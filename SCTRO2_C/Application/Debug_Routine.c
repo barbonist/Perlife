@@ -382,6 +382,10 @@ void testCOMMSbcDebug(void){
 															   (((float)((float)sensor_PRx[sbcDebug_rx_data[22]].prSensAdc/65535))*3.3 - sensor_PRx[sbcDebug_rx_data[22]].prSensOffsetVal) +
 															   sensor_PRx[sbcDebug_rx_data[22]].prSensOffset;
 
+				//3.3: fondo scala in volt
+				//1000/2,04: mv/V / mv/mmHg
+				//1617: fondo scala in mmHg
+
 				//sensor_PRx[sbcDebug_rx_data[22]].prSensOffsetVal = ((sensor_PRx[sbcDebug_rx_data[22]].prSensValue) / (sensor_PRx[sbcDebug_rx_data[22]].prSensGain))*((float)(775/3.3));
 				sensor_PRx[sbcDebug_rx_data[22]].prSensOffset = - sensor_PRx[sbcDebug_rx_data[22]].prSensValue * ((float)(1000/2.04));
 
