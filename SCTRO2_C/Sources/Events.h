@@ -46,7 +46,7 @@
 #include "AdcLdd1.h"
 #include "AS3_PELTIER.h"
 #include "ASerialLdd3.h"
-#include "AS4_C2P.h"
+#include "FLOWSENS_COMM.h"
 #include "ASerialLdd4.h"
 #include "AS5_SBC.h"
 #include "ASerialLdd5.h"
@@ -160,9 +160,9 @@ void AS5_SBC_OnFreeTxBuf(void);
 
 /*
 ** ===================================================================
-**     Event       :  AS4_C2P_OnError (module Events)
+**     Event       :  FLOWSENS_COMM_OnError (module Events)
 **
-**     Component   :  AS4_C2P [AsynchroSerial]
+**     Component   :  FLOWSENS_COMM [AsynchroSerial]
 **     Description :
 **         This event is called when a channel error (not the error
 **         returned by a given method) occurs. The errors can be read
@@ -173,13 +173,13 @@ void AS5_SBC_OnFreeTxBuf(void);
 **     Returns     : Nothing
 ** ===================================================================
 */
-void AS4_C2P_OnError(void);
+void FLOWSENS_COMM_OnError(void);
 
 /*
 ** ===================================================================
-**     Event       :  AS4_C2P_OnRxChar (module Events)
+**     Event       :  FLOWSENS_COMM_OnRxChar (module Events)
 **
-**     Component   :  AS4_C2P [AsynchroSerial]
+**     Component   :  FLOWSENS_COMM [AsynchroSerial]
 **     Description :
 **         This event is called after a correct character is received.
 **         The event is available only when the <Interrupt
@@ -190,26 +190,26 @@ void AS4_C2P_OnError(void);
 **     Returns     : Nothing
 ** ===================================================================
 */
-void AS4_C2P_OnRxChar(void);
+void FLOWSENS_COMM_OnRxChar(void);
 
 /*
 ** ===================================================================
-**     Event       :  AS4_C2P_OnTxChar (module Events)
+**     Event       :  FLOWSENS_COMM_OnTxChar (module Events)
 **
-**     Component   :  AS4_C2P [AsynchroSerial]
+**     Component   :  FLOWSENS_COMM [AsynchroSerial]
 **     Description :
 **         This event is called after a character is transmitted.
 **     Parameters  : None
 **     Returns     : Nothing
 ** ===================================================================
 */
-void AS4_C2P_OnTxChar(void);
+void FLOWSENS_COMM_OnTxChar(void);
 
 /*
 ** ===================================================================
-**     Event       :  AS4_C2P_OnFullRxBuf (module Events)
+**     Event       :  FLOWSENS_COMM_OnFullRxBuf (module Events)
 **
-**     Component   :  AS4_C2P [AsynchroSerial]
+**     Component   :  FLOWSENS_COMM [AsynchroSerial]
 **     Description :
 **         This event is called when the input buffer is full;
 **         i.e. after reception of the last character 
@@ -218,13 +218,13 @@ void AS4_C2P_OnTxChar(void);
 **     Returns     : Nothing
 ** ===================================================================
 */
-void AS4_C2P_OnFullRxBuf(void);
+void FLOWSENS_COMM_OnFullRxBuf(void);
 
 /*
 ** ===================================================================
-**     Event       :  AS4_C2P_OnFreeTxBuf (module Events)
+**     Event       :  FLOWSENS_COMM_OnFreeTxBuf (module Events)
 **
-**     Component   :  AS4_C2P [AsynchroSerial]
+**     Component   :  FLOWSENS_COMM [AsynchroSerial]
 **     Description :
 **         This event is called after the last character in output
 **         buffer is transmitted.
@@ -232,7 +232,7 @@ void AS4_C2P_OnFullRxBuf(void);
 **     Returns     : Nothing
 ** ===================================================================
 */
-void AS4_C2P_OnFreeTxBuf(void);
+void FLOWSENS_COMM_OnFreeTxBuf(void);
 
 /*
 ** ===================================================================
@@ -552,9 +552,9 @@ void SM1_OnBlockReceived(LDD_TUserData *UserDataPtr);
 
 /*
 ** ===================================================================
-**     Event       :  AS4_C2P_OnTxComplete (module Events)
+**     Event       :  FLOWSENS_COMM_OnTxComplete (module Events)
 **
-**     Component   :  AS4_C2P [AsynchroSerial]
+**     Component   :  FLOWSENS_COMM [AsynchroSerial]
 **     Description :
 **         This event indicates that the transmitter is finished
 **         transmitting all data, preamble, and break characters and is
@@ -566,7 +566,7 @@ void SM1_OnBlockReceived(LDD_TUserData *UserDataPtr);
 **     Returns     : Nothing
 ** ===================================================================
 */
-void AS4_C2P_OnTxComplete(void);
+void FLOWSENS_COMM_OnTxComplete(void);
 
 /*
 ** ===================================================================

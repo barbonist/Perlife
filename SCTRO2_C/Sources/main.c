@@ -43,7 +43,7 @@
 #include "AdcLdd1.h"
 #include "AS3_PELTIER.h"
 #include "ASerialLdd3.h"
-#include "AS4_C2P.h"
+#include "FLOWSENS_COMM.h"
 #include "ASerialLdd4.h"
 #include "AS5_SBC.h"
 #include "ASerialLdd5.h"
@@ -204,7 +204,7 @@ int main(void)
 	         		  for(char k = 0; k < ptrMsg_UFLOW->bufferToSendLenght; k++)
 						{
 							//Uart3_rts_SetVal();
-							AS4_C2P_SendChar(ptrMsg_UFLOW->bufferToSend[k]);
+							FLOWSENS_COMM_SendChar(ptrMsg_UFLOW->bufferToSend[k]);
 						}
 
 	         		 while(!(iflag_uflow_sens == IFLAG_UFLOW_SENS_RX))

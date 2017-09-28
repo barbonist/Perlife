@@ -13,7 +13,7 @@
 #include "ASerialLdd1.h"
 #include "SM1.h"
 #include "Uart3_rts.h"
-#include "AS4_C2P.h"
+#include "FLOWSENS_COMM.h"
 #include "CI2C1.h"
 
 #include "Global.h"
@@ -617,7 +617,7 @@ void testCOMMSbcDebug(void){
 				for(char k = 0; k < ptrMsg_UFLOW->bufferToSendLenght; k++)
 				{
 				//Uart3_rts_SetVal();
-				AS4_C2P_SendChar(ptrMsg_UFLOW->bufferToSend[k]);
+				FLOWSENS_COMM_SendChar(ptrMsg_UFLOW->bufferToSend[k]);
 				}
 				break;
 

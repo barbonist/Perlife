@@ -2,7 +2,7 @@
 <GenerationInfo_G_C>
   <Options>
     <ProjectName>SCTRO2_C</ProjectName>
-    <ProjectDirectory>C:\Users\W15\Desktop\WRK_SPACE\SCTRO2\SCTRO2_C\</ProjectDirectory>
+    <ProjectDirectory>C:\WorkspaceKinetis\Perlife_FW\SCTRO2_C\</ProjectDirectory>
     <ProjectMainModuleName>main</ProjectMainModuleName>
     <DestEventsDirectory>Sources\</DestEventsDirectory>
     <DestDriversSubDirectory>..\Generated_Code\</DestDriversSubDirectory>
@@ -62,10 +62,10 @@
       <GenExtraFileSrcDir25>Repositories\lib\doxygen\</GenExtraFileSrcDir25>
       <GenExtraFileSrcDir18>lib\Kinetis\startup\</GenExtraFileSrcDir18>
       <XtraAge15>1254525661</XtraAge15>
-      <XtraAge16>1254525661</XtraAge16>
+      <XtraAge16>1262248659</XtraAge16>
       <XtraAge18>1223917623</XtraAge18>
-      <XtraAge19>1254525661</XtraAge19>
-      <XtraAge20>1257464211</XtraAge20>
+      <XtraAge19>1262248659</XtraAge19>
+      <XtraAge20>1262248658</XtraAge20>
       <XtraAge21>1248486160</XtraAge21>
       <GenExtraFileType25>5</GenExtraFileType25>
       <GenExtraFileType24>4</GenExtraFileType24>
@@ -533,12 +533,12 @@
         <Line>AS5_SBC_OnTxChar</Line>
         <Line>AS5_SBC_OnFullRxBuf</Line>
         <Line>AS5_SBC_OnFreeTxBuf</Line>
-        <Line>AS4_C2P_OnError</Line>
-        <Line>AS4_C2P_OnRxChar</Line>
-        <Line>AS4_C2P_OnTxChar</Line>
-        <Line>AS4_C2P_OnFullRxBuf</Line>
-        <Line>AS4_C2P_OnFreeTxBuf</Line>
-        <Line>AS4_C2P_OnTxComplete</Line>
+        <Line>FLOWSENS_COMM_OnError</Line>
+        <Line>FLOWSENS_COMM_OnRxChar</Line>
+        <Line>FLOWSENS_COMM_OnTxChar</Line>
+        <Line>FLOWSENS_COMM_OnFullRxBuf</Line>
+        <Line>FLOWSENS_COMM_OnFreeTxBuf</Line>
+        <Line>FLOWSENS_COMM_OnTxComplete</Line>
         <Line>AS3_PELTIER_OnError</Line>
         <Line>AS3_PELTIER_OnRxChar</Line>
         <Line>AS3_PELTIER_OnTxChar</Line>
@@ -565,7 +565,6 @@
         <Line>AS1_MODBUS_ACTUATOR</Line>
         <Line>AS2_PC_DEBUG</Line>
         <Line>AS3_PELTIER</Line>
-        <Line>AS4_C2P</Line>
         <Line>AS5_SBC</Line>
         <Line>ASerialLdd1</Line>
         <Line>ASerialLdd2</Line>
@@ -585,6 +584,7 @@
         <Line>Cpu</Line>
         <Line>Events</Line>
         <Line>FLASH1</Line>
+        <Line>FLOWSENS_COMM</Line>
         <Line>IntI2cLdd1</Line>
         <Line>IO_Map</Line>
         <Line>PE_Const</Line>
@@ -610,7 +610,7 @@
         <Line>AdcLdd1</Line>
         <Line>AS3_PELTIER</Line>
         <Line>ASerialLdd3</Line>
-        <Line>AS4_C2P</Line>
+        <Line>FLOWSENS_COMM</Line>
         <Line>ASerialLdd4</Line>
         <Line>AS5_SBC</Line>
         <Line>ASerialLdd5</Line>
@@ -629,7 +629,7 @@
     </GenFiles>
     <SignalListFile />
     <DestinationCompiler>GNUC</DestinationCompiler>
-    <ProjectModificationStamp>36</ProjectModificationStamp>
+    <ProjectModificationStamp>38</ProjectModificationStamp>
   </Options>
   <CpuID_2>
     <Generated>false</Generated>
@@ -704,7 +704,7 @@
     <GenDriverVersion>01.00</GenDriverVersion>
     <GenEventModule>Events</GenEventModule>
     <HeaderAge>1248486160</HeaderAge>
-    <CodeAge>1254525661</CodeAge>
+    <CodeAge>1262248659</CodeAge>
     <AsemblAge>-1</AsemblAge>
     <GenNumMethods>10</GenNumMethods>
     <SetClockConfiguration>false</SetClockConfiguration>
@@ -2941,12 +2941,12 @@
   </ComponentID_18>
   <ComponentID_20>
     <Generated>true</Generated>
-    <GenCompName>AS4_C2P</GenCompName>
+    <GenCompName>FLOWSENS_COMM</GenCompName>
     <GenComponentVersion>02.611</GenComponentVersion>
     <GenDriverVersion>01.01</GenDriverVersion>
     <GenEventModule>Events</GenEventModule>
-    <HeaderAge>1247973884</HeaderAge>
-    <CodeAge>1247973884</CodeAge>
+    <HeaderAge>1262248659</HeaderAge>
+    <CodeAge>1262248659</CodeAge>
     <AsemblAge>-1</AsemblAge>
     <GenNumMethods>24</GenNumMethods>
     <Enable>true</Enable>
@@ -2975,34 +2975,34 @@
     <ConnectPin>false</ConnectPin>
     <GenNumEvents>10</GenNumEvents>
     <BeforeNewSpeed_Selected>0</BeforeNewSpeed_Selected>
-    <BeforeNewSpeed_Name>AS4_C2P_BeforeNewSpeed</BeforeNewSpeed_Name>
+    <BeforeNewSpeed_Name>FLOWSENS_COMM_BeforeNewSpeed</BeforeNewSpeed_Name>
     <BeforeNewSpeed_Priority>interrupts disabled</BeforeNewSpeed_Priority>
     <AfterNewSpeed_Selected>0</AfterNewSpeed_Selected>
-    <AfterNewSpeed_Name>AS4_C2P_AfterNewSpeed</AfterNewSpeed_Name>
+    <AfterNewSpeed_Name>FLOWSENS_COMM_AfterNewSpeed</AfterNewSpeed_Name>
     <AfterNewSpeed_Priority>interrupts disabled</AfterNewSpeed_Priority>
     <OnError_Selected>3</OnError_Selected>
-    <OnError_Name>AS4_C2P_OnError</OnError_Name>
+    <OnError_Name>FLOWSENS_COMM_OnError</OnError_Name>
     <OnError_Priority>same as interrupt</OnError_Priority>
     <OnRxChar_Selected>3</OnRxChar_Selected>
-    <OnRxChar_Name>AS4_C2P_OnRxChar</OnRxChar_Name>
+    <OnRxChar_Name>FLOWSENS_COMM_OnRxChar</OnRxChar_Name>
     <OnRxChar_Priority>same as interrupt</OnRxChar_Priority>
     <OnRxCharExt_Selected>1</OnRxCharExt_Selected>
-    <OnRxCharExt_Name>AS4_C2P_OnRxCharExt</OnRxCharExt_Name>
+    <OnRxCharExt_Name>FLOWSENS_COMM_OnRxCharExt</OnRxCharExt_Name>
     <OnRxCharExt_Priority>same as interrupt</OnRxCharExt_Priority>
     <OnTxChar_Selected>3</OnTxChar_Selected>
-    <OnTxChar_Name>AS4_C2P_OnTxChar</OnTxChar_Name>
+    <OnTxChar_Name>FLOWSENS_COMM_OnTxChar</OnTxChar_Name>
     <OnTxChar_Priority>same as interrupt</OnTxChar_Priority>
     <OnFullRxBuf_Selected>3</OnFullRxBuf_Selected>
-    <OnFullRxBuf_Name>AS4_C2P_OnFullRxBuf</OnFullRxBuf_Name>
+    <OnFullRxBuf_Name>FLOWSENS_COMM_OnFullRxBuf</OnFullRxBuf_Name>
     <OnFullRxBuf_Priority>same as interrupt</OnFullRxBuf_Priority>
     <OnFreeTxBuf_Selected>3</OnFreeTxBuf_Selected>
-    <OnFreeTxBuf_Name>AS4_C2P_OnFreeTxBuf</OnFreeTxBuf_Name>
+    <OnFreeTxBuf_Name>FLOWSENS_COMM_OnFreeTxBuf</OnFreeTxBuf_Name>
     <OnFreeTxBuf_Priority>same as interrupt</OnFreeTxBuf_Priority>
     <OnBreak_Selected>0</OnBreak_Selected>
-    <OnBreak_Name>AS4_C2P_OnBreak</OnBreak_Name>
+    <OnBreak_Name>FLOWSENS_COMM_OnBreak</OnBreak_Name>
     <OnBreak_Priority>same as interrupt</OnBreak_Priority>
     <OnTxComplete_Selected>3</OnTxComplete_Selected>
-    <OnTxComplete_Name>AS4_C2P_OnTxComplete</OnTxComplete_Name>
+    <OnTxComplete_Name>FLOWSENS_COMM_OnTxComplete</OnTxComplete_Name>
     <OnTxComplete_Priority>same as interrupt</OnTxComplete_Priority>
     <GenSmartUserChangesDetected_Header>false</GenSmartUserChangesDetected_Header>
     <GenSmartUserChangesDetected_Code>false</GenSmartUserChangesDetected_Code>
@@ -3247,7 +3247,7 @@
       <GenDriverVersion>01.12</GenDriverVersion>
       <GenEventModule>Events</GenEventModule>
       <HeaderAge>1247973884</HeaderAge>
-      <CodeAge>1247973884</CodeAge>
+      <CodeAge>1262248659</CodeAge>
       <AsemblAge>-1</AsemblAge>
       <GenNumMethods>36</GenNumMethods>
       <Init>true</Init>
@@ -5620,7 +5620,7 @@
     <SrcFile128>Drivers\TimerUnit_LDD.src=-1</SrcFile128>
     <SrcFile129>Drivers\Common\I2C_LDDEnable.inc=-1</SrcFile129>
     <SrcFile130>Drivers\Common\Serial_LDDAbstract.inc=1183486050</SrcFile130>
-    <SrcFile131>Drivers\sw\RTOSAdaptor\Common_RTOSAdaptor.prg=1183482931</SrcFile131>
+    <SrcFile131>Drivers\sw\RTOSAdaptor\Common_RTOSAdaptor.prg=1183484979</SrcFile131>
     <SrcFile132>Drivers\Common\InitReg8Block.prg=1183486427</SrcFile132>
     <SrcFile133>Drivers\Common\Serial_LDDOnBreak.inc=1183486050</SrcFile133>
     <SrcFile134>Drivers\Kinetis\FLASH_LDD.drv=-1</SrcFile134>
@@ -5669,7 +5669,7 @@
     <SrcFile177>Drivers\Common\GeneralParameters.inc=1183486427</SrcFile177>
     <SrcFile178>Drivers\Common\AsynchroSerialOnRxChar.inc=-1</SrcFile178>
     <SrcFile179>Drivers\Common\Serial_LDDInit.inc=1183486050</SrcFile179>
-    <SrcFile180>Drivers\sw\RTOSAdaptor\Default_RTOSAdaptor.prg=1183482931</SrcFile180>
+    <SrcFile180>Drivers\sw\RTOSAdaptor\Default_RTOSAdaptor.prg=1183484979</SrcFile180>
     <SrcFile181>Drivers\Kinetis\Serial_LDD.drv=1183486077</SrcFile181>
     <SrcFile182>Drivers\Common\GenReg32InitInfo.prg=1183486427</SrcFile182>
     <SrcFile183>Drivers\Common\AsynchroSerialOnFullRxBuf.inc=-1</SrcFile183>
@@ -5714,7 +5714,7 @@
     <SrcFile222>Drivers\Common\SetRegBits32.prg=1183486427</SrcFile222>
     <SrcFile223>Drivers\Kinetis\FLASH_LDD_FTFx.drv=-1</SrcFile223>
     <SrcFile224>Drivers\Common\InternalI2COnNACK.inc=-1</SrcFile224>
-    <SrcFile225>lib\doxygen\pex.doxyfile=1183482798</SrcFile225>
+    <SrcFile225>lib\doxygen\pex.doxyfile=1183484846</SrcFile225>
     <SrcFile226>Drivers\Kinetis\IsSupported_NFC_PDD.prg=1183486082</SrcFile226>
     <SrcFile227>Drivers\PinSettings.src=-1</SrcFile227>
     <SrcFile228>Drivers\Common\GeneralEvent.inc=1183486427</SrcFile228>
@@ -5740,7 +5740,7 @@
     <SrcFile248>Drivers\Common\PE_LDD.prg=1183486427</SrcFile248>
     <SrcFile249>Drivers\Common\BitIO_LDDNegVal.inc=-1</SrcFile249>
     <SrcFile250>Drivers\Kinetis\IsSupported_CRC_PDD.prg=1183486054</SrcFile250>
-    <SrcFile251>Drivers\Common\Header.doxy=1183484379</SrcFile251>
+    <SrcFile251>Drivers\Common\Header.doxy=1183486427</SrcFile251>
     <SrcFile252>Drivers\Common\LDDSupport\PE_LDD_Event.prg=1183486427</SrcFile252>
     <SrcFile253>Drivers\Common\I2C_LDDOnMasterBlockReceived.inc=-1</SrcFile253>
     <SrcFile254>Drivers\Common\SPIMaster_LDDAbstract.inc=-1</SrcFile254>

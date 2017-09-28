@@ -11,7 +11,7 @@
 #include "PE_Types.h"
 
 #include "Uart3_rts.h"
-#include "AS4_C2P.h"
+#include "FLOWSENS_COMM.h"
 
 
 void initUFlowSensor(void)
@@ -69,7 +69,7 @@ void alwaysUFlowSensor(void){
 			for(char k = 0; k < ptrMsg_UFLOW->bufferToSendLenght; k++)
 			{
 				//Uart3_rts_SetVal();
-				AS4_C2P_SendChar(ptrMsg_UFLOW->bufferToSend[k]);
+				FLOWSENS_COMM_SendChar(ptrMsg_UFLOW->bufferToSend[k]);
 			}
 		break;
 
@@ -84,7 +84,7 @@ void alwaysUFlowSensor(void){
 			for(char k = 0; k < ptrMsg_UFLOW->bufferToSendLenght; k++)
 			{
 				//Uart3_rts_SetVal();
-				AS4_C2P_SendChar(ptrMsg_UFLOW->bufferToSend[k]);
+				FLOWSENS_COMM_SendChar(ptrMsg_UFLOW->bufferToSend[k]);
 			}
 			break;
 
