@@ -62,10 +62,10 @@
       <GenExtraFileSrcDir25>Repositories\lib\doxygen\</GenExtraFileSrcDir25>
       <GenExtraFileSrcDir18>lib\Kinetis\startup\</GenExtraFileSrcDir18>
       <XtraAge15>1262248909</XtraAge15>
-      <XtraAge16>1262248909</XtraAge16>
+      <XtraAge16>1262249174</XtraAge16>
       <XtraAge18>1223917623</XtraAge18>
-      <XtraAge19>1262248909</XtraAge19>
-      <XtraAge20>1262248908</XtraAge20>
+      <XtraAge19>1262249174</XtraAge19>
+      <XtraAge20>1262249173</XtraAge20>
       <XtraAge21>1248486160</XtraAge21>
       <GenExtraFileType25>5</GenExtraFileType25>
       <GenExtraFileType24>4</GenExtraFileType24>
@@ -552,17 +552,16 @@
         <Line>AS2_PC_DEBUG_OnTxChar</Line>
         <Line>AS2_PC_DEBUG_OnFullRxBuf</Line>
         <Line>AS2_PC_DEBUG_OnFreeTxBuf</Line>
-        <Line>AS1_MODBUS_ACTUATOR_OnError</Line>
-        <Line>AS1_MODBUS_ACTUATOR_OnRxChar</Line>
-        <Line>AS1_MODBUS_ACTUATOR_OnTxChar</Line>
-        <Line>AS1_MODBUS_ACTUATOR_OnFullRxBuf</Line>
-        <Line>AS1_MODBUS_ACTUATOR_OnFreeTxBuf</Line>
+        <Line>MODBUS_COMM_OnError</Line>
+        <Line>MODBUS_COMM_OnRxChar</Line>
+        <Line>MODBUS_COMM_OnTxChar</Line>
+        <Line>MODBUS_COMM_OnFullRxBuf</Line>
+        <Line>MODBUS_COMM_OnFreeTxBuf</Line>
         <Line>Cpu_OnNMI</Line>
       </GenMethodsInEvents>
       <GenAllModules lines_count="34">
         <Line>AD1</Line>
         <Line>AdcLdd1</Line>
-        <Line>AS1_MODBUS_ACTUATOR</Line>
         <Line>AS2_PC_DEBUG</Line>
         <Line>AS3_PELTIER</Line>
         <Line>AS5_SBC</Line>
@@ -588,6 +587,7 @@
         <Line>FLOWSENS_RTS</Line>
         <Line>IntI2cLdd1</Line>
         <Line>IO_Map</Line>
+        <Line>MODBUS_COMM</Line>
         <Line>PE_Const</Line>
         <Line>PE_Error</Line>
         <Line>PE_Types</Line>
@@ -598,7 +598,7 @@
       <GenExternModules lines_count="0" />
       <GenBeanModules lines_count="28">
         <Line>Pins1</Line>
-        <Line>AS1_MODBUS_ACTUATOR</Line>
+        <Line>MODBUS_COMM</Line>
         <Line>ASerialLdd1</Line>
         <Line>AS2_PC_DEBUG</Line>
         <Line>ASerialLdd2</Line>
@@ -629,7 +629,7 @@
     </GenFiles>
     <SignalListFile />
     <DestinationCompiler>GNUC</DestinationCompiler>
-    <ProjectModificationStamp>39</ProjectModificationStamp>
+    <ProjectModificationStamp>40</ProjectModificationStamp>
   </Options>
   <CpuID_2>
     <Generated>false</Generated>
@@ -704,7 +704,7 @@
     <GenDriverVersion>01.00</GenDriverVersion>
     <GenEventModule>Events</GenEventModule>
     <HeaderAge>1248486160</HeaderAge>
-    <CodeAge>1262248909</CodeAge>
+    <CodeAge>1262249174</CodeAge>
     <AsemblAge>-1</AsemblAge>
     <GenNumMethods>10</GenNumMethods>
     <SetClockConfiguration>false</SetClockConfiguration>
@@ -809,12 +809,12 @@
   </ComponentID_5>
   <ComponentID_6>
     <Generated>true</Generated>
-    <GenCompName>AS1_MODBUS_ACTUATOR</GenCompName>
+    <GenCompName>MODBUS_COMM</GenCompName>
     <GenComponentVersion>02.611</GenComponentVersion>
     <GenDriverVersion>01.01</GenDriverVersion>
     <GenEventModule>Events</GenEventModule>
-    <HeaderAge>1234133668</HeaderAge>
-    <CodeAge>1234133668</CodeAge>
+    <HeaderAge>1262249174</HeaderAge>
+    <CodeAge>1262249174</CodeAge>
     <AsemblAge>-1</AsemblAge>
     <GenNumMethods>24</GenNumMethods>
     <Enable>true</Enable>
@@ -843,34 +843,34 @@
     <ConnectPin>false</ConnectPin>
     <GenNumEvents>10</GenNumEvents>
     <BeforeNewSpeed_Selected>0</BeforeNewSpeed_Selected>
-    <BeforeNewSpeed_Name>AS1_MODBUS_ACTUATOR_BeforeNewSpeed</BeforeNewSpeed_Name>
+    <BeforeNewSpeed_Name>MODBUS_COMM_BeforeNewSpeed</BeforeNewSpeed_Name>
     <BeforeNewSpeed_Priority>interrupts disabled</BeforeNewSpeed_Priority>
     <AfterNewSpeed_Selected>0</AfterNewSpeed_Selected>
-    <AfterNewSpeed_Name>AS1_MODBUS_ACTUATOR_AfterNewSpeed</AfterNewSpeed_Name>
+    <AfterNewSpeed_Name>MODBUS_COMM_AfterNewSpeed</AfterNewSpeed_Name>
     <AfterNewSpeed_Priority>interrupts disabled</AfterNewSpeed_Priority>
     <OnError_Selected>3</OnError_Selected>
-    <OnError_Name>AS1_MODBUS_ACTUATOR_OnError</OnError_Name>
+    <OnError_Name>MODBUS_COMM_OnError</OnError_Name>
     <OnError_Priority>same as interrupt</OnError_Priority>
     <OnRxChar_Selected>3</OnRxChar_Selected>
-    <OnRxChar_Name>AS1_MODBUS_ACTUATOR_OnRxChar</OnRxChar_Name>
+    <OnRxChar_Name>MODBUS_COMM_OnRxChar</OnRxChar_Name>
     <OnRxChar_Priority>same as interrupt</OnRxChar_Priority>
     <OnRxCharExt_Selected>1</OnRxCharExt_Selected>
-    <OnRxCharExt_Name>AS1_MODBUS_ACTUATOR_OnRxCharExt</OnRxCharExt_Name>
+    <OnRxCharExt_Name>MODBUS_COMM_OnRxCharExt</OnRxCharExt_Name>
     <OnRxCharExt_Priority>same as interrupt</OnRxCharExt_Priority>
     <OnTxChar_Selected>3</OnTxChar_Selected>
-    <OnTxChar_Name>AS1_MODBUS_ACTUATOR_OnTxChar</OnTxChar_Name>
+    <OnTxChar_Name>MODBUS_COMM_OnTxChar</OnTxChar_Name>
     <OnTxChar_Priority>same as interrupt</OnTxChar_Priority>
     <OnFullRxBuf_Selected>3</OnFullRxBuf_Selected>
-    <OnFullRxBuf_Name>AS1_MODBUS_ACTUATOR_OnFullRxBuf</OnFullRxBuf_Name>
+    <OnFullRxBuf_Name>MODBUS_COMM_OnFullRxBuf</OnFullRxBuf_Name>
     <OnFullRxBuf_Priority>same as interrupt</OnFullRxBuf_Priority>
     <OnFreeTxBuf_Selected>3</OnFreeTxBuf_Selected>
-    <OnFreeTxBuf_Name>AS1_MODBUS_ACTUATOR_OnFreeTxBuf</OnFreeTxBuf_Name>
+    <OnFreeTxBuf_Name>MODBUS_COMM_OnFreeTxBuf</OnFreeTxBuf_Name>
     <OnFreeTxBuf_Priority>same as interrupt</OnFreeTxBuf_Priority>
     <OnBreak_Selected>0</OnBreak_Selected>
-    <OnBreak_Name>AS1_MODBUS_ACTUATOR_OnBreak</OnBreak_Name>
+    <OnBreak_Name>MODBUS_COMM_OnBreak</OnBreak_Name>
     <OnBreak_Priority>same as interrupt</OnBreak_Priority>
     <OnTxComplete_Selected>1</OnTxComplete_Selected>
-    <OnTxComplete_Name>AS1_MODBUS_ACTUATOR_OnTxComplete</OnTxComplete_Name>
+    <OnTxComplete_Name>MODBUS_COMM_OnTxComplete</OnTxComplete_Name>
     <OnTxComplete_Priority>same as interrupt</OnTxComplete_Priority>
     <GenSmartUserChangesDetected_Header>false</GenSmartUserChangesDetected_Header>
     <GenSmartUserChangesDetected_Code>false</GenSmartUserChangesDetected_Code>
@@ -1101,7 +1101,7 @@
       <GenDriverVersion>01.12</GenDriverVersion>
       <GenEventModule>Events</GenEventModule>
       <HeaderAge>1234133668</HeaderAge>
-      <CodeAge>1234133668</CodeAge>
+      <CodeAge>1262249174</CodeAge>
       <AsemblAge>-1</AsemblAge>
       <GenNumMethods>36</GenNumMethods>
       <Init>true</Init>

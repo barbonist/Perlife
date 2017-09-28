@@ -34,7 +34,7 @@
 #include "PE_Const.h"
 #include "IO_Map.h"
 #include "Pins1.h"
-#include "AS1_MODBUS_ACTUATOR.h"
+#include "MODBUS_COMM.h"
 #include "ASerialLdd1.h"
 #include "AS2_PC_DEBUG.h"
 #include "ASerialLdd2.h"
@@ -438,9 +438,9 @@ void AS2_PC_DEBUG_OnFreeTxBuf(void);
 
 /*
 ** ===================================================================
-**     Event       :  AS1_MODBUS_ACTUATOR_OnError (module Events)
+**     Event       :  MODBUS_COMM_OnError (module Events)
 **
-**     Component   :  AS1_MODBUS_ACTUATOR [AsynchroSerial]
+**     Component   :  MODBUS_COMM [AsynchroSerial]
 **     Description :
 **         This event is called when a channel error (not the error
 **         returned by a given method) occurs. The errors can be read
@@ -451,13 +451,13 @@ void AS2_PC_DEBUG_OnFreeTxBuf(void);
 **     Returns     : Nothing
 ** ===================================================================
 */
-void AS1_MODBUS_ACTUATOR_OnError(void);
+void MODBUS_COMM_OnError(void);
 
 /*
 ** ===================================================================
-**     Event       :  AS1_MODBUS_ACTUATOR_OnRxChar (module Events)
+**     Event       :  MODBUS_COMM_OnRxChar (module Events)
 **
-**     Component   :  AS1_MODBUS_ACTUATOR [AsynchroSerial]
+**     Component   :  MODBUS_COMM [AsynchroSerial]
 **     Description :
 **         This event is called after a correct character is received.
 **         The event is available only when the <Interrupt
@@ -468,26 +468,26 @@ void AS1_MODBUS_ACTUATOR_OnError(void);
 **     Returns     : Nothing
 ** ===================================================================
 */
-void AS1_MODBUS_ACTUATOR_OnRxChar(void);
+void MODBUS_COMM_OnRxChar(void);
 
 /*
 ** ===================================================================
-**     Event       :  AS1_MODBUS_ACTUATOR_OnTxChar (module Events)
+**     Event       :  MODBUS_COMM_OnTxChar (module Events)
 **
-**     Component   :  AS1_MODBUS_ACTUATOR [AsynchroSerial]
+**     Component   :  MODBUS_COMM [AsynchroSerial]
 **     Description :
 **         This event is called after a character is transmitted.
 **     Parameters  : None
 **     Returns     : Nothing
 ** ===================================================================
 */
-void AS1_MODBUS_ACTUATOR_OnTxChar(void);
+void MODBUS_COMM_OnTxChar(void);
 
 /*
 ** ===================================================================
-**     Event       :  AS1_MODBUS_ACTUATOR_OnFullRxBuf (module Events)
+**     Event       :  MODBUS_COMM_OnFullRxBuf (module Events)
 **
-**     Component   :  AS1_MODBUS_ACTUATOR [AsynchroSerial]
+**     Component   :  MODBUS_COMM [AsynchroSerial]
 **     Description :
 **         This event is called when the input buffer is full;
 **         i.e. after reception of the last character 
@@ -496,13 +496,13 @@ void AS1_MODBUS_ACTUATOR_OnTxChar(void);
 **     Returns     : Nothing
 ** ===================================================================
 */
-void AS1_MODBUS_ACTUATOR_OnFullRxBuf(void);
+void MODBUS_COMM_OnFullRxBuf(void);
 
 /*
 ** ===================================================================
-**     Event       :  AS1_MODBUS_ACTUATOR_OnFreeTxBuf (module Events)
+**     Event       :  MODBUS_COMM_OnFreeTxBuf (module Events)
 **
-**     Component   :  AS1_MODBUS_ACTUATOR [AsynchroSerial]
+**     Component   :  MODBUS_COMM [AsynchroSerial]
 **     Description :
 **         This event is called after the last character in output
 **         buffer is transmitted.
@@ -510,7 +510,7 @@ void AS1_MODBUS_ACTUATOR_OnFullRxBuf(void);
 **     Returns     : Nothing
 ** ===================================================================
 */
-void AS1_MODBUS_ACTUATOR_OnFreeTxBuf(void);
+void MODBUS_COMM_OnFreeTxBuf(void);
 
 /*
 ** ===================================================================

@@ -16,7 +16,7 @@
 #include "BitIoLdd1.h"
 #include "Bit2.h"
 #include "BitIoLdd2.h"
-#include "AS1_MODBUS_ACTUATOR.h"
+#include "MODBUS_COMM.h"
 #include "ASerialLdd1.h"
 
 /********************************/

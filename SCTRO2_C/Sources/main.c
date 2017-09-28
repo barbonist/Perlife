@@ -31,7 +31,7 @@
 #include "Cpu.h"
 #include "Events.h"
 #include "Pins1.h"
-#include "AS1_MODBUS_ACTUATOR.h"
+#include "MODBUS_COMM.h"
 #include "ASerialLdd1.h"
 #include "AS2_PC_DEBUG.h"
 #include "ASerialLdd2.h"

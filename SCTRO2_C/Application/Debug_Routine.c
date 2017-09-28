@@ -9,7 +9,7 @@
 #include "ASerialLdd5.h"
 #include "AS2_PC_DEBUG.h"
 #include "ASerialLdd2.h"
-#include "AS1_MODBUS_ACTUATOR.h"
+#include "MODBUS_COMM.h"
 #include "ASerialLdd1.h"
 #include "SM1.h"
 #include "FLOWSENS_RTS.h"
@@ -485,7 +485,7 @@ void testCOMMSbcDebug(void){
 
 				for(char k = 0; k < _funcRetVal.mstreqRetStructNumByte; k++)
 				{
-					AS1_MODBUS_ACTUATOR_SendChar(*(_funcRetVal.ptr_msg+k));
+					MODBUS_COMM_SendChar(*(_funcRetVal.ptr_msg+k));
 				}
 				break;
 
@@ -517,7 +517,7 @@ void testCOMMSbcDebug(void){
 
 				for(char k = 0; k < _funcRetVal.mstreqRetStructNumByte; k++)
 					{
-						AS1_MODBUS_ACTUATOR_SendChar(*(_funcRetVal.ptr_msg+k));
+						MODBUS_COMM_SendChar(*(_funcRetVal.ptr_msg+k));
 					}
 				break;
 
@@ -540,7 +540,7 @@ void testCOMMSbcDebug(void){
 
 				for(char k = 0; k < _funcRetVal.mstreqRetStructNumByte; k++)
 				{
-					AS1_MODBUS_ACTUATOR_SendChar(*(_funcRetVal.ptr_msg+k));
+					MODBUS_COMM_SendChar(*(_funcRetVal.ptr_msg+k));
 				}
 				break;
 
@@ -570,7 +570,7 @@ void testCOMMSbcDebug(void){
 
 				for(char k = 0; k < _funcRetVal.mstreqRetStructNumByte; k++)
 				{
-					AS1_MODBUS_ACTUATOR_SendChar(*(_funcRetVal.ptr_msg+k));
+					MODBUS_COMM_SendChar(*(_funcRetVal.ptr_msg+k));
 				}
 
 				break;

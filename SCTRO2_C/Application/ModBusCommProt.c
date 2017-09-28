@@ -8,7 +8,7 @@
 #include "ModBusCommProt.h"
 #include "Global.h"
 
-#include "AS1_MODBUS_ACTUATOR.h"
+#include "MODBUS_COMM.h"
 #include "ASerialLdd1.h"
 
 
@@ -432,7 +432,7 @@ void setPumpSpeedValue(unsigned char slaveAddr, int speedValue){
 
 	for(char k = 0; k < _funcRetVal.mstreqRetStructNumByte; k++)
 	{
-		AS1_MODBUS_ACTUATOR_SendChar(*(_funcRetVal.ptr_msg+k));
+		MODBUS_COMM_SendChar(*(_funcRetVal.ptr_msg+k));
 	}
 }
 
@@ -457,7 +457,7 @@ void readPumpSpeedValue(unsigned char slaveAddr){
 
 	for(char k = 0; k < _funcRetVal.mstreqRetStructNumByte; k++)
 	{
-		AS1_MODBUS_ACTUATOR_SendChar(*(_funcRetVal.ptr_msg+k));
+		MODBUS_COMM_SendChar(*(_funcRetVal.ptr_msg+k));
 	}
 }
 
@@ -557,7 +557,7 @@ void setPinchPosValue(unsigned char slaveAddr, int posValue){
 
 		for(char k = 0; k < _funcRetVal.mstreqRetStructNumByte; k++)
 		{
-			AS1_MODBUS_ACTUATOR_SendChar(*(_funcRetVal.ptr_msg+k));
+			MODBUS_COMM_SendChar(*(_funcRetVal.ptr_msg+k));
 		}
 }
 
