@@ -57,7 +57,7 @@
 #include "SM1.h"
 #include "FLOWSENS_RTS.h"
 #include "BitIoLdd5.h"
-#include "CI2C1.h"
+#include "IR_TM_COMM.h"
 #include "IntI2cLdd1.h"
 #include "TU1.h"
 #include "FLASH1.h"
@@ -570,9 +570,9 @@ void FLOWSENS_COMM_OnTxComplete(void);
 
 /*
 ** ===================================================================
-**     Event       :  CI2C1_OnReceiveData (module Events)
+**     Event       :  IR_TM_COMM_OnReceiveData (module Events)
 **
-**     Component   :  CI2C1 [InternalI2C]
+**     Component   :  IR_TM_COMM [InternalI2C]
 **     Description :
 **         This event is invoked when I2C finishes the reception of the
 **         data successfully. This event is not available for the SLAVE
@@ -582,13 +582,13 @@ void FLOWSENS_COMM_OnTxComplete(void);
 **     Returns     : Nothing
 ** ===================================================================
 */
-void CI2C1_OnReceiveData(void);
+void IR_TM_COMM_OnReceiveData(void);
 
 /*
 ** ===================================================================
-**     Event       :  CI2C1_OnTransmitData (module Events)
+**     Event       :  IR_TM_COMM_OnTransmitData (module Events)
 **
-**     Component   :  CI2C1 [InternalI2C]
+**     Component   :  IR_TM_COMM [InternalI2C]
 **     Description :
 **         This event is invoked when I2C finishes the transmission of
 **         the data successfully. This event is not available for the
@@ -598,13 +598,13 @@ void CI2C1_OnReceiveData(void);
 **     Returns     : Nothing
 ** ===================================================================
 */
-void CI2C1_OnTransmitData(void);
+void IR_TM_COMM_OnTransmitData(void);
 
 /*
 ** ===================================================================
-**     Event       :  CI2C1_OnNACK (module Events)
+**     Event       :  IR_TM_COMM_OnNACK (module Events)
 **
-**     Component   :  CI2C1 [InternalI2C]
+**     Component   :  IR_TM_COMM [InternalI2C]
 **     Description :
 **         Called when a no slave acknowledge (NAK) occurs during
 **         communication. This event is not available for the SLAVE
@@ -614,7 +614,7 @@ void CI2C1_OnTransmitData(void);
 **     Returns     : Nothing
 ** ===================================================================
 */
-void CI2C1_OnNACK(void);
+void IR_TM_COMM_OnNACK(void);
 
 /*
 ** ===================================================================

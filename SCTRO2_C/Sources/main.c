@@ -54,7 +54,7 @@
 #include "SM1.h"
 #include "FLOWSENS_RTS.h"
 #include "BitIoLdd5.h"
-#include "CI2C1.h"
+#include "IR_TM_COMM.h"
 #include "IntI2cLdd1.h"
 #include "TU1.h"
 #include "FLASH1.h"
@@ -227,8 +227,8 @@ int main(void)
 	         	  case 0:
 	         		 if(iflag_sensTempIR == IFLAG_IDLE)
 	         		 	 {
-	         		 	   //CI2C1_Disable();
-	         		 	    CI2C1_Enable();
+	         		 	   //IR_TM_COMM_Disable();
+	         		 	    IR_TM_COMM_Enable();
 	         		 	    ptrData = buildCmdReadTempSensIR(0x01, (EEPROM_ACCESS_COMMAND | SD_TOMIN_E2_ADDRESS), 0);
 	         		 	    //ptrData = buildCmdWriteTempSensIR(0x5A, (EEPROM_ACCESS_COMMAND | SD_TOMAX_E2_ADDRESS), 0xBE01);
 	         		 	    iflag_sensTempIR = IFLAG_SENS_TEMPIR_WAIT;
@@ -236,8 +236,8 @@ int main(void)
 
 	         		if(iflag_sensTempIR == IFLAG_SENS_TEMPIR_TX)
 	         		{
-	         		//CI2C1_SelectSlave(0x5A);
-	         			err = CI2C1_RecvBlock(ptrData, 3, &ret);
+	         		//IR_TM_COMM_SelectSlave(0x5A);
+	         			err = IR_TM_COMM_RecvBlock(ptrData, 3, &ret);
 	         			iflag_sensTempIR = IFLAG_SENS_TEMPIR_WAIT;
 	         			stateSensTempIR = 1;
 	         		}
@@ -263,8 +263,8 @@ int main(void)
 	         		 if(iflag_sensTempIR == IFLAG_SENS_TEMPIR_TX)
 	         		 {
 	         			stateSensTempIR = 3;
-	         			CI2C1_Disable();
-	         			//CI2C1_Enable();
+	         			IR_TM_COMM_Disable();
+	         			//IR_TM_COMM_Enable();
 	         		 }
 	         		  break;
 
@@ -279,7 +279,7 @@ int main(void)
 	         	 case 4:
 	         		if(iflag_sensTempIR == IFLAG_IDLE)
 	         		{
-	         			CI2C1_Enable();
+	         			IR_TM_COMM_Enable();
 	         			ptrDatawR = buildCmdWriteTempSensIR(0x01, (EEPROM_ACCESS_COMMAND | SD_TOMIN_E2_ADDRESS), 0x62E5);
 	         			iflag_sensTempIR = IFLAG_SENS_TEMPIR_WAIT;
 	         		}
@@ -288,8 +288,8 @@ int main(void)
 	         		if(iflag_sensTempIR == IFLAG_SENS_TEMPIR_TX)
 	         		{
 	         			stateSensTempIR = 5;
-	         			CI2C1_Disable();
-	         			//CI2C1_Enable();
+	         			IR_TM_COMM_Disable();
+	         			//IR_TM_COMM_Enable();
 	         		}
 	         	 	 break;
 
@@ -308,8 +308,8 @@ int main(void)
 
 	         	  //if((iflag_sensTempIR == IFLAG_IDLE))
 	         	 //{
-	         		 //CI2C1_Disable();
-	         		 //CI2C1_Enable();
+	         		 //IR_TM_COMM_Disable();
+	         		 //IR_TM_COMM_Enable();
 	         		 //ptrData = buildCmdReadTempSensIR(0x5A, (EEPROM_ACCESS_COMMAND | SD_SMBUS_E2_ADDRESS), 0);
 	         		//ptrData = buildCmdWriteTempSensIR(0x5A, (EEPROM_ACCESS_COMMAND | SD_TOMAX_E2_ADDRESS), 0xBE01);
 	         		//iflag_sensTempIR = IFLAG_SENS_TEMPIR_WAIT;
@@ -324,8 +324,8 @@ int main(void)
 
 	         	 //if((iflag_sensTempIR == IFLAG_SENS_TEMPIR_TX))
 	         	 //{
-	         		//CI2C1_SelectSlave(0x5A);
-	         		//err = CI2C1_RecvBlock(ptrData, 3, &ret);
+	         		//IR_TM_COMM_SelectSlave(0x5A);
+	         		//err = IR_TM_COMM_RecvBlock(ptrData, 3, &ret);
 	         		//iflag_sensTempIR = IFLAG_SENS_TEMPIR_WAIT;
 	         		//iflag_sensTempIR = IFLAG_IDLE;
 	         	 //}

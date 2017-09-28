@@ -83,11 +83,11 @@
       <PathName>C:\WorkspaceKinetis\Perlife_FW\SCTRO2_C\Generated_Code\BitIoLdd3.c</PathName>
       <PathName>C:\WorkspaceKinetis\Perlife_FW\SCTRO2_C\Generated_Code\BitIoLdd4.c</PathName>
       <PathName>C:\WorkspaceKinetis\Perlife_FW\SCTRO2_C\Generated_Code\BitIoLdd5.c</PathName>
-      <PathName>C:\WorkspaceKinetis\Perlife_FW\SCTRO2_C\Generated_Code\CI2C1.c</PathName>
       <PathName>C:\WorkspaceKinetis\Perlife_FW\SCTRO2_C\Generated_Code\Cpu.c</PathName>
       <PathName>C:\WorkspaceKinetis\Perlife_FW\SCTRO2_C\Generated_Code\FLASH1.c</PathName>
       <PathName>C:\WorkspaceKinetis\Perlife_FW\SCTRO2_C\Generated_Code\FLOWSENS_COMM.c</PathName>
       <PathName>C:\WorkspaceKinetis\Perlife_FW\SCTRO2_C\Generated_Code\FLOWSENS_RTS.c</PathName>
+      <PathName>C:\WorkspaceKinetis\Perlife_FW\SCTRO2_C\Generated_Code\IR_TM_COMM.c</PathName>
       <PathName>C:\WorkspaceKinetis\Perlife_FW\SCTRO2_C\Generated_Code\IntI2cLdd1.c</PathName>
       <PathName>C:\WorkspaceKinetis\Perlife_FW\SCTRO2_C\Generated_Code\MODBUS_COMM.c</PathName>
       <PathName>C:\WorkspaceKinetis\Perlife_FW\SCTRO2_C\Generated_Code\PELTIER_COMM.c</PathName>
@@ -132,13 +132,13 @@
       <PathName>C:\WorkspaceKinetis\Perlife_FW\SCTRO2_C\Generated_Code\BitIoLdd3.h</PathName>
       <PathName>C:\WorkspaceKinetis\Perlife_FW\SCTRO2_C\Generated_Code\BitIoLdd4.h</PathName>
       <PathName>C:\WorkspaceKinetis\Perlife_FW\SCTRO2_C\Generated_Code\BitIoLdd5.h</PathName>
-      <PathName>C:\WorkspaceKinetis\Perlife_FW\SCTRO2_C\Generated_Code\CI2C1.h</PathName>
       <PathName>C:\WorkspaceKinetis\Perlife_FW\SCTRO2_C\Generated_Code\CPU_Config.h</PathName>
       <PathName>C:\WorkspaceKinetis\Perlife_FW\SCTRO2_C\Generated_Code\Cpu.h</PathName>
       <PathName>C:\WorkspaceKinetis\Perlife_FW\SCTRO2_C\Generated_Code\FLASH1.h</PathName>
       <PathName>C:\WorkspaceKinetis\Perlife_FW\SCTRO2_C\Generated_Code\FLOWSENS_COMM.h</PathName>
       <PathName>C:\WorkspaceKinetis\Perlife_FW\SCTRO2_C\Generated_Code\FLOWSENS_RTS.h</PathName>
       <PathName>C:\WorkspaceKinetis\Perlife_FW\SCTRO2_C\Generated_Code\IO_Map.h</PathName>
+      <PathName>C:\WorkspaceKinetis\Perlife_FW\SCTRO2_C\Generated_Code\IR_TM_COMM.h</PathName>
       <PathName>C:\WorkspaceKinetis\Perlife_FW\SCTRO2_C\Generated_Code\Init_Config.h</PathName>
       <PathName>C:\WorkspaceKinetis\Perlife_FW\SCTRO2_C\Generated_Code\IntI2cLdd1.h</PathName>
       <PathName>C:\WorkspaceKinetis\Perlife_FW\SCTRO2_C\Generated_Code\MODBUS_COMM.h</PathName>

@@ -752,9 +752,9 @@ void FLOWSENS_COMM_OnTxComplete(void)
 
 /*
 ** ===================================================================
-**     Event       :  CI2C1_OnReceiveData (module Events)
+**     Event       :  IR_TM_COMM_OnReceiveData (module Events)
 **
-**     Component   :  CI2C1 [InternalI2C]
+**     Component   :  IR_TM_COMM [InternalI2C]
 **     Description :
 **         This event is invoked when I2C finishes the reception of the
 **         data successfully. This event is not available for the SLAVE
@@ -764,19 +764,19 @@ void FLOWSENS_COMM_OnTxComplete(void)
 **     Returns     : Nothing
 ** ===================================================================
 */
-void CI2C1_OnReceiveData(void)
+void IR_TM_COMM_OnReceiveData(void)
 {
   /* Write your code here ... */
 	iflag_sensTempIR = IFLAG_IDLE;
 	iflag_sensTempIR_Meas_Ready = IFLAG_IRTEMP_MEASURE_READY;
-	CI2C1_SendStop();
+	IR_TM_COMM_SendStop();
 }
 
 /*
 ** ===================================================================
-**     Event       :  CI2C1_OnTransmitData (module Events)
+**     Event       :  IR_TM_COMM_OnTransmitData (module Events)
 **
-**     Component   :  CI2C1 [InternalI2C]
+**     Component   :  IR_TM_COMM [InternalI2C]
 **     Description :
 **         This event is invoked when I2C finishes the transmission of
 **         the data successfully. This event is not available for the
@@ -786,24 +786,24 @@ void CI2C1_OnReceiveData(void)
 **     Returns     : Nothing
 ** ===================================================================
 */
-void CI2C1_OnTransmitData(void)
+void IR_TM_COMM_OnTransmitData(void)
 {
   /* Write your code here ... */
 	iflag_sensTempIR = IFLAG_SENS_TEMPIR_TX;
 	if(iflag_sensTempIRRW == IFLAG_SENS_TEMPIR_WRITE)
 	{
 		//iflag_sensTempIRRW = IFLAG_IDLE;
-		//CI2C1_Disable();
-		CI2C1_SendStop();
-		//CI2C1_Enable();
+		//IR_TM_COMM_Disable();
+		IR_TM_COMM_SendStop();
+		//IR_TM_COMM_Enable();
 	}
 }
 
 /*
 ** ===================================================================
-**     Event       :  CI2C1_OnNACK (module Events)
+**     Event       :  IR_TM_COMM_OnNACK (module Events)
 **
-**     Component   :  CI2C1 [InternalI2C]
+**     Component   :  IR_TM_COMM [InternalI2C]
 **     Description :
 **         Called when a no slave acknowledge (NAK) occurs during
 **         communication. This event is not available for the SLAVE
@@ -813,7 +813,7 @@ void CI2C1_OnTransmitData(void)
 **     Returns     : Nothing
 ** ===================================================================
 */
-void CI2C1_OnNACK(void)
+void IR_TM_COMM_OnNACK(void)
 {
   /* Write your code here ... */
 	//iflag_sensTempIR ^= IFLAG_SENS_TEMPIR_TX;

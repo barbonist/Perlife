@@ -8,7 +8,7 @@
 #include "Temp_sensIR.h"
 #include "Global.h"
 #include "PE_Types.h"
-#include "CI2C1.h"
+#include "IR_TM_COMM.h"
 
 #define NUM_BYTE_CRC	4
 #define NUM_BYTE_RCV	3
@@ -61,7 +61,7 @@ void alwaysIRTempSensRead(void){
 		case 0:
 			if(iflag_sensTempIR == IFLAG_IDLE)
 			{
-				CI2C1_Enable();
+				IR_TM_COMM_Enable();
 				//id sensore
 				//indirizzo da leggere
 				ptrDataTemp = buildCmdReadTempSensIR(0x01, (RAM_ACCESS_COMMAND | SD_TOBJ1_RAM_ADDRESS), 0);
@@ -74,9 +74,9 @@ void alwaysIRTempSensRead(void){
 		case 1:
 			if(iflag_sensTempIR == IFLAG_SENS_TEMPIR_TX)
 			{
-				//CI2C1_SelectSlave(0x01);
+				//IR_TM_COMM_SelectSlave(0x01);
 				//ptrDataOne = &sensorIR_TM[0].bufferReceived[0];
-				err = CI2C1_RecvBlock(ptrDataTemp, 3, &ret);
+				err = IR_TM_COMM_RecvBlock(ptrDataTemp, 3, &ret);
 				iflag_sensTempIR = IFLAG_IDLE;
 
 				tempState = 2;
@@ -143,15 +143,15 @@ unsigned char * buildCmdReadTempSensIR(unsigned char  tempSensAddress,
 		sensTempIRId = sensorIR_TM[0].sensorId;
 
 	/* Start + slave address + write command */
-	CI2C1_SelectSlave(tempSensAddress);
-	err = CI2C1_SendChar(command);
+	IR_TM_COMM_SelectSlave(tempSensAddress);
+	err = IR_TM_COMM_SendChar(command);
 	/* Restart + slave address + received data */
-	//CI2C1_SelectSlave(tempSensAddress);
+	//IR_TM_COMM_SelectSlave(tempSensAddress);
 	//if(err == ERR_OK)
-		//CI2C1_RecvBlock(&rcvData[0], NUM_BYTE_RCV, &ret);
+		//IR_TM_COMM_RecvBlock(&rcvData[0], NUM_BYTE_RCV, &ret);
 	//ptrData = &rcvData[0];
 	ptrData = &sensorIR_TM[0].bufferReceived[0];
-	//CI2C1_RecvBlock(ptrData, 3, &ret);
+	//IR_TM_COMM_RecvBlock(ptrData, 3, &ret);
 
 	return	ptrData;
 
@@ -178,33 +178,33 @@ unsigned char * buildCmdWriteTempSensIR(unsigned char  tempSensAddress,
 
 
 	/* Start + slave address + write command */
-	//CI2C1_SelectSlave(tempSensAddress);
+	//IR_TM_COMM_SelectSlave(tempSensAddress);
 	/**/
 	buffCRC[0] = tempSensAddress*2;
 
 	sensorIR_TM[0].bufferToSend[0] = command;
 	buffCRC[1] = sensorIR_TM[0].bufferToSend[0];
-	//error = CI2C1_SendChar(sensorIR_TM[0].bufferToSend[0]);
+	//error = IR_TM_COMM_SendChar(sensorIR_TM[0].bufferToSend[0]);
 
 	byteTx_L = (unsigned char) (dataWordTx & 0x00FF);
 	sensorIR_TM[0].bufferToSend[1] = byteTx_L;
 	buffCRC[2] = sensorIR_TM[0].bufferToSend[1];
-	//error = CI2C1_SendChar(sensorIR_TM[0].bufferToSend[1]);
+	//error = IR_TM_COMM_SendChar(sensorIR_TM[0].bufferToSend[1]);
 
 	byteTx_H = (unsigned char) ((dataWordTx >> 8) & 0x00FF);
 	sensorIR_TM[0].bufferToSend[2] = byteTx_H;
 	buffCRC[3] = sensorIR_TM[0].bufferToSend[2];
-	//error = CI2C1_SendChar(sensorIR_TM[0].bufferToSend[2]);
+	//error = IR_TM_COMM_SendChar(sensorIR_TM[0].bufferToSend[2]);
 
 	ptrCRC = &buffCRC[0];
 	byteCRC = computeCRC8TempSens(ptrCRC);
 	sensorIR_TM[0].bufferToSend[3] = byteCRC;
-	//error = CI2C1_SendChar(sensorIR_TM[0].bufferToSend[3]);
+	//error = IR_TM_COMM_SendChar(sensorIR_TM[0].bufferToSend[3]);
 
 	ptrBuffer = &sensorIR_TM[0].bufferToSend[0];
-	error = CI2C1_SendBlock(ptrBuffer, sizeBlock, &dataSent);
+	error = IR_TM_COMM_SendBlock(ptrBuffer, sizeBlock, &dataSent);
 	//if(error == ERR_OK)
-		//CI2C1_SendStop();
+		//IR_TM_COMM_SendStop();
 
 	iflag_sensTempIRRW = IFLAG_SENS_TEMPIR_WRITE;
 

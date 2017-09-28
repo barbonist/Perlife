@@ -14,7 +14,7 @@
 #include "SM1.h"
 #include "FLOWSENS_RTS.h"
 #include "FLOWSENS_COMM.h"
-#include "CI2C1.h"
+#include "IR_TM_COMM.h"
 
 #include "Global.h"
 #include "Comm_Sbc.h"
@@ -581,7 +581,7 @@ void testCOMMSbcDebug(void){
 				{
 				//id sensore
 				//indirizzo da leggere
-				CI2C1_Enable();
+				IR_TM_COMM_Enable();
 				//ptrData = buildCmdReadTempSensIR(0x01, (EEPROM_ACCESS_COMMAND | SD_TOMIN_E2_ADDRESS), 0);
 				ptrData = buildCmdReadTempSensIR(0x01, (RAM_ACCESS_COMMAND | SD_TOBJ1_RAM_ADDRESS), 0);
 				//ptrData = buildCmdWriteTempSensIR(0x5A, (EEPROM_ACCESS_COMMAND | SD_TOMAX_E2_ADDRESS), 0xBE01);
@@ -642,8 +642,8 @@ void testCOMMSbcDebug(void){
 
 	if(iflag_sensTempIR == IFLAG_SENS_TEMPIR_TX)
 	{
-	//CI2C1_SelectSlave(0x5A);
-	err = CI2C1_RecvBlock(ptrData, 3, &ret);
+	//IR_TM_COMM_SelectSlave(0x5A);
+	err = IR_TM_COMM_RecvBlock(ptrData, 3, &ret);
 	iflag_sensTempIR = IFLAG_IDLE;
 	}
 
