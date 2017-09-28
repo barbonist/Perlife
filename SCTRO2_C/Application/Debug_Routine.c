@@ -5,7 +5,7 @@
  *      Author: W15
  */
 
-#include "AS5_SBC.h"
+#include "SBC_COMM.h"
 #include "ASerialLdd5.h"
 #include "PC_DEBUG_COMM.h"
 #include "ASerialLdd2.h"
@@ -108,7 +108,7 @@ void testCOMMSbcDebug(void){
 	stateSensTempIR = 0;
 
 
-	/*porta AS5_SBC - messaggio completo da sbc - contenuto in pcDebug_rx_data*/
+	/*porta SBC_COMM - messaggio completo da sbc - contenuto in pcDebug_rx_data*/
 	if(iflag_sbc_rx == IFLAG_SBC_RX)
 	{
 		iflag_sbc_rx = IFLAG_IDLE;
@@ -121,7 +121,7 @@ void testCOMMSbcDebug(void){
 			ptrMsgSbcTx = &sbcDebug_tx_data[0];
 			for(char i = 0; i < 16 ; i++)
 			{
-				AS5_SBC_SendChar(*(ptrMsgSbcTx+i));
+				SBC_COMM_SendChar(*(ptrMsgSbcTx+i));
 				//PC_DEBUG_COMM_SendChar(*(ptrMsgSbcTx+i));
 			}
 			break;
@@ -131,7 +131,7 @@ void testCOMMSbcDebug(void){
 			ptrMsgSbcTx = &sbcDebug_tx_data[0];
 			for(char i = 0; i < 12 ; i++)
 			{
-				AS5_SBC_SendChar(*(ptrMsgSbcTx+i));
+				SBC_COMM_SendChar(*(ptrMsgSbcTx+i));
 				//PC_DEBUG_COMM_SendChar(*(ptrMsgSbcTx+i));
 			}
 			break;
@@ -141,7 +141,7 @@ void testCOMMSbcDebug(void){
 			ptrMsgSbcTx = &sbcDebug_tx_data[0];
 			for(char i = 0; i < 12 ; i++)
 			{
-				AS5_SBC_SendChar(*(ptrMsgSbcTx+i));
+				SBC_COMM_SendChar(*(ptrMsgSbcTx+i));
 				//PC_DEBUG_COMM_SendChar(*(ptrMsgSbcTx+i));
 			}
 			break;
@@ -655,7 +655,7 @@ void testCOMMSbcDebug(void){
 
 		for(char i = 0; i < 14 ; i++)
 		{
-			AS5_SBC_SendChar(*(ptrMsgSbcTx+i));
+			SBC_COMM_SendChar(*(ptrMsgSbcTx+i));
 
 			#ifdef	DEBUG_COMM_SBC
 			//PC_DEBUG_COMM_SendChar(*(ptrMsgSbcTx+i));
@@ -672,7 +672,7 @@ void testCOMMSbcDebug(void){
 
 		for(char i = 0; i < 14 ; i++)
 		{
-			AS5_SBC_SendChar(*(ptrMsgSbcTx+i));
+			SBC_COMM_SendChar(*(ptrMsgSbcTx+i));
 
 			#ifdef	DEBUG_COMM_SBC
 			//PC_DEBUG_COMM_SendChar(*(ptrMsgSbcTx+i));
@@ -822,7 +822,7 @@ void testCOMMSbcDebug(void){
 
 		for(char i = 0; i < 14 ; i++)
 		{
-			AS5_SBC_SendChar(*(ptrMsgSbcTx+i));
+			SBC_COMM_SendChar(*(ptrMsgSbcTx+i));
 
 			#ifdef	DEBUG_COMM_SBC
 			//PC_DEBUG_COMM_SendChar(*(ptrMsgSbcTx+i));
@@ -839,7 +839,7 @@ void testCOMMSbcDebug(void){
 		ptrMsgSbcTx = &sbcDebug_tx_data[0];
 		for(char i = 0; i < 14 ; i++)
 		{
-			AS5_SBC_SendChar(*(ptrMsgSbcTx+i));
+			SBC_COMM_SendChar(*(ptrMsgSbcTx+i));
 
 			#ifdef	DEBUG_COMM_SBC
 			//PC_DEBUG_COMM_SendChar(*(ptrMsgSbcTx+i));
@@ -856,7 +856,7 @@ void testCOMMSbcDebug(void){
 		ptrMsgSbcTx = &sbcDebug_tx_data[0];
 		for(char i = 0; i < 29 ; i++)
 		{
-			AS5_SBC_SendChar(*(ptrMsgSbcTx+i));
+			SBC_COMM_SendChar(*(ptrMsgSbcTx+i));
 
 			#ifdef	DEBUG_COMM_SBC
 			//PC_DEBUG_COMM_SendChar(*(ptrMsgSbcTx+i));
@@ -871,7 +871,7 @@ void testCOMMSbcDebug(void){
 		buildWriteTempSensResponseMsg(cmdId, (sbcDebug_rx_data[22]-6));
 		for(char i = 0; i < 14 ; i++)
 		{
-			AS5_SBC_SendChar(*(ptrMsgSbcTx+i));
+			SBC_COMM_SendChar(*(ptrMsgSbcTx+i));
 
 			#ifdef	DEBUG_COMM_SBC
 			//PC_DEBUG_COMM_SendChar(*(ptrMsgSbcTx+i));
@@ -886,7 +886,7 @@ void testCOMMSbcDebug(void){
 		buildReadTempSensResponseMsg(cmdId, (sbcDebug_rx_data[7]-6));
 		for(char i = 0; i < 24 ; i++)
 		{
-			AS5_SBC_SendChar(*(ptrMsgSbcTx+i));
+			SBC_COMM_SendChar(*(ptrMsgSbcTx+i));
 
 			#ifdef	DEBUG_COMM_SBC
 			//PC_DEBUG_COMM_SendChar(*(ptrMsgSbcTx+i));
@@ -908,7 +908,7 @@ void testCOMMSbcDebug(void){
 		//send response to sbc
 		for(char i = 0; i < 16 ; i++)
 		{
-			AS5_SBC_SendChar(*(ptrMsgSbcTx+i));
+			SBC_COMM_SendChar(*(ptrMsgSbcTx+i));
 
 			#ifdef	DEBUG_COMM_SBC
 			//PC_DEBUG_COMM_SendChar(*(ptrMsgSbcTx+i));

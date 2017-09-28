@@ -16,7 +16,7 @@
 
 #include "PE_Types.h"
 
-#include "AS5_SBC.h"
+#include "SBC_COMM.h"
 #include "ASerialLdd5.h"
 
 
@@ -501,7 +501,7 @@ void pollingDataToSBCTreat(void){
 
 		for(char i = 0; i < (myCommunicatorToSBC.numByteToSend) ; i++)
 		{
-			AS5_SBC_SendChar(*(ptrMsgSbcTx+i));
+			SBC_COMM_SendChar(*(ptrMsgSbcTx+i));
 
 			#ifdef	DEBUG_COMM_SBC
 			//PC_DEBUG_COMM_SendChar(*(ptrMsgSbcTx+i));
@@ -521,7 +521,7 @@ void pollingDataToSBCTreat(void){
 		ptrMsgSbcTx = &sbcDebug_tx_data[0];
 		for(char i = 0; i < (myCommunicatorToSBC.numByteToSend) ; i++)
 		{
-			AS5_SBC_SendChar(*(ptrMsgSbcTx+i));
+			SBC_COMM_SendChar(*(ptrMsgSbcTx+i));
 		}
 	}
 

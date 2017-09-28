@@ -66,7 +66,6 @@
       <PathName>C:\WorkspaceKinetis\Perlife_FW\SCTRO2_C\Application\Purificat.c</PathName>
       <PathName>C:\WorkspaceKinetis\Perlife_FW\SCTRO2_C\Application\Temp_sensIR.c</PathName>
       <PathName>C:\WorkspaceKinetis\Perlife_FW\SCTRO2_C\Generated_Code\AD1.c</PathName>
-      <PathName>C:\WorkspaceKinetis\Perlife_FW\SCTRO2_C\Generated_Code\AS5_SBC.c</PathName>
       <PathName>C:\WorkspaceKinetis\Perlife_FW\SCTRO2_C\Generated_Code\ASerialLdd1.c</PathName>
       <PathName>C:\WorkspaceKinetis\Perlife_FW\SCTRO2_C\Generated_Code\ASerialLdd2.c</PathName>
       <PathName>C:\WorkspaceKinetis\Perlife_FW\SCTRO2_C\Generated_Code\ASerialLdd3.c</PathName>
@@ -93,6 +92,7 @@
       <PathName>C:\WorkspaceKinetis\Perlife_FW\SCTRO2_C\Generated_Code\PELTIER_COMM.c</PathName>
       <PathName>C:\WorkspaceKinetis\Perlife_FW\SCTRO2_C\Generated_Code\PE_LDD.c</PathName>
       <PathName>C:\WorkspaceKinetis\Perlife_FW\SCTRO2_C\Generated_Code\Pins1.c</PathName>
+      <PathName>C:\WorkspaceKinetis\Perlife_FW\SCTRO2_C\Generated_Code\SBC_COMM.c</PathName>
       <PathName>C:\WorkspaceKinetis\Perlife_FW\SCTRO2_C\Generated_Code\SM1.c</PathName>
       <PathName>C:\WorkspaceKinetis\Perlife_FW\SCTRO2_C\Generated_Code\TU1.c</PathName>
       <PathName>C:\WorkspaceKinetis\Perlife_FW\SCTRO2_C\Project_Settings\Startup_Code\startup.c</PathName>
@@ -115,7 +115,6 @@
       <PathName>C:\WorkspaceKinetis\Perlife_FW\SCTRO2_C\Application\Purificat.h</PathName>
       <PathName>C:\WorkspaceKinetis\Perlife_FW\SCTRO2_C\Application\Temp_sensIR.h</PathName>
       <PathName>C:\WorkspaceKinetis\Perlife_FW\SCTRO2_C\Generated_Code\AD1.h</PathName>
-      <PathName>C:\WorkspaceKinetis\Perlife_FW\SCTRO2_C\Generated_Code\AS5_SBC.h</PathName>
       <PathName>C:\WorkspaceKinetis\Perlife_FW\SCTRO2_C\Generated_Code\ASerialLdd1.h</PathName>
       <PathName>C:\WorkspaceKinetis\Perlife_FW\SCTRO2_C\Generated_Code\ASerialLdd2.h</PathName>
       <PathName>C:\WorkspaceKinetis\Perlife_FW\SCTRO2_C\Generated_Code\ASerialLdd3.h</PathName>
@@ -148,6 +147,7 @@
       <PathName>C:\WorkspaceKinetis\Perlife_FW\SCTRO2_C\Generated_Code\PE_LDD.h</PathName>
       <PathName>C:\WorkspaceKinetis\Perlife_FW\SCTRO2_C\Generated_Code\PE_Types.h</PathName>
       <PathName>C:\WorkspaceKinetis\Perlife_FW\SCTRO2_C\Generated_Code\Pins1.h</PathName>
+      <PathName>C:\WorkspaceKinetis\Perlife_FW\SCTRO2_C\Generated_Code\SBC_COMM.h</PathName>
       <PathName>C:\WorkspaceKinetis\Perlife_FW\SCTRO2_C\Generated_Code\SM1.h</PathName>
       <PathName>C:\WorkspaceKinetis\Perlife_FW\SCTRO2_C\Generated_Code\TU1.h</PathName>
       <PathName>C:\WorkspaceKinetis\Perlife_FW\SCTRO2_C\Generated_Code\Vectors_Config.h</PathName>

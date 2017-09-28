@@ -45,7 +45,7 @@
 #include "ASerialLdd3.h"
 #include "FLOWSENS_COMM.h"
 #include "ASerialLdd4.h"
-#include "AS5_SBC.h"
+#include "SBC_COMM.h"
 #include "ASerialLdd5.h"
 #include "Bit1.h"
 #include "BitIoLdd3.h"
@@ -129,7 +129,7 @@ int main(void)
   modBusPmpInit();
   modBusPinchInit();
 
-  AS5_SBC_Enable();
+  SBC_COMM_Enable();
     /**/
   Bit3_SetVal(); /* enable motore */
   Bit4_SetVal();
@@ -333,7 +333,7 @@ int main(void)
 	         	#endif
 
 				#ifdef	DEBUG_COMM_SBC
-	         	//AS5_SBC_Enable();
+	         	//SBC_COMM_Enable();
 	         	testCOMMSbcDebug();
 
 	         	alwaysAdcParam();

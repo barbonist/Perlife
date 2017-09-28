@@ -48,7 +48,7 @@
 #include "ASerialLdd3.h"
 #include "FLOWSENS_COMM.h"
 #include "ASerialLdd4.h"
-#include "AS5_SBC.h"
+#include "SBC_COMM.h"
 #include "ASerialLdd5.h"
 #include "Bit1.h"
 #include "BitIoLdd3.h"
@@ -84,9 +84,9 @@ void Cpu_OnNMI(void);
 
 /*
 ** ===================================================================
-**     Event       :  AS5_SBC_OnError (module Events)
+**     Event       :  SBC_COMM_OnError (module Events)
 **
-**     Component   :  AS5_SBC [AsynchroSerial]
+**     Component   :  SBC_COMM [AsynchroSerial]
 **     Description :
 **         This event is called when a channel error (not the error
 **         returned by a given method) occurs. The errors can be read
@@ -97,13 +97,13 @@ void Cpu_OnNMI(void);
 **     Returns     : Nothing
 ** ===================================================================
 */
-void AS5_SBC_OnError(void);
+void SBC_COMM_OnError(void);
 
 /*
 ** ===================================================================
-**     Event       :  AS5_SBC_OnRxChar (module Events)
+**     Event       :  SBC_COMM_OnRxChar (module Events)
 **
-**     Component   :  AS5_SBC [AsynchroSerial]
+**     Component   :  SBC_COMM [AsynchroSerial]
 **     Description :
 **         This event is called after a correct character is received.
 **         The event is available only when the <Interrupt
@@ -114,26 +114,26 @@ void AS5_SBC_OnError(void);
 **     Returns     : Nothing
 ** ===================================================================
 */
-void AS5_SBC_OnRxChar(void);
+void SBC_COMM_OnRxChar(void);
 
 /*
 ** ===================================================================
-**     Event       :  AS5_SBC_OnTxChar (module Events)
+**     Event       :  SBC_COMM_OnTxChar (module Events)
 **
-**     Component   :  AS5_SBC [AsynchroSerial]
+**     Component   :  SBC_COMM [AsynchroSerial]
 **     Description :
 **         This event is called after a character is transmitted.
 **     Parameters  : None
 **     Returns     : Nothing
 ** ===================================================================
 */
-void AS5_SBC_OnTxChar(void);
+void SBC_COMM_OnTxChar(void);
 
 /*
 ** ===================================================================
-**     Event       :  AS5_SBC_OnFullRxBuf (module Events)
+**     Event       :  SBC_COMM_OnFullRxBuf (module Events)
 **
-**     Component   :  AS5_SBC [AsynchroSerial]
+**     Component   :  SBC_COMM [AsynchroSerial]
 **     Description :
 **         This event is called when the input buffer is full;
 **         i.e. after reception of the last character 
@@ -142,13 +142,13 @@ void AS5_SBC_OnTxChar(void);
 **     Returns     : Nothing
 ** ===================================================================
 */
-void AS5_SBC_OnFullRxBuf(void);
+void SBC_COMM_OnFullRxBuf(void);
 
 /*
 ** ===================================================================
-**     Event       :  AS5_SBC_OnFreeTxBuf (module Events)
+**     Event       :  SBC_COMM_OnFreeTxBuf (module Events)
 **
-**     Component   :  AS5_SBC [AsynchroSerial]
+**     Component   :  SBC_COMM [AsynchroSerial]
 **     Description :
 **         This event is called after the last character in output
 **         buffer is transmitted.
@@ -156,7 +156,7 @@ void AS5_SBC_OnFullRxBuf(void);
 **     Returns     : Nothing
 ** ===================================================================
 */
-void AS5_SBC_OnFreeTxBuf(void);
+void SBC_COMM_OnFreeTxBuf(void);
 
 /*
 ** ===================================================================
