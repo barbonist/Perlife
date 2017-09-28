@@ -12,7 +12,7 @@
 #include "AS1_MODBUS_ACTUATOR.h"
 #include "ASerialLdd1.h"
 #include "SM1.h"
-#include "Uart3_rts.h"
+#include "FLOWSENS_RTS.h"
 #include "FLOWSENS_COMM.h"
 #include "CI2C1.h"
 
@@ -613,10 +613,10 @@ void testCOMMSbcDebug(void){
 												  0,
 												  ID_FLOW_VAL_MLMIN);
 
-				Uart3_rts_SetVal();
+				FLOWSENS_RTS_SetVal();
 				for(char k = 0; k < ptrMsg_UFLOW->bufferToSendLenght; k++)
 				{
-				//Uart3_rts_SetVal();
+				//FLOWSENS_RTS_SetVal();
 				FLOWSENS_COMM_SendChar(ptrMsg_UFLOW->bufferToSend[k]);
 				}
 				break;

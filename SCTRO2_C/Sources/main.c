@@ -52,7 +52,7 @@
 #include "Bit2.h"
 #include "BitIoLdd4.h"
 #include "SM1.h"
-#include "Uart3_rts.h"
+#include "FLOWSENS_RTS.h"
 #include "BitIoLdd5.h"
 #include "CI2C1.h"
 #include "IntI2cLdd1.h"
@@ -200,10 +200,10 @@ int main(void)
 													   0,
 													   ID_FLOW_VAL_MLMIN);
 
-	         		 Uart3_rts_SetVal();
+	         		 FLOWSENS_RTS_SetVal();
 	         		  for(char k = 0; k < ptrMsg_UFLOW->bufferToSendLenght; k++)
 						{
-							//Uart3_rts_SetVal();
+							//FLOWSENS_RTS_SetVal();
 							FLOWSENS_COMM_SendChar(ptrMsg_UFLOW->bufferToSend[k]);
 						}
 

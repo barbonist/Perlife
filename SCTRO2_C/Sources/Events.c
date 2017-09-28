@@ -279,7 +279,7 @@ void FLOWSENS_COMM_OnFreeTxBuf(void)
 {
   /* Write your code here ... */
 	//if(ptrMsg_UFLOW->byteSended >= ptrMsg_UFLOW->bufferToSendLenght)
-		//Uart3_rts_ClrVal();
+		//FLOWSENS_RTS_ClrVal();
 }
 
 /*
@@ -747,7 +747,7 @@ void FLOWSENS_COMM_OnTxComplete(void)
 {
   /* Write your code here ... */
 	if(ptrMsg_UFLOW->byteSended >= ptrMsg_UFLOW->bufferToSendLenght)
-			Uart3_rts_ClrVal();
+			FLOWSENS_RTS_ClrVal();
 }
 
 /*

@@ -89,12 +89,12 @@
       <PathName>C:\WorkspaceKinetis\Perlife_FW\SCTRO2_C\Generated_Code\Cpu.c</PathName>
       <PathName>C:\WorkspaceKinetis\Perlife_FW\SCTRO2_C\Generated_Code\FLASH1.c</PathName>
       <PathName>C:\WorkspaceKinetis\Perlife_FW\SCTRO2_C\Generated_Code\FLOWSENS_COMM.c</PathName>
+      <PathName>C:\WorkspaceKinetis\Perlife_FW\SCTRO2_C\Generated_Code\FLOWSENS_RTS.c</PathName>
       <PathName>C:\WorkspaceKinetis\Perlife_FW\SCTRO2_C\Generated_Code\IntI2cLdd1.c</PathName>
       <PathName>C:\WorkspaceKinetis\Perlife_FW\SCTRO2_C\Generated_Code\PE_LDD.c</PathName>
       <PathName>C:\WorkspaceKinetis\Perlife_FW\SCTRO2_C\Generated_Code\Pins1.c</PathName>
       <PathName>C:\WorkspaceKinetis\Perlife_FW\SCTRO2_C\Generated_Code\SM1.c</PathName>
       <PathName>C:\WorkspaceKinetis\Perlife_FW\SCTRO2_C\Generated_Code\TU1.c</PathName>
-      <PathName>C:\WorkspaceKinetis\Perlife_FW\SCTRO2_C\Generated_Code\Uart3_rts.c</PathName>
       <PathName>C:\WorkspaceKinetis\Perlife_FW\SCTRO2_C\Project_Settings\Startup_Code\startup.c</PathName>
       <PathName>C:\WorkspaceKinetis\Perlife_FW\SCTRO2_C\Sources\Events.c</PathName>
       <PathName>C:\WorkspaceKinetis\Perlife_FW\SCTRO2_C\Sources\main.c</PathName>
@@ -139,6 +139,7 @@
       <PathName>C:\WorkspaceKinetis\Perlife_FW\SCTRO2_C\Generated_Code\Cpu.h</PathName>
       <PathName>C:\WorkspaceKinetis\Perlife_FW\SCTRO2_C\Generated_Code\FLASH1.h</PathName>
       <PathName>C:\WorkspaceKinetis\Perlife_FW\SCTRO2_C\Generated_Code\FLOWSENS_COMM.h</PathName>
+      <PathName>C:\WorkspaceKinetis\Perlife_FW\SCTRO2_C\Generated_Code\FLOWSENS_RTS.h</PathName>
       <PathName>C:\WorkspaceKinetis\Perlife_FW\SCTRO2_C\Generated_Code\IO_Map.h</PathName>
       <PathName>C:\WorkspaceKinetis\Perlife_FW\SCTRO2_C\Generated_Code\Init_Config.h</PathName>
       <PathName>C:\WorkspaceKinetis\Perlife_FW\SCTRO2_C\Generated_Code\IntI2cLdd1.h</PathName>
@@ -149,7 +150,6 @@
       <PathName>C:\WorkspaceKinetis\Perlife_FW\SCTRO2_C\Generated_Code\Pins1.h</PathName>
       <PathName>C:\WorkspaceKinetis\Perlife_FW\SCTRO2_C\Generated_Code\SM1.h</PathName>
       <PathName>C:\WorkspaceKinetis\Perlife_FW\SCTRO2_C\Generated_Code\TU1.h</PathName>
-      <PathName>C:\WorkspaceKinetis\Perlife_FW\SCTRO2_C\Generated_Code\Uart3_rts.h</PathName>
       <PathName>C:\WorkspaceKinetis\Perlife_FW\SCTRO2_C\Generated_Code\Vectors_Config.h</PathName>
       <PathName>C:\WorkspaceKinetis\Perlife_FW\SCTRO2_C\Sources\Events.h</PathName>
       <PathName>C:\WorkspaceKinetis\Perlife_FW\SCTRO2_C\Sources\Global.h</PathName>
