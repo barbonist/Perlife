@@ -13,11 +13,11 @@
 struct alarm alarmList[] =
 {
 		//{CODE_ALARM0, PHYSIC_TRUE, TYPE_ALARM_CONTROL, PRIORITY_LOW, OVRD_ENABLE, SILENCE_ALLOWED},
-		{CODE_ALARM_PRESS_ART_HIGH, PHYSIC_TRUE, ACTIVE_FLASE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL, PRIORITY_HIGH, 2000, 2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull}, 		/* 0 */
-		{CODE_ALARM_PRESS_ART_LOW, PHYSIC_FLASE, ACTIVE_FLASE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL, PRIORITY_HIGH, 2000, 2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull}, 		/* 1 */
-		{CODE_ALARM_AIR_PRES_ART, PHYSIC_FLASE, ACTIVE_FLASE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL, PRIORITY_HIGH, 1000, 2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_ALLOWED, &alarmManageNull}, 				/* 2 */
-		{CODE_ALARM_TEMP_ART_HIGH, PHYSIC_FLASE, ACTIVE_FLASE, ALARM_TYPE_CONTROL, SECURITY_STOP_PERF_PUMP, PRIORITY_HIGH, 5000, 2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull}, 	/* 3 */
-		{CODE_ALARM_PRESS_ADS_FILTER_HIGH, PHYSIC_FLASE, ACTIVE_FLASE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL, PRIORITY_HIGH, 2000, 2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull},	/* 4 */
+		{CODE_ALARM_PRESS_ART_HIGH, PHYSIC_TRUE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL, PRIORITY_HIGH, 2000, 2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull}, 		/* 0 */
+		{CODE_ALARM_PRESS_ART_LOW, PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL, PRIORITY_HIGH, 2000, 2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull}, 		/* 1 */
+		{CODE_ALARM_AIR_PRES_ART, PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL, PRIORITY_HIGH, 1000, 2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_ALLOWED, &alarmManageNull}, 				/* 2 */
+		{CODE_ALARM_TEMP_ART_HIGH, PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_PERF_PUMP, PRIORITY_HIGH, 5000, 2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull}, 	/* 3 */
+		{CODE_ALARM_PRESS_ADS_FILTER_HIGH, PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL, PRIORITY_HIGH, 2000, 2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull},	/* 4 */
 		{}																																																						/* 5 */
 
 };
@@ -44,7 +44,7 @@ void alarmEngineAlways(void){
 			alarmList[i].prySafetyActionFunc();
 			ptrAlarmCurrent = &alarmList[i];
 		}
-		else if((alarmList[i].active == ACTIVE_TRUE) && (alarmList[i].physic == PHYSIC_FLASE))
+		else if((alarmList[i].active == ACTIVE_TRUE) && (alarmList[i].physic == PHYSIC_FALSE))
 		{
 			alarmList[i].prySafetyActionFunc();
 			ptrAlarmCurrent = &alarmList[i];
@@ -59,7 +59,7 @@ void manageAlarmPhysicPressSens(void){
 		}
 	else
 		{
-			alarmList[0].physic = PHYSIC_FLASE;
+			alarmList[0].physic = PHYSIC_FALSE;
 		}
 
 	if(sensor_PRx[1].prSensValue > 100)
@@ -68,7 +68,7 @@ void manageAlarmPhysicPressSens(void){
 		}
 	else
 		{
-			alarmList[4].physic = PHYSIC_FLASE;
+			alarmList[4].physic = PHYSIC_FALSE;
 		}
 }
 
@@ -78,7 +78,7 @@ void manageAlarmPhysicTempSens(void){
 	}
 	else
 	{
-		alarmList[3].physic = PHYSIC_FLASE;
+		alarmList[3].physic = PHYSIC_FALSE;
 	}
 }
 
@@ -92,7 +92,7 @@ void manageAlarmPhysicUFlowSens(void){
 	}
 	else
 	{
-		alarmList[2].physic = PHYSIC_FLASE;
+		alarmList[2].physic = PHYSIC_FALSE;
 	}
 }
 
@@ -116,7 +116,7 @@ void alarmManageNull(void)
 	else if((ptrAlarmCurrent->active == ACTIVE_TRUE) && (elapsedExitTime > ptrAlarmCurrent->exitTime)){
 		elapsedEntryTime = 0;
 		elapsedExitTime = 0;
-		ptrAlarmCurrent->active = ACTIVE_FLASE;
+		ptrAlarmCurrent->active = ACTIVE_FALSE;
 		currentGuard[GUARD_ALARM_ACTIVE].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
 
 		manageAlarmChildGuard(ptrAlarmCurrent);
