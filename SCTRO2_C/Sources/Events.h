@@ -44,7 +44,7 @@
 #include "BitIoLdd2.h"
 #include "AD1.h"
 #include "AdcLdd1.h"
-#include "AS3_PELTIER.h"
+#include "PELTIER_COMM.h"
 #include "ASerialLdd3.h"
 #include "FLOWSENS_COMM.h"
 #include "ASerialLdd4.h"
@@ -236,9 +236,9 @@ void FLOWSENS_COMM_OnFreeTxBuf(void);
 
 /*
 ** ===================================================================
-**     Event       :  AS3_PELTIER_OnError (module Events)
+**     Event       :  PELTIER_COMM_OnError (module Events)
 **
-**     Component   :  AS3_PELTIER [AsynchroSerial]
+**     Component   :  PELTIER_COMM [AsynchroSerial]
 **     Description :
 **         This event is called when a channel error (not the error
 **         returned by a given method) occurs. The errors can be read
@@ -249,13 +249,13 @@ void FLOWSENS_COMM_OnFreeTxBuf(void);
 **     Returns     : Nothing
 ** ===================================================================
 */
-void AS3_PELTIER_OnError(void);
+void PELTIER_COMM_OnError(void);
 
 /*
 ** ===================================================================
-**     Event       :  AS3_PELTIER_OnRxChar (module Events)
+**     Event       :  PELTIER_COMM_OnRxChar (module Events)
 **
-**     Component   :  AS3_PELTIER [AsynchroSerial]
+**     Component   :  PELTIER_COMM [AsynchroSerial]
 **     Description :
 **         This event is called after a correct character is received.
 **         The event is available only when the <Interrupt
@@ -266,26 +266,26 @@ void AS3_PELTIER_OnError(void);
 **     Returns     : Nothing
 ** ===================================================================
 */
-void AS3_PELTIER_OnRxChar(void);
+void PELTIER_COMM_OnRxChar(void);
 
 /*
 ** ===================================================================
-**     Event       :  AS3_PELTIER_OnTxChar (module Events)
+**     Event       :  PELTIER_COMM_OnTxChar (module Events)
 **
-**     Component   :  AS3_PELTIER [AsynchroSerial]
+**     Component   :  PELTIER_COMM [AsynchroSerial]
 **     Description :
 **         This event is called after a character is transmitted.
 **     Parameters  : None
 **     Returns     : Nothing
 ** ===================================================================
 */
-void AS3_PELTIER_OnTxChar(void);
+void PELTIER_COMM_OnTxChar(void);
 
 /*
 ** ===================================================================
-**     Event       :  AS3_PELTIER_OnFullRxBuf (module Events)
+**     Event       :  PELTIER_COMM_OnFullRxBuf (module Events)
 **
-**     Component   :  AS3_PELTIER [AsynchroSerial]
+**     Component   :  PELTIER_COMM [AsynchroSerial]
 **     Description :
 **         This event is called when the input buffer is full;
 **         i.e. after reception of the last character 
@@ -294,13 +294,13 @@ void AS3_PELTIER_OnTxChar(void);
 **     Returns     : Nothing
 ** ===================================================================
 */
-void AS3_PELTIER_OnFullRxBuf(void);
+void PELTIER_COMM_OnFullRxBuf(void);
 
 /*
 ** ===================================================================
-**     Event       :  AS3_PELTIER_OnFreeTxBuf (module Events)
+**     Event       :  PELTIER_COMM_OnFreeTxBuf (module Events)
 **
-**     Component   :  AS3_PELTIER [AsynchroSerial]
+**     Component   :  PELTIER_COMM [AsynchroSerial]
 **     Description :
 **         This event is called after the last character in output
 **         buffer is transmitted.
@@ -308,13 +308,13 @@ void AS3_PELTIER_OnFullRxBuf(void);
 **     Returns     : Nothing
 ** ===================================================================
 */
-void AS3_PELTIER_OnFreeTxBuf(void);
+void PELTIER_COMM_OnFreeTxBuf(void);
 
 /*
 ** ===================================================================
-**     Event       :  AS3_PELTIER_OnTxComplete (module Events)
+**     Event       :  PELTIER_COMM_OnTxComplete (module Events)
 **
-**     Component   :  AS3_PELTIER [AsynchroSerial]
+**     Component   :  PELTIER_COMM [AsynchroSerial]
 **     Description :
 **         This event indicates that the transmitter is finished
 **         transmitting all data, preamble, and break characters and is
@@ -326,7 +326,7 @@ void AS3_PELTIER_OnFreeTxBuf(void);
 **     Returns     : Nothing
 ** ===================================================================
 */
-void AS3_PELTIER_OnTxComplete(void);
+void PELTIER_COMM_OnTxComplete(void);
 
 void AD1_OnEnd(void);
 /*

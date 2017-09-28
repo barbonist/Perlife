@@ -3,7 +3,7 @@
   <Header>
     <Name>SCTRO2_C</Name>
     <SavedBy>W15</SavedBy>
-    <ModificationStamp>40</ModificationStamp>
+    <ModificationStamp>41</ModificationStamp>
     <Date>2016-07-19</Date>
     <IDE>Eclipse IDE</IDE>
     <PEversion>1.12.2.RT7_b1550-0615</PEversion>
@@ -31166,7 +31166,7 @@
     <Repository>file:/${ProcessorExpert_loc}/Repositories/Kinetis_Repository</Repository>
     <ComponentUUID>com.freescale.processorexpert.asynchroserial</ComponentUUID>
     <BeanType>AsynchroSerial</BeanType>
-    <Name>AS3_PELTIER</Name>
+    <Name>PELTIER_COMM</Name>
     <CompNumb>18</CompNumb>
     <CompEnabled>true</CompEnabled>
     <GenCodeMode>ALWAYS_WRITE</GenCodeMode>
@@ -31181,7 +31181,7 @@
         <ItemSymbol>DeviceName</ItemSymbol>
         <ReadOnly>false</ReadOnly>
         <UserReadOnly>false</UserReadOnly>
-        <Value>AS3_PELTIER</Value>
+        <Value>PELTIER_COMM</Value>
       </ItemState>
       <ItemState>
         <ItemSymbol>Ser</ItemSymbol>
@@ -33784,7 +33784,7 @@
         <ItemSymbol>BeforeNewSpeedName</ItemSymbol>
         <ReadOnly>false</ReadOnly>
         <UserReadOnly>false</UserReadOnly>
-        <Value>AS3_PELTIER_BeforeNewSpeed</Value>
+        <Value>PELTIER_COMM_BeforeNewSpeed</Value>
       </ItemState>
       <ItemState>
         <ItemSymbol>AfterNewSpeed</ItemSymbol>
@@ -33800,7 +33800,7 @@
         <ItemSymbol>AfterNewSpeedName</ItemSymbol>
         <ReadOnly>false</ReadOnly>
         <UserReadOnly>false</UserReadOnly>
-        <Value>AS3_PELTIER_AfterNewSpeed</Value>
+        <Value>PELTIER_COMM_AfterNewSpeed</Value>
       </ItemState>
       <ItemState>
         <ItemSymbol>OnError</ItemSymbol>
@@ -33816,7 +33816,7 @@
         <ItemSymbol>OnErrorName</ItemSymbol>
         <ReadOnly>false</ReadOnly>
         <UserReadOnly>false</UserReadOnly>
-        <Value>AS3_PELTIER_OnError</Value>
+        <Value>PELTIER_COMM_OnError</Value>
       </ItemState>
       <ItemState>
         <ItemSymbol>OnErrorPriority</ItemSymbol>
@@ -33838,7 +33838,7 @@
         <ItemSymbol>OnRxCharName</ItemSymbol>
         <ReadOnly>false</ReadOnly>
         <UserReadOnly>false</UserReadOnly>
-        <Value>AS3_PELTIER_OnRxChar</Value>
+        <Value>PELTIER_COMM_OnRxChar</Value>
       </ItemState>
       <ItemState>
         <ItemSymbol>OnRxCharPriority</ItemSymbol>
@@ -33860,7 +33860,7 @@
         <ItemSymbol>OnRxCharExtName</ItemSymbol>
         <ReadOnly>false</ReadOnly>
         <UserReadOnly>false</UserReadOnly>
-        <Value>AS3_PELTIER_OnRxCharExt</Value>
+        <Value>PELTIER_COMM_OnRxCharExt</Value>
       </ItemState>
       <ItemState>
         <ItemSymbol>OnRxCharExtPriority</ItemSymbol>
@@ -33882,7 +33882,7 @@
         <ItemSymbol>OnTxCharName</ItemSymbol>
         <ReadOnly>false</ReadOnly>
         <UserReadOnly>false</UserReadOnly>
-        <Value>AS3_PELTIER_OnTxChar</Value>
+        <Value>PELTIER_COMM_OnTxChar</Value>
       </ItemState>
       <ItemState>
         <ItemSymbol>OnTxCharPriority</ItemSymbol>
@@ -33904,7 +33904,7 @@
         <ItemSymbol>OnFullRxBufName</ItemSymbol>
         <ReadOnly>false</ReadOnly>
         <UserReadOnly>false</UserReadOnly>
-        <Value>AS3_PELTIER_OnFullRxBuf</Value>
+        <Value>PELTIER_COMM_OnFullRxBuf</Value>
       </ItemState>
       <ItemState>
         <ItemSymbol>OnFullRxBufPriority</ItemSymbol>
@@ -33926,7 +33926,7 @@
         <ItemSymbol>OnFreeTxBufName</ItemSymbol>
         <ReadOnly>false</ReadOnly>
         <UserReadOnly>false</UserReadOnly>
-        <Value>AS3_PELTIER_OnFreeTxBuf</Value>
+        <Value>PELTIER_COMM_OnFreeTxBuf</Value>
       </ItemState>
       <ItemState>
         <ItemSymbol>OnFreeTxBufPriority</ItemSymbol>
@@ -33948,7 +33948,7 @@
         <ItemSymbol>OnBreakName</ItemSymbol>
         <ReadOnly>false</ReadOnly>
         <UserReadOnly>false</UserReadOnly>
-        <Value>AS3_PELTIER_OnBreak</Value>
+        <Value>PELTIER_COMM_OnBreak</Value>
       </ItemState>
       <ItemState>
         <ItemSymbol>OnBreakPriority</ItemSymbol>
@@ -33975,7 +33975,7 @@
         <ItemSymbol>OnIdleName</ItemSymbol>
         <ReadOnly>false</ReadOnly>
         <UserReadOnly>false</UserReadOnly>
-        <Value>AS3_PELTIER_OnIdle</Value>
+        <Value>PELTIER_COMM_OnIdle</Value>
       </ItemState>
       <ItemState>
         <ItemSymbol>OnIdlePriority</ItemSymbol>
@@ -34007,7 +34007,7 @@
         <ItemSymbol>OnTxCompleteName</ItemSymbol>
         <ReadOnly>false</ReadOnly>
         <UserReadOnly>false</UserReadOnly>
-        <Value>AS3_PELTIER_OnTxComplete</Value>
+        <Value>PELTIER_COMM_OnTxComplete</Value>
       </ItemState>
       <ItemState>
         <ItemSymbol>OnTxCompletePriority</ItemSymbol>
@@ -34034,7 +34034,7 @@
         <ItemSymbol>OnRxActiveEdgeName</ItemSymbol>
         <ReadOnly>false</ReadOnly>
         <UserReadOnly>false</UserReadOnly>
-        <Value>AS3_PELTIER_OnRxActiveEdge</Value>
+        <Value>PELTIER_COMM_OnRxActiveEdge</Value>
       </ItemState>
       <ItemState>
         <ItemSymbol>OnRxActiveEdgePriority</ItemSymbol>

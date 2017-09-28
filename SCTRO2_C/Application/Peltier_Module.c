@@ -12,7 +12,7 @@
 #include "Peltier_Module.h"
 #include "Global.h"
 
-#include "AS3_PELTIER.h"
+#include "PELTIER_COMM.h"
 #include "ASerialLdd3.h"
 #include "AS2_PC_DEBUG.h"
 #include "ASerialLdd2.h"
@@ -782,7 +782,7 @@ void PeltierAssSendCommand(char command[], char registerId[], int dataIntUser, c
 
 	for(int i = 0; i<msgLenght; i++)
 	{
-		AS3_PELTIER_SendChar(msgPeltier[i]);
+		PELTIER_COMM_SendChar(msgPeltier[i]);
 
 		//iflag_peltier_rx = IFLAG_IDLE;
 

@@ -41,7 +41,7 @@
 #include "BitIoLdd2.h"
 #include "AD1.h"
 #include "AdcLdd1.h"
-#include "AS3_PELTIER.h"
+#include "PELTIER_COMM.h"
 #include "ASerialLdd3.h"
 #include "FLOWSENS_COMM.h"
 #include "ASerialLdd4.h"
