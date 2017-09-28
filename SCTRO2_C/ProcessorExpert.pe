@@ -3,7 +3,7 @@
   <Header>
     <Name>SCTRO2_C</Name>
     <SavedBy>W15</SavedBy>
-    <ModificationStamp>42</ModificationStamp>
+    <ModificationStamp>43</ModificationStamp>
     <Date>2016-07-19</Date>
     <IDE>Eclipse IDE</IDE>
     <PEversion>1.12.2.RT7_b1550-0615</PEversion>
@@ -32737,7 +32737,7 @@
     <Repository>file:/${ProcessorExpert_loc}/Repositories/Kinetis_Repository</Repository>
     <ComponentUUID>com.freescale.processorexpert.asynchroserial</ComponentUUID>
     <BeanType>AsynchroSerial</BeanType>
-    <Name>AS2_PC_DEBUG</Name>
+    <Name>PC_DEBUG_COMM</Name>
     <CompNumb>8</CompNumb>
     <CompEnabled>true</CompEnabled>
     <GenCodeMode>ALWAYS_WRITE</GenCodeMode>
@@ -32752,7 +32752,7 @@
         <ItemSymbol>DeviceName</ItemSymbol>
         <ReadOnly>false</ReadOnly>
         <UserReadOnly>false</UserReadOnly>
-        <Value>AS2_PC_DEBUG</Value>
+        <Value>PC_DEBUG_COMM</Value>
       </ItemState>
       <ItemState>
         <ItemSymbol>Ser</ItemSymbol>
@@ -35355,7 +35355,7 @@
         <ItemSymbol>BeforeNewSpeedName</ItemSymbol>
         <ReadOnly>false</ReadOnly>
         <UserReadOnly>false</UserReadOnly>
-        <Value>AS2_PC_DEBUG_BeforeNewSpeed</Value>
+        <Value>PC_DEBUG_COMM_BeforeNewSpeed</Value>
       </ItemState>
       <ItemState>
         <ItemSymbol>AfterNewSpeed</ItemSymbol>
@@ -35371,7 +35371,7 @@
         <ItemSymbol>AfterNewSpeedName</ItemSymbol>
         <ReadOnly>false</ReadOnly>
         <UserReadOnly>false</UserReadOnly>
-        <Value>AS2_PC_DEBUG_AfterNewSpeed</Value>
+        <Value>PC_DEBUG_COMM_AfterNewSpeed</Value>
       </ItemState>
       <ItemState>
         <ItemSymbol>OnError</ItemSymbol>
@@ -35387,7 +35387,7 @@
         <ItemSymbol>OnErrorName</ItemSymbol>
         <ReadOnly>false</ReadOnly>
         <UserReadOnly>false</UserReadOnly>
-        <Value>AS2_PC_DEBUG_OnError</Value>
+        <Value>PC_DEBUG_COMM_OnError</Value>
       </ItemState>
       <ItemState>
         <ItemSymbol>OnErrorPriority</ItemSymbol>
@@ -35409,7 +35409,7 @@
         <ItemSymbol>OnRxCharName</ItemSymbol>
         <ReadOnly>false</ReadOnly>
         <UserReadOnly>false</UserReadOnly>
-        <Value>AS2_PC_DEBUG_OnRxChar</Value>
+        <Value>PC_DEBUG_COMM_OnRxChar</Value>
       </ItemState>
       <ItemState>
         <ItemSymbol>OnRxCharPriority</ItemSymbol>
@@ -35431,7 +35431,7 @@
         <ItemSymbol>OnRxCharExtName</ItemSymbol>
         <ReadOnly>false</ReadOnly>
         <UserReadOnly>false</UserReadOnly>
-        <Value>AS2_PC_DEBUG_OnRxCharExt</Value>
+        <Value>PC_DEBUG_COMM_OnRxCharExt</Value>
       </ItemState>
       <ItemState>
         <ItemSymbol>OnRxCharExtPriority</ItemSymbol>
@@ -35453,7 +35453,7 @@
         <ItemSymbol>OnTxCharName</ItemSymbol>
         <ReadOnly>false</ReadOnly>
         <UserReadOnly>false</UserReadOnly>
-        <Value>AS2_PC_DEBUG_OnTxChar</Value>
+        <Value>PC_DEBUG_COMM_OnTxChar</Value>
       </ItemState>
       <ItemState>
         <ItemSymbol>OnTxCharPriority</ItemSymbol>
@@ -35475,7 +35475,7 @@
         <ItemSymbol>OnFullRxBufName</ItemSymbol>
         <ReadOnly>false</ReadOnly>
         <UserReadOnly>false</UserReadOnly>
-        <Value>AS2_PC_DEBUG_OnFullRxBuf</Value>
+        <Value>PC_DEBUG_COMM_OnFullRxBuf</Value>
       </ItemState>
       <ItemState>
         <ItemSymbol>OnFullRxBufPriority</ItemSymbol>
@@ -35497,7 +35497,7 @@
         <ItemSymbol>OnFreeTxBufName</ItemSymbol>
         <ReadOnly>false</ReadOnly>
         <UserReadOnly>false</UserReadOnly>
-        <Value>AS2_PC_DEBUG_OnFreeTxBuf</Value>
+        <Value>PC_DEBUG_COMM_OnFreeTxBuf</Value>
       </ItemState>
       <ItemState>
         <ItemSymbol>OnFreeTxBufPriority</ItemSymbol>
@@ -35519,7 +35519,7 @@
         <ItemSymbol>OnBreakName</ItemSymbol>
         <ReadOnly>false</ReadOnly>
         <UserReadOnly>false</UserReadOnly>
-        <Value>AS2_PC_DEBUG_OnBreak</Value>
+        <Value>PC_DEBUG_COMM_OnBreak</Value>
       </ItemState>
       <ItemState>
         <ItemSymbol>OnBreakPriority</ItemSymbol>
@@ -35546,7 +35546,7 @@
         <ItemSymbol>OnIdleName</ItemSymbol>
         <ReadOnly>false</ReadOnly>
         <UserReadOnly>false</UserReadOnly>
-        <Value>AS2_PC_DEBUG_OnIdle</Value>
+        <Value>PC_DEBUG_COMM_OnIdle</Value>
       </ItemState>
       <ItemState>
         <ItemSymbol>OnIdlePriority</ItemSymbol>
@@ -35578,7 +35578,7 @@
         <ItemSymbol>OnTxCompleteName</ItemSymbol>
         <ReadOnly>false</ReadOnly>
         <UserReadOnly>false</UserReadOnly>
-        <Value>AS2_PC_DEBUG_OnTxComplete</Value>
+        <Value>PC_DEBUG_COMM_OnTxComplete</Value>
       </ItemState>
       <ItemState>
         <ItemSymbol>OnTxCompletePriority</ItemSymbol>
@@ -35605,7 +35605,7 @@
         <ItemSymbol>OnRxActiveEdgeName</ItemSymbol>
         <ReadOnly>false</ReadOnly>
         <UserReadOnly>false</UserReadOnly>
-        <Value>AS2_PC_DEBUG_OnRxActiveEdge</Value>
+        <Value>PC_DEBUG_COMM_OnRxActiveEdge</Value>
       </ItemState>
       <ItemState>
         <ItemSymbol>OnRxActiveEdgePriority</ItemSymbol>

@@ -14,7 +14,7 @@
 
 #include "PELTIER_COMM.h"
 #include "ASerialLdd3.h"
-#include "AS2_PC_DEBUG.h"
+#include "PC_DEBUG_COMM.h"
 #include "ASerialLdd2.h"
 
 void peltierAssInit(void){
@@ -787,7 +787,7 @@ void PeltierAssSendCommand(char command[], char registerId[], int dataIntUser, c
 		//iflag_peltier_rx = IFLAG_IDLE;
 
 		#ifdef	DEBUG_COMM_SBC
-		//AS2_PC_DEBUG_SendChar(msgPeltier[i]);
+		//PC_DEBUG_COMM_SendChar(msgPeltier[i]);
 		#endif
 
 		if(i == (msgLenght-1))

@@ -7,7 +7,7 @@
 
 #include "AS5_SBC.h"
 #include "ASerialLdd5.h"
-#include "AS2_PC_DEBUG.h"
+#include "PC_DEBUG_COMM.h"
 #include "ASerialLdd2.h"
 #include "MODBUS_COMM.h"
 #include "ASerialLdd1.h"
@@ -122,7 +122,7 @@ void testCOMMSbcDebug(void){
 			for(char i = 0; i < 16 ; i++)
 			{
 				AS5_SBC_SendChar(*(ptrMsgSbcTx+i));
-				//AS2_PC_DEBUG_SendChar(*(ptrMsgSbcTx+i));
+				//PC_DEBUG_COMM_SendChar(*(ptrMsgSbcTx+i));
 			}
 			break;
 
@@ -132,7 +132,7 @@ void testCOMMSbcDebug(void){
 			for(char i = 0; i < 12 ; i++)
 			{
 				AS5_SBC_SendChar(*(ptrMsgSbcTx+i));
-				//AS2_PC_DEBUG_SendChar(*(ptrMsgSbcTx+i));
+				//PC_DEBUG_COMM_SendChar(*(ptrMsgSbcTx+i));
 			}
 			break;
 
@@ -142,7 +142,7 @@ void testCOMMSbcDebug(void){
 			for(char i = 0; i < 12 ; i++)
 			{
 				AS5_SBC_SendChar(*(ptrMsgSbcTx+i));
-				//AS2_PC_DEBUG_SendChar(*(ptrMsgSbcTx+i));
+				//PC_DEBUG_COMM_SendChar(*(ptrMsgSbcTx+i));
 			}
 			break;
 
@@ -658,7 +658,7 @@ void testCOMMSbcDebug(void){
 			AS5_SBC_SendChar(*(ptrMsgSbcTx+i));
 
 			#ifdef	DEBUG_COMM_SBC
-			//AS2_PC_DEBUG_SendChar(*(ptrMsgSbcTx+i));
+			//PC_DEBUG_COMM_SendChar(*(ptrMsgSbcTx+i));
 			#endif
 		}
 
@@ -675,7 +675,7 @@ void testCOMMSbcDebug(void){
 			AS5_SBC_SendChar(*(ptrMsgSbcTx+i));
 
 			#ifdef	DEBUG_COMM_SBC
-			//AS2_PC_DEBUG_SendChar(*(ptrMsgSbcTx+i));
+			//PC_DEBUG_COMM_SendChar(*(ptrMsgSbcTx+i));
 			#endif
 		}
 
@@ -825,7 +825,7 @@ void testCOMMSbcDebug(void){
 			AS5_SBC_SendChar(*(ptrMsgSbcTx+i));
 
 			#ifdef	DEBUG_COMM_SBC
-			//AS2_PC_DEBUG_SendChar(*(ptrMsgSbcTx+i));
+			//PC_DEBUG_COMM_SendChar(*(ptrMsgSbcTx+i));
 			#endif
 		}
 	}
@@ -842,7 +842,7 @@ void testCOMMSbcDebug(void){
 			AS5_SBC_SendChar(*(ptrMsgSbcTx+i));
 
 			#ifdef	DEBUG_COMM_SBC
-			//AS2_PC_DEBUG_SendChar(*(ptrMsgSbcTx+i));
+			//PC_DEBUG_COMM_SendChar(*(ptrMsgSbcTx+i));
 			#endif
 		}
 	}
@@ -859,7 +859,7 @@ void testCOMMSbcDebug(void){
 			AS5_SBC_SendChar(*(ptrMsgSbcTx+i));
 
 			#ifdef	DEBUG_COMM_SBC
-			//AS2_PC_DEBUG_SendChar(*(ptrMsgSbcTx+i));
+			//PC_DEBUG_COMM_SendChar(*(ptrMsgSbcTx+i));
 			#endif
 		}
 	}
@@ -874,7 +874,7 @@ void testCOMMSbcDebug(void){
 			AS5_SBC_SendChar(*(ptrMsgSbcTx+i));
 
 			#ifdef	DEBUG_COMM_SBC
-			//AS2_PC_DEBUG_SendChar(*(ptrMsgSbcTx+i));
+			//PC_DEBUG_COMM_SendChar(*(ptrMsgSbcTx+i));
 			#endif
 		}
 	}
@@ -889,7 +889,7 @@ void testCOMMSbcDebug(void){
 			AS5_SBC_SendChar(*(ptrMsgSbcTx+i));
 
 			#ifdef	DEBUG_COMM_SBC
-			//AS2_PC_DEBUG_SendChar(*(ptrMsgSbcTx+i));
+			//PC_DEBUG_COMM_SendChar(*(ptrMsgSbcTx+i));
 			#endif
 		}
 	}
@@ -911,7 +911,7 @@ void testCOMMSbcDebug(void){
 			AS5_SBC_SendChar(*(ptrMsgSbcTx+i));
 
 			#ifdef	DEBUG_COMM_SBC
-			//AS2_PC_DEBUG_SendChar(*(ptrMsgSbcTx+i));
+			//PC_DEBUG_COMM_SendChar(*(ptrMsgSbcTx+i));
 			#endif
 		}
 	}

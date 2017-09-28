@@ -99,7 +99,7 @@ void AS5_SBC_OnRxChar(void)
 	AS5_SBC_RecvChar(ptrMsgSbcRx);
 
 	#ifdef	DEBUG_COMM_SBC
-	//AS2_PC_DEBUG_SendChar(*ptrMsgSbcRx);
+	//PC_DEBUG_COMM_SendChar(*ptrMsgSbcRx);
 	#endif
 
 	ptrSbcCountRx = ptrSbcCountRx + 1;
@@ -134,7 +134,7 @@ void AS5_SBC_OnTxChar(void)
 {
   /* Write your code here ... */
 	#ifdef	DEBUG_COMM_SBC
-	//AS2_PC_DEBUG_SendChar(*ptrMsgSbcTx);
+	//PC_DEBUG_COMM_SendChar(*ptrMsgSbcTx);
 	//ptrMsgSbcTx = ptrMsgSbcTx + 1;
 	#endif
 }
@@ -325,7 +325,7 @@ void PELTIER_COMM_OnRxChar(void)
 	PELTIER_COMM_RecvChar(ptrMsgPeltierRx);
 
  	#ifdef	DEBUG_COMM_SBC
-	//AS2_PC_DEBUG_SendChar(*ptrMsgPeltierRx);
+	//PC_DEBUG_COMM_SendChar(*ptrMsgPeltierRx);
 	#endif
 	/*}*/
 
@@ -470,9 +470,9 @@ void AD1_OnCalibrationEnd(void)
 
 /*
 ** ===================================================================
-**     Event       :  AS2_PC_DEBUG_OnError (module Events)
+**     Event       :  PC_DEBUG_COMM_OnError (module Events)
 **
-**     Component   :  AS2_PC_DEBUG [AsynchroSerial]
+**     Component   :  PC_DEBUG_COMM [AsynchroSerial]
 **     Description :
 **         This event is called when a channel error (not the error
 **         returned by a given method) occurs. The errors can be read
@@ -483,16 +483,16 @@ void AD1_OnCalibrationEnd(void)
 **     Returns     : Nothing
 ** ===================================================================
 */
-void AS2_PC_DEBUG_OnError(void)
+void PC_DEBUG_COMM_OnError(void)
 {
   /* Write your code here ... */
 }
 
 /*
 ** ===================================================================
-**     Event       :  AS2_PC_DEBUG_OnRxChar (module Events)
+**     Event       :  PC_DEBUG_COMM_OnRxChar (module Events)
 **
-**     Component   :  AS2_PC_DEBUG [AsynchroSerial]
+**     Component   :  PC_DEBUG_COMM [AsynchroSerial]
 **     Description :
 **         This event is called after a correct character is received.
 **         The event is available only when the <Interrupt
@@ -503,12 +503,12 @@ void AS2_PC_DEBUG_OnError(void)
 **     Returns     : Nothing
 ** ===================================================================
 */
-void AS2_PC_DEBUG_OnRxChar(void)
+void PC_DEBUG_COMM_OnRxChar(void)
 {
   /* Write your code here ... */
 
 	//ptr = &pc_rx_data[0]; /* questa riga va messa dove si inizialiiza la comunicazione col pc */
-	AS2_PC_DEBUG_RecvChar(ptrPCDebug);
+	PC_DEBUG_COMM_RecvChar(ptrPCDebug);
 
 	ptrPCDebug = ptrPCDebug + 1;
 	ptrPCDebugCount = ptrPCDebugCount + 1;
@@ -523,25 +523,25 @@ void AS2_PC_DEBUG_OnRxChar(void)
 
 /*
 ** ===================================================================
-**     Event       :  AS2_PC_DEBUG_OnTxChar (module Events)
+**     Event       :  PC_DEBUG_COMM_OnTxChar (module Events)
 **
-**     Component   :  AS2_PC_DEBUG [AsynchroSerial]
+**     Component   :  PC_DEBUG_COMM [AsynchroSerial]
 **     Description :
 **         This event is called after a character is transmitted.
 **     Parameters  : None
 **     Returns     : Nothing
 ** ===================================================================
 */
-void AS2_PC_DEBUG_OnTxChar(void)
+void PC_DEBUG_COMM_OnTxChar(void)
 {
   /* Write your code here ... */
 }
 
 /*
 ** ===================================================================
-**     Event       :  AS2_PC_DEBUG_OnFullRxBuf (module Events)
+**     Event       :  PC_DEBUG_COMM_OnFullRxBuf (module Events)
 **
-**     Component   :  AS2_PC_DEBUG [AsynchroSerial]
+**     Component   :  PC_DEBUG_COMM [AsynchroSerial]
 **     Description :
 **         This event is called when the input buffer is full;
 **         i.e. after reception of the last character 
@@ -550,16 +550,16 @@ void AS2_PC_DEBUG_OnTxChar(void)
 **     Returns     : Nothing
 ** ===================================================================
 */
-void AS2_PC_DEBUG_OnFullRxBuf(void)
+void PC_DEBUG_COMM_OnFullRxBuf(void)
 {
   /* Write your code here ... */
 }
 
 /*
 ** ===================================================================
-**     Event       :  AS2_PC_DEBUG_OnFreeTxBuf (module Events)
+**     Event       :  PC_DEBUG_COMM_OnFreeTxBuf (module Events)
 **
-**     Component   :  AS2_PC_DEBUG [AsynchroSerial]
+**     Component   :  PC_DEBUG_COMM [AsynchroSerial]
 **     Description :
 **         This event is called after the last character in output
 **         buffer is transmitted.
@@ -567,7 +567,7 @@ void AS2_PC_DEBUG_OnFullRxBuf(void)
 **     Returns     : Nothing
 ** ===================================================================
 */
-void AS2_PC_DEBUG_OnFreeTxBuf(void)
+void PC_DEBUG_COMM_OnFreeTxBuf(void)
 {
   /* Write your code here ... */
 }
@@ -617,7 +617,7 @@ void MODBUS_COMM_OnRxChar(void)
 
 	#ifdef DEBUG_PUMP
 	//if(_funcRetVal.slvresRetNumByte > 0)
-		//AS2_PC_DEBUG_SendChar(*_funcRetVal.slvresRetPtr);
+		//PC_DEBUG_COMM_SendChar(*_funcRetVal.slvresRetPtr);
 	#endif
 
 	//msg_pmp1_rx_ptr = msg_pmp1_rx_ptr + 1;

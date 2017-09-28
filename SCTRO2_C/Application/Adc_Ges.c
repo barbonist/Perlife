@@ -11,7 +11,7 @@
 #include "AdcLdd1.h"
 #include "PE_Types.h"
 
-#include "AS2_PC_DEBUG.h"
+#include "PC_DEBUG_COMM.h"
 #include "ASerialLdd2.h"
 
 #include "string.h"
@@ -179,9 +179,9 @@ void 	alwaysAdcParam(void){
 	sprintf(stringPr1, "%d; %i; %i;", timems, (int)(sensor_UFLOW[0].volumeMlTot), (sensor_PRx[0].prSensValueFilteredWA));
 	for(int i=0; i<20; i++)
 	{
-		AS2_PC_DEBUG_SendChar(stringPr1[i]);
+		PC_DEBUG_COMM_SendChar(stringPr1[i]);
 	}
-	AS2_PC_DEBUG_SendChar(0x0A);
+	PC_DEBUG_COMM_SendChar(0x0A);
 	#endif
 
 	sensor_PRx[1].prSensAdcPtr = sensor_PRx[1].readAdctPtr();

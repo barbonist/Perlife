@@ -504,7 +504,7 @@ void pollingDataToSBCTreat(void){
 			AS5_SBC_SendChar(*(ptrMsgSbcTx+i));
 
 			#ifdef	DEBUG_COMM_SBC
-			//AS2_PC_DEBUG_SendChar(*(ptrMsgSbcTx+i));
+			//PC_DEBUG_COMM_SendChar(*(ptrMsgSbcTx+i));
 			#endif
 		}
 	}
