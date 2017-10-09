@@ -868,6 +868,7 @@ struct communicatorToSBC{
 	unsigned short dataModBusReadyFlag;
 	unsigned short dataMachineStateReadyFlag;
 	unsigned short dataButtonSBCReadyFlag;
+	unsigned short dataParamSetSBCReadyFlag;
 	unsigned short dataPerfParamReadyFlag;
 
 	unsigned short numByteToSend;

@@ -32,6 +32,7 @@ void buildBUTSBCResponseMsg(char code);
 void buildPARSETSBCResponseMsg(char code);
 void buildRDMachineStateResponseMsg(char code);
 void buildButtonSBCResponseMsg(char code, unsigned char buttonId);
+void buildParamSetSBCResponseMsg(char code, unsigned char paramId);
 void buildRDPerfParamResponseMsg(char code);
 
 /*******************/
