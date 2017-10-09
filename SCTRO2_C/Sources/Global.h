@@ -779,6 +779,7 @@ struct ultrsndFlowSens * ptrMsg_UFLOW; 	   /* puntatore utilizzato per spedire i
 /************************************************************************/
 /* 						PULSANTI GUI 									*/
 /************************************************************************/
+#define GUI_BUTTON_NULL			0x00
 #define GUI_BUTTON_PRESSED		0xA5
 #define GUI_BUTTON_RELEASED		0x5A
 
@@ -866,6 +867,7 @@ struct communicatorToSBC{
 	unsigned short dataPeltierReadyFlag;
 	unsigned short dataModBusReadyFlag;
 	unsigned short dataMachineStateReadyFlag;
+	unsigned short dataButtonSBCReadyFlag;
 	unsigned short dataPerfParamReadyFlag;
 
 	unsigned short numByteToSend;

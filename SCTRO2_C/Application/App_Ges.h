@@ -138,6 +138,7 @@ void initAllGuard(void);
 /*  GUI FUNCTION */
 void initGUIButton(void);
 void setGUIButton(unsigned char buttonId);
+unsigned char getGUIButton(unsigned char buttonId);
 void releaseGUIButton(unsigned char buttonId);
 
 void initSetParamFromGUI(void);

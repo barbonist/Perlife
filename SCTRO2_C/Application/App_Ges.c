@@ -765,7 +765,7 @@ void manageParentPrimingAlways(void){
 	//manage pump
 	switch(ptrCurrentParent->parent){
 	case PARENT_PRIMING_TREAT_KIDNEY_1_INIT:
-	if(buttonGUITreatment[BUTTON_START_PRIMING].state == GUI_BUTTON_PRESSED)
+	if(buttonGUITreatment[BUTTON_START_PRIMING].state == GUI_BUTTON_RELEASED)
 	{
 		setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 2000);
 		//setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 3000);
@@ -775,7 +775,7 @@ void manageParentPrimingAlways(void){
 
 		releaseGUIButton(BUTTON_START_PRIMING);
 	}
-	else if(buttonGUITreatment[BUTTON_START_PERF_PUMP].state == GUI_BUTTON_PRESSED)
+	else if(buttonGUITreatment[BUTTON_START_PERF_PUMP].state == GUI_BUTTON_RELEASED)
 	{
 		releaseGUIButton(BUTTON_START_PERF_PUMP);
 
@@ -783,28 +783,28 @@ void manageParentPrimingAlways(void){
 		setPinchPositionHighLevel(PNCHVLV1_ADDRESS, MODBUS_PINCH_RIGHT_OPEN);
 		setPinchPositionHighLevel(PNCHVLV3_ADDRESS, MODBUS_PINCH_RIGHT_OPEN);
 	}
-	else if(buttonGUITreatment[BUTTON_START_OXYGEN_PUMP].state == GUI_BUTTON_PRESSED)
+	else if(buttonGUITreatment[BUTTON_START_OXYGEN_PUMP].state == GUI_BUTTON_RELEASED)
 	{
 		releaseGUIButton(BUTTON_START_OXYGEN_PUMP);
 
 		//setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 3000);
 		setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 10*parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FOW].value);
 	}
-	else if(buttonGUITreatment[BUTTON_STOP_ALL_PUMP].state == GUI_BUTTON_PRESSED)
+	else if(buttonGUITreatment[BUTTON_STOP_ALL_PUMP].state == GUI_BUTTON_RELEASED)
 	{
 		setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
 		setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 0);
 		releaseGUIButton(BUTTON_STOP_ALL_PUMP);
 
 	}
-	else if(buttonGUITreatment[BUTTON_STOP_PERF_PUMP].state == GUI_BUTTON_PRESSED)
+	else if(buttonGUITreatment[BUTTON_STOP_PERF_PUMP].state == GUI_BUTTON_RELEASED)
 	{
 		releaseGUIButton(BUTTON_STOP_PERF_PUMP);
 
 		setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
 		iflag_perf = 0;
 	}
-	else if(buttonGUITreatment[BUTTON_STOP_OXYGEN_PUMP].state == GUI_BUTTON_PRESSED)
+	else if(buttonGUITreatment[BUTTON_STOP_OXYGEN_PUMP].state == GUI_BUTTON_RELEASED)
 	{
 		releaseGUIButton(BUTTON_STOP_OXYGEN_PUMP);
 
@@ -836,7 +836,7 @@ void manageParentPrimingAlways(void){
 	break;
 
 	case PARENT_PRIMING_TREAT_KIDNEY_1_RUN:
-			if(buttonGUITreatment[BUTTON_START_PRIMING].state == GUI_BUTTON_PRESSED)
+			if(buttonGUITreatment[BUTTON_START_PRIMING].state == GUI_BUTTON_RELEASED)
 			{
 				setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 2000);
 				//setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 3000);
@@ -846,7 +846,7 @@ void manageParentPrimingAlways(void){
 
 				releaseGUIButton(BUTTON_START_PRIMING);
 			}
-			else if(buttonGUITreatment[BUTTON_START_PERF_PUMP].state == GUI_BUTTON_PRESSED)
+			else if(buttonGUITreatment[BUTTON_START_PERF_PUMP].state == GUI_BUTTON_RELEASED)
 			{
 				releaseGUIButton(BUTTON_START_PERF_PUMP);
 
@@ -854,27 +854,27 @@ void manageParentPrimingAlways(void){
 				setPinchPositionHighLevel(PNCHVLV1_ADDRESS, MODBUS_PINCH_RIGHT_OPEN);
 				setPinchPositionHighLevel(PNCHVLV3_ADDRESS, MODBUS_PINCH_RIGHT_OPEN);
 			}
-			else if(buttonGUITreatment[BUTTON_START_OXYGEN_PUMP].state == GUI_BUTTON_PRESSED)
+			else if(buttonGUITreatment[BUTTON_START_OXYGEN_PUMP].state == GUI_BUTTON_RELEASED)
 			{
 				releaseGUIButton(BUTTON_START_OXYGEN_PUMP);
 
 				//setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 3000);
 				setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 10*parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FOW].value);
 			}
-			else if(buttonGUITreatment[BUTTON_STOP_ALL_PUMP].state == GUI_BUTTON_PRESSED)
+			else if(buttonGUITreatment[BUTTON_STOP_ALL_PUMP].state == GUI_BUTTON_RELEASED)
 			{
 				setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
 				setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 0);
 				releaseGUIButton(BUTTON_STOP_ALL_PUMP);
 			}
-			else if(buttonGUITreatment[BUTTON_STOP_PERF_PUMP].state == GUI_BUTTON_PRESSED)
+			else if(buttonGUITreatment[BUTTON_STOP_PERF_PUMP].state == GUI_BUTTON_RELEASED)
 			{
 				releaseGUIButton(BUTTON_STOP_PERF_PUMP);
 
 				setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
 				iflag_perf = 0;
 			}
-			else if(buttonGUITreatment[BUTTON_STOP_OXYGEN_PUMP].state == GUI_BUTTON_PRESSED)
+			else if(buttonGUITreatment[BUTTON_STOP_OXYGEN_PUMP].state == GUI_BUTTON_RELEASED)
 			{
 				releaseGUIButton(BUTTON_STOP_OXYGEN_PUMP);
 
@@ -883,8 +883,8 @@ void manageParentPrimingAlways(void){
 			}
 
 		/*if(
-			(buttonGUITreatment[BUTTON_START_PRIMING].state == GUI_BUTTON_PRESSED) ||
-			(buttonGUITreatment[BUTTON_START_PERF_PUMP].state == GUI_BUTTON_PRESSED)
+			(buttonGUITreatment[BUTTON_START_PRIMING].state == GUI_BUTTON_RELEASED) ||
+			(buttonGUITreatment[BUTTON_START_PERF_PUMP].state == GUI_BUTTON_RELEASED)
 			)
 		{
 			releaseGUIButton(BUTTON_START_PRIMING);
@@ -897,8 +897,8 @@ void manageParentPrimingAlways(void){
 			}
 		}
 		else if(
-				(buttonGUITreatment[BUTTON_STOP_ALL_PUMP].state == GUI_BUTTON_PRESSED) ||
-				(buttonGUITreatment[BUTTON_STOP_PERF_PUMP].state == GUI_BUTTON_PRESSED)
+				(buttonGUITreatment[BUTTON_STOP_ALL_PUMP].state == GUI_BUTTON_RELEASED) ||
+				(buttonGUITreatment[BUTTON_STOP_PERF_PUMP].state == GUI_BUTTON_RELEASED)
 				)
 		{
 			releaseGUIButton(BUTTON_STOP_ALL_PUMP);
@@ -1081,7 +1081,7 @@ void manageParentTreatAlways(void){
 		//manage pump
 		switch(ptrCurrentParent->parent){
 		case PARENT_TREAT_KIDNEY_1_INIT:
-		if(buttonGUITreatment[BUTTON_STOP_ALL_PUMP].state == GUI_BUTTON_PRESSED)
+		if(buttonGUITreatment[BUTTON_STOP_ALL_PUMP].state == GUI_BUTTON_RELEASED)
 		{
 			setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
 			setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 0);
@@ -1089,7 +1089,7 @@ void manageParentTreatAlways(void){
 
 			setPumpPressLoop(0, PRESS_LOOP_OFF);
 		}
-		else if(buttonGUITreatment[BUTTON_STOP_PERF_PUMP].state == GUI_BUTTON_PRESSED)
+		else if(buttonGUITreatment[BUTTON_STOP_PERF_PUMP].state == GUI_BUTTON_RELEASED)
 		{
 			releaseGUIButton(BUTTON_STOP_PERF_PUMP);
 
@@ -1098,14 +1098,14 @@ void manageParentTreatAlways(void){
 
 			setPumpPressLoop(0, PRESS_LOOP_OFF);
 		}
-		else if(buttonGUITreatment[BUTTON_STOP_OXYGEN_PUMP].state == GUI_BUTTON_PRESSED)
+		else if(buttonGUITreatment[BUTTON_STOP_OXYGEN_PUMP].state == GUI_BUTTON_RELEASED)
 		{
 			releaseGUIButton(BUTTON_STOP_OXYGEN_PUMP);
 
 			setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 0);
 			iflag_perf = 0;
 		}
-		else if(buttonGUITreatment[BUTTON_START_PRIMING].state == GUI_BUTTON_PRESSED)
+		else if(buttonGUITreatment[BUTTON_START_PRIMING].state == GUI_BUTTON_RELEASED)
 		{
 			setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 2000); //pump 0: start value = 20 rpm than pressure loop
 			//setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 3000); //pump 1: start value = 30 rpm than open loop
@@ -1115,14 +1115,14 @@ void manageParentTreatAlways(void){
 			//if(iflag_perf == 0)
 			setPumpPressLoop(0, PRESS_LOOP_ON);
 		}
-		else if(buttonGUITreatment[BUTTON_START_PERF_PUMP].state == GUI_BUTTON_PRESSED){
+		else if(buttonGUITreatment[BUTTON_START_PERF_PUMP].state == GUI_BUTTON_RELEASED){
 			releaseGUIButton(BUTTON_START_PERF_PUMP);
 
 			setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 2000); //pump 0: start value = 20 rpm than pressure loop
 
 			setPumpPressLoop(0, PRESS_LOOP_ON);
 		}
-		else if(buttonGUITreatment[BUTTON_START_OXYGEN_PUMP].state == GUI_BUTTON_PRESSED){
+		else if(buttonGUITreatment[BUTTON_START_OXYGEN_PUMP].state == GUI_BUTTON_RELEASED){
 			releaseGUIButton(BUTTON_START_OXYGEN_PUMP);
 
 			//setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 3000); //pump 1: start value = 30 rpm than open loop
@@ -1165,7 +1165,7 @@ void manageParentTreatAlways(void){
 		break;
 
 		case PARENT_TREAT_KIDNEY_1_PUMP_ON:
-			if(buttonGUITreatment[BUTTON_STOP_ALL_PUMP].state == GUI_BUTTON_PRESSED)
+			if(buttonGUITreatment[BUTTON_STOP_ALL_PUMP].state == GUI_BUTTON_RELEASED)
 			{
 				setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
 				setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 0);
@@ -1173,7 +1173,7 @@ void manageParentTreatAlways(void){
 
 				setPumpPressLoop(0, PRESS_LOOP_OFF);
 			}
-			else if(buttonGUITreatment[BUTTON_STOP_PERF_PUMP].state == GUI_BUTTON_PRESSED)
+			else if(buttonGUITreatment[BUTTON_STOP_PERF_PUMP].state == GUI_BUTTON_RELEASED)
 			{
 				releaseGUIButton(BUTTON_STOP_PERF_PUMP);
 
@@ -1182,14 +1182,14 @@ void manageParentTreatAlways(void){
 
 				setPumpPressLoop(0, PRESS_LOOP_OFF);
 			}
-			else if(buttonGUITreatment[BUTTON_STOP_OXYGEN_PUMP].state == GUI_BUTTON_PRESSED)
+			else if(buttonGUITreatment[BUTTON_STOP_OXYGEN_PUMP].state == GUI_BUTTON_RELEASED)
 			{
 				releaseGUIButton(BUTTON_STOP_OXYGEN_PUMP);
 
 				setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 0);
 				iflag_perf = 0;
 			}
-			else if(buttonGUITreatment[BUTTON_START_PRIMING].state == GUI_BUTTON_PRESSED)
+			else if(buttonGUITreatment[BUTTON_START_PRIMING].state == GUI_BUTTON_RELEASED)
 			{
 				setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 2000); //pump 0: start value = 20 rpm than pressure loop
 				//setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 3000); //pump 1: start value = 30 rpm than open loop
@@ -1199,14 +1199,14 @@ void manageParentTreatAlways(void){
 				//if(iflag_perf == 0)
 				setPumpPressLoop(0, PRESS_LOOP_ON);
 			}
-			else if(buttonGUITreatment[BUTTON_START_PERF_PUMP].state == GUI_BUTTON_PRESSED){
+			else if(buttonGUITreatment[BUTTON_START_PERF_PUMP].state == GUI_BUTTON_RELEASED){
 				releaseGUIButton(BUTTON_START_PERF_PUMP);
 
 				setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 2000); //pump 0: start value = 20 rpm than pressure loop
 
 				setPumpPressLoop(0, PRESS_LOOP_ON);
 			}
-			else if(buttonGUITreatment[BUTTON_START_OXYGEN_PUMP].state == GUI_BUTTON_PRESSED){
+			else if(buttonGUITreatment[BUTTON_START_OXYGEN_PUMP].state == GUI_BUTTON_RELEASED){
 				releaseGUIButton(BUTTON_START_OXYGEN_PUMP);
 
 				//setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 3000); //pump 1: start value = 30 rpm than open loop
@@ -1416,8 +1416,8 @@ static void computeMachineStateGuardEntryState(void){
 static void computeMachineStateGuardIdle(void){
 	//only the significant guard for the current state are computed --> to be evaluated: for each state a function is required to evaluate the guard
 	if(
-		(buttonGUITreatment[BUTTON_KIDNEY].state == GUI_BUTTON_PRESSED) &&
-		(buttonGUITreatment[BUTTON_CONFIRM].state == GUI_BUTTON_PRESSED)
+		(buttonGUITreatment[BUTTON_KIDNEY].state == GUI_BUTTON_RELEASED) &&
+		(buttonGUITreatment[BUTTON_CONFIRM].state == GUI_BUTTON_RELEASED)
 		)
 	{
 		currentGuard[GUARD_ENABLE_SELECT_TREAT_PAGE].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
@@ -1429,9 +1429,9 @@ static void computeMachineStateGuardIdle(void){
 /*--------------------------------------------------------------------*/
 static void computeMachineStateGuardSelTreat(void){
 	if(
-		(buttonGUITreatment[BUTTON_EN_PERFUSION].state == GUI_BUTTON_PRESSED) &&
-		(buttonGUITreatment[BUTTON_EN_OXYGENATION].state == GUI_BUTTON_PRESSED) &&
-		(buttonGUITreatment[BUTTON_CONFIRM].state == GUI_BUTTON_PRESSED)
+		(buttonGUITreatment[BUTTON_EN_PERFUSION].state == GUI_BUTTON_RELEASED) &&
+		(buttonGUITreatment[BUTTON_EN_OXYGENATION].state == GUI_BUTTON_RELEASED) &&
+		(buttonGUITreatment[BUTTON_CONFIRM].state == GUI_BUTTON_RELEASED)
 	 )
 	{
 		currentGuard[GUARD_ENABLE_MOUNT_DISPOSABLE].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
@@ -1443,9 +1443,9 @@ static void computeMachineStateGuardSelTreat(void){
 /*--------------------------------------------------------------------*/
 static void computeMachineStateGuardMountDisp(void){
 	if(
-		(buttonGUITreatment[BUTTON_PERF_DISP_MOUNTED].state == GUI_BUTTON_PRESSED) &&
-		(buttonGUITreatment[BUTTON_OXYG_DISP_MOUNTED].state == GUI_BUTTON_PRESSED) &&
-		(buttonGUITreatment[BUTTON_CONFIRM].state == GUI_BUTTON_PRESSED)
+		(buttonGUITreatment[BUTTON_PERF_DISP_MOUNTED].state == GUI_BUTTON_RELEASED) &&
+		(buttonGUITreatment[BUTTON_OXYG_DISP_MOUNTED].state == GUI_BUTTON_RELEASED) &&
+		(buttonGUITreatment[BUTTON_CONFIRM].state == GUI_BUTTON_RELEASED)
 			)
 	{
 		currentGuard[GUARD_ENABLE_TANK_FILL].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
@@ -1457,8 +1457,8 @@ static void computeMachineStateGuardMountDisp(void){
 /*--------------------------------------------------------------------*/
 static void computeMachineStateGuardTankFill(void){
 	if(
-		(buttonGUITreatment[BUTTON_PERF_TANK_FILL].state == GUI_BUTTON_PRESSED) &&
-		(buttonGUITreatment[BUTTON_CONFIRM].state == GUI_BUTTON_PRESSED)
+		(buttonGUITreatment[BUTTON_PERF_TANK_FILL].state == GUI_BUTTON_RELEASED) &&
+		(buttonGUITreatment[BUTTON_CONFIRM].state == GUI_BUTTON_RELEASED)
 			)
 	{
 		currentGuard[GUARD_ENABLE_PRIMING_PHASE_1].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
@@ -1471,8 +1471,8 @@ static void computeMachineStateGuardTankFill(void){
 /*--------------------------------------------------------------------*/
 static void computeMachineStateGuardPrimingPh1(void){
 	if(
-		(buttonGUITreatment[BUTTON_PERF_FILTER_MOUNT].state == GUI_BUTTON_PRESSED) &&
-		(buttonGUITreatment[BUTTON_CONFIRM].state == GUI_BUTTON_PRESSED)
+		(buttonGUITreatment[BUTTON_PERF_FILTER_MOUNT].state == GUI_BUTTON_RELEASED) &&
+		(buttonGUITreatment[BUTTON_CONFIRM].state == GUI_BUTTON_RELEASED)
 			)
 	{
 		currentGuard[GUARD_ENABLE_PRIMING_PHASE_2].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
@@ -1488,7 +1488,7 @@ static void computeMachineStateGuardPrimingPh1(void){
 static void computeMachineStateGuardPrimingPh2(void){
 	if(
 		(perfusionParam.volumePrimingArt >= parameterWordSetFromGUI[PAR_SET_PRIMING_VOL_PERFUSION].value) &&
-		(buttonGUITreatment[BUTTON_CONFIRM].state == GUI_BUTTON_PRESSED) /*&&
+		(buttonGUITreatment[BUTTON_CONFIRM].state == GUI_BUTTON_RELEASED) /*&&
 		(iflag_pmp1_rx == IFLAG_PMP1_RX)*/
 		)
 	{
@@ -1503,8 +1503,8 @@ static void computeMachineStateGuardPrimingPh2(void){
 /*--------------------------------------------------------------------*/
 static void computeMachineStateGuardTreatment(void){
 	if(
-			(buttonGUITreatment[BUTTON_STOP_ALL_PUMP].state == GUI_BUTTON_PRESSED) &&
-			(buttonGUITreatment[BUTTON_CONFIRM].state == GUI_BUTTON_PRESSED)
+			(buttonGUITreatment[BUTTON_STOP_ALL_PUMP].state == GUI_BUTTON_RELEASED) &&
+			(buttonGUITreatment[BUTTON_CONFIRM].state == GUI_BUTTON_RELEASED)
 			)
 		{
 			currentGuard[GUARD_ENABLE_DISPOSABLE_EMPTY].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
@@ -1933,7 +1933,7 @@ void processMachineState(void)
 	//questo switch andrà suddiviso e portato dentro i singoli case dello switch sopra........
 	switch(ptrCurrentParent->parent){
 		case PARENT_PRIMING_TREAT_KIDNEY_1_INIT:
-			if(buttonGUITreatment[BUTTON_CONFIRM].state == GUI_BUTTON_PRESSED)
+			if(buttonGUITreatment[BUTTON_CONFIRM].state == GUI_BUTTON_RELEASED)
 			{
 				releaseGUIButton(BUTTON_CONFIRM);
 
@@ -2232,32 +2232,37 @@ void initAllGuard(void)
 /**/
 void initGUIButton(void){
 
-	buttonGUITreatment[BUTTON_KIDNEY].state = GUI_BUTTON_RELEASED;
-	buttonGUITreatment[BUTTON_LIVER].state = GUI_BUTTON_RELEASED;
-	buttonGUITreatment[BUTTON_CONFIRM].state = GUI_BUTTON_RELEASED;
-	buttonGUITreatment[BUTTON_RESET].state = GUI_BUTTON_RELEASED;
-	buttonGUITreatment[BUTTON_BACK].state = GUI_BUTTON_RELEASED;
-	buttonGUITreatment[BUTTON_START_PRIMING].state = GUI_BUTTON_RELEASED;
-	buttonGUITreatment[BUTTON_STOP_ALL_PUMP].state = GUI_BUTTON_RELEASED;
-	buttonGUITreatment[BUTTON_EN_PERFUSION].state = GUI_BUTTON_RELEASED;
-	buttonGUITreatment[BUTTON_EN_OXYGENATION].state = GUI_BUTTON_RELEASED;
-	buttonGUITreatment[BUTTON_EN_PURIFICATION].state = GUI_BUTTON_RELEASED;
-	buttonGUITreatment[BUTTON_START_PERF_PUMP].state = GUI_BUTTON_RELEASED;
-	buttonGUITreatment[BUTTON_STOP_PERF_PUMP].state = GUI_BUTTON_RELEASED;
-	buttonGUITreatment[BUTTON_START_OXYGEN_PUMP].state = GUI_BUTTON_RELEASED;
-	buttonGUITreatment[BUTTON_STOP_OXYGEN_PUMP].state = GUI_BUTTON_RELEASED;
-	buttonGUITreatment[BUTTON_START_PURIF_PUMP].state = GUI_BUTTON_RELEASED;
-	buttonGUITreatment[BUTTON_STOP_PURIF_PUMP].state = GUI_BUTTON_RELEASED;
-	buttonGUITreatment[BUTTON_PERF_DISP_MOUNTED].state = GUI_BUTTON_RELEASED;
-	buttonGUITreatment[BUTTON_OXYG_DISP_MOUNTED].state = GUI_BUTTON_RELEASED;
-	buttonGUITreatment[BUTTON_PERF_TANK_FILL].state = GUI_BUTTON_RELEASED;
-	buttonGUITreatment[BUTTON_PERF_FILTER_MOUNT].state = GUI_BUTTON_RELEASED;
+	buttonGUITreatment[BUTTON_KIDNEY].state = GUI_BUTTON_NULL;
+	buttonGUITreatment[BUTTON_LIVER].state = GUI_BUTTON_NULL;
+	buttonGUITreatment[BUTTON_CONFIRM].state = GUI_BUTTON_NULL;
+	buttonGUITreatment[BUTTON_RESET].state = GUI_BUTTON_NULL;
+	buttonGUITreatment[BUTTON_BACK].state = GUI_BUTTON_NULL;
+	buttonGUITreatment[BUTTON_START_PRIMING].state = GUI_BUTTON_NULL;
+	buttonGUITreatment[BUTTON_STOP_ALL_PUMP].state = GUI_BUTTON_NULL;
+	buttonGUITreatment[BUTTON_EN_PERFUSION].state = GUI_BUTTON_NULL;
+	buttonGUITreatment[BUTTON_EN_OXYGENATION].state = GUI_BUTTON_NULL;
+	buttonGUITreatment[BUTTON_EN_PURIFICATION].state = GUI_BUTTON_NULL;
+	buttonGUITreatment[BUTTON_START_PERF_PUMP].state = GUI_BUTTON_NULL;
+	buttonGUITreatment[BUTTON_STOP_PERF_PUMP].state = GUI_BUTTON_NULL;
+	buttonGUITreatment[BUTTON_START_OXYGEN_PUMP].state = GUI_BUTTON_NULL;
+	buttonGUITreatment[BUTTON_STOP_OXYGEN_PUMP].state = GUI_BUTTON_NULL;
+	buttonGUITreatment[BUTTON_START_PURIF_PUMP].state = GUI_BUTTON_NULL;
+	buttonGUITreatment[BUTTON_STOP_PURIF_PUMP].state = GUI_BUTTON_NULL;
+	buttonGUITreatment[BUTTON_PERF_DISP_MOUNTED].state = GUI_BUTTON_NULL;
+	buttonGUITreatment[BUTTON_OXYG_DISP_MOUNTED].state = GUI_BUTTON_NULL;
+	buttonGUITreatment[BUTTON_PERF_TANK_FILL].state = GUI_BUTTON_NULL;
+	buttonGUITreatment[BUTTON_PERF_FILTER_MOUNT].state = GUI_BUTTON_NULL;
 
 }
 
 void setGUIButton(unsigned char buttonId){
 	buttonGUITreatment[buttonId].state = GUI_BUTTON_PRESSED;
 	actionFlag = 2;
+}
+
+unsigned char getGUIButton(unsigned char buttonId)
+{
+	return buttonGUITreatment[buttonId].state;
 }
 
 void releaseGUIButton(unsigned char buttonId){

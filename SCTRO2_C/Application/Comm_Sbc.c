@@ -417,6 +417,7 @@ void initCommSBC(void){
 	myCommunicatorToSBC.dataPeltierReadyFlag = DATA_COMM_IDLE;
 	myCommunicatorToSBC.dataPressSensReadyFlag = DATA_COMM_IDLE;
 	myCommunicatorToSBC.dataPerfParamReadyFlag = DATA_COMM_IDLE;
+	myCommunicatorToSBC.dataButtonSBCReadyFlag = DATA_COMM_IDLE;
 
 	myCommunicatorToSBC.numByteToSend = 0;
 }
@@ -475,6 +476,7 @@ void pollingSBCCommTreat(void){
 				{
 					releaseGUIButton(sbcDebug_rx_data[6]);
 				}
+				myCommunicatorToSBC.dataButtonSBCReadyFlag = DATA_COMM_READY_TO_BE_SEND;
 			}
 			break;
 
@@ -498,6 +500,25 @@ void pollingDataToSBCTreat(void){
 
 		/* build response message */
 		buildRDMachineStateResponseMsg(COMMAND_ID_ST);
+
+		/* build response message */
+		ptrMsgSbcTx = &sbcDebug_tx_data[0];
+
+		for(char i = 0; i < (myCommunicatorToSBC.numByteToSend) ; i++)
+		{
+			SBC_COMM_SendChar(*(ptrMsgSbcTx+i));
+
+			#ifdef	DEBUG_COMM_SBC
+			//PC_DEBUG_COMM_SendChar(*(ptrMsgSbcTx+i));
+			#endif
+		}
+	}
+	else if(myCommunicatorToSBC.dataButtonSBCReadyFlag == DATA_COMM_READY_TO_BE_SEND)
+	{
+		myCommunicatorToSBC.dataButtonSBCReadyFlag = DATA_COMM_IDLE;
+
+		/* build response message */
+		buildButtonSBCResponseMsg(COMMAND_ID_BUT_SBC, sbcDebug_rx_data[6]);
 
 		/* build response message */
 		ptrMsgSbcTx = &sbcDebug_tx_data[0];
@@ -649,6 +670,32 @@ void buildRDMachineStateResponseMsg(char code){
 	/* TODO purification parameters: duration absorbent filter */
 	sbcDebug_tx_data[index++] = 0x00;
 	sbcDebug_tx_data[index++] = 0x00;
+	/* TODO CRC H */
+	sbcDebug_tx_data[index++] = 0x00;
+	/* TODO CRC L */
+	sbcDebug_tx_data[index++] = 0x00;
+	/* End */
+	sbcDebug_tx_data[index++] = 0x5A;
+
+	myCommunicatorToSBC.numByteToSend = index-1;
+}
+
+void buildButtonSBCResponseMsg(char code, unsigned char buttonId)
+{
+	byte index = 0;
+
+	sbcDebug_tx_data[index++] = 0xA5;
+	sbcDebug_tx_data[index++] = 0xAA;
+	sbcDebug_tx_data[index++] = 0x55;
+	sbcDebug_tx_data[index++] = 0x00;
+	/* byte count: 1 byte */
+	sbcDebug_tx_data[index++] = 0x02;
+	/* command id */
+	sbcDebug_tx_data[index++] = code;
+	/* button id */
+	sbcDebug_tx_data[index++] = buttonId;
+	/* button state */
+	sbcDebug_tx_data[index++] = getGUIButton(buttonId);
 	/* TODO CRC H */
 	sbcDebug_tx_data[index++] = 0x00;
 	/* TODO CRC L */

@@ -31,6 +31,7 @@ void pollingDataToSBCTreat(void);
 void buildBUTSBCResponseMsg(char code);
 void buildPARSETSBCResponseMsg(char code);
 void buildRDMachineStateResponseMsg(char code);
+void buildButtonSBCResponseMsg(char code, unsigned char buttonId);
 void buildRDPerfParamResponseMsg(char code);
 
 /*******************/
