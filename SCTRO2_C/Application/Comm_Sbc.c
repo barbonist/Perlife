@@ -520,8 +520,11 @@ void buildRDMachineStateResponseMsg(char code){
 	sbcDebug_tx_data[index++] = 0xAA;
 	sbcDebug_tx_data[index++] = 0x55;
 	sbcDebug_tx_data[index++] = 0x00;
-	sbcDebug_tx_data[index++] = 0x10;
+	/* byte count: 79 byte */
+	sbcDebug_tx_data[index++] = 0x4F;
+	/* command id */
 	sbcDebug_tx_data[index++] = code;
+	/* TODO what is the meaning of this byte? */
 	sbcDebug_tx_data[index++] = 0x66;
 	/* TODO status parameters: life  */
 	sbcDebug_tx_data[index++] = 0x00;
@@ -646,8 +649,9 @@ void buildRDMachineStateResponseMsg(char code){
 	/* TODO purification parameters: duration absorbent filter */
 	sbcDebug_tx_data[index++] = 0x00;
 	sbcDebug_tx_data[index++] = 0x00;
-	/* TODO CRC */
+	/* TODO CRC H */
 	sbcDebug_tx_data[index++] = 0x00;
+	/* TODO CRC L */
 	sbcDebug_tx_data[index++] = 0x00;
 	/* End */
 	sbcDebug_tx_data[index++] = 0x5A;

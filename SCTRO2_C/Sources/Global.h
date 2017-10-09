@@ -828,7 +828,7 @@ enum paramWordSetFromSBC{
 	PAR_SET_PRESS_ART_TARGET = 0xB1,
 	PAR_SET_PRESS_VEN_TARGET = 0xC2,
 	PAR_SET_PURIF_FLOW_TARGET = 0xD3,
-	PAR_SET__WORD_END_NUMBER = 0xD3
+	PAR_SET_WORD_END_NUMBER = 0xD3
 };
 
 enum paramFloatSetFromSBC{
@@ -841,7 +841,7 @@ struct parWordSetFromGUI{
 	char id;
 	word value;
 };
-struct parWordSetFromGUI parameterWordSetFromGUI[PAR_SET__WORD_END_NUMBER];
+struct parWordSetFromGUI parameterWordSetFromGUI[PAR_SET_WORD_END_NUMBER];
 
 
 struct parFloatSetFromGUI{
