@@ -104,8 +104,12 @@ unsigned char		sbcDebug_tx_data[32];				/* transmitted byte to sbc */
 
 /**/
 
-
-
+enum CommandId {
+	COMMAND_ID_NULL		= 0x00,
+	COMMAND_ID_ST      	= 0x20,
+	COMMAND_ID_BUT_SBC 	= 0xC2,
+	COMMAND_ID_PAR_SET 	= 0xC0
+};
 
 //AS1_TComData    msg_pmp1_tx[257];		/* modbus codified pmp1 message transmitted */
 //AS1_TComData *  msg_pmp1_tx_ptr;		/* pointer to msg_pmp1_tx */

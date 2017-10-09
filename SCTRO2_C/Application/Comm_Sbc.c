@@ -433,14 +433,15 @@ void pollingSBCCommTreat(void){
 		} valueFloat;
 
 	if(iflag_sbc_rx == IFLAG_SBC_RX)
-		{
-			iflag_sbc_rx = IFLAG_IDLE;
+	{
+		iflag_sbc_rx = IFLAG_IDLE;
 
-			/*decodifica messaggio*/
-			switch(sbcDebug_rx_data[5])
-			{
+		/*decodifica messaggio*/
+		switch(sbcDebug_rx_data[5])
+		{
 			/* PAR SET SBC */
-			case 0xC0:
+			case COMMAND_ID_PAR_SET:
+			{
 				//depending on par_id the following four byte are interpreted as word or float
 				if(checkParTypeFromGUI(sbcDebug_rx_data[6]) == 0x01) //word
 				{
@@ -460,32 +461,33 @@ void pollingSBCCommTreat(void){
 												  sbcDebug_rx_data[10];
 					setParamFloatFromGUI(sbcDebug_rx_data[6], valueFloat.valFormatFloat);
 				}
-				break;
+			}
+			break;
 
 			/*BUT-SBC*/
-			case 0xC2:
+			case COMMAND_ID_BUT_SBC:
+			{
 				if(sbcDebug_rx_data[7] == 0x01)
+				{
 					setGUIButton(sbcDebug_rx_data[6]);
+				}
 				else
+				{
 					releaseGUIButton(sbcDebug_rx_data[6]);
-				break;
+				}
+			}
+			break;
 
 			/* READ MACHINE STATES */
-			case 0x20:
+			case COMMAND_ID_ST:
+			{
 				myCommunicatorToSBC.dataMachineStateReadyFlag = DATA_COMM_READY_TO_BE_SEND;
-				break;
-
-			/* READ PERFUSION PARAMETER ALWAYS */
-			case 0x30:
-				myCommunicatorToSBC.dataPerfParamReadyFlag = DATA_COMM_READY_TO_BE_SEND;
-				break;
-
-			default:
-				break;
 			}
+			break;
+			default:{}
+			break;
 		}
-
-
+	}
 }
 
 void pollingDataToSBCTreat(void){
@@ -495,7 +497,7 @@ void pollingDataToSBCTreat(void){
 		myCommunicatorToSBC.dataMachineStateReadyFlag == DATA_COMM_IDLE;
 
 		/* build response message */
-		buildRDMachineStateResponseMsg(0x20);
+		buildRDMachineStateResponseMsg(COMMAND_ID_ST);
 
 		/* build response message */
 		ptrMsgSbcTx = &sbcDebug_tx_data[0];
@@ -509,23 +511,6 @@ void pollingDataToSBCTreat(void){
 			#endif
 		}
 	}
-
-	/* response to perfusion parameter update request */
-	if(myCommunicatorToSBC.dataPerfParamReadyFlag == DATA_COMM_READY_TO_BE_SEND)
-	{
-		/*reset flag */
-		myCommunicatorToSBC.dataPerfParamReadyFlag = DATA_COMM_IDLE;
-
-		/* build response message */
-		buildRDPerfParamResponseMsg(0x30);
-
-		ptrMsgSbcTx = &sbcDebug_tx_data[0];
-		for(char i = 0; i < (myCommunicatorToSBC.numByteToSend) ; i++)
-		{
-			SBC_COMM_SendChar(*(ptrMsgSbcTx+i));
-		}
-	}
-
 }
 
 void buildRDMachineStateResponseMsg(char code){
