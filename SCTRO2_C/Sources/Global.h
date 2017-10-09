@@ -570,16 +570,16 @@ struct perfParam	perfusionParam;
 struct purifParam{
 	word	pressPlasmaFilt;
 	word	pressFractFilt;
-	word	pressAdsorbFilt;
+	word	pressAbsorbFilt;
 	word	flowPlasmaFilt;
 	word	flowFractFilt;
-	word	flowAdsorbFilt;
+	word	flowAbsorbFilt;
 	word	volPrimingPlasmaFilt;
 	word	volPrimingFractFilt;
-	word	volPrimingAdsorbFilt;
+	word	volPrimingAbsorbFilt;
 	word	volTreatPlasmaFilt;
 	word	volTreatFractFilt;
-	word	volTreatAdsorbFilt;
+	word	volTreatAbsorbFilt;
 	word	volTreatWashFilt;
 
 };

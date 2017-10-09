@@ -65,8 +65,8 @@ void buildPURResponseMsg(char code){
 	sbcDebug_tx_data[4] = 0x12;
 	sbcDebug_tx_data[5] = 0x40;
 	sbcDebug_tx_data[6] = 0x66;
-	sbcDebug_tx_data[7] = purificatParam.pressAdsorbFilt >> 8;
-	sbcDebug_tx_data[8] = purificatParam.pressAdsorbFilt;
+	sbcDebug_tx_data[7] = purificatParam.pressAbsorbFilt >> 8;
+	sbcDebug_tx_data[8] = purificatParam.pressAbsorbFilt;
 	sbcDebug_tx_data[9] = 0x00;
 	sbcDebug_tx_data[10] = 0x00;
 	sbcDebug_tx_data[11] = 0x5A;
@@ -521,23 +521,135 @@ void buildRDMachineStateResponseMsg(char code){
 	sbcDebug_tx_data[index++] = 0x55;
 	sbcDebug_tx_data[index++] = 0x00;
 	sbcDebug_tx_data[index++] = 0x10;
-	sbcDebug_tx_data[index++] = 0x20;
+	sbcDebug_tx_data[index++] = code;
 	sbcDebug_tx_data[index++] = 0x66;
-	/* alarm */
+	/* TODO status parameters: life  */
+	sbcDebug_tx_data[index++] = 0x00;
+	/* TODO status parameters: rev fw-H  */
+	sbcDebug_tx_data[index++] = 0x00;
+	/* TODO status parameters: rev fw-L  */
+	sbcDebug_tx_data[index++] = 0x00;
+	/* status parameters: alarm code */
 	sbcDebug_tx_data[index++] = alarmCurrent.code;
+	/* status parameters: alarm physic */
 	sbcDebug_tx_data[index++] = alarmCurrent.physic;
+	/* status parameters: alarm type */
 	sbcDebug_tx_data[index++] = alarmCurrent.type;
-	/*state*/
-	sbcDebug_tx_data[index++] = (ptrCurrentState->state >> 8) & 0xFF;
-	sbcDebug_tx_data[index++] = (ptrCurrentState->state     ) & 0xFF;
-	/*parent*/
-	sbcDebug_tx_data[index++] = (ptrCurrentParent->parent >> 8) & 0xFF;
-	sbcDebug_tx_data[index++] = (ptrCurrentParent->parent     ) & 0xFF;
-	/*child*/
-	sbcDebug_tx_data[index++] = (ptrCurrentChild->child >> 8) & 0xFF;
-	sbcDebug_tx_data[index++] = (ptrCurrentChild->child     ) & 0xFF;
+	/* status parameters: machine state state*/
+	sbcDebug_tx_data[index++] = ptrCurrentState->state;
+	/* status parameters: machine state parent*/
+	sbcDebug_tx_data[index++] = ptrCurrentParent->parent;
+	/* status parameters: machine state child*/
+	sbcDebug_tx_data[index++] = ptrCurrentChild->child;
+	/* perfusion parameters: systolic pressure */
+	sbcDebug_tx_data[index++] = (perfusionParam.systolicPress >> 8) & 0xFF;
+	sbcDebug_tx_data[index++] = (perfusionParam.systolicPress     ) & 0xFF;
+	/* perfusion parameters: diastolic pressure */
+	sbcDebug_tx_data[index++] = (perfusionParam.diastolicPress >> 8) & 0xFF;
+	sbcDebug_tx_data[index++] = (perfusionParam.diastolicPress     ) & 0xFF;
+	/* perfusion parameters: mean pressure */
+	sbcDebug_tx_data[index++] = (perfusionParam.meanPress >> 8) & 0xFF;
+	sbcDebug_tx_data[index++] = (perfusionParam.meanPress     ) & 0xFF;
+	/* perfusion parameters: flow art */
+	sbcDebug_tx_data[index++] = (perfusionParam.flowPerfArt >> 8) & 0xFF;
+	sbcDebug_tx_data[index++] = (perfusionParam.flowPerfArt     ) & 0xFF;
+	/* perfusion parameters: flow ven */
+	sbcDebug_tx_data[index++] = (perfusionParam.flowPerfVen >> 8) & 0xFF;
+	sbcDebug_tx_data[index++] = (perfusionParam.flowPerfVen     ) & 0xFF;
+	/* perfusion parameters: flow oxy */
+	sbcDebug_tx_data[index++] = (perfusionParam.flowOxygenat >> 8) & 0xFF;
+	sbcDebug_tx_data[index++] = (perfusionParam.flowOxygenat     ) & 0xFF;
+	/* perfusion parameters: temperature reservoir filter */
+	sbcDebug_tx_data[index++] = (perfusionParam.tempReservOutlet >> 8) & 0xFF;
+	sbcDebug_tx_data[index++] = (perfusionParam.tempReservOutlet     ) & 0xFF;
+	/* perfusion parameters: temperature organ inlet */
+	sbcDebug_tx_data[index++] = (perfusionParam.tempPerfInletCon >> 8) & 0xFF;
+	sbcDebug_tx_data[index++] = (perfusionParam.tempPerfInletCon     ) & 0xFF;
+	/* perfusion parameters: renal resistence */
+	sbcDebug_tx_data[index++] = (perfusionParam.renalResistance >> 8) & 0xFF;
+	sbcDebug_tx_data[index++] = (perfusionParam.renalResistance     ) & 0xFF;
+	/* perfusion parameters: priming volume art */
+	sbcDebug_tx_data[index++] = (perfusionParam.volumePrimingArt >> 8) & 0xFF;
+	sbcDebug_tx_data[index++] = (perfusionParam.volumePrimingArt     ) & 0xFF;
+	/* perfusion parameters: priming volume ven */
+	sbcDebug_tx_data[index++] = (perfusionParam.volumePrimingVen >> 8) & 0xFF;
+	sbcDebug_tx_data[index++] = (perfusionParam.volumePrimingVen     ) & 0xFF;
+	/* perfusion parameters: priming volume oxy */
+	sbcDebug_tx_data[index++] = (perfusionParam.volumePrimingOxygen >> 8) & 0xFF;
+	sbcDebug_tx_data[index++] = (perfusionParam.volumePrimingOxygen     ) & 0xFF;
+	/* perfusion parameters: treatment volume art */
+	sbcDebug_tx_data[index++] = (perfusionParam.volumeTreatArt >> 8) & 0xFF;
+	sbcDebug_tx_data[index++] = (perfusionParam.volumeTreatArt     ) & 0xFF;
+	/* perfusion parameters: treatment volume ven */
+	sbcDebug_tx_data[index++] = (perfusionParam.volumeTreatVen >> 8) & 0xFF;
+	sbcDebug_tx_data[index++] = (perfusionParam.volumeTreatVen     ) & 0xFF;
+	/* perfusion parameters: treatment volume oxy */
+	sbcDebug_tx_data[index++] = (perfusionParam.volumeTreatOxygen >> 8) & 0xFF;
+	sbcDebug_tx_data[index++] = (perfusionParam.volumeTreatOxygen     ) & 0xFF;
+	/* TODO perfusion parameters: duration art */
 	sbcDebug_tx_data[index++] = 0x00;
 	sbcDebug_tx_data[index++] = 0x00;
+	/* TODO perfusion parameters: duration ven */
+	sbcDebug_tx_data[index++] = 0x00;
+	sbcDebug_tx_data[index++] = 0x00;
+	/* TODO perfusion parameters: duration oxy */
+	sbcDebug_tx_data[index++] = 0x00;
+	sbcDebug_tx_data[index++] = 0x00;
+	/* purification parameters: pressure plasma filter */
+	sbcDebug_tx_data[index++] = (purificatParam.pressPlasmaFilt >> 8) & 0xFF;
+	sbcDebug_tx_data[index++] = (purificatParam.pressPlasmaFilt     ) & 0xFF;
+	/* purification parameters: pressure fract filter */
+	sbcDebug_tx_data[index++] = (purificatParam.pressFractFilt >> 8) & 0xFF;
+	sbcDebug_tx_data[index++] = (purificatParam.pressFractFilt     ) & 0xFF;
+	/* purification parameters: pressure absorbent filter */
+	sbcDebug_tx_data[index++] = (purificatParam.pressAbsorbFilt >> 8) & 0xFF;
+	sbcDebug_tx_data[index++] = (purificatParam.pressAbsorbFilt     ) & 0xFF;
+	/* purification parameters: flow plasma filter */
+	sbcDebug_tx_data[index++] = (purificatParam.flowPlasmaFilt >> 8) & 0xFF;
+	sbcDebug_tx_data[index++] = (purificatParam.flowPlasmaFilt     ) & 0xFF;
+	/* purification parameters: flow fract filter */
+	sbcDebug_tx_data[index++] = (purificatParam.flowFractFilt >> 8) & 0xFF;
+	sbcDebug_tx_data[index++] = (purificatParam.flowFractFilt     ) & 0xFF;
+	/* purification parameters: flow absorbent filter */
+	sbcDebug_tx_data[index++] = (purificatParam.flowAbsorbFilt >> 8) & 0xFF;
+	sbcDebug_tx_data[index++] = (purificatParam.flowAbsorbFilt     ) & 0xFF;
+	/* purification parameters: volume priming plasma filter */
+	sbcDebug_tx_data[index++] = (purificatParam.volPrimingPlasmaFilt >> 8) & 0xFF;
+	sbcDebug_tx_data[index++] = (purificatParam.volPrimingPlasmaFilt     ) & 0xFF;
+	/* purification parameters: volume priming fract filter */
+	sbcDebug_tx_data[index++] = (purificatParam.volPrimingFractFilt >> 8) & 0xFF;
+	sbcDebug_tx_data[index++] = (purificatParam.volPrimingFractFilt     ) & 0xFF;
+	/* purification parameters: volume priming absorbent filter */
+	sbcDebug_tx_data[index++] = (purificatParam.volPrimingAbsorbFilt >> 8) & 0xFF;
+	sbcDebug_tx_data[index++] = (purificatParam.volPrimingAbsorbFilt     ) & 0xFF;
+	/* purification parameters: volume treatment plasma filter */
+	sbcDebug_tx_data[index++] = (purificatParam.volTreatPlasmaFilt >> 8) & 0xFF;
+	sbcDebug_tx_data[index++] = (purificatParam.volTreatPlasmaFilt     ) & 0xFF;
+	/* purification parameters: volume treatment fract filter */
+	sbcDebug_tx_data[index++] = (purificatParam.volTreatFractFilt >> 8) & 0xFF;
+	sbcDebug_tx_data[index++] = (purificatParam.volTreatFractFilt     ) & 0xFF;
+	/* purification parameters: volume treatment absorbent filter */
+	sbcDebug_tx_data[index++] = (purificatParam.volTreatAbsorbFilt >> 8) & 0xFF;
+	sbcDebug_tx_data[index++] = (purificatParam.volTreatAbsorbFilt     ) & 0xFF;
+	/* TODO purification parameters: volume treatment ultrafiltered */
+	sbcDebug_tx_data[index++] = 0x00;
+	sbcDebug_tx_data[index++] = 0x00;
+	/* purification parameters: volume treatment washing filter */
+	sbcDebug_tx_data[index++] = (purificatParam.volTreatWashFilt >> 8) & 0xFF;
+	sbcDebug_tx_data[index++] = (purificatParam.volTreatWashFilt     ) & 0xFF;
+	/* TODO purification parameters: duration plasma filter */
+	sbcDebug_tx_data[index++] = 0x00;
+	sbcDebug_tx_data[index++] = 0x00;
+	/* TODO purification parameters: duration fractional filter */
+	sbcDebug_tx_data[index++] = 0x00;
+	sbcDebug_tx_data[index++] = 0x00;
+	/* TODO purification parameters: duration absorbent filter */
+	sbcDebug_tx_data[index++] = 0x00;
+	sbcDebug_tx_data[index++] = 0x00;
+	/* TODO CRC */
+	sbcDebug_tx_data[index++] = 0x00;
+	sbcDebug_tx_data[index++] = 0x00;
+	/* End */
 	sbcDebug_tx_data[index++] = 0x5A;
 
 	myCommunicatorToSBC.numByteToSend = index-1;
