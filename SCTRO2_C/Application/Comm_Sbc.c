@@ -416,6 +416,7 @@ void initCommSBC(void){
 	myCommunicatorToSBC.dataModBusReadyFlag = DATA_COMM_IDLE;
 	myCommunicatorToSBC.dataPeltierReadyFlag = DATA_COMM_IDLE;
 	myCommunicatorToSBC.dataPressSensReadyFlag = DATA_COMM_IDLE;
+	myCommunicatorToSBC.dataPerfParamReadyFlag = DATA_COMM_IDLE;
 
 	myCommunicatorToSBC.numByteToSend = 0;
 }
