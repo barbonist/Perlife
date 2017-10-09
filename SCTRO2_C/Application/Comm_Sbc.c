@@ -514,27 +514,33 @@ void pollingDataToSBCTreat(void){
 }
 
 void buildRDMachineStateResponseMsg(char code){
-	sbcDebug_tx_data[0] = 0xA5;
-	sbcDebug_tx_data[1] = 0xAA;
-	sbcDebug_tx_data[2] = 0x55;
-	sbcDebug_tx_data[3] = 0x00;
-	sbcDebug_tx_data[4] = 0x10;
-	sbcDebug_tx_data[5] = 0x20;
-	sbcDebug_tx_data[6] = 0x66;
-	/*state*/
-	sbcDebug_tx_data[7] = 0x00;
-	sbcDebug_tx_data[8] = ptrCurrentState->state;
-	/*parent*/
-	sbcDebug_tx_data[9] = 0x00;
-	sbcDebug_tx_data[10] = ptrCurrentParent->parent;
-	/*child*/
-	sbcDebug_tx_data[11] = 0x00;
-	sbcDebug_tx_data[12] = ptrCurrentChild->child;
-	sbcDebug_tx_data[13] = 0x00;
-	sbcDebug_tx_data[14] = 0x00;
-	sbcDebug_tx_data[15] = 0x5A;
+	byte index = 0;
 
-	myCommunicatorToSBC.numByteToSend = 16;
+	sbcDebug_tx_data[index++] = 0xA5;
+	sbcDebug_tx_data[index++] = 0xAA;
+	sbcDebug_tx_data[index++] = 0x55;
+	sbcDebug_tx_data[index++] = 0x00;
+	sbcDebug_tx_data[index++] = 0x10;
+	sbcDebug_tx_data[index++] = 0x20;
+	sbcDebug_tx_data[index++] = 0x66;
+	/* alarm */
+	sbcDebug_tx_data[index++] = alarmCurrent.code;
+	sbcDebug_tx_data[index++] = alarmCurrent.physic;
+	sbcDebug_tx_data[index++] = alarmCurrent.type;
+	/*state*/
+	sbcDebug_tx_data[index++] = (ptrCurrentState->state >> 8) & 0xFF;
+	sbcDebug_tx_data[index++] = (ptrCurrentState->state     ) & 0xFF;
+	/*parent*/
+	sbcDebug_tx_data[index++] = (ptrCurrentParent->parent >> 8) & 0xFF;
+	sbcDebug_tx_data[index++] = (ptrCurrentParent->parent     ) & 0xFF;
+	/*child*/
+	sbcDebug_tx_data[index++] = (ptrCurrentChild->child >> 8) & 0xFF;
+	sbcDebug_tx_data[index++] = (ptrCurrentChild->child     ) & 0xFF;
+	sbcDebug_tx_data[index++] = 0x00;
+	sbcDebug_tx_data[index++] = 0x00;
+	sbcDebug_tx_data[index++] = 0x5A;
+
+	myCommunicatorToSBC.numByteToSend = index-1;
 }
 
 void buildRDPerfParamResponseMsg(char code){
