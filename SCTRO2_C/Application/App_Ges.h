@@ -143,9 +143,9 @@ void releaseGUIButton(unsigned char buttonId);
 
 void initSetParamFromGUI(void);
 void setParamWordFromGUI(unsigned char parId, int value);
-void setParamFloatFromGUI(unsigned char parId, float value);
+//void setParamFloatFromGUI(unsigned char parId, float value);
 void resetParamWordFromGUI(unsigned char parId);
-void resetParamFloatFromGUI(unsigned char parId);
+//void resetParamFloatFromGUI(unsigned char parId);
 char checkParTypeFromGUI(unsigned char parId);
 
 /*******************/

@@ -426,7 +426,7 @@ void initCommSBC(void){
 
 void pollingSBCCommTreat(void){
 
-	int val = 0;
+	word val = 0;
 	unsigned char perfParaRspMsgReady = 0;
 
 	union NumFloatUnion{
@@ -445,7 +445,7 @@ void pollingSBCCommTreat(void){
 			case COMMAND_ID_PAR_SET:
 			{
 				//depending on par_id the following four byte are interpreted as word or float
-				if(checkParTypeFromGUI(sbcDebug_rx_data[6]) == 0x01) //word
+				/*if(checkParTypeFromGUI(sbcDebug_rx_data[6]) == 0x01) //word
 				{
 					valueFloat.ieee754ValFormat = (sbcDebug_rx_data[7] << 24) |
 												  (sbcDebug_rx_data[8] << 16) |
@@ -462,7 +462,10 @@ void pollingSBCCommTreat(void){
 												  (sbcDebug_rx_data[9] << 8) |
 												  sbcDebug_rx_data[10];
 					setParamFloatFromGUI(sbcDebug_rx_data[6], valueFloat.valFormatFloat);
-				}
+				}*/
+				val = (sbcDebug_rx_data[7] << 8) + sbcDebug_rx_data[8];
+				setParamWordFromGUI(sbcDebug_rx_data[6],val);
+
 				myCommunicatorToSBC.dataParamSetSBCReadyFlag = DATA_COMM_READY_TO_BE_SEND;
 			}
 			break;
@@ -539,7 +542,8 @@ void pollingDataToSBCTreat(void){
 		myCommunicatorToSBC.dataParamSetSBCReadyFlag = DATA_COMM_IDLE;
 
 		/* build response message */
-		buildParamSetSBCResponseMsg(COMMAND_ID_PAR_SET, sbcDebug_rx_data[6]);
+		buildParamSetSBCResponseMsg(COMMAND_ID_PAR_SET, sbcDebug_rx_data[6],
+									sbcDebug_rx_data[7],sbcDebug_rx_data[8]);
 
 		/* build response message */
 		ptrMsgSbcTx = &sbcDebug_tx_data[0];
@@ -727,7 +731,7 @@ void buildButtonSBCResponseMsg(char code, unsigned char buttonId)
 	myCommunicatorToSBC.numByteToSend = index-1;
 }
 
-void buildParamSetSBCResponseMsg(char code, unsigned char paramId)
+void buildParamSetSBCResponseMsg(char code, unsigned char paramId, unsigned char param_h, unsigned char param_l)
 {
 	byte index = 0;
 
@@ -742,9 +746,9 @@ void buildParamSetSBCResponseMsg(char code, unsigned char paramId)
 	/* param id */
 	sbcDebug_tx_data[index++] = paramId;
 	/* param value high */
-	sbcDebug_tx_data[index++] = 0x00;
+	sbcDebug_tx_data[index++] = param_h;
 	/* param value low */
-	sbcDebug_tx_data[index++] = 0x00;
+	sbcDebug_tx_data[index++] = param_l;
 	/* TODO CRC H */
 	sbcDebug_tx_data[index++] = 0x00;
 	/* TODO CRC L */

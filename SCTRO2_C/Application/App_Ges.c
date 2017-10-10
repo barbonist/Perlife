@@ -427,8 +427,8 @@ void manageStateTankFillAlways(void)
 {
 	static float myTempValue = 20;
 
-	if(myTempValue != parameterFloatSetFromGUI[PAR_SET_TEMPERATURE].value){
-		myTempValue = parameterFloatSetFromGUI[PAR_SET_TEMPERATURE].value;
+	if(myTempValue != parameterWordSetFromGUI[PAR_SET_TEMPERATURE].value){
+		myTempValue = parameterWordSetFromGUI[PAR_SET_TEMPERATURE].value;
 
 		if(myTempValue == 4.0)
 		{
@@ -2276,29 +2276,28 @@ void initSetParamFromGUI(void){
 	parameterWordSetFromGUI[PAR_SET_PRIMING_VOL_PURIFICATION].value = 0;
 	parameterWordSetFromGUI[PAR_SET_PRIMING_VOL_OXYGENATION].value = 0;
 	parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FOW].value = 0;
+	parameterWordSetFromGUI[PAR_SET_TEMPERATURE].value = 0;
 	parameterWordSetFromGUI[PAR_SET_PRESS_ART_TARGET].value = 0;
 	parameterWordSetFromGUI[PAR_SET_PRESS_VEN_TARGET].value = 0;
 	parameterWordSetFromGUI[PAR_SET_PURIF_FLOW_TARGET].value = 0;
-
-	parameterFloatSetFromGUI[PAR_SET_TEMPERATURE].value = 0;
-	parameterFloatSetFromGUI[PAR_SET_PURIF_UF_FLOW_TARGET].value = 0;
+	parameterWordSetFromGUI[PAR_SET_PURIF_UF_FLOW_TARGET].value = 0;
 }
 
 void setParamWordFromGUI(unsigned char parId, int value){
 	parameterWordSetFromGUI[parId].value = value;
 }
 
-void setParamFloatFromGUI(unsigned char parId, float value){
+/*void setParamFloatFromGUI(unsigned char parId, float value){
 	parameterFloatSetFromGUI[parId].value = value;
-}
+}*/
 
 void resetParamWordFromGUI(unsigned char parId){
 	parameterWordSetFromGUI[parId].value = 0;
 }
 
-void resetParamFloatFromGUI(unsigned char parId){
+/*void resetParamFloatFromGUI(unsigned char parId){
 	parameterFloatSetFromGUI[parId].value = 0;
-}
+}*/
 
 char checkParTypeFromGUI(unsigned char parId){
 	switch(parId)

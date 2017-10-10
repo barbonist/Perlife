@@ -826,16 +826,12 @@ enum paramWordSetFromSBC{
 	PAR_SET_PRIMING_VOL_PURIFICATION = 0x30,
 	PAR_SET_PRIMING_VOL_OXYGENATION = 0x50,
 	PAR_SET_OXYGENATOR_FOW = 0x70,
+	PAR_SET_TEMPERATURE = 0xA0,
 	PAR_SET_PRESS_ART_TARGET = 0xB1,
 	PAR_SET_PRESS_VEN_TARGET = 0xC2,
 	PAR_SET_PURIF_FLOW_TARGET = 0xD3,
-	PAR_SET_WORD_END_NUMBER = 0xD3
-};
-
-enum paramFloatSetFromSBC{
-	PAR_SET_TEMPERATURE = 0xA0,
 	PAR_SET_PURIF_UF_FLOW_TARGET = 0xE4,
-	PAR_SET_FLOAT_END_NUMBER = 0xE4
+	PAR_SET_WORD_END_NUMBER = PAR_SET_PURIF_UF_FLOW_TARGET
 };
 
 struct parWordSetFromGUI{
@@ -845,11 +841,11 @@ struct parWordSetFromGUI{
 struct parWordSetFromGUI parameterWordSetFromGUI[PAR_SET_WORD_END_NUMBER];
 
 
-struct parFloatSetFromGUI{
+/*struct parFloatSetFromGUI{
 	char id;
 	float value;
 };
-struct parFloatSetFromGUI parameterFloatSetFromGUI[PAR_SET_FLOAT_END_NUMBER];
+struct parFloatSetFromGUI parameterFloatSetFromGUI[PAR_SET_FLOAT_END_NUMBER];*/
 /************************************************************************/
 /* 					PARAMETRI DA IMPOSTARE TRAMITE GUI 					*/
 /************************************************************************/
