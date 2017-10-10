@@ -425,22 +425,22 @@ void manageStateTankFill(void)
 
 void manageStateTankFillAlways(void)
 {
-	static float myTempValue = 20;
+	static float myTempValue = 200;
 
 	if(myTempValue != parameterWordSetFromGUI[PAR_SET_TEMPERATURE].value){
 		myTempValue = parameterWordSetFromGUI[PAR_SET_TEMPERATURE].value;
 
-		if(myTempValue == 4.0)
+		if(myTempValue == 40)
 		{
-			peltierCell.mySet = myTempValue - 8.0;
+			peltierCell.mySet = myTempValue - 80;
 		}
-		else if(myTempValue == 36.0)
+		else if(myTempValue == 360)
 		{
-			peltierCell.mySet = myTempValue + 6.0;
+			peltierCell.mySet = myTempValue + 60;
 		}
 		else
 		{
-			peltierCell.mySet = 20.0;
+			peltierCell.mySet = 200;
 		}
 	}
 
@@ -2299,7 +2299,7 @@ void resetParamWordFromGUI(unsigned char parId){
 	parameterFloatSetFromGUI[parId].value = 0;
 }*/
 
-char checkParTypeFromGUI(unsigned char parId){
+/*char checkParTypeFromGUI(unsigned char parId){
 	switch(parId)
 	{
 	case PAR_SET_PRIMING_VOL_PERFUSION:
@@ -2322,5 +2322,5 @@ char checkParTypeFromGUI(unsigned char parId){
 		break;
 
 	}
-}
+}*/
 /**/
