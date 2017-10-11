@@ -550,17 +550,17 @@ struct perfParam{
 	word meanPress;
 	word flowPerfArt;
 	word flowPerfVen;
-	word flowOxygenat;
 	word tempReservOutlet;
 	word tempPerfInletCon;
+	word tempPerfVen;
 	word tempPerfInletPro;
 	word renalResistance;
 	word volumePrimingArt;
 	word volumePrimingVen;
-	word volumePrimingOxygen;
 	word volumeTreatArt;
 	word volumeTreatVen;
-	word volumeTreatOxygen;
+	word durationTreatArt;
+	word durationTreatVen;
 };
 
 struct perfParam	perfusionParam;

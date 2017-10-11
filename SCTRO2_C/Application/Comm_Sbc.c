@@ -567,7 +567,7 @@ void buildRDMachineStateResponseMsg(char code){
 	sbcDebug_tx_data[index++] = 0x55;
 	sbcDebug_tx_data[index++] = 0x00;
 	/* byte count: 79 byte */
-	sbcDebug_tx_data[index++] = 0x4F;
+	sbcDebug_tx_data[index++] = 0x52;
 	/* command id */
 	sbcDebug_tx_data[index++] = code;
 	/* TODO what is the meaning of this byte? */
@@ -579,17 +579,23 @@ void buildRDMachineStateResponseMsg(char code){
 	/* TODO status parameters: rev fw-L  */
 	sbcDebug_tx_data[index++] = 0x00;
 	/* status parameters: alarm code */
-	sbcDebug_tx_data[index++] = alarmCurrent.code;
+	sbcDebug_tx_data[index++] = (alarmCurrent.code >> 8 ) & 0xFF;
+	sbcDebug_tx_data[index++] = (alarmCurrent.code 	    ) & 0xFF;
 	/* status parameters: alarm physic */
-	sbcDebug_tx_data[index++] = alarmCurrent.physic;
+	sbcDebug_tx_data[index++] = (alarmCurrent.physic >> 8 ) & 0xFF;
+	sbcDebug_tx_data[index++] = (alarmCurrent.physic      ) & 0xFF;
 	/* status parameters: alarm type */
-	sbcDebug_tx_data[index++] = alarmCurrent.type;
+	sbcDebug_tx_data[index++] = (alarmCurrent.type >> 8 ) & 0xFF;
+	sbcDebug_tx_data[index++] = (alarmCurrent.type      ) & 0xFF;
 	/* status parameters: machine state state*/
-	sbcDebug_tx_data[index++] = ptrCurrentState->state;
+	sbcDebug_tx_data[index++] = (ptrCurrentState->state >> 8) & 0xFF;
+	sbcDebug_tx_data[index++] = (ptrCurrentState->state     ) & 0xFF;
 	/* status parameters: machine state parent*/
-	sbcDebug_tx_data[index++] = ptrCurrentParent->parent;
+	sbcDebug_tx_data[index++] = (ptrCurrentParent->parent >> 8) & 0xFF;
+	sbcDebug_tx_data[index++] = (ptrCurrentParent->parent     ) & 0xFF;
 	/* status parameters: machine state child*/
-	sbcDebug_tx_data[index++] = ptrCurrentChild->child;
+	sbcDebug_tx_data[index++] = (ptrCurrentChild->child >> 8) & 0xFF;
+	sbcDebug_tx_data[index++] = (ptrCurrentChild->child     ) & 0xFF;
 	/* perfusion parameters: systolic pressure */
 	sbcDebug_tx_data[index++] = (perfusionParam.systolicPress >> 8) & 0xFF;
 	sbcDebug_tx_data[index++] = (perfusionParam.systolicPress     ) & 0xFF;
@@ -605,15 +611,15 @@ void buildRDMachineStateResponseMsg(char code){
 	/* perfusion parameters: flow ven */
 	sbcDebug_tx_data[index++] = (perfusionParam.flowPerfVen >> 8) & 0xFF;
 	sbcDebug_tx_data[index++] = (perfusionParam.flowPerfVen     ) & 0xFF;
-	/* perfusion parameters: flow oxy */
-	sbcDebug_tx_data[index++] = (perfusionParam.flowOxygenat >> 8) & 0xFF;
-	sbcDebug_tx_data[index++] = (perfusionParam.flowOxygenat     ) & 0xFF;
 	/* perfusion parameters: temperature reservoir filter */
 	sbcDebug_tx_data[index++] = (perfusionParam.tempReservOutlet >> 8) & 0xFF;
 	sbcDebug_tx_data[index++] = (perfusionParam.tempReservOutlet     ) & 0xFF;
 	/* perfusion parameters: temperature organ inlet */
 	sbcDebug_tx_data[index++] = (perfusionParam.tempPerfInletCon >> 8) & 0xFF;
 	sbcDebug_tx_data[index++] = (perfusionParam.tempPerfInletCon     ) & 0xFF;
+	/* perfusion parameters: temperature venous */
+	sbcDebug_tx_data[index++] = (perfusionParam.tempPerfVen >> 8) & 0xFF;
+	sbcDebug_tx_data[index++] = (perfusionParam.tempPerfVen     ) & 0xFF;
 	/* perfusion parameters: renal resistence */
 	sbcDebug_tx_data[index++] = (perfusionParam.renalResistance >> 8) & 0xFF;
 	sbcDebug_tx_data[index++] = (perfusionParam.renalResistance     ) & 0xFF;
@@ -623,18 +629,18 @@ void buildRDMachineStateResponseMsg(char code){
 	/* perfusion parameters: priming volume ven */
 	sbcDebug_tx_data[index++] = (perfusionParam.volumePrimingVen >> 8) & 0xFF;
 	sbcDebug_tx_data[index++] = (perfusionParam.volumePrimingVen     ) & 0xFF;
-	/* perfusion parameters: priming volume oxy */
-	sbcDebug_tx_data[index++] = (perfusionParam.volumePrimingOxygen >> 8) & 0xFF;
-	sbcDebug_tx_data[index++] = (perfusionParam.volumePrimingOxygen     ) & 0xFF;
 	/* perfusion parameters: treatment volume art */
 	sbcDebug_tx_data[index++] = (perfusionParam.volumeTreatArt >> 8) & 0xFF;
 	sbcDebug_tx_data[index++] = (perfusionParam.volumeTreatArt     ) & 0xFF;
 	/* perfusion parameters: treatment volume ven */
 	sbcDebug_tx_data[index++] = (perfusionParam.volumeTreatVen >> 8) & 0xFF;
 	sbcDebug_tx_data[index++] = (perfusionParam.volumeTreatVen     ) & 0xFF;
-	/* perfusion parameters: treatment volume oxy */
-	sbcDebug_tx_data[index++] = (perfusionParam.volumeTreatOxygen >> 8) & 0xFF;
-	sbcDebug_tx_data[index++] = (perfusionParam.volumeTreatOxygen     ) & 0xFF;
+	/* perfusion parameters: duration treat art */
+	sbcDebug_tx_data[index++] = (perfusionParam.durationTreatArt >> 8) & 0xFF;
+	sbcDebug_tx_data[index++] = (perfusionParam.durationTreatArt     ) & 0xFF;
+	/* perfusion parameters: duration treat ven */
+	sbcDebug_tx_data[index++] = (perfusionParam.durationTreatVen >> 8) & 0xFF;
+	sbcDebug_tx_data[index++] = (perfusionParam.durationTreatVen     ) & 0xFF;
 	/* TODO perfusion parameters: duration art */
 	sbcDebug_tx_data[index++] = 0x00;
 	sbcDebug_tx_data[index++] = 0x00;
