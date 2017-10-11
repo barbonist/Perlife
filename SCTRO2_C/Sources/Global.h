@@ -541,26 +541,52 @@ struct alarm	alarmCurrent;
 struct alarm * ptrAlarmCurrent;
 /* alarm */
 
+/* sensors values */
+typedef unsigned short	word;
+struct sensValues{
+	word pressAdsFilter;
+	word pressArt;
+	word pressVen;
+	word pressOxy;
+	word pressLevel;
+	word pressSystArt;
+	word pressDiasArt;
+	word pressMeanArt;
+	word pressSystVen;
+	word pressDiasVen;
+	word pressMeanVen;
+	word flowArt;
+	word flowVenOxy;
+	word tempResOut;
+	word tempOrganIn;
+	word tempVenOxy;
+};
+
+struct sensValues	sensorsValues;
+/* sensors values */
+
 /* perfusion parameter */
 /* word will be converted to float by sbc */
-typedef unsigned short	word;
 struct perfParam{
-	word systolicPress;
-	word diastolicPress;
-	word meanPress;
-	word flowPerfArt;
-	word flowPerfVen;
-	word tempReservOutlet;
-	word tempPerfInletCon;
-	word tempPerfVen;
-	word tempPerfInletPro;
+	word priVolAdsFilter;
+	word priVolPerfArt;
+	word priVolPerfVenOxy;
+	word priDurPerfArt;
+	word priDurPerVenOxy;
+	word treatVolAdsFilter;
+	word treatVolPerfArt;
+	word treatVolPerfVenOxy;
+	word treatDurPerfArt;
+	word treatDurPerVenOxy;
+	word unlVolAdsFilter;
+	word unlVolPerfArt;
+	word unlVolPerfVenOxy;
+	word unlVolRes;
+	word unlDurPerfArt;
+	word unlDurPerVenOxy;
 	word renalResistance;
-	word volumePrimingArt;
-	word volumePrimingVen;
-	word volumeTreatArt;
-	word volumeTreatVen;
-	word durationTreatArt;
-	word durationTreatVen;
+	word pulsatility;
+	word pressDropAdsFilter;
 };
 
 struct perfParam	perfusionParam;

@@ -830,7 +830,7 @@ void manageParentPrimingAlways(void){
 		//iflag_pmp1_rx = IFLAG_IDLE;
 		speed = ((BYTES_TO_WORD_SIGN(msgToRecvFrame3[3], msgToRecvFrame3[4]))/100)*(timerCopy);
 		volumePriming = volumePriming + (float)(speed * 0.00775);
-		perfusionParam.volumePrimingArt = (int)(volumePriming);
+		perfusionParam.priVolPerfArt = (int)(volumePriming);
 		pumpPerist[0].dataReady = DATA_READY_FALSE;
 	}
 	break;
@@ -925,7 +925,7 @@ void manageParentPrimingAlways(void){
 				//iflag_pmp1_rx = IFLAG_IDLE;
 				speed = ((BYTES_TO_WORD_SIGN(msgToRecvFrame3[3], msgToRecvFrame3[4]))/100)*(timerCopy);
 				volumePriming = volumePriming + (float)(speed * 0.00775);
-				perfusionParam.volumePrimingArt = (int)(volumePriming);
+				perfusionParam.priVolPerfArt = (int)(volumePriming);
 				pumpPerist[0].dataReady = DATA_READY_FALSE;
 			}
 		break;
@@ -1159,7 +1159,7 @@ void manageParentTreatAlways(void){
 			speed = ((BYTES_TO_WORD_SIGN(msgToRecvFrame3[3], msgToRecvFrame3[4]))/100)*(timerCopy);
 			pumpPerist[0].actualSpeed = speed;
 			volumeTreatArt = volumeTreatArt + (float)(speed * 0.00775);
-			perfusionParam.volumeTreatArt = (int)(volumeTreatArt);
+			perfusionParam.treatVolPerfArt = (int)(volumeTreatArt);
 			pumpPerist[0].dataReady = DATA_READY_FALSE;
 		}
 		break;
@@ -1243,7 +1243,7 @@ void manageParentTreatAlways(void){
 				speed = ((BYTES_TO_WORD_SIGN(msgToRecvFrame3[3], msgToRecvFrame3[4]))/100)*(timerCopy);
 				pumpPerist[0].actualSpeed = speed;
 				volumeTreatArt = volumeTreatArt + (float)(speed * 0.00775);
-				perfusionParam.volumeTreatArt = (int)(volumeTreatArt);
+				perfusionParam.treatVolPerfArt = (int)(volumeTreatArt);
 				pumpPerist[0].dataReady = DATA_READY_FALSE;
 			}
 			break;
@@ -1487,7 +1487,7 @@ static void computeMachineStateGuardPrimingPh1(void){
 /*--------------------------------------------------------------------*/
 static void computeMachineStateGuardPrimingPh2(void){
 	if(
-		(perfusionParam.volumePrimingArt >= parameterWordSetFromGUI[PAR_SET_PRIMING_VOL_PERFUSION].value) &&
+		(perfusionParam.priVolPerfArt >= parameterWordSetFromGUI[PAR_SET_PRIMING_VOL_PERFUSION].value) &&
 		(buttonGUITreatment[BUTTON_CONFIRM].state == GUI_BUTTON_RELEASED) /*&&
 		(iflag_pmp1_rx == IFLAG_PMP1_RX)*/
 		)
@@ -2004,7 +2004,7 @@ void processMachineState(void)
 
 
 		case PARENT_TREAT_KIDNEY_1_INIT:
-			if(perfusionParam.volumeTreatArt >= 200)
+			if(perfusionParam.treatVolPerfArt >= 200)
 			{
 				ptrFutureParent = &stateParentTreatKidney1[3];
 			}
