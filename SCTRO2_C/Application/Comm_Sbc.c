@@ -626,6 +626,8 @@ void buildRDMachineStateResponseMsg(char code){
 	sbcDebug_tx_data[index++] = (sensorsValues.pressDiasArt >> 8) & 0xFF;
 	sbcDebug_tx_data[index++] = (sensorsValues.pressDiasArt     ) & 0xFF;
 	/* sensors parameters: pressure mean arterial */
+	//TODO remove this
+	sensorsValues.pressMeanArt = sensor_PRx[0].prSensValueFilteredWA;
 	sbcDebug_tx_data[index++] = (sensorsValues.pressMeanArt >> 8) & 0xFF;
 	sbcDebug_tx_data[index++] = (sensorsValues.pressMeanArt     ) & 0xFF;
 	/* sensors parameters: pressure systolic venous */
@@ -638,6 +640,8 @@ void buildRDMachineStateResponseMsg(char code){
 	sbcDebug_tx_data[index++] = (sensorsValues.pressMeanVen >> 8) & 0xFF;
 	sbcDebug_tx_data[index++] = (sensorsValues.pressMeanVen     ) & 0xFF;
 	/* sensors parameters: pressure flow arterial */
+	//TODO remove this
+	sensorsValues.flowArt = (sensor_UFLOW[0].bufferReceived[18] << 8) + sensor_UFLOW[0].bufferReceived[17];
 	sbcDebug_tx_data[index++] = (sensorsValues.flowArt >> 8) & 0xFF;
 	sbcDebug_tx_data[index++] = (sensorsValues.flowArt     ) & 0xFF;
 	/* sensors parameters: pressure flow venous / oxygenation */
@@ -647,6 +651,8 @@ void buildRDMachineStateResponseMsg(char code){
 	sbcDebug_tx_data[index++] = (sensorsValues.tempResOut >> 8) & 0xFF;
 	sbcDebug_tx_data[index++] = (sensorsValues.tempResOut     ) & 0xFF;
 	/* sensors parameters: temperature organ inlet */
+	//TODO remove this
+	sensorsValues.tempOrganIn = (int)(sensorIR_TM[0].tempSensValue);
 	sbcDebug_tx_data[index++] = (sensorsValues.tempOrganIn >> 8) & 0xFF;
 	sbcDebug_tx_data[index++] = (sensorsValues.tempOrganIn     ) & 0xFF;
 	/* sensors parameters: temperature venous / oxygenation */
