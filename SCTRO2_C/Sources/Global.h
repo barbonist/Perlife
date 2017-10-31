@@ -41,7 +41,7 @@ char	iflag_sensTempIRRW;
 #define DEBUG_MACHINE_STATE		0x06
 #define DEBUG_CONTROL			0xA5
 #define DEBUG_PROTECTION		0x5A
-//#define DEBUG_LOG_PC			0x01
+#define DEBUG_LOG_PC			0x01
 #define DEBUG_TREATMENT			0xA5
 /*#define DEBUG_I2C_TEMP_SENS		0x01;*/
 /*#define DEBUG_FLOW_SENS			0x00*/ /*0x01*/
@@ -806,8 +806,8 @@ struct ultrsndFlowSens * ptrMsg_UFLOW; 	   /* puntatore utilizzato per spedire i
 /* 						PULSANTI GUI 									*/
 /************************************************************************/
 #define GUI_BUTTON_NULL			0x00
-#define GUI_BUTTON_PRESSED		0xA5
-#define GUI_BUTTON_RELEASED		0x5A
+#define GUI_BUTTON_PRESSED		0x01
+#define GUI_BUTTON_RELEASED		0x00
 
 enum buttonGUIEnum{
 	BUTTON_KIDNEY = 0xA1,

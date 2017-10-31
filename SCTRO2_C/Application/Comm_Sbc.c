@@ -727,7 +727,7 @@ void buildRDMachineStateResponseMsg(char code){
 	/* End */
 	sbcDebug_tx_data[index++] = 0x5A;
 
-	myCommunicatorToSBC.numByteToSend = index-1;
+	myCommunicatorToSBC.numByteToSend = index;
 }
 
 void buildButtonSBCResponseMsg(char code, unsigned char buttonId)
@@ -753,7 +753,7 @@ void buildButtonSBCResponseMsg(char code, unsigned char buttonId)
 	/* End */
 	sbcDebug_tx_data[index++] = 0x5A;
 
-	myCommunicatorToSBC.numByteToSend = index-1;
+	myCommunicatorToSBC.numByteToSend = index;
 }
 
 void buildParamSetSBCResponseMsg(char code, unsigned char paramId, unsigned char param_h, unsigned char param_l)
@@ -781,7 +781,7 @@ void buildParamSetSBCResponseMsg(char code, unsigned char paramId, unsigned char
 	/* End */
 	sbcDebug_tx_data[index++] = 0x5A;
 
-	myCommunicatorToSBC.numByteToSend = index-1;
+	myCommunicatorToSBC.numByteToSend = index;
 }
 
 void buildRDPerfParamResponseMsg(char code){
