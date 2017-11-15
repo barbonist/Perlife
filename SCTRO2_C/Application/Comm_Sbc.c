@@ -504,7 +504,7 @@ void pollingDataToSBCTreat(void){
 		myCommunicatorToSBC.dataMachineStateReadyFlag == DATA_COMM_IDLE;
 
 		/* build response message */
-		buildRDMachineStateResponseMsg(COMMAND_ID_ST);
+		buildRDMachineStateResponseMsg(COMMAND_ID_ST,sbcDebug_rx_data[6]);
 
 		/* build response message */
 		ptrMsgSbcTx = &sbcDebug_tx_data[0];
@@ -523,7 +523,7 @@ void pollingDataToSBCTreat(void){
 		myCommunicatorToSBC.dataButtonSBCReadyFlag = DATA_COMM_IDLE;
 
 		/* build response message */
-		buildButtonSBCResponseMsg(COMMAND_ID_BUT_SBC, sbcDebug_rx_data[6]);
+		buildButtonSBCResponseMsg(COMMAND_ID_BUT_SBC, sbcDebug_rx_data[6], sbcDebug_rx_data[7]);
 
 		/* build response message */
 		ptrMsgSbcTx = &sbcDebug_tx_data[0];
@@ -543,7 +543,8 @@ void pollingDataToSBCTreat(void){
 
 		/* build response message */
 		buildParamSetSBCResponseMsg(COMMAND_ID_PAR_SET, sbcDebug_rx_data[6],
-									sbcDebug_rx_data[7],sbcDebug_rx_data[8]);
+									sbcDebug_rx_data[7],sbcDebug_rx_data[8],
+									sbcDebug_rx_data[9]);
 
 		/* build response message */
 		ptrMsgSbcTx = &sbcDebug_tx_data[0];
@@ -559,7 +560,7 @@ void pollingDataToSBCTreat(void){
 	}
 }
 
-void buildRDMachineStateResponseMsg(char code){
+void buildRDMachineStateResponseMsg(char code, char subcode){
 	byte index = 0;
 
 	sbcDebug_tx_data[index++] = 0xA5;
@@ -567,9 +568,11 @@ void buildRDMachineStateResponseMsg(char code){
 	sbcDebug_tx_data[index++] = 0x55;
 	sbcDebug_tx_data[index++] = 0x00;
 	/* byte count: 79 byte */
-	sbcDebug_tx_data[index++] = 0x5E;
+	sbcDebug_tx_data[index++] = 0x5F;
 	/* command id */
 	sbcDebug_tx_data[index++] = code;
+	/* command id */
+	sbcDebug_tx_data[index++] = subcode;
 	/* TODO what is the meaning of this byte? */
 	sbcDebug_tx_data[index++] = 0x66;
 
@@ -730,7 +733,7 @@ void buildRDMachineStateResponseMsg(char code){
 	myCommunicatorToSBC.numByteToSend = index;
 }
 
-void buildButtonSBCResponseMsg(char code, unsigned char buttonId)
+void buildButtonSBCResponseMsg(char code, char subcode, unsigned char buttonId)
 {
 	byte index = 0;
 
@@ -739,9 +742,11 @@ void buildButtonSBCResponseMsg(char code, unsigned char buttonId)
 	sbcDebug_tx_data[index++] = 0x55;
 	sbcDebug_tx_data[index++] = 0x00;
 	/* byte count: 1 byte */
-	sbcDebug_tx_data[index++] = 0x02;
+	sbcDebug_tx_data[index++] = 0x03;
 	/* command id */
 	sbcDebug_tx_data[index++] = code;
+	/* sub command id */
+	sbcDebug_tx_data[index++] = subcode;
 	/* status id */
 	sbcDebug_tx_data[index++] = 0x66;
 	/* button id */
@@ -758,7 +763,7 @@ void buildButtonSBCResponseMsg(char code, unsigned char buttonId)
 	myCommunicatorToSBC.numByteToSend = index;
 }
 
-void buildParamSetSBCResponseMsg(char code, unsigned char paramId, unsigned char param_h, unsigned char param_l)
+void buildParamSetSBCResponseMsg(char code, char subcode, unsigned char paramId, unsigned char param_h, unsigned char param_l)
 {
 	byte index = 0;
 
@@ -767,9 +772,11 @@ void buildParamSetSBCResponseMsg(char code, unsigned char paramId, unsigned char
 	sbcDebug_tx_data[index++] = 0x55;
 	sbcDebug_tx_data[index++] = 0x00;
 	/* byte count: 1 byte */
-	sbcDebug_tx_data[index++] = 0x03;
+	sbcDebug_tx_data[index++] = 0x04;
 	/* command id */
 	sbcDebug_tx_data[index++] = code;
+	/* sub command id */
+	sbcDebug_tx_data[index++] = subcode;
 	/* status id */
 	sbcDebug_tx_data[index++] = 0x66;
 	/* param id */
