@@ -98,17 +98,19 @@ unsigned char	peltierDebug_rx_data[256];				/* received byte from peltier */
 unsigned char	peltierDebug_rx_data_dummy[256];
 unsigned char	peltierDebug_tx_data[32];				/* transmitted byte to peltier */
 
-unsigned char	sbcDebug_rx_data[256];				/* received byte from sbc */
-//unsigned char	sbcDebug_tx_data[32];				/* transmitted byte to sbc */
-unsigned char		sbcDebug_tx_data[256];				/* transmitted byte to sbc */
+unsigned char	sbc_rx_data[256];				/* received byte from sbc */
+unsigned char	sbc_tx_data[256];				/* transmitted byte to sbc */
+
+#define SBC_RX_DATA_POS_CODE	5
+#define SBC_RX_DATA_POS_SUBCODE	6
 
 /**/
 
 enum CommandId {
 	COMMAND_ID_NULL		= 0x00,
 	COMMAND_ID_ST      	= 0x20,
-	COMMAND_ID_BUT_SBC 	= 0xC2,
-	COMMAND_ID_PAR_SET 	= 0xC0
+	COMMAND_ID_PAR_SET 	= 0xC0,
+	COMMAND_ID_BUT_SBC 	= 0xC2
 };
 
 //AS1_TComData    msg_pmp1_tx[257];		/* modbus codified pmp1 message transmitted */
