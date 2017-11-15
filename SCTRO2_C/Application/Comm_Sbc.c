@@ -742,6 +742,8 @@ void buildButtonSBCResponseMsg(char code, unsigned char buttonId)
 	sbcDebug_tx_data[index++] = 0x02;
 	/* command id */
 	sbcDebug_tx_data[index++] = code;
+	/* status id */
+	sbcDebug_tx_data[index++] = 0x66;
 	/* button id */
 	sbcDebug_tx_data[index++] = buttonId;
 	/* button state */
@@ -768,6 +770,8 @@ void buildParamSetSBCResponseMsg(char code, unsigned char paramId, unsigned char
 	sbcDebug_tx_data[index++] = 0x03;
 	/* command id */
 	sbcDebug_tx_data[index++] = code;
+	/* status id */
+	sbcDebug_tx_data[index++] = 0x66;
 	/* param id */
 	sbcDebug_tx_data[index++] = paramId;
 	/* param value high */
