@@ -98,9 +98,9 @@ unsigned char	peltierDebug_rx_data[256];				/* received byte from peltier */
 unsigned char	peltierDebug_rx_data_dummy[256];
 unsigned char	peltierDebug_tx_data[32];				/* transmitted byte to peltier */
 
-unsigned char	sbcDebug_rx_data[32];				/* received byte from sbc */
+unsigned char	sbcDebug_rx_data[256];				/* received byte from sbc */
 //unsigned char	sbcDebug_tx_data[32];				/* transmitted byte to sbc */
-unsigned char		sbcDebug_tx_data[32];				/* transmitted byte to sbc */
+unsigned char		sbcDebug_tx_data[256];				/* transmitted byte to sbc */
 
 /**/
 
