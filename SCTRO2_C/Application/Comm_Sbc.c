@@ -788,57 +788,57 @@ void buildParamSetSBCResponseMsg(char code, unsigned char paramId, unsigned char
 	myCommunicatorToSBC.numByteToSend = index;
 }
 
-void buildRDPerfParamResponseMsg(char code){
-
-	union NumFloatOffVal{
-		uint32 ieee754NumFormat_Val;
-		float numFormatFloat_Val;
-			} numFloatPressArt_Val;
-
-	union NumFloatIRTempVal{
-		uint32 ieee754NumFormat_Val;
-		float numFormatFloat_Val;
-			} numFloatIRTempSensor_Val;
-
-	sbcDebug_tx_data[0] = 0xA5;
-	sbcDebug_tx_data[1] = 0xAA;
-	sbcDebug_tx_data[2] = 0x55;
-	sbcDebug_tx_data[3] = 0x00;
-	sbcDebug_tx_data[4] = 0x00;
-	sbcDebug_tx_data[5] = 0x30;
-	sbcDebug_tx_data[6] = 0x66;
-	/*vol priming art*/
-	sbcDebug_tx_data[7] = perfusionParam.priVolPerfArt >> 8;
-	sbcDebug_tx_data[8] = perfusionParam.priVolPerfArt;
-	/*press. art. mean*/
-	numFloatPressArt_Val.numFormatFloat_Val = sensor_PRx[0].prSensValueFilteredWA;
-	sbcDebug_tx_data[9] = numFloatPressArt_Val.ieee754NumFormat_Val >> 24;
-	sbcDebug_tx_data[10] = numFloatPressArt_Val.ieee754NumFormat_Val >> 16;
-	sbcDebug_tx_data[11] = numFloatPressArt_Val.ieee754NumFormat_Val >> 8;
-	sbcDebug_tx_data[12] = numFloatPressArt_Val.ieee754NumFormat_Val;
-
-	/*flow sensor art*/
-	sbcDebug_tx_data[13] = sensor_UFLOW[0].bufferReceived[17];	//LL
-	sbcDebug_tx_data[14] = sensor_UFLOW[0].bufferReceived[18];	//LH
-	sbcDebug_tx_data[15] = sensor_UFLOW[0].bufferReceived[19];	//HL
-	sbcDebug_tx_data[16] = sensor_UFLOW[0].bufferReceived[20];  //HH
-
-	/*temp sensor art */
-	numFloatIRTempSensor_Val.numFormatFloat_Val = sensorIR_TM[0].tempSensValue;
-	sbcDebug_tx_data[17] = numFloatIRTempSensor_Val.ieee754NumFormat_Val >> 24;
-	sbcDebug_tx_data[18] = numFloatIRTempSensor_Val.ieee754NumFormat_Val >> 16;
-	sbcDebug_tx_data[19] = numFloatIRTempSensor_Val.ieee754NumFormat_Val >> 8;
-	sbcDebug_tx_data[20] = numFloatIRTempSensor_Val.ieee754NumFormat_Val;
-
-	//sbcDebug_tx_data[9] =  (sensor_PRx[0].prSensValueFilteredWA)  >> 8;
-	//sbcDebug_tx_data[10] = (sensor_PRx[0].prSensValueFilteredWA);
-
-	sbcDebug_tx_data[21] = 0x00;
-	sbcDebug_tx_data[22] = 0x00;
-	sbcDebug_tx_data[23] = 0x5A;
-
-	myCommunicatorToSBC.numByteToSend = 24;
-}
+//void buildRDPerfParamResponseMsg(char code){
+//
+//	union NumFloatOffVal{
+//		uint32 ieee754NumFormat_Val;
+//		float numFormatFloat_Val;
+//			} numFloatPressArt_Val;
+//
+//	union NumFloatIRTempVal{
+//		uint32 ieee754NumFormat_Val;
+//		float numFormatFloat_Val;
+//			} numFloatIRTempSensor_Val;
+//
+//	sbcDebug_tx_data[0] = 0xA5;
+//	sbcDebug_tx_data[1] = 0xAA;
+//	sbcDebug_tx_data[2] = 0x55;
+//	sbcDebug_tx_data[3] = 0x00;
+//	sbcDebug_tx_data[4] = 0x00;
+//	sbcDebug_tx_data[5] = 0x30;
+//	sbcDebug_tx_data[6] = 0x66;
+//	/*vol priming art*/
+//	sbcDebug_tx_data[7] = perfusionParam.priVolPerfArt >> 8;
+//	sbcDebug_tx_data[8] = perfusionParam.priVolPerfArt;
+//	/*press. art. mean*/
+//	numFloatPressArt_Val.numFormatFloat_Val = sensor_PRx[0].prSensValueFilteredWA;
+//	sbcDebug_tx_data[9] = numFloatPressArt_Val.ieee754NumFormat_Val >> 24;
+//	sbcDebug_tx_data[10] = numFloatPressArt_Val.ieee754NumFormat_Val >> 16;
+//	sbcDebug_tx_data[11] = numFloatPressArt_Val.ieee754NumFormat_Val >> 8;
+//	sbcDebug_tx_data[12] = numFloatPressArt_Val.ieee754NumFormat_Val;
+//
+//	/*flow sensor art*/
+//	sbcDebug_tx_data[13] = sensor_UFLOW[0].bufferReceived[17];	//LL
+//	sbcDebug_tx_data[14] = sensor_UFLOW[0].bufferReceived[18];	//LH
+//	sbcDebug_tx_data[15] = sensor_UFLOW[0].bufferReceived[19];	//HL
+//	sbcDebug_tx_data[16] = sensor_UFLOW[0].bufferReceived[20];  //HH
+//
+//	/*temp sensor art */
+//	numFloatIRTempSensor_Val.numFormatFloat_Val = sensorIR_TM[0].tempSensValue;
+//	sbcDebug_tx_data[17] = numFloatIRTempSensor_Val.ieee754NumFormat_Val >> 24;
+//	sbcDebug_tx_data[18] = numFloatIRTempSensor_Val.ieee754NumFormat_Val >> 16;
+//	sbcDebug_tx_data[19] = numFloatIRTempSensor_Val.ieee754NumFormat_Val >> 8;
+//	sbcDebug_tx_data[20] = numFloatIRTempSensor_Val.ieee754NumFormat_Val;
+//
+//	//sbcDebug_tx_data[9] =  (sensor_PRx[0].prSensValueFilteredWA)  >> 8;
+//	//sbcDebug_tx_data[10] = (sensor_PRx[0].prSensValueFilteredWA);
+//
+//	sbcDebug_tx_data[21] = 0x00;
+//	sbcDebug_tx_data[22] = 0x00;
+//	sbcDebug_tx_data[23] = 0x5A;
+//
+//	myCommunicatorToSBC.numByteToSend = 24;
+//}
 
 /******************************************************************************************/
 /*                          TREATMENT - END SECTION									  */

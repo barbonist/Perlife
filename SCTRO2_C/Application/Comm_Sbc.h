@@ -28,12 +28,12 @@ void initCommSBC(void);
 void pollingSBCCommTreat(void);
 void pollingDataToSBCTreat(void);
 
-void buildBUTSBCResponseMsg(char code);
-void buildPARSETSBCResponseMsg(char code);
+//void buildBUTSBCResponseMsg(char code);
+//void buildPARSETSBCResponseMsg(char code);
 void buildRDMachineStateResponseMsg(char code);
 void buildButtonSBCResponseMsg(char code, unsigned char buttonId);
 void buildParamSetSBCResponseMsg(char code, unsigned char paramId, unsigned char param_h, unsigned char param_l);
-void buildRDPerfParamResponseMsg(char code);
+//void buildRDPerfParamResponseMsg(char code);
 
 /*******************/
 /******* TREATMENT - SBC COMM. FUNCTION *********/
