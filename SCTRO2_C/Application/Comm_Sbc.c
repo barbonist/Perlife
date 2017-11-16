@@ -19,22 +19,42 @@
 #include "SBC_COMM.h"
 #include "ASerialLdd5.h"
 
-void buildModBusActResponseMsg(char *ptrMsgSbcRx)
+void buildModBusActResponseMsg(char *ptrMsgSbcRx, char *ptrMsgModbusRx)
 {
 	byte index = 0;
+
+	char subcode = ptrMsgSbcRx[6];
 
 	sbc_tx_data[index++] = 0xA5;
 	sbc_tx_data[index++] = 0xAA;
 	sbc_tx_data[index++] = 0x55;
 	sbc_tx_data[index++] = 0x00;
-	sbc_tx_data[index++] = ptrMsgSbcRx[4]+1;
+	if(subcode == 0x15)
+	{
+		sbc_tx_data[index++] = ptrMsgSbcRx[4]+1;
+	}
+	else if(subcode == 0x16)
+	{
+		sbc_tx_data[index++] = ptrMsgSbcRx[4]+1+ptrMsgModbusRx[2];
+	}
+
 	sbc_tx_data[index++] = ptrMsgSbcRx[5];
-	sbc_tx_data[index++] = ptrMsgSbcRx[6];
+	sbc_tx_data[index++] = subcode;
 	sbc_tx_data[index++] = 0x66;
+
 	for(int i = 0 ; i < ptrMsgSbcRx[4] ; i++)
 	{
 		sbc_tx_data[index++] = ptrMsgSbcRx[7+i];
 	}
+
+	if(subcode == 0x16)
+	{
+		for(int i = 0 ; i < ptrMsgModbusRx[2] ; i++)
+		{
+			sbc_tx_data[index++] = ptrMsgModbusRx[3+i];
+		}
+	}
+
 	sbc_tx_data[index++] = 0x00;
 	sbc_tx_data[index++] = 0x00;
 	sbc_tx_data[index++] = 0x5A;

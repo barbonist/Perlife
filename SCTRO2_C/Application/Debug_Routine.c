@@ -152,6 +152,32 @@ void testCOMMSbcDebug(void){
 					}
 					break;
 
+					// Modbus read
+					case 0x16:
+					{
+						byte slvAddr = sbc_rx_data[7];
+						byte funcCode = 0x03;
+						word readAddrStart = BYTES_TO_WORD(sbc_rx_data[8], sbc_rx_data[9]);
+						word readAddrStop  = BYTES_TO_WORD(sbc_rx_data[10], sbc_rx_data[11]);
+						word numberOfAddress = readAddrStop - readAddrStart + 1;
+
+						_funcRetValPtr = ModBusReadRegisterReq(slvAddr,
+															   funcCode,
+															   readAddrStart,
+															   numberOfAddress);
+
+						_funcRetVal.ptr_msg = _funcRetValPtr->ptr_msg;
+						_funcRetVal.mstreqRetStructNumByte = _funcRetValPtr->mstreqRetStructNumByte;
+						_funcRetVal.slvresRetPtr = _funcRetValPtr->slvresRetPtr;
+						_funcRetVal.slvresRetNumByte = _funcRetValPtr->slvresRetNumByte;
+
+						word snd;
+						MODBUS_COMM_SendBlock(_funcRetVal.ptr_msg,
+											  _funcRetVal.mstreqRetStructNumByte,
+											  &snd);
+					}
+					break;
+
 					case 0x01:
 					{
 						//build command for peltier
@@ -519,31 +545,6 @@ void testCOMMSbcDebug(void){
 					}
 					break;
 
-					//modbus actuator read
-					case 0x16:
-					{
-						byte slvAddr = sbc_rx_data[7];
-						byte funcCode = sbc_rx_data[8];
-						unsigned int readAddr = BYTES_TO_WORD(sbc_rx_data[9], sbc_rx_data[10]);
-						unsigned int numRegRead = BYTES_TO_WORD(sbc_rx_data[11], sbc_rx_data[12]);
-
-						_funcRetValPtr = ModBusReadRegisterReq(slvAddr,
-															   funcCode,
-															   readAddr,
-															   numRegRead);
-
-						_funcRetVal.ptr_msg = _funcRetValPtr->ptr_msg;
-						_funcRetVal.mstreqRetStructNumByte = _funcRetValPtr->mstreqRetStructNumByte;
-						_funcRetVal.slvresRetPtr = _funcRetValPtr->slvresRetPtr;
-						_funcRetVal.slvresRetNumByte = _funcRetValPtr->slvresRetNumByte;
-
-						for(char k = 0; k < _funcRetVal.mstreqRetStructNumByte; k++)
-						{
-							MODBUS_COMM_SendChar(*(_funcRetVal.ptr_msg+k));
-						}
-					}
-					break;
-
 					//modbus read/write
 					case 0x17:
 					{
@@ -650,7 +651,7 @@ void testCOMMSbcDebug(void){
 		iflag_pmp1_rx = IFLAG_IDLE;
 		// Build response for sbc
 		ptrMsgSbcRx = &sbc_rx_data;
-		buildModBusActResponseMsg(ptrMsgSbcRx);
+		buildModBusActResponseMsg(ptrMsgSbcRx, _funcRetVal.slvresRetPtr);
 		ptrMsgSbcTx = &sbc_tx_data[0];
 
 		// Send response to sbc
