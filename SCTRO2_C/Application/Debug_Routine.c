@@ -178,6 +178,38 @@ void testCOMMSbcDebug(void){
 					}
 					break;
 
+					// Modbus read/write
+					/*case 0x17:
+					{
+						byte slvAddr = sbc_rx_data[7];
+						byte funcCode = sbc_rx_data[8];
+
+						unsigned int readAddr2 = BYTES_TO_WORD(sbc_rx_data[9], sbc_rx_data[10]);
+						unsigned int numRegRead2 = BYTES_TO_WORD(sbc_rx_data[11], sbc_rx_data[12]);
+
+						valModBusArray[1] = 0x14;
+						valModBusArrayPtr = &valModBusArray[1];
+
+						_funcRetValPtr = ModBusRWRegisterReq(slvAddr,
+								   	   	   	   	   	   	   	 funcCode,
+															 readAddr2,
+															 numRegRead2,
+															 0x0003,
+															 1,
+															 valModBusArrayPtr);
+
+						_funcRetVal.ptr_msg = _funcRetValPtr->ptr_msg;
+						_funcRetVal.mstreqRetStructNumByte = _funcRetValPtr->mstreqRetStructNumByte;
+						_funcRetVal.slvresRetPtr = _funcRetValPtr->slvresRetPtr;
+						_funcRetVal.slvresRetNumByte = _funcRetValPtr->slvresRetNumByte;
+
+						for(char k = 0; k < _funcRetVal.mstreqRetStructNumByte; k++)
+						{
+							MODBUS_COMM_SendChar(*(_funcRetVal.ptr_msg+k));
+						}
+					}
+					break;*/
+
 					case 0x01:
 					{
 						//build command for peltier
@@ -510,38 +542,6 @@ void testCOMMSbcDebug(void){
 					{
 						if(sbc_rx_data[7] == 0xA5)
 							PeltierAssSendCommand(START_FLAG,"0",0,"0");
-					}
-					break;
-
-					//modbus read/write
-					case 0x17:
-					{
-						byte slvAddr = sbc_rx_data[7];
-						byte funcCode = sbc_rx_data[8];
-
-						unsigned int readAddr2 = BYTES_TO_WORD(sbc_rx_data[9], sbc_rx_data[10]);
-						unsigned int numRegRead2 = BYTES_TO_WORD(sbc_rx_data[11], sbc_rx_data[12]);
-
-						valModBusArray[1] = 0x14;
-						valModBusArrayPtr = &valModBusArray[1];
-
-						_funcRetValPtr = ModBusRWRegisterReq(slvAddr,
-								   	   	   	   	   	   	   	 funcCode,
-															 readAddr2,
-															 numRegRead2,
-															 0x0003,
-															 1,
-															 valModBusArrayPtr);
-
-						_funcRetVal.ptr_msg = _funcRetValPtr->ptr_msg;
-						_funcRetVal.mstreqRetStructNumByte = _funcRetValPtr->mstreqRetStructNumByte;
-						_funcRetVal.slvresRetPtr = _funcRetValPtr->slvresRetPtr;
-						_funcRetVal.slvresRetNumByte = _funcRetValPtr->slvresRetNumByte;
-
-						for(char k = 0; k < _funcRetVal.mstreqRetStructNumByte; k++)
-						{
-							MODBUS_COMM_SendChar(*(_funcRetVal.ptr_msg+k));
-						}
 					}
 					break;
 
