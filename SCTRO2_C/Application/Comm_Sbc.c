@@ -20,59 +20,6 @@
 #include "ASerialLdd5.h"
 
 
-void buildSTResponseMsg(char code){
-	sbc_tx_data[0] = 0xA5;
-	sbc_tx_data[1] = 0xAA;
-	sbc_tx_data[2] = 0x55;
-	sbc_tx_data[3] = 0x00;
-	sbc_tx_data[4] = 0x0D;
-	sbc_tx_data[5] = 0x20;
-	sbc_tx_data[6] = 0x66;
-	/* par: alarm code */
-	sbc_tx_data[7] = alarmCurrent.code;
-	sbc_tx_data[8] = alarmCurrent.physic;
-	sbc_tx_data[9] = alarmCurrent.type;
-	sbc_tx_data[10] = ptrCurrentState->state;
-	sbc_tx_data[11] = ptrCurrentParent->parent;
-	sbc_tx_data[12] = ptrCurrentChild->child;
-	sbc_tx_data[13] = 0x00;
-	sbc_tx_data[14] = 0x00;
-	sbc_tx_data[15] = 0x5A;
-
-}
-
-void buildPERResponseMsg(char code){
-	sbc_tx_data[0] = 0xA5;
-	sbc_tx_data[1] = 0xAA;
-	sbc_tx_data[2] = 0x55;
-	sbc_tx_data[3] = 0x00;
-	sbc_tx_data[4] = 0x0F;
-	sbc_tx_data[5] = 0x30;
-	sbc_tx_data[6] = 0x66;
-	sbc_tx_data[7] = sensorsValues.pressSystArt >> 8;
-	sbc_tx_data[8] = sensorsValues.pressSystArt;
-	sbc_tx_data[9] = 0x00;
-	sbc_tx_data[10] = 0x00;
-	sbc_tx_data[11] = 0x5A;
-
-}
-
-void buildPURResponseMsg(char code){
-	sbc_tx_data[0] = 0xA5;
-	sbc_tx_data[1] = 0xAA;
-	sbc_tx_data[2] = 0x55;
-	sbc_tx_data[3] = 0x00;
-	sbc_tx_data[4] = 0x12;
-	sbc_tx_data[5] = 0x40;
-	sbc_tx_data[6] = 0x66;
-	sbc_tx_data[7] = purificatParam.pressAbsorbFilt >> 8;
-	sbc_tx_data[8] = purificatParam.pressAbsorbFilt;
-	sbc_tx_data[9] = 0x00;
-	sbc_tx_data[10] = 0x00;
-	sbc_tx_data[11] = 0x5A;
-
-}
-
 void buildPeltierResponseMsg(char code){
 
 	char numFloat[4];

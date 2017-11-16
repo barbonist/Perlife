@@ -116,36 +116,6 @@ void testCOMMSbcDebug(void){
 		/*decodifica messaggio*/
 		switch(sbc_rx_data[5])
 		{
-		case 0x20:
-			buildSTResponseMsg(0x20);
-			ptrMsgSbcTx = &sbc_tx_data[0];
-			for(char i = 0; i < 16 ; i++)
-			{
-				SBC_COMM_SendChar(*(ptrMsgSbcTx+i));
-				//PC_DEBUG_COMM_SendChar(*(ptrMsgSbcTx+i));
-			}
-			break;
-
-		case 0x30:
-			buildPERResponseMsg(0x30);
-			ptrMsgSbcTx = &sbc_tx_data[0];
-			for(char i = 0; i < 12 ; i++)
-			{
-				SBC_COMM_SendChar(*(ptrMsgSbcTx+i));
-				//PC_DEBUG_COMM_SendChar(*(ptrMsgSbcTx+i));
-			}
-			break;
-
-		case 0x40:
-			buildPURResponseMsg(0x40);
-			ptrMsgSbcTx = &sbc_tx_data[0];
-			for(char i = 0; i < 12 ; i++)
-			{
-				SBC_COMM_SendChar(*(ptrMsgSbcTx+i));
-				//PC_DEBUG_COMM_SendChar(*(ptrMsgSbcTx+i));
-			}
-			break;
-
 		// service - Peltier Cell
 		case 0xCC:
 			switch(sbc_rx_data[6])
