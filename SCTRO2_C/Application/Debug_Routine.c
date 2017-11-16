@@ -513,38 +513,6 @@ void testCOMMSbcDebug(void){
 					}
 					break;
 
-					//modbus actuator write param
-					case 0x11:
-					{
-						byte slvAddr = sbc_rx_data[7];
-						byte funcCode = sbc_rx_data[8];
-						word wrAddr = BYTES_TO_WORD(sbc_rx_data[9], sbc_rx_data[10]);
-
-						if((slvAddr >= 2) && (slvAddr <= 4)) /* pump */
-							valModBusArray[0] = (BYTES_TO_WORD(sbc_rx_data[11], ((signed char)sbc_rx_data[12])));
-						else if((slvAddr >= 7) && (slvAddr <= 9)) /* pinch */
-							valModBusArray[0] = 1 + (BYTES_TO_WORD(sbc_rx_data[12], sbc_rx_data[11]));
-
-						//valModBusArray[0] = 0x1388;
-						valModBusArrayPtr = &valModBusArray[0];
-						_funcRetValPtr = ModBusWriteRegisterReq(slvAddr,
-																funcCode,
-																wrAddr,
-																0x0001,
-																valModBusArrayPtr);
-						//send command to actuator
-						_funcRetVal.ptr_msg = _funcRetValPtr->ptr_msg;
-						_funcRetVal.mstreqRetStructNumByte = _funcRetValPtr->mstreqRetStructNumByte;
-						_funcRetVal.slvresRetPtr = _funcRetValPtr->slvresRetPtr;
-						_funcRetVal.slvresRetNumByte = _funcRetValPtr->slvresRetNumByte;
-
-						for(char k = 0; k < _funcRetVal.mstreqRetStructNumByte; k++)
-						{
-							MODBUS_COMM_SendChar(*(_funcRetVal.ptr_msg+k));
-						}
-					}
-					break;
-
 					//modbus read/write
 					case 0x17:
 					{
