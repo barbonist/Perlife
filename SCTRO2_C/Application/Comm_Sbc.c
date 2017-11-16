@@ -19,6 +19,28 @@
 #include "SBC_COMM.h"
 #include "ASerialLdd5.h"
 
+void buildModBusActResponseMsg(char *ptrMsgSbcRx)
+{
+	byte index = 0;
+
+	sbc_tx_data[index++] = 0xA5;
+	sbc_tx_data[index++] = 0xAA;
+	sbc_tx_data[index++] = 0x55;
+	sbc_tx_data[index++] = 0x00;
+	sbc_tx_data[index++] = ptrMsgSbcRx[4]+1;
+	sbc_tx_data[index++] = ptrMsgSbcRx[5];
+	sbc_tx_data[index++] = ptrMsgSbcRx[6];
+	sbc_tx_data[index++] = 0x66;
+	for(int i = 0 ; i < ptrMsgSbcRx[4] ; i++)
+	{
+		sbc_tx_data[index++] = ptrMsgSbcRx[7+i];
+	}
+	sbc_tx_data[index++] = 0x00;
+	sbc_tx_data[index++] = 0x00;
+	sbc_tx_data[index++] = 0x5A;
+
+	myCommunicatorToSBC.numByteToSend = index;
+}
 
 void buildPeltierResponseMsg(char code){
 
@@ -83,49 +105,6 @@ void buildPeltierResponseMsg(char code){
 	sbc_tx_data[11] = 0x00;
 	sbc_tx_data[12] = 0x00;
 	sbc_tx_data[13] = 0x5A;
-}
-
-void buildModBusActResponseMsg(char code)
-{
-	sbc_tx_data[0] = 0xA5;
-	sbc_tx_data[1] = 0xAA;
-	sbc_tx_data[2] = 0x55;
-	sbc_tx_data[3] = 0x00;
-	sbc_tx_data[4] = 0x01;
-	sbc_tx_data[5] = 0xCC;
-	sbc_tx_data[6] = code; //cmdId & 0x66
-
-	if(code == 0x04) /* write */
-	{
-		sbc_tx_data[7] = msgToRecvFrame10[2];
-		sbc_tx_data[8] = msgToRecvFrame10[3];
-		sbc_tx_data[9] = msgToRecvFrame10[4];
-		sbc_tx_data[10] = msgToRecvFrame10[5];
-		sbc_tx_data[11] = 0;
-		sbc_tx_data[12] = 0;
-	}
-	else if(code == 0x06) /* read */
-	{
-		sbc_tx_data[7] = msgToRecvFrame3[3];
-		sbc_tx_data[8] = msgToRecvFrame3[4];
-		sbc_tx_data[9] = msgToRecvFrame3[31];
-		sbc_tx_data[10] = msgToRecvFrame3[32];
-		sbc_tx_data[11] = msgToRecvFrame3[29];
-		sbc_tx_data[12] = msgToRecvFrame3[30];
-	}
-	else if(code == 0x17)
-	{
-		sbc_tx_data[7] = msgToRecvFrame17[3];
-		sbc_tx_data[8] = msgToRecvFrame17[4];
-		sbc_tx_data[9] = msgToRecvFrame17[5];
-		sbc_tx_data[10] = msgToRecvFrame17[6];
-		sbc_tx_data[11] = msgToRecvFrame17[7];
-		sbc_tx_data[12] = msgToRecvFrame17[8];
-	}
-
-	sbc_tx_data[13] = 0x00;
-	sbc_tx_data[14] = 0x00;
-	sbc_tx_data[15] = 0x5A;
 }
 
 void buildWritePressSensResponseMsg(char code, char presssensId)

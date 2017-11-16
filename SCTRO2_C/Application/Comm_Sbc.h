@@ -8,8 +8,9 @@
 #ifndef APPLICATION_COMM_SBC_H_
 #define APPLICATION_COMM_SBC_H_
 
+void buildModBusActResponseMsg(char *ptrMsgSbcRx);
+
 void buildPeltierResponseMsg(char code);
-void buildModBusActResponseMsg(char code);
 void buildWritePressSensResponseMsg(char code, char pressSensId);
 void buildReadPressSensResponseMsg(char code, char pressSensId);
 void buildWriteTempSensResponseMsg(char code, char tempSensId);

@@ -644,6 +644,20 @@ void testCOMMSbcDebug(void){
 		/*invio risposta*/
 	}
 
+	// Wait for response from actuators
+	if(iflag_pmp1_rx == IFLAG_PMP1_RX)
+	{
+		iflag_pmp1_rx = IFLAG_IDLE;
+		// Build response for sbc
+		ptrMsgSbcRx = &sbc_rx_data;
+		buildModBusActResponseMsg(ptrMsgSbcRx);
+		ptrMsgSbcTx = &sbc_tx_data[0];
+
+		// Send response to sbc
+		word snd;
+		SBC_COMM_SendBlock(ptrMsgSbcTx,myCommunicatorToSBC.numByteToSend,&snd);
+	}
+
 	if(iflag_sensTempIR == IFLAG_SENS_TEMPIR_TX)
 	{
 	//IR_TM_COMM_SelectSlave(0x5A);
@@ -889,28 +903,6 @@ void testCOMMSbcDebug(void){
 		cmdId = sbc_rx_data[6];
 		buildReadTempSensResponseMsg(cmdId, (sbc_rx_data[7]-6));
 		for(char i = 0; i < 24 ; i++)
-		{
-			SBC_COMM_SendChar(*(ptrMsgSbcTx+i));
-
-			#ifdef	DEBUG_COMM_SBC
-			//PC_DEBUG_COMM_SendChar(*(ptrMsgSbcTx+i));
-			#endif
-		}
-	}
-
-	//wait for response
-	if(iflag_pmp1_rx == IFLAG_PMP1_RX)
-	{
-		iflag_pmp1_rx = IFLAG_IDLE;
-		//build response for sbc
-		if(sbc_rx_data[6] == 0x17)
-			cmdId = 0x17;
-		else
-			cmdId = sbc_rx_data[6] & 0x66;
-		buildModBusActResponseMsg(cmdId);
-		ptrMsgSbcTx = &sbc_tx_data[0];
-		//send response to sbc
-		for(char i = 0; i < 16 ; i++)
 		{
 			SBC_COMM_SendChar(*(ptrMsgSbcTx+i));
 
