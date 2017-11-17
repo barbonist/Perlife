@@ -210,8 +210,15 @@ void testCOMMSbcDebug(void){
 					}
 					break;*/
 
-					//read adc press sens
+					// Read adc and mmHg pressure values
 					case 0x31:
+					{
+						iflag_read_press_sensor = IFLAG_READ_PR_SENSOR;
+					}
+					break;
+
+					// Read pressure sensors calibration values
+					case 0x32:
 					{
 						iflag_read_press_sensor = IFLAG_READ_PR_SENSOR;
 					}
