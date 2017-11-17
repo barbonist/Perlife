@@ -62,6 +62,78 @@ void buildModBusActResponseMsg(char *ptrMsgSbcRx, char *ptrMsgModbusRx)
 	myCommunicatorToSBC.numByteToSend = index;
 }
 
+void buildPressSensResponseMsg(char *ptrMsgSbcRx)
+{
+	/*union NumFloatGain{
+				uint32 ieee754NumFormat_Gain;
+				float numFormatFloat_Gain;
+			} numFloatSensor_Gain;
+
+	union NumFloatOffset{
+				uint32 ieee754NumFormat_Offset;
+				float numFormatFloat_Offset;
+			} numFloatSensor_Offset;
+
+	union NumFloatOffVal{
+				uint32 ieee754NumFormat_OffVal;
+				float numFormatFloat_OffVal;
+			} numFloatSensor_OffVal;
+
+	union NumFloatUnion{
+				uint32 ieee754NUmFormat;
+				float numFormatFloat;
+			} numFloatSensor_Value;*/
+
+    byte index = 0;
+
+    char subcode = ptrMsgSbcRx[6];
+
+	sbc_tx_data[index++] = 0xA5;
+	sbc_tx_data[index++] = 0xAA;
+	sbc_tx_data[index++] = 0x55;
+	sbc_tx_data[index++] = 0x00;
+
+	sbc_tx_data[index++] = 0x16;
+
+	sbc_tx_data[index++] = ptrMsgSbcRx[5];
+	sbc_tx_data[index++] = subcode;
+
+	sbc_tx_data[index++] = 0x66;
+	sbc_tx_data[index++] = 0x00; //stability byte
+
+	for(int i = 0 ; i < 5 ; i++)
+	{
+		sbc_tx_data[index++] = ((word)sensor_PRx[i].prSensValue) >> 8;
+		sbc_tx_data[index++] = ((word)sensor_PRx[i].prSensValue);
+		sbc_tx_data[index++] = sensor_PRx[i].prSensAdc >> 8;
+		sbc_tx_data[index++] = sensor_PRx[i].prSensAdc;
+	}
+
+	sbc_tx_data[index++] = 0x00;
+	sbc_tx_data[index++] = 0x00;
+	sbc_tx_data[index++] = 0x5A;
+
+	myCommunicatorToSBC.numByteToSend = index;
+
+	/*numFloatSensor_Gain.numFormatFloat_Gain = sensor_PRx[pressSensId].prSensGain;
+	sbc_tx_data[7] = numFloatSensor_Gain.ieee754NumFormat_Gain >> 24;
+	sbc_tx_data[8] = numFloatSensor_Gain.ieee754NumFormat_Gain >> 16;
+	sbc_tx_data[9] = numFloatSensor_Gain.ieee754NumFormat_Gain >> 8;
+	sbc_tx_data[10] = numFloatSensor_Gain.ieee754NumFormat_Gain;
+
+	numFloatSensor_Offset.numFormatFloat_Offset = sensor_PRx[pressSensId].prSensOffset;
+	sbc_tx_data[11] = numFloatSensor_Offset.ieee754NumFormat_Offset >> 24;
+	sbc_tx_data[12] = numFloatSensor_Offset.ieee754NumFormat_Offset >> 16;
+	sbc_tx_data[13] = numFloatSensor_Offset.ieee754NumFormat_Offset >> 8;
+	sbc_tx_data[14] = numFloatSensor_Offset.ieee754NumFormat_Offset;
+
+	numFloatSensor_OffVal.numFormatFloat_OffVal = sensor_PRx[pressSensId].prSensOffsetVal;
+	sbc_tx_data[15] = numFloatSensor_OffVal.ieee754NumFormat_OffVal >> 24;
+	sbc_tx_data[16] = numFloatSensor_OffVal.ieee754NumFormat_OffVal >> 16;
+	sbc_tx_data[17] = numFloatSensor_OffVal.ieee754NumFormat_OffVal >> 8;
+	sbc_tx_data[18] = numFloatSensor_OffVal.ieee754NumFormat_OffVal;*/
+}
+
 void buildPeltierResponseMsg(char code){
 
 	char numFloat[4];
@@ -153,74 +225,6 @@ void buildWritePressSensResponseMsg(char code, char presssensId)
 	sbc_tx_data[11] = 0x00;
 	sbc_tx_data[12] = 0x00;
 	sbc_tx_data[13] = 0x5A;
-}
-
-void buildReadPressSensResponseMsg(char code, char pressSensId)
-{
-	union NumFloatGain{
-				uint32 ieee754NumFormat_Gain;
-				float numFormatFloat_Gain;
-			} numFloatSensor_Gain;
-
-	union NumFloatOffset{
-				uint32 ieee754NumFormat_Offset;
-				float numFormatFloat_Offset;
-			} numFloatSensor_Offset;
-
-	union NumFloatOffVal{
-				uint32 ieee754NumFormat_OffVal;
-				float numFormatFloat_OffVal;
-			} numFloatSensor_OffVal;
-
-	union NumFloatUnion{
-				uint32 ieee754NUmFormat;
-				float numFormatFloat;
-			} numFloatSensor_Value;
-
-	sbc_tx_data[0] = 0xA5;
-	sbc_tx_data[1] = 0xAA;
-	sbc_tx_data[2] = 0x55;
-	sbc_tx_data[3] = 0x00;
-	sbc_tx_data[4] = 0x01;
-	sbc_tx_data[5] = 0xCC;
-	sbc_tx_data[6] = code;
-
-	if(code == 0x31)
-	{
-		numFloatSensor_Gain.numFormatFloat_Gain = sensor_PRx[pressSensId].prSensGain;
-		sbc_tx_data[7] = numFloatSensor_Gain.ieee754NumFormat_Gain >> 24;
-		sbc_tx_data[8] = numFloatSensor_Gain.ieee754NumFormat_Gain >> 16;
-		sbc_tx_data[9] = numFloatSensor_Gain.ieee754NumFormat_Gain >> 8;
-		sbc_tx_data[10] = numFloatSensor_Gain.ieee754NumFormat_Gain;
-
-		numFloatSensor_Offset.numFormatFloat_Offset = sensor_PRx[pressSensId].prSensOffset;
-		sbc_tx_data[11] = numFloatSensor_Offset.ieee754NumFormat_Offset >> 24;
-		sbc_tx_data[12] = numFloatSensor_Offset.ieee754NumFormat_Offset >> 16;
-		sbc_tx_data[13] = numFloatSensor_Offset.ieee754NumFormat_Offset >> 8;
-		sbc_tx_data[14] = numFloatSensor_Offset.ieee754NumFormat_Offset;
-
-		numFloatSensor_OffVal.numFormatFloat_OffVal = sensor_PRx[pressSensId].prSensOffsetVal;
-		sbc_tx_data[15] = numFloatSensor_OffVal.ieee754NumFormat_OffVal >> 24;
-		sbc_tx_data[16] = numFloatSensor_OffVal.ieee754NumFormat_OffVal >> 16;
-		sbc_tx_data[17] = numFloatSensor_OffVal.ieee754NumFormat_OffVal >> 8;
-		sbc_tx_data[18] = numFloatSensor_OffVal.ieee754NumFormat_OffVal;
-
-		numFloatSensor_Value.numFormatFloat = sensor_PRx[pressSensId].prSensValue;
-		sbc_tx_data[19] = numFloatSensor_Value.ieee754NUmFormat >> 24;
-		sbc_tx_data[20] = numFloatSensor_Value.ieee754NUmFormat >> 16;
-		sbc_tx_data[21] = numFloatSensor_Value.ieee754NUmFormat >> 8;
-		sbc_tx_data[22] = numFloatSensor_Value.ieee754NUmFormat;
-
-		sbc_tx_data[23] = sensor_PRx[pressSensId].prSensAdc >> 8;
-		sbc_tx_data[24] = sensor_PRx[pressSensId].prSensAdc;
-
-		sbc_tx_data[25] = pressSensId;
-
-	}
-
-	sbc_tx_data[26] = 0x00;
-	sbc_tx_data[27] = 0x00;
-	sbc_tx_data[28] = 0x5A;
 }
 
 void buildWriteTempSensResponseMsg(char code, char tempSensId){

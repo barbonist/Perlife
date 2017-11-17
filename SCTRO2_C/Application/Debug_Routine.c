@@ -210,6 +210,17 @@ void testCOMMSbcDebug(void){
 					}
 					break;*/
 
+					//read adc press sens
+					case 0x31:
+					{
+						iflag_read_press_sensor = IFLAG_READ_PR_SENSOR;
+					}
+					break;
+
+/******************************************************************/
+/******************************************************************/
+/******************************************************************/
+
 					case 0x01:
 					{
 						//build command for peltier
@@ -469,18 +480,6 @@ void testCOMMSbcDebug(void){
 					}
 					break;
 
-					//read adc press sens
-					case 0x31:
-					{
-						iflag_read_press_sensor = IFLAG_READ_PR_SENSOR;
-						sensor_PRx[sbc_rx_data[7]].prSensAdcPtr = sensor_PRx[sbc_rx_data[7]].readAdctPtr();
-						sensor_PRx[sbc_rx_data[7]].prSensAdc = *sensor_PRx[sbc_rx_data[7]].prSensAdcPtr;
-						sensor_PRx[sbc_rx_data[7]].prSensValue = sensor_PRx[sbc_rx_data[7]].prSensGain *
-																	 (((float)sensor_PRx[sbc_rx_data[7]].prSensAdc/65535)*1617 - sensor_PRx[sbc_rx_data[7]].prSensOffsetVal) +
-																	 sensor_PRx[sbc_rx_data[7]].prSensOffset;
-					}
-					break;
-
 					//cal temperature sensr
 					case 0x35:
 					{
@@ -626,6 +625,24 @@ void testCOMMSbcDebug(void){
 		word snd;
 		SBC_COMM_SendBlock(ptrMsgSbcTx,myCommunicatorToSBC.numByteToSend,&snd);
 	}
+
+	// Pressure sensor read
+	if(iflag_read_press_sensor == IFLAG_READ_PR_SENSOR)
+	{
+		iflag_read_press_sensor = IFLAG_IDLE;
+		// Build response for sbc
+		ptrMsgSbcRx = &sbc_rx_data;
+		buildPressSensResponseMsg(ptrMsgSbcRx);
+		ptrMsgSbcTx = &sbc_tx_data[0];
+
+		// Send response to sbc
+		word snd;
+		SBC_COMM_SendBlock(ptrMsgSbcTx,myCommunicatorToSBC.numByteToSend,&snd);
+	}
+
+/*************************************************************/
+/*************************************************************/
+/*************************************************************/
 
 	if(iflag_sensTempIR == IFLAG_SENS_TEMPIR_TX)
 	{
@@ -825,23 +842,6 @@ void testCOMMSbcDebug(void){
 		buildWritePressSensResponseMsg(cmdId, sbc_rx_data[22]);
 		ptrMsgSbcTx = &sbc_tx_data[0];
 		for(char i = 0; i < 14 ; i++)
-		{
-			SBC_COMM_SendChar(*(ptrMsgSbcTx+i));
-
-			#ifdef	DEBUG_COMM_SBC
-			//PC_DEBUG_COMM_SendChar(*(ptrMsgSbcTx+i));
-			#endif
-		}
-	}
-
-	//pressure sensor read
-	if(iflag_read_press_sensor == IFLAG_READ_PR_SENSOR)
-	{
-		iflag_read_press_sensor = IFLAG_IDLE;
-		cmdId = sbc_rx_data[6];
-		buildReadPressSensResponseMsg(cmdId, sbc_rx_data[7]);
-		ptrMsgSbcTx = &sbc_tx_data[0];
-		for(char i = 0; i < 29 ; i++)
 		{
 			SBC_COMM_SendChar(*(ptrMsgSbcTx+i));
 

@@ -9,10 +9,10 @@
 #define APPLICATION_COMM_SBC_H_
 
 void buildModBusActResponseMsg(char *ptrMsgSbcRx, char *ptrMsgModbusRx);
+void buildPressSensResponseMsg(char *ptrMsgSbcRx);
 
 void buildPeltierResponseMsg(char code);
 void buildWritePressSensResponseMsg(char code, char pressSensId);
-void buildReadPressSensResponseMsg(char code, char pressSensId);
 void buildWriteTempSensResponseMsg(char code, char tempSensId);
 void buildReadTempSensResponseMsg(char code, char tempSensId);
 void buildReadIRTempRspMsg(char code, char tempIRSensId);
