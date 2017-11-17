@@ -91,6 +91,10 @@ void buildPressSensResponseMsg(char *ptrMsgSbcRx)
 	{
 		sbc_tx_data[index++] = 0x29;
 	}
+	else if(subcode == 0x33)
+	{
+		sbc_tx_data[index++] = 0x05;
+	}
 
 	sbc_tx_data[index++] = ptrMsgSbcRx[5];
 	sbc_tx_data[index++] = subcode;
@@ -125,6 +129,13 @@ void buildPressSensResponseMsg(char *ptrMsgSbcRx)
 			sbc_tx_data[index++] = numFloatSensor_Offset.ieee754NumFormat_Offset >> 8;
 			sbc_tx_data[index++] = numFloatSensor_Offset.ieee754NumFormat_Offset;
 		}
+	}
+	else if(subcode == 0x33)
+	{
+		sbc_tx_data[index++] = ptrMsgSbcRx[7];
+		sbc_tx_data[index++] = ptrMsgSbcRx[8];
+		sbc_tx_data[index++] = sensor_PRx[ptrMsgSbcRx[7]].prSensAdc >> 8;
+		sbc_tx_data[index++] = sensor_PRx[ptrMsgSbcRx[7]].prSensAdc;
 	}
 
 	sbc_tx_data[index++] = 0x00;
@@ -194,34 +205,6 @@ void buildPeltierResponseMsg(char code){
 	//sbcDebug_tx_data[7] = peltierDebug_rx_data[0];
 	//sbcDebug_tx_data[8] = peltierCell.msgPeltierRx[1];
 	//sbcDebug_tx_data[8] = peltierDebug_rx_data[1];
-	sbc_tx_data[11] = 0x00;
-	sbc_tx_data[12] = 0x00;
-	sbc_tx_data[13] = 0x5A;
-}
-
-void buildWritePressSensResponseMsg(char code, char presssensId)
-{
-	union NumFloatUnion{
-			uint32 ieee754NUmFormat;
-			float numFormatFloat;
-		} numFloatSensor;
-
-	sbc_tx_data[0] = 0xA5;
-	sbc_tx_data[1] = 0xAA;
-	sbc_tx_data[2] = 0x55;
-	sbc_tx_data[3] = 0x00;
-	sbc_tx_data[4] = 0x01;
-	sbc_tx_data[5] = 0xCC;
-	sbc_tx_data[6] = code; //cmdId & 0x66
-	if(code == 0x30)
-	{
-		numFloatSensor.numFormatFloat = sensor_PRx[presssensId].prSensValue;
-
-		sbc_tx_data[7] = numFloatSensor.ieee754NUmFormat >> 24;
-		sbc_tx_data[8] = numFloatSensor.ieee754NUmFormat >> 16;
-		sbc_tx_data[9] = numFloatSensor.ieee754NUmFormat >> 8;
-		sbc_tx_data[10] = numFloatSensor.ieee754NUmFormat;
-	}
 	sbc_tx_data[11] = 0x00;
 	sbc_tx_data[12] = 0x00;
 	sbc_tx_data[13] = 0x5A;

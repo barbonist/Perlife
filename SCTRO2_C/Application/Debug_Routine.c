@@ -224,6 +224,16 @@ void testCOMMSbcDebug(void){
 					}
 					break;
 
+					// Set pressure sensors zero point
+					case 0x33:
+					{
+						//TODO Store zero point for calibration
+						iflag_read_press_sensor = IFLAG_READ_PR_SENSOR;
+					}
+					break;
+
+
+
 /******************************************************************/
 /******************************************************************/
 /******************************************************************/
@@ -433,57 +443,6 @@ void testCOMMSbcDebug(void){
 					{
 						sprintf(regIntId, "%u", sbc_rx_data[7]);
 						PeltierAssSendCommand(READ_DATA_REGISTER_XX,regIntId,0,"0");
-					}
-					break;
-
-					//cal pressure sensor
-					case 0x30:
-					{
-						if(sbc_rx_data[7] == 0x10)
-						{
-							numFloatSensor.ieee754NUmFormat = 	(sbc_rx_data[8] << 24) |
-																(sbc_rx_data[9] << 16) |
-																(sbc_rx_data[10] << 8) |
-																(sbc_rx_data[11]);
-
-							sensor_PRx[sbc_rx_data[22]].prSensGain = numFloatSensor.numFormatFloat;
-						}
-
-						if(sbc_rx_data[12] == 0x20)
-						{
-							numFloatSensor.ieee754NUmFormat = 	(sbc_rx_data[13] << 24) |
-																(sbc_rx_data[14] << 16) |
-																(sbc_rx_data[15] << 8) |
-																(sbc_rx_data[16]);
-
-							sensor_PRx[sbc_rx_data[22]].prSensOffset = numFloatSensor.numFormatFloat;
-						}
-
-						if(sbc_rx_data[17] == 0x30)
-						{
-							numFloatSensor.ieee754NUmFormat = 	(sbc_rx_data[18] << 24) |
-																(sbc_rx_data[19] << 16) |
-																(sbc_rx_data[20] << 8) |
-																(sbc_rx_data[21]);
-
-							sensor_PRx[sbc_rx_data[22]].prSensOffsetVal = numFloatSensor.numFormatFloat;
-						}
-
-
-						sensor_PRx[sbc_rx_data[22]].prSensAdcPtr = sensor_PRx[sbc_rx_data[22]].readAdctPtr();
-						sensor_PRx[sbc_rx_data[22]].prSensAdc = *sensor_PRx[sbc_rx_data[22]].prSensAdcPtr;
-						sensor_PRx[sbc_rx_data[22]].prSensValue = sensor_PRx[sbc_rx_data[22]].prSensGain *
-																	   (((float)((float)sensor_PRx[sbc_rx_data[22]].prSensAdc/65535))*3.3 - sensor_PRx[sbc_rx_data[22]].prSensOffsetVal) +
-																	   sensor_PRx[sbc_rx_data[22]].prSensOffset;
-
-						//3.3: fondo scala in volt
-						//1000/2,04: mv/V / mv/mmHg
-						//1617: fondo scala in mmHg
-
-						//sensor_PRx[sbcDebug_rx_data[22]].prSensOffsetVal = ((sensor_PRx[sbcDebug_rx_data[22]].prSensValue) / (sensor_PRx[sbcDebug_rx_data[22]].prSensGain))*((float)(775/3.3));
-						sensor_PRx[sbc_rx_data[22]].prSensOffset = - sensor_PRx[sbc_rx_data[22]].prSensValue * ((float)(1000/2.04));
-
-						iflag_write_press_sensor = IFLAG_WRITE_PR_SENSOR;
 					}
 					break;
 
@@ -831,23 +790,6 @@ void testCOMMSbcDebug(void){
 		buildPeltierResponseMsg(cmdId);
 		ptrMsgSbcTx = &sbc_tx_data[0];
 
-		for(char i = 0; i < 14 ; i++)
-		{
-			SBC_COMM_SendChar(*(ptrMsgSbcTx+i));
-
-			#ifdef	DEBUG_COMM_SBC
-			//PC_DEBUG_COMM_SendChar(*(ptrMsgSbcTx+i));
-			#endif
-		}
-	}
-
-	//pressure sensor write
-	if(iflag_write_press_sensor == IFLAG_WRITE_PR_SENSOR)
-	{
-		iflag_write_press_sensor = IFLAG_IDLE;
-		cmdId = sbc_rx_data[6];
-		buildWritePressSensResponseMsg(cmdId, sbc_rx_data[22]);
-		ptrMsgSbcTx = &sbc_tx_data[0];
 		for(char i = 0; i < 14 ; i++)
 		{
 			SBC_COMM_SendChar(*(ptrMsgSbcTx+i));

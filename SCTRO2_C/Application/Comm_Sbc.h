@@ -12,7 +12,6 @@ void buildModBusActResponseMsg(char *ptrMsgSbcRx, char *ptrMsgModbusRx);
 void buildPressSensResponseMsg(char *ptrMsgSbcRx);
 
 void buildPeltierResponseMsg(char code);
-void buildWritePressSensResponseMsg(char code, char pressSensId);
 void buildWriteTempSensResponseMsg(char code, char tempSensId);
 void buildReadTempSensResponseMsg(char code, char tempSensId);
 void buildReadIRTempRspMsg(char code, char tempIRSensId);
