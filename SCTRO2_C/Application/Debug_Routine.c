@@ -232,6 +232,13 @@ void testCOMMSbcDebug(void){
 					}
 					break;
 
+					// Set pressure sensors load point
+					case 0x34:
+					{
+						//TODO Store load point for calibration
+						iflag_read_press_sensor = IFLAG_READ_PR_SENSOR;
+					}
+					break;
 
 
 /******************************************************************/

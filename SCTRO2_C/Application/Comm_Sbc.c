@@ -91,7 +91,7 @@ void buildPressSensResponseMsg(char *ptrMsgSbcRx)
 	{
 		sbc_tx_data[index++] = 0x29;
 	}
-	else if(subcode == 0x33)
+	else if(subcode == 0x33 || subcode == 0x34)
 	{
 		sbc_tx_data[index++] = 0x05;
 	}
@@ -130,7 +130,7 @@ void buildPressSensResponseMsg(char *ptrMsgSbcRx)
 			sbc_tx_data[index++] = numFloatSensor_Offset.ieee754NumFormat_Offset;
 		}
 	}
-	else if(subcode == 0x33)
+	else if(subcode == 0x33 || subcode == 0x34)
 	{
 		sbc_tx_data[index++] = ptrMsgSbcRx[7];
 		sbc_tx_data[index++] = ptrMsgSbcRx[8];
