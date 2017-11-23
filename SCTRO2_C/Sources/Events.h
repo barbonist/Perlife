@@ -84,6 +84,14 @@
 #include "IntI2cLdd1.h"
 #include "TU1.h"
 #include "FLASH1.h"
+#include "BUBBLE_KEYBOARD_BUTTON1.h"
+#include "BitIoLdd16.h"
+#include "BUBBLE_KEYBOARD_BUTTON2.h"
+#include "BitIoLdd17.h"
+#include "BUBBLE_KEYBOARD_BUTTON3.h"
+#include "BitIoLdd18.h"
+#include "BUBBLE_KEYBOARD_BUTTON4.h"
+#include "BitIoLdd19.h"
 
 #ifdef __cplusplus
 extern "C" {
