@@ -112,6 +112,9 @@
       <PathName>C:\PROGETTI\0353000_Perlife_FW\SCTRO2_C\Generated_Code\BitIoLdd30.c</PathName>
       <PathName>C:\PROGETTI\0353000_Perlife_FW\SCTRO2_C\Generated_Code\BitIoLdd31.c</PathName>
       <PathName>C:\PROGETTI\0353000_Perlife_FW\SCTRO2_C\Generated_Code\BitIoLdd32.c</PathName>
+      <PathName>C:\PROGETTI\0353000_Perlife_FW\SCTRO2_C\Generated_Code\BitIoLdd33.c</PathName>
+      <PathName>C:\PROGETTI\0353000_Perlife_FW\SCTRO2_C\Generated_Code\BitIoLdd34.c</PathName>
+      <PathName>C:\PROGETTI\0353000_Perlife_FW\SCTRO2_C\Generated_Code\BitIoLdd35.c</PathName>
       <PathName>C:\PROGETTI\0353000_Perlife_FW\SCTRO2_C\Generated_Code\BitIoLdd4.c</PathName>
       <PathName>C:\PROGETTI\0353000_Perlife_FW\SCTRO2_C\Generated_Code\BitIoLdd5.c</PathName>
       <PathName>C:\PROGETTI\0353000_Perlife_FW\SCTRO2_C\Generated_Code\BitIoLdd6.c</PathName>
@@ -147,6 +150,9 @@
       <PathName>C:\PROGETTI\0353000_Perlife_FW\SCTRO2_C\Generated_Code\FLOWSENS_RE.c</PathName>
       <PathName>C:\PROGETTI\0353000_Perlife_FW\SCTRO2_C\Generated_Code\IR_TM_COMM.c</PathName>
       <PathName>C:\PROGETTI\0353000_Perlife_FW\SCTRO2_C\Generated_Code\IntI2cLdd1.c</PathName>
+      <PathName>C:\PROGETTI\0353000_Perlife_FW\SCTRO2_C\Generated_Code\LAMP_HIGH.c</PathName>
+      <PathName>C:\PROGETTI\0353000_Perlife_FW\SCTRO2_C\Generated_Code\LAMP_LOW.c</PathName>
+      <PathName>C:\PROGETTI\0353000_Perlife_FW\SCTRO2_C\Generated_Code\LAMP_MEDIUM.c</PathName>
       <PathName>C:\PROGETTI\0353000_Perlife_FW\SCTRO2_C\Generated_Code\MODBUS_COMM.c</PathName>
       <PathName>C:\PROGETTI\0353000_Perlife_FW\SCTRO2_C\Generated_Code\PC_DEBUG_COMM.c</PathName>
       <PathName>C:\PROGETTI\0353000_Perlife_FW\SCTRO2_C\Generated_Code\PELTIER2_COMM.c</PathName>
@@ -222,6 +228,9 @@
       <PathName>C:\PROGETTI\0353000_Perlife_FW\SCTRO2_C\Generated_Code\BitIoLdd30.h</PathName>
       <PathName>C:\PROGETTI\0353000_Perlife_FW\SCTRO2_C\Generated_Code\BitIoLdd31.h</PathName>
       <PathName>C:\PROGETTI\0353000_Perlife_FW\SCTRO2_C\Generated_Code\BitIoLdd32.h</PathName>
+      <PathName>C:\PROGETTI\0353000_Perlife_FW\SCTRO2_C\Generated_Code\BitIoLdd33.h</PathName>
+      <PathName>C:\PROGETTI\0353000_Perlife_FW\SCTRO2_C\Generated_Code\BitIoLdd34.h</PathName>
+      <PathName>C:\PROGETTI\0353000_Perlife_FW\SCTRO2_C\Generated_Code\BitIoLdd35.h</PathName>
       <PathName>C:\PROGETTI\0353000_Perlife_FW\SCTRO2_C\Generated_Code\BitIoLdd4.h</PathName>
       <PathName>C:\PROGETTI\0353000_Perlife_FW\SCTRO2_C\Generated_Code\BitIoLdd5.h</PathName>
       <PathName>C:\PROGETTI\0353000_Perlife_FW\SCTRO2_C\Generated_Code\BitIoLdd6.h</PathName>
@@ -260,6 +269,9 @@
       <PathName>C:\PROGETTI\0353000_Perlife_FW\SCTRO2_C\Generated_Code\IR_TM_COMM.h</PathName>
       <PathName>C:\PROGETTI\0353000_Perlife_FW\SCTRO2_C\Generated_Code\Init_Config.h</PathName>
       <PathName>C:\PROGETTI\0353000_Perlife_FW\SCTRO2_C\Generated_Code\IntI2cLdd1.h</PathName>
+      <PathName>C:\PROGETTI\0353000_Perlife_FW\SCTRO2_C\Generated_Code\LAMP_HIGH.h</PathName>
+      <PathName>C:\PROGETTI\0353000_Perlife_FW\SCTRO2_C\Generated_Code\LAMP_LOW.h</PathName>
+      <PathName>C:\PROGETTI\0353000_Perlife_FW\SCTRO2_C\Generated_Code\LAMP_MEDIUM.h</PathName>
       <PathName>C:\PROGETTI\0353000_Perlife_FW\SCTRO2_C\Generated_Code\MODBUS_COMM.h</PathName>
       <PathName>C:\PROGETTI\0353000_Perlife_FW\SCTRO2_C\Generated_Code\PC_DEBUG_COMM.h</PathName>
       <PathName>C:\PROGETTI\0353000_Perlife_FW\SCTRO2_C\Generated_Code\PELTIER2_COMM.h</PathName>
