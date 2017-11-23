@@ -684,28 +684,6 @@ void MODBUS_COMM_OnFreeTxBuf(void)
 
 /*
 ** ===================================================================
-**     Event       :  SM1_OnBlockSent (module Events)
-**
-**     Component   :  SM1 [SPIMaster_LDD]
-*/
-/*!
-**     @brief
-**         This event is called after the last character from the
-**         output buffer is moved to the transmitter. This event is
-**         available only if the SendBlock method is enabled.
-**     @param
-**         UserDataPtr     - Pointer to the user or
-**                           RTOS specific data. The pointer is passed
-**                           as the parameter of Init method. 
-*/
-/* ===================================================================*/
-void SM1_OnBlockSent(LDD_TUserData *UserDataPtr)
-{
-  /* Write your code here ... */
-}
-
-/*
-** ===================================================================
 **     Event       :  SM1_OnBlockReceived (module Events)
 **
 **     Component   :  SM1 [SPIMaster_LDD]
@@ -875,6 +853,44 @@ void TU1_OnCounterRestart(LDD_TUserData *UserDataPtr)
 */
 /* ===================================================================*/
 void FLASH1_OnOperationComplete(LDD_TUserData *UserDataPtr)
+{
+  /* Write your code here ... */
+}
+
+/*
+** ===================================================================
+**     Event       :  AD0_OnEnd (module Events)
+**
+**     Component   :  AD0 [ADC]
+**     Description :
+**         This event is called after the measurement (which consists
+**         of <1 or more conversions>) is/are finished.
+**         The event is available only when the <Interrupt
+**         service/event> property is enabled.
+**     Parameters  : None
+**     Returns     : Nothing
+** ===================================================================
+*/
+void AD0_OnEnd(void)
+{
+  /* Write your code here ... */
+}
+
+/*
+** ===================================================================
+**     Event       :  AD0_OnCalibrationEnd (module Events)
+**
+**     Component   :  AD0 [ADC]
+**     Description :
+**         This event is called when the calibration has been finished.
+**         User should check if the calibration pass or fail by
+**         Calibration status method./nThis event is enabled only if
+**         the <Interrupt service/event> property is enabled.
+**     Parameters  : None
+**     Returns     : Nothing
+** ===================================================================
+*/
+void AD0_OnCalibrationEnd(void)
 {
   /* Write your code here ... */
 }
