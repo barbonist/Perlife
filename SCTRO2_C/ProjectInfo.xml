@@ -79,6 +79,8 @@
       <PathName>C:\PROGETTI\0353000_Perlife_FW\SCTRO2_C\Generated_Code\BUBBLE_KEYBOARD_BUTTON2.c</PathName>
       <PathName>C:\PROGETTI\0353000_Perlife_FW\SCTRO2_C\Generated_Code\BUBBLE_KEYBOARD_BUTTON3.c</PathName>
       <PathName>C:\PROGETTI\0353000_Perlife_FW\SCTRO2_C\Generated_Code\BUBBLE_KEYBOARD_BUTTON4.c</PathName>
+      <PathName>C:\PROGETTI\0353000_Perlife_FW\SCTRO2_C\Generated_Code\Bit1.c</PathName>
+      <PathName>C:\PROGETTI\0353000_Perlife_FW\SCTRO2_C\Generated_Code\Bit2.c</PathName>
       <PathName>C:\PROGETTI\0353000_Perlife_FW\SCTRO2_C\Generated_Code\Bit3.c</PathName>
       <PathName>C:\PROGETTI\0353000_Perlife_FW\SCTRO2_C\Generated_Code\Bit4.c</PathName>
       <PathName>C:\PROGETTI\0353000_Perlife_FW\SCTRO2_C\Generated_Code\BitIoLdd1.c</PathName>
@@ -93,6 +95,8 @@
       <PathName>C:\PROGETTI\0353000_Perlife_FW\SCTRO2_C\Generated_Code\BitIoLdd18.c</PathName>
       <PathName>C:\PROGETTI\0353000_Perlife_FW\SCTRO2_C\Generated_Code\BitIoLdd19.c</PathName>
       <PathName>C:\PROGETTI\0353000_Perlife_FW\SCTRO2_C\Generated_Code\BitIoLdd2.c</PathName>
+      <PathName>C:\PROGETTI\0353000_Perlife_FW\SCTRO2_C\Generated_Code\BitIoLdd20.c</PathName>
+      <PathName>C:\PROGETTI\0353000_Perlife_FW\SCTRO2_C\Generated_Code\BitIoLdd21.c</PathName>
       <PathName>C:\PROGETTI\0353000_Perlife_FW\SCTRO2_C\Generated_Code\BitIoLdd3.c</PathName>
       <PathName>C:\PROGETTI\0353000_Perlife_FW\SCTRO2_C\Generated_Code\BitIoLdd4.c</PathName>
       <PathName>C:\PROGETTI\0353000_Perlife_FW\SCTRO2_C\Generated_Code\BitIoLdd5.c</PathName>
@@ -106,15 +110,19 @@
       <PathName>C:\PROGETTI\0353000_Perlife_FW\SCTRO2_C\Generated_Code\COVER_M4.c</PathName>
       <PathName>C:\PROGETTI\0353000_Perlife_FW\SCTRO2_C\Generated_Code\COVER_M5.c</PathName>
       <PathName>C:\PROGETTI\0353000_Perlife_FW\SCTRO2_C\Generated_Code\Cpu.c</PathName>
+      <PathName>C:\PROGETTI\0353000_Perlife_FW\SCTRO2_C\Generated_Code\DacLdd1.c</PathName>
+      <PathName>C:\PROGETTI\0353000_Perlife_FW\SCTRO2_C\Generated_Code\DacLdd2.c</PathName>
       <PathName>C:\PROGETTI\0353000_Perlife_FW\SCTRO2_C\Generated_Code\EN_24_M_C.c</PathName>
       <PathName>C:\PROGETTI\0353000_Perlife_FW\SCTRO2_C\Generated_Code\EN_CLAMP_CONTROL.c</PathName>
+      <PathName>C:\PROGETTI\0353000_Perlife_FW\SCTRO2_C\Generated_Code\EN_FAN_1.c</PathName>
+      <PathName>C:\PROGETTI\0353000_Perlife_FW\SCTRO2_C\Generated_Code\EN_FAN_2.c</PathName>
       <PathName>C:\PROGETTI\0353000_Perlife_FW\SCTRO2_C\Generated_Code\EN_MOTOR_CONTROL.c</PathName>
       <PathName>C:\PROGETTI\0353000_Perlife_FW\SCTRO2_C\Generated_Code\EN_P_1_C.c</PathName>
       <PathName>C:\PROGETTI\0353000_Perlife_FW\SCTRO2_C\Generated_Code\EN_P_2_C.c</PathName>
       <PathName>C:\PROGETTI\0353000_Perlife_FW\SCTRO2_C\Generated_Code\FLASH1.c</PathName>
       <PathName>C:\PROGETTI\0353000_Perlife_FW\SCTRO2_C\Generated_Code\FLOWSENS_COMM.c</PathName>
+      <PathName>C:\PROGETTI\0353000_Perlife_FW\SCTRO2_C\Generated_Code\FLOWSENS_DE.c</PathName>
       <PathName>C:\PROGETTI\0353000_Perlife_FW\SCTRO2_C\Generated_Code\FLOWSENS_RE.c</PathName>
-      <PathName>C:\PROGETTI\0353000_Perlife_FW\SCTRO2_C\Generated_Code\FLOWSESNS_DE.c</PathName>
       <PathName>C:\PROGETTI\0353000_Perlife_FW\SCTRO2_C\Generated_Code\IR_TM_COMM.c</PathName>
       <PathName>C:\PROGETTI\0353000_Perlife_FW\SCTRO2_C\Generated_Code\IntI2cLdd1.c</PathName>
       <PathName>C:\PROGETTI\0353000_Perlife_FW\SCTRO2_C\Generated_Code\MODBUS_COMM.c</PathName>
@@ -159,6 +167,8 @@
       <PathName>C:\PROGETTI\0353000_Perlife_FW\SCTRO2_C\Generated_Code\BUBBLE_KEYBOARD_BUTTON2.h</PathName>
       <PathName>C:\PROGETTI\0353000_Perlife_FW\SCTRO2_C\Generated_Code\BUBBLE_KEYBOARD_BUTTON3.h</PathName>
       <PathName>C:\PROGETTI\0353000_Perlife_FW\SCTRO2_C\Generated_Code\BUBBLE_KEYBOARD_BUTTON4.h</PathName>
+      <PathName>C:\PROGETTI\0353000_Perlife_FW\SCTRO2_C\Generated_Code\Bit1.h</PathName>
+      <PathName>C:\PROGETTI\0353000_Perlife_FW\SCTRO2_C\Generated_Code\Bit2.h</PathName>
       <PathName>C:\PROGETTI\0353000_Perlife_FW\SCTRO2_C\Generated_Code\Bit3.h</PathName>
       <PathName>C:\PROGETTI\0353000_Perlife_FW\SCTRO2_C\Generated_Code\Bit4.h</PathName>
       <PathName>C:\PROGETTI\0353000_Perlife_FW\SCTRO2_C\Generated_Code\BitIoLdd1.h</PathName>
@@ -173,6 +183,8 @@
       <PathName>C:\PROGETTI\0353000_Perlife_FW\SCTRO2_C\Generated_Code\BitIoLdd18.h</PathName>
       <PathName>C:\PROGETTI\0353000_Perlife_FW\SCTRO2_C\Generated_Code\BitIoLdd19.h</PathName>
       <PathName>C:\PROGETTI\0353000_Perlife_FW\SCTRO2_C\Generated_Code\BitIoLdd2.h</PathName>
+      <PathName>C:\PROGETTI\0353000_Perlife_FW\SCTRO2_C\Generated_Code\BitIoLdd20.h</PathName>
+      <PathName>C:\PROGETTI\0353000_Perlife_FW\SCTRO2_C\Generated_Code\BitIoLdd21.h</PathName>
       <PathName>C:\PROGETTI\0353000_Perlife_FW\SCTRO2_C\Generated_Code\BitIoLdd3.h</PathName>
       <PathName>C:\PROGETTI\0353000_Perlife_FW\SCTRO2_C\Generated_Code\BitIoLdd4.h</PathName>
       <PathName>C:\PROGETTI\0353000_Perlife_FW\SCTRO2_C\Generated_Code\BitIoLdd5.h</PathName>
@@ -187,15 +199,19 @@
       <PathName>C:\PROGETTI\0353000_Perlife_FW\SCTRO2_C\Generated_Code\COVER_M5.h</PathName>
       <PathName>C:\PROGETTI\0353000_Perlife_FW\SCTRO2_C\Generated_Code\CPU_Config.h</PathName>
       <PathName>C:\PROGETTI\0353000_Perlife_FW\SCTRO2_C\Generated_Code\Cpu.h</PathName>
+      <PathName>C:\PROGETTI\0353000_Perlife_FW\SCTRO2_C\Generated_Code\DacLdd1.h</PathName>
+      <PathName>C:\PROGETTI\0353000_Perlife_FW\SCTRO2_C\Generated_Code\DacLdd2.h</PathName>
       <PathName>C:\PROGETTI\0353000_Perlife_FW\SCTRO2_C\Generated_Code\EN_24_M_C.h</PathName>
       <PathName>C:\PROGETTI\0353000_Perlife_FW\SCTRO2_C\Generated_Code\EN_CLAMP_CONTROL.h</PathName>
+      <PathName>C:\PROGETTI\0353000_Perlife_FW\SCTRO2_C\Generated_Code\EN_FAN_1.h</PathName>
+      <PathName>C:\PROGETTI\0353000_Perlife_FW\SCTRO2_C\Generated_Code\EN_FAN_2.h</PathName>
       <PathName>C:\PROGETTI\0353000_Perlife_FW\SCTRO2_C\Generated_Code\EN_MOTOR_CONTROL.h</PathName>
       <PathName>C:\PROGETTI\0353000_Perlife_FW\SCTRO2_C\Generated_Code\EN_P_1_C.h</PathName>
       <PathName>C:\PROGETTI\0353000_Perlife_FW\SCTRO2_C\Generated_Code\EN_P_2_C.h</PathName>
       <PathName>C:\PROGETTI\0353000_Perlife_FW\SCTRO2_C\Generated_Code\FLASH1.h</PathName>
       <PathName>C:\PROGETTI\0353000_Perlife_FW\SCTRO2_C\Generated_Code\FLOWSENS_COMM.h</PathName>
+      <PathName>C:\PROGETTI\0353000_Perlife_FW\SCTRO2_C\Generated_Code\FLOWSENS_DE.h</PathName>
       <PathName>C:\PROGETTI\0353000_Perlife_FW\SCTRO2_C\Generated_Code\FLOWSENS_RE.h</PathName>
-      <PathName>C:\PROGETTI\0353000_Perlife_FW\SCTRO2_C\Generated_Code\FLOWSESNS_DE.h</PathName>
       <PathName>C:\PROGETTI\0353000_Perlife_FW\SCTRO2_C\Generated_Code\IO_Map.h</PathName>
       <PathName>C:\PROGETTI\0353000_Perlife_FW\SCTRO2_C\Generated_Code\IR_TM_COMM.h</PathName>
       <PathName>C:\PROGETTI\0353000_Perlife_FW\SCTRO2_C\Generated_Code\Init_Config.h</PathName>

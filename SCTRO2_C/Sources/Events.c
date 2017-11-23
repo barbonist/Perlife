@@ -724,8 +724,8 @@ void SM1_OnBlockReceived(LDD_TUserData *UserDataPtr)
 void FLOWSENS_COMM_OnTxComplete(void)
 {
   /* Write your code here ... */
-	if(ptrMsg_UFLOW->byteSended >= ptrMsg_UFLOW->bufferToSendLenght)
-			FLOWSENS_RTS_ClrVal();
+//TODO	if(ptrMsg_UFLOW->byteSended >= ptrMsg_UFLOW->bufferToSendLenght)
+	//TODO		FLOWSENS_RTS_ClrVal();
 }
 
 /*

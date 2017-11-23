@@ -70,6 +70,10 @@
 #include "BitIoLdd14.h"
 #include "EN_P_1_C.h"
 #include "BitIoLdd15.h"
+#include "EN_FAN_1.h"
+#include "DacLdd1.h"
+#include "EN_FAN_2.h"
+#include "DacLdd2.h"
 #include "FLOWSENS_COMM.h"
 #include "ASerialLdd4.h"
 #include "SBC_COMM.h"
@@ -78,7 +82,7 @@
 #include "AdcLdd2.h"
 #include "FLOWSENS_RE.h"
 #include "BitIoLdd3.h"
-#include "FLOWSESNS_DE.h"
+#include "FLOWSENS_DE.h"
 #include "BitIoLdd4.h"
 #include "IR_TM_COMM.h"
 #include "IntI2cLdd1.h"
@@ -92,6 +96,10 @@
 #include "BitIoLdd18.h"
 #include "BUBBLE_KEYBOARD_BUTTON4.h"
 #include "BitIoLdd19.h"
+#include "Bit1.h"
+#include "BitIoLdd20.h"
+#include "Bit2.h"
+#include "BitIoLdd21.h"
 
 #ifdef __cplusplus
 extern "C" {

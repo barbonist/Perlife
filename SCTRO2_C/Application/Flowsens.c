@@ -10,7 +10,6 @@
 
 #include "PE_Types.h"
 
-#include "FLOWSENS_RTS.h"
 #include "FLOWSENS_COMM.h"
 
 
@@ -65,7 +64,7 @@ void alwaysUFlowSensor(void){
 											0,
 											ID_FLOW_VAL_MLMIN);
 
-			FLOWSENS_RTS_SetVal();
+		//TODO	FLOWSENS_RTS_SetVal();
 			for(char k = 0; k < ptrMsg_UFLOW->bufferToSendLenght; k++)
 			{
 				//FLOWSENS_RTS_SetVal();
@@ -80,7 +79,7 @@ void alwaysUFlowSensor(void){
 											 0,
 											 ID_MAX_BUBBLE_SIZE);
 
-			FLOWSENS_RTS_SetVal();
+		//TODO	FLOWSENS_RTS_SetVal();
 			for(char k = 0; k < ptrMsg_UFLOW->bufferToSendLenght; k++)
 			{
 				//FLOWSENS_RTS_SetVal();

@@ -13,8 +13,9 @@
 
 #include "Pins1.h"
 #include "Bit1.h"
-#include "BitIoLdd1.h"
 #include "Bit2.h"
+#include "BitIoLdd1.h"
+
 #include "BitIoLdd2.h"
 #include "MODBUS_COMM.h"
 #include "ASerialLdd1.h"
