@@ -1007,6 +1007,54 @@ void PELTIER2_COMM_OnTxComplete(void)
   /* Write your code here ... */
 }
 
+/*
+** ===================================================================
+**     Event       :  CAN_C_P_OnFreeTxBuffer (module Events)
+**
+**     Component   :  CAN_C_P [CAN_LDD]
+*/
+/*!
+**     @brief
+**         This event is called when the buffer is empty after a
+**         successful transmit of a message. This event is available
+**         only if method SendFrame is enabled.
+**     @param
+**         UserDataPtr     - Pointer to the user or
+**                           RTOS specific data. This pointer is passed
+**                           as the parameter of Init method.
+**     @param
+**         BufferIdx       - Receive message buffer index.
+*/
+/* ===================================================================*/
+void CAN_C_P_OnFreeTxBuffer(LDD_TUserData *UserDataPtr, LDD_CAN_TMBIndex BufferIdx)
+{
+  /* Write your code here ... */
+}
+
+/*
+** ===================================================================
+**     Event       :  CAN_C_P_OnFullRxBuffer (module Events)
+**
+**     Component   :  CAN_C_P [CAN_LDD]
+*/
+/*!
+**     @brief
+**         This event is called when the buffer is full after a
+**         successful receive a message. This event is available only
+**         if method ReadFrame or SetRxBufferState is enabled.
+**     @param
+**         UserDataPtr     - Pointer to the user or
+**                           RTOS specific data. This pointer is passed
+**                           as the parameter of Init method.
+**     @param
+**         BufferIdx       - Transmit buffer index.
+*/
+/* ===================================================================*/
+void CAN_C_P_OnFullRxBuffer(LDD_TUserData *UserDataPtr, LDD_CAN_TMBIndex BufferIdx)
+{
+  /* Write your code here ... */
+}
+
 /* END Events */
 
 #ifdef __cplusplus

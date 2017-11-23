@@ -91,6 +91,7 @@
 #include "BitIoLdd34.h"
 #include "LAMP_LOW.h"
 #include "BitIoLdd35.h"
+#include "CAN_C_P.h"
 #include "D_7S_DP.h"
 #include "BitIoLdd22.h"
 #include "D_7S_G.h"
