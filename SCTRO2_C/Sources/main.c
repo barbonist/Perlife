@@ -49,12 +49,10 @@
 #include "ASerialLdd5.h"
 #include "AD0.h"
 #include "AdcLdd2.h"
-#include "Bit1.h"
+#include "FLOWSENS_RE.h"
 #include "BitIoLdd3.h"
-#include "Bit2.h"
+#include "FLOWSESNS_DE.h"
 #include "BitIoLdd4.h"
-#include "FLOWSENS_RTS.h"
-#include "BitIoLdd5.h"
 #include "IR_TM_COMM.h"
 #include "IntI2cLdd1.h"
 #include "TU1.h"
@@ -164,10 +162,10 @@ int main(void)
 			 #ifdef DEBUG_ENABLE
 	  	  	  	  index++;
 	         	  if(index%32000 == 0)
-	         		 Bit1_NegVal();
+	         		 FLOWSENS_RE_NegVal();
 	         	  else if(index%65000 == 0)
 	         	  {
-	         		 Bit2_NegVal();
+	         		 FLOWSESNS_DE_NegVal();
 	         		 index = 0;
 	         	  }
 
