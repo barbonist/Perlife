@@ -463,7 +463,6 @@ int main(void)
 
 	         }
 
-
 	         if(timerCounterPeltier >= 2){
 	        	 timerCounterPeltier = 0;
 

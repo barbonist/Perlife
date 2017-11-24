@@ -35,6 +35,11 @@
 #include "COVER_M4.h"
 #include "COVER_M5.h"
 
+#include "BUBBLE_KEYBOARD_BUTTON1.h"
+#include "BUBBLE_KEYBOARD_BUTTON2.h"
+#include "BUBBLE_KEYBOARD_BUTTON3.h"
+#include "BUBBLE_KEYBOARD_BUTTON4.h"
+
 /********************************/
 /* machine state initialization */
 /********************************/
@@ -2375,5 +2380,15 @@ void Cover_Sensor_GetVal()
 	CoverM4 = COVER_M4_GetVal();
 	CoverM5 = COVER_M5_GetVal();
 
+}
+
+void Bubble_Keyboard_GetVal()
+{
+	bool Button1,Button2,Button3,Button4;
+
+	Button1 = BUBBLE_KEYBOARD_BUTTON1_GetVal();
+	Button2 = BUBBLE_KEYBOARD_BUTTON2_GetVal();
+	Button3 = BUBBLE_KEYBOARD_BUTTON3_GetVal();
+	Button4 = BUBBLE_KEYBOARD_BUTTON4_GetVal();
 }
 /**/
