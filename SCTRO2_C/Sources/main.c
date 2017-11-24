@@ -462,6 +462,7 @@ int main(void)
 	        	 alwaysUFlowSensor();
 
 	         }
+	         Buzzer_Management();
 
 	         if(timerCounterPeltier >= 2){
 	        	 timerCounterPeltier = 0;

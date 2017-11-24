@@ -40,6 +40,10 @@
 #include "BUBBLE_KEYBOARD_BUTTON3.h"
 #include "BUBBLE_KEYBOARD_BUTTON4.h"
 
+#include "BUZZER_LOW_C.h"
+#include "BUZZER_MEDIUM_C.h"
+#include "BUZZER_HIGH_C.h"
+
 /********************************/
 /* machine state initialization */
 /********************************/
@@ -2390,5 +2394,17 @@ void Bubble_Keyboard_GetVal()
 	Button2 = BUBBLE_KEYBOARD_BUTTON2_GetVal();
 	Button3 = BUBBLE_KEYBOARD_BUTTON3_GetVal();
 	Button4 = BUBBLE_KEYBOARD_BUTTON4_GetVal();
+}
+
+void Buzzer_Management()
+{
+//	BUZZER_LOW_C_SetVal(); 		//attiva il buzzer low
+//	BUZZER_LOW_C_ClrVal(); 		//disattiva il buzzer low
+
+//	BUZZER_MEDIUM_C_SetVal();	//attiva il buzzer Medium
+//	BUZZER_MEDIUM_C_ClrVal();	//disattiva il buzzer Medium
+
+//	BUZZER_HIGH_C_SetVal();		//attiva il buzzer High
+//	BUZZER_HIGH_C_ClrVal();		//disattiva il buzzer Medium
 }
 /**/

@@ -153,7 +153,7 @@ char checkParTypeFromGUI(unsigned char parId);
 void Display_7S_Management();
 void Cover_Sensor_GetVal();
 void Bubble_Keyboard_GetVal();
-
+void Buzzer_Management();
 /*******************/
 /* VARIABLE */
 /******************/
