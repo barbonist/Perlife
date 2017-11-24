@@ -29,6 +29,12 @@
 #include "D_7S_F.h"
 #include "D_7S_G.h"
 
+#include "COVER_M1.h"
+#include "COVER_M2.h"
+#include "COVER_M3.h"
+#include "COVER_M4.h"
+#include "COVER_M5.h"
+
 /********************************/
 /* machine state initialization */
 /********************************/
@@ -2357,5 +2363,17 @@ void Display_7S_Management()
 
 	// D_7S_DP_SetVal(); //spegne puntino led
 	// D_7S_DP_ClrVal(); //accende puntino led
+}
+
+void Cover_Sensor_GetVal()
+{
+	unsigned char CoverM1,CoverM2,CoverM3,CoverM4,CoverM5;
+
+	CoverM1 = COVER_M1_GetVal();
+	CoverM2 = COVER_M2_GetVal();
+	CoverM3 = COVER_M3_GetVal();
+	CoverM4 = COVER_M4_GetVal();
+	CoverM5 = COVER_M5_GetVal();
+
 }
 /**/

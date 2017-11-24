@@ -151,6 +151,7 @@ char checkParTypeFromGUI(unsigned char parId);
 /******---------------------7 SEGMENT DISPLAY MANAGEMENT-----------------------********/
 /**************************************************************************************/
 void Display_7S_Management();
+void Cover_Sensor_GetVal();
 
 /*******************/
 /* VARIABLE */
