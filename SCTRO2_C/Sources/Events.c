@@ -1055,6 +1055,31 @@ void CAN_C_P_OnFullRxBuffer(LDD_TUserData *UserDataPtr, LDD_CAN_TMBIndex BufferI
   /* Write your code here ... */
 }
 
+/*
+** ===================================================================
+**     Event       :  TI1_OnInterrupt (module Events)
+**
+**     Component   :  TI1 [TimerInt]
+**     Description :
+**         When a timer interrupt occurs this event is called (only
+**         when the component is enabled - <Enable> and the events are
+**         enabled - <EnableEvent>). This event is enabled only if a
+**         <interrupt service/event> is enabled.
+**     Parameters  : None
+**     Returns     : Nothing
+** ===================================================================
+*/
+void TI1_OnInterrupt(void)
+{
+  /* Write your code here ... */
+	/*funzione per generare il PWM a 200 HZ per il compressore
+	 * Se si vuole variare la frequenza (200 HZ dovrebbe essere il massimo
+	 * si può mettere una variabile globale impsotabile che funzioni da
+	 * divisore di frequenza*/
+
+	COMP_PWM_NegVal();
+}
+
 /* END Events */
 
 #ifdef __cplusplus
