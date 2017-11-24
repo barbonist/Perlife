@@ -176,7 +176,7 @@ void 	alwaysAdcParam(void){
 	dummy = dummy + 1;
 
 	#ifdef DEBUG_LOG_PC
-	sprintf(stringPr1, "%d; %i; %i;", timems, (int)(sensor_UFLOW[0].volumeMlTot), (sensor_PRx[0].prSensValueFilteredWA));
+	sprintf(stringPr1, "%d; %i; %i;\r", timems, (int)(sensor_UFLOW[0].volumeMlTot), (sensor_PRx[0].prSensValueFilteredWA));
 	for(int i=0; i<20; i++)
 	{
 		PC_DEBUG_COMM_SendChar(stringPr1[i]);

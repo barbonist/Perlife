@@ -439,6 +439,8 @@ int main(void)
 	         pollingDataToSBCTreat();
 	         /* sbc comm - end */
 
+	       //  Display_7S_Management();
+
 	         /*****MACHINE STATE UPDATE START****/
 	         if(timerCounterMState >= 1)
 	         {

@@ -41,7 +41,7 @@ char	iflag_sensTempIRRW;
 #define DEBUG_MACHINE_STATE		0x06
 #define DEBUG_CONTROL			0xA5
 #define DEBUG_PROTECTION		0x5A
-//#define DEBUG_LOG_PC			0x01
+#define DEBUG_LOG_PC			0x01
 #define DEBUG_TREATMENT			0xA5
 /*#define DEBUG_I2C_TEMP_SENS		0x01;*/
 /*#define DEBUG_FLOW_SENS			0x00*/ /*0x01*/

@@ -20,6 +20,15 @@
 #include "MODBUS_COMM.h"
 #include "ASerialLdd1.h"
 
+#include "D_7S_DP.h"
+#include "D_7S_A.h"
+#include "D_7S_B.h"
+#include "D_7S_C.h"
+#include "D_7S_D.h"
+#include "D_7S_E.h"
+#include "D_7S_F.h"
+#include "D_7S_G.h"
+
 /********************************/
 /* machine state initialization */
 /********************************/
@@ -2319,5 +2328,34 @@ char checkParTypeFromGUI(unsigned char parId){
 		break;
 
 	}
+}
+
+void Display_7S_Management()
+{
+	//funzioni per spegnere e accenderfe display a 7 Segmenti
+
+	// D_7S_A_SetVal(); //spegne led orizzontale alto
+	// D_7S_A_ClrVal(); //accende led orizzontale alto
+
+	// D_7S_B_SetVal(); //spegne led verticale alto Dx
+	// D_7S_B_ClrVal(); //accende led verticale alto Dx
+
+	// D_7S_C_SetVal(); //spegne led led verticale basso Dx
+	// D_7S_C_ClrVal(); //accende led verticale basso Dx
+
+	// D_7S_D_SetVal(); //spegne led orizzontale basso
+	// D_7S_D_ClrVal(); //accende led orizzontale basso
+
+	// D_7S_E_SetVal(); //spegne led verticale basso Sx
+	// D_7S_E_ClrVal(); //accende led verticale basso Sx
+
+	// D_7S_F_SetVal(); //spegne led verticale alto Sx
+	// D_7S_F_ClrVal(); //accende led verticale alto Sx
+
+	// D_7S_G_SetVal(); //spegne led orizzontale centrale
+	// D_7S_G_ClrVal(); //accende led orizzontale centrale
+
+	// D_7S_DP_SetVal(); //spegne puntino led
+	// D_7S_DP_ClrVal(); //accende puntino led
 }
 /**/

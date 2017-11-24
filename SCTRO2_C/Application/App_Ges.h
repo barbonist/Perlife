@@ -147,6 +147,11 @@ void resetParamWordFromGUI(unsigned char parId);
 void resetParamFloatFromGUI(unsigned char parId);
 char checkParTypeFromGUI(unsigned char parId);
 
+/**************************************************************************************/
+/******---------------------7 SEGMENT DISPLAY MANAGEMENT-----------------------********/
+/**************************************************************************************/
+void Display_7S_Management();
+
 /*******************/
 /* VARIABLE */
 /******************/
