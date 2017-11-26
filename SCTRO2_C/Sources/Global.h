@@ -81,6 +81,9 @@ char	iflag_sensTempIRRW;
 #define IFLAG_IRTEMP_MEASURE_READY	0x01 /* valore di temperatura pronto da leggere */
 #define IFLAG_IDLE				0x00 /* idle flag */
 #define IFLAG_BUSY				0x5A /* channel busy */
+#define LAMP_LEVEL_LOW			0x00
+#define LAMP_LEVEL_MEDIUM		0x01
+#define LAMP_LEVEL_HIGH			0x02
 
 /**/
 /**/

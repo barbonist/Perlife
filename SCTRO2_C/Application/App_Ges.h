@@ -155,6 +155,8 @@ void Cover_Sensor_GetVal();
 void Bubble_Keyboard_GetVal();
 void Buzzer_Management();
 void Heater_ON();
+void Set_Lamp(unsigned char level);
+void Reset_Lamp(unsigned char level);
 /*******************/
 /* VARIABLE */
 /******************/

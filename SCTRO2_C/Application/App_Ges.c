@@ -45,6 +45,9 @@
 #include "BUZZER_HIGH_C.h"
 
 #include "HEAT_ON_C.h"
+#include "LAMP_LOW.h"
+#include "LAMP_MEDIUM.h"
+#include "LAMP_HIGH.h"
 
 /********************************/
 /* machine state initialization */
@@ -2416,5 +2419,47 @@ void Heater_ON()
 
 	if (!HeaterStatus)
 		HEAT_ON_C_SetVal();
+}
+
+void Set_Lamp(unsigned char level)
+{
+	switch (level)
+	{
+	case LAMP_LEVEL_LOW:
+		LAMP_LOW_SetVal();
+		break;
+
+	case LAMP_LEVEL_MEDIUM:
+		LAMP_MEDIUM_SetVal();
+		break;
+
+	case LAMP_LEVEL_HIGH:
+		LAMP_HIGH_SetVal();
+		break;
+
+	default:
+		break;
+	}
+}
+
+void Reset_Lamp(unsigned char level)
+{
+	switch (level)
+	{
+	case LAMP_LEVEL_LOW:
+		LAMP_LOW_ClrVal();
+		break;
+
+	case LAMP_LEVEL_MEDIUM:
+		LAMP_MEDIUM_ClrVal();
+		break;
+
+	case LAMP_LEVEL_HIGH:
+		LAMP_HIGH_ClrVal();
+		break;
+
+	default:
+		break;
+	}
 }
 /**/
