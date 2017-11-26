@@ -49,6 +49,11 @@
 #include "LAMP_MEDIUM.h"
 #include "LAMP_HIGH.h"
 
+#include "RTS_MOTOR.h"
+#include "EN_CLAMP_CONTROL.h"
+#include "EN_MOTOR_CONTROL.h"
+#include "EN_24_M_C.h"
+
 /********************************/
 /* machine state initialization */
 /********************************/
@@ -2462,4 +2467,74 @@ void Reset_Lamp(unsigned char level)
 		break;
 	}
 }
+
+void RTS_Motor_Management(unsigned char action)
+{
+	switch (action)
+	{
+	case ENABLE:
+		RTS_MOTOR_SetVal();
+		break;
+
+	case DISABLE:
+		RTS_MOTOR_ClrVal();
+		break;
+
+	default:
+		break;
+	}
+
+}
+
+void EN_Clamp_Control (unsigned char action)
+{
+	switch (action)
+	{
+	case ENABLE:
+		EN_CLAMP_CONTROL_SetVal();
+		break;
+
+	case DISABLE:
+		EN_CLAMP_CONTROL_ClrVal();
+		break;
+
+	default:
+		break;
+	}
+}
+
+void EN_Motor_Control(unsigned char action)
+{
+	switch (action)
+	{
+	case ENABLE:
+		EN_MOTOR_CONTROL_SetVal();
+		break;
+
+	case DISABLE:
+		EN_MOTOR_CONTROL_ClrVal();
+		break;
+
+	default:
+		break;
+	}
+}
+
+void EN_24_M_C_Management(unsigned char action)
+{
+	switch (action)
+	{
+	case ENABLE:
+		EN_24_M_C_SetVal();
+		break;
+
+	case DISABLE:
+		EN_24_M_C_ClrVal();
+		break;
+
+	default:
+		break;
+	}
+}
+
 /**/

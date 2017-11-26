@@ -84,6 +84,8 @@ char	iflag_sensTempIRRW;
 #define LAMP_LEVEL_LOW			0x00
 #define LAMP_LEVEL_MEDIUM		0x01
 #define LAMP_LEVEL_HIGH			0x02
+#define ENABLE					0x00
+#define DISABLE					0x01
 
 /**/
 /**/

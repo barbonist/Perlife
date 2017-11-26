@@ -157,6 +157,10 @@ void Buzzer_Management();
 void Heater_ON();
 void Set_Lamp(unsigned char level);
 void Reset_Lamp(unsigned char level);
+void RTS_Motor_Management(unsigned char action);
+void EN_Clamp_Control (unsigned char action);
+void EN_Motor_Control(unsigned char action);
+void EN_24_M_C_Management(unsigned char action);
 /*******************/
 /* VARIABLE */
 /******************/
