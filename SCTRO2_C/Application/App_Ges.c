@@ -44,6 +44,8 @@
 #include "BUZZER_MEDIUM_C.h"
 #include "BUZZER_HIGH_C.h"
 
+#include "HEAT_ON_C.h"
+
 /********************************/
 /* machine state initialization */
 /********************************/
@@ -2406,5 +2408,13 @@ void Buzzer_Management()
 
 //	BUZZER_HIGH_C_SetVal();		//attiva il buzzer High
 //	BUZZER_HIGH_C_ClrVal();		//disattiva il buzzer Medium
+}
+
+void Heater_ON()
+{
+	unsigned char HeaterStatus =  HEAT_ON_C_GetVal();
+
+	if (!HeaterStatus)
+		HEAT_ON_C_SetVal();
 }
 /**/
