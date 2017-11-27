@@ -3,7 +3,7 @@
   <Header>
     <Name>SCTRO2_C</Name>
     <SavedBy>W15</SavedBy>
-    <ModificationStamp>91</ModificationStamp>
+    <ModificationStamp>92</ModificationStamp>
     <Date>2016-07-19</Date>
     <IDE>Eclipse IDE</IDE>
     <PEversion>1.12.2.RT7_b1550-0615</PEversion>
@@ -53057,7 +53057,7 @@
               <ReqDevPrescSpeedMode5>-1</ReqDevPrescSpeedMode5>
               <ReqDevPrescSpeedMode6>-1</ReqDevPrescSpeedMode6>
               <ReqDevPrescSpeedMode7>-1</ReqDevPrescSpeedMode7>
-              <ReqExtCompPrescHigh>20</ReqExtCompPrescHigh>
+              <ReqExtCompPrescHigh>40</ReqExtCompPrescHigh>
               <ReqExtCompPrescLow>-1</ReqExtCompPrescLow>
               <ReqExtCompPrescSlow>-1</ReqExtCompPrescSlow>
               <ReqExtCompPrescSpeedMode3>-1</ReqExtCompPrescSpeedMode3>
@@ -53084,15 +53084,15 @@
             </ItemState>
             <ItemState>
               <ItemSymbol>ADCClock</ItemSymbol>
-              <Value>1.31 MHz (762.939 ns)</Value>
+              <Value>2.621 MHz (381.47 ns)</Value>
             </ItemState>
             <ItemState>
               <ItemSymbol>SingleConversionTimeSE</ItemSymbol>
-              <Value>19.311 us</Value>
+              <Value>16.641 us</Value>
             </ItemState>
             <ItemState>
               <ItemSymbol>SingleConversionTimeDiff</ItemSymbol>
-              <Value>26.941 us</Value>
+              <Value>20.456 us</Value>
             </ItemState>
             <ItemState>
               <ItemSymbol>AdditionalConversionTimeSE</ItemSymbol>
@@ -53100,7 +53100,7 @@
             </ItemState>
             <ItemState>
               <ItemSymbol>AdditionalConversionTimeDiff</ItemSymbol>
-              <Value>22.888 us</Value>
+              <Value>19.073 us</Value>
             </ItemState>
             <ItemState>
               <ItemSymbol>StandbyFeatureGroup</ItemSymbol>
@@ -54889,7 +54889,7 @@
         <ReqDevPrescSpeedMode5>-1</ReqDevPrescSpeedMode5>
         <ReqDevPrescSpeedMode6>-1</ReqDevPrescSpeedMode6>
         <ReqDevPrescSpeedMode7>-1</ReqDevPrescSpeedMode7>
-        <ReqExtCompPrescHigh>20</ReqExtCompPrescHigh>
+        <ReqExtCompPrescHigh>40</ReqExtCompPrescHigh>
         <ReqExtCompPrescLow>-1</ReqExtCompPrescLow>
         <ReqExtCompPrescSlow>-1</ReqExtCompPrescSlow>
         <ReqExtCompPrescSpeedMode3>-1</ReqExtCompPrescSpeedMode3>
@@ -55008,8 +55008,8 @@
         <UserReadOnly>false</UserReadOnly>
         <PropertyModelIsAutomatic>false</PropertyModelIsAutomatic>
         <TypeSpecNameState>typeSampleExtendedLongTime</TypeSpecNameState>
-        <Index>0</Index>
-        <EnumSymbVal>0</EnumSymbVal>
+        <Index>1</Index>
+        <EnumSymbVal>20</EnumSymbVal>
       </ItemState>
       <ItemState>
         <ItemSymbol>HCS12Grp</ItemSymbol>
@@ -55518,7 +55518,7 @@
         <ReadOnly>false</ReadOnly>
         <UserReadOnly>false</UserReadOnly>
         <PropertyModelIsAutomatic>false</PropertyModelIsAutomatic>
-        <Value>1</Value>
+        <Value>16</Value>
         <Base>DEC</Base>
       </ItemState>
       <ItemState>
