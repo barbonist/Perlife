@@ -28,5 +28,7 @@ void	initAdcParam(void);
 void 	alwaysAdcParam(void);
 
 int meanWA(unsigned char dimNum, int newSensVal);
+void ADC1_Init(void);
+void ADC0_Init(void);
 
 #endif /* APPLICATION_ADC_GES_H_ */

@@ -7,6 +7,7 @@
 
 #include "Global.h"
 #include "Adc_Ges.h"
+#include "AD0.h"
 #include "AD1.h"
 #include "AdcLdd1.h"
 #include "PE_Types.h"
@@ -23,6 +24,37 @@ word adcValue;
 word adcValueDummy;
 word * adcValPtr;
 
+void ADC0_Init(void)
+{
+	int i;
+	bool ADC_CALIB_OK = TRUE;
+
+	/*calibriamo il componente AD1 rispetto alla VREF*/
+	for (int i=0; i<50; i++)
+	{
+		if (AD0_Calibrate(ADC_CALIB_OK) == ERR_OK)
+			break;
+	}
+
+	/*faccio lo start per attivare la conversione*/
+	AD0_Start();
+}
+
+void ADC1_Init(void)
+{
+	int i;
+	bool ADC_CALIB_OK = TRUE;
+
+	/*calibriamo il componente AD1 rispetto alla VREF*/
+	for (int i=0; i<50; i++)
+	{
+		if (AD1_Calibrate(ADC_CALIB_OK) == ERR_OK)
+			break;
+	}
+
+	/*faccio lo start per attivare la conversione*/
+	AD1_Start();
+}
 word * ReadAdcPr1(void)
 {
 	adcRes = AD1_MeasureChan(1, ADC_CHANNEL_PR1);

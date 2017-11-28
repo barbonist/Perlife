@@ -178,6 +178,9 @@ int main(void)
   PE_low_level_init();
   /*** End of Processor Expert internal initialization.                    ***/
 
+  ADC0_Init();
+  ADC1_Init();
+
   /* Write your code here */
 
   initAllGuard();
@@ -243,6 +246,7 @@ int main(void)
 
   int timerCounterModBusOld = 0;
   /* For example: for(;;) { } */
+  AD0_Start();
 
   /**********MAIN LOOP START************/
   for(;;) {

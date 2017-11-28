@@ -447,6 +447,9 @@ void PELTIER_COMM_OnTxComplete(void)
 void AD1_OnEnd(void)
 {
   /* Write your code here ... */
+
+	/*DP_SW2 sta su AD1 channel 13*/
+	AD1_GetChanValue16(13, &DipSwitch_2);
 }
 
 /*
@@ -874,6 +877,11 @@ void FLASH1_OnOperationComplete(LDD_TUserData *UserDataPtr)
 void AD0_OnEnd(void)
 {
   /* Write your code here ... */
+
+	/*DP_SW0 sta su AD0 channel 4*/
+	AD0_GetChanValue16(4, &DipSwitch_0);
+	/*DP_SW1 sta su AD0 channel 5*/
+	AD0_GetChanValue16(5, &DipSwitch_1);
 }
 
 /*
