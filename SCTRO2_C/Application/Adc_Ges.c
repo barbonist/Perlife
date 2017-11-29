@@ -55,6 +55,21 @@ void ADC1_Init(void)
 	/*faccio lo start per attivare la conversione*/
 	AD1_Start();
 }
+
+void Dip_Switch_Init(void)
+{
+	/*inizializzo le variabili globali in cui saranno
+	 * presenti i valori ADC dei 3 DIP SWITCH*/
+	DipSwitch_0 = 0;
+	DipSwitch_1 = 0;
+	DipSwitch_2 = 0;
+}
+
+void Voltage_Peltier_ADC_Init(void)
+{
+	V24_P1_CHK = 0;
+	V24_P2_CHK = 0;
+}
 word * ReadAdcPr1(void)
 {
 	adcRes = AD1_MeasureChan(1, ADC_CHANNEL_PR1);

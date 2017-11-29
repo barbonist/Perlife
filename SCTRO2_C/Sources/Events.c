@@ -450,6 +450,10 @@ void AD1_OnEnd(void)
 
 	/*DP_SW2 sta su AD1 channel 13*/
 	AD1_GetChanValue16(13, &DipSwitch_2);
+	/*Peltier Voltage 1 sta su AD1 channel 11*/
+	AD1_GetChanValue16(11, &V24_P1_CHK);
+	/*Peltier Voltage 2 sta su AD1 channel 11*/
+	AD1_GetChanValue16(10, &V24_P2_CHK);
 }
 
 /*

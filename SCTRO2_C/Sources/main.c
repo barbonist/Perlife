@@ -181,6 +181,9 @@ int main(void)
   ADC0_Init();
   ADC1_Init();
 
+  Dip_Switch_Init();
+  Voltage_Peltier_ADC_Init();
+
   /* Write your code here */
 
   initAllGuard();
