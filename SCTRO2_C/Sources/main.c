@@ -178,13 +178,13 @@ int main(void)
   PE_low_level_init();
   /*** End of Processor Expert internal initialization.                    ***/
 
-
   /**/
   ADC0_Calibration();
   ADC1_Calibration();
 
-  Dip_Switch_Init();
+  Dip_Switch_ADC_Init();
   Voltage_Peltier_ADC_Init();
+  PR_Sens_ADC_Init();
 
   /* Write your code here */
 

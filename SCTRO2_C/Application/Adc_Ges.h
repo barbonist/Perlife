@@ -30,9 +30,9 @@ void 	alwaysAdcParam(void);
 int meanWA(unsigned char dimNum, int newSensVal);
 void ADC1_Calibration(void);
 void ADC0_Calibration(void);
-void Dip_Switch_Init(void);
+void Dip_Switch_ADC_Init(void);
 void Voltage_Peltier_ADC_Init(void);
 void Manange_ADC0(void);
 void Manange_ADC1(void);
-
+void PR_Sens_ADC_Init(void);
 #endif /* APPLICATION_ADC_GES_H_ */

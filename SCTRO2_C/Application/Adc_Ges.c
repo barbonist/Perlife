@@ -33,10 +33,10 @@ void Manange_ADC0(void)
 	 * che saranno sempre aggiornate*/
 	if (END_ADC0)
   	  {
-		/*DP_SW0 sta su AD0 channel 4*/
-		AD0_GetChanValue16(4, &DipSwitch_0);
-		/*DP_SW1 sta su AD0 channel 5*/
-		AD0_GetChanValue16(5, &DipSwitch_1);
+		/*DP_SW0 sta su AD0 channel 4; passando l'indirizzo della variabile, la valorizzo*/
+		AD0_GetChanValue16(4, &DipSwitch_0_ADC);
+		/*DP_SW1 sta su AD0 channel 5; passando l'indirizzo della variabile, la valorizzo*/
+		AD0_GetChanValue16(5, &DipSwitch_1_ADC);
 
 		/*resetto il flag di lettura sull'interrupt AD0_OnEnd*/
 		END_ADC0 = FALSE;
@@ -54,12 +54,14 @@ void Manange_ADC1(void)
 	 * che saranno sempre aggiornate*/
 	if (END_ADC1)
   	  {
-		/*DP_SW2 sta su AD1 channel 13*/
-		AD1_GetChanValue16(13, &DipSwitch_2);
-		/*Peltier Voltage 1 sta su AD1 channel 11*/
-		AD1_GetChanValue16(11, &V24_P1_CHK);
-		/*Peltier Voltage 2 sta su AD1 channel 11*/
-		AD1_GetChanValue16(10, &V24_P2_CHK);
+		/*Peltier Voltage 2 sta su AD1 channel 10; passando l'indirizzo della variabile, la valorizzo*/
+		AD1_GetChanValue16(10, &V24_P2_CHK_ADC);
+		/*Peltier Voltage 1 sta su AD1 channel 11; passando l'indirizzo della variabile, la valorizzo*/
+		AD1_GetChanValue16(11, &V24_P1_CHK_ADC);
+		/*DP_SW2 sta su AD1 channel 13; passando l'indirizzo della variabile, la valorizzo*/
+		AD1_GetChanValue16(13, &DipSwitch_2_ADC);
+		/*PR_VEN sta su AD1 channel 4; passando l'indirizzo della variabile, la valorizzo*/
+		AD1_GetChanValue16(4, &PR_VEN_ADC);
 
 		/*resetto il flag di lettura sull'interrupt AD1_OnEnd*/
 		END_ADC1 = FALSE;
@@ -97,20 +99,26 @@ void ADC1_Calibration(void)
 	END_ADC1 = FALSE;
 }
 
-void Dip_Switch_Init(void)
+void Dip_Switch_ADC_Init(void)
 {
 	/*inizializzo le variabili globali in cui saranno
 	 * presenti i valori ADC dei 3 DIP SWITCH*/
-	DipSwitch_0 = 0;
-	DipSwitch_1 = 0;
-	DipSwitch_2 = 0;
+	DipSwitch_0_ADC = 0;
+	DipSwitch_1_ADC = 0;
+	DipSwitch_2_ADC = 0;
 }
 
 void Voltage_Peltier_ADC_Init(void)
 {
-	V24_P1_CHK = 0;
-	V24_P2_CHK = 0;
+	V24_P1_CHK_ADC = 0;
+	V24_P2_CHK_ADC = 0;
 }
+
+void PR_Sens_ADC_Init()
+{
+	PR_VEN_ADC=0;
+}
+
 word * ReadAdcPr1(void)
 {
 	adcRes = AD1_MeasureChan(1, ADC_CHANNEL_PR1);

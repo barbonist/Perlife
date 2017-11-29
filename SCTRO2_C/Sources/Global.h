@@ -916,12 +916,14 @@ int timerCounterPeltier;
 /* 					VARIABILI CANALI ADC		 						*/
 /************************************************************************/
 
-word DipSwitch_0;		//Variabile globale col valore ADC del DIP_SWITCH_1
-word DipSwitch_1;		//Variabile globale col valore ADC del DIP_SWITCH_2
-word DipSwitch_2;		//Variabile globale col valore ADC del DIP_SWITCH_3
+word DipSwitch_0_ADC;		//Variabile globale col valore ADC del DIP_SWITCH_1
+word DipSwitch_1_ADC;		//Variabile globale col valore ADC del DIP_SWITCH_2
+word DipSwitch_2_ADC;		//Variabile globale col valore ADC del DIP_SWITCH_3
 
-word V24_P1_CHK;
-word V24_P2_CHK;
+word V24_P1_CHK_ADC;
+word V24_P2_CHK_ADC;
+
+word PR_VEN_ADC;
 
 unsigned char END_ADC0;
 unsigned char END_ADC1;
