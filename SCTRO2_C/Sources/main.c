@@ -463,11 +463,7 @@ int main(void)
 	         /*funzioni per leggere i canali AD*/
 	         Manange_ADC0();
 	         Manange_ADC1();
-	         if (DipSwitch_2 > 0xE0)
-	         { int i;
-	        	 i=0;
-	         }
-	         /*funzioni per leggere i canali AD END*/
+	         /*END funzioni per leggere i canali AD*/
 
 	         /*****MACHINE STATE UPDATE START****/
 	         if(timerCounterMState >= 1)

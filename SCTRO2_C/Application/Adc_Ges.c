@@ -27,6 +27,10 @@ word * adcValPtr;
 
 void Manange_ADC0(void)
 {
+	/*dentro l'if seguente posso mettere
+	 * tutte le letture del canale ADC0
+	 * usando delle variabili globali
+	 * che saranno sempre aggiornate*/
 	if (END_ADC0)
   	  {
 		/*DP_SW0 sta su AD0 channel 4*/
@@ -44,6 +48,10 @@ void Manange_ADC0(void)
 
 void Manange_ADC1(void)
 {
+	/*dentro l'if seguente posso mettere
+	 * tutte le letture del canale ADC1
+	 * usando delle variabili globali
+	 * che saranno sempre aggiornate*/
 	if (END_ADC1)
   	  {
 		/*DP_SW2 sta su AD1 channel 13*/
@@ -72,6 +80,7 @@ void ADC0_Calibration(void)
 		if (AD0_Calibrate(ADC_CALIB_OK) == ERR_OK)
 			break;
 	}
+	END_ADC0 = FALSE;
 }
 
 void ADC1_Calibration(void)
@@ -85,6 +94,7 @@ void ADC1_Calibration(void)
 		if (AD1_Calibrate(ADC_CALIB_OK) == ERR_OK)
 			break;
 	}
+	END_ADC1 = FALSE;
 }
 
 void Dip_Switch_Init(void)
