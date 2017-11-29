@@ -24,36 +24,67 @@ word adcValue;
 word adcValueDummy;
 word * adcValPtr;
 
-void ADC0_Init(void)
+
+void Manange_ADC0(void)
+{
+	if (END_ADC0)
+  	  {
+		/*DP_SW0 sta su AD0 channel 4*/
+		AD0_GetChanValue16(4, &DipSwitch_0);
+		/*DP_SW1 sta su AD0 channel 5*/
+		AD0_GetChanValue16(5, &DipSwitch_1);
+
+		/*resetto il flag di lettura sull'interrupt AD0_OnEnd*/
+		END_ADC0 = FALSE;
+
+		/*rifaccio lo start per riattivare la conversione*/
+		AD0_Start();
+  	  }
+}
+
+void Manange_ADC1(void)
+{
+	if (END_ADC1)
+  	  {
+		/*DP_SW2 sta su AD1 channel 13*/
+		AD1_GetChanValue16(13, &DipSwitch_2);
+		/*Peltier Voltage 1 sta su AD1 channel 11*/
+		AD1_GetChanValue16(11, &V24_P1_CHK);
+		/*Peltier Voltage 2 sta su AD1 channel 11*/
+		AD1_GetChanValue16(10, &V24_P2_CHK);
+
+		/*resetto il flag di lettura sull'interrupt AD1_OnEnd*/
+		END_ADC1 = FALSE;
+
+		/*rifaccio lo start per riattivare la conversione*/
+		AD1_Start();
+  	  }
+}
+
+void ADC0_Calibration(void)
 {
 	int i;
 	bool ADC_CALIB_OK = TRUE;
 
 	/*calibriamo il componente AD1 rispetto alla VREF*/
-	for (int i=0; i<50; i++)
+	for (i=0; i<50; i++)
 	{
 		if (AD0_Calibrate(ADC_CALIB_OK) == ERR_OK)
 			break;
 	}
-
-	/*faccio lo start per attivare la conversione*/
-	AD0_Start();
 }
 
-void ADC1_Init(void)
+void ADC1_Calibration(void)
 {
 	int i;
 	bool ADC_CALIB_OK = TRUE;
 
 	/*calibriamo il componente AD1 rispetto alla VREF*/
-	for (int i=0; i<50; i++)
+	for (i=0; i<50; i++)
 	{
 		if (AD1_Calibrate(ADC_CALIB_OK) == ERR_OK)
 			break;
 	}
-
-	/*faccio lo start per attivare la conversione*/
-	AD1_Start();
 }
 
 void Dip_Switch_Init(void)

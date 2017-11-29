@@ -447,13 +447,9 @@ void PELTIER_COMM_OnTxComplete(void)
 void AD1_OnEnd(void)
 {
   /* Write your code here ... */
+	END_ADC1=TRUE;
 
-	/*DP_SW2 sta su AD1 channel 13*/
-	AD1_GetChanValue16(13, &DipSwitch_2);
-	/*Peltier Voltage 1 sta su AD1 channel 11*/
-	AD1_GetChanValue16(11, &V24_P1_CHK);
-	/*Peltier Voltage 2 sta su AD1 channel 11*/
-	AD1_GetChanValue16(10, &V24_P2_CHK);
+	AD1_Stop();
 }
 
 /*
@@ -882,10 +878,9 @@ void AD0_OnEnd(void)
 {
   /* Write your code here ... */
 
-	/*DP_SW0 sta su AD0 channel 4*/
-	AD0_GetChanValue16(4, &DipSwitch_0);
-	/*DP_SW1 sta su AD0 channel 5*/
-	AD0_GetChanValue16(5, &DipSwitch_1);
+	END_ADC0=TRUE;
+
+	AD0_Stop();
 }
 
 /*

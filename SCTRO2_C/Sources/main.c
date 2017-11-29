@@ -178,8 +178,10 @@ int main(void)
   PE_low_level_init();
   /*** End of Processor Expert internal initialization.                    ***/
 
-  ADC0_Init();
-  ADC1_Init();
+
+  /**/
+  ADC0_Calibration();
+  ADC1_Calibration();
 
   Dip_Switch_Init();
   Voltage_Peltier_ADC_Init();
@@ -222,6 +224,8 @@ int main(void)
   modBusPmpInit();
   modBusPinchInit();
 
+
+
   SBC_COMM_Enable();
     /**/
   Bit3_SetVal(); /* enable motore */
@@ -237,6 +241,8 @@ int main(void)
 
   ptrMsgPeltierRx = &peltierDebug_rx_data[0];
 
+
+
   ptrPeltierCountRx = 0;
 
   uint8_t InpData[4];
@@ -249,7 +255,12 @@ int main(void)
 
   int timerCounterModBusOld = 0;
   /* For example: for(;;) { } */
+
+  /*fccio lo start dei canali AD per far scattare l'interrupt
+   * dentro l'interrupt farò lo stop e poi lo start lo rifarò
+   * nella Manange_ADC0 e Manange_ADC1*/
   AD0_Start();
+  AD1_Start();
 
   /**********MAIN LOOP START************/
   for(;;) {
@@ -449,6 +460,15 @@ int main(void)
 	         pollingDataToSBCTreat();
 	         /* sbc comm - end */
 
+	         /*funzioni per leggere i canali AD*/
+	         Manange_ADC0();
+	         Manange_ADC1();
+	         if (DipSwitch_2 > 0xE0)
+	         { int i;
+	        	 i=0;
+	         }
+	         /*funzioni per leggere i canali AD END*/
+
 	         /*****MACHINE STATE UPDATE START****/
 	         if(timerCounterMState >= 1)
 	         {
@@ -463,6 +483,8 @@ int main(void)
 	        	//alwaysModBusActuator();
 	         }
 	         /****MACHINE STATE UPDATE END****/
+
+
 
 	         /*******************************/
 	         /*UFLOW SENSOR                 */

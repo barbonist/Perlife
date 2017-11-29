@@ -923,6 +923,9 @@ word DipSwitch_2;		//Variabile globale col valore ADC del DIP_SWITCH_3
 word V24_P1_CHK;
 word V24_P2_CHK;
 
+unsigned char END_ADC0;
+unsigned char END_ADC1;
+
 
 
 /**/
