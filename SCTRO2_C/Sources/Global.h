@@ -47,6 +47,8 @@ char	iflag_sensTempIRRW;
 /*#define DEBUG_FLOW_SENS			0x00*/ /*0x01*/
 /* DEBUG */
 
+#define STR_DBG_LENGHT			40
+
 #define	IFLAG_PC_RX				0x01 /* new data on rx 232 pc */
 #define IFLAG_PC_TX				0x01 /* new data to rx 232 pc */
 #define IFLAG_PMP1_RX			0x01 /* new data on rx 422 pmp1 */
@@ -908,6 +910,7 @@ int timerCounterMState;
 int timerCounterModBus;
 int timerCounterUFlowSensor;
 int timerCounterPeltier;
+
 /************************************************************************/
 /* 					STRUTTURA VOLUMI TRATTAMENTO 						*/
 /************************************************************************/
@@ -928,6 +931,8 @@ word PR_VEN_mmHg;
 
 unsigned char END_ADC0;
 unsigned char END_ADC1;
+
+unsigned char OK_START;
 
 #define BUTTON_1 0x01
 #define BUTTON_2 0x02

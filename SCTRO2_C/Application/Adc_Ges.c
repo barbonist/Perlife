@@ -254,7 +254,7 @@ void 	alwaysAdcParam(void){
 	unsigned char * ptrChar;
 	static unsigned long timems = 0;
 
-	static char stringPr1[20];
+	static char stringPr1[STR_DBG_LENGHT];
 
 	if(timerCounterADC >= 1)
 	{
@@ -268,17 +268,32 @@ void 	alwaysAdcParam(void){
 								(((float)sensor_PRx[0].prSensAdc/65535)*1617 - sensor_PRx[0].prSensOffsetVal) +
 								sensor_PRx[0].prSensOffset;
 
-	sensor_PRx[0].prSensValueFilteredWA = meanWA(8, (sensor_PRx[0].prSensValue));
+	sensor_PRx[0].prSensValueFilteredWA = meanWA(8, (sensor_PRx[0].prSensValue),0);
+
+	sensor_PRx[1].prSensAdcPtr = sensor_PRx[1].readAdctPtr();
+	sensor_PRx[1].prSensAdc = *sensor_PRx[1].prSensAdcPtr;
+	sensor_PRx[1].prSensValue = sensor_PRx[1].prSensGain *
+								(((float)sensor_PRx[1].prSensAdc/65535)*1617 - sensor_PRx[1].prSensOffsetVal) +
+								sensor_PRx[1].prSensOffset;
+
+	sensor_PRx[1].prSensValueFilteredWA = meanWA(8, (sensor_PRx[1].prSensValue),1);
+
 	dummy = dummy + 1;
 
-	#ifdef DEBUG_LOG_PC
-	sprintf(stringPr1, "%d; %i; %i;\r", timems, (int)(sensor_UFLOW[0].volumeMlTot), (sensor_PRx[0].prSensValueFilteredWA));
-	for(int i=0; i<20; i++)
+	//#ifdef DEBUG_LOG_PC
+	sprintf(stringPr1, "\r%d; %i; %i; %i; %i;",
+			            timems,
+						(int) (sensor_PRx[0].prSensValueFilteredWA),
+						(int) (sensor_PRx[1].prSensValueFilteredWA),
+						/*(int) (sensor_UFLOW[0].volumeMlTot)*/PR_VEN_mmHg,
+						(int) (sensorIR_TM[0].tempSensValue*10)
+			);
+	for(int i=0; i<STR_DBG_LENGHT; i++)
 	{
 		PC_DEBUG_COMM_SendChar(stringPr1[i]);
 	}
 	PC_DEBUG_COMM_SendChar(0x0A);
-	#endif
+//	#endif
 
 	sensor_PRx[1].prSensAdcPtr = sensor_PRx[1].readAdctPtr();
 	sensor_PRx[1].prSensAdc = *sensor_PRx[1].prSensAdcPtr;
@@ -294,7 +309,10 @@ void 	alwaysAdcParam(void){
 	}
 }
 
-int meanWA(unsigned char dimNum, int newSensVal){
+int meanWA(unsigned char dimNum, int newSensVal, char IdSens){
+	//fatto così faccio la media fra tutti i sensori contemporaneamente in quanto non specifico
+	//su quale sensore fare la media
+	/*
 	static int circularBuffer[64];
 	static int circBuffAdd[64];
 	int numSumValue = 0;
@@ -313,6 +331,35 @@ int meanWA(unsigned char dimNum, int newSensVal){
 	}
 	circularBuffer[0] = newSensVal;
 	numSumValue = numSumValue + (circularBuffer[0]*dimNum);
+	denValue = denValue + dimNum;
+	numTotal = (numSumValue/denValue);
+
+	return numTotal;
+	}
+	else
+		return 0;
+	*/
+
+	//rifaccio lo stesso codice ma provando a passare per paramento l'id del sensore
+
+	static int circularBuffer[4] [64]; //uso una matrice di 4 array, uno per ogni sensore
+	static int circBuffAdd[4] [64];    //uso una matrice di 4 array, uno per ogni sensore
+	int numSumValue = 0;
+	int denValue=0;
+	int numTotal=0;
+
+	if(dimNum <= 64){
+	for(int i=(dimNum-1); i>0; i--)
+	{
+		denValue = denValue + i;
+
+		circularBuffer[IdSens] [i] = circularBuffer [IdSens] [i-1];
+		circBuffAdd [IdSens] [i] = circularBuffer[IdSens] [i]*(dimNum-i);
+		numSumValue = numSumValue + circBuffAdd [IdSens] [i];
+
+	}
+	circularBuffer[IdSens] [0] = newSensVal;
+	numSumValue = numSumValue + (circularBuffer [IdSens] [0]*dimNum);
 	denValue = denValue + dimNum;
 	numTotal = (numSumValue/denValue);
 

@@ -27,7 +27,7 @@ word * ReadAdcTm2(void);
 void	initAdcParam(void);
 void 	alwaysAdcParam(void);
 
-int meanWA(unsigned char dimNum, int newSensVal);
+int meanWA(unsigned char dimNum, int newSensVal, char IdSens);
 void ADC1_Calibration(void);
 void ADC0_Calibration(void);
 void Dip_Switch_ADC_Init(void);

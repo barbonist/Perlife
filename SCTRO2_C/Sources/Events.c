@@ -823,6 +823,7 @@ void IR_TM_COMM_OnNACK(void)
 void TU1_OnCounterRestart(LDD_TUserData *UserDataPtr)
 {
   /* Write your code here ... */
+  /*interrupt usato per i timer che scatta ogni 50 ms*/
   timerCounter = timerCounter + 1;
 
   timerCounterADC = timerCounterADC + 1;
@@ -836,6 +837,12 @@ void TU1_OnCounterRestart(LDD_TUserData *UserDataPtr)
   timerCounterUFlowSensor = timerCounterUFlowSensor + 1;
 
   timerCounterPeltier = timerCounterPeltier + 1;
+
+  if (!OK_START)
+  {
+	  OK_START = TRUE;
+  }
+
 }
 
 /*

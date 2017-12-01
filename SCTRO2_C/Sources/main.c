@@ -211,6 +211,8 @@ int main(void)
   timerCounterMState = 0;
   timerCounterUFlowSensor = 0;
 
+  OK_START = FALSE;
+
   /*#ifdef	DEBUG_I2C_TEMP_SENS
   unsigned char rcvData[20];
   unsigned char * ptrData;
@@ -266,6 +268,15 @@ int main(void)
    * nella Manange_ADC0 e Manange_ADC1 oppure nel main loop sotto timer*/
   AD0_Start();
   AD1_Start();
+
+
+  /*attendo 50 ms prima di entrare nell main loop
+   * per dare il tempo ai sensori di alimentarsi e
+   * ativarsi; la variabile globale OK_START sarà
+   * messa a TRUE nella TU1_OnCounterRestart interrupt
+   * di timer che scatta ogni 50 ms*/
+  while (!OK_START);
+
 
   /**********MAIN LOOP START************/
   for(;;) {
@@ -506,7 +517,16 @@ int main(void)
 
 	         }
 
+	         /********************************/
+	         /*             I2C	             */
+	         /********************************/
+	         /*questa finzione viene chiamata a giro di programma
+	          * ma sarebbe meglio tmeporizzarla riscrivendo il driver
+	          * quindi riscrivendo la funzione facendo in modo
+	          * da fare la richiesta ad esmepio ogni 50 ms
+	          * e subito dopo la richiesta, facendo la ricezione */
 	         alwaysIRTempSensRead();
+
 	         /*******************************/
 	         /*UFLOW SENSOR                 */
 

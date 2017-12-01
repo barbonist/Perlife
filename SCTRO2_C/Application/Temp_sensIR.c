@@ -64,7 +64,7 @@ void alwaysIRTempSensRead(void){
 				IR_TM_COMM_Enable();
 				//id sensore
 				//indirizzo da leggere
-				ptrDataTemp = buildCmdReadTempSensIR(0x01, (RAM_ACCESS_COMMAND | SD_TOBJ1_RAM_ADDRESS), 0);
+				ptrDataTemp = buildCmdReadTempSensIR(0x5A/*0x01*/, (RAM_ACCESS_COMMAND | SD_TOBJ1_RAM_ADDRESS), 0);
 				//ptrDataOne = ptrDataTemp;
 				iflag_sensTempIR = IFLAG_SENS_TEMPIR_WAIT;
 				tempState = 1;
