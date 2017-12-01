@@ -152,7 +152,7 @@ char checkParTypeFromGUI(unsigned char parId);
 /**************************************************************************************/
 void Display_7S_Management();
 void Cover_Sensor_GetVal();
-void Bubble_Keyboard_GetVal();
+unsigned char Bubble_Keyboard_GetVal(unsigned char Button);
 void Buzzer_Management();
 void Heater_ON();
 void Set_Lamp(unsigned char level);
@@ -161,6 +161,7 @@ void RTS_Motor_Management(unsigned char action);
 void EN_Clamp_Control (unsigned char action);
 void EN_Motor_Control(unsigned char action);
 void EN_24_M_C_Management(unsigned char action);
+void Coversion_From_ADC_To_mmHg_Pressure_Sensor(void);
 /*******************/
 /* VARIABLE */
 /******************/

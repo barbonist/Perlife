@@ -172,7 +172,11 @@
 int main(void)
 /*lint -restore Enable MISRA rule (6.3) checking. */
 {
+
   /* Write your local variable definition here */
+  bool MOTORE_ACCESO = FALSE;
+  bool MOTORE_ACCESO_2 = FALSE;
+  unsigned char PINCH_POSITION = 0;
 
   /*** Processor Expert internal initialization. DON'T REMOVE THIS CODE!!! ***/
   PE_low_level_init();
@@ -256,9 +260,10 @@ int main(void)
   int timerCounterModBusOld = 0;
   /* For example: for(;;) { } */
 
-  /*fccio lo start dei canali AD per far scattare l'interrupt
+
+  /*faccio lo start dei canali AD per far scattare l'interrupt
    * dentro l'interrupt farò lo stop e poi lo start lo rifarò
-   * nella Manange_ADC0 e Manange_ADC1*/
+   * nella Manange_ADC0 e Manange_ADC1 oppure nel main loop sotto timer*/
   AD0_Start();
   AD1_Start();
 
@@ -463,6 +468,7 @@ int main(void)
 	         /*funzioni per leggere i canali AD*/
 	         Manange_ADC0();
 	         Manange_ADC1();
+	         Coversion_From_ADC_To_mmHg_Pressure_Sensor();
 	         /*END funzioni per leggere i canali AD*/
 
 	         /*****MACHINE STATE UPDATE START****/
@@ -523,6 +529,112 @@ int main(void)
 
   }
   /**********MAIN LOOP END**************/
+
+  /*********MAIN LOOP TEST**************/
+
+  /*MAIN loop per la gestione della pinch tramite tastiera a bolle*/
+  EN_24_M_C_Management(ENABLE);
+  EN_Clamp_Control(ENABLE);
+  for(;;)
+  {
+	  if (Bubble_Keyboard_GetVal(BUTTON_1) && PINCH_POSITION != MODBUS_PINCH_POS_CLOSED)
+	  {
+		  PINCH_POSITION = MODBUS_PINCH_POS_CLOSED;
+		  /*Pinch con rottay select = 5 e position = MODBUS_PINCH_POS_CLOSED*/
+		  setPinchPosValue (7,MODBUS_PINCH_POS_CLOSED);
+	  }
+	  if (Bubble_Keyboard_GetVal(BUTTON_2) && PINCH_POSITION != MODBUS_PINCH_RIGHT_OPEN)
+	  {
+		  PINCH_POSITION = MODBUS_PINCH_RIGHT_OPEN;
+		  /*Pinch con rottay select = 5 e position = MODBUS_PINCH_POS_CLOSED*/
+		  setPinchPosValue (7,MODBUS_PINCH_RIGHT_OPEN);
+	  }
+	  if (Bubble_Keyboard_GetVal(BUTTON_3) && PINCH_POSITION != MODBUS_PINCH_LEFT_OPEN)
+	  {
+		  PINCH_POSITION = MODBUS_PINCH_LEFT_OPEN;
+		  /*Pinch con rottay select = 5 e position = MODBUS_PINCH_POS_CLOSED*/
+		  setPinchPosValue (7,MODBUS_PINCH_LEFT_OPEN);
+	  }
+
+  }
+
+  /*MAIN loop per la gestione del motore pinch tramite tastiera a bolle*/
+  EN_24_M_C_Management(ENABLE);
+  for(;;)
+  {
+	  if (Bubble_Keyboard_GetVal(BUTTON_1) && !MOTORE_ACCESO)
+	  {
+		  /*accendo il motore*/
+		  MOTORE_ACCESO = TRUE;
+		  EN_Motor_Control(ENABLE);
+		  /*faccio partire la pompa con 2 come indirizzo
+		   * corrispondente a 0 come rotary select e 10 RPM come speed*/
+		  setPumpSpeedValue(2,1000);
+	  }
+	  if (Bubble_Keyboard_GetVal(BUTTON_2) && MOTORE_ACCESO)
+	  {
+		  /*spengo il motore*/
+		  MOTORE_ACCESO = FALSE;
+		  EN_Motor_Control(DISABLE);
+		  /*Fermo la pompa con 2 come indirizzo
+		   * corrispondente a 0 come rotary select e 0 RPM come speed*/
+		  setPumpSpeedValue(2,0);
+	  }
+
+  }
+
+  /*MAIN loop per la gestione di due motori tramite tastiera a bolle*/
+  EN_24_M_C_Management(ENABLE);
+  EN_Motor_Control(ENABLE);
+  EN_Clamp_Control(ENABLE);
+  for(;;)
+  {
+	  if (Bubble_Keyboard_GetVal(BUTTON_1) && Bubble_Keyboard_GetVal(BUTTON_2))
+	  {
+		  /*do l'enable ai canali pinch e motor*/
+		  EN_Motor_Control(ENABLE);
+		  EN_Clamp_Control(ENABLE);
+	  }
+	  else if (Bubble_Keyboard_GetVal(BUTTON_3) && Bubble_Keyboard_GetVal(BUTTON_4))
+	  {
+		  /*disabilito i canali pinch e motor*/
+		  EN_Motor_Control(DISABLE);
+		  EN_Clamp_Control(DISABLE);
+	  }
+	  else if (Bubble_Keyboard_GetVal(BUTTON_1) && !MOTORE_ACCESO)
+	  {
+		  /*accendo il motore*/
+		  MOTORE_ACCESO = TRUE;
+		  /*faccio partire la pompa con 2 come indirizzo
+		   * corrispondente a 0 come rotary select e 20 RPM come speed*/
+		  setPumpSpeedValue(2,2000);
+	  }
+	  else if (Bubble_Keyboard_GetVal(BUTTON_2) && MOTORE_ACCESO)
+	  {
+		  /*spengo il motore*/
+		  MOTORE_ACCESO = FALSE;
+		  /*Fermo la pompa con 2 come indirizzo
+		   * corrispondente a 0 come rotary select e 0 RPM come speed*/
+		  setPumpSpeedValue(2,0);
+	  }
+	  else if (Bubble_Keyboard_GetVal(BUTTON_3) && !MOTORE_ACCESO_2)
+	  {
+		  /*accendo il motore*/
+		  MOTORE_ACCESO_2 = TRUE;
+		  /*faccio partire la pompa con 2 come indirizzo
+		   * corrispondente a 0 come rotary select e 50 RPM come speed*/
+		  setPumpSpeedValue(3,5000);
+	  }
+	  else if (Bubble_Keyboard_GetVal(BUTTON_4) && MOTORE_ACCESO_2)
+	  {
+		  /*spengo il motore*/
+		  MOTORE_ACCESO_2 = FALSE;
+		  /*Fermo la pompa con 2 come indirizzo
+		   * corrispondente a 0 come rotary select e 0 RPM come speed*/
+		  setPumpSpeedValue(3,0);
+	  }
+  }
+  /*********MAIN LOOP TEST END **************/
 
   /*** Don't write any code pass this line, or it will be deleted during code generation. ***/
   /*** RTOS startup code. Macro PEX_RTOS_START is defined by the RTOS component. DON'T MODIFY THIS CODE!!! ***/

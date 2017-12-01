@@ -1349,8 +1349,6 @@ void alwaysPumpPressLoop(unsigned char pmpId){
 
 }
 
-
-
 void manageParentEntry(void)
 {
 	#ifdef DEBUG_ENABLE
@@ -2396,14 +2394,32 @@ void Cover_Sensor_GetVal()
 
 }
 
-void Bubble_Keyboard_GetVal()
+unsigned char Bubble_Keyboard_GetVal(unsigned char Button)
 {
-	bool Button1,Button2,Button3,Button4;
+	unsigned char button_Value = 0;
 
-	Button1 = BUBBLE_KEYBOARD_BUTTON1_GetVal();
-	Button2 = BUBBLE_KEYBOARD_BUTTON2_GetVal();
-	Button3 = BUBBLE_KEYBOARD_BUTTON3_GetVal();
-	Button4 = BUBBLE_KEYBOARD_BUTTON4_GetVal();
+		switch (Button)
+		{
+			case BUTTON_1:
+				 button_Value = BUBBLE_KEYBOARD_BUTTON1_GetVal();
+				 break;
+
+			case BUTTON_2:
+				 button_Value = BUBBLE_KEYBOARD_BUTTON2_GetVal();
+				 break;
+
+			case BUTTON_3:
+				 button_Value = BUBBLE_KEYBOARD_BUTTON3_GetVal();
+				 break;
+
+			case BUTTON_4:
+				 button_Value = BUBBLE_KEYBOARD_BUTTON4_GetVal();
+				 break;
+
+			default:
+				break;
+		}
+	return (button_Value);
 }
 
 void Buzzer_Management()
@@ -2537,4 +2553,8 @@ void EN_24_M_C_Management(unsigned char action)
 	}
 }
 
+void Coversion_From_ADC_To_mmHg_Pressure_Sensor()
+{
+	PR_VEN_mmHg = (PR_VEN_ADC - OFFSET_PR_VEN) * GAIN_PR_VEN;
+}
 /**/

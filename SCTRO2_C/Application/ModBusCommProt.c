@@ -403,6 +403,11 @@ void setPumpSpeedValueHighLevel(unsigned char slaveAddr, int speedValue){
 	}
 }
 
+/*Funzione che riceve in ingresso l'indirizzo con un offset di 2
+ * ad esempio se ho rotary select = 0 devo mandare due e la velocità
+ * moltiplicata per 100...se devo mandare 10 RPM devo inviare 1000
+ * alla funzione. Questa funzione fa muovere la pompa inviando già
+ * il comando su MODBUS*/
 void setPumpSpeedValue(unsigned char slaveAddr, int speedValue){
 	unsigned int mySpeedValue = 0;
 	unsigned int * valModBusArrayPtr;

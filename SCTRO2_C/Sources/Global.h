@@ -924,9 +924,18 @@ word V24_P1_CHK_ADC;
 word V24_P2_CHK_ADC;
 
 word PR_VEN_ADC;
+word PR_VEN_mmHg;
 
 unsigned char END_ADC0;
 unsigned char END_ADC1;
+
+#define BUTTON_1 0x01
+#define BUTTON_2 0x02
+#define BUTTON_3 0x03
+#define BUTTON_4 0x04
+
+#define GAIN_PR_VEN 	0.037302
+#define OFFSET_PR_VEN	19700
 
 
 
