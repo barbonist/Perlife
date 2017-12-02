@@ -929,6 +929,8 @@ word V24_P2_CHK_ADC;
 word PR_VEN_ADC;
 word PR_VEN_mmHg;
 
+char ON_NACK_IR_TM;
+
 unsigned char END_ADC0;
 unsigned char END_ADC1;
 

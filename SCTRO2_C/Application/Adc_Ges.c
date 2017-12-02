@@ -286,7 +286,8 @@ void 	alwaysAdcParam(void){
 						(int) (sensor_PRx[0].prSensValueFilteredWA),
 						(int) (sensor_PRx[1].prSensValueFilteredWA),
 						/*(int) (sensor_UFLOW[0].volumeMlTot)*/PR_VEN_mmHg,
-						(int) (sensorIR_TM[0].tempSensValue*10)
+						(int) (sensorIR_TM[0].tempSensValue*10
+						)
 			);
 	for(int i=0; i<STR_DBG_LENGHT; i++)
 	{

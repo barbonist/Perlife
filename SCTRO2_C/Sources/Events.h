@@ -908,6 +908,21 @@ void CAN_C_P_OnFullRxBuffer(LDD_TUserData *UserDataPtr, LDD_CAN_TMBIndex BufferI
 */
 void TI1_OnInterrupt(void);
 
+/*
+** ===================================================================
+**     Event       :  IR_TM_COMM_OnArbitLost (module Events)
+**
+**     Component   :  IR_TM_COMM [InternalI2C]
+**     Description :
+**         This event is called when the master lost the bus
+**         arbitration or the device detects an error on the bus. This
+**         event is enabled only if interrupts/events are enabled.
+**     Parameters  : None
+**     Returns     : Nothing
+** ===================================================================
+*/
+void IR_TM_COMM_OnArbitLost(void);
+
 /* END Events */
 
 #ifdef __cplusplus

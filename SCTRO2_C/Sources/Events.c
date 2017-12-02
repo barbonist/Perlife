@@ -798,7 +798,11 @@ void IR_TM_COMM_OnNACK(void)
 {
   /* Write your code here ... */
 	//iflag_sensTempIR ^= IFLAG_SENS_TEMPIR_TX;
-	//iflag_sensTempIR == IFLAG_IDLE;
+	//iflag_sensTempIR == IFLAG_IDLE
+
+	/*Setto il flag che indica che c'è, stato un NACK sul bus I2C quindi
+	 * devo far ripartire la trasmissione dei sensori di temperatura dall'inizio*/
+	ON_NACK_IR_TM = TRUE;
 }
 
 /*
@@ -1092,6 +1096,25 @@ void TI1_OnInterrupt(void)
 	 * divisore di frequenza*/
 
 	COMP_PWM_NegVal();
+}
+
+/*
+** ===================================================================
+**     Event       :  IR_TM_COMM_OnArbitLost (module Events)
+**
+**     Component   :  IR_TM_COMM [InternalI2C]
+**     Description :
+**         This event is called when the master lost the bus
+**         arbitration or the device detects an error on the bus. This
+**         event is enabled only if interrupts/events are enabled.
+**     Parameters  : None
+**     Returns     : Nothing
+** ===================================================================
+*/
+void IR_TM_COMM_OnArbitLost(void)
+{
+  /* Write your code here ... */
+	int a =0;
 }
 
 /* END Events */

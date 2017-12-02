@@ -56,6 +56,24 @@ void alwaysIRTempSensRead(void){
 	void * ptrDataOne;
 	unsigned char dummy = 0;
 
+		/*Se è arrivato un NACK sul bus I2C con cui comunico con  i sensori IR,
+		 * devo far ripartire la macchina a stati dall'inizio*/
+		if (ON_NACK_IR_TM)
+		{
+			/*Nel caso in cui il bus I2C mi abbia risposto
+			 * con un NACK mando uno stop per ricominicare
+			 * la trasmisisone altrimenti si inchioda*/
+			IR_TM_COMM_SendStop();
+
+			tempState = 0;
+			/*resetto anche tutti i flag per ricominciare daccapo*/
+			iflag_sensTempIR = IFLAG_IDLE;
+			iflag_sensTempIRRW = IFLAG_IDLE;
+			iflag_sensTempIR_Meas_Ready = IFLAG_IDLE;
+			/*resetto il flag così da non ricadere più in questo if
+			 * se non allo scattare di un nuovo NACK*/
+			ON_NACK_IR_TM = FALSE;
+		}
 
 		switch(tempState){
 		case 0:

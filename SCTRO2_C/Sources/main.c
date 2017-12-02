@@ -212,6 +212,7 @@ int main(void)
   timerCounterUFlowSensor = 0;
 
   OK_START = FALSE;
+  ON_NACK_IR_TM = FALSE;
 
   /*#ifdef	DEBUG_I2C_TEMP_SENS
   unsigned char rcvData[20];
@@ -276,7 +277,6 @@ int main(void)
    * messa a TRUE nella TU1_OnCounterRestart interrupt
    * di timer che scatta ogni 50 ms*/
   while (!OK_START);
-
 
   /**********MAIN LOOP START************/
   for(;;) {
@@ -497,8 +497,6 @@ int main(void)
 	         }
 	         /****MACHINE STATE UPDATE END****/
 
-
-
 	         /*******************************/
 	         /*UFLOW SENSOR                 */
 	         if(timerCounterUFlowSensor >= 2){
@@ -526,7 +524,30 @@ int main(void)
 	          * da fare la richiesta ad esmepio ogni 50 ms
 	          * e subito dopo la richiesta, facendo la ricezione */
 	         alwaysIRTempSensRead();
-
+//
+//	         if (IR_TM_COMM_CheckBus == IR_TM_COMM_IDLE)
+//	         {
+//	        	 /*scrivo 0 sul display 7 segment*/
+//
+//				 D_7S_A_ClrVal(); //accende led orizzontale alto
+//				 D_7S_B_ClrVal(); //accende led verticale alto Dx
+//				 D_7S_C_ClrVal(); //accende led verticale basso Dx
+//				 D_7S_D_ClrVal(); //accende led orizzontale basso
+//				 D_7S_E_ClrVal(); //accende led verticale basso Sx
+//				 D_7S_F_ClrVal(); //accende led verticale alto Sx
+//				 D_7S_G_SetVal(); //spegne led orizzontale centrale
+//	         }
+//	         else //if (IR_TM_COMM_CheckBus == IR_TM_COMM_BUSY)
+//	         {
+//	        	 /*scrivo 1 sul display 7 segment*/
+//				 D_7S_A_SetVal(); //spegne led orizzontale alto
+//				 D_7S_B_ClrVal(); //accende led verticale alto Dx
+//				 D_7S_C_ClrVal(); //accende led verticale basso Dx
+//				 D_7S_D_SetVal(); //spegne led orizzontale basso
+//				 D_7S_E_SetVal(); //spegne led verticale basso Sx
+//				 D_7S_F_SetVal(); //spegne led verticale alto Sx
+//				 D_7S_G_SetVal(); //spegne led orizzontale centrale
+//	         }
 	         /*******************************/
 	         /*UFLOW SENSOR                 */
 
@@ -627,7 +648,7 @@ int main(void)
 		  MOTORE_ACCESO = TRUE;
 		  /*faccio partire la pompa con 2 come indirizzo
 		   * corrispondente a 0 come rotary select e 20 RPM come speed*/
-		  setPumpSpeedValue(2,2000);
+		  setPumpSpeedValue(2,5000);
 	  }
 	  else if (Bubble_Keyboard_GetVal(BUTTON_2) && MOTORE_ACCESO)
 	  {
@@ -641,16 +662,16 @@ int main(void)
 	  {
 		  /*accendo il motore*/
 		  MOTORE_ACCESO_2 = TRUE;
-		  /*faccio partire la pompa con 2 come indirizzo
-		   * corrispondente a 0 come rotary select e 50 RPM come speed*/
-		  setPumpSpeedValue(3,5000);
+		  /*faccio partire la pompa con 3 come indirizzo
+		   * corrispondente a 1 come rotary select e 50 RPM come speed*/
+		  setPumpSpeedValue(3,2000);
 	  }
 	  else if (Bubble_Keyboard_GetVal(BUTTON_4) && MOTORE_ACCESO_2)
 	  {
 		  /*spengo il motore*/
 		  MOTORE_ACCESO_2 = FALSE;
-		  /*Fermo la pompa con 2 come indirizzo
-		   * corrispondente a 0 come rotary select e 0 RPM come speed*/
+		  /*Fermo la pompa con 3 come indirizzo
+		   * corrispondente a 1 come rotary select e 0 RPM come speed*/
 		  setPumpSpeedValue(3,0);
 	  }
   }
