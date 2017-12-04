@@ -240,7 +240,7 @@ int main(void)
 
   static int index = 0;
   //ptrMsgSbcRx = &msg_sbc_rx[0];
-  ptrMsgSbcRx = &sbcDebug_rx_data[0];
+  ptrMsgSbcRx = &sbc_rx_data[0];
   ptrSbcCountRx = 0;
 
   ptrPCDebug = &msgPcDebug[0];

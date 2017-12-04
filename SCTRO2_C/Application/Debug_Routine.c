@@ -46,11 +46,8 @@ void testPELTIERDebug(void){
 
 void testCOMMSbcDebug(void){
 
-	char slvAddr;
-	char funcCode;
 	char cmdId;
 	unsigned int * valModBusArrayPtr;
-	unsigned int wrAddr;
 
 	static char stCoeffA[10];
 	static char stCoeffB[10];
@@ -114,531 +111,511 @@ void testCOMMSbcDebug(void){
 		iflag_sbc_rx = IFLAG_IDLE;
 
 		/*decodifica messaggio*/
-		switch(sbcDebug_rx_data[5])
+		switch(sbc_rx_data[5])
 		{
-		case 0x20:
-			buildSTResponseMsg(0x20);
-			ptrMsgSbcTx = &sbcDebug_tx_data[0];
-			for(char i = 0; i < 16 ; i++)
+			// Service
+			case 0xCC:
 			{
-				SBC_COMM_SendChar(*(ptrMsgSbcTx+i));
-				//PC_DEBUG_COMM_SendChar(*(ptrMsgSbcTx+i));
-			}
-			break;
-
-		case 0x30:
-			buildPERResponseMsg(0x30);
-			ptrMsgSbcTx = &sbcDebug_tx_data[0];
-			for(char i = 0; i < 12 ; i++)
-			{
-				SBC_COMM_SendChar(*(ptrMsgSbcTx+i));
-				//PC_DEBUG_COMM_SendChar(*(ptrMsgSbcTx+i));
-			}
-			break;
-
-		case 0x40:
-			buildPURResponseMsg(0x40);
-			ptrMsgSbcTx = &sbcDebug_tx_data[0];
-			for(char i = 0; i < 12 ; i++)
-			{
-				SBC_COMM_SendChar(*(ptrMsgSbcTx+i));
-				//PC_DEBUG_COMM_SendChar(*(ptrMsgSbcTx+i));
-			}
-			break;
-
-		// service - Peltier Cell
-		case 0xCC:
-			switch(sbcDebug_rx_data[6])
-			{
-			case 0x01:
-				//build command for peltier
-				//send command to peltier
-				PeltierAssSendCommand(SHOW_CURRENT_SW,0,0,"0");
-
-				//wait for response
-
-				break;
-
-			case 0x02:
-				//build command for peltier
-				//send command to peltier
-				//PeltierAssSendCommand(SHOW_CURRENT_SW_INT,0,0,0);
-				//PeltierAssSendCommand(READ_REG_REGISTER,0,0,0);
-				for(char i=0; i<1; i++)
+				switch(sbc_rx_data[6])
 				{
-					//while(iflagPeltierBusy == IFLAG_PELTIER_BUSY);
-					PeltierAssSendCommand(READ_FLOAT_FROM_REG_XX,REG_0_SET_POINT+i,0,"0");
-				}
-
-				//wait for response
-
-				break;
-
-			case 0x03:
-				/* when using the ieee 754 format the hex number shall be written as a string */
-				PeltierAssSendCommand(WRITE_FLOAT_REG_XX, REG_0_SET_POINT, 0, "40133333");
-				break;
-
-			//peltier; write tcdband, tclimit, set temp
-			case 0x21:
-				msgPeltierDbLimSet = 3;
-				iflag_peltier_rx = IFLAG_PELTIER_RX;
-				sprintf(tcDBand, "%2X%2X%2X%2X", sbcDebug_rx_data[8], sbcDebug_rx_data[9], sbcDebug_rx_data[10], sbcDebug_rx_data[11]);
-				for(char i=0; i<8; i++)
-				{
-					if(tcDBand[i] == 0x20)
-						tcDBand[i] = 0x30;
-				}
-				sprintf(regTcDBand, "%u", sbcDebug_rx_data[7]);
-
-				sprintf(tcLimit, "%2X%2X%2X%2X", sbcDebug_rx_data[13], sbcDebug_rx_data[14], sbcDebug_rx_data[15], sbcDebug_rx_data[16]);
-				for(char i=0; i<8; i++)
-				{
-					if(tcLimit[i] == 0x20)
-						tcLimit[i] = 0x30;
-				}
-				sprintf(regTcLimit, "%u", sbcDebug_rx_data[12]);
-
-				sprintf(setTemp, "%2X%2X%2X%2X", sbcDebug_rx_data[18], sbcDebug_rx_data[19], sbcDebug_rx_data[20], sbcDebug_rx_data[21]);
-				for(char i=0; i<8; i++)
-				{
-					if(setTemp[i] == 0x20)
-						setTemp[i] = 0x30;
-				}
-				sprintf(regSetTemp, "%u", sbcDebug_rx_data[17]);
-				break;
-
-			//peltier write 3 float; calibration of t1 ntc
-			case 0x22:
-				msgPeltierCalT1Wr = 3;
-				iflag_peltier_rx = IFLAG_PELTIER_RX;
-				sprintf(stCoeffA, "%2X%2X%2X%2X", sbcDebug_rx_data[8], sbcDebug_rx_data[9], sbcDebug_rx_data[10], sbcDebug_rx_data[11]);
-				for(char i=0; i<8; i++)
-				{
-					if(stCoeffA[i] == 0x20)
-						stCoeffA[i] = 0x30;
-				}
-				sprintf(regCoeffA, "%u", sbcDebug_rx_data[7]);
-
-				sprintf(stCoeffB, "%2X%2X%2X%2X", sbcDebug_rx_data[13], sbcDebug_rx_data[14], sbcDebug_rx_data[15], sbcDebug_rx_data[16]);
-				for(char i=0; i<8; i++)
-				{
-					if(stCoeffB[i] == 0x20)
-						stCoeffB[i] = 0x30;
-				}
-				sprintf(regCoeffB, "%u", sbcDebug_rx_data[12]);
-
-				sprintf(stCoeffC, "%2X%2X%2X%2X", sbcDebug_rx_data[18], sbcDebug_rx_data[19], sbcDebug_rx_data[20], sbcDebug_rx_data[21]);
-				for(char i=0; i<8; i++)
-				{
-					if(stCoeffC[i] == 0x20)
-						stCoeffC[i] = 0x30;
-				}
-				sprintf(regCoeffC, "%u", sbcDebug_rx_data[17]);
-				break;
-
-			//peltier; write parameters for on / off mode
-			case 0x23:
-				msgPeltierOnOff = 3;
-				iflag_peltier_rx = IFLAG_PELTIER_RX;
-				sprintf(onOffDBand, "%2X%2X%2X%2X", sbcDebug_rx_data[8], sbcDebug_rx_data[9], sbcDebug_rx_data[10], sbcDebug_rx_data[11]);
-				for(char i=0; i<8; i++)
-				{
-					if(onOffDBand[i] == 0x20)
-						onOffDBand[i] = 0x30;
-				}
-				sprintf(regOnOffDBand, "%u", sbcDebug_rx_data[7]);
-
-				sprintf(onOffHyst, "%2X%2X%2X%2X", sbcDebug_rx_data[13], sbcDebug_rx_data[14], sbcDebug_rx_data[15], sbcDebug_rx_data[16]);
-				for(char i=0; i<8; i++)
-				{
-					if(onOffHyst[i] == 0x20)
-						onOffHyst[i] = 0x30;
-				}
-				sprintf(regOnOffHyst, "%u", sbcDebug_rx_data[12]);
-
-				onOffValue = sbcDebug_rx_data[19];
-				sprintf(regOnOffValue, "%u", sbcDebug_rx_data[17]);
-				break;
-
-			//peltier write 2 float - ad alarm thresholds
-			case 0x24:
-				msgPeltierToSendWr = 2;
-				iflag_peltier_rx = IFLAG_PELTIER_RX;
-				sprintf(dataFloatWriteHigh, "%2X%2X%2X%2X", sbcDebug_rx_data[8], sbcDebug_rx_data[9], sbcDebug_rx_data[10], sbcDebug_rx_data[11]);
-				for(char i=0; i<8; i++)
-				{
-					if(dataFloatWriteHigh[i] == 0x20)
-						dataFloatWriteHigh[i] = 0x30;
-				}
-				sprintf(regIdHigh, "%u", sbcDebug_rx_data[7]);
-				msgPeltierToSendWr = 2;
-
-				sprintf(dataFloatWriteLow, "%2X%2X%2X%2X", sbcDebug_rx_data[13], sbcDebug_rx_data[14], sbcDebug_rx_data[15], sbcDebug_rx_data[16]);
-				for(char i=0; i<8; i++)
-				{
-					if(dataFloatWriteLow[i] == 0x20)
-						dataFloatWriteLow[i] = 0x30;
-				}
-				sprintf(regIdLow, "%u", sbcDebug_rx_data[12]);
-
-				/*if(sbcDebug_rx_data[7] == 0x05)
-				{
-					sprintf(dataFloatWriteHigh, "%2x%2x%2x%2x", sbcDebug_rx_data[8], sbcDebug_rx_data[9], sbcDebug_rx_data[10], sbcDebug_rx_data[11]);
-					for(char i=0; i<8; i++)
+					// Modbus write
+					case 0x15:
 					{
-						if(dataFloatWriteHigh[i] == 0x20)
-							dataFloatWriteHigh[i] = 0x30;
+						//build command for actuator
+						byte slvAddr = sbc_rx_data[7];
+						byte funcCode = 0x10;
+						word wrAddrStart = BYTES_TO_WORD(sbc_rx_data[8], sbc_rx_data[9]);
+						word wrAddrStop  = BYTES_TO_WORD(sbc_rx_data[10], sbc_rx_data[11]);
+						word numberOfAddress = wrAddrStop - wrAddrStart + 1;
+
+						for(int i = 0 ; i < numberOfAddress ; i++)
+						{
+							valModBusArray[i] = (sbc_rx_data[12+2*i] << 8)  + sbc_rx_data[13+2*i];
+						}
+						valModBusArrayPtr = &valModBusArray[0];
+
+						_funcRetValPtr = ModBusWriteRegisterReq(slvAddr,
+																funcCode,
+																wrAddrStart,
+																numberOfAddress,
+																valModBusArrayPtr);
+						//send command to actuator
+						_funcRetVal.ptr_msg = _funcRetValPtr->ptr_msg;
+						_funcRetVal.mstreqRetStructNumByte = _funcRetValPtr->mstreqRetStructNumByte;
+						_funcRetVal.slvresRetPtr = _funcRetValPtr->slvresRetPtr;
+						_funcRetVal.slvresRetNumByte = _funcRetValPtr->slvresRetNumByte;
+
+						word snd;
+						MODBUS_COMM_SendBlock(_funcRetVal.ptr_msg,
+											  _funcRetVal.mstreqRetStructNumByte,
+											  &snd);
 					}
-					msgPeltierToSend = 2;
-					PeltierAssSendCommand(WRITE_FLOAT_REG_XX, REG_72_ALARM_TEMP1_LOW, 0, dataFloatWrite);
+					break;
 
-
-					sprintf(dataFloatWriteLow, "%2x%2x%2x%2x", sbcDebug_rx_data[13], sbcDebug_rx_data[14], sbcDebug_rx_data[15], sbcDebug_rx_data[16]);
-					for(char i=0; i<8; i++)
+					// Modbus read
+					case 0x16:
 					{
-						if(dataFloatWriteLow[i] == 0x20)
-							dataFloatWriteLow[i] = 0x30;
+						byte slvAddr = sbc_rx_data[7];
+						byte funcCode = 0x03;
+						word readAddrStart = BYTES_TO_WORD(sbc_rx_data[8], sbc_rx_data[9]);
+						word readAddrStop  = BYTES_TO_WORD(sbc_rx_data[10], sbc_rx_data[11]);
+						word numberOfAddress = readAddrStop - readAddrStart + 1;
+
+						_funcRetValPtr = ModBusReadRegisterReq(slvAddr,
+															   funcCode,
+															   readAddrStart,
+															   numberOfAddress);
+
+						_funcRetVal.ptr_msg = _funcRetValPtr->ptr_msg;
+						_funcRetVal.mstreqRetStructNumByte = _funcRetValPtr->mstreqRetStructNumByte;
+						_funcRetVal.slvresRetPtr = _funcRetValPtr->slvresRetPtr;
+						_funcRetVal.slvresRetNumByte = _funcRetValPtr->slvresRetNumByte;
+
+						word snd;
+						MODBUS_COMM_SendBlock(_funcRetVal.ptr_msg,
+											  _funcRetVal.mstreqRetStructNumByte,
+											  &snd);
 					}
+					break;
 
-					//PeltierAssSendCommand(WRITE_FLOAT_REG_XX, REG_71_ALARM_TEMP1_HIGH, 0, dataFloatWrite);
-					//PeltierAssSendCommand(WRITE_FLOAT_REG_XX, REG_72_ALARM_TEMP1_LOW, 0, dataFloatWrite);
-				}*/
-				break;
-
-			//Peltier fan
-			case 0x25:
-				msgPeltierFan = 3;
-				iflag_peltier_rx = IFLAG_PELTIER_RX;
-				sprintf(fanHighSpeedVal, "%2X%2X%2X%2X", sbcDebug_rx_data[8], sbcDebug_rx_data[9], sbcDebug_rx_data[10], sbcDebug_rx_data[11]);
-				for(char i=0; i<8; i++)
-				{
-					if(fanHighSpeedVal[i] == 0x20)
-						fanHighSpeedVal[i] = 0x30;
-				}
-				sprintf(regFanHighSpeed, "%u", sbcDebug_rx_data[7]);
-
-				sprintf(fanLowSpeedVal, "%2X%2X%2X%2X", sbcDebug_rx_data[13], sbcDebug_rx_data[14], sbcDebug_rx_data[15], sbcDebug_rx_data[16]);
-				for(char i=0; i<8; i++)
-				{
-					if(fanLowSpeedVal[i] == 0x20)
-						fanLowSpeedVal[i] = 0x30;
-				}
-				sprintf(regFanLowSpeed, "%u", sbcDebug_rx_data[12]);
-
-				fanValue = sbcDebug_rx_data[19];
-				sprintf(regFanValue, "%u", sbcDebug_rx_data[17]);
-				break;
-
-			//peltier read float
-			case 0x26:
-				sprintf(regId, "%u", sbcDebug_rx_data[7]);
-				PeltierAssSendCommand(READ_FLOAT_FROM_REG_XX,regId,0,"0");
-
-				break;
-
-			//peltier read int
-			case 0x28:
-				sprintf(regIntId, "%u", sbcDebug_rx_data[7]);
-				PeltierAssSendCommand(READ_DATA_REGISTER_XX,regIntId,0,"0");
-				break;
-
-			//cal pressure sensor
-			case 0x30:
-				if(sbcDebug_rx_data[7] == 0x10)
-				{
-					numFloatSensor.ieee754NUmFormat = 	(sbcDebug_rx_data[8] << 24) |
-														(sbcDebug_rx_data[9] << 16) |
-														(sbcDebug_rx_data[10] << 8) |
-														(sbcDebug_rx_data[11]);
-
-					sensor_PRx[sbcDebug_rx_data[22]].prSensGain = numFloatSensor.numFormatFloat;
-				}
-
-				if(sbcDebug_rx_data[12] == 0x20)
-				{
-					numFloatSensor.ieee754NUmFormat = 	(sbcDebug_rx_data[13] << 24) |
-														(sbcDebug_rx_data[14] << 16) |
-														(sbcDebug_rx_data[15] << 8) |
-														(sbcDebug_rx_data[16]);
-
-					sensor_PRx[sbcDebug_rx_data[22]].prSensOffset = numFloatSensor.numFormatFloat;
-				}
-
-				if(sbcDebug_rx_data[17] == 0x30)
-				{
-					numFloatSensor.ieee754NUmFormat = 	(sbcDebug_rx_data[18] << 24) |
-														(sbcDebug_rx_data[19] << 16) |
-														(sbcDebug_rx_data[20] << 8) |
-														(sbcDebug_rx_data[21]);
-
-					sensor_PRx[sbcDebug_rx_data[22]].prSensOffsetVal = numFloatSensor.numFormatFloat;
-				}
-
-
-				sensor_PRx[sbcDebug_rx_data[22]].prSensAdcPtr = sensor_PRx[sbcDebug_rx_data[22]].readAdctPtr();
-				sensor_PRx[sbcDebug_rx_data[22]].prSensAdc = *sensor_PRx[sbcDebug_rx_data[22]].prSensAdcPtr;
-				sensor_PRx[sbcDebug_rx_data[22]].prSensValue = sensor_PRx[sbcDebug_rx_data[22]].prSensGain *
-															   (((float)((float)sensor_PRx[sbcDebug_rx_data[22]].prSensAdc/65535))*3.3 - sensor_PRx[sbcDebug_rx_data[22]].prSensOffsetVal) +
-															   sensor_PRx[sbcDebug_rx_data[22]].prSensOffset;
-
-				//3.3: fondo scala in volt
-				//1000/2,04: mv/V / mv/mmHg
-				//1617: fondo scala in mmHg
-
-				//sensor_PRx[sbcDebug_rx_data[22]].prSensOffsetVal = ((sensor_PRx[sbcDebug_rx_data[22]].prSensValue) / (sensor_PRx[sbcDebug_rx_data[22]].prSensGain))*((float)(775/3.3));
-				sensor_PRx[sbcDebug_rx_data[22]].prSensOffset = - sensor_PRx[sbcDebug_rx_data[22]].prSensValue * ((float)(1000/2.04));
-
-				iflag_write_press_sensor = IFLAG_WRITE_PR_SENSOR;
-				break;
-
-			//read adc press sens
-			case 0x31:
-				iflag_read_press_sensor = IFLAG_READ_PR_SENSOR;
-				sensor_PRx[sbcDebug_rx_data[7]].prSensAdcPtr = sensor_PRx[sbcDebug_rx_data[7]].readAdctPtr();
-				sensor_PRx[sbcDebug_rx_data[7]].prSensAdc = *sensor_PRx[sbcDebug_rx_data[7]].prSensAdcPtr;
-				sensor_PRx[sbcDebug_rx_data[7]].prSensValue = sensor_PRx[sbcDebug_rx_data[7]].prSensGain *
-															 (((float)sensor_PRx[sbcDebug_rx_data[7]].prSensAdc/65535)*1617 - sensor_PRx[sbcDebug_rx_data[7]].prSensOffsetVal) +
-															 sensor_PRx[sbcDebug_rx_data[7]].prSensOffset;
-
-				break;
-
-			//cal temperature sensr
-			case 0x35:
-				if(sbcDebug_rx_data[7] == 0x10)
-				{
-					numFloatSensor.ieee754NUmFormat = 	(sbcDebug_rx_data[8] << 24) |
-														(sbcDebug_rx_data[9] << 16) |
-														(sbcDebug_rx_data[10] << 8) |
-														(sbcDebug_rx_data[11]);
-
-					sensor_TMx[sbcDebug_rx_data[22]-6].tempSensGain = numFloatSensor.numFormatFloat;
-				}
-
-				if(sbcDebug_rx_data[12] == 0x20)
-				{
-					numFloatSensor.ieee754NUmFormat = 	(sbcDebug_rx_data[13] << 24) |
-														(sbcDebug_rx_data[14] << 16) |
-														(sbcDebug_rx_data[15] << 8) |
-														(sbcDebug_rx_data[16]);
-
-					sensor_TMx[sbcDebug_rx_data[22]-6].tempSensOffset = numFloatSensor.numFormatFloat;
-				}
-
-				if(sbcDebug_rx_data[17] == 0x30)
-				{
-					numFloatSensor.ieee754NUmFormat = 	(sbcDebug_rx_data[18] << 24) |
-														(sbcDebug_rx_data[19] << 16) |
-														(sbcDebug_rx_data[20] << 8) |
-														(sbcDebug_rx_data[21]);
-
-					sensor_TMx[sbcDebug_rx_data[22]-6].tempSensOffsetVal = numFloatSensor.numFormatFloat;
-				}
-
-				sensor_TMx[sbcDebug_rx_data[22]-6].tempSensAdcPtr = sensor_TMx[sbcDebug_rx_data[22]-6].readAdctPtr();
-				sensor_TMx[sbcDebug_rx_data[22]-6].tempSensAdc = *sensor_TMx[sbcDebug_rx_data[22]-6].tempSensAdcPtr;
-				sensor_TMx[sbcDebug_rx_data[22]-6].tempSensValue = sensor_TMx[sbcDebug_rx_data[22]-6].tempSensGain *
-																((((float)sensor_TMx[sbcDebug_rx_data[22]-6].tempSensAdc)/65535)*3.3 - sensor_TMx[sbcDebug_rx_data[22]-6].tempSensOffsetVal) +
-																sensor_TMx[sbcDebug_rx_data[22]-6].tempSensOffset;
-
-				iflag_write_temp_sensor = IFLAG_WRITE_TEMP_SENSOR;
-				break;
-
-			//read adc temp sens
-			case 0x36:
-				iflag_read_temp_sensor = IFLAG_READ_TEMP_SENSOR;
-				break;
-
-			case 0x80:
-				if(sbcDebug_rx_data[7] == 0x5A)
-					PeltierAssSendCommand(STOP_FLAG,"0",0,"0");
-				break;
-
-			case 0x90:
-				if(sbcDebug_rx_data[7] == 0xA5)
-					PeltierAssSendCommand(START_FLAG,"0",0,"0");
-				break;
-
-			//modbus actuator write param
-			case 0x11:
-				slvAddr = sbcDebug_rx_data[7];
-				funcCode = sbcDebug_rx_data[8];
-				wrAddr = BYTES_TO_WORD(sbcDebug_rx_data[9], sbcDebug_rx_data[10]);
-
-				if((slvAddr >= 2) && (slvAddr <= 4)) /* pump */
-					valModBusArray[0] = (BYTES_TO_WORD(sbcDebug_rx_data[11], ((signed char)sbcDebug_rx_data[12])));
-				else if((slvAddr >= 7) && (slvAddr <= 9)) /* pinch */
-					valModBusArray[0] = 1 + (BYTES_TO_WORD(sbcDebug_rx_data[12], sbcDebug_rx_data[11]));
-
-				//valModBusArray[0] = 0x1388;
-				valModBusArrayPtr = &valModBusArray[0];
-				_funcRetValPtr = ModBusWriteRegisterReq(slvAddr,
-														funcCode,
-														wrAddr,
-														0x0001,
-														valModBusArrayPtr);
-				//send command to actuator
-				_funcRetVal.ptr_msg = _funcRetValPtr->ptr_msg;
-				_funcRetVal.mstreqRetStructNumByte = _funcRetValPtr->mstreqRetStructNumByte;
-				_funcRetVal.slvresRetPtr = _funcRetValPtr->slvresRetPtr;
-				_funcRetVal.slvresRetNumByte = _funcRetValPtr->slvresRetNumByte;
-
-				for(char k = 0; k < _funcRetVal.mstreqRetStructNumByte; k++)
-				{
-					MODBUS_COMM_SendChar(*(_funcRetVal.ptr_msg+k));
-				}
-				break;
-
-			//modbus actuator write
-			case 0x15:
-				//build command for actuator
-				slvAddr = sbcDebug_rx_data[7];
-				funcCode = sbcDebug_rx_data[8];
-				wrAddr = BYTES_TO_WORD(sbcDebug_rx_data[9], sbcDebug_rx_data[10]);
-
-				if((slvAddr >= 2) && (slvAddr <= 4)) /* pump */
-					//valModBusArray[0] = 100 * (BYTES_TO_WORD(sbcDebug_rx_data[12], ((signed char)sbcDebug_rx_data[11])));
-					valModBusArray[0] = (BYTES_TO_WORD(sbcDebug_rx_data[12], sbcDebug_rx_data[11]));
-				else if((slvAddr >= 7) && (slvAddr <= 9)) /* pinch */
-					valModBusArray[0] = 1 + (BYTES_TO_WORD(sbcDebug_rx_data[12], sbcDebug_rx_data[11]));
-
-				//valModBusArray[0] = 0x1388;
-				valModBusArrayPtr = &valModBusArray[0];
-				_funcRetValPtr = ModBusWriteRegisterReq(slvAddr,
-														  funcCode,
-														  wrAddr,
-														  0x0001,
-														  valModBusArrayPtr);
-				//send command to actuator
-				_funcRetVal.ptr_msg = _funcRetValPtr->ptr_msg;
-				_funcRetVal.mstreqRetStructNumByte = _funcRetValPtr->mstreqRetStructNumByte;
-				_funcRetVal.slvresRetPtr = _funcRetValPtr->slvresRetPtr;
-				_funcRetVal.slvresRetNumByte = _funcRetValPtr->slvresRetNumByte;
-
-				for(char k = 0; k < _funcRetVal.mstreqRetStructNumByte; k++)
+					// Modbus read/write
+					/*case 0x17:
 					{
-						MODBUS_COMM_SendChar(*(_funcRetVal.ptr_msg+k));
+						byte slvAddr = sbc_rx_data[7];
+						byte funcCode = sbc_rx_data[8];
+
+						unsigned int readAddr2 = BYTES_TO_WORD(sbc_rx_data[9], sbc_rx_data[10]);
+						unsigned int numRegRead2 = BYTES_TO_WORD(sbc_rx_data[11], sbc_rx_data[12]);
+
+						valModBusArray[1] = 0x14;
+						valModBusArrayPtr = &valModBusArray[1];
+
+						_funcRetValPtr = ModBusRWRegisterReq(slvAddr,
+								   	   	   	   	   	   	   	 funcCode,
+															 readAddr2,
+															 numRegRead2,
+															 0x0003,
+															 1,
+															 valModBusArrayPtr);
+
+						_funcRetVal.ptr_msg = _funcRetValPtr->ptr_msg;
+						_funcRetVal.mstreqRetStructNumByte = _funcRetValPtr->mstreqRetStructNumByte;
+						_funcRetVal.slvresRetPtr = _funcRetValPtr->slvresRetPtr;
+						_funcRetVal.slvresRetNumByte = _funcRetValPtr->slvresRetNumByte;
+
+						for(char k = 0; k < _funcRetVal.mstreqRetStructNumByte; k++)
+						{
+							MODBUS_COMM_SendChar(*(_funcRetVal.ptr_msg+k));
+						}
 					}
-				break;
+					break;*/
 
-			//modbus actuator read
-			case 0x16:
-				slvAddr = sbcDebug_rx_data[7];
-				funcCode = sbcDebug_rx_data[8];
-				unsigned int readAddr = BYTES_TO_WORD(sbcDebug_rx_data[9], sbcDebug_rx_data[10]);
-				unsigned int numRegRead = BYTES_TO_WORD(sbcDebug_rx_data[11], sbcDebug_rx_data[12]);
+					// Read adc and mmHg pressure values
+					case 0x31:
+					{
+						iflag_read_press_sensor = IFLAG_READ_PR_SENSOR;
+					}
+					break;
 
-				_funcRetValPtr = ModBusReadRegisterReq(slvAddr,
-													   funcCode,
-													   readAddr,
-													   numRegRead);
+					// Read pressure sensors calibration values
+					case 0x32:
+					{
+						iflag_read_press_sensor = IFLAG_READ_PR_SENSOR;
+					}
+					break;
 
-				_funcRetVal.ptr_msg = _funcRetValPtr->ptr_msg;
-				_funcRetVal.mstreqRetStructNumByte = _funcRetValPtr->mstreqRetStructNumByte;
-				_funcRetVal.slvresRetPtr = _funcRetValPtr->slvresRetPtr;
-				_funcRetVal.slvresRetNumByte = _funcRetValPtr->slvresRetNumByte;
+					// Set pressure sensors zero point
+					case 0x33:
+					{
+						//TODO Store zero point for calibration
+						iflag_read_press_sensor = IFLAG_READ_PR_SENSOR;
+					}
+					break;
 
-				for(char k = 0; k < _funcRetVal.mstreqRetStructNumByte; k++)
-				{
-					MODBUS_COMM_SendChar(*(_funcRetVal.ptr_msg+k));
+					// Set pressure sensors load point
+					case 0x34:
+					{
+						//TODO Store load point for calibration
+						iflag_read_press_sensor = IFLAG_READ_PR_SENSOR;
+					}
+					break;
+
+
+/******************************************************************/
+/******************************************************************/
+/******************************************************************/
+
+					case 0x01:
+					{
+						//build command for peltier
+						//send command to peltier
+						PeltierAssSendCommand(SHOW_CURRENT_SW,0,0,"0");
+						//wait for response
+					}
+					break;
+
+					case 0x02:
+					{
+						//build command for peltier
+						//send command to peltier
+						//PeltierAssSendCommand(SHOW_CURRENT_SW_INT,0,0,0);
+						//PeltierAssSendCommand(READ_REG_REGISTER,0,0,0);
+						for(char i=0; i<1; i++)
+						{
+							//while(iflagPeltierBusy == IFLAG_PELTIER_BUSY);
+							PeltierAssSendCommand(READ_FLOAT_FROM_REG_XX,REG_0_SET_POINT+i,0,"0");
+						}
+						//wait for response
+					}
+					break;
+
+					case 0x03:
+					{
+						/* when using the ieee 754 format the hex number shall be written as a string */
+						PeltierAssSendCommand(WRITE_FLOAT_REG_XX, REG_0_SET_POINT, 0, "40133333");
+					}
+					break;
+
+					//peltier; write tcdband, tclimit, set temp
+					case 0x21:
+					{
+						msgPeltierDbLimSet = 3;
+						iflag_peltier_rx = IFLAG_PELTIER_RX;
+						sprintf(tcDBand, "%2X%2X%2X%2X", sbc_rx_data[8], sbc_rx_data[9], sbc_rx_data[10], sbc_rx_data[11]);
+						for(char i=0; i<8; i++)
+						{
+							if(tcDBand[i] == 0x20)
+								tcDBand[i] = 0x30;
+						}
+						sprintf(regTcDBand, "%u", sbc_rx_data[7]);
+
+						sprintf(tcLimit, "%2X%2X%2X%2X", sbc_rx_data[13], sbc_rx_data[14], sbc_rx_data[15], sbc_rx_data[16]);
+						for(char i=0; i<8; i++)
+						{
+							if(tcLimit[i] == 0x20)
+								tcLimit[i] = 0x30;
+						}
+						sprintf(regTcLimit, "%u", sbc_rx_data[12]);
+
+						sprintf(setTemp, "%2X%2X%2X%2X", sbc_rx_data[18], sbc_rx_data[19], sbc_rx_data[20], sbc_rx_data[21]);
+						for(char i=0; i<8; i++)
+						{
+							if(setTemp[i] == 0x20)
+								setTemp[i] = 0x30;
+						}
+						sprintf(regSetTemp, "%u", sbc_rx_data[17]);
+					}
+					break;
+
+					//peltier write 3 float; calibration of t1 ntc
+					case 0x22:
+					{
+						msgPeltierCalT1Wr = 3;
+						iflag_peltier_rx = IFLAG_PELTIER_RX;
+						sprintf(stCoeffA, "%2X%2X%2X%2X", sbc_rx_data[8], sbc_rx_data[9], sbc_rx_data[10], sbc_rx_data[11]);
+						for(char i=0; i<8; i++)
+						{
+							if(stCoeffA[i] == 0x20)
+								stCoeffA[i] = 0x30;
+						}
+						sprintf(regCoeffA, "%u", sbc_rx_data[7]);
+
+						sprintf(stCoeffB, "%2X%2X%2X%2X", sbc_rx_data[13], sbc_rx_data[14], sbc_rx_data[15], sbc_rx_data[16]);
+						for(char i=0; i<8; i++)
+						{
+							if(stCoeffB[i] == 0x20)
+								stCoeffB[i] = 0x30;
+						}
+						sprintf(regCoeffB, "%u", sbc_rx_data[12]);
+
+						sprintf(stCoeffC, "%2X%2X%2X%2X", sbc_rx_data[18], sbc_rx_data[19], sbc_rx_data[20], sbc_rx_data[21]);
+						for(char i=0; i<8; i++)
+						{
+							if(stCoeffC[i] == 0x20)
+								stCoeffC[i] = 0x30;
+						}
+						sprintf(regCoeffC, "%u", sbc_rx_data[17]);
+					}
+					break;
+
+					//peltier; write parameters for on / off mode
+					case 0x23:
+					{
+						msgPeltierOnOff = 3;
+						iflag_peltier_rx = IFLAG_PELTIER_RX;
+						sprintf(onOffDBand, "%2X%2X%2X%2X", sbc_rx_data[8], sbc_rx_data[9], sbc_rx_data[10], sbc_rx_data[11]);
+						for(char i=0; i<8; i++)
+						{
+							if(onOffDBand[i] == 0x20)
+								onOffDBand[i] = 0x30;
+						}
+						sprintf(regOnOffDBand, "%u", sbc_rx_data[7]);
+
+						sprintf(onOffHyst, "%2X%2X%2X%2X", sbc_rx_data[13], sbc_rx_data[14], sbc_rx_data[15], sbc_rx_data[16]);
+						for(char i=0; i<8; i++)
+						{
+							if(onOffHyst[i] == 0x20)
+								onOffHyst[i] = 0x30;
+						}
+						sprintf(regOnOffHyst, "%u", sbc_rx_data[12]);
+
+						onOffValue = sbc_rx_data[19];
+						sprintf(regOnOffValue, "%u", sbc_rx_data[17]);
+					}
+					break;
+
+					//peltier write 2 float - ad alarm thresholds
+					case 0x24:
+					{
+						msgPeltierToSendWr = 2;
+						iflag_peltier_rx = IFLAG_PELTIER_RX;
+						sprintf(dataFloatWriteHigh, "%2X%2X%2X%2X", sbc_rx_data[8], sbc_rx_data[9], sbc_rx_data[10], sbc_rx_data[11]);
+						for(char i=0; i<8; i++)
+						{
+							if(dataFloatWriteHigh[i] == 0x20)
+								dataFloatWriteHigh[i] = 0x30;
+						}
+						sprintf(regIdHigh, "%u", sbc_rx_data[7]);
+						msgPeltierToSendWr = 2;
+
+						sprintf(dataFloatWriteLow, "%2X%2X%2X%2X", sbc_rx_data[13], sbc_rx_data[14], sbc_rx_data[15], sbc_rx_data[16]);
+						for(char i=0; i<8; i++)
+						{
+							if(dataFloatWriteLow[i] == 0x20)
+								dataFloatWriteLow[i] = 0x30;
+						}
+						sprintf(regIdLow, "%u", sbc_rx_data[12]);
+
+						/*if(sbcDebug_rx_data[7] == 0x05)
+						{
+							sprintf(dataFloatWriteHigh, "%2x%2x%2x%2x", sbcDebug_rx_data[8], sbcDebug_rx_data[9], sbcDebug_rx_data[10], sbcDebug_rx_data[11]);
+							for(char i=0; i<8; i++)
+							{
+								if(dataFloatWriteHigh[i] == 0x20)
+									dataFloatWriteHigh[i] = 0x30;
+							}
+							msgPeltierToSend = 2;
+							PeltierAssSendCommand(WRITE_FLOAT_REG_XX, REG_72_ALARM_TEMP1_LOW, 0, dataFloatWrite);
+
+
+							sprintf(dataFloatWriteLow, "%2x%2x%2x%2x", sbcDebug_rx_data[13], sbcDebug_rx_data[14], sbcDebug_rx_data[15], sbcDebug_rx_data[16]);
+							for(char i=0; i<8; i++)
+							{
+								if(dataFloatWriteLow[i] == 0x20)
+									dataFloatWriteLow[i] = 0x30;
+							}
+
+							//PeltierAssSendCommand(WRITE_FLOAT_REG_XX, REG_71_ALARM_TEMP1_HIGH, 0, dataFloatWrite);
+							//PeltierAssSendCommand(WRITE_FLOAT_REG_XX, REG_72_ALARM_TEMP1_LOW, 0, dataFloatWrite);
+						}*/
+					}
+					break;
+
+					//Peltier fan
+					case 0x25:
+					{
+						msgPeltierFan = 3;
+						iflag_peltier_rx = IFLAG_PELTIER_RX;
+						sprintf(fanHighSpeedVal, "%2X%2X%2X%2X", sbc_rx_data[8], sbc_rx_data[9], sbc_rx_data[10], sbc_rx_data[11]);
+						for(char i=0; i<8; i++)
+						{
+							if(fanHighSpeedVal[i] == 0x20)
+								fanHighSpeedVal[i] = 0x30;
+						}
+						sprintf(regFanHighSpeed, "%u", sbc_rx_data[7]);
+
+						sprintf(fanLowSpeedVal, "%2X%2X%2X%2X", sbc_rx_data[13], sbc_rx_data[14], sbc_rx_data[15], sbc_rx_data[16]);
+						for(char i=0; i<8; i++)
+						{
+							if(fanLowSpeedVal[i] == 0x20)
+								fanLowSpeedVal[i] = 0x30;
+						}
+						sprintf(regFanLowSpeed, "%u", sbc_rx_data[12]);
+
+						fanValue = sbc_rx_data[19];
+						sprintf(regFanValue, "%u", sbc_rx_data[17]);
+					}
+					break;
+
+					//peltier read float
+					case 0x26:
+					{
+						sprintf(regId, "%u", sbc_rx_data[7]);
+						PeltierAssSendCommand(READ_FLOAT_FROM_REG_XX,regId,0,"0");
+					}
+					break;
+
+					//peltier read int
+					case 0x28:
+					{
+						sprintf(regIntId, "%u", sbc_rx_data[7]);
+						PeltierAssSendCommand(READ_DATA_REGISTER_XX,regIntId,0,"0");
+					}
+					break;
+
+					//cal temperature sensr
+					case 0x35:
+					{
+						if(sbc_rx_data[7] == 0x10)
+						{
+							numFloatSensor.ieee754NUmFormat = 	(sbc_rx_data[8] << 24) |
+																(sbc_rx_data[9] << 16) |
+																(sbc_rx_data[10] << 8) |
+																(sbc_rx_data[11]);
+
+							sensor_TMx[sbc_rx_data[22]-6].tempSensGain = numFloatSensor.numFormatFloat;
+						}
+
+						if(sbc_rx_data[12] == 0x20)
+						{
+							numFloatSensor.ieee754NUmFormat = 	(sbc_rx_data[13] << 24) |
+																(sbc_rx_data[14] << 16) |
+																(sbc_rx_data[15] << 8) |
+																(sbc_rx_data[16]);
+
+							sensor_TMx[sbc_rx_data[22]-6].tempSensOffset = numFloatSensor.numFormatFloat;
+						}
+
+						if(sbc_rx_data[17] == 0x30)
+						{
+							numFloatSensor.ieee754NUmFormat = 	(sbc_rx_data[18] << 24) |
+																(sbc_rx_data[19] << 16) |
+																(sbc_rx_data[20] << 8) |
+																(sbc_rx_data[21]);
+
+							sensor_TMx[sbc_rx_data[22]-6].tempSensOffsetVal = numFloatSensor.numFormatFloat;
+						}
+
+						sensor_TMx[sbc_rx_data[22]-6].tempSensAdcPtr = sensor_TMx[sbc_rx_data[22]-6].readAdctPtr();
+						sensor_TMx[sbc_rx_data[22]-6].tempSensAdc = *sensor_TMx[sbc_rx_data[22]-6].tempSensAdcPtr;
+						sensor_TMx[sbc_rx_data[22]-6].tempSensValue = sensor_TMx[sbc_rx_data[22]-6].tempSensGain *
+																		((((float)sensor_TMx[sbc_rx_data[22]-6].tempSensAdc)/65535)*3.3 - sensor_TMx[sbc_rx_data[22]-6].tempSensOffsetVal) +
+																		sensor_TMx[sbc_rx_data[22]-6].tempSensOffset;
+
+						iflag_write_temp_sensor = IFLAG_WRITE_TEMP_SENSOR;
+					}
+					break;
+
+					//read adc temp sens
+					case 0x36:
+					{
+						iflag_read_temp_sensor = IFLAG_READ_TEMP_SENSOR;
+					}
+					break;
+
+					case 0x80:
+					{
+						if(sbc_rx_data[7] == 0x5A)
+							PeltierAssSendCommand(STOP_FLAG,"0",0,"0");
+					}
+					break;
+
+					case 0x90:
+					{
+						if(sbc_rx_data[7] == 0xA5)
+							PeltierAssSendCommand(START_FLAG,"0",0,"0");
+					}
+					break;
+
+					//ir temp sensor read
+					case 0x40:
+					{
+						if(iflag_sensTempIR == IFLAG_IDLE)
+						{
+						//id sensore
+						//indirizzo da leggere
+						IR_TM_COMM_Enable();
+						//ptrData = buildCmdReadTempSensIR(0x01, (EEPROM_ACCESS_COMMAND | SD_TOMIN_E2_ADDRESS), 0);
+						ptrData = buildCmdReadTempSensIR(0x01, (RAM_ACCESS_COMMAND | SD_TOBJ1_RAM_ADDRESS), 0);
+						//ptrData = buildCmdWriteTempSensIR(0x5A, (EEPROM_ACCESS_COMMAND | SD_TOMAX_E2_ADDRESS), 0xBE01);
+						iflag_sensTempIR = IFLAG_SENS_TEMPIR_WAIT;
+						}
+					}
+					break;
+
+					//ir temp sensor write
+					case 0x41:
+					{
+						//id sensore
+						//indirizzo da scrivere
+						//valore da scrivere
+						if(iflag_sensTempIR == IFLAG_IDLE)
+						{
+						ptrDatawR = buildCmdWriteTempSensIR(0x01, (EEPROM_ACCESS_COMMAND | SD_TOMIN_E2_ADDRESS), 0x62E5);
+						iflag_sensTempIR = IFLAG_SENS_TEMPIR_WAIT;
+						}
+					}
+					break;
+
+					//flow sensor read
+					case 0x50:
+					{
+						//id sensore
+						byte slvAddr = sbc_rx_data[7];
+						//comando
+						//parametro
+						ptrMsg_UFLOW = buildCmdToFlowSens(slvAddr,
+							         				  	  CMD_GET_VAL_CODE /*CMD_IDENT_CODE*/,
+														  0,
+														  0,
+														  ID_FLOW_VAL_MLMIN);
+
+						FLOWSENS_RTS_SetVal();
+						for(char k = 0; k < ptrMsg_UFLOW->bufferToSendLenght; k++)
+						{
+						//FLOWSENS_RTS_SetVal();
+						FLOWSENS_COMM_SendChar(ptrMsg_UFLOW->bufferToSend[k]);
+						}
+					}
+					break;
+
+					default:{}
+					break;
 				}
-				break;
-
-			//modbus read/write
-			case 0x17:
-				slvAddr = sbcDebug_rx_data[7];
-				funcCode = sbcDebug_rx_data[8];
-
-				unsigned int readAddr2 = BYTES_TO_WORD(sbcDebug_rx_data[9], sbcDebug_rx_data[10]);
-				unsigned int numRegRead2 = BYTES_TO_WORD(sbcDebug_rx_data[11], sbcDebug_rx_data[12]);
-
-				valModBusArray[1] = 0x14;
-				valModBusArrayPtr = &valModBusArray[1];
-
-				_funcRetValPtr = ModBusRWRegisterReq(slvAddr,
-						   	   	   	   	   	   	   	 funcCode,
-													 readAddr2,
-													 numRegRead2,
-													 0x0003,
-													 1,
-													 valModBusArrayPtr);
-
-				_funcRetVal.ptr_msg = _funcRetValPtr->ptr_msg;
-				_funcRetVal.mstreqRetStructNumByte = _funcRetValPtr->mstreqRetStructNumByte;
-				_funcRetVal.slvresRetPtr = _funcRetValPtr->slvresRetPtr;
-				_funcRetVal.slvresRetNumByte = _funcRetValPtr->slvresRetNumByte;
-
-				for(char k = 0; k < _funcRetVal.mstreqRetStructNumByte; k++)
-				{
-					MODBUS_COMM_SendChar(*(_funcRetVal.ptr_msg+k));
-				}
-
-				break;
-
-			//ir temp sensor read
-			case 0x40:
-				if(iflag_sensTempIR == IFLAG_IDLE)
-				{
-				//id sensore
-				//indirizzo da leggere
-				IR_TM_COMM_Enable();
-				//ptrData = buildCmdReadTempSensIR(0x01, (EEPROM_ACCESS_COMMAND | SD_TOMIN_E2_ADDRESS), 0);
-				ptrData = buildCmdReadTempSensIR(0x01, (RAM_ACCESS_COMMAND | SD_TOBJ1_RAM_ADDRESS), 0);
-				//ptrData = buildCmdWriteTempSensIR(0x5A, (EEPROM_ACCESS_COMMAND | SD_TOMAX_E2_ADDRESS), 0xBE01);
-				iflag_sensTempIR = IFLAG_SENS_TEMPIR_WAIT;
-				}
-				break;
-
-			//ir temp sensor write
-			case 0x41:
-				//id sensore
-				//indirizzo da scrivere
-				//valore da scrivere
-				if(iflag_sensTempIR == IFLAG_IDLE)
-				{
-				ptrDatawR = buildCmdWriteTempSensIR(0x01, (EEPROM_ACCESS_COMMAND | SD_TOMIN_E2_ADDRESS), 0x62E5);
-				iflag_sensTempIR = IFLAG_SENS_TEMPIR_WAIT;
-				}
-				break;
-
-			//flow sensor read
-			case 0x50:
-				//id sensore
-				slvAddr = sbcDebug_rx_data[7];
-				//comando
-				//parametro
-				ptrMsg_UFLOW = buildCmdToFlowSens(slvAddr,
-					         				  	  CMD_GET_VAL_CODE /*CMD_IDENT_CODE*/,
-												  0,
-												  0,
-												  ID_FLOW_VAL_MLMIN);
-
-				FLOWSENS_RTS_SetVal();
-				for(char k = 0; k < ptrMsg_UFLOW->bufferToSendLenght; k++)
-				{
-				//FLOWSENS_RTS_SetVal();
-				FLOWSENS_COMM_SendChar(ptrMsg_UFLOW->bufferToSend[k]);
-				}
-				break;
-
-			default:
-				break;
 			}
-
 			//wait for response
 			//build peltier response
 			//send response to sbc and pc debug
 			break;
 
-		default:
+			default:{}
 			break;
 		}
-
 		/*confezione risposta - contenuto in pcDebug_tx_data*/
-
 		/*invio risposta*/
-
 	}
+
+	// Wait for response from actuators
+	if(iflag_pmp1_rx == IFLAG_PMP1_RX)
+	{
+		iflag_pmp1_rx = IFLAG_IDLE;
+		// Build response for sbc
+		ptrMsgSbcRx = &sbc_rx_data;
+		buildModBusActResponseMsg(ptrMsgSbcRx, _funcRetVal.slvresRetPtr);
+		ptrMsgSbcTx = &sbc_tx_data[0];
+
+		// Send response to sbc
+		word snd;
+		SBC_COMM_SendBlock(ptrMsgSbcTx,myCommunicatorToSBC.numByteToSend,&snd);
+	}
+
+	// Pressure sensor read
+	if(iflag_read_press_sensor == IFLAG_READ_PR_SENSOR)
+	{
+		iflag_read_press_sensor = IFLAG_IDLE;
+		// Build response for sbc
+		ptrMsgSbcRx = &sbc_rx_data;
+		buildPressSensResponseMsg(ptrMsgSbcRx);
+		ptrMsgSbcTx = &sbc_tx_data[0];
+
+		// Send response to sbc
+		word snd;
+		SBC_COMM_SendBlock(ptrMsgSbcTx,myCommunicatorToSBC.numByteToSend,&snd);
+	}
+
+/*************************************************************/
+/*************************************************************/
+/*************************************************************/
 
 	if(iflag_sensTempIR == IFLAG_SENS_TEMPIR_TX)
 	{
@@ -651,7 +628,7 @@ void testCOMMSbcDebug(void){
 	{
 		sensorIR_TM[0].tempSensValue = (float)((BYTES_TO_WORD(sensorIR_TM[0].bufferReceived[1], sensorIR_TM[0].bufferReceived[0]))*((float)0.02)) - (float)273.15;
 		buildReadIRTempRspMsg(0x40, 0x01);
-		ptrMsgSbcTx = &sbcDebug_tx_data[0];
+		ptrMsgSbcTx = &sbc_tx_data[0];
 
 		for(char i = 0; i < 14 ; i++)
 		{
@@ -816,45 +793,11 @@ void testCOMMSbcDebug(void){
 		iflag_peltier_rx = IFLAG_IDLE;
 
 		//build peltier response
-		cmdId = sbcDebug_rx_data[6] & 0x66;
+		cmdId = sbc_rx_data[6] & 0x66;
 		buildPeltierResponseMsg(cmdId);
-		ptrMsgSbcTx = &sbcDebug_tx_data[0];
+		ptrMsgSbcTx = &sbc_tx_data[0];
 
 		for(char i = 0; i < 14 ; i++)
-		{
-			SBC_COMM_SendChar(*(ptrMsgSbcTx+i));
-
-			#ifdef	DEBUG_COMM_SBC
-			//PC_DEBUG_COMM_SendChar(*(ptrMsgSbcTx+i));
-			#endif
-		}
-	}
-
-	//pressure sensor write
-	if(iflag_write_press_sensor == IFLAG_WRITE_PR_SENSOR)
-	{
-		iflag_write_press_sensor = IFLAG_IDLE;
-		cmdId = sbcDebug_rx_data[6];
-		buildWritePressSensResponseMsg(cmdId, sbcDebug_rx_data[22]);
-		ptrMsgSbcTx = &sbcDebug_tx_data[0];
-		for(char i = 0; i < 14 ; i++)
-		{
-			SBC_COMM_SendChar(*(ptrMsgSbcTx+i));
-
-			#ifdef	DEBUG_COMM_SBC
-			//PC_DEBUG_COMM_SendChar(*(ptrMsgSbcTx+i));
-			#endif
-		}
-	}
-
-	//pressure sensor read
-	if(iflag_read_press_sensor == IFLAG_READ_PR_SENSOR)
-	{
-		iflag_read_press_sensor = IFLAG_IDLE;
-		cmdId = sbcDebug_rx_data[6];
-		buildReadPressSensResponseMsg(cmdId, sbcDebug_rx_data[7]);
-		ptrMsgSbcTx = &sbcDebug_tx_data[0];
-		for(char i = 0; i < 29 ; i++)
 		{
 			SBC_COMM_SendChar(*(ptrMsgSbcTx+i));
 
@@ -867,8 +810,8 @@ void testCOMMSbcDebug(void){
 	//temp sensor write
 	if(iflag_write_temp_sensor == IFLAG_WRITE_TEMP_SENSOR){
 		iflag_write_temp_sensor = IFLAG_IDLE;
-		cmdId = sbcDebug_rx_data[6];
-		buildWriteTempSensResponseMsg(cmdId, (sbcDebug_rx_data[22]-6));
+		cmdId = sbc_rx_data[6];
+		buildWriteTempSensResponseMsg(cmdId, (sbc_rx_data[22]-6));
 		for(char i = 0; i < 14 ; i++)
 		{
 			SBC_COMM_SendChar(*(ptrMsgSbcTx+i));
@@ -882,31 +825,9 @@ void testCOMMSbcDebug(void){
 	//temp sensor read
 	if(iflag_read_temp_sensor == IFLAG_READ_TEMP_SENSOR){
 		iflag_read_temp_sensor = IFLAG_IDLE;
-		cmdId = sbcDebug_rx_data[6];
-		buildReadTempSensResponseMsg(cmdId, (sbcDebug_rx_data[7]-6));
+		cmdId = sbc_rx_data[6];
+		buildReadTempSensResponseMsg(cmdId, (sbc_rx_data[7]-6));
 		for(char i = 0; i < 24 ; i++)
-		{
-			SBC_COMM_SendChar(*(ptrMsgSbcTx+i));
-
-			#ifdef	DEBUG_COMM_SBC
-			//PC_DEBUG_COMM_SendChar(*(ptrMsgSbcTx+i));
-			#endif
-		}
-	}
-
-	//wait for response
-	if(iflag_pmp1_rx == IFLAG_PMP1_RX)
-	{
-		iflag_pmp1_rx = IFLAG_IDLE;
-		//build response for sbc
-		if(sbcDebug_rx_data[6] == 0x17)
-			cmdId = 0x17;
-		else
-			cmdId = sbcDebug_rx_data[6] & 0x66;
-		buildModBusActResponseMsg(cmdId);
-		ptrMsgSbcTx = &sbcDebug_tx_data[0];
-		//send response to sbc
-		for(char i = 0; i < 16 ; i++)
 		{
 			SBC_COMM_SendChar(*(ptrMsgSbcTx+i));
 

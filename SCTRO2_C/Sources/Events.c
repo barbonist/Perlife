@@ -115,7 +115,7 @@ void SBC_COMM_OnRxChar(void)
 		iflag_sbc_rx |= IFLAG_SBC_RX;
 		ptrSbcCountRx = 0;
 		//ptrMsgSbcRx = &msg_sbc_rx[0];
-		ptrMsgSbcRx = &sbcDebug_rx_data[0];
+		ptrMsgSbcRx = &sbc_rx_data[0];
 	}
 }
 

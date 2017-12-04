@@ -105,14 +105,20 @@ unsigned char	peltierDebug_rx_data[256];				/* received byte from peltier */
 unsigned char	peltierDebug_rx_data_dummy[256];
 unsigned char	peltierDebug_tx_data[32];				/* transmitted byte to peltier */
 
-unsigned char	sbcDebug_rx_data[32];				/* received byte from sbc */
-//unsigned char	sbcDebug_tx_data[32];				/* transmitted byte to sbc */
-unsigned char		sbcDebug_tx_data[32];				/* transmitted byte to sbc */
+unsigned char	sbc_rx_data[256];				/* received byte from sbc */
+unsigned char	sbc_tx_data[256];				/* transmitted byte to sbc */
+
+#define SBC_RX_DATA_POS_CODE	5
+#define SBC_RX_DATA_POS_SUBCODE	6
 
 /**/
 
-
-
+enum CommandId {
+	COMMAND_ID_NULL		= 0x00,
+	COMMAND_ID_ST      	= 0x20,
+	COMMAND_ID_PAR_SET 	= 0xC0,
+	COMMAND_ID_BUT_SBC 	= 0xC2
+};
 
 //AS1_TComData    msg_pmp1_tx[257];		/* modbus codified pmp1 message transmitted */
 //AS1_TComData *  msg_pmp1_tx_ptr;		/* pointer to msg_pmp1_tx */
@@ -544,26 +550,52 @@ struct alarm	alarmCurrent;
 struct alarm * ptrAlarmCurrent;
 /* alarm */
 
+/* sensors values */
+typedef unsigned short	word;
+struct sensValues{
+	word pressAdsFilter;
+	word pressArt;
+	word pressVen;
+	word pressOxy;
+	word pressLevel;
+	word pressSystArt;
+	word pressDiasArt;
+	word pressMeanArt;
+	word pressSystVen;
+	word pressDiasVen;
+	word pressMeanVen;
+	word flowArt;
+	word flowVenOxy;
+	word tempResOut;
+	word tempOrganIn;
+	word tempVenOxy;
+};
+
+struct sensValues	sensorsValues;
+/* sensors values */
+
 /* perfusion parameter */
 /* word will be converted to float by sbc */
-typedef unsigned short	word;
 struct perfParam{
-	word systolicPress;
-	word diastolicPress;
-	word meanPress;
-	word flowPerfArt;
-	word flowPerfVen;
-	word flowOxygenat;
-	word tempReservOutlet;
-	word tempPerfInletCon;
-	word tempPerfInletPro;
+	word priVolAdsFilter;
+	word priVolPerfArt;
+	word priVolPerfVenOxy;
+	word priDurPerfArt;
+	word priDurPerVenOxy;
+	word treatVolAdsFilter;
+	word treatVolPerfArt;
+	word treatVolPerfVenOxy;
+	word treatDurPerfArt;
+	word treatDurPerVenOxy;
+	word unlVolAdsFilter;
+	word unlVolPerfArt;
+	word unlVolPerfVenOxy;
+	word unlVolRes;
+	word unlDurPerfArt;
+	word unlDurPerVenOxy;
 	word renalResistance;
-	word volumePrimingArt;
-	word volumePrimingVen;
-	word volumePrimingOxygen;
-	word volumeTreatArt;
-	word volumeTreatVen;
-	word volumeTreatOxygen;
+	word pulsatility;
+	word pressDropAdsFilter;
 };
 
 struct perfParam	perfusionParam;
@@ -573,16 +605,16 @@ struct perfParam	perfusionParam;
 struct purifParam{
 	word	pressPlasmaFilt;
 	word	pressFractFilt;
-	word	pressAdsorbFilt;
+	word	pressAbsorbFilt;
 	word	flowPlasmaFilt;
 	word	flowFractFilt;
-	word	flowAdsorbFilt;
+	word	flowAbsorbFilt;
 	word	volPrimingPlasmaFilt;
 	word	volPrimingFractFilt;
-	word	volPrimingAdsorbFilt;
+	word	volPrimingAbsorbFilt;
 	word	volTreatPlasmaFilt;
 	word	volTreatFractFilt;
-	word	volTreatAdsorbFilt;
+	word	volTreatAbsorbFilt;
 	word	volTreatWashFilt;
 
 };
@@ -782,8 +814,9 @@ struct ultrsndFlowSens * ptrMsg_UFLOW; 	   /* puntatore utilizzato per spedire i
 /************************************************************************/
 /* 						PULSANTI GUI 									*/
 /************************************************************************/
-#define GUI_BUTTON_PRESSED		0xA5
-#define GUI_BUTTON_RELEASED		0x5A
+#define GUI_BUTTON_NULL			0x00
+#define GUI_BUTTON_PRESSED		0x01
+#define GUI_BUTTON_RELEASED		0x00
 
 enum buttonGUIEnum{
 	BUTTON_KIDNEY = 0xA1,
@@ -828,30 +861,28 @@ enum paramWordSetFromSBC{
 	PAR_SET_PRIMING_VOL_PURIFICATION = 0x30,
 	PAR_SET_PRIMING_VOL_OXYGENATION = 0x50,
 	PAR_SET_OXYGENATOR_FOW = 0x70,
+	PAR_SET_TEMPERATURE = 0xA0,
 	PAR_SET_PRESS_ART_TARGET = 0xB1,
+	PAR_SET_DESIRED_DURATION = 0xB3,
+	PAR_SET_MAX_FLOW_PERFUSION = 0xB7,
 	PAR_SET_PRESS_VEN_TARGET = 0xC2,
 	PAR_SET_PURIF_FLOW_TARGET = 0xD3,
-	PAR_SET__WORD_END_NUMBER = 0xD3
-};
-
-enum paramFloatSetFromSBC{
-	PAR_SET_TEMPERATURE = 0xA0,
 	PAR_SET_PURIF_UF_FLOW_TARGET = 0xE4,
-	PAR_SET_FLOAT_END_NUMBER = 0xE4
+	PAR_SET_WORD_END_NUMBER = PAR_SET_PURIF_UF_FLOW_TARGET
 };
 
 struct parWordSetFromGUI{
 	char id;
 	word value;
 };
-struct parWordSetFromGUI parameterWordSetFromGUI[PAR_SET__WORD_END_NUMBER];
+struct parWordSetFromGUI parameterWordSetFromGUI[PAR_SET_WORD_END_NUMBER];
 
 
-struct parFloatSetFromGUI{
+/*struct parFloatSetFromGUI{
 	char id;
 	float value;
 };
-struct parFloatSetFromGUI parameterFloatSetFromGUI[PAR_SET_FLOAT_END_NUMBER];
+struct parFloatSetFromGUI parameterFloatSetFromGUI[PAR_SET_FLOAT_END_NUMBER];*/
 /************************************************************************/
 /* 					PARAMETRI DA IMPOSTARE TRAMITE GUI 					*/
 /************************************************************************/
@@ -869,6 +900,8 @@ struct communicatorToSBC{
 	unsigned short dataPeltierReadyFlag;
 	unsigned short dataModBusReadyFlag;
 	unsigned short dataMachineStateReadyFlag;
+	unsigned short dataButtonSBCReadyFlag;
+	unsigned short dataParamSetSBCReadyFlag;
 	unsigned short dataPerfParamReadyFlag;
 
 	unsigned short numByteToSend;

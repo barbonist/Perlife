@@ -138,14 +138,15 @@ void initAllGuard(void);
 /*  GUI FUNCTION */
 void initGUIButton(void);
 void setGUIButton(unsigned char buttonId);
+unsigned char getGUIButton(unsigned char buttonId);
 void releaseGUIButton(unsigned char buttonId);
 
 void initSetParamFromGUI(void);
 void setParamWordFromGUI(unsigned char parId, int value);
-void setParamFloatFromGUI(unsigned char parId, float value);
+//void setParamFloatFromGUI(unsigned char parId, float value);
 void resetParamWordFromGUI(unsigned char parId);
-void resetParamFloatFromGUI(unsigned char parId);
-char checkParTypeFromGUI(unsigned char parId);
+//void resetParamFloatFromGUI(unsigned char parId);
+//char checkParTypeFromGUI(unsigned char parId);
 
 /**************************************************************************************/
 /******-------------------------DRIVERS MANAGEMENT-----------------------------********/

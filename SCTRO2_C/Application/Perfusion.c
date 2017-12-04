@@ -10,8 +10,11 @@
 
 
 void initPerfusionParam(void){
-	perfusionParam.diastolicPress = 0xABCD;
-	perfusionParam.systolicPress = 0xFAFC;
-	perfusionParam.meanPress = 0xAFCF;
+	//perfusionParam.diastolicPress = 0xABCD;
+	//perfusionParam.systolicPress = 0xFAFC;
+	//perfusionParam.meanPress = 0xAFCF;
+	sensorsValues.pressSystArt = 0xFAFC;
+	sensorsValues.pressDiasArt = 0xABCD;
+	sensorsValues.pressMeanArt = 0xAFCF;
 
 }
