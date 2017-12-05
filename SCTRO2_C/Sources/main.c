@@ -270,6 +270,11 @@ int main(void)
   AD0_Start();
   AD1_Start();
 
+  /*abilito la 24V sui motori*/
+  EN_24_M_C_Management(ENABLE);
+  /*do l'enable sui motori*/
+  EN_Clamp_Control(ENABLE);
+  EN_Motor_Control(ENABLE);
 
   /*attendo 50 ms prima di entrare nell main loop
    * per dare il tempo ai sensori di alimentarsi e
@@ -458,6 +463,7 @@ int main(void)
 	         	testCOMMSbcDebug();
 
 	         	alwaysAdcParam();
+	         	alwaysIRTempSensRead();
 
 	         	if(timerCounterUFlowSensor >= 2){
 	         		timerCounterUFlowSensor = 0;

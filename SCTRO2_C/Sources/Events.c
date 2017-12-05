@@ -614,8 +614,13 @@ void MODBUS_COMM_OnRxChar(void)
 {
   /* Write your code here ... */
 
+	static char byte_received =0; //lo faccio static così non lo inizializza ad ogni ingresso nell' interrupt
+
 	//MODBUS_COMM_RecvChar(msg_pmp1_rx_ptr);
 	MODBUS_COMM_RecvChar(_funcRetVal.slvresRetPtr);
+
+	byte_received++; // incremento pert sapere quantri byte ho ricevuto
+
 	_funcRetVal.slvresRetPtr = _funcRetVal.slvresRetPtr + 1;
 
 	#ifdef DEBUG_PUMP
@@ -631,6 +636,8 @@ void MODBUS_COMM_OnRxChar(void)
 	{
 		iflag_pmp1_rx = IFLAG_IDLE;
 		iflag_pmp1_rx |= IFLAG_PMP1_RX;
+		_funcRetVal.slvresRetPtr = _funcRetVal.slvresRetPtr - byte_received; //riporto il puntatore dei valori all'inizio
+		byte_received=0;
 	}
 }
 
