@@ -91,6 +91,8 @@ void testCOMMSbcDebug(void){
 		regId[i] = 0x00;
 
 	static char regIntId[4];
+	static char valueIeee[10];
+	int	valueInt;
 
 	unsigned char rcvData[20];
 	unsigned char * ptrData;
@@ -331,6 +333,91 @@ void testCOMMSbcDebug(void){
 						SBC_COMM_SendBlock(ptrMsgSbcTx,myCommunicatorToSBC.numByteToSend,&snd);
 					}
 					break;
+					// Peltier read float
+					case 0x26:
+					{
+						sprintf(regId, "%u", sbc_rx_data[7]);
+						PeltierAssSendCommand(READ_FLOAT_FROM_REG_XX,regId,0,"0");
+
+						word snd;
+						ptrMsgSbcRx = &sbc_rx_data;
+						buildPeltierReadFloatResponseMsg(ptrMsgSbcRx, ptrMsgDataieee754start);
+						ptrMsgSbcTx = &sbc_tx_data[0];
+						SBC_COMM_SendBlock(ptrMsgSbcTx,myCommunicatorToSBC.numByteToSend,&snd);
+					}
+					break;
+					// Peltier read int
+					case 0x28:
+					{
+						sprintf(regId, "%u", sbc_rx_data[7]);
+						PeltierAssSendCommand(READ_DATA_REGISTER_XX,regId,0,"0");
+
+						word snd;
+						ptrMsgSbcRx = &sbc_rx_data;
+						buildPeltierReadIntResponseMsg(ptrMsgSbcRx, ptrMsgDataPeltierInt);
+						ptrMsgSbcTx = &sbc_tx_data[0];
+						SBC_COMM_SendBlock(ptrMsgSbcTx,myCommunicatorToSBC.numByteToSend,&snd);
+					}
+					break;
+					case 0x27:
+					{
+						sprintf(regId, "%u", sbc_rx_data[7]);
+						sprintf(valueIeee, "%2X%2X%2X%2X", sbc_rx_data[8], sbc_rx_data[9], sbc_rx_data[10], sbc_rx_data[11]);
+						PeltierAssSendCommand(WRITE_FLOAT_REG_XX,regId,0,valueIeee);
+
+						word snd;
+						ptrMsgSbcRx = &sbc_rx_data;
+						buildPeltierWriteFloatResponseMsg(ptrMsgSbcRx);
+						ptrMsgSbcTx = &sbc_tx_data[0];
+						SBC_COMM_SendBlock(ptrMsgSbcTx,myCommunicatorToSBC.numByteToSend,&snd);
+					}
+					break;
+					case 0x29:
+					{
+						sprintf(regId, "%u", sbc_rx_data[7]);
+						valueInt = sbc_rx_data[8];
+						PeltierAssSendCommand(WRITE_DATA_REGISTER_XX,regId,valueInt,"0");
+
+						word snd;
+						ptrMsgSbcRx = &sbc_rx_data;
+						buildPeltierWriteIntResponseMsg(ptrMsgSbcRx);
+						ptrMsgSbcTx = &sbc_tx_data[0];
+						SBC_COMM_SendBlock(ptrMsgSbcTx,myCommunicatorToSBC.numByteToSend,&snd);
+					}
+					break;
+					case 0x20:
+					{
+						PeltierAssSendCommand(START_FLAG,"0",0,"0");
+
+						word snd;
+						ptrMsgSbcRx = &sbc_rx_data;
+						buildPeltierStartResponseMsg(ptrMsgSbcRx);
+						ptrMsgSbcTx = &sbc_tx_data[0];
+						SBC_COMM_SendBlock(ptrMsgSbcTx,myCommunicatorToSBC.numByteToSend,&snd);
+					}
+					break;
+					case 0x21:
+					{
+						PeltierAssSendCommand(STOP_FLAG,"0",0,"0");
+
+						word snd;
+						ptrMsgSbcRx = &sbc_rx_data;
+						buildPeltierStopResponseMsg(ptrMsgSbcRx);
+						ptrMsgSbcTx = &sbc_tx_data[0];
+						SBC_COMM_SendBlock(ptrMsgSbcTx,myCommunicatorToSBC.numByteToSend,&snd);
+					}
+					break;
+					case 0x22:
+					{
+						PeltierAssSendCommand(WRITE_REG_VAL_TO_EEPROM, "0",0,"0");
+
+						word snd;
+						ptrMsgSbcRx = &sbc_rx_data;
+						buildPeltierWriteEEResponseMsg(ptrMsgSbcRx);
+						ptrMsgSbcTx = &sbc_tx_data[0];
+						SBC_COMM_SendBlock(ptrMsgSbcTx,myCommunicatorToSBC.numByteToSend,&snd);
+					}
+					break;
 
 /******************************************************************/
 /******************************************************************/
@@ -367,254 +454,235 @@ void testCOMMSbcDebug(void){
 					}
 					break;
 
-					//peltier; write tcdband, tclimit, set temp
-					case 0x21:
-					{
-						msgPeltierDbLimSet = 3;
-						iflag_peltier_rx = IFLAG_PELTIER_RX;
-						sprintf(tcDBand, "%2X%2X%2X%2X", sbc_rx_data[8], sbc_rx_data[9], sbc_rx_data[10], sbc_rx_data[11]);
-						for(char i=0; i<8; i++)
-						{
-							if(tcDBand[i] == 0x20)
-								tcDBand[i] = 0x30;
-						}
-						sprintf(regTcDBand, "%u", sbc_rx_data[7]);
-
-						sprintf(tcLimit, "%2X%2X%2X%2X", sbc_rx_data[13], sbc_rx_data[14], sbc_rx_data[15], sbc_rx_data[16]);
-						for(char i=0; i<8; i++)
-						{
-							if(tcLimit[i] == 0x20)
-								tcLimit[i] = 0x30;
-						}
-						sprintf(regTcLimit, "%u", sbc_rx_data[12]);
-
-						sprintf(setTemp, "%2X%2X%2X%2X", sbc_rx_data[18], sbc_rx_data[19], sbc_rx_data[20], sbc_rx_data[21]);
-						for(char i=0; i<8; i++)
-						{
-							if(setTemp[i] == 0x20)
-								setTemp[i] = 0x30;
-						}
-						sprintf(regSetTemp, "%u", sbc_rx_data[17]);
-					}
-					break;
-
-					//peltier write 3 float; calibration of t1 ntc
-					case 0x22:
-					{
-						msgPeltierCalT1Wr = 3;
-						iflag_peltier_rx = IFLAG_PELTIER_RX;
-						sprintf(stCoeffA, "%2X%2X%2X%2X", sbc_rx_data[8], sbc_rx_data[9], sbc_rx_data[10], sbc_rx_data[11]);
-						for(char i=0; i<8; i++)
-						{
-							if(stCoeffA[i] == 0x20)
-								stCoeffA[i] = 0x30;
-						}
-						sprintf(regCoeffA, "%u", sbc_rx_data[7]);
-
-						sprintf(stCoeffB, "%2X%2X%2X%2X", sbc_rx_data[13], sbc_rx_data[14], sbc_rx_data[15], sbc_rx_data[16]);
-						for(char i=0; i<8; i++)
-						{
-							if(stCoeffB[i] == 0x20)
-								stCoeffB[i] = 0x30;
-						}
-						sprintf(regCoeffB, "%u", sbc_rx_data[12]);
-
-						sprintf(stCoeffC, "%2X%2X%2X%2X", sbc_rx_data[18], sbc_rx_data[19], sbc_rx_data[20], sbc_rx_data[21]);
-						for(char i=0; i<8; i++)
-						{
-							if(stCoeffC[i] == 0x20)
-								stCoeffC[i] = 0x30;
-						}
-						sprintf(regCoeffC, "%u", sbc_rx_data[17]);
-					}
-					break;
-
-					//peltier; write parameters for on / off mode
-					case 0x23:
-					{
-						msgPeltierOnOff = 3;
-						iflag_peltier_rx = IFLAG_PELTIER_RX;
-						sprintf(onOffDBand, "%2X%2X%2X%2X", sbc_rx_data[8], sbc_rx_data[9], sbc_rx_data[10], sbc_rx_data[11]);
-						for(char i=0; i<8; i++)
-						{
-							if(onOffDBand[i] == 0x20)
-								onOffDBand[i] = 0x30;
-						}
-						sprintf(regOnOffDBand, "%u", sbc_rx_data[7]);
-
-						sprintf(onOffHyst, "%2X%2X%2X%2X", sbc_rx_data[13], sbc_rx_data[14], sbc_rx_data[15], sbc_rx_data[16]);
-						for(char i=0; i<8; i++)
-						{
-							if(onOffHyst[i] == 0x20)
-								onOffHyst[i] = 0x30;
-						}
-						sprintf(regOnOffHyst, "%u", sbc_rx_data[12]);
-
-						onOffValue = sbc_rx_data[19];
-						sprintf(regOnOffValue, "%u", sbc_rx_data[17]);
-					}
-					break;
-
-					//peltier write 2 float - ad alarm thresholds
-					case 0x24:
-					{
-						msgPeltierToSendWr = 2;
-						iflag_peltier_rx = IFLAG_PELTIER_RX;
-						sprintf(dataFloatWriteHigh, "%2X%2X%2X%2X", sbc_rx_data[8], sbc_rx_data[9], sbc_rx_data[10], sbc_rx_data[11]);
-						for(char i=0; i<8; i++)
-						{
-							if(dataFloatWriteHigh[i] == 0x20)
-								dataFloatWriteHigh[i] = 0x30;
-						}
-						sprintf(regIdHigh, "%u", sbc_rx_data[7]);
-						msgPeltierToSendWr = 2;
-
-						sprintf(dataFloatWriteLow, "%2X%2X%2X%2X", sbc_rx_data[13], sbc_rx_data[14], sbc_rx_data[15], sbc_rx_data[16]);
-						for(char i=0; i<8; i++)
-						{
-							if(dataFloatWriteLow[i] == 0x20)
-								dataFloatWriteLow[i] = 0x30;
-						}
-						sprintf(regIdLow, "%u", sbc_rx_data[12]);
-
-						/*if(sbcDebug_rx_data[7] == 0x05)
-						{
-							sprintf(dataFloatWriteHigh, "%2x%2x%2x%2x", sbcDebug_rx_data[8], sbcDebug_rx_data[9], sbcDebug_rx_data[10], sbcDebug_rx_data[11]);
-							for(char i=0; i<8; i++)
-							{
-								if(dataFloatWriteHigh[i] == 0x20)
-									dataFloatWriteHigh[i] = 0x30;
-							}
-							msgPeltierToSend = 2;
-							PeltierAssSendCommand(WRITE_FLOAT_REG_XX, REG_72_ALARM_TEMP1_LOW, 0, dataFloatWrite);
-
-
-							sprintf(dataFloatWriteLow, "%2x%2x%2x%2x", sbcDebug_rx_data[13], sbcDebug_rx_data[14], sbcDebug_rx_data[15], sbcDebug_rx_data[16]);
-							for(char i=0; i<8; i++)
-							{
-								if(dataFloatWriteLow[i] == 0x20)
-									dataFloatWriteLow[i] = 0x30;
-							}
-
-							//PeltierAssSendCommand(WRITE_FLOAT_REG_XX, REG_71_ALARM_TEMP1_HIGH, 0, dataFloatWrite);
-							//PeltierAssSendCommand(WRITE_FLOAT_REG_XX, REG_72_ALARM_TEMP1_LOW, 0, dataFloatWrite);
-						}*/
-					}
-					break;
-
-					//Peltier fan
-					case 0x25:
-					{
-						msgPeltierFan = 3;
-						iflag_peltier_rx = IFLAG_PELTIER_RX;
-						sprintf(fanHighSpeedVal, "%2X%2X%2X%2X", sbc_rx_data[8], sbc_rx_data[9], sbc_rx_data[10], sbc_rx_data[11]);
-						for(char i=0; i<8; i++)
-						{
-							if(fanHighSpeedVal[i] == 0x20)
-								fanHighSpeedVal[i] = 0x30;
-						}
-						sprintf(regFanHighSpeed, "%u", sbc_rx_data[7]);
-
-						sprintf(fanLowSpeedVal, "%2X%2X%2X%2X", sbc_rx_data[13], sbc_rx_data[14], sbc_rx_data[15], sbc_rx_data[16]);
-						for(char i=0; i<8; i++)
-						{
-							if(fanLowSpeedVal[i] == 0x20)
-								fanLowSpeedVal[i] = 0x30;
-						}
-						sprintf(regFanLowSpeed, "%u", sbc_rx_data[12]);
-
-						fanValue = sbc_rx_data[19];
-						sprintf(regFanValue, "%u", sbc_rx_data[17]);
-					}
-					break;
-
-					//peltier read float
-					case 0x26:
-					{
-						sprintf(regId, "%u", sbc_rx_data[7]);
-						PeltierAssSendCommand(READ_FLOAT_FROM_REG_XX,regId,0,"0");
-					}
-					break;
-
-					//peltier read int
-					case 0x28:
-					{
-						sprintf(regIntId, "%u", sbc_rx_data[7]);
-						PeltierAssSendCommand(READ_DATA_REGISTER_XX,regIntId,0,"0");
-					}
-					break;
-
-					//cal temperature sensr
-					case 0x35:
-					{
-						if(sbc_rx_data[7] == 0x10)
-						{
-							numFloatSensor.ieee754NUmFormat = 	(sbc_rx_data[8] << 24) |
-																(sbc_rx_data[9] << 16) |
-																(sbc_rx_data[10] << 8) |
-																(sbc_rx_data[11]);
-
-							sensor_TMx[sbc_rx_data[22]-6].tempSensGain = numFloatSensor.numFormatFloat;
-						}
-
-						if(sbc_rx_data[12] == 0x20)
-						{
-							numFloatSensor.ieee754NUmFormat = 	(sbc_rx_data[13] << 24) |
-																(sbc_rx_data[14] << 16) |
-																(sbc_rx_data[15] << 8) |
-																(sbc_rx_data[16]);
-
-							sensor_TMx[sbc_rx_data[22]-6].tempSensOffset = numFloatSensor.numFormatFloat;
-						}
-
-						if(sbc_rx_data[17] == 0x30)
-						{
-							numFloatSensor.ieee754NUmFormat = 	(sbc_rx_data[18] << 24) |
-																(sbc_rx_data[19] << 16) |
-																(sbc_rx_data[20] << 8) |
-																(sbc_rx_data[21]);
-
-							sensor_TMx[sbc_rx_data[22]-6].tempSensOffsetVal = numFloatSensor.numFormatFloat;
-						}
-
-						sensor_TMx[sbc_rx_data[22]-6].tempSensAdcPtr = sensor_TMx[sbc_rx_data[22]-6].readAdctPtr();
-						sensor_TMx[sbc_rx_data[22]-6].tempSensAdc = *sensor_TMx[sbc_rx_data[22]-6].tempSensAdcPtr;
-						sensor_TMx[sbc_rx_data[22]-6].tempSensValue = sensor_TMx[sbc_rx_data[22]-6].tempSensGain *
-																		((((float)sensor_TMx[sbc_rx_data[22]-6].tempSensAdc)/65535)*3.3 - sensor_TMx[sbc_rx_data[22]-6].tempSensOffsetVal) +
-																		sensor_TMx[sbc_rx_data[22]-6].tempSensOffset;
-
-						iflag_write_temp_sensor = IFLAG_WRITE_TEMP_SENSOR;
-					}
-					break;
-
-					//read adc temp sens
-					case 0x36:
-					{
-						iflag_read_temp_sensor = IFLAG_READ_TEMP_SENSOR;
-					}
-					break;
-
-					case 0x80:
-					{
-						if(sbc_rx_data[7] == 0x5A)
-							PeltierAssSendCommand(STOP_FLAG,"0",0,"0");
-					}
-					break;
-
-					case 0x90:
-					{
-						if(sbc_rx_data[7] == 0xA5)
-							PeltierAssSendCommand(START_FLAG,"0",0,"0");
-					}
-					break;
+//					//peltier; write tcdband, tclimit, set temp
+//					case 0x21:
+//					{
+//						msgPeltierDbLimSet = 3;
+//						iflag_peltier_rx = IFLAG_PELTIER_RX;
+//						sprintf(tcDBand, "%2X%2X%2X%2X", sbc_rx_data[8], sbc_rx_data[9], sbc_rx_data[10], sbc_rx_data[11]);
+//						for(char i=0; i<8; i++)
+//						{
+//							if(tcDBand[i] == 0x20)
+//								tcDBand[i] = 0x30;
+//						}
+//						sprintf(regTcDBand, "%u", sbc_rx_data[7]);
+//
+//						sprintf(tcLimit, "%2X%2X%2X%2X", sbc_rx_data[13], sbc_rx_data[14], sbc_rx_data[15], sbc_rx_data[16]);
+//						for(char i=0; i<8; i++)
+//						{
+//							if(tcLimit[i] == 0x20)
+//								tcLimit[i] = 0x30;
+//						}
+//						sprintf(regTcLimit, "%u", sbc_rx_data[12]);
+//
+//						sprintf(setTemp, "%2X%2X%2X%2X", sbc_rx_data[18], sbc_rx_data[19], sbc_rx_data[20], sbc_rx_data[21]);
+//						for(char i=0; i<8; i++)
+//						{
+//							if(setTemp[i] == 0x20)
+//								setTemp[i] = 0x30;
+//						}
+//						sprintf(regSetTemp, "%u", sbc_rx_data[17]);
+//					}
+//					break;
+//
+//					//peltier write 3 float; calibration of t1 ntc
+//					case 0x22:
+//					{
+//						msgPeltierCalT1Wr = 3;
+//						iflag_peltier_rx = IFLAG_PELTIER_RX;
+//						sprintf(stCoeffA, "%2X%2X%2X%2X", sbc_rx_data[8], sbc_rx_data[9], sbc_rx_data[10], sbc_rx_data[11]);
+//						for(char i=0; i<8; i++)
+//						{
+//							if(stCoeffA[i] == 0x20)
+//								stCoeffA[i] = 0x30;
+//						}
+//						sprintf(regCoeffA, "%u", sbc_rx_data[7]);
+//
+//						sprintf(stCoeffB, "%2X%2X%2X%2X", sbc_rx_data[13], sbc_rx_data[14], sbc_rx_data[15], sbc_rx_data[16]);
+//						for(char i=0; i<8; i++)
+//						{
+//							if(stCoeffB[i] == 0x20)
+//								stCoeffB[i] = 0x30;
+//						}
+//						sprintf(regCoeffB, "%u", sbc_rx_data[12]);
+//
+//						sprintf(stCoeffC, "%2X%2X%2X%2X", sbc_rx_data[18], sbc_rx_data[19], sbc_rx_data[20], sbc_rx_data[21]);
+//						for(char i=0; i<8; i++)
+//						{
+//							if(stCoeffC[i] == 0x20)
+//								stCoeffC[i] = 0x30;
+//						}
+//						sprintf(regCoeffC, "%u", sbc_rx_data[17]);
+//					}
+//					break;
+//
+//					//peltier; write parameters for on / off mode
+//					case 0x23:
+//					{
+//						msgPeltierOnOff = 3;
+//						iflag_peltier_rx = IFLAG_PELTIER_RX;
+//						sprintf(onOffDBand, "%2X%2X%2X%2X", sbc_rx_data[8], sbc_rx_data[9], sbc_rx_data[10], sbc_rx_data[11]);
+//						for(char i=0; i<8; i++)
+//						{
+//							if(onOffDBand[i] == 0x20)
+//								onOffDBand[i] = 0x30;
+//						}
+//						sprintf(regOnOffDBand, "%u", sbc_rx_data[7]);
+//
+//						sprintf(onOffHyst, "%2X%2X%2X%2X", sbc_rx_data[13], sbc_rx_data[14], sbc_rx_data[15], sbc_rx_data[16]);
+//						for(char i=0; i<8; i++)
+//						{
+//							if(onOffHyst[i] == 0x20)
+//								onOffHyst[i] = 0x30;
+//						}
+//						sprintf(regOnOffHyst, "%u", sbc_rx_data[12]);
+//
+//						onOffValue = sbc_rx_data[19];
+//						sprintf(regOnOffValue, "%u", sbc_rx_data[17]);
+//					}
+//					break;
+//
+//					//peltier write 2 float - ad alarm thresholds
+//					case 0x24:
+//					{
+//						msgPeltierToSendWr = 2;
+//						iflag_peltier_rx = IFLAG_PELTIER_RX;
+//						sprintf(dataFloatWriteHigh, "%2X%2X%2X%2X", sbc_rx_data[8], sbc_rx_data[9], sbc_rx_data[10], sbc_rx_data[11]);
+//						for(char i=0; i<8; i++)
+//						{
+//							if(dataFloatWriteHigh[i] == 0x20)
+//								dataFloatWriteHigh[i] = 0x30;
+//						}
+//						sprintf(regIdHigh, "%u", sbc_rx_data[7]);
+//						msgPeltierToSendWr = 2;
+//
+//						sprintf(dataFloatWriteLow, "%2X%2X%2X%2X", sbc_rx_data[13], sbc_rx_data[14], sbc_rx_data[15], sbc_rx_data[16]);
+//						for(char i=0; i<8; i++)
+//						{
+//							if(dataFloatWriteLow[i] == 0x20)
+//								dataFloatWriteLow[i] = 0x30;
+//						}
+//						sprintf(regIdLow, "%u", sbc_rx_data[12]);
+//
+//						/*if(sbcDebug_rx_data[7] == 0x05)
+//						{
+//							sprintf(dataFloatWriteHigh, "%2x%2x%2x%2x", sbcDebug_rx_data[8], sbcDebug_rx_data[9], sbcDebug_rx_data[10], sbcDebug_rx_data[11]);
+//							for(char i=0; i<8; i++)
+//							{
+//								if(dataFloatWriteHigh[i] == 0x20)
+//									dataFloatWriteHigh[i] = 0x30;
+//							}
+//							msgPeltierToSend = 2;
+//							PeltierAssSendCommand(WRITE_FLOAT_REG_XX, REG_72_ALARM_TEMP1_LOW, 0, dataFloatWrite);
+//
+//
+//							sprintf(dataFloatWriteLow, "%2x%2x%2x%2x", sbcDebug_rx_data[13], sbcDebug_rx_data[14], sbcDebug_rx_data[15], sbcDebug_rx_data[16]);
+//							for(char i=0; i<8; i++)
+//							{
+//								if(dataFloatWriteLow[i] == 0x20)
+//									dataFloatWriteLow[i] = 0x30;
+//							}
+//
+//							//PeltierAssSendCommand(WRITE_FLOAT_REG_XX, REG_71_ALARM_TEMP1_HIGH, 0, dataFloatWrite);
+//							//PeltierAssSendCommand(WRITE_FLOAT_REG_XX, REG_72_ALARM_TEMP1_LOW, 0, dataFloatWrite);
+//						}*/
+//					}
+//					break;
+//
+//					//Peltier fan
+//					case 0x25:
+//					{
+//						msgPeltierFan = 3;
+//						iflag_peltier_rx = IFLAG_PELTIER_RX;
+//						sprintf(fanHighSpeedVal, "%2X%2X%2X%2X", sbc_rx_data[8], sbc_rx_data[9], sbc_rx_data[10], sbc_rx_data[11]);
+//						for(char i=0; i<8; i++)
+//						{
+//							if(fanHighSpeedVal[i] == 0x20)
+//								fanHighSpeedVal[i] = 0x30;
+//						}
+//						sprintf(regFanHighSpeed, "%u", sbc_rx_data[7]);
+//
+//						sprintf(fanLowSpeedVal, "%2X%2X%2X%2X", sbc_rx_data[13], sbc_rx_data[14], sbc_rx_data[15], sbc_rx_data[16]);
+//						for(char i=0; i<8; i++)
+//						{
+//							if(fanLowSpeedVal[i] == 0x20)
+//								fanLowSpeedVal[i] = 0x30;
+//						}
+//						sprintf(regFanLowSpeed, "%u", sbc_rx_data[12]);
+//
+//						fanValue = sbc_rx_data[19];
+//						sprintf(regFanValue, "%u", sbc_rx_data[17]);
+//					}
+//					break;
+//
+//					//cal temperature sensr
+//					case 0x35:
+//					{
+//						if(sbc_rx_data[7] == 0x10)
+//						{
+//							numFloatSensor.ieee754NUmFormat = 	(sbc_rx_data[8] << 24) |
+//																(sbc_rx_data[9] << 16) |
+//																(sbc_rx_data[10] << 8) |
+//																(sbc_rx_data[11]);
+//
+//							sensor_TMx[sbc_rx_data[22]-6].tempSensGain = numFloatSensor.numFormatFloat;
+//						}
+//
+//						if(sbc_rx_data[12] == 0x20)
+//						{
+//							numFloatSensor.ieee754NUmFormat = 	(sbc_rx_data[13] << 24) |
+//																(sbc_rx_data[14] << 16) |
+//																(sbc_rx_data[15] << 8) |
+//																(sbc_rx_data[16]);
+//
+//							sensor_TMx[sbc_rx_data[22]-6].tempSensOffset = numFloatSensor.numFormatFloat;
+//						}
+//
+//						if(sbc_rx_data[17] == 0x30)
+//						{
+//							numFloatSensor.ieee754NUmFormat = 	(sbc_rx_data[18] << 24) |
+//																(sbc_rx_data[19] << 16) |
+//																(sbc_rx_data[20] << 8) |
+//																(sbc_rx_data[21]);
+//
+//							sensor_TMx[sbc_rx_data[22]-6].tempSensOffsetVal = numFloatSensor.numFormatFloat;
+//						}
+//
+//						sensor_TMx[sbc_rx_data[22]-6].tempSensAdcPtr = sensor_TMx[sbc_rx_data[22]-6].readAdctPtr();
+//						sensor_TMx[sbc_rx_data[22]-6].tempSensAdc = *sensor_TMx[sbc_rx_data[22]-6].tempSensAdcPtr;
+//						sensor_TMx[sbc_rx_data[22]-6].tempSensValue = sensor_TMx[sbc_rx_data[22]-6].tempSensGain *
+//																		((((float)sensor_TMx[sbc_rx_data[22]-6].tempSensAdc)/65535)*3.3 - sensor_TMx[sbc_rx_data[22]-6].tempSensOffsetVal) +
+//																		sensor_TMx[sbc_rx_data[22]-6].tempSensOffset;
+//
+//						iflag_write_temp_sensor = IFLAG_WRITE_TEMP_SENSOR;
+//					}
+//					break;
+//
+//					//read adc temp sens
+//					case 0x36:
+//					{
+//						iflag_read_temp_sensor = IFLAG_READ_TEMP_SENSOR;
+//					}
+//					break;
+//
+//					case 0x80:
+//					{
+//						if(sbc_rx_data[7] == 0x5A)
+//							PeltierAssSendCommand(STOP_FLAG,"0",0,"0");
+//					}
+//					break;
+//
+//					case 0x90:
+//					{
+//						if(sbc_rx_data[7] == 0xA5)
+//							PeltierAssSendCommand(START_FLAG,"0",0,"0");
+//					}
+//					break;
 
 					default:{}
 					break;
 				}
 			}
-			//wait for response
-			//build peltier response
-			//send response to sbc and pc debug
 			break;
 
 			default:{}

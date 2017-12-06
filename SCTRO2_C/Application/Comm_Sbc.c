@@ -353,6 +353,153 @@ void buildReadFlowResetResponseMsg(char *ptrMsgSbcRx)
 	myCommunicatorToSBC.numByteToSend = index;
 }
 
+void buildPeltierReadFloatResponseMsg(char *ptrMsgSbcRx, char *ieee754ptr)
+{
+	byte index = 0;
+
+	sbc_tx_data[index++] = 0xA5;
+	sbc_tx_data[index++] = 0xAA;
+	sbc_tx_data[index++] = 0x55;
+	sbc_tx_data[index++] = 0x00;
+	sbc_tx_data[index++] = 0x06;
+	sbc_tx_data[index++] = ptrMsgSbcRx[5];
+	sbc_tx_data[index++] = ptrMsgSbcRx[6];
+	sbc_tx_data[index++] = 0x66;
+	sbc_tx_data[index++] = ptrMsgSbcRx[7];
+	sbc_tx_data[index++] = *ieee754ptr; //TODO HH value
+	sbc_tx_data[index++] = *(ieee754ptr+1); //TODO HL value
+	sbc_tx_data[index++] = *(ieee754ptr+2); //TODO LH value
+	sbc_tx_data[index++] = *(ieee754ptr+3); //TODO LL value
+	sbc_tx_data[index++] = 0x00;
+	sbc_tx_data[index++] = 0x00;
+	sbc_tx_data[index++] = 0x5A;
+
+	myCommunicatorToSBC.numByteToSend = index;
+}
+
+void buildPeltierReadIntResponseMsg(char *ptrMsgSbcRx, char *intptr)
+{
+	byte index = 0;
+
+	sbc_tx_data[index++] = 0xA5;
+	sbc_tx_data[index++] = 0xAA;
+	sbc_tx_data[index++] = 0x55;
+	sbc_tx_data[index++] = 0x00;
+	sbc_tx_data[index++] = 0x03;
+	sbc_tx_data[index++] = ptrMsgSbcRx[5];
+	sbc_tx_data[index++] = ptrMsgSbcRx[6];
+	sbc_tx_data[index++] = 0x66;
+	sbc_tx_data[index++] = ptrMsgSbcRx[7];
+	sbc_tx_data[index++] = *intptr; //TODO int value
+	sbc_tx_data[index++] = 0x00;
+	sbc_tx_data[index++] = 0x00;
+	sbc_tx_data[index++] = 0x5A;
+
+	myCommunicatorToSBC.numByteToSend = index;
+}
+
+void buildPeltierWriteFloatResponseMsg(char *ptrMsgSbcRx)
+{
+	byte index = 0;
+
+	sbc_tx_data[index++] = 0xA5;
+	sbc_tx_data[index++] = 0xAA;
+	sbc_tx_data[index++] = 0x55;
+	sbc_tx_data[index++] = 0x00;
+	sbc_tx_data[index++] = 0x05;
+	sbc_tx_data[index++] = ptrMsgSbcRx[5];
+	sbc_tx_data[index++] = ptrMsgSbcRx[6];
+	sbc_tx_data[index++] = 0x66;
+	sbc_tx_data[index++] = ptrMsgSbcRx[7];
+	sbc_tx_data[index++] = ptrMsgSbcRx[8];
+	sbc_tx_data[index++] = ptrMsgSbcRx[9];
+	sbc_tx_data[index++] = ptrMsgSbcRx[10];
+	sbc_tx_data[index++] = ptrMsgSbcRx[11];
+	sbc_tx_data[index++] = 0x00;
+	sbc_tx_data[index++] = 0x00;
+	sbc_tx_data[index++] = 0x5A;
+
+	myCommunicatorToSBC.numByteToSend = index;
+}
+
+void buildPeltierWriteIntResponseMsg(char *ptrMsgSbcRx)
+{
+	byte index = 0;
+
+	sbc_tx_data[index++] = 0xA5;
+	sbc_tx_data[index++] = 0xAA;
+	sbc_tx_data[index++] = 0x55;
+	sbc_tx_data[index++] = 0x00;
+	sbc_tx_data[index++] = 0x02;
+	sbc_tx_data[index++] = ptrMsgSbcRx[5];
+	sbc_tx_data[index++] = ptrMsgSbcRx[6];
+	sbc_tx_data[index++] = 0x66;
+	sbc_tx_data[index++] = ptrMsgSbcRx[7];
+	sbc_tx_data[index++] = ptrMsgSbcRx[8];
+	sbc_tx_data[index++] = 0x00;
+	sbc_tx_data[index++] = 0x00;
+	sbc_tx_data[index++] = 0x5A;
+
+	myCommunicatorToSBC.numByteToSend = index;
+}
+
+void buildPeltierStartResponseMsg(char *ptrMsgSbcRx)
+{
+	byte index = 0;
+
+	sbc_tx_data[index++] = 0xA5;
+	sbc_tx_data[index++] = 0xAA;
+	sbc_tx_data[index++] = 0x55;
+	sbc_tx_data[index++] = 0x00;
+	sbc_tx_data[index++] = 0x01;
+	sbc_tx_data[index++] = ptrMsgSbcRx[5];
+	sbc_tx_data[index++] = ptrMsgSbcRx[6];
+	sbc_tx_data[index++] = 0x66;
+	sbc_tx_data[index++] = 0x00;
+	sbc_tx_data[index++] = 0x00;
+	sbc_tx_data[index++] = 0x5A;
+
+	myCommunicatorToSBC.numByteToSend = index;
+}
+
+void buildPeltierStopResponseMsg(char *ptrMsgSbcRx)
+{
+	byte index = 0;
+
+	sbc_tx_data[index++] = 0xA5;
+	sbc_tx_data[index++] = 0xAA;
+	sbc_tx_data[index++] = 0x55;
+	sbc_tx_data[index++] = 0x00;
+	sbc_tx_data[index++] = 0x01;
+	sbc_tx_data[index++] = ptrMsgSbcRx[5];
+	sbc_tx_data[index++] = ptrMsgSbcRx[6];
+	sbc_tx_data[index++] = 0x66;
+	sbc_tx_data[index++] = 0x00;
+	sbc_tx_data[index++] = 0x00;
+	sbc_tx_data[index++] = 0x5A;
+
+	myCommunicatorToSBC.numByteToSend = index;
+}
+
+void buildPeltierWriteEEResponseMsg(char *ptrMsgSbcRx)
+{
+	byte index = 0;
+
+	sbc_tx_data[index++] = 0xA5;
+	sbc_tx_data[index++] = 0xAA;
+	sbc_tx_data[index++] = 0x55;
+	sbc_tx_data[index++] = 0x00;
+	sbc_tx_data[index++] = 0x01;
+	sbc_tx_data[index++] = ptrMsgSbcRx[5];
+	sbc_tx_data[index++] = ptrMsgSbcRx[6];
+	sbc_tx_data[index++] = 0x66;
+	sbc_tx_data[index++] = 0x00;
+	sbc_tx_data[index++] = 0x00;
+	sbc_tx_data[index++] = 0x5A;
+
+	myCommunicatorToSBC.numByteToSend = index;
+}
+
 //void buildPeltierResponseMsg(char code){
 //
 //	char numFloat[4];
