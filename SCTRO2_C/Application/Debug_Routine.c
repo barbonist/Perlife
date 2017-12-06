@@ -268,6 +268,41 @@ void testCOMMSbcDebug(void){
 					}
 					break;
 
+					// Read ADC and mmHg temperature values
+					case 0x40:
+					{
+						word snd;
+						ptrMsgSbcRx = &sbc_rx_data;
+						buildTempIRSensReadValuesResponseMsg(ptrMsgSbcRx);
+						ptrMsgSbcTx = &sbc_tx_data[0];
+						SBC_COMM_SendBlock(ptrMsgSbcTx,myCommunicatorToSBC.numByteToSend,&snd);
+					}
+					break;
+
+					// Read temperature IR register
+					case 0x41:
+					{
+						//TODO Store load point for calibration
+						word snd;
+						ptrMsgSbcRx = &sbc_rx_data;
+						buildTempIRSensReadRegResponseMsg(ptrMsgSbcRx);
+						ptrMsgSbcTx = &sbc_tx_data[0];
+						SBC_COMM_SendBlock(ptrMsgSbcTx,myCommunicatorToSBC.numByteToSend,&snd);
+					}
+					break;
+
+					// Write temperature IR register
+					case 0x42:
+					{
+						//TODO Store load point for calibration
+						word snd;
+						ptrMsgSbcRx = &sbc_rx_data;
+						buildTempIRSensWriteRegResponseMsg(ptrMsgSbcRx);
+						ptrMsgSbcTx = &sbc_tx_data[0];
+						SBC_COMM_SendBlock(ptrMsgSbcTx,myCommunicatorToSBC.numByteToSend,&snd);
+					}
+					break;
+
 
 /******************************************************************/
 /******************************************************************/
@@ -545,36 +580,6 @@ void testCOMMSbcDebug(void){
 					}
 					break;
 
-					//ir temp sensor read
-					case 0x40:
-					{
-						if(iflag_sensTempIR == IFLAG_IDLE)
-						{
-						//id sensore
-						//indirizzo da leggere
-						IR_TM_COMM_Enable();
-						//ptrData = buildCmdReadTempSensIR(0x01, (EEPROM_ACCESS_COMMAND | SD_TOMIN_E2_ADDRESS), 0);
-						ptrData = buildCmdReadTempSensIR(0x01, (RAM_ACCESS_COMMAND | SD_TOBJ1_RAM_ADDRESS), 0);
-						//ptrData = buildCmdWriteTempSensIR(0x5A, (EEPROM_ACCESS_COMMAND | SD_TOMAX_E2_ADDRESS), 0xBE01);
-						iflag_sensTempIR = IFLAG_SENS_TEMPIR_WAIT;
-						}
-					}
-					break;
-
-					//ir temp sensor write
-					case 0x41:
-					{
-						//id sensore
-						//indirizzo da scrivere
-						//valore da scrivere
-						if(iflag_sensTempIR == IFLAG_IDLE)
-						{
-						ptrDatawR = buildCmdWriteTempSensIR(0x01, (EEPROM_ACCESS_COMMAND | SD_TOMIN_E2_ADDRESS), 0x62E5);
-						iflag_sensTempIR = IFLAG_SENS_TEMPIR_WAIT;
-						}
-					}
-					break;
-
 					//flow sensor read
 					case 0x50:
 					{
@@ -616,48 +621,6 @@ void testCOMMSbcDebug(void){
 /*************************************************************/
 /*************************************************************/
 /*************************************************************/
-
-	if(iflag_sensTempIR == IFLAG_SENS_TEMPIR_TX)
-	{
-	//IR_TM_COMM_SelectSlave(0x5A);
-	err = IR_TM_COMM_RecvBlock(ptrData, 3, &ret);
-	iflag_sensTempIR = IFLAG_IDLE;
-	}
-
-	if(iflag_sensTempIR_Meas_Ready == IFLAG_IRTEMP_MEASURE_READY)
-	{
-		sensorIR_TM[0].tempSensValue = (float)((BYTES_TO_WORD(sensorIR_TM[0].bufferReceived[1], sensorIR_TM[0].bufferReceived[0]))*((float)0.02)) - (float)273.15;
-		buildReadIRTempRspMsg(0x40, 0x01);
-		ptrMsgSbcTx = &sbc_tx_data[0];
-
-		for(char i = 0; i < 14 ; i++)
-		{
-			SBC_COMM_SendChar(*(ptrMsgSbcTx+i));
-
-			#ifdef	DEBUG_COMM_SBC
-			//PC_DEBUG_COMM_SendChar(*(ptrMsgSbcTx+i));
-			#endif
-		}
-
-		iflag_sensTempIR_Meas_Ready = IFLAG_IDLE;
-	}
-
-	/*if(iflag_uflow_sens == IFLAG_UFLOW_SENS_RX)
-	{
-		buildReadFlowArtRspMsg(0x50, 0x01);
-		ptrMsgSbcTx = &sbcDebug_tx_data[0];
-
-		for(char i = 0; i < 14 ; i++)
-		{
-			SBC_COMM_SendChar(*(ptrMsgSbcTx+i));
-
-			#ifdef	DEBUG_COMM_SBC
-			//PC_DEBUG_COMM_SendChar(*(ptrMsgSbcTx+i));
-			#endif
-		}
-
-		iflag_uflow_sens = IFLAG_IDLE;
-	}*/
 
 	if((msgPeltierToSendWr != 0) && (iflag_peltier_rx == IFLAG_PELTIER_RX))
 	{

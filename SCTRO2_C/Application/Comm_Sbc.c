@@ -177,6 +177,87 @@ void buildPressSensCalibResponseMsg(char *ptrMsgSbcRx)
 	myCommunicatorToSBC.numByteToSend = index;
 }
 
+void buildTempIRSensReadValuesResponseMsg(char *ptrMsgSbcRx)
+{
+	byte index = 0;
+	word value = 0;
+
+	sbc_tx_data[index++] = 0xA5;
+	sbc_tx_data[index++] = 0xAA;
+	sbc_tx_data[index++] = 0x55;
+	sbc_tx_data[index++] = 0x00;
+	sbc_tx_data[index++] = 0x0D;
+	sbc_tx_data[index++] = ptrMsgSbcRx[5];
+	sbc_tx_data[index++] = ptrMsgSbcRx[6];
+	sbc_tx_data[index++] = 0x66;
+	sbc_tx_data[index++] = 0x00; //TODO stable byte
+
+	for(int i = 0 ; i < 3 ; i++)
+	{
+		value = (word)(sensorIR_TM[i].tempSensValue*10);
+		sbc_tx_data[index++] = (value >> 8) & 0xFF;
+		sbc_tx_data[index++] = (value     ) & 0xFF;
+
+		value = sensorIR_TM[i].tempSensAdc;
+		sbc_tx_data[index++] = (value >> 8) & 0xFF;
+		sbc_tx_data[index++] = (value     ) & 0xFF;
+	}
+
+	sbc_tx_data[index++] = 0x00;
+	sbc_tx_data[index++] = 0x00;
+	sbc_tx_data[index++] = 0x5A;
+
+	myCommunicatorToSBC.numByteToSend = index;
+}
+
+void buildTempIRSensReadRegResponseMsg(char *ptrMsgSbcRx)
+{
+	byte index = 0;
+	word value = 0;
+
+	sbc_tx_data[index++] = 0xA5;
+	sbc_tx_data[index++] = 0xAA;
+	sbc_tx_data[index++] = 0x55;
+	sbc_tx_data[index++] = 0x00;
+	sbc_tx_data[index++] = 0x05;
+	sbc_tx_data[index++] = ptrMsgSbcRx[5];
+	sbc_tx_data[index++] = ptrMsgSbcRx[6];
+	sbc_tx_data[index++] = 0x66;
+	sbc_tx_data[index++] = ptrMsgSbcRx[7];
+	sbc_tx_data[index++] = ptrMsgSbcRx[8];
+	sbc_tx_data[index++] = 0x00;	//TODO add mem value
+	sbc_tx_data[index++] = 0x00;	//TODO add mem value
+	sbc_tx_data[index++] = 0x00;
+	sbc_tx_data[index++] = 0x00;
+	sbc_tx_data[index++] = 0x5A;
+
+	myCommunicatorToSBC.numByteToSend = index;
+}
+
+void buildTempIRSensWriteRegResponseMsg(char *ptrMsgSbcRx)
+{
+	byte index = 0;
+	word value = 0;
+
+	sbc_tx_data[index++] = 0xA5;
+	sbc_tx_data[index++] = 0xAA;
+	sbc_tx_data[index++] = 0x55;
+	sbc_tx_data[index++] = 0x00;
+	sbc_tx_data[index++] = 0x05;
+	sbc_tx_data[index++] = ptrMsgSbcRx[5];
+	sbc_tx_data[index++] = ptrMsgSbcRx[6];
+	sbc_tx_data[index++] = 0x66;
+	sbc_tx_data[index++] = ptrMsgSbcRx[7];
+	sbc_tx_data[index++] = ptrMsgSbcRx[8];
+	sbc_tx_data[index++] = ptrMsgSbcRx[9];
+	sbc_tx_data[index++] = ptrMsgSbcRx[10];
+	sbc_tx_data[index++] = 0x00;
+	sbc_tx_data[index++] = 0x00;
+	sbc_tx_data[index++] = 0x5A;
+
+	myCommunicatorToSBC.numByteToSend = index;
+}
+
 void buildPeltierResponseMsg(char code){
 
 	char numFloat[4];

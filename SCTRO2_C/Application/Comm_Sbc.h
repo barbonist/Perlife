@@ -16,6 +16,9 @@ void buildModBusReadRegActResponseMsg(char *ptrMsgSbcRx,
 void buildPressSensReadValuesResponseMsg(char *ptrMsgSbcRx);
 void buildPressSensReadParamResponseMsg(char *ptrMsgSbcRx);
 void buildPressSensCalibResponseMsg(char *ptrMsgSbcRx);
+void buildTempIRSensReadValuesResponseMsg(char *ptrMsgSbcRx);
+void buildTempIRSensReadRegResponseMsg(char *ptrMsgSbcRx);
+void buildTempIRSensWriteRegResponseMsg(char *ptrMsgSbcRx);
 
 void buildPeltierResponseMsg(char code);
 void buildWriteTempSensResponseMsg(char code, char tempSensId);
