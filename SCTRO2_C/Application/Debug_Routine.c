@@ -169,22 +169,23 @@ void testCOMMSbcDebug(void){
 						word readAddrStop  = BYTES_TO_WORD(sbc_rx_data[10], sbc_rx_data[11]);
 						word numberOfAddress = readAddrStop - readAddrStart + 1;
 
-						_funcRetValPtr = ModBusReadRegisterReq(slvAddr,
-															   funcCode,
-															   readAddrStart,
-															   numberOfAddress);
-
-						_funcRetVal.ptr_msg = _funcRetValPtr->ptr_msg;
-						_funcRetVal.mstreqRetStructNumByte = _funcRetValPtr->mstreqRetStructNumByte;
-						_funcRetVal.slvresRetPtr = _funcRetValPtr->slvresRetPtr;
-						_funcRetVal.slvresRetNumByte = _funcRetValPtr->slvresRetNumByte;
-
-						word snd;
-						MODBUS_COMM_SendBlock(_funcRetVal.ptr_msg,
-											  _funcRetVal.mstreqRetStructNumByte,
-											  &snd);
+//						_funcRetValPtr = ModBusReadRegisterReq(slvAddr,
+//															   funcCode,
+//															   readAddrStart,
+//															   numberOfAddress);
+//
+//						_funcRetVal.ptr_msg = _funcRetValPtr->ptr_msg;
+//						_funcRetVal.mstreqRetStructNumByte = _funcRetValPtr->mstreqRetStructNumByte;
+//						_funcRetVal.slvresRetPtr = _funcRetValPtr->slvresRetPtr;
+//						_funcRetVal.slvresRetNumByte = _funcRetValPtr->slvresRetNumByte;
+//
+//						word snd;
+//						MODBUS_COMM_SendBlock(_funcRetVal.ptr_msg,
+//											  _funcRetVal.mstreqRetStructNumByte,
+//											  &snd);
 
 						//send answer to sbc
+						word snd;
 						ptrMsgSbcRx = &sbc_rx_data;
 						buildModBusReadRegActResponseMsg(ptrMsgSbcRx, slvAddr, readAddrStart, numberOfAddress);
 						ptrMsgSbcTx = &sbc_tx_data[0];
@@ -306,6 +307,8 @@ void testCOMMSbcDebug(void){
 					// Write temperature IR register
 					case 0x42:
 					{
+						//TODO write the register
+
 						word snd;
 						ptrMsgSbcRx = &sbc_rx_data;
 						buildTempIRSensWriteRegResponseMsg(ptrMsgSbcRx);
@@ -313,7 +316,6 @@ void testCOMMSbcDebug(void){
 						SBC_COMM_SendBlock(ptrMsgSbcTx,myCommunicatorToSBC.numByteToSend,&snd);
 					}
 					break;
-
 					// Flow sensor read values
 					case 0x50:
 					{
@@ -324,6 +326,7 @@ void testCOMMSbcDebug(void){
 						SBC_COMM_SendBlock(ptrMsgSbcTx,myCommunicatorToSBC.numByteToSend,&snd);
 
 					}
+					// Flow sensor reset
 					case 0x51:
 					{
 						word snd;
@@ -359,6 +362,7 @@ void testCOMMSbcDebug(void){
 						SBC_COMM_SendBlock(ptrMsgSbcTx,myCommunicatorToSBC.numByteToSend,&snd);
 					}
 					break;
+					// Peltier write float
 					case 0x27:
 					{
 						sprintf(regId, "%u", sbc_rx_data[7]);
@@ -372,6 +376,7 @@ void testCOMMSbcDebug(void){
 						SBC_COMM_SendBlock(ptrMsgSbcTx,myCommunicatorToSBC.numByteToSend,&snd);
 					}
 					break;
+					// Peltier write int
 					case 0x29:
 					{
 						sprintf(regId, "%u", sbc_rx_data[7]);
@@ -385,6 +390,7 @@ void testCOMMSbcDebug(void){
 						SBC_COMM_SendBlock(ptrMsgSbcTx,myCommunicatorToSBC.numByteToSend,&snd);
 					}
 					break;
+					// Peltier start
 					case 0x20:
 					{
 						PeltierAssSendCommand(START_FLAG,"0",0,"0");
@@ -396,6 +402,7 @@ void testCOMMSbcDebug(void){
 						SBC_COMM_SendBlock(ptrMsgSbcTx,myCommunicatorToSBC.numByteToSend,&snd);
 					}
 					break;
+					// Peltier stop
 					case 0x21:
 					{
 						PeltierAssSendCommand(STOP_FLAG,"0",0,"0");
@@ -407,6 +414,7 @@ void testCOMMSbcDebug(void){
 						SBC_COMM_SendBlock(ptrMsgSbcTx,myCommunicatorToSBC.numByteToSend,&snd);
 					}
 					break;
+					// Peltier write ee
 					case 0x22:
 					{
 						PeltierAssSendCommand(WRITE_REG_VAL_TO_EEPROM, "0",0,"0");
