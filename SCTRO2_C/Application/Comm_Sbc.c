@@ -237,7 +237,6 @@ void buildTempIRSensReadRegResponseMsg(char *ptrMsgSbcRx)
 void buildTempIRSensWriteRegResponseMsg(char *ptrMsgSbcRx)
 {
 	byte index = 0;
-	word value = 0;
 
 	sbc_tx_data[index++] = 0xA5;
 	sbc_tx_data[index++] = 0xAA;
@@ -251,6 +250,63 @@ void buildTempIRSensWriteRegResponseMsg(char *ptrMsgSbcRx)
 	sbc_tx_data[index++] = ptrMsgSbcRx[8];
 	sbc_tx_data[index++] = ptrMsgSbcRx[9];
 	sbc_tx_data[index++] = ptrMsgSbcRx[10];
+	sbc_tx_data[index++] = 0x00;
+	sbc_tx_data[index++] = 0x00;
+	sbc_tx_data[index++] = 0x5A;
+
+	myCommunicatorToSBC.numByteToSend = index;
+}
+
+void buildReadFlowAirResponseMsg(char *ptrMsgSbcRx)
+{
+	byte index = 0;
+
+	sbc_tx_data[index++] = 0xA5;
+	sbc_tx_data[index++] = 0xAA;
+	sbc_tx_data[index++] = 0x55;
+	sbc_tx_data[index++] = 0x00;
+	sbc_tx_data[index++] = 0x13;
+	sbc_tx_data[index++] = ptrMsgSbcRx[5];
+	sbc_tx_data[index++] = ptrMsgSbcRx[6];
+	sbc_tx_data[index++] = 0x66;
+	sbc_tx_data[index++] = 0x00; //TODO stability flag
+	sbc_tx_data[index++] = 0x00; //TODO air bits
+
+	for(int i = 0 ; i < 2 ; i++)
+	{
+		//TODO add instant flow
+		sbc_tx_data[index++] = 0x00;
+		sbc_tx_data[index++] = 0x00;
+		sbc_tx_data[index++] = 0x00;
+		sbc_tx_data[index++] = 0x00;
+
+		//TODO check if this data is valid or not
+		sbc_tx_data[index++] = sensor_UFLOW[i].bufferReceived[20];
+		sbc_tx_data[index++] = sensor_UFLOW[i].bufferReceived[19];
+		sbc_tx_data[index++] = sensor_UFLOW[i].bufferReceived[18];
+		sbc_tx_data[index++] = sensor_UFLOW[i].bufferReceived[17];
+	}
+
+	sbc_tx_data[index++] = 0x00;
+	sbc_tx_data[index++] = 0x00;
+	sbc_tx_data[index++] = 0x5A;
+
+	myCommunicatorToSBC.numByteToSend = index;
+}
+
+void buildReadFlowResetResponseMsg(char *ptrMsgSbcRx)
+{
+	byte index = 0;
+
+	sbc_tx_data[index++] = 0xA5;
+	sbc_tx_data[index++] = 0xAA;
+	sbc_tx_data[index++] = 0x55;
+	sbc_tx_data[index++] = 0x00;
+	sbc_tx_data[index++] = 0x02;
+	sbc_tx_data[index++] = ptrMsgSbcRx[5];
+	sbc_tx_data[index++] = ptrMsgSbcRx[6];
+	sbc_tx_data[index++] = 0x66;
+	sbc_tx_data[index++] = ptrMsgSbcRx[7];
 	sbc_tx_data[index++] = 0x00;
 	sbc_tx_data[index++] = 0x00;
 	sbc_tx_data[index++] = 0x5A;
@@ -428,29 +484,6 @@ void buildReadIRTempRspMsg(char code, char tempIRSensId){
 	sbc_tx_data[12] = 0x00;
 	sbc_tx_data[13] = 0x5A;
 }
-
-void buildReadFlowArtRspMsg(char code, char flowSensId){
-
-	sbc_tx_data[0] = 0xA5;
-	sbc_tx_data[1] = 0xAA;
-	sbc_tx_data[2] = 0x55;
-	sbc_tx_data[3] = 0x00;
-	sbc_tx_data[4] = 0x01;
-	sbc_tx_data[5] = 0xCC;
-	sbc_tx_data[6] = code;
-	if(code == 0x50)
-	{
-		sbc_tx_data[7] = sensor_UFLOW[0].bufferReceived[17];
-		sbc_tx_data[8] = sensor_UFLOW[0].bufferReceived[18];
-		sbc_tx_data[9] = sensor_UFLOW[0].bufferReceived[19];
-		sbc_tx_data[10] = sensor_UFLOW[0].bufferReceived[20];
-	}
-	sbc_tx_data[11] = 0x00;
-	sbc_tx_data[12] = 0x00;
-	sbc_tx_data[13] = 0x5A;
-}
-
-
 
 /******************************************************************************************/
 /*                          TREATMENT - START SECTION									  */

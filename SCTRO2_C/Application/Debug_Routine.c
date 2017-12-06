@@ -268,7 +268,7 @@ void testCOMMSbcDebug(void){
 					}
 					break;
 
-					// Read ADC and mmHg temperature values
+					// Read ADC and mmHg temperature IR values
 					case 0x40:
 					{
 						word snd;
@@ -282,7 +282,6 @@ void testCOMMSbcDebug(void){
 					// Read temperature IR register
 					case 0x41:
 					{
-						//TODO Store load point for calibration
 						word snd;
 						ptrMsgSbcRx = &sbc_rx_data;
 						buildTempIRSensReadRegResponseMsg(ptrMsgSbcRx);
@@ -294,7 +293,6 @@ void testCOMMSbcDebug(void){
 					// Write temperature IR register
 					case 0x42:
 					{
-						//TODO Store load point for calibration
 						word snd;
 						ptrMsgSbcRx = &sbc_rx_data;
 						buildTempIRSensWriteRegResponseMsg(ptrMsgSbcRx);
@@ -303,6 +301,25 @@ void testCOMMSbcDebug(void){
 					}
 					break;
 
+					// Flow sensor read values
+					case 0x50:
+					{
+						word snd;
+						ptrMsgSbcRx = &sbc_rx_data;
+						buildReadFlowAirResponseMsg(ptrMsgSbcRx);
+						ptrMsgSbcTx = &sbc_tx_data[0];
+						SBC_COMM_SendBlock(ptrMsgSbcTx,myCommunicatorToSBC.numByteToSend,&snd);
+
+					}
+					case 0x51:
+					{
+						word snd;
+						ptrMsgSbcRx = &sbc_rx_data;
+						buildReadFlowResetResponseMsg(ptrMsgSbcRx);
+						ptrMsgSbcTx = &sbc_tx_data[0];
+						SBC_COMM_SendBlock(ptrMsgSbcTx,myCommunicatorToSBC.numByteToSend,&snd);
+					}
+					break;
 
 /******************************************************************/
 /******************************************************************/
@@ -580,28 +597,6 @@ void testCOMMSbcDebug(void){
 					}
 					break;
 
-					//flow sensor read
-					case 0x50:
-					{
-						//id sensore
-						byte slvAddr = sbc_rx_data[7];
-						//comando
-						//parametro
-						ptrMsg_UFLOW = buildCmdToFlowSens(slvAddr,
-							         				  	  CMD_GET_VAL_CODE /*CMD_IDENT_CODE*/,
-														  0,
-														  0,
-														  ID_FLOW_VAL_MLMIN);
-
-						FLOWSENS_RTS_SetVal();
-						for(char k = 0; k < ptrMsg_UFLOW->bufferToSendLenght; k++)
-						{
-						//FLOWSENS_RTS_SetVal();
-						FLOWSENS_COMM_SendChar(ptrMsg_UFLOW->bufferToSend[k]);
-						}
-					}
-					break;
-
 					default:{}
 					break;
 				}
@@ -770,34 +765,33 @@ void testCOMMSbcDebug(void){
 		}
 	}
 
-	//temp sensor write
-	if(iflag_write_temp_sensor == IFLAG_WRITE_TEMP_SENSOR){
-		iflag_write_temp_sensor = IFLAG_IDLE;
-		cmdId = sbc_rx_data[6];
-		buildWriteTempSensResponseMsg(cmdId, (sbc_rx_data[22]-6));
-		for(char i = 0; i < 14 ; i++)
-		{
-			SBC_COMM_SendChar(*(ptrMsgSbcTx+i));
-
-			#ifdef	DEBUG_COMM_SBC
-			//PC_DEBUG_COMM_SendChar(*(ptrMsgSbcTx+i));
-			#endif
-		}
-	}
-
-	//temp sensor read
-	if(iflag_read_temp_sensor == IFLAG_READ_TEMP_SENSOR){
-		iflag_read_temp_sensor = IFLAG_IDLE;
-		cmdId = sbc_rx_data[6];
-		buildReadTempSensResponseMsg(cmdId, (sbc_rx_data[7]-6));
-		for(char i = 0; i < 24 ; i++)
-		{
-			SBC_COMM_SendChar(*(ptrMsgSbcTx+i));
-
-			#ifdef	DEBUG_COMM_SBC
-			//PC_DEBUG_COMM_SendChar(*(ptrMsgSbcTx+i));
-			#endif
-		}
-	}
-
+//	//temp sensor write
+//	if(iflag_write_temp_sensor == IFLAG_WRITE_TEMP_SENSOR){
+//		iflag_write_temp_sensor = IFLAG_IDLE;
+//		cmdId = sbc_rx_data[6];
+//		buildWriteTempSensResponseMsg(cmdId, (sbc_rx_data[22]-6));
+//		for(char i = 0; i < 14 ; i++)
+//		{
+//			SBC_COMM_SendChar(*(ptrMsgSbcTx+i));
+//
+//			#ifdef	DEBUG_COMM_SBC
+//			//PC_DEBUG_COMM_SendChar(*(ptrMsgSbcTx+i));
+//			#endif
+//		}
+//	}
+//
+//	//temp sensor read
+//	if(iflag_read_temp_sensor == IFLAG_READ_TEMP_SENSOR){
+//		iflag_read_temp_sensor = IFLAG_IDLE;
+//		cmdId = sbc_rx_data[6];
+//		buildReadTempSensResponseMsg(cmdId, (sbc_rx_data[7]-6));
+//		for(char i = 0; i < 24 ; i++)
+//		{
+//			SBC_COMM_SendChar(*(ptrMsgSbcTx+i));
+//
+//			#ifdef	DEBUG_COMM_SBC
+//			//PC_DEBUG_COMM_SendChar(*(ptrMsgSbcTx+i));
+//			#endif
+//		}
+//	}
 }
