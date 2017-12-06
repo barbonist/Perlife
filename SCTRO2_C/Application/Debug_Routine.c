@@ -149,6 +149,12 @@ void testCOMMSbcDebug(void){
 						MODBUS_COMM_SendBlock(_funcRetVal.ptr_msg,
 											  _funcRetVal.mstreqRetStructNumByte,
 											  &snd);
+
+						//send answer to sbc
+						ptrMsgSbcRx = &sbc_rx_data;
+						buildModBusWriteRegActResponseMsg(ptrMsgSbcRx);
+						ptrMsgSbcTx = &sbc_tx_data[0];
+						SBC_COMM_SendBlock(ptrMsgSbcTx,myCommunicatorToSBC.numByteToSend,&snd);
 					}
 					break;
 
@@ -175,6 +181,12 @@ void testCOMMSbcDebug(void){
 						MODBUS_COMM_SendBlock(_funcRetVal.ptr_msg,
 											  _funcRetVal.mstreqRetStructNumByte,
 											  &snd);
+
+						//send answer to sbc
+						ptrMsgSbcRx = &sbc_rx_data;
+						buildModBusReadRegActResponseMsg(ptrMsgSbcRx, slvAddr, readAddrStart, numberOfAddress);
+						ptrMsgSbcTx = &sbc_tx_data[0];
+						SBC_COMM_SendBlock(ptrMsgSbcTx,myCommunicatorToSBC.numByteToSend,&snd);
 					}
 					break;
 
@@ -213,14 +225,22 @@ void testCOMMSbcDebug(void){
 					// Read adc and mmHg pressure values
 					case 0x31:
 					{
-						iflag_read_press_sensor = IFLAG_READ_PR_SENSOR;
+						word snd;
+						ptrMsgSbcRx = &sbc_rx_data;
+						buildPressSensReadValuesResponseMsg(ptrMsgSbcRx);
+						ptrMsgSbcTx = &sbc_tx_data[0];
+						SBC_COMM_SendBlock(ptrMsgSbcTx,myCommunicatorToSBC.numByteToSend,&snd);
 					}
 					break;
 
 					// Read pressure sensors calibration values
 					case 0x32:
 					{
-						iflag_read_press_sensor = IFLAG_READ_PR_SENSOR;
+						word snd;
+						ptrMsgSbcRx = &sbc_rx_data;
+						buildPressSensReadParamResponseMsg(ptrMsgSbcRx);
+						ptrMsgSbcTx = &sbc_tx_data[0];
+						SBC_COMM_SendBlock(ptrMsgSbcTx,myCommunicatorToSBC.numByteToSend,&snd);
 					}
 					break;
 
@@ -228,7 +248,11 @@ void testCOMMSbcDebug(void){
 					case 0x33:
 					{
 						//TODO Store zero point for calibration
-						iflag_read_press_sensor = IFLAG_READ_PR_SENSOR;
+						word snd;
+						ptrMsgSbcRx = &sbc_rx_data;
+						buildPressSensCalibResponseMsg(ptrMsgSbcRx);
+						ptrMsgSbcTx = &sbc_tx_data[0];
+						SBC_COMM_SendBlock(ptrMsgSbcTx,myCommunicatorToSBC.numByteToSend,&snd);
 					}
 					break;
 
@@ -236,7 +260,11 @@ void testCOMMSbcDebug(void){
 					case 0x34:
 					{
 						//TODO Store load point for calibration
-						iflag_read_press_sensor = IFLAG_READ_PR_SENSOR;
+						word snd;
+						ptrMsgSbcRx = &sbc_rx_data;
+						buildPressSensCalibResponseMsg(ptrMsgSbcRx);
+						ptrMsgSbcTx = &sbc_tx_data[0];
+						SBC_COMM_SendBlock(ptrMsgSbcTx,myCommunicatorToSBC.numByteToSend,&snd);
 					}
 					break;
 
@@ -583,34 +611,6 @@ void testCOMMSbcDebug(void){
 		}
 		/*confezione risposta - contenuto in pcDebug_tx_data*/
 		/*invio risposta*/
-	}
-
-	// Wait for response from actuators
-	if(iflag_pmp1_rx == IFLAG_PMP1_RX)
-	{
-		iflag_pmp1_rx = IFLAG_IDLE;
-		// Build response for sbc
-		ptrMsgSbcRx = &sbc_rx_data;
-		buildModBusActResponseMsg(ptrMsgSbcRx, _funcRetVal.slvresRetPtr);
-		ptrMsgSbcTx = &sbc_tx_data[0];
-
-		// Send response to sbc
-		word snd;
-		SBC_COMM_SendBlock(ptrMsgSbcTx,myCommunicatorToSBC.numByteToSend,&snd);
-	}
-
-	// Pressure sensor read
-	if(iflag_read_press_sensor == IFLAG_READ_PR_SENSOR)
-	{
-		iflag_read_press_sensor = IFLAG_IDLE;
-		// Build response for sbc
-		ptrMsgSbcRx = &sbc_rx_data;
-		buildPressSensResponseMsg(ptrMsgSbcRx);
-		ptrMsgSbcTx = &sbc_tx_data[0];
-
-		// Send response to sbc
-		word snd;
-		SBC_COMM_SendBlock(ptrMsgSbcTx,myCommunicatorToSBC.numByteToSend,&snd);
 	}
 
 /*************************************************************/

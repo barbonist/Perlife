@@ -8,8 +8,14 @@
 #ifndef APPLICATION_COMM_SBC_H_
 #define APPLICATION_COMM_SBC_H_
 
-void buildModBusActResponseMsg(char *ptrMsgSbcRx, char *ptrMsgModbusRx);
-void buildPressSensResponseMsg(char *ptrMsgSbcRx);
+void buildModBusWriteRegActResponseMsg(char *ptrMsgSbcRx);
+void buildModBusReadRegActResponseMsg(char *ptrMsgSbcRx,
+									  char slaveAddr,
+									  unsigned int readStartAddr,
+									  unsigned int numRegisterRead);
+void buildPressSensReadValuesResponseMsg(char *ptrMsgSbcRx);
+void buildPressSensReadParamResponseMsg(char *ptrMsgSbcRx);
+void buildPressSensCalibResponseMsg(char *ptrMsgSbcRx);
 
 void buildPeltierResponseMsg(char code);
 void buildWriteTempSensResponseMsg(char code, char tempSensId);
