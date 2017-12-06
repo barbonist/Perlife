@@ -190,6 +190,17 @@ void testCOMMSbcDebug(void){
 					}
 					break;
 
+					case 0x17:
+					{
+						//send answer to sbc
+						word snd;
+						ptrMsgSbcRx = &sbc_rx_data;
+						buildModBusReadStatusResponseMsg(ptrMsgSbcRx);
+						ptrMsgSbcTx = &sbc_tx_data[0];
+						SBC_COMM_SendBlock(ptrMsgSbcTx,myCommunicatorToSBC.numByteToSend,&snd);
+					}
+					break;
+
 					// Modbus read/write
 					/*case 0x17:
 					{
