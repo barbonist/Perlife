@@ -176,7 +176,14 @@ int main(void)
   /* Write your local variable definition here */
   bool MOTORE_ACCESO = FALSE;
   bool MOTORE_ACCESO_2 = FALSE;
-  unsigned char PINCH_POSITION = 0;
+  unsigned char PINCH_POSITION 				= 0;
+  unsigned char slvAddr 					= 0x02;
+  unsigned char funcCode 					= 0x03;
+  unsigned char readAddrStart		 		= 0x10;
+  unsigned char numberOfAddressCheckPump	= 0x03;
+  unsigned char numberOfAddressCheckPinch	= 0x02;
+  unsigned char readAddrStartReadRevision	= 0x00;
+  unsigned char numberOfAddressReadRevision	= 0x20; //allo start leggo 32 registri
 
   /*** Processor Expert internal initialization. DON'T REMOVE THIS CODE!!! ***/
   PE_low_level_init();
@@ -210,6 +217,9 @@ int main(void)
 
   timerCounterMState = 0;
   timerCounterUFlowSensor = 0;
+  timerCounterCheckModBus = 0;
+  iFlag_actuatorCheck = IFLAG_IDLE;
+  iFlag_modbusDataStorage = FALSE;
 
   OK_START = FALSE;
   ON_NACK_IR_TM = FALSE;
@@ -230,6 +240,7 @@ int main(void)
 
   modBusPmpInit();
   modBusPinchInit();
+  modbusDataInit();
 
 
 
@@ -276,12 +287,45 @@ int main(void)
   EN_Clamp_Control(ENABLE);
   EN_Motor_Control(ENABLE);
 
-  /*attendo 50 ms prima di entrare nell main loop
+  /*attendo 5 s prima di entrare nell main loop
    * per dare il tempo ai sensori di alimentarsi e
-   * ativarsi; la variabile globale OK_START sarà
-   * messa a TRUE nella TU1_OnCounterRestart interrupt
-   * di timer che scatta ogni 50 ms*/
-  while (!OK_START);
+   * ativarsi e soprattutto ai driver delle pompe e
+   * delle pinch di essere pronti dopo avergli dato
+   * l'alimentazione; la variabile timerCounterCheckModBus
+   * si incrementa di una unità nella TU1_OnCounterRestart
+   * interrupt che scatta ogni 50 ms, quindi quando arriva
+   * a 100 avrò contato 5000 msec ovvero 5 sec*/
+  while (!OK_START)
+  {
+	  if (timerCounterCheckModBus >= 100)
+	  {
+		  OK_START = TRUE;
+		  timerCounterCheckModBus = 0;
+	  }
+  }
+
+  /*prima di entrare nel loop infinito chiedo i dati di targa agli attuatori
+   * devo ricevere i dati di tutte le pompe in massimo un secondo;
+   * quando avrò tutti gli attuatori sarà da rimettere TOT_NUMBER_OF_ACTAUTOR al posto di 0x03*/
+  while (slvAddr <= 0x03 /*TOT_NUMBER_OF_ACTAUTOR*/ && timerCounterCheckModBus <= 20)
+  {
+	  /*se ho ricevuto opp sono in IDLE quindi non ho ancora inviato il primo messaggio, invio il messaggio*/
+	  if (iFlag_actuatorCheck == IFLAG_COMMAND_RECEIVED || iFlag_actuatorCheck == IFLAG_IDLE)
+	  {
+		  iFlag_actuatorCheck = IFLAG_COMMAND_SENT;
+		  Check_Actuator_Status (slvAddr,funcCode,readAddrStartReadRevision,numberOfAddressReadRevision);
+	  }
+	  /*Se ho ricevuto vado a salvarmi i dati nella matrice 'modbusData'*/
+	  if (iFlag_actuatorCheck == IFLAG_COMMAND_RECEIVED)
+	  {
+		  StorageModbusDataInit();
+		  /*dopo che ho memorizzato la risposta posso passare al prossimo attuatore*/
+		  slvAddr++;
+	  }
+  }
+
+  timerCounterCheckModBus = 0; 	//resetto il timer di check sul modbus
+  slvAddr = FIRST_ACTUATOR;		//rimetto come indirizzo da leggere il primo
 
   /**********MAIN LOOP START************/
   for(;;) {
@@ -470,6 +514,37 @@ int main(void)
 
 	         		alwaysUFlowSensor();
 	         	}
+
+	         	/*se ho ricevuto un dato me lo vado a memorizzare nella mia struttura globale: 'modbusData'*/
+	         	if (iFlag_actuatorCheck == IFLAG_COMMAND_RECEIVED && iFlag_modbusDataStorage == FALSE)
+	         	{
+	         		StorageModbusData();
+	         		iFlag_modbusDataStorage = TRUE;
+	         	}
+	         	/*chiamo la funzione ogni 50 msec*/
+	         	if (timerCounterCheckModBus >= 1 &&
+	         		( iFlag_actuatorCheck == IFLAG_COMMAND_RECEIVED || iFlag_actuatorCheck == IFLAG_IDLE))
+		        {
+	         		iFlag_actuatorCheck = IFLAG_COMMAND_SENT;
+	         		timerCounterCheckModBus = 0;
+
+	         		/*chiamo la funzione col corretto number of address dipendentemente dall'attuatore (pump/pinch)*/
+		            if (slvAddr <= LAST_PUMP)
+		            	/*funzione che mi legge lo stato delle pompe*/
+		            	Check_Actuator_Status (slvAddr,funcCode,readAddrStart,numberOfAddressCheckPump);
+		            else
+		            	/*funzione che mi legge lo stato delle pinch*/
+		            	Check_Actuator_Status (slvAddr,funcCode,readAddrStart,numberOfAddressCheckPinch);
+
+		            /*incremento l'indirizzo per interrogare tutti gli attuatori*/
+		            slvAddr++;
+
+		           /* quando avrò tutti gli attuatori sarà da rimettere TOT_NUMBER_OF_ACTAUTOR al posto di 0x03*/
+		            if (slvAddr > 0x03)//TOT_NUMBER_OF_ACTAUTOR)
+						slvAddr = FIRST_ACTUATOR;
+		        }
+	         	/*else devo aggiungere unn controllo sulla non ricezione e non impallarmi*/
+
 				#endif
 
 		 	 #endif
@@ -520,6 +595,7 @@ int main(void)
 	        		 alwaysPeltierActuator();
 
 	         }
+
 
 	         /********************************/
 	         /*             I2C	             */

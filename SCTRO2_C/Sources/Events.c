@@ -616,10 +616,14 @@ void MODBUS_COMM_OnRxChar(void)
 
 	static char byte_received =0; //lo faccio static così non lo inizializza ad ogni ingresso nell' interrupt
 
+
 	//MODBUS_COMM_RecvChar(msg_pmp1_rx_ptr);
 	MODBUS_COMM_RecvChar(_funcRetVal.slvresRetPtr);
 
+	//array [byte_received] = *_funcRetVal.slvresRetPtr; //used only for debug
+
 	byte_received++; // incremento pert sapere quantri byte ho ricevuto
+
 
 	_funcRetVal.slvresRetPtr = _funcRetVal.slvresRetPtr + 1;
 
@@ -636,8 +640,10 @@ void MODBUS_COMM_OnRxChar(void)
 	{
 		iflag_pmp1_rx = IFLAG_IDLE;
 		iflag_pmp1_rx |= IFLAG_PMP1_RX;
-		_funcRetVal.slvresRetPtr = _funcRetVal.slvresRetPtr - byte_received; //riporto il puntatore dei valori all'inizio
-		byte_received=0;
+		_funcRetVal.slvresRetPtr = _funcRetVal.slvresRetPtr - byte_received;	//riporto il puntatore dei valori all'inizio
+		byte_received=0;														//resetto byte_received così ad una prossima ricezione
+		iFlag_actuatorCheck = IFLAG_COMMAND_RECEIVED;
+		iFlag_modbusDataStorage = FALSE;
 	}
 }
 
@@ -849,10 +855,8 @@ void TU1_OnCounterRestart(LDD_TUserData *UserDataPtr)
 
   timerCounterPeltier = timerCounterPeltier + 1;
 
-  if (!OK_START)
-  {
-	  OK_START = TRUE;
-  }
+  timerCounterCheckModBus++;
+
 
 }
 

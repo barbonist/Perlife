@@ -174,6 +174,8 @@ struct func17RetStruct * ModBusRWRegisterReq(char slaveAddr,
 
 void modBusPmpInit(void);
 void modBusPinchInit(void);
+void modbusDataInit(void);
+
 
 void setPumpSpeedValueHighLevel(unsigned char slaveAddr, int speedValue);
 void setPumpSpeedValue(unsigned char slaveAddr, int speedValue);
@@ -183,6 +185,15 @@ void setPinchPositionHighLevel(unsigned char slaveAddr, int posValue);
 void setPinchPosValue(unsigned char slaveAddr, int posValue);
 
 void alwaysModBusActuator(void);
+
+void Check_Actuator_Status (
+							char slvAddr,
+							char funcCode,
+							int readAddrStart,
+							int numberOfAddress);
+
+void StorageModbusData(void);
+void StorageModbusDataInit(void);
 
 /* Public interface function */
 

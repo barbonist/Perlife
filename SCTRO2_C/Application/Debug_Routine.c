@@ -121,60 +121,73 @@ void testCOMMSbcDebug(void){
 					// Modbus write
 					case 0x15:
 					{
-						//build command for actuator
-						byte slvAddr = sbc_rx_data[7];
-						byte funcCode = 0x10;
-						word wrAddrStart = BYTES_TO_WORD(sbc_rx_data[8], sbc_rx_data[9]);
-						word wrAddrStop  = BYTES_TO_WORD(sbc_rx_data[10], sbc_rx_data[11]);
-						word numberOfAddress = wrAddrStop - wrAddrStart + 1;
-
-						for(int i = 0 ; i < numberOfAddress ; i++)
+						/*eseguo il comando solo se il bus è libero quindi se ho finito di ricevere l'ultima richiesta*/
+						if (iFlag_actuatorCheck == IFLAG_COMMAND_RECEIVED)
 						{
-							valModBusArray[i] = (sbc_rx_data[12+2*i] << 8)  + sbc_rx_data[13+2*i];
+							iFlag_actuatorCheck = IFLAG_COMMAND_SENT;
+							//build command for actuator
+							byte slvAddr = sbc_rx_data[7];
+							byte funcCode = 0x10;
+							word wrAddrStart = BYTES_TO_WORD(sbc_rx_data[8], sbc_rx_data[9]);
+							word wrAddrStop  = BYTES_TO_WORD(sbc_rx_data[10], sbc_rx_data[11]);
+							word numberOfAddress = wrAddrStop - wrAddrStart + 1;
+
+							for(int i = 0 ; i < numberOfAddress ; i++)
+							{
+								valModBusArray[i] = (sbc_rx_data[12+2*i] << 8)  + sbc_rx_data[13+2*i];
+							}
+							valModBusArrayPtr = &valModBusArray[0];
+
+							_funcRetValPtr = ModBusWriteRegisterReq(slvAddr,
+																	funcCode,
+																	wrAddrStart,
+																	numberOfAddress,
+																	valModBusArrayPtr);
+							//send command to actuator
+							_funcRetVal.ptr_msg = _funcRetValPtr->ptr_msg;
+							_funcRetVal.mstreqRetStructNumByte = _funcRetValPtr->mstreqRetStructNumByte;
+							_funcRetVal.slvresRetPtr = _funcRetValPtr->slvresRetPtr;
+							_funcRetVal.slvresRetNumByte = _funcRetValPtr->slvresRetNumByte;
+
+							word snd;
+							MODBUS_COMM_SendBlock(_funcRetVal.ptr_msg,
+												  _funcRetVal.mstreqRetStructNumByte,
+												  &snd);
 						}
-						valModBusArrayPtr = &valModBusArray[0];
-
-						_funcRetValPtr = ModBusWriteRegisterReq(slvAddr,
-																funcCode,
-																wrAddrStart,
-																numberOfAddress,
-																valModBusArrayPtr);
-						//send command to actuator
-						_funcRetVal.ptr_msg = _funcRetValPtr->ptr_msg;
-						_funcRetVal.mstreqRetStructNumByte = _funcRetValPtr->mstreqRetStructNumByte;
-						_funcRetVal.slvresRetPtr = _funcRetValPtr->slvresRetPtr;
-						_funcRetVal.slvresRetNumByte = _funcRetValPtr->slvresRetNumByte;
-
-						word snd;
-						MODBUS_COMM_SendBlock(_funcRetVal.ptr_msg,
-											  _funcRetVal.mstreqRetStructNumByte,
-											  &snd);
+						else
+							iflag_sbc_rx = IFLAG_SBC_RX; // ho ricevuto il comando ma non l'ho ancora processato
 					}
 					break;
 
 					// Modbus read
 					case 0x16:
 					{
-						byte slvAddr = sbc_rx_data[7];
-						byte funcCode = 0x03;
-						word readAddrStart = BYTES_TO_WORD(sbc_rx_data[8], sbc_rx_data[9]);
-						word readAddrStop  = BYTES_TO_WORD(sbc_rx_data[10], sbc_rx_data[11]);
-						word numberOfAddress = readAddrStop - readAddrStart + 1;
+						/*eseguo il comando solo se il bus è libero quindi se ho finito di ricevere l'ultima richiesta*/
+						if (iFlag_actuatorCheck == IFLAG_COMMAND_RECEIVED)
+						{
+							byte slvAddr = sbc_rx_data[7];
+							byte funcCode = 0x03;
+							word readAddrStart = BYTES_TO_WORD(sbc_rx_data[8], sbc_rx_data[9]);
+							word readAddrStop  = BYTES_TO_WORD(sbc_rx_data[10], sbc_rx_data[11]);
+							word numberOfAddress = readAddrStop - readAddrStart + 1;
 
-						_funcRetValPtr = ModBusReadRegisterReq(slvAddr,
-															   funcCode,
-															   readAddrStart,
-															   numberOfAddress);
+							_funcRetValPtr = ModBusReadRegisterReq(slvAddr,
+																   funcCode,
+																   readAddrStart,
+																   numberOfAddress);
 
-						_funcRetVal.ptr_msg = _funcRetValPtr->ptr_msg;
-						_funcRetVal.mstreqRetStructNumByte = _funcRetValPtr->mstreqRetStructNumByte;
-						_funcRetVal.slvresRetPtr = _funcRetValPtr->slvresRetPtr;
-						_funcRetVal.slvresRetNumByte = _funcRetValPtr->slvresRetNumByte;
+							_funcRetVal.ptr_msg = _funcRetValPtr->ptr_msg;
+							_funcRetVal.mstreqRetStructNumByte = _funcRetValPtr->mstreqRetStructNumByte;
+							_funcRetVal.slvresRetPtr = _funcRetValPtr->slvresRetPtr;
+							_funcRetVal.slvresRetNumByte = _funcRetValPtr->slvresRetNumByte;
 
-						word snd;
-						MODBUS_COMM_SendBlock(_funcRetVal.ptr_msg,
-											  _funcRetVal.mstreqRetStructNumByte,
-											  &snd);
+							word snd;
+							MODBUS_COMM_SendBlock(_funcRetVal.ptr_msg,
+												  _funcRetVal.mstreqRetStructNumByte,
+												  &snd);
+						}
+						else
+							iflag_sbc_rx = IFLAG_SBC_RX; // ho ricevuto il comando ma non l'ho ancora processato
 					}
 					break;
 
@@ -560,7 +573,7 @@ void testCOMMSbcDebug(void){
 														  0,
 														  ID_FLOW_VAL_MLMIN);
 
-						FLOWSENS_RTS_SetVal();
+					//	FLOWSENS_RTS_SetVal();
 						for(char k = 0; k < ptrMsg_UFLOW->bufferToSendLenght; k++)
 						{
 						//FLOWSENS_RTS_SetVal();
@@ -585,6 +598,7 @@ void testCOMMSbcDebug(void){
 		/*invio risposta*/
 	}
 
+
 	// Wait for response from actuators
 	if(iflag_pmp1_rx == IFLAG_PMP1_RX)
 	{
@@ -595,8 +609,11 @@ void testCOMMSbcDebug(void){
 		ptrMsgSbcTx = &sbc_tx_data[0];
 
 		// Send response to sbc
-		word snd;
-		SBC_COMM_SendBlock(ptrMsgSbcTx,myCommunicatorToSBC.numByteToSend,&snd);
+		/*05-12-2017: adesso non interrogo gli attuatori solo quando richiesto da SBC
+		 * ma lo faccio in seire ogni 50 msec; non manderò questo messaggio sempre all' SBC
+		 * ma memorizzerò i dati che mi servono e glieli manderò solo quando me li chiede*/
+		//word snd;
+		//	SBC_COMM_SendBlock(ptrMsgSbcTx,myCommunicatorToSBC.numByteToSend,&snd);
 	}
 
 	// Pressure sensor read
@@ -608,39 +625,43 @@ void testCOMMSbcDebug(void){
 		buildPressSensResponseMsg(ptrMsgSbcRx);
 		ptrMsgSbcTx = &sbc_tx_data[0];
 
+		/*05-12-2017: adesso non interrogo i sensori solo quando richiesto da SBC
+		 * ma lo faccio di continuo; non manderò questo messaggio sempre all' SBC
+		 * ma memorizzerò i dati che mi servono e glieli manderò solo quando me li chiede*/
+
 		// Send response to sbc
-		word snd;
-		SBC_COMM_SendBlock(ptrMsgSbcTx,myCommunicatorToSBC.numByteToSend,&snd);
+		//word snd;
+		//SBC_COMM_SendBlock(ptrMsgSbcTx,myCommunicatorToSBC.numByteToSend,&snd);
 	}
 
 /*************************************************************/
 /*************************************************************/
 /*************************************************************/
 
-	if(iflag_sensTempIR == IFLAG_SENS_TEMPIR_TX)
-	{
-	//IR_TM_COMM_SelectSlave(0x5A);
-	err = IR_TM_COMM_RecvBlock(ptrData, 3, &ret);
-	iflag_sensTempIR = IFLAG_IDLE;
-	}
-
-	if(iflag_sensTempIR_Meas_Ready == IFLAG_IRTEMP_MEASURE_READY)
-	{
-		sensorIR_TM[0].tempSensValue = (float)((BYTES_TO_WORD(sensorIR_TM[0].bufferReceived[1], sensorIR_TM[0].bufferReceived[0]))*((float)0.02)) - (float)273.15;
-		buildReadIRTempRspMsg(0x40, 0x01);
-		ptrMsgSbcTx = &sbc_tx_data[0];
-
-		for(char i = 0; i < 14 ; i++)
-		{
-			SBC_COMM_SendChar(*(ptrMsgSbcTx+i));
-
-			#ifdef	DEBUG_COMM_SBC
-			//PC_DEBUG_COMM_SendChar(*(ptrMsgSbcTx+i));
-			#endif
-		}
-
-		iflag_sensTempIR_Meas_Ready = IFLAG_IDLE;
-	}
+//	if(iflag_sensTempIR == IFLAG_SENS_TEMPIR_TX)
+//	{
+//	//IR_TM_COMM_SelectSlave(0x5A);
+//	err = IR_TM_COMM_RecvBlock(ptrData, 3, &ret);
+//	iflag_sensTempIR = IFLAG_IDLE;
+//	}
+//
+//	if(iflag_sensTempIR_Meas_Ready == IFLAG_IRTEMP_MEASURE_READY)
+//	{
+//		sensorIR_TM[0].tempSensValue = (float)((BYTES_TO_WORD(sensorIR_TM[0].bufferReceived[1], sensorIR_TM[0].bufferReceived[0]))*((float)0.02)) - (float)273.15;
+//		buildReadIRTempRspMsg(0x40, 0x01);
+//		ptrMsgSbcTx = &sbc_tx_data[0];
+//
+//		for(char i = 0; i < 14 ; i++)
+//		{
+//			SBC_COMM_SendChar(*(ptrMsgSbcTx+i));
+//
+//			#ifdef	DEBUG_COMM_SBC
+//			//PC_DEBUG_COMM_SendChar(*(ptrMsgSbcTx+i));
+//			#endif
+//		}
+//
+//		iflag_sensTempIR_Meas_Ready = IFLAG_IDLE;
+//	}
 
 	/*if(iflag_uflow_sens == IFLAG_UFLOW_SENS_RX)
 	{

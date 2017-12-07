@@ -373,6 +373,16 @@ void modBusPinchInit(void)
 	pinchActuator[3].pinchNumRegRead = 0x0001;
 	pinchActuator[3].pinchWriteRegValuePtr = 0;
 }
+void modbusDataInit (void)
+{
+	int i,j;
+
+	for (i=0; i<TOTAL_ACTUATOR; i++)
+	{
+		for (j=0; j<TOTAL_MODBUS_DATA;j++)
+			modbusData [TOTAL_ACTUATOR] [TOTAL_MODBUS_DATA] = 0;
+	}
+}
 
 void setPumpSpeedValueHighLevel(unsigned char slaveAddr, int speedValue){
 	switch((slaveAddr - 2))
@@ -731,6 +741,185 @@ void alwaysModBusActuator(void){
 		}
 		iflag_pmp1_rx = IFLAG_IDLE;
 		timerCounterModBus = 0; //da verificare......qui il canale è sicuramente libero
+	}
+}
+
+/*funzione per controllare lo stato dei motori*/
+void Check_Actuator_Status (char slvAddr,
+							char funcCode,
+							int readAddrStart,
+							int numberOfAddress)
+{
+	int snd;
+
+	_funcRetValPtr = ModBusReadRegisterReq(slvAddr,
+										   funcCode,
+										   readAddrStart,
+										   numberOfAddress);
+
+	_funcRetVal.ptr_msg = _funcRetValPtr->ptr_msg;
+	_funcRetVal.mstreqRetStructNumByte = _funcRetValPtr->mstreqRetStructNumByte;
+	_funcRetVal.slvresRetPtr = _funcRetValPtr->slvresRetPtr;
+	_funcRetVal.slvresRetNumByte = _funcRetValPtr->slvresRetNumByte;
+
+
+	MODBUS_COMM_SendBlock(_funcRetVal.ptr_msg,
+						  _funcRetVal.mstreqRetStructNumByte,
+						  &snd);
+}
+
+/*In questa funzione memorizzo i dati ricevuti in seguito
+ *  alla Check_Actuator_Status nella matrice modbusData*/
+void StorageModbusData(void)
+{
+	unsigned char dataTemp[MAX_DATA_MODBUS_RECEIVED],i,slvAddr,funCode;
+	unsigned int  Pump_Average_Current	= 0,
+				  Pump_Speed_Status		= 0,
+				  Pump_Status			= 0,
+				  Pinch_Average_Current = 0,
+				  Pinch_Status			= 0;
+
+	/*copio nell'array temporaneo i dati ricevuti*/
+	for (i=0; i<MAX_DATA_MODBUS_RECEIVED; i++)
+	{
+		/*sposto il puntatore nella posizione che devo leggere*/
+		//_funcRetVal.slvresRetPtr = _funcRetVal.slvresRetPtr + i;
+
+		/*copio il dato*/
+		dataTemp[i] = * (_funcRetVal.slvresRetPtr+i); //così sposto non sposto il puntatore, ma leggo direttamente quello che mi serve senza spostarlo
+	}
+	/*riporto il puntatore nella posizione iniziale*/
+	//_funcRetVal.slvresRetPtr = _funcRetVal.slvresRetPtr - MAX_DATA_MODBUS_RECEIVED;
+
+	slvAddr = dataTemp[0];
+	funCode = dataTemp[1];
+
+	/*se ho l'indirizzo di una pompa*/
+	if (slvAddr <= LAST_PUMP)
+	{
+		/*devo trasfomare i dati ricevuti da byte in word*/
+		Pump_Average_Current = BYTES_TO_WORD(dataTemp[3], dataTemp[4]);
+		Pump_Speed_Status	 = BYTES_TO_WORD(dataTemp[5], dataTemp[6]);
+		Pump_Status 		 = BYTES_TO_WORD(dataTemp[7], dataTemp[8]);
+	}
+	else /*ho l'indirizzo di una pinch*/
+	{
+		/*devo trasfomare i dati ricevuti da byte in word*/
+		Pinch_Average_Current = BYTES_TO_WORD(dataTemp[3], dataTemp[4]);
+		Pinch_Status	 	  = BYTES_TO_WORD(dataTemp[5], dataTemp[6]);
+	}
+
+
+	/*memorizzo i dati solo se il function code contenuto
+	 * nel secondo byte ricevuto è pari a 0x03 ossia
+	 * quella è una risposta al mio comando di Check_Actuator_Status*/
+	if (funCode == 0x03)
+	{
+		/*uso lo slvAddr come indice per la matrice
+		 * ma lo decremento di due in quanto pompa con
+		 * selettore '0' corrisposnde a indirizzo '2'*/
+		if (slvAddr <= LAST_PUMP) //sono nel caso di una pompa
+		{
+			modbusData[slvAddr-2][16]= Pump_Average_Current;
+			modbusData[slvAddr-2][17]= Pump_Speed_Status;
+			modbusData[slvAddr-2][18]= Pump_Status;
+		}
+		else //sono nel caso di una pinch
+		{
+			modbusData[slvAddr-2][16]= Pinch_Average_Current;
+			modbusData[slvAddr-2][17]= Pinch_Status;
+		}
+	}
+}
+
+void StorageModbusDataInit(void)
+{
+	unsigned char dataTemp[MAX_DATA_MODBUS_RX],i,slvAddr,funCode;
+	unsigned int  Target 				= 0,
+			      Go_To_Home_Position 	= 0,
+				  Acceleration 			= 0,
+				  Current_level 		= 0,
+				  Cruise_Speed 			= 0,
+				  Steps_Target 			= 0,
+				  Average_Current 		= 0,
+				  Pump_Speed_Status 	= 0,
+				  Status 				= 0,
+				  BL_Version			= 0,
+				  PCB_Code_H			= 0,
+				  PCB_Code_L			= 0,
+				  PCB_Code_REV  		= 0,
+				  Serial_Number 		= 0,
+				  FW_Version    		= 0;
+
+	/*copio nell'array temporaneo i dati ricevuti*/
+	for (i=0; i<MAX_DATA_MODBUS_RX; i++)
+	{
+		/*copio il dato*/
+		dataTemp[i] = * (_funcRetVal.slvresRetPtr+i); //così sposto non sposto il puntatore, ma leggo direttamente quello che mi serve senza spostarlo
+	}
+
+	slvAddr = dataTemp[0];
+	funCode = dataTemp[1];
+
+
+	/*devo trasfomare i dati ricevuti da byte in word*/
+	Target				= BYTES_TO_WORD(dataTemp[3], dataTemp[4]);
+	Average_Current		= BYTES_TO_WORD(dataTemp[35], dataTemp[36]);
+	BL_Version 	 		= BYTES_TO_WORD(dataTemp[55], dataTemp[56]);
+	PCB_Code_H			= BYTES_TO_WORD(dataTemp[57], dataTemp[58]);
+	PCB_Code_L 	 		= BYTES_TO_WORD(dataTemp[59], dataTemp[60]);
+	PCB_Code_REV 		= BYTES_TO_WORD(dataTemp[61], dataTemp[62]);
+	Serial_Number		= BYTES_TO_WORD(dataTemp[63], dataTemp[64]);
+	FW_Version 	 		= BYTES_TO_WORD(dataTemp[65], dataTemp[66]);
+
+	/*se ho l'indirizzo di una pompa memorizzo anche...*/
+	if (slvAddr <= LAST_PUMP) //sono nel caso di una pompa
+	{
+		Go_To_Home_Position = BYTES_TO_WORD(dataTemp[5], dataTemp[6]);
+		Acceleration		= BYTES_TO_WORD(dataTemp[7], dataTemp[8]);
+		Current_level		= BYTES_TO_WORD(dataTemp[9], dataTemp[10]);
+		Cruise_Speed		= BYTES_TO_WORD(dataTemp[11], dataTemp[12]);
+		Steps_Target		= BYTES_TO_WORD(dataTemp[13], dataTemp[14]);
+		Pump_Speed_Status	= BYTES_TO_WORD(dataTemp[37], dataTemp[38]);
+		Status				= BYTES_TO_WORD(dataTemp[39], dataTemp[40]);
+
+	}
+	else //sono nel caso di uan pinch, lo Status è messo in un posto diverso
+		Status = BYTES_TO_WORD(dataTemp[37], dataTemp[38]);
+
+	/*memorizzo i dati solo se il function code contenuto
+	 * nel secondo byte ricevuto è pari a 0x03 ossia
+	 * quella è una risposta al mio comando di Read Revision*/
+	if (funCode == 0x03)
+	{
+		/*uso lo slvAddr come indice per la matrice
+		 * ma lo decremento di due in quanto pompa con
+		 * selettore '0' corrisponde a indirizzo '2'*/
+
+		modbusData[slvAddr-2][0]  = Target;
+		modbusData[slvAddr-2][16] = Average_Current;
+
+		modbusData[slvAddr-2][26] = BL_Version;
+		modbusData[slvAddr-2][27] = PCB_Code_H;
+		modbusData[slvAddr-2][28] = PCB_Code_L;
+		modbusData[slvAddr-2][29] = PCB_Code_REV;
+		modbusData[slvAddr-2][30] = Serial_Number;
+		modbusData[slvAddr-2][31] = FW_Version;
+
+		/*se ho l'indirizzo di una pompa memorizzo anche...*/
+		if (slvAddr <= LAST_PUMP) //sono nel caso di una pompa
+		{
+			modbusData[slvAddr-2][1]  = Go_To_Home_Position;
+			modbusData[slvAddr-2][2]  = Acceleration;
+			modbusData[slvAddr-2][3]  = Current_level;
+			modbusData[slvAddr-2][4]  = Cruise_Speed;
+			modbusData[slvAddr-2][5]  = Steps_Target;
+			modbusData[slvAddr-2][17] = Pump_Speed_Status;
+			modbusData[slvAddr-2][18] = Status;
+
+		}
+		else //sono nel caso di uan pinch, lo Status è messo in un posto diverso
+			modbusData[slvAddr-2][17]= Status;
 	}
 }
 /* Public function */

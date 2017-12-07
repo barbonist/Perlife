@@ -30,6 +30,8 @@ char	iflag_uflow_sens;
 char	iflag_sensTempIR;
 char	iflag_sensTempIR_Meas_Ready;
 char	iflag_sensTempIRRW;
+char 	iFlag_actuatorCheck;
+char    iFlag_modbusDataStorage;
 
 /* DEBUG */
 #define DEBUG_ENABLE
@@ -37,63 +39,75 @@ char	iflag_sensTempIRRW;
 #define DEBUG_PUMP				0x02
 #define DEBUG_CENTRIF_PUMP		0x03
 #define DEBUG_PELTIER			0x04
-//#define DEBUG_COMM_SBC			0x05
+#define DEBUG_COMM_SBC			0x05
 #define DEBUG_MACHINE_STATE		0x06
 #define DEBUG_CONTROL			0xA5
 #define DEBUG_PROTECTION		0x5A
 #define DEBUG_LOG_PC			0x01
-#define DEBUG_TREATMENT			0xA5
+//#define DEBUG_TREATMENT			0xA5
 /*#define DEBUG_I2C_TEMP_SENS		0x01;*/
 /*#define DEBUG_FLOW_SENS			0x00*/ /*0x01*/
 /* DEBUG */
 
 #define STR_DBG_LENGHT			40
 
-#define	IFLAG_PC_RX				0x01 /* new data on rx 232 pc */
-#define IFLAG_PC_TX				0x01 /* new data to rx 232 pc */
-#define IFLAG_PMP1_RX			0x01 /* new data on rx 422 pmp1 */
-#define IFLAG_PMP1_BUSY			0xA5 /* canale occupato */
-#define IFLAG_PMP2_RX			0x01 /* new data on rx 422 pmp2 */
-#define IFLAG_PMP3_RX			0x01 /* new data on rx 422 pmp3 */
-#define IFLAG_PMP4_RX			0x01 /* new data on rx 422 pmp4 */
-#define IFLAG_PMP1_TX			0x01 /* new data on tx 422 pmp1 */
-#define IFLAG_PMP2_TX			0x01 /* new data on tx 422 pmp2 */
-#define IFLAG_PMP3_TX			0x01 /* new data on tx 422 pmp3 */
-#define IFLAG_PMP4_TX			0x01 /* new data on tx 422 pmp4 */
-#define IFLAG_SBC_RX			0x01 /* new data from sbc */
-#define IFLAG_SBC_TX			0x01 /* new data to sbc */
-#define IFLAG_PELTIER_RX		0x01 /* new data from Peltier */
-#define IFLAG_PELTIER_HZ		0x05 /* high impedance */
-#define IFLAG_PELTIER_TX		0x01 /* new data to Peltier */
-#define IFLAG_PELTIER_BUSY		0xA5 /* comm channel to peltier busy */
-#define IFLAG_PELTIER_FREE		0x5A /* comm channel to peltier free */
-#define IFLAG_PELTIER_MSG_START	0x05 /* Peltier message start */
-#define IFLAG_PELTIER_MSG_END	0x55 /* Peltier message end */
-#define IFLAG_WRITE_PR_SENSOR	0x03 /* Write pressure sensor parameter */
-#define IFLAG_READ_PR_SENSOR	0x01 /* Read pressure sensor */
-#define IFLAG_WRITE_TEMP_SENSOR	0x03 /* Write temperature sensor parameter */
-#define IFLAG_READ_TEMP_SENSOR	0x01 /* Read temperature sensor */
-#define IFLAG_SPI_RX_TRUE		0x01 /* Message received on spi channel */
-#define IFLAG_UFLOW_SENS_RX		0x01 /* Message received from ultrasound flowsensor */
-#define IFLAG_UFLOW_SENS_TX		0x02 /* Message transmitted to ultrasound flowsensor */
-#define IFLAG_SENS_TEMPIR_TX	0x5A /* Message end trasmission */
-#define IFLAG_SENS_TEMPIR_RX	0xA5 /* Message end reception */
-#define IFLAG_SENS_TEMPIR_WAIT	0xCC /* Wait for rx/tx message */
-#define IFLAG_SENS_TEMPIR_WRITE 0xEE /* write request */
+#define	IFLAG_PC_RX					0x01 /* new data on rx 232 pc */
+#define IFLAG_PC_TX					0x01 /* new data to rx 232 pc */
+#define IFLAG_PMP1_RX				0x01 /* new data on rx 422 pmp1 */
+#define IFLAG_PMP1_BUSY				0xA5 /* canale occupato */
+#define IFLAG_PMP2_RX				0x01 /* new data on rx 422 pmp2 */
+#define IFLAG_PMP3_RX				0x01 /* new data on rx 422 pmp3 */
+#define IFLAG_PMP4_RX				0x01 /* new data on rx 422 pmp4 */
+#define IFLAG_PMP1_TX				0x01 /* new data on tx 422 pmp1 */
+#define IFLAG_PMP2_TX				0x01 /* new data on tx 422 pmp2 */
+#define IFLAG_PMP3_TX				0x01 /* new data on tx 422 pmp3 */
+#define IFLAG_PMP4_TX				0x01 /* new data on tx 422 pmp4 */
+#define IFLAG_SBC_RX				0x01 /* new data from sbc */
+#define IFLAG_SBC_TX				0x01 /* new data to sbc */
+#define IFLAG_PELTIER_RX			0x01 /* new data from Peltier */
+#define IFLAG_PELTIER_HZ			0x05 /* high impedance */
+#define IFLAG_PELTIER_TX			0x01 /* new data to Peltier */
+#define IFLAG_PELTIER_BUSY			0xA5 /* comm channel to peltier busy */
+#define IFLAG_PELTIER_FREE			0x5A /* comm channel to peltier free */
+#define IFLAG_PELTIER_MSG_START		0x05 /* Peltier message start */
+#define IFLAG_PELTIER_MSG_END		0x55 /* Peltier message end */
+#define IFLAG_WRITE_PR_SENSOR		0x03 /* Write pressure sensor parameter */
+#define IFLAG_READ_PR_SENSOR		0x01 /* Read pressure sensor */
+#define IFLAG_WRITE_TEMP_SENSOR		0x03 /* Write temperature sensor parameter */
+#define IFLAG_READ_TEMP_SENSOR		0x01 /* Read temperature sensor */
+#define IFLAG_SPI_RX_TRUE			0x01 /* Message received on spi channel */
+#define IFLAG_UFLOW_SENS_RX			0x01 /* Message received from ultrasound flowsensor */
+#define IFLAG_UFLOW_SENS_TX			0x02 /* Message transmitted to ultrasound flowsensor */
+#define IFLAG_SENS_TEMPIR_TX		0x5A /* Message end trasmission */
+#define IFLAG_SENS_TEMPIR_RX		0xA5 /* Message end reception */
+#define IFLAG_SENS_TEMPIR_WAIT		0xCC /* Wait for rx/tx message */
+#define IFLAG_SENS_TEMPIR_WRITE		0xEE /* write request */
 #define IFLAG_IRTEMP_MEASURE_READY	0x01 /* valore di temperatura pronto da leggere */
-#define IFLAG_IDLE				0x00 /* idle flag */
-#define IFLAG_BUSY				0x5A /* channel busy */
-#define LAMP_LEVEL_LOW			0x00
-#define LAMP_LEVEL_MEDIUM		0x01
-#define LAMP_LEVEL_HIGH			0x02
-#define ENABLE					0x00
-#define DISABLE					0x01
+#define IFLAG_IDLE					0x00 /* idle flag */
+#define IFLAG_BUSY					0x5A /* channel busy */
+#define LAMP_LEVEL_LOW				0x00
+#define LAMP_LEVEL_MEDIUM			0x01
+#define LAMP_LEVEL_HIGH				0x02
+#define ENABLE						0x00
+#define DISABLE						0x01
+#define IFLAG_IDLE					0x00
+#define IFLAG_COMMAND_SENT			0x01
+#define IFLAG_COMMAND_RECEIVED		0x02
+#define TOT_NUMBER_OF_ACTAUTOR  	0x09 //gli attuatori sono 7 ma ho un offset di due per gli indirtizzi (il primo attuatore ha indirizzo 0x02
+#define FIRST_ACTUATOR				0x02
+#define LAST_PUMP					0x05
+#define TOTAL_ACTUATOR				7
+#define TOTAL_MODBUS_DATA			32
+#define MAX_DATA_MODBUS_RECEIVED	11
+#define MAX_DATA_MODBUS_RX 		    67 //64byte di dati + 3 byte iniziali con slv Addr, fun code and byte Read Count
+
+static char array [70];
 
 /**/
 /**/
 
 /**/
-#define BYTES_TO_WORD(hi,lo)  (unsigned int) (((unsigned int)(hi) << 8) | (unsigned int)(lo))
+#define BYTES_TO_WORD(hi,lo)  (unsigned int) (((unsigned char)(hi) << 8) | (unsigned char)(lo)) //i caratteri passi come argomento (hi,lo) devono essere UNSIGNED char e non char
 #define BYTES_TO_WORD_SIGN(hi,lo)  (int) (((int)(hi) << 8) | (int)(lo))
 #define BYTES_TO_WORD_BYTE(hi,lo)	(unsigned short) (((char)(hi) << 8) | (char)(lo))
 
@@ -720,6 +734,8 @@ struct Pinch_Valve {
 };
 
 struct Pinch_Valve			pinchActuator[5];
+
+word modbusData [TOTAL_ACTUATOR] [TOTAL_MODBUS_DATA];
 /* Pinch */
 /************************************************************************/
 /* 						ACTUATOR 										*/
@@ -943,6 +959,7 @@ int timerCounterMState;
 int timerCounterModBus;
 int timerCounterUFlowSensor;
 int timerCounterPeltier;
+int timerCounterCheckModBus;
 
 /************************************************************************/
 /* 					STRUTTURA VOLUMI TRATTAMENTO 						*/
