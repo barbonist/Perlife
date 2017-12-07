@@ -172,42 +172,37 @@ void testCOMMSbcDebug(void){
 					// Modbus read
 					case 0x16:
 					{
-						/*mando il messaggio ricevuto dall SBC alle pompe/pinch solo se il buffer è libero
-						 * ovvero se ho avuto l'ultima ricezione*/
-						if(iFlag_actuatorCheck == IFLAG_COMMAND_RECEIVED)
-						{
-							iFlag_actuatorCheck = IFLAG_COMMAND_SENT;
 
-							byte slvAddr = sbc_rx_data[7];
-							byte funcCode = 0x03;
-							word readAddrStart = BYTES_TO_WORD(sbc_rx_data[8], sbc_rx_data[9]);
-							word readAddrStop  = BYTES_TO_WORD(sbc_rx_data[10], sbc_rx_data[11]);
-							word numberOfAddress = readAddrStop - readAddrStart + 1;
+						iFlag_actuatorCheck = IFLAG_COMMAND_SENT;
 
-	//						_funcRetValPtr = ModBusReadRegisterReq(slvAddr,
-	//															   funcCode,
-	//															   readAddrStart,
-	//															   numberOfAddress);
-	//
-	//						_funcRetVal.ptr_msg = _funcRetValPtr->ptr_msg;
-	//						_funcRetVal.mstreqRetStructNumByte = _funcRetValPtr->mstreqRetStructNumByte;
-	//						_funcRetVal.slvresRetPtr = _funcRetValPtr->slvresRetPtr;
-	//						_funcRetVal.slvresRetNumByte = _funcRetValPtr->slvresRetNumByte;
-	//
-	//						word snd;
-	//						MODBUS_COMM_SendBlock(_funcRetVal.ptr_msg,
-	//											  _funcRetVal.mstreqRetStructNumByte,
-	//											  &snd);
+						byte slvAddr = sbc_rx_data[7];
+						byte funcCode = 0x03;
+						word readAddrStart = BYTES_TO_WORD(sbc_rx_data[8], sbc_rx_data[9]);
+						word readAddrStop  = BYTES_TO_WORD(sbc_rx_data[10], sbc_rx_data[11]);
+						word numberOfAddress = readAddrStop - readAddrStart + 1;
 
-							//send answer to sbc
-							word snd;
-							ptrMsgSbcRx = &sbc_rx_data;
-							buildModBusReadRegActResponseMsg(ptrMsgSbcRx, slvAddr, readAddrStart, numberOfAddress);
-							ptrMsgSbcTx = &sbc_tx_data[0];
-							SBC_COMM_SendBlock(ptrMsgSbcTx,myCommunicatorToSBC.numByteToSend,&snd);
-						}
-						else//altrimenti provo a rimandare il messaggio
-							iflag_sbc_rx = IFLAG_SBC_RX;
+//						_funcRetValPtr = ModBusReadRegisterReq(slvAddr,
+//															   funcCode,
+//															   readAddrStart,
+//															   numberOfAddress);
+//
+//						_funcRetVal.ptr_msg = _funcRetValPtr->ptr_msg;
+//						_funcRetVal.mstreqRetStructNumByte = _funcRetValPtr->mstreqRetStructNumByte;
+//						_funcRetVal.slvresRetPtr = _funcRetValPtr->slvresRetPtr;
+//						_funcRetVal.slvresRetNumByte = _funcRetValPtr->slvresRetNumByte;
+//
+//						word snd;
+//						MODBUS_COMM_SendBlock(_funcRetVal.ptr_msg,
+//											  _funcRetVal.mstreqRetStructNumByte,
+//											  &snd);
+
+						//send answer to sbc
+						word snd;
+						ptrMsgSbcRx = &sbc_rx_data;
+						buildModBusReadRegActResponseMsg(ptrMsgSbcRx, slvAddr, readAddrStart, numberOfAddress);
+						ptrMsgSbcTx = &sbc_tx_data[0];
+						SBC_COMM_SendBlock(ptrMsgSbcTx,myCommunicatorToSBC.numByteToSend,&snd);
+
 					}
 					break;
 

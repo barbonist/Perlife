@@ -179,11 +179,11 @@ int main(void)
   unsigned char PINCH_POSITION 				= 0;
   unsigned char slvAddr 					= 0x02;
   unsigned char funcCode 					= 0x03;
-  unsigned char readAddrStart		 		= 0x10;
+  word 			readAddrStart		 		= 0x0010;
   unsigned char numberOfAddressCheckPump	= 0x03;
   unsigned char numberOfAddressCheckPinch	= 0x02;
-  unsigned char readAddrStartReadRevision	= 0x00;
-  unsigned char numberOfAddressReadRevision	= 0x20; //allo start leggo 32 registri
+  word			readAddrStartReadRevision	= 0x0000;
+  unsigned char	numberOfAddressReadRevision	= 0x20; //allo start leggo 32 registri
 
   /*** Processor Expert internal initialization. DON'T REMOVE THIS CODE!!! ***/
   PE_low_level_init();
