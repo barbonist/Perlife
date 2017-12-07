@@ -19,40 +19,22 @@
 #include "SBC_COMM.h"
 #include "ASerialLdd5.h"
 
-void buildModBusActResponseMsg(char *ptrMsgSbcRx, char *ptrMsgModbusRx)
+void buildModBusWriteRegActResponseMsg(char *ptrMsgSbcRx)
 {
 	byte index = 0;
-
-	char subcode = ptrMsgSbcRx[6];
 
 	sbc_tx_data[index++] = 0xA5;
 	sbc_tx_data[index++] = 0xAA;
 	sbc_tx_data[index++] = 0x55;
 	sbc_tx_data[index++] = 0x00;
-	if(subcode == 0x15)
-	{
-		sbc_tx_data[index++] = ptrMsgSbcRx[4]+1;
-	}
-	else if(subcode == 0x16)
-	{
-		sbc_tx_data[index++] = ptrMsgSbcRx[4]+1+ptrMsgModbusRx[2];
-	}
-
+	sbc_tx_data[index++] = ptrMsgSbcRx[4]+1;
 	sbc_tx_data[index++] = ptrMsgSbcRx[5];
-	sbc_tx_data[index++] = subcode;
+	sbc_tx_data[index++] = ptrMsgSbcRx[6];
 	sbc_tx_data[index++] = 0x66;
 
 	for(int i = 0 ; i < ptrMsgSbcRx[4] ; i++)
 	{
 		sbc_tx_data[index++] = ptrMsgSbcRx[7+i];
-	}
-
-	if(subcode == 0x16)
-	{
-		for(int i = 0 ; i < ptrMsgModbusRx[2] ; i++)
-		{
-			sbc_tx_data[index++] = ptrMsgModbusRx[3+i];
-		}
 	}
 
 	sbc_tx_data[index++] = 0x00;
@@ -62,7 +44,107 @@ void buildModBusActResponseMsg(char *ptrMsgSbcRx, char *ptrMsgModbusRx)
 	myCommunicatorToSBC.numByteToSend = index;
 }
 
-void buildPressSensResponseMsg(char *ptrMsgSbcRx)
+void buildModBusReadRegActResponseMsg(char *ptrMsgSbcRx,
+									  char slaveAddr,
+									  unsigned int readStartAddr,
+									  unsigned int numRegisterRead)
+{
+	byte index = 0;
+
+	sbc_tx_data[index++] = 0xA5;
+	sbc_tx_data[index++] = 0xAA;
+	sbc_tx_data[index++] = 0x55;
+	sbc_tx_data[index++] = 0x00;
+	sbc_tx_data[index++] = ptrMsgSbcRx[4]+1+2*numRegisterRead;
+	sbc_tx_data[index++] = ptrMsgSbcRx[5];
+	sbc_tx_data[index++] = ptrMsgSbcRx[6];
+	sbc_tx_data[index++] = 0x66;
+
+	for(int i = 0 ; i < ptrMsgSbcRx[4] ; i++)
+	{
+		sbc_tx_data[index++] = ptrMsgSbcRx[7+i];
+	}
+
+	for(int i = 0 ; i < numRegisterRead; i++)
+	{
+		sbc_tx_data[index++] = (modbusData[slaveAddr][readStartAddr+i] >> 8) & 0xFF;
+		sbc_tx_data[index++] = (modbusData[slaveAddr][readStartAddr+i]     ) & 0xFF;
+	}
+
+	sbc_tx_data[index++] = 0x00;
+	sbc_tx_data[index++] = 0x00;
+	sbc_tx_data[index++] = 0x5A;
+
+	myCommunicatorToSBC.numByteToSend = index;
+}
+
+void buildModBusReadStatusResponseMsg(char *ptrMsgSbcRx)
+{
+	byte index = 0;
+
+	sbc_tx_data[index++] = 0xA5;
+	sbc_tx_data[index++] = 0xAA;
+	sbc_tx_data[index++] = 0x55;
+	sbc_tx_data[index++] = 0x00;
+	sbc_tx_data[index++] = 0x25;
+	sbc_tx_data[index++] = ptrMsgSbcRx[5];
+	sbc_tx_data[index++] = ptrMsgSbcRx[6];
+	sbc_tx_data[index++] = 0x66;
+
+	for(int i = 0 ; i < 4 ; i++)
+	{
+		sbc_tx_data[index++] = (modbusData[i][0x0010] >> 8) & 0xFF;
+		sbc_tx_data[index++] = (modbusData[i][0x0010]     ) & 0xFF;
+		sbc_tx_data[index++] = (modbusData[i][0x0011] >> 8) & 0xFF;
+		sbc_tx_data[index++] = (modbusData[i][0x0011]     ) & 0xFF;
+		sbc_tx_data[index++] = (modbusData[i][0x0012] >> 8) & 0xFF;
+		sbc_tx_data[index++] = (modbusData[i][0x0012]     ) & 0xFF;
+	}
+	for(int i = 4 ; i < 7 ; i++)
+	{
+		sbc_tx_data[index++] = (modbusData[i][0x0010] >> 8) & 0xFF;
+		sbc_tx_data[index++] = (modbusData[i][0x0010]     ) & 0xFF;
+		sbc_tx_data[index++] = (modbusData[i][0x0011] >> 8) & 0xFF;
+		sbc_tx_data[index++] = (modbusData[i][0x0011]     ) & 0xFF;
+	}
+
+	sbc_tx_data[index++] = 0x00;
+	sbc_tx_data[index++] = 0x00;
+	sbc_tx_data[index++] = 0x5A;
+
+	myCommunicatorToSBC.numByteToSend = index;
+}
+
+void buildPressSensReadValuesResponseMsg(char *ptrMsgSbcRx)
+{
+    byte index = 0;
+
+	sbc_tx_data[index++] = 0xA5;
+	sbc_tx_data[index++] = 0xAA;
+	sbc_tx_data[index++] = 0x55;
+	sbc_tx_data[index++] = 0x00;
+	sbc_tx_data[index++] = 0x16;
+	sbc_tx_data[index++] = ptrMsgSbcRx[5];
+	sbc_tx_data[index++] = ptrMsgSbcRx[6];
+	sbc_tx_data[index++] = 0x66;
+	sbc_tx_data[index++] = 0x00; //TODO stable byte
+
+	for(int i = 0 ; i < 5 ; i++)
+	{
+		sbc_tx_data[index++] = ((word)sensor_PRx[i].prSensValue) >> 8;
+		sbc_tx_data[index++] = ((word)sensor_PRx[i].prSensValue);
+		sbc_tx_data[index++] = sensor_PRx[i].prSensAdc >> 8;
+		sbc_tx_data[index++] = sensor_PRx[i].prSensAdc;
+	}
+
+	sbc_tx_data[index++] = 0x00;
+	sbc_tx_data[index++] = 0x00;
+	sbc_tx_data[index++] = 0x5A;
+
+	myCommunicatorToSBC.numByteToSend = index;
+}
+
+void buildPressSensReadParamResponseMsg(char *ptrMsgSbcRx)
 {
 	union NumFloatGain{
 				uint32 ieee754NumFormat_Gain;
@@ -76,66 +158,28 @@ void buildPressSensResponseMsg(char *ptrMsgSbcRx)
 
     byte index = 0;
 
-    char subcode = ptrMsgSbcRx[6];
-
 	sbc_tx_data[index++] = 0xA5;
 	sbc_tx_data[index++] = 0xAA;
 	sbc_tx_data[index++] = 0x55;
 	sbc_tx_data[index++] = 0x00;
-
-	if(subcode == 0x31)
-	{
-		sbc_tx_data[index++] = 0x16;
-	}
-	else if(subcode == 0x32)
-	{
-		sbc_tx_data[index++] = 0x29;
-	}
-	else if(subcode == 0x33 || subcode == 0x34)
-	{
-		sbc_tx_data[index++] = 0x05;
-	}
-
+	sbc_tx_data[index++] = 0x29;
 	sbc_tx_data[index++] = ptrMsgSbcRx[5];
-	sbc_tx_data[index++] = subcode;
-
+	sbc_tx_data[index++] = ptrMsgSbcRx[6];
 	sbc_tx_data[index++] = 0x66;
 
-	if(subcode == 0x31)
+	for(int i = 0 ; i < 5 ; i++)
 	{
-		sbc_tx_data[index++] = 0x00; //stability byte
+		numFloatSensor_Gain.numFormatFloat_Gain = sensor_PRx[i].prSensGain;
+		sbc_tx_data[index++] = numFloatSensor_Gain.ieee754NumFormat_Gain >> 24;
+		sbc_tx_data[index++] = numFloatSensor_Gain.ieee754NumFormat_Gain >> 16;
+		sbc_tx_data[index++] = numFloatSensor_Gain.ieee754NumFormat_Gain >> 8;
+		sbc_tx_data[index++] = numFloatSensor_Gain.ieee754NumFormat_Gain;
 
-		for(int i = 0 ; i < 5 ; i++)
-		{
-			sbc_tx_data[index++] = ((word)sensor_PRx[i].prSensValue) >> 8;
-			sbc_tx_data[index++] = ((word)sensor_PRx[i].prSensValue);
-			sbc_tx_data[index++] = sensor_PRx[i].prSensAdc >> 8;
-			sbc_tx_data[index++] = sensor_PRx[i].prSensAdc;
-		}
-	}
-	else if(subcode == 0x32)
-	{
-		for(int i = 0 ; i < 5 ; i++)
-		{
-			numFloatSensor_Gain.numFormatFloat_Gain = sensor_PRx[i].prSensGain;
-			sbc_tx_data[index++] = numFloatSensor_Gain.ieee754NumFormat_Gain >> 24;
-			sbc_tx_data[index++] = numFloatSensor_Gain.ieee754NumFormat_Gain >> 16;
-			sbc_tx_data[index++] = numFloatSensor_Gain.ieee754NumFormat_Gain >> 8;
-			sbc_tx_data[index++] = numFloatSensor_Gain.ieee754NumFormat_Gain;
-
-			numFloatSensor_Offset.numFormatFloat_Offset = sensor_PRx[i].prSensOffset;
-			sbc_tx_data[index++] = numFloatSensor_Offset.ieee754NumFormat_Offset >> 24;
-			sbc_tx_data[index++] = numFloatSensor_Offset.ieee754NumFormat_Offset >> 16;
-			sbc_tx_data[index++] = numFloatSensor_Offset.ieee754NumFormat_Offset >> 8;
-			sbc_tx_data[index++] = numFloatSensor_Offset.ieee754NumFormat_Offset;
-		}
-	}
-	else if(subcode == 0x33 || subcode == 0x34)
-	{
-		sbc_tx_data[index++] = ptrMsgSbcRx[7];
-		sbc_tx_data[index++] = ptrMsgSbcRx[8];
-		sbc_tx_data[index++] = sensor_PRx[ptrMsgSbcRx[7]].prSensAdc >> 8;
-		sbc_tx_data[index++] = sensor_PRx[ptrMsgSbcRx[7]].prSensAdc;
+		numFloatSensor_Offset.numFormatFloat_Offset = sensor_PRx[i].prSensOffset;
+		sbc_tx_data[index++] = numFloatSensor_Offset.ieee754NumFormat_Offset >> 24;
+		sbc_tx_data[index++] = numFloatSensor_Offset.ieee754NumFormat_Offset >> 16;
+		sbc_tx_data[index++] = numFloatSensor_Offset.ieee754NumFormat_Offset >> 8;
+		sbc_tx_data[index++] = numFloatSensor_Offset.ieee754NumFormat_Offset;
 	}
 
 	sbc_tx_data[index++] = 0x00;
@@ -145,199 +189,483 @@ void buildPressSensResponseMsg(char *ptrMsgSbcRx)
 	myCommunicatorToSBC.numByteToSend = index;
 }
 
-void buildPeltierResponseMsg(char code){
+void buildPressSensCalibResponseMsg(char *ptrMsgSbcRx)
+{
+    byte index = 0;
 
-	char numFloat[4];
-	//long ret;
-	//char data[8];
-	sbc_tx_data[0] = 0xA5;
-	sbc_tx_data[1] = 0xAA;
-	sbc_tx_data[2] = 0x55;
-	sbc_tx_data[3] = 0x00;
-	sbc_tx_data[4] = 0x01;
-	sbc_tx_data[5] = 0xCC;
-	sbc_tx_data[6] = code;
-	if(code == 0x26) /*read float*/
-	{
-		dataIeee754[0] = *ptrMsgDataieee754start;
-		dataIeee754[1] = *(ptrMsgDataieee754start+1);
-		dataIeee754[2] = *(ptrMsgDataieee754start+2);
-		dataIeee754[3] = *(ptrMsgDataieee754start+3);
-		dataIeee754[4] = *(ptrMsgDataieee754start+4);
-		dataIeee754[5] = *(ptrMsgDataieee754start+5);
-		dataIeee754[6] = *(ptrMsgDataieee754start+6);
-		dataIeee754[7] = *(ptrMsgDataieee754start+7);
-		//retIeee754 = strtol(dataIeee754,NULL,16);
-		retIeee754Dummy = strtoul(dataIeee754,NULL,16); //ok anche per numeri negativi
+	sbc_tx_data[index++] = 0xA5;
+	sbc_tx_data[index++] = 0xAA;
+	sbc_tx_data[index++] = 0x55;
+	sbc_tx_data[index++] = 0x00;
+	sbc_tx_data[index++] = 0x05;
+	sbc_tx_data[index++] = ptrMsgSbcRx[5];
+	sbc_tx_data[index++] = ptrMsgSbcRx[6];
+	sbc_tx_data[index++] = 0x66;
+	sbc_tx_data[index++] = ptrMsgSbcRx[7];
+	sbc_tx_data[index++] = ptrMsgSbcRx[8];
+	sbc_tx_data[index++] = sensor_PRx[ptrMsgSbcRx[7]].prSensAdc >> 8;
+	sbc_tx_data[index++] = sensor_PRx[ptrMsgSbcRx[7]].prSensAdc;
+	sbc_tx_data[index++] = 0x00;
+	sbc_tx_data[index++] = 0x00;
+	sbc_tx_data[index++] = 0x5A;
 
-		sbc_tx_data[7] = retIeee754Dummy>>24; //retIeee754>>24;
-		sbc_tx_data[8] = retIeee754Dummy>>16; //retIeee754>>16;
-		sbc_tx_data[9] = retIeee754Dummy>>8; //retIeee754>>8;
-		sbc_tx_data[10] = retIeee754Dummy; //retIeee754;
-
-
-		/*sbcDebug_tx_data[7] = *ptrMsgDataieee754start; /* most significant byte */
-		/*sbcDebug_tx_data[8] = *(ptrMsgDataieee754start+1);
-		sbcDebug_tx_data[9] = *(ptrMsgDataieee754start+2);
-		sbcDebug_tx_data[10] = *(ptrMsgDataieee754start+3);
-		sbcDebug_tx_data[11] = *(ptrMsgDataieee754start+4);
-		sbcDebug_tx_data[12] = *(ptrMsgDataieee754start+5);
-		sbcDebug_tx_data[13] = *(ptrMsgDataieee754start+6);
-		sbcDebug_tx_data[14] = *(ptrMsgDataieee754start+7);*/
-	}
-	else if((code == 0x24) || (code == 0x22))
-	{
-		sbc_tx_data[7] = 0x00;
-		sbc_tx_data[8] = 0x00;
-		sbc_tx_data[9] = 0x00;
-		sbc_tx_data[10] = 0x00;
-	}
-	else if(code == 0x20) /*read int*/
-	{
-		dataIntPeltier[0] = *ptrMsgDataPeltierInt;
-		sbc_tx_data[7] = strtol(dataIntPeltier,NULL,16);
-		sbc_tx_data[8] = 0x00;
-		sbc_tx_data[9] = 0x00;
-		sbc_tx_data[10] = 0x00;
-	}
-
-	//sbcDebug_tx_data[7] = peltierCell.msgPeltierRx[0];
-	//sbcDebug_tx_data[7] = peltierDebug_rx_data[0];
-	//sbcDebug_tx_data[8] = peltierCell.msgPeltierRx[1];
-	//sbcDebug_tx_data[8] = peltierDebug_rx_data[1];
-	sbc_tx_data[11] = 0x00;
-	sbc_tx_data[12] = 0x00;
-	sbc_tx_data[13] = 0x5A;
+	myCommunicatorToSBC.numByteToSend = index;
 }
 
-void buildWriteTempSensResponseMsg(char code, char tempSensId){
-	union NumFloatUnion{
-				uint32 ieee754NUmFormat;
-				float numFormatFloat;
-			} numFloatSensor;
+void buildTempIRSensReadValuesResponseMsg(char *ptrMsgSbcRx)
+{
+	byte index = 0;
+	word value = 0;
 
-	sbc_tx_data[0] = 0xA5;
-	sbc_tx_data[1] = 0xAA;
-	sbc_tx_data[2] = 0x55;
-	sbc_tx_data[3] = 0x00;
-	sbc_tx_data[4] = 0x01;
-	sbc_tx_data[5] = 0xCC;
-	sbc_tx_data[6] = code; //cmdId & 0x66
-	if(code == 0x35)
+	sbc_tx_data[index++] = 0xA5;
+	sbc_tx_data[index++] = 0xAA;
+	sbc_tx_data[index++] = 0x55;
+	sbc_tx_data[index++] = 0x00;
+	sbc_tx_data[index++] = 0x0D;
+	sbc_tx_data[index++] = ptrMsgSbcRx[5];
+	sbc_tx_data[index++] = ptrMsgSbcRx[6];
+	sbc_tx_data[index++] = 0x66;
+	sbc_tx_data[index++] = 0x00; //TODO stable byte
+
+	for(int i = 0 ; i < 3 ; i++)
 	{
-		numFloatSensor.numFormatFloat = sensor_TMx[tempSensId].tempSensValue;
+		value = (word)(sensorIR_TM[i].tempSensValue*10);
+		sbc_tx_data[index++] = (value >> 8) & 0xFF;
+		sbc_tx_data[index++] = (value     ) & 0xFF;
 
-		sbc_tx_data[7] = numFloatSensor.ieee754NUmFormat >> 24;
-		sbc_tx_data[8] = numFloatSensor.ieee754NUmFormat >> 16;
-		sbc_tx_data[9] = numFloatSensor.ieee754NUmFormat >> 8;
-		sbc_tx_data[10] = numFloatSensor.ieee754NUmFormat;
-	}
-	sbc_tx_data[11] = 0x00;
-	sbc_tx_data[12] = 0x00;
-	sbc_tx_data[13] = 0x5A;
-}
-
-void buildReadTempSensResponseMsg(char code, char tempSensId){
-	union NumFloatGain{
-			uint32 ieee754NumFormat_Gain;
-			float numFormatFloat_Gain;
-	} numFloatSensor_Gain;
-
-	union NumFloatOffset{
-			uint32 ieee754NumFormat_Offset;
-			float numFormatFloat_Offset;
-	} numFloatSensor_Offset;
-
-	union NumFloatOffVal{
-			uint32 ieee754NumFormat_OffVal;
-			float numFormatFloat_OffVal;
-	} numFloatSensor_OffVal;
-
-	sbc_tx_data[0] = 0xA5;
-	sbc_tx_data[1] = 0xAA;
-	sbc_tx_data[2] = 0x55;
-	sbc_tx_data[3] = 0x00;
-	sbc_tx_data[4] = 0x01;
-	sbc_tx_data[5] = 0xCC;
-	sbc_tx_data[6] = code;
-
-	if(code == 0x36)
-	{
-		numFloatSensor_Gain.numFormatFloat_Gain = sensor_TMx[tempSensId].tempSensGain;
-		sbc_tx_data[7] = numFloatSensor_Gain.ieee754NumFormat_Gain >> 24;
-		sbc_tx_data[8] = numFloatSensor_Gain.ieee754NumFormat_Gain >> 16;
-		sbc_tx_data[9] = numFloatSensor_Gain.ieee754NumFormat_Gain >> 8;
-		sbc_tx_data[10] = numFloatSensor_Gain.ieee754NumFormat_Gain;
-
-		numFloatSensor_Offset.numFormatFloat_Offset = sensor_TMx[tempSensId].tempSensOffset;
-		sbc_tx_data[11] = numFloatSensor_Offset.ieee754NumFormat_Offset >> 24;
-		sbc_tx_data[12] = numFloatSensor_Offset.ieee754NumFormat_Offset >> 16;
-		sbc_tx_data[13] = numFloatSensor_Offset.ieee754NumFormat_Offset >> 8;
-		sbc_tx_data[14] = numFloatSensor_Offset.ieee754NumFormat_Offset;
-
-		numFloatSensor_OffVal.numFormatFloat_OffVal = sensor_TMx[tempSensId].tempSensOffsetVal;
-		sbc_tx_data[15] = numFloatSensor_OffVal.ieee754NumFormat_OffVal >> 24;
-		sbc_tx_data[16] = numFloatSensor_OffVal.ieee754NumFormat_OffVal >> 16;
-		sbc_tx_data[17] = numFloatSensor_OffVal.ieee754NumFormat_OffVal >> 8;
-		sbc_tx_data[18] = numFloatSensor_OffVal.ieee754NumFormat_OffVal;
-
-		sbc_tx_data[19] = sensor_TMx[tempSensId].tempSensAdc >> 8;
-		sbc_tx_data[20] = sensor_TMx[tempSensId].tempSensAdc;
+		value = sensorIR_TM[i].tempSensAdc;
+		sbc_tx_data[index++] = (value >> 8) & 0xFF;
+		sbc_tx_data[index++] = (value     ) & 0xFF;
 	}
 
-	sbc_tx_data[21] = 0x00;
-	sbc_tx_data[22] = 0x00;
-	sbc_tx_data[23] = 0x5A;
+	sbc_tx_data[index++] = 0x00;
+	sbc_tx_data[index++] = 0x00;
+	sbc_tx_data[index++] = 0x5A;
+
+	myCommunicatorToSBC.numByteToSend = index;
 }
 
-void buildReadIRTempRspMsg(char code, char tempIRSensId){
-	union NumFloatOffVal{
-				uint32 ieee754NumFormat_Val;
-				float numFormatFloat_Val;
-		} numFloatIRTempSensor_Val;
+void buildTempIRSensReadRegResponseMsg(char *ptrMsgSbcRx)
+{
+	byte index = 0;
+	word value = 0;
 
-	sbc_tx_data[0] = 0xA5;
-	sbc_tx_data[1] = 0xAA;
-	sbc_tx_data[2] = 0x55;
-	sbc_tx_data[3] = 0x00;
-	sbc_tx_data[4] = 0x01;
-	sbc_tx_data[5] = 0xCC;
-	sbc_tx_data[6] = code;
-	if(code == 0x40)
+	sbc_tx_data[index++] = 0xA5;
+	sbc_tx_data[index++] = 0xAA;
+	sbc_tx_data[index++] = 0x55;
+	sbc_tx_data[index++] = 0x00;
+	sbc_tx_data[index++] = 0x05;
+	sbc_tx_data[index++] = ptrMsgSbcRx[5];
+	sbc_tx_data[index++] = ptrMsgSbcRx[6];
+	sbc_tx_data[index++] = 0x66;
+	sbc_tx_data[index++] = ptrMsgSbcRx[7];
+	sbc_tx_data[index++] = ptrMsgSbcRx[8];
+	sbc_tx_data[index++] = 0x00;	//TODO add mem value
+	sbc_tx_data[index++] = 0x00;	//TODO add mem value
+	sbc_tx_data[index++] = 0x00;
+	sbc_tx_data[index++] = 0x00;
+	sbc_tx_data[index++] = 0x5A;
+
+	myCommunicatorToSBC.numByteToSend = index;
+}
+
+void buildTempIRSensWriteRegResponseMsg(char *ptrMsgSbcRx)
+{
+	byte index = 0;
+
+	sbc_tx_data[index++] = 0xA5;
+	sbc_tx_data[index++] = 0xAA;
+	sbc_tx_data[index++] = 0x55;
+	sbc_tx_data[index++] = 0x00;
+	sbc_tx_data[index++] = 0x05;
+	sbc_tx_data[index++] = ptrMsgSbcRx[5];
+	sbc_tx_data[index++] = ptrMsgSbcRx[6];
+	sbc_tx_data[index++] = 0x66;
+	sbc_tx_data[index++] = ptrMsgSbcRx[7];
+	sbc_tx_data[index++] = ptrMsgSbcRx[8];
+	sbc_tx_data[index++] = ptrMsgSbcRx[9];
+	sbc_tx_data[index++] = ptrMsgSbcRx[10];
+	sbc_tx_data[index++] = 0x00;
+	sbc_tx_data[index++] = 0x00;
+	sbc_tx_data[index++] = 0x5A;
+
+	myCommunicatorToSBC.numByteToSend = index;
+}
+
+void buildReadFlowAirResponseMsg(char *ptrMsgSbcRx)
+{
+	byte index = 0;
+
+	sbc_tx_data[index++] = 0xA5;
+	sbc_tx_data[index++] = 0xAA;
+	sbc_tx_data[index++] = 0x55;
+	sbc_tx_data[index++] = 0x00;
+	sbc_tx_data[index++] = 0x13;
+	sbc_tx_data[index++] = ptrMsgSbcRx[5];
+	sbc_tx_data[index++] = ptrMsgSbcRx[6];
+	sbc_tx_data[index++] = 0x66;
+	sbc_tx_data[index++] = 0x00; //TODO stability flag
+	sbc_tx_data[index++] = 0x00; //TODO air bits
+
+	for(int i = 0 ; i < 2 ; i++)
 	{
-		numFloatIRTempSensor_Val.numFormatFloat_Val = sensorIR_TM[0].tempSensValue;
-		sbc_tx_data[7] = numFloatIRTempSensor_Val.ieee754NumFormat_Val >> 24;
-		sbc_tx_data[8] = numFloatIRTempSensor_Val.ieee754NumFormat_Val >> 16;
-		sbc_tx_data[9] = numFloatIRTempSensor_Val.ieee754NumFormat_Val >> 8;
-		sbc_tx_data[10] = numFloatIRTempSensor_Val.ieee754NumFormat_Val;
+		//TODO add instant flow
+		sbc_tx_data[index++] = 0x00;
+		sbc_tx_data[index++] = 0x00;
+		sbc_tx_data[index++] = 0x00;
+		sbc_tx_data[index++] = 0x00;
+
+		//TODO check if this data is valid or not
+		sbc_tx_data[index++] = sensor_UFLOW[i].bufferReceived[20];
+		sbc_tx_data[index++] = sensor_UFLOW[i].bufferReceived[19];
+		sbc_tx_data[index++] = sensor_UFLOW[i].bufferReceived[18];
+		sbc_tx_data[index++] = sensor_UFLOW[i].bufferReceived[17];
 	}
-	sbc_tx_data[11] = 0x00;
-	sbc_tx_data[12] = 0x00;
-	sbc_tx_data[13] = 0x5A;
+
+	sbc_tx_data[index++] = 0x00;
+	sbc_tx_data[index++] = 0x00;
+	sbc_tx_data[index++] = 0x5A;
+
+	myCommunicatorToSBC.numByteToSend = index;
 }
 
-void buildReadFlowArtRspMsg(char code, char flowSensId){
+void buildReadFlowResetResponseMsg(char *ptrMsgSbcRx)
+{
+	byte index = 0;
 
-	sbc_tx_data[0] = 0xA5;
-	sbc_tx_data[1] = 0xAA;
-	sbc_tx_data[2] = 0x55;
-	sbc_tx_data[3] = 0x00;
-	sbc_tx_data[4] = 0x01;
-	sbc_tx_data[5] = 0xCC;
-	sbc_tx_data[6] = code;
-	if(code == 0x50)
-	{
-		sbc_tx_data[7] = sensor_UFLOW[0].bufferReceived[17];
-		sbc_tx_data[8] = sensor_UFLOW[0].bufferReceived[18];
-		sbc_tx_data[9] = sensor_UFLOW[0].bufferReceived[19];
-		sbc_tx_data[10] = sensor_UFLOW[0].bufferReceived[20];
-	}
-	sbc_tx_data[11] = 0x00;
-	sbc_tx_data[12] = 0x00;
-	sbc_tx_data[13] = 0x5A;
+	sbc_tx_data[index++] = 0xA5;
+	sbc_tx_data[index++] = 0xAA;
+	sbc_tx_data[index++] = 0x55;
+	sbc_tx_data[index++] = 0x00;
+	sbc_tx_data[index++] = 0x02;
+	sbc_tx_data[index++] = ptrMsgSbcRx[5];
+	sbc_tx_data[index++] = ptrMsgSbcRx[6];
+	sbc_tx_data[index++] = 0x66;
+	sbc_tx_data[index++] = ptrMsgSbcRx[7];
+	sbc_tx_data[index++] = 0x00;
+	sbc_tx_data[index++] = 0x00;
+	sbc_tx_data[index++] = 0x5A;
+
+	myCommunicatorToSBC.numByteToSend = index;
 }
 
+void buildPeltierReadFloatResponseMsg(char *ptrMsgSbcRx, char *ieee754ptr)
+{
+	byte index = 0;
 
+	sbc_tx_data[index++] = 0xA5;
+	sbc_tx_data[index++] = 0xAA;
+	sbc_tx_data[index++] = 0x55;
+	sbc_tx_data[index++] = 0x00;
+	sbc_tx_data[index++] = 0x06;
+	sbc_tx_data[index++] = ptrMsgSbcRx[5];
+	sbc_tx_data[index++] = ptrMsgSbcRx[6];
+	sbc_tx_data[index++] = 0x66;
+	sbc_tx_data[index++] = ptrMsgSbcRx[7];
+	sbc_tx_data[index++] = *ieee754ptr; //TODO HH value
+	sbc_tx_data[index++] = *(ieee754ptr+1); //TODO HL value
+	sbc_tx_data[index++] = *(ieee754ptr+2); //TODO LH value
+	sbc_tx_data[index++] = *(ieee754ptr+3); //TODO LL value
+	sbc_tx_data[index++] = 0x00;
+	sbc_tx_data[index++] = 0x00;
+	sbc_tx_data[index++] = 0x5A;
+
+	myCommunicatorToSBC.numByteToSend = index;
+}
+
+void buildPeltierReadIntResponseMsg(char *ptrMsgSbcRx, char *intptr)
+{
+	byte index = 0;
+
+	sbc_tx_data[index++] = 0xA5;
+	sbc_tx_data[index++] = 0xAA;
+	sbc_tx_data[index++] = 0x55;
+	sbc_tx_data[index++] = 0x00;
+	sbc_tx_data[index++] = 0x03;
+	sbc_tx_data[index++] = ptrMsgSbcRx[5];
+	sbc_tx_data[index++] = ptrMsgSbcRx[6];
+	sbc_tx_data[index++] = 0x66;
+	sbc_tx_data[index++] = ptrMsgSbcRx[7];
+	sbc_tx_data[index++] = *intptr; //TODO int value
+	sbc_tx_data[index++] = 0x00;
+	sbc_tx_data[index++] = 0x00;
+	sbc_tx_data[index++] = 0x5A;
+
+	myCommunicatorToSBC.numByteToSend = index;
+}
+
+void buildPeltierWriteFloatResponseMsg(char *ptrMsgSbcRx)
+{
+	byte index = 0;
+
+	sbc_tx_data[index++] = 0xA5;
+	sbc_tx_data[index++] = 0xAA;
+	sbc_tx_data[index++] = 0x55;
+	sbc_tx_data[index++] = 0x00;
+	sbc_tx_data[index++] = 0x05;
+	sbc_tx_data[index++] = ptrMsgSbcRx[5];
+	sbc_tx_data[index++] = ptrMsgSbcRx[6];
+	sbc_tx_data[index++] = 0x66;
+	sbc_tx_data[index++] = ptrMsgSbcRx[7];
+	sbc_tx_data[index++] = ptrMsgSbcRx[8];
+	sbc_tx_data[index++] = ptrMsgSbcRx[9];
+	sbc_tx_data[index++] = ptrMsgSbcRx[10];
+	sbc_tx_data[index++] = ptrMsgSbcRx[11];
+	sbc_tx_data[index++] = 0x00;
+	sbc_tx_data[index++] = 0x00;
+	sbc_tx_data[index++] = 0x5A;
+
+	myCommunicatorToSBC.numByteToSend = index;
+}
+
+void buildPeltierWriteIntResponseMsg(char *ptrMsgSbcRx)
+{
+	byte index = 0;
+
+	sbc_tx_data[index++] = 0xA5;
+	sbc_tx_data[index++] = 0xAA;
+	sbc_tx_data[index++] = 0x55;
+	sbc_tx_data[index++] = 0x00;
+	sbc_tx_data[index++] = 0x02;
+	sbc_tx_data[index++] = ptrMsgSbcRx[5];
+	sbc_tx_data[index++] = ptrMsgSbcRx[6];
+	sbc_tx_data[index++] = 0x66;
+	sbc_tx_data[index++] = ptrMsgSbcRx[7];
+	sbc_tx_data[index++] = ptrMsgSbcRx[8];
+	sbc_tx_data[index++] = 0x00;
+	sbc_tx_data[index++] = 0x00;
+	sbc_tx_data[index++] = 0x5A;
+
+	myCommunicatorToSBC.numByteToSend = index;
+}
+
+void buildPeltierStartResponseMsg(char *ptrMsgSbcRx)
+{
+	byte index = 0;
+
+	sbc_tx_data[index++] = 0xA5;
+	sbc_tx_data[index++] = 0xAA;
+	sbc_tx_data[index++] = 0x55;
+	sbc_tx_data[index++] = 0x00;
+	sbc_tx_data[index++] = 0x01;
+	sbc_tx_data[index++] = ptrMsgSbcRx[5];
+	sbc_tx_data[index++] = ptrMsgSbcRx[6];
+	sbc_tx_data[index++] = 0x66;
+	sbc_tx_data[index++] = 0x00;
+	sbc_tx_data[index++] = 0x00;
+	sbc_tx_data[index++] = 0x5A;
+
+	myCommunicatorToSBC.numByteToSend = index;
+}
+
+void buildPeltierStopResponseMsg(char *ptrMsgSbcRx)
+{
+	byte index = 0;
+
+	sbc_tx_data[index++] = 0xA5;
+	sbc_tx_data[index++] = 0xAA;
+	sbc_tx_data[index++] = 0x55;
+	sbc_tx_data[index++] = 0x00;
+	sbc_tx_data[index++] = 0x01;
+	sbc_tx_data[index++] = ptrMsgSbcRx[5];
+	sbc_tx_data[index++] = ptrMsgSbcRx[6];
+	sbc_tx_data[index++] = 0x66;
+	sbc_tx_data[index++] = 0x00;
+	sbc_tx_data[index++] = 0x00;
+	sbc_tx_data[index++] = 0x5A;
+
+	myCommunicatorToSBC.numByteToSend = index;
+}
+
+void buildPeltierWriteEEResponseMsg(char *ptrMsgSbcRx)
+{
+	byte index = 0;
+
+	sbc_tx_data[index++] = 0xA5;
+	sbc_tx_data[index++] = 0xAA;
+	sbc_tx_data[index++] = 0x55;
+	sbc_tx_data[index++] = 0x00;
+	sbc_tx_data[index++] = 0x01;
+	sbc_tx_data[index++] = ptrMsgSbcRx[5];
+	sbc_tx_data[index++] = ptrMsgSbcRx[6];
+	sbc_tx_data[index++] = 0x66;
+	sbc_tx_data[index++] = 0x00;
+	sbc_tx_data[index++] = 0x00;
+	sbc_tx_data[index++] = 0x5A;
+
+	myCommunicatorToSBC.numByteToSend = index;
+}
+
+//void buildPeltierResponseMsg(char code){
+//
+//	char numFloat[4];
+//	//long ret;
+//	//char data[8];
+//	sbc_tx_data[0] = 0xA5;
+//	sbc_tx_data[1] = 0xAA;
+//	sbc_tx_data[2] = 0x55;
+//	sbc_tx_data[3] = 0x00;
+//	sbc_tx_data[4] = 0x01;
+//	sbc_tx_data[5] = 0xCC;
+//	sbc_tx_data[6] = code;
+//	if(code == 0x26) /*read float*/
+//	{
+//		dataIeee754[0] = *ptrMsgDataieee754start;
+//		dataIeee754[1] = *(ptrMsgDataieee754start+1);
+//		dataIeee754[2] = *(ptrMsgDataieee754start+2);
+//		dataIeee754[3] = *(ptrMsgDataieee754start+3);
+//		dataIeee754[4] = *(ptrMsgDataieee754start+4);
+//		dataIeee754[5] = *(ptrMsgDataieee754start+5);
+//		dataIeee754[6] = *(ptrMsgDataieee754start+6);
+//		dataIeee754[7] = *(ptrMsgDataieee754start+7);
+//		//retIeee754 = strtol(dataIeee754,NULL,16);
+//		retIeee754Dummy = strtoul(dataIeee754,NULL,16); //ok anche per numeri negativi
+//
+//		sbc_tx_data[7] = retIeee754Dummy>>24; //retIeee754>>24;
+//		sbc_tx_data[8] = retIeee754Dummy>>16; //retIeee754>>16;
+//		sbc_tx_data[9] = retIeee754Dummy>>8; //retIeee754>>8;
+//		sbc_tx_data[10] = retIeee754Dummy; //retIeee754;
+//
+//
+//		/*sbcDebug_tx_data[7] = *ptrMsgDataieee754start; /* most significant byte */
+//		/*sbcDebug_tx_data[8] = *(ptrMsgDataieee754start+1);
+//		sbcDebug_tx_data[9] = *(ptrMsgDataieee754start+2);
+//		sbcDebug_tx_data[10] = *(ptrMsgDataieee754start+3);
+//		sbcDebug_tx_data[11] = *(ptrMsgDataieee754start+4);
+//		sbcDebug_tx_data[12] = *(ptrMsgDataieee754start+5);
+//		sbcDebug_tx_data[13] = *(ptrMsgDataieee754start+6);
+//		sbcDebug_tx_data[14] = *(ptrMsgDataieee754start+7);*/
+//	}
+//	else if((code == 0x24) || (code == 0x22))
+//	{
+//		sbc_tx_data[7] = 0x00;
+//		sbc_tx_data[8] = 0x00;
+//		sbc_tx_data[9] = 0x00;
+//		sbc_tx_data[10] = 0x00;
+//	}
+//	else if(code == 0x20) /*read int*/
+//	{
+//		dataIntPeltier[0] = *ptrMsgDataPeltierInt;
+//		sbc_tx_data[7] = strtol(dataIntPeltier,NULL,16);
+//		sbc_tx_data[8] = 0x00;
+//		sbc_tx_data[9] = 0x00;
+//		sbc_tx_data[10] = 0x00;
+//	}
+//
+//	//sbcDebug_tx_data[7] = peltierCell.msgPeltierRx[0];
+//	//sbcDebug_tx_data[7] = peltierDebug_rx_data[0];
+//	//sbcDebug_tx_data[8] = peltierCell.msgPeltierRx[1];
+//	//sbcDebug_tx_data[8] = peltierDebug_rx_data[1];
+//	sbc_tx_data[11] = 0x00;
+//	sbc_tx_data[12] = 0x00;
+//	sbc_tx_data[13] = 0x5A;
+//}
+//
+//void buildWriteTempSensResponseMsg(char code, char tempSensId){
+//	union NumFloatUnion{
+//				uint32 ieee754NUmFormat;
+//				float numFormatFloat;
+//			} numFloatSensor;
+//
+//	sbc_tx_data[0] = 0xA5;
+//	sbc_tx_data[1] = 0xAA;
+//	sbc_tx_data[2] = 0x55;
+//	sbc_tx_data[3] = 0x00;
+//	sbc_tx_data[4] = 0x01;
+//	sbc_tx_data[5] = 0xCC;
+//	sbc_tx_data[6] = code; //cmdId & 0x66
+//	if(code == 0x35)
+//	{
+//		numFloatSensor.numFormatFloat = sensor_TMx[tempSensId].tempSensValue;
+//
+//		sbc_tx_data[7] = numFloatSensor.ieee754NUmFormat >> 24;
+//		sbc_tx_data[8] = numFloatSensor.ieee754NUmFormat >> 16;
+//		sbc_tx_data[9] = numFloatSensor.ieee754NUmFormat >> 8;
+//		sbc_tx_data[10] = numFloatSensor.ieee754NUmFormat;
+//	}
+//	sbc_tx_data[11] = 0x00;
+//	sbc_tx_data[12] = 0x00;
+//	sbc_tx_data[13] = 0x5A;
+//}
+//
+//void buildReadTempSensResponseMsg(char code, char tempSensId){
+//	union NumFloatGain{
+//			uint32 ieee754NumFormat_Gain;
+//			float numFormatFloat_Gain;
+//	} numFloatSensor_Gain;
+//
+//	union NumFloatOffset{
+//			uint32 ieee754NumFormat_Offset;
+//			float numFormatFloat_Offset;
+//	} numFloatSensor_Offset;
+//
+//	union NumFloatOffVal{
+//			uint32 ieee754NumFormat_OffVal;
+//			float numFormatFloat_OffVal;
+//	} numFloatSensor_OffVal;
+//
+//	sbc_tx_data[0] = 0xA5;
+//	sbc_tx_data[1] = 0xAA;
+//	sbc_tx_data[2] = 0x55;
+//	sbc_tx_data[3] = 0x00;
+//	sbc_tx_data[4] = 0x01;
+//	sbc_tx_data[5] = 0xCC;
+//	sbc_tx_data[6] = code;
+//
+//	if(code == 0x36)
+//	{
+//		numFloatSensor_Gain.numFormatFloat_Gain = sensor_TMx[tempSensId].tempSensGain;
+//		sbc_tx_data[7] = numFloatSensor_Gain.ieee754NumFormat_Gain >> 24;
+//		sbc_tx_data[8] = numFloatSensor_Gain.ieee754NumFormat_Gain >> 16;
+//		sbc_tx_data[9] = numFloatSensor_Gain.ieee754NumFormat_Gain >> 8;
+//		sbc_tx_data[10] = numFloatSensor_Gain.ieee754NumFormat_Gain;
+//
+//		numFloatSensor_Offset.numFormatFloat_Offset = sensor_TMx[tempSensId].tempSensOffset;
+//		sbc_tx_data[11] = numFloatSensor_Offset.ieee754NumFormat_Offset >> 24;
+//		sbc_tx_data[12] = numFloatSensor_Offset.ieee754NumFormat_Offset >> 16;
+//		sbc_tx_data[13] = numFloatSensor_Offset.ieee754NumFormat_Offset >> 8;
+//		sbc_tx_data[14] = numFloatSensor_Offset.ieee754NumFormat_Offset;
+//
+//		numFloatSensor_OffVal.numFormatFloat_OffVal = sensor_TMx[tempSensId].tempSensOffsetVal;
+//		sbc_tx_data[15] = numFloatSensor_OffVal.ieee754NumFormat_OffVal >> 24;
+//		sbc_tx_data[16] = numFloatSensor_OffVal.ieee754NumFormat_OffVal >> 16;
+//		sbc_tx_data[17] = numFloatSensor_OffVal.ieee754NumFormat_OffVal >> 8;
+//		sbc_tx_data[18] = numFloatSensor_OffVal.ieee754NumFormat_OffVal;
+//
+//		sbc_tx_data[19] = sensor_TMx[tempSensId].tempSensAdc >> 8;
+//		sbc_tx_data[20] = sensor_TMx[tempSensId].tempSensAdc;
+//	}
+//
+//	sbc_tx_data[21] = 0x00;
+//	sbc_tx_data[22] = 0x00;
+//	sbc_tx_data[23] = 0x5A;
+//}
+//
+//void buildReadIRTempRspMsg(char code, char tempIRSensId){
+//	union NumFloatOffVal{
+//				uint32 ieee754NumFormat_Val;
+//				float numFormatFloat_Val;
+//		} numFloatIRTempSensor_Val;
+//
+//	sbc_tx_data[0] = 0xA5;
+//	sbc_tx_data[1] = 0xAA;
+//	sbc_tx_data[2] = 0x55;
+//	sbc_tx_data[3] = 0x00;
+//	sbc_tx_data[4] = 0x01;
+//	sbc_tx_data[5] = 0xCC;
+//	sbc_tx_data[6] = code;
+//	if(code == 0x40)
+//	{
+//		numFloatIRTempSensor_Val.numFormatFloat_Val = sensorIR_TM[0].tempSensValue;
+//		sbc_tx_data[7] = numFloatIRTempSensor_Val.ieee754NumFormat_Val >> 24;
+//		sbc_tx_data[8] = numFloatIRTempSensor_Val.ieee754NumFormat_Val >> 16;
+//		sbc_tx_data[9] = numFloatIRTempSensor_Val.ieee754NumFormat_Val >> 8;
+//		sbc_tx_data[10] = numFloatIRTempSensor_Val.ieee754NumFormat_Val;
+//	}
+//	sbc_tx_data[11] = 0x00;
+//	sbc_tx_data[12] = 0x00;
+//	sbc_tx_data[13] = 0x5A;
+//}
 
 /******************************************************************************************/
 /*                          TREATMENT - START SECTION									  */

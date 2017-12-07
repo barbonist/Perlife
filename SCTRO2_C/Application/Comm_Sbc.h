@@ -8,14 +8,32 @@
 #ifndef APPLICATION_COMM_SBC_H_
 #define APPLICATION_COMM_SBC_H_
 
-void buildModBusActResponseMsg(char *ptrMsgSbcRx, char *ptrMsgModbusRx);
-void buildPressSensResponseMsg(char *ptrMsgSbcRx);
+void buildModBusWriteRegActResponseMsg(char *ptrMsgSbcRx);
+void buildModBusReadRegActResponseMsg(char *ptrMsgSbcRx,
+									  char slaveAddr,
+									  unsigned int readStartAddr,
+									  unsigned int numRegisterRead);
+void buildModBusReadStatusResponseMsg(char *ptrMsgSbcRx);
+void buildPressSensReadValuesResponseMsg(char *ptrMsgSbcRx);
+void buildPressSensReadParamResponseMsg(char *ptrMsgSbcRx);
+void buildPressSensCalibResponseMsg(char *ptrMsgSbcRx);
+void buildTempIRSensReadValuesResponseMsg(char *ptrMsgSbcRx);
+void buildTempIRSensReadRegResponseMsg(char *ptrMsgSbcRx);
+void buildTempIRSensWriteRegResponseMsg(char *ptrMsgSbcRx);
+void buildReadFlowAirResponseMsg(char *ptrMsgSbcRx);
+void buildReadFlowResetResponseMsg(char *ptrMsgSbcRx);
+void buildPeltierReadFloatResponseMsg(char *ptrMsgSbcRx, char *ieee754ptr);
+void buildPeltierReadIntResponseMsg(char *ptrMsgSbcRx, char *intptr);
+void buildPeltierWriteFloatResponseMsg(char *ptrMsgSbcRx);
+void buildPeltierWriteIntResponseMsg(char *ptrMsgSbcRx);
+void buildPeltierStartResponseMsg(char *ptrMsgSbcRx);
+void buildPeltierStopResponseMsg(char *ptrMsgSbcRx);
+void buildPeltierWriteEEResponseMsg(char *ptrMsgSbcRx);
 
-void buildPeltierResponseMsg(char code);
-void buildWriteTempSensResponseMsg(char code, char tempSensId);
-void buildReadTempSensResponseMsg(char code, char tempSensId);
-void buildReadIRTempRspMsg(char code, char tempIRSensId);
-void buildReadFlowArtRspMsg(char code, char flowSensId);
+//void buildPeltierResponseMsg(char code);
+//void buildWriteTempSensResponseMsg(char code, char tempSensId);
+//void buildReadTempSensResponseMsg(char code, char tempSensId);
+//void buildReadIRTempRspMsg(char code, char tempIRSensId);
 
 /********************/
 /******* TREATMENT - SBC COMM. FUNCTION *********/
