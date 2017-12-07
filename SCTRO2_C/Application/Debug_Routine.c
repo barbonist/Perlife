@@ -123,8 +123,12 @@ void testCOMMSbcDebug(void){
 					// Modbus write
 					case 0x15:
 					{
-						if(iflag_sbc_rx == IFLAG_PMP1_RX)
+						/*mando il messaggio ricevuto dall SBC alle pompe/pinch solo se il buffer è libero
+						 * ovvero se ho avuto l'ultima ricezione*/
+						if(iFlag_actuatorCheck == IFLAG_COMMAND_RECEIVED)
 						{
+							iFlag_actuatorCheck = IFLAG_COMMAND_SENT;
+
 							//build command for actuator
 							byte slvAddr = sbc_rx_data[7];
 							byte funcCode = 0x10;
@@ -160,7 +164,7 @@ void testCOMMSbcDebug(void){
 							ptrMsgSbcTx = &sbc_tx_data[0];
 							SBC_COMM_SendBlock(ptrMsgSbcTx,myCommunicatorToSBC.numByteToSend,&snd);
 						}
-						else
+						else //altrimenti provo a rimandare il messaggio
 							iflag_sbc_rx = IFLAG_SBC_RX;
 					}
 					break;
@@ -168,8 +172,12 @@ void testCOMMSbcDebug(void){
 					// Modbus read
 					case 0x16:
 					{
-						if(iflag_sbc_rx == IFLAG_PMP1_RX)
+						/*mando il messaggio ricevuto dall SBC alle pompe/pinch solo se il buffer è libero
+						 * ovvero se ho avuto l'ultima ricezione*/
+						if(iFlag_actuatorCheck == IFLAG_COMMAND_RECEIVED)
 						{
+							iFlag_actuatorCheck = IFLAG_COMMAND_SENT;
+
 							byte slvAddr = sbc_rx_data[7];
 							byte funcCode = 0x03;
 							word readAddrStart = BYTES_TO_WORD(sbc_rx_data[8], sbc_rx_data[9]);
@@ -198,7 +206,7 @@ void testCOMMSbcDebug(void){
 							ptrMsgSbcTx = &sbc_tx_data[0];
 							SBC_COMM_SendBlock(ptrMsgSbcTx,myCommunicatorToSBC.numByteToSend,&snd);
 						}
-						else
+						else//altrimenti provo a rimandare il messaggio
 							iflag_sbc_rx = IFLAG_SBC_RX;
 					}
 					break;
