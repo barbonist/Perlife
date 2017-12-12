@@ -27,7 +27,7 @@ char	iflag_write_temp_sensor;
 char	iflag_read_temp_sensor;
 char	iflag_spi_rx;
 char	iflag_uflow_sens;
-char	iflag_sensTempIR;
+//char	iflag_sensTempIR;
 char	iflag_sensTempIR_Meas_Ready;
 char	iflag_sensTempIRRW;
 char 	iFlag_actuatorCheck;
@@ -45,7 +45,7 @@ char    iFlag_modbusDataStorage;
 #define DEBUG_PROTECTION		0x5A
 #define DEBUG_LOG_PC			0x01
 //#define DEBUG_TREATMENT			0xA5
-/*#define DEBUG_I2C_TEMP_SENS		0x01;*/
+//#define DEBUG_I2C_TEMP_SENS		0x01
 /*#define DEBUG_FLOW_SENS			0x00*/ /*0x01*/
 /* DEBUG */
 
@@ -960,6 +960,7 @@ int timerCounterModBus;
 int timerCounterUFlowSensor;
 int timerCounterPeltier;
 int timerCounterCheckModBus;
+int timerCounterCheckTempIRSens;
 
 /************************************************************************/
 /* 					STRUTTURA VOLUMI TRATTAMENTO 						*/
@@ -985,6 +986,7 @@ unsigned char END_ADC0;
 unsigned char END_ADC1;
 
 unsigned char OK_START;
+unsigned char CHANGE_ADDRESS_IR_SENS;
 
 #define BUTTON_1 0x01
 #define BUTTON_2 0x02
@@ -993,6 +995,9 @@ unsigned char OK_START;
 
 #define GAIN_PR_VEN 	0.037302
 #define OFFSET_PR_VEN	19700
+
+
+unsigned char * ptrDataTemperatureIR;
 
 
 

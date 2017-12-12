@@ -281,13 +281,14 @@ void 	alwaysAdcParam(void){
 	dummy = dummy + 1;
 
 	//#ifdef DEBUG_LOG_PC
-	sprintf(stringPr1, "\r%d; %i; %i; %i; %i;",
+	sprintf(stringPr1, "\r%d; %i; %i; %i; %i; %i; %i;",
 			            timems,
-						(int) (sensor_PRx[0].prSensValueFilteredWA),
+						(int) (sensor_PRx[0].prSensValueFilteredWA)/*(unsigned short) myCommunicatorToSBC.numByteToSend*/,
 						(int) (sensor_PRx[1].prSensValueFilteredWA),
 						/*(int) (sensor_UFLOW[0].volumeMlTot)*/PR_VEN_mmHg,
-						(int) (sensorIR_TM[0].tempSensValue*10
-						)
+						(int) (sensorIR_TM[0].tempSensValue*10),
+						(int) (sensorIR_TM[1].tempSensValue*10),
+						(int) (sensorIR_TM[2].tempSensValue*10)
 			);
 	for(int i=0; i<STR_DBG_LENGHT; i++)
 	{

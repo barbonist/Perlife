@@ -176,6 +176,7 @@ int main(void)
   /* Write your local variable definition here */
   bool MOTORE_ACCESO = FALSE;
   bool MOTORE_ACCESO_2 = FALSE;
+
   unsigned char PINCH_POSITION 				= 0;
   unsigned char slvAddr 					= 0x02;
   unsigned char funcCode 					= 0x03;
@@ -218,13 +219,16 @@ int main(void)
   timerCounterMState = 0;
   timerCounterUFlowSensor = 0;
   timerCounterCheckModBus = 0;
+  timerCounterCheckTempIRSens = 0;
   iFlag_actuatorCheck = IFLAG_IDLE;
   iFlag_modbusDataStorage = FALSE;
+
+  CHANGE_ADDRESS_IR_SENS = FALSE;
 
   OK_START = FALSE;
   ON_NACK_IR_TM = FALSE;
 
-  /*#ifdef	DEBUG_I2C_TEMP_SENS
+  #ifdef	DEBUG_I2C_TEMP_SENS
   unsigned char rcvData[20];
   unsigned char * ptrData;
   unsigned char * ptrDatawR;
@@ -236,7 +240,7 @@ int main(void)
   	 rcvData[i] = 0;
   }
   stateSensTempIR = 0;
- #endif*/
+ #endif
 
   modBusPmpInit();
   modBusPinchInit();
@@ -286,6 +290,7 @@ int main(void)
   /*do l'enable sui motori*/
   EN_Clamp_Control(ENABLE);
   EN_Motor_Control(ENABLE);
+  IR_TM_COMM_Enable();
 
   /*attendo 5 s prima di entrare nell main loop
    * per dare il tempo ai sensori di alimentarsi e
@@ -401,6 +406,7 @@ int main(void)
 	         		 	    IR_TM_COMM_Enable();
 	         		 	    ptrData = buildCmdReadTempSensIR(0x01, (EEPROM_ACCESS_COMMAND | SD_TOMIN_E2_ADDRESS), 0);
 	         		 	    //ptrData = buildCmdWriteTempSensIR(0x5A, (EEPROM_ACCESS_COMMAND | SD_TOMAX_E2_ADDRESS), 0xBE01);
+
 	         		 	    iflag_sensTempIR = IFLAG_SENS_TEMPIR_WAIT;
 	         		 	  }
 
@@ -507,7 +513,17 @@ int main(void)
 	         	testCOMMSbcDebug();
 
 	         	alwaysAdcParam();
-	         	alwaysIRTempSensRead();
+
+
+	         	Manage_IR_Sens_Temp();
+
+
+		        /*funzioni per leggere i canali AD*/
+		        Manange_ADC0();
+		        Manange_ADC1();
+		        Coversion_From_ADC_To_mmHg_Pressure_Sensor();
+		        /*END funzioni per leggere i canali AD*/
+
 
 	         	if(timerCounterUFlowSensor >= 2){
 	         		timerCounterUFlowSensor = 0;
@@ -600,12 +616,8 @@ int main(void)
 	         /********************************/
 	         /*             I2C	             */
 	         /********************************/
-	         /*questa finzione viene chiamata a giro di programma
-	          * ma sarebbe meglio tmeporizzarla riscrivendo il driver
-	          * quindi riscrivendo la funzione facendo in modo
-	          * da fare la richiesta ad esmepio ogni 50 ms
-	          * e subito dopo la richiesta, facendo la ricezione */
-	         alwaysIRTempSensRead();
+	        // alwaysIRTempSensRead();
+	         Manage_IR_Sens_Temp();
 //
 //	         if (IR_TM_COMM_CheckBus == IR_TM_COMM_IDLE)
 //	         {

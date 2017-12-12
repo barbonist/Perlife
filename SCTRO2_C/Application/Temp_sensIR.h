@@ -36,10 +36,14 @@
 											 /* es: access to smbus address = 0x20 + 0x0E = 0x2E */
 
 #define RAM_ACCESS_COMMAND				0x00 /* final address = ram_access_command + sd_xxx_ram_address */
+#define FIRST_IR_TEMP_SENSOR			0x01 /*corrisponde al sensore con connettore a 4 pin*/
+#define LAST_IR_TEMP_SENSOR				0x03 /*corrisponde al sensore con connettore a 6 pin, l'indirizzo 0x02 corrisponde al sensore con connettore a 5 pin*/
 
 
 void initTempSensIR(void);
 unsigned char computeCRC8TempSens(unsigned char buffer[]);
+unsigned char computeCRC8TempSensRx(unsigned char buffer[],unsigned char command, unsigned char TempSensAddr);
+void Manage_IR_Sens_Temp(void);
 unsigned char * buildCmdReadTempSensIR(unsigned char  tempSensAddress,
 										   unsigned char  command,
 										   word dataWordTx);

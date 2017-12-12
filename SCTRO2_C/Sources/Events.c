@@ -75,6 +75,7 @@ void Cpu_OnNMI(void)
 void SBC_COMM_OnError(void)
 {
   /* Write your code here ... */
+
 }
 
 /*
@@ -155,6 +156,7 @@ void SBC_COMM_OnTxChar(void)
 void SBC_COMM_OnFullRxBuf(void)
 {
   /* Write your code here ... */
+
 }
 
 /*
@@ -761,7 +763,7 @@ void FLOWSENS_COMM_OnTxComplete(void)
 void IR_TM_COMM_OnReceiveData(void)
 {
   /* Write your code here ... */
-	iflag_sensTempIR = IFLAG_IDLE;
+
 	iflag_sensTempIR_Meas_Ready = IFLAG_IRTEMP_MEASURE_READY;
 	IR_TM_COMM_SendStop();
 }
@@ -783,13 +785,13 @@ void IR_TM_COMM_OnReceiveData(void)
 void IR_TM_COMM_OnTransmitData(void)
 {
   /* Write your code here ... */
-	iflag_sensTempIR = IFLAG_SENS_TEMPIR_TX;
+	unsigned char err;
+	word ret;
+
+	err = IR_TM_COMM_RecvBlock(ptrDataTemperatureIR, 3, &ret);
 	if(iflag_sensTempIRRW == IFLAG_SENS_TEMPIR_WRITE)
 	{
-		//iflag_sensTempIRRW = IFLAG_IDLE;
-		//IR_TM_COMM_Disable();
 		IR_TM_COMM_SendStop();
-		//IR_TM_COMM_Enable();
 	}
 }
 
@@ -857,6 +859,7 @@ void TU1_OnCounterRestart(LDD_TUserData *UserDataPtr)
 
   timerCounterCheckModBus++;
 
+  timerCounterCheckTempIRSens++;
 
 }
 

@@ -213,6 +213,7 @@ void testCOMMSbcDebug(void){
 						ptrMsgSbcRx = &sbc_rx_data;
 						buildModBusReadStatusResponseMsg(ptrMsgSbcRx);
 						ptrMsgSbcTx = &sbc_tx_data[0];
+
 						SBC_COMM_SendBlock(ptrMsgSbcTx,myCommunicatorToSBC.numByteToSend,&snd);
 					}
 					break;
@@ -322,11 +323,27 @@ void testCOMMSbcDebug(void){
 					{
 						//TODO write the register
 
+						CHANGE_ADDRESS_IR_SENS = TRUE;
+						unsigned char OldAddress = 0x5A;
 						word snd;
 						ptrMsgSbcRx = &sbc_rx_data;
+						word NewAddress = BYTES_TO_WORD(ptrMsgSbcRx[9], ptrMsgSbcRx[10]);
+
 						buildTempIRSensWriteRegResponseMsg(ptrMsgSbcRx);
 						ptrMsgSbcTx = &sbc_tx_data[0];
 						SBC_COMM_SendBlock(ptrMsgSbcTx,myCommunicatorToSBC.numByteToSend,&snd);
+
+						/*resetto l'indirzzo*/
+						buildCmdWriteTempSensIR(OldAddress, (RAM_ACCESS_COMMAND | SD_SMBUS_E2_ADDRESS), 0x0000);
+
+		         		int wait = timerCounter;
+		         	    /*attendo 200 msec*/
+		         		while ( timerCounter - wait < 4);
+
+		         		/*scrivo il nuovo indirizzo*/
+		         	    buildCmdWriteTempSensIR(OldAddress, (RAM_ACCESS_COMMAND | SD_SMBUS_E2_ADDRESS), NewAddress);
+
+		         	    /*successivamente dovrò disalimentare il sensore altrimenti il nuovo indirizzo non viene memorizzato*/
 					}
 					break;
 					// Flow sensor read values
