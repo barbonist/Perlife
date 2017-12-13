@@ -282,7 +282,7 @@ void 	alwaysAdcParam(void){
 	dummy = dummy + 1;
 
 	//#ifdef DEBUG_LOG_PC
-	sprintf(stringPr1, "\r%d; %i; %i; %i; %i; %i;",
+	sprintf(stringPr1, "\r%d; %i; %i; %i; %i; %i; %i;",
 			            timems,
 						(int) (sensor_PRx[0].prSensValueFilteredWA),
 						(int) Air_1_Status/*(int) (sensor_PRx[1].prSensValueFilteredWA)*/,
