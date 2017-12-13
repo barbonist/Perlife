@@ -49,7 +49,7 @@ char    iFlag_modbusDataStorage;
 /*#define DEBUG_FLOW_SENS			0x00*/ /*0x01*/
 /* DEBUG */
 
-#define STR_DBG_LENGHT			40
+#define STR_DBG_LENGHT				40
 
 #define	IFLAG_PC_RX					0x01 /* new data on rx 232 pc */
 #define IFLAG_PC_TX					0x01 /* new data to rx 232 pc */
@@ -100,6 +100,8 @@ char    iFlag_modbusDataStorage;
 #define TOTAL_MODBUS_DATA			32
 #define MAX_DATA_MODBUS_RECEIVED	11
 #define MAX_DATA_MODBUS_RX 		    67 //64byte di dati + 3 byte iniziali con slv Addr, fun code and byte Read Count
+#define AIR							0x00
+#define LIQUID						0x01
 
 static char array [70];
 
@@ -795,9 +797,11 @@ struct tempIRSensor{
 	word * (*writeIRTempSensor)(void);
 	word tempSensValToWrite;
 	unsigned char * ptrValToRead;
+	word errorNACK;
+	word errorPEC;
 };
 
-struct tempIRSensor sensorIR_TM[6];
+struct tempIRSensor sensorIR_TM[3];
 struct tempIRSensor * ptrCurrent_IR_TM; /* puntatore a struttura corrente - sensore attualmente interrogato */
 struct tempIRSensor * ptrMsg_IR_TM;	/* puntatore utilizzato per spedire il messaggio */
 
@@ -961,6 +965,7 @@ int timerCounterUFlowSensor;
 int timerCounterPeltier;
 int timerCounterCheckModBus;
 int timerCounterCheckTempIRSens;
+int timerCounterLedBoard;
 
 /************************************************************************/
 /* 					STRUTTURA VOLUMI TRATTAMENTO 						*/
@@ -977,10 +982,10 @@ word DipSwitch_2_ADC;		//Variabile globale col valore ADC del DIP_SWITCH_3
 word V24_P1_CHK_ADC;
 word V24_P2_CHK_ADC;
 
-word PR_VEN_ADC;
-word PR_VEN_mmHg;
+word PR_VEN_ADC;			//variabile globale per il valore ADC del sensore di pressione Venoso
+word PR_VEN_mmHg;			//variabile globale per il valore in mmHg del sensore di pressione Venoso
 
-char ON_NACK_IR_TM;
+char ON_NACK_IR_TM;			//variabile globale che viene messa ad 1 se ricevo un NACK da un sensore di Temp IR
 
 unsigned char END_ADC0;
 unsigned char END_ADC1;
@@ -996,7 +1001,12 @@ unsigned char CHANGE_ADDRESS_IR_SENS;
 #define GAIN_PR_VEN 	0.037302
 #define OFFSET_PR_VEN	19700
 
+#define FREQ_DEBUG_LED 	10
+#define SERVICE 		0x01
+#define TREAT			0x00
 
+unsigned char Air_1_Status;				//variabile globale per vedere lo stato del sensore di aria SONOTEC; può assumere valire AIR opp LIQUID
+unsigned char slvAddr;					//variabile globale per l'indirizzo degli attuatori: FIRST_ACTUATOR = 0x02, LAST_ACTUATOR = 0x08
 unsigned char * ptrDataTemperatureIR;
 
 

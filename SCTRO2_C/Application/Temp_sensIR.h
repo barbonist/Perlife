@@ -42,7 +42,7 @@
 
 void initTempSensIR(void);
 unsigned char computeCRC8TempSens(unsigned char buffer[]);
-unsigned char computeCRC8TempSensRx(unsigned char buffer[],unsigned char command, unsigned char TempSensAddr);
+bool computeCRC8TempSensRx(unsigned char buffer[],unsigned char command, unsigned char TempSensAddr);
 void Manage_IR_Sens_Temp(void);
 unsigned char * buildCmdReadTempSensIR(unsigned char  tempSensAddress,
 										   unsigned char  command,

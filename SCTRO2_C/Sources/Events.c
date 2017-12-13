@@ -861,6 +861,8 @@ void TU1_OnCounterRestart(LDD_TUserData *UserDataPtr)
 
   timerCounterCheckTempIRSens++;
 
+  timerCounterLedBoard++;
+
 }
 
 /*

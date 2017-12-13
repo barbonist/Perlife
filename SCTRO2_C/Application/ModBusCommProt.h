@@ -192,6 +192,7 @@ void Check_Actuator_Status (
 							int readAddrStart,
 							int numberOfAddress);
 
+void Manage_and_Storage_ModBus_Actuator_Data(void);
 void StorageModbusData(void);
 void StorageModbusDataInit(void);
 

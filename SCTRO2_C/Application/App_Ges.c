@@ -2324,6 +2324,30 @@ void resetParamWordFromGUI(unsigned char parId){
 	parameterWordSetFromGUI[parId].value = 0;
 }
 
+void Manage_Debug_led(bool Status)
+{
+ 	unsigned char Freq = FREQ_DEBUG_LED;
+ 	static bool Status_Led_Board = FALSE;
+
+ 	if (Status)
+ 		Freq = Freq * 2;
+
+	if (timerCounterLedBoard >= Freq)
+ 	{
+ 		timerCounterLedBoard = 0;
+ 		if (Status_Led_Board)
+ 		{
+ 			Status_Led_Board = FALSE;
+ 			D_7S_DP_SetVal(); //spegne puntino led
+ 		}
+ 		else
+ 		{
+ 			Status_Led_Board = TRUE;
+ 			D_7S_DP_ClrVal(); //accende puntino led
+ 		}
+ 	}
+}
+
 void Display_7S_Management()
 {
 	//funzioni per spegnere e accenderfe display a 7 Segmenti

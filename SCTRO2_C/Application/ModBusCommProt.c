@@ -768,6 +768,44 @@ void Check_Actuator_Status (char slvAddr,
 						  &snd);
 }
 
+void Manage_and_Storage_ModBus_Actuator_Data(void)
+{
+	  word 			readAddrStart		 		= 0x0010;
+	  unsigned char numberOfAddressCheckPump	= 0x03;
+	  unsigned char numberOfAddressCheckPinch	= 0x02;
+	  unsigned char funcCode 					= 0x03;
+
+ 	/*se ho ricevuto un dato me lo vado a memorizzare nella mia struttura globale: 'modbusData'*/
+ 	if (iFlag_actuatorCheck == IFLAG_COMMAND_RECEIVED && iFlag_modbusDataStorage == FALSE)
+ 	{
+ 		StorageModbusData();
+ 		iFlag_modbusDataStorage = TRUE;
+ 	}
+ 	/*chiamo la funzione ogni 50 msec*/
+ 	if (timerCounterCheckModBus >= 1 &&
+ 		( iFlag_actuatorCheck == IFLAG_COMMAND_RECEIVED || iFlag_actuatorCheck == IFLAG_IDLE))
+    {
+ 		iFlag_actuatorCheck = IFLAG_COMMAND_SENT;
+ 		timerCounterCheckModBus = 0;
+
+ 		/*chiamo la funzione col corretto number of address dipendentemente dall'attuatore (pump/pinch)*/
+        if (slvAddr <= LAST_PUMP)
+        	/*funzione che mi legge lo stato delle pompe*/
+        	Check_Actuator_Status (slvAddr,funcCode,readAddrStart,numberOfAddressCheckPump);
+        else
+        	/*funzione che mi legge lo stato delle pinch*/
+        	Check_Actuator_Status (slvAddr,funcCode,readAddrStart,numberOfAddressCheckPinch);
+
+        /*incremento l'indirizzo per interrogare tutti gli attuatori*/
+        slvAddr++;
+
+       /* quando avrò tutti gli attuatori sarà da rimettere TOT_NUMBER_OF_ACTAUTOR al posto di 0x03*/
+        if (slvAddr > 0x03)//TOT_NUMBER_OF_ACTAUTOR)
+			slvAddr = FIRST_ACTUATOR;
+    }
+ 	/*else devo aggiungere unn controllo sulla non ricezione e non impallarmi*/
+}
+
 /*In questa funzione memorizzo i dati ricevuti in seguito
  *  alla Check_Actuator_Status nella matrice modbusData*/
 void StorageModbusData(void)

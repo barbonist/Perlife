@@ -11,22 +11,31 @@
 #include "IR_TM_COMM.h"
 
 #define NUM_BYTE_CRC	4
+#define NUM_BYTE_CRC_RX 5
 #define NUM_BYTE_RCV	3
 #define NUM_SIZE_BLOCK_WRITE 4
 
 void initTempSensIR(void){
-	sensorIR_TM[0].sensorId = 0;
-	sensorIR_TM[0].tempSensGain = 1;
-	sensorIR_TM[0].tempSensOffset = 0;
-	sensorIR_TM[0].tempSensOffsetVal = 0;
-	sensorIR_TM[0].tempSensValue = 0;
-	sensorIR_TM[0].tempSensValueOld = 0;
-	sensorIR_TM[0].tempSensAdc = 0;
 
-	for(char i = 0; i<4; i++)
+
+	for (char i=0; i<3; i++)
 	{
-		sensorIR_TM[0].bufferReceived[i] = 0;
-		sensorIR_TM[0].bufferToSend[i] = 0;
+		sensorIR_TM[i].sensorId 		 = 0;
+		sensorIR_TM[i].tempSensGain 	 = 1;
+		sensorIR_TM[i].tempSensOffset 	 = 0;
+		sensorIR_TM[i].tempSensOffsetVal = 0;
+		sensorIR_TM[i].tempSensValue 	 = 0;
+		sensorIR_TM[i].tempSensValueOld  = 0;
+		sensorIR_TM[i].tempSensAdc 		 = 0;
+		sensorIR_TM[i].errorNACK		 = 0;
+		sensorIR_TM[i].errorPEC			 = 0;
+
+		for(char j = 0; j<4; j++)
+		{
+			sensorIR_TM[i].bufferReceived[j] = 0;
+			sensorIR_TM[i].bufferToSend[j]	 = 0;
+		}
+
 	}
 
 	/*unsigned char testChar;
@@ -58,7 +67,11 @@ void Manage_IR_Sens_Temp(void)
 
  		/*se prima avevo ricevuto un NACK, resetto il flag altrimenti non ricevo più*/
  		if (ON_NACK_IR_TM)
+ 		{
+ 			/*incremento il contatore di errori NACK*/
+ 			sensorIR_TM[Address-2].errorNACK++;
  			ON_NACK_IR_TM = FALSE;
+ 		}
 
  		/*costruisco il comando di lettura per il sensore di temperatura con indirizzo pari ad Address
  		 * Quando scatterà l'interrupt di trasmissione 'void IR_TM_COMM_OnTransmitData(void)'
@@ -74,16 +87,25 @@ void Manage_IR_Sens_Temp(void)
 
  	if (iflag_sensTempIR_Meas_Ready == IFLAG_IRTEMP_MEASURE_READY && ON_NACK_IR_TM == FALSE)
  	{
- 		/*se Ho spedito il comando al sensore con address 0x01, nell'if precedente
- 		 * Address è già stato incrementato per essere pronto alla nuova spedzione, quindi
- 		 * sarà 0x02 ma sto sempre aspettando la ricezione del primo sensore quindi
- 		 * con indice dell'array pari a 0 e devo quindi sottrarre due all'address*/
- 		unsigned char index_array = Address -2;
+ 		/*mi vado a memorizzare quale lo slave Address su cui ho inviato l'ultimo comando
+ 		 * in quanto dopo l'invio del comando l'Address è stato incrementato*/
+ 		unsigned char Slave_Address_Sent = Address -1;
+
+ 		/*se Ho spedito il comando al sensore con indirizzo pari a 'Addres' ma nell'if precedente
+ 		 * Address è già stato incrementato per essere pronto alla nuova spedzione;io però
+ 		 * sto sempre aspettando la ricezione del precedente sensore quindi
+ 		 * l'indice Array (che parte da 0) lo metto a Slave_Address_Sent (che parte da 1) -1 */
+ 		unsigned char index_array = Slave_Address_Sent -1;
+ 		unsigned char * ptrChar;
+
+ 		ptrChar = &sensorIR_TM[0].bufferReceived[0];
 
  		/*devo salvare il dato solo dopo aver fatto il controllo della PEC Packet Error Code*/
 
- 		/*Vado a copiarmi il dato ricevuto dal sensore IR solo se non ho ricevuto un NACK*/
- 		sensorIR_TM[index_array].tempSensValue = (float)((BYTES_TO_WORD(sensorIR_TM[0].bufferReceived[1], sensorIR_TM[0].bufferReceived[0]))*((float)0.02)) - (float)273.15;
+ 		/*Vado a copiarmi il dato ricevuto dal sensore IR solo se non ho ricevuto un NACK
+ 		 * e se torna LA PEC ricevuta con quella calcolata*/
+ 		if (computeCRC8TempSensRx(ptrChar,(RAM_ACCESS_COMMAND | SD_TOBJ1_RAM_ADDRESS),Slave_Address_Sent) )
+ 			sensorIR_TM[index_array].tempSensValue = (float)((BYTES_TO_WORD(sensorIR_TM[0].bufferReceived[1], sensorIR_TM[0].bufferReceived[0]))*((float)0.02)) - (float)273.15;
 
  		iflag_sensTempIR_Meas_Ready = IFLAG_IDLE;
 
@@ -253,18 +275,29 @@ unsigned char computeCRC8TempSens(unsigned char buffer[]){
 	return (unsigned char) (registerCRC & 0x00FF);
 }
 
-unsigned char computeCRC8TempSensRx(unsigned char buffer[],unsigned char command, unsigned char TempSensAddr){
+bool computeCRC8TempSensRx(unsigned char buffer[],unsigned char command, unsigned char TempSensAddr){
 	word registerCRC = 0x0000;
 	word polinomial = 0x0107;
 	word maskByte = 0x8000;
-	unsigned char bufferPEC[3];
+	unsigned char bufferPEC[NUM_BYTE_CRC_RX];
+	unsigned char PEC_CALCULATED, PEC_RX;
 
+	/*Il sensore IR calcola invia la PEC nel terzo byet (i primi due sono i valori di temp)
+	 * il calcolo lo fa usandi 5 bytecon:
+	 * 1) Slave Address *2
+	 * 2) Command (nel caso di comando di lettura si ha (RAM_ACCESS_COMMAND | SD_TOBJ1_RAM_ADDRESS) ovvero 0x0007
+	 * 3) (Slave Address *2) +1
+	 * 4) Byte di dato LSB
+	 * 5) Byte di dato MSB */
 	bufferPEC[0] = TempSensAddr * 2;
 	bufferPEC[1] = command;
-	bufferPEC[2] = buffer[0];
-	bufferPEC[3] = buffer[1];
+	bufferPEC[2] = (TempSensAddr * 2) + 1;
+	bufferPEC[3] = buffer[0];
+	bufferPEC[4] = buffer[1];
 
-	for(int a = 0; a<4; a++)
+	PEC_RX = buffer[2];
+
+	for(int a = 0; a<NUM_BYTE_CRC_RX; a++)
 	{
 		registerCRC = ((registerCRC ^ bufferPEC[a]) << 8);
 
@@ -277,7 +310,16 @@ unsigned char computeCRC8TempSensRx(unsigned char buffer[],unsigned char command
 		}
 	}
 
-	return (unsigned char) (registerCRC & 0x00FF);
+	PEC_CALCULATED = (unsigned char) (registerCRC & 0x00FF);
+
+	if (PEC_CALCULATED == PEC_RX)
+		return (TRUE);
+	else
+	{
+		/*incremento il contatore di errori sulla PEC*/
+		sensorIR_TM[TempSensAddr-1].errorPEC++;
+		return (FALSE);
+	}
 }
 
 unsigned char * buildCmdReadTempSensIR(unsigned char  tempSensAddress,

@@ -176,13 +176,16 @@ int main(void)
   /* Write your local variable definition here */
   bool MOTORE_ACCESO = FALSE;
   bool MOTORE_ACCESO_2 = FALSE;
+  bool Status_Board;
+
+ #ifdef	DEBUG_COMM_SBC
+  Status_Board = SERVICE;
+ #else
+  Status_Board = TREAT;
+ #endif
 
   unsigned char PINCH_POSITION 				= 0;
-  unsigned char slvAddr 					= 0x02;
   unsigned char funcCode 					= 0x03;
-  word 			readAddrStart		 		= 0x0010;
-  unsigned char numberOfAddressCheckPump	= 0x03;
-  unsigned char numberOfAddressCheckPinch	= 0x02;
   word			readAddrStartReadRevision	= 0x0000;
   unsigned char	numberOfAddressReadRevision	= 0x20; //allo start leggo 32 registri
 
@@ -216,10 +219,15 @@ int main(void)
   initUFlowSensor();
   initTempSensIR();
 
+  Air_1_Status = AIR;
+  slvAddr = FIRST_ACTUATOR;		//metto come indirizzo degli attuatori da leggere il primo
+
   timerCounterMState = 0;
   timerCounterUFlowSensor = 0;
   timerCounterCheckModBus = 0;
   timerCounterCheckTempIRSens = 0;
+  timerCounterLedBoard = 0;
+
   iFlag_actuatorCheck = IFLAG_IDLE;
   iFlag_modbusDataStorage = FALSE;
 
@@ -512,18 +520,25 @@ int main(void)
 	         	//SBC_COMM_Enable();
 	         	testCOMMSbcDebug();
 
+	         	/*da valutare se sreve ancora o può essere sostituita dalla mie Manange_ADC0() e Manange_ADC1()*/
 	         	alwaysAdcParam();
 
-
+	         	/*Gestisco i sensori di Temp IR la funzione viene chiamata a giro
+	         	 * di programa ma al suo interno i sensori saranno interrogati
+	         	 * ogni 200 msec quindi il giro completo sei tre sensori sarà fatto ogni 600 msec*/
 	         	Manage_IR_Sens_Temp();
 
+	         	/*controllo lo stato del sensore d'aria
+	         	 * e aggiorno la variabile globale
+	         	 * Air_1_Status */
+	         	Manage_Air_Sensor_1();
 
 		        /*funzioni per leggere i canali AD*/
 		        Manange_ADC0();
 		        Manange_ADC1();
-		        Coversion_From_ADC_To_mmHg_Pressure_Sensor();
 		        /*END funzioni per leggere i canali AD*/
-
+		        /*converte i valori ADC in mmHg dei sensori di pressione*/
+		        Coversion_From_ADC_To_mmHg_Pressure_Sensor();
 
 	         	if(timerCounterUFlowSensor >= 2){
 	         		timerCounterUFlowSensor = 0;
@@ -531,35 +546,9 @@ int main(void)
 	         		alwaysUFlowSensor();
 	         	}
 
-	         	/*se ho ricevuto un dato me lo vado a memorizzare nella mia struttura globale: 'modbusData'*/
-	         	if (iFlag_actuatorCheck == IFLAG_COMMAND_RECEIVED && iFlag_modbusDataStorage == FALSE)
-	         	{
-	         		StorageModbusData();
-	         		iFlag_modbusDataStorage = TRUE;
-	         	}
-	         	/*chiamo la funzione ogni 50 msec*/
-	         	if (timerCounterCheckModBus >= 1 &&
-	         		( iFlag_actuatorCheck == IFLAG_COMMAND_RECEIVED || iFlag_actuatorCheck == IFLAG_IDLE))
-		        {
-	         		iFlag_actuatorCheck = IFLAG_COMMAND_SENT;
-	         		timerCounterCheckModBus = 0;
+	         	Manage_Debug_led(Status_Board);
 
-	         		/*chiamo la funzione col corretto number of address dipendentemente dall'attuatore (pump/pinch)*/
-		            if (slvAddr <= LAST_PUMP)
-		            	/*funzione che mi legge lo stato delle pompe*/
-		            	Check_Actuator_Status (slvAddr,funcCode,readAddrStart,numberOfAddressCheckPump);
-		            else
-		            	/*funzione che mi legge lo stato delle pinch*/
-		            	Check_Actuator_Status (slvAddr,funcCode,readAddrStart,numberOfAddressCheckPinch);
-
-		            /*incremento l'indirizzo per interrogare tutti gli attuatori*/
-		            slvAddr++;
-
-		           /* quando avrò tutti gli attuatori sarà da rimettere TOT_NUMBER_OF_ACTAUTOR al posto di 0x03*/
-		            if (slvAddr > 0x03)//TOT_NUMBER_OF_ACTAUTOR)
-						slvAddr = FIRST_ACTUATOR;
-		        }
-	         	/*else devo aggiungere unn controllo sulla non ricezione e non impallarmi*/
+	         	Manage_and_Storage_ModBus_Actuator_Data();
 
 				#endif
 
@@ -573,11 +562,13 @@ int main(void)
 	         pollingDataToSBCTreat();
 	         /* sbc comm - end */
 
-	         /*funzioni per leggere i canali AD*/
-	         Manange_ADC0();
-	         Manange_ADC1();
-	         Coversion_From_ADC_To_mmHg_Pressure_Sensor();
-	         /*END funzioni per leggere i canali AD*/
+			/*controllo lo stato del sensore d'aria
+			 * e aggiorno la variabile globale
+			 * Air_1_Status */
+			if (AIR_SENSOR_GetVal())
+				Air_1_Status = AIR;
+			else
+				Air_1_Status = LIQUID;
 
 	         /*****MACHINE STATE UPDATE START****/
 	         if(timerCounterMState >= 1)
@@ -611,49 +602,42 @@ int main(void)
 	        		 alwaysPeltierActuator();
 
 	         }
-
-
 	         /********************************/
 	         /*             I2C	             */
 	         /********************************/
 	        // alwaysIRTempSensRead();
 	         Manage_IR_Sens_Temp();
-//
-//	         if (IR_TM_COMM_CheckBus == IR_TM_COMM_IDLE)
-//	         {
-//	        	 /*scrivo 0 sul display 7 segment*/
-//
-//				 D_7S_A_ClrVal(); //accende led orizzontale alto
-//				 D_7S_B_ClrVal(); //accende led verticale alto Dx
-//				 D_7S_C_ClrVal(); //accende led verticale basso Dx
-//				 D_7S_D_ClrVal(); //accende led orizzontale basso
-//				 D_7S_E_ClrVal(); //accende led verticale basso Sx
-//				 D_7S_F_ClrVal(); //accende led verticale alto Sx
-//				 D_7S_G_SetVal(); //spegne led orizzontale centrale
-//	         }
-//	         else //if (IR_TM_COMM_CheckBus == IR_TM_COMM_BUSY)
-//	         {
-//	        	 /*scrivo 1 sul display 7 segment*/
-//				 D_7S_A_SetVal(); //spegne led orizzontale alto
-//				 D_7S_B_ClrVal(); //accende led verticale alto Dx
-//				 D_7S_C_ClrVal(); //accende led verticale basso Dx
-//				 D_7S_D_SetVal(); //spegne led orizzontale basso
-//				 D_7S_E_SetVal(); //spegne led verticale basso Sx
-//				 D_7S_F_SetVal(); //spegne led verticale alto Sx
-//				 D_7S_G_SetVal(); //spegne led orizzontale centrale
-//	         }
+
 	         /*******************************/
 	         /*UFLOW SENSOR                 */
+
+
+	         /********************************/
+	         /*           DEBUG LED          */
+	         /********************************/
+	         Manage_Debug_led(Status_Board);
+	         /********************************/
+	         /*           DEBUG LED  END     */
+	         /********************************/
 
 	         /********************************/
 	         /*             ADC	             */
 	         /********************************/
+			 /*funzioni per leggere i canali AD*/
+			 Manange_ADC0();
+			 Manange_ADC1();
+			 /*END funzioni per leggere i canali AD*/
+		 	 /*converte i valori ADC in mmHg dei sensori di pressione*/
+			 Coversion_From_ADC_To_mmHg_Pressure_Sensor();
+
+			 /*da valutare se sreve ancora o può essere sostituita dalla mie Manange_ADC0() e Manange_ADC1()*/
 	         alwaysAdcParam();
 	         /********************************/
 	         /*				ADC				 */
 	         /********************************/
 
 	         /*********PUMP*********/
+	         /*la gestone del ModBus probabilmente sarà da rifare seguendo la scia di quanto fatto inn Debug*/
 	         if(timerCounterModBus != timerCounterModBusOld)
 	         {
 	        	 timerCounterModBusOld = timerCounterModBus;

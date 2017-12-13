@@ -11,6 +11,7 @@
 #include "AD1.h"
 #include "AdcLdd1.h"
 #include "PE_Types.h"
+#include "AIR_SENSOR.h"
 
 #include "PC_DEBUG_COMM.h"
 #include "ASerialLdd2.h"
@@ -281,15 +282,24 @@ void 	alwaysAdcParam(void){
 	dummy = dummy + 1;
 
 	//#ifdef DEBUG_LOG_PC
-	sprintf(stringPr1, "\r%d; %i; %i; %i; %i; %i; %i;",
+	sprintf(stringPr1, "\r%d; %i; %i; %i; %i; %i;",
 			            timems,
-						(int) (sensor_PRx[0].prSensValueFilteredWA)/*(unsigned short) myCommunicatorToSBC.numByteToSend*/,
-						(int) (sensor_PRx[1].prSensValueFilteredWA),
+						(int) (sensor_PRx[0].prSensValueFilteredWA),
+						(int) Air_1_Status/*(int) (sensor_PRx[1].prSensValueFilteredWA)*/,
 						/*(int) (sensor_UFLOW[0].volumeMlTot)*/PR_VEN_mmHg,
 						(int) (sensorIR_TM[0].tempSensValue*10),
 						(int) (sensorIR_TM[1].tempSensValue*10),
 						(int) (sensorIR_TM[2].tempSensValue*10)
 			);
+//	sprintf(stringPr1, "\r%d; %i; %i; %i; %i; %i;",
+//			            timems,
+//						(int) (sensorIR_TM[0].errorNACK),
+//						(int) (sensorIR_TM[1].errorNACK),
+//						(int) (sensorIR_TM[2].errorNACK),
+//						(int) (sensorIR_TM[0].errorPEC),
+//						(int) (sensorIR_TM[1].errorPEC),
+//						(int) (sensorIR_TM[2].errorPEC)
+//			);
 	for(int i=0; i<STR_DBG_LENGHT; i++)
 	{
 		PC_DEBUG_COMM_SendChar(stringPr1[i]);
@@ -369,4 +379,12 @@ int meanWA(unsigned char dimNum, int newSensVal, char IdSens){
 	}
 	else
 		return 0;
+}
+
+void Manage_Air_Sensor_1(void)
+{
+ 	if (AIR_SENSOR_GetVal())
+ 		Air_1_Status = AIR;
+ 	else
+ 		Air_1_Status = LIQUID;
 }
