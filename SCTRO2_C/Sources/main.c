@@ -565,10 +565,7 @@ int main(void)
 			/*controllo lo stato del sensore d'aria
 			 * e aggiorno la variabile globale
 			 * Air_1_Status */
-			if (AIR_SENSOR_GetVal())
-				Air_1_Status = AIR;
-			else
-				Air_1_Status = LIQUID;
+			Manage_Air_Sensor_1();
 
 	         /*****MACHINE STATE UPDATE START****/
 	         if(timerCounterMState >= 1)
