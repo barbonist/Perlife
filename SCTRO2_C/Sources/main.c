@@ -640,6 +640,8 @@ int main(void)
 	        	 timerCounterModBusOld = timerCounterModBus;
 	        	 alwaysModBusActuator();
 	         }
+
+	         Manage_and_Storage_ModBus_Actuator_Data();
 	         /*********PUMP*********/
 			 #endif
 

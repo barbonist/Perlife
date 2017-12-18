@@ -39,12 +39,12 @@ char    iFlag_modbusDataStorage;
 #define DEBUG_PUMP				0x02
 #define DEBUG_CENTRIF_PUMP		0x03
 #define DEBUG_PELTIER			0x04
-#define DEBUG_COMM_SBC			0x05
+//#define DEBUG_COMM_SBC			0x05  //alternativa a DEBUG_TREATMENT
 #define DEBUG_MACHINE_STATE		0x06
 #define DEBUG_CONTROL			0xA5
 #define DEBUG_PROTECTION		0x5A
 #define DEBUG_LOG_PC			0x01
-//#define DEBUG_TREATMENT			0xA5
+#define DEBUG_TREATMENT			0xA5 //alternativa a DEBUG_COMM_SBC
 //#define DEBUG_I2C_TEMP_SENS		0x01
 /*#define DEBUG_FLOW_SENS			0x00*/ /*0x01*/
 /* DEBUG */
@@ -216,8 +216,8 @@ struct Flow_Sensor {
 /* Machine State Structure */
 struct machineState {
 	unsigned short	state;
-	unsigned short  parent;
-	unsigned short	child;
+	unsigned short  parent;  /* (FM) PER ORA E' SEMPRE PARENT_NULL E NON VIENE MAI USATO */
+	unsigned short	child;   /* (FM) PER ORA E' SEMPRE CHILD_NULL E NON VIENE MAI USATO */
 	unsigned short  action;
 	struct machineParent * ptrParent;
 	void (*callBackFunct) (void);
@@ -226,7 +226,7 @@ struct machineState {
 struct machineParent {
 	unsigned short	state;
 	unsigned short  parent;
-	unsigned short	child;
+	unsigned short	child;            /* (FM) PER ORA NON VIENE MAI USATO */
 	unsigned short  action;
 	struct machineChild * ptrChild;
 	void (*callBackFunct) (void);
@@ -234,7 +234,7 @@ struct machineParent {
 
 struct machineChild {
 	unsigned short	state;
-	unsigned short  parent;
+	unsigned short  parent;          /* (FM) PER ORA NON VIENE MAI USATO */
 	unsigned short	child;
 	unsigned short  action;
 	struct machineNull * ptrStateNull;
