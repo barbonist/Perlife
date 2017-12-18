@@ -822,9 +822,28 @@ struct ultrsndFlowSens{
 	unsigned char bubblePhysic;
 	unsigned char bubbleSize;
 	unsigned char bubblePresence;
+	float Inst_Flow_Value;
+	float Average_Flow_Val;
+	float Temperature;
+	float Accumulated_Volume_ul;
+	unsigned char Bubble_Alarm;
+	unsigned char Error_during_Bubble_Detection;
+	unsigned char Error_In_Flow_Meas;
+	unsigned char Error_In_Temp_Meas;
+	unsigned char Device_Fault;
 };
+#define MASK_Bubble_Alarm					0x01
+#define MASK_Error_during_Bubble_Detection	0x10
+#define MASK_Error_In_Flow_Meas				0x20
+#define MASK_Error_In_Temp_Meas				0x40
+#define MASK_Device_Fault					0x80
 
-struct ultrsndFlowSens sensor_UFLOW[2];
+#define SAMPLE 								16			//numero di campioni su cui mediare il flusso istantaneo letto
+#define TOT_UF_SENSOR 						2
+#define BYTE_COUNT_GET_VAL_CODE 			0x17 		//numero di byet che mi aspetto in ricezione col comando di GET_VAL_CODE customizzato con 3 byte di richesta 0x82 -- 0x88 -- 0x8B
+float buffer_flow_value [TOT_UF_SENSOR][SAMPLE];
+
+struct ultrsndFlowSens sensor_UFLOW[12];
 struct ultrsndFlowSens * ptrCurrent_UFLOW; /* puntatore a struttura corrente - sensore attualmente interrogato */
 struct ultrsndFlowSens * ptrMsg_UFLOW; 	   /* puntatore utilizzato per spedire il messaggio */
 /************************************************************************/

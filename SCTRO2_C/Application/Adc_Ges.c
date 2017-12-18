@@ -25,7 +25,6 @@ word adcValue;
 word adcValueDummy;
 word * adcValPtr;
 
-
 void Manange_ADC0(void)
 {
 	/*dentro l'if seguente posso mettere
@@ -249,9 +248,9 @@ void initAdcParam(void)
 
 }
 
-void 	alwaysAdcParam(void){
-	int valPressure = 0;
-	int dummy = 0;
+void 	alwaysAdcParam(void)
+{
+
 	unsigned char * ptrChar;
 	static unsigned long timems = 0;
 
@@ -279,14 +278,14 @@ void 	alwaysAdcParam(void){
 
 	sensor_PRx[1].prSensValueFilteredWA = meanWA(8, (sensor_PRx[1].prSensValue),1);
 
-	dummy = dummy + 1;
 
 	//#ifdef DEBUG_LOG_PC
-	sprintf(stringPr1, "\r%d; %i; %i; %i; %i; %i; %i;",
+	sprintf(stringPr1, "\r %d; %i; %i; %i; %i; %i; %i; %i;",
 			            timems,
-						(int) (sensor_PRx[0].prSensValueFilteredWA),
-						(int) Air_1_Status/*(int) (sensor_PRx[1].prSensValueFilteredWA)*/,
-						/*(int) (sensor_UFLOW[0].volumeMlTot)*/PR_VEN_mmHg,
+						(int) sensor_UFLOW[0].Average_Flow_Val,
+						(int) sensor_UFLOW[0].Inst_Flow_Value,
+						(int) sensor_UFLOW[1].Average_Flow_Val/*(int) Air_1_Status*//*(int) (sensor_PRx[1].prSensValueFilteredWA)*/,
+						(int) sensor_UFLOW[1].Inst_Flow_Value/*(int) (sensor_UFLOW[0].volumeMlTot)*//*PR_VEN_mmHg*/,
 						(int) (sensorIR_TM[0].tempSensValue*10),
 						(int) (sensorIR_TM[1].tempSensValue*10),
 						(int) (sensorIR_TM[2].tempSensValue*10)

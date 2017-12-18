@@ -340,18 +340,19 @@ int main(void)
   timerCounterCheckModBus = 0; 	//resetto il timer di check sul modbus
   slvAddr = FIRST_ACTUATOR;		//rimetto come indirizzo da leggere il primo
 
+
   /**********MAIN LOOP START************/
   for(;;) {
 	  	  	 /***********DEBUG START*************/
 			 #ifdef DEBUG_ENABLE
-	  	  	  	  index++;
-	         	  if(index%32000 == 0)
-	         		 FLOWSENS_RE_NegVal();
-	         	  else if(index%65000 == 0)
-	         	  {
-	         		 FLOWSENS_DE_NegVal();
-	         		 index = 0;
-	         	  }
+//	  	  	  	  index++;
+//	         	  if(index%32000 == 0)
+//	         		 FLOWSENS_RE_NegVal();
+//	         	  else if(index%65000 == 0)
+//	         	  {
+//	         		 FLOWSENS_DE_NegVal();
+//	         		 index = 0;
+//	         	  }
 
 				#ifdef	DEBUG_ADC
 	         	  //testADCDebug();
@@ -383,7 +384,9 @@ int main(void)
 													   0,
 													   ID_FLOW_VAL_MLMIN);
 
-	         		 FLOWSENS_RTS_SetVal();
+
+					 FLOWSENS_RE_SetVal();
+					 FLOWSENS_DE_SetVal();
 	         		  for(char k = 0; k < ptrMsg_UFLOW->bufferToSendLenght; k++)
 						{
 							//FLOWSENS_RTS_SetVal();
@@ -528,8 +531,7 @@ int main(void)
 	         	 * ogni 200 msec quindi il giro completo sei tre sensori sarà fatto ogni 600 msec*/
 	         	Manage_IR_Sens_Temp();
 
-	         	/*controllo lo stato del sensore d'aria
-	         	 * e aggiorno la variabile globale
+	         	/*controllo lo stato del sensore d'aria	         	 * e aggiorno la variabile globale
 	         	 * Air_1_Status */
 	         	Manage_Air_Sensor_1();
 
@@ -540,11 +542,39 @@ int main(void)
 		        /*converte i valori ADC in mmHg dei sensori di pressione*/
 		        Coversion_From_ADC_To_mmHg_Pressure_Sensor();
 
-	         	if(timerCounterUFlowSensor >= 2){
-	         		timerCounterUFlowSensor = 0;
+		         /*******************************/
+		         /********UFLOW SENSOR***********/
 
-	         		alwaysUFlowSensor();
-	         	}
+		        Manage_UFlow_Sens();
+
+		        /*ATTIVA IL MOTORE CON LA TASTIERTA A BOLLE---> SOLO PER TEST*/
+//				if (Bubble_Keyboard_GetVal(BUTTON_1) && !MOTORE_ACCESO)
+//				{
+//					  /*accendo il motore*/
+//					  MOTORE_ACCESO = TRUE;
+//					 // EN_Motor_Control(ENABLE);
+//					  /*faccio partire la pompa con 2 come indirizzo
+//					   * corrispondente a 0 come rotary select e 10 RPM come speed*/
+//					  setPumpSpeedValue(3,8000);
+//				}
+//				if (Bubble_Keyboard_GetVal(BUTTON_2) && MOTORE_ACCESO)
+//				{
+//					  /*spengo il motore*/
+//					  MOTORE_ACCESO = FALSE;
+//					 // EN_Motor_Control(DISABLE);
+//					  /*Fermo la pompa con 2 come indirizzo
+//					   * corrispondente a 0 come rotary select e 0 RPM come speed*/
+//					  setPumpSpeedValue(3,0);
+//				}
+
+//		        if(timerCounterUFlowSensor >= 2)
+//		        {
+//	         		timerCounterUFlowSensor = 0;
+//
+//	         		alwaysUFlowSensor();
+//	         	}
+		        /*******************************/
+		        /******UFLOW SENSOR END*********/
 
 	         	Manage_Debug_led(Status_Board);
 

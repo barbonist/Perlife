@@ -60,9 +60,8 @@ void Manage_IR_Sens_Temp(void)
    static unsigned char Address = FIRST_IR_TEMP_SENSOR; /*lo metto static così non la inizializza tutte le vote*/
 
 	/*interrogo su bus I2C ogni 200 msec, quindi ogni sensore sarà interrogato ogni 600 msec perché abbiamo 3 sensori*/
-   if (CHANGE_ADDRESS_IR_SENS == FALSE && timerCounterCheckTempIRSens >=4)
+   if (CHANGE_ADDRESS_IR_SENS == FALSE && timerCounterCheckTempIRSens >= 4)
     {
-    //	alwaysIRTempSensRead();
  		timerCounterCheckTempIRSens = 0;
 
  		/*se prima avevo ricevuto un NACK, resetto il flag altrimenti non ricevo più*/
@@ -72,6 +71,10 @@ void Manage_IR_Sens_Temp(void)
  			sensorIR_TM[Address-2].errorNACK++;
  			ON_NACK_IR_TM = FALSE;
  		}
+
+ 		/*se l'indirizzo supera l'ultimo sensore, resetto l'indirizzo al primo sensore per rifare il giro dei 3*/
+ 		if (Address > LAST_IR_TEMP_SENSOR)
+ 			Address = FIRST_IR_TEMP_SENSOR;
 
  		/*costruisco il comando di lettura per il sensore di temperatura con indirizzo pari ad Address
  		 * Quando scatterà l'interrupt di trasmissione 'void IR_TM_COMM_OnTransmitData(void)'
@@ -101,7 +104,6 @@ void Manage_IR_Sens_Temp(void)
  		ptrChar = &sensorIR_TM[0].bufferReceived[0];
 
  		/*devo salvare il dato solo dopo aver fatto il controllo della PEC Packet Error Code*/
-
  		/*Vado a copiarmi il dato ricevuto dal sensore IR solo se non ho ricevuto un NACK
  		 * e se torna LA PEC ricevuta con quella calcolata*/
  		if (computeCRC8TempSensRx(ptrChar,(RAM_ACCESS_COMMAND | SD_TOBJ1_RAM_ADDRESS),Slave_Address_Sent) )
@@ -109,9 +111,6 @@ void Manage_IR_Sens_Temp(void)
 
  		iflag_sensTempIR_Meas_Ready = IFLAG_IDLE;
 
- 		/*se l'indirizzo supera l'ultimo sensore, resetto l'indirizzo al primo sensore per rifare il giro dei 3*/
- 		if (Address > LAST_IR_TEMP_SENSOR)
- 			Address = FIRST_IR_TEMP_SENSOR;
  	}
 }
 
