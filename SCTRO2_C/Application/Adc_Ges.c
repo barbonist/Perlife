@@ -63,9 +63,9 @@ void Manange_ADC0(void)
 	if (END_ADC0)
   	  {
 		/*DP_SW0 sta su AD0 channel 4; passando l'indirizzo della variabile, la valorizzo*/
-		AD0_GetChanValue16(4, &DipSwitch_0_ADC);
+		AD0_GetChanValue16(DipSwitch_0_ADC_CHANNEL, &DipSwitch_0_ADC);
 		/*DP_SW1 sta su AD0 channel 5; passando l'indirizzo della variabile, la valorizzo*/
-		AD0_GetChanValue16(5, &DipSwitch_1_ADC);
+		AD0_GetChanValue16(DipSwitch_1_ADC_CHANNEL, &DipSwitch_1_ADC);
 
 		/*resetto il flag di lettura sull'interrupt AD0_OnEnd*/
 		END_ADC0 = FALSE;
@@ -84,11 +84,11 @@ void Manange_ADC1(void)
 	if (END_ADC1)
   	  {
 		/*Peltier Voltage 2 sta su AD1 channel 10; passando l'indirizzo della variabile, la valorizzo*/
-		AD1_GetChanValue16(10, &V24_P2_CHK_ADC);
+		AD1_GetChanValue16(V24_P2_CHK_ADC_CHANNEL, &V24_P2_CHK_ADC);
 		/*Peltier Voltage 1 sta su AD1 channel 11; passando l'indirizzo della variabile, la valorizzo*/
-		AD1_GetChanValue16(11, &V24_P1_CHK_ADC);
+		AD1_GetChanValue16(V24_P1_CHK_ADC_CHANNEL, &V24_P1_CHK_ADC);
 		/*DP_SW2 sta su AD1 channel 13; passando l'indirizzo della variabile, la valorizzo*/
-		AD1_GetChanValue16(13, &DipSwitch_2_ADC);
+		AD1_GetChanValue16(DipSwitch_2_ADC_CHANNEL, &DipSwitch_2_ADC);
 
 		/*PR_OXYG sta su AD1 channel 0; passando l'indirizzo della variabile, la valorizzo*/
 		AD1_GetChanValue16(PR_OXYG_ADC_CHANNEL, &PR_OXYG_ADC);

@@ -998,8 +998,15 @@ word DipSwitch_0_ADC;		//Variabile globale col valore ADC del DIP_SWITCH_1
 word DipSwitch_1_ADC;		//Variabile globale col valore ADC del DIP_SWITCH_2
 word DipSwitch_2_ADC;		//Variabile globale col valore ADC del DIP_SWITCH_3
 
+#define DipSwitch_0_ADC_CHANNEL 	4
+#define DipSwitch_1_ADC_CHANNEL 	5
+#define DipSwitch_2_ADC_CHANNEL 	13
+
 word V24_P1_CHK_ADC;
 word V24_P2_CHK_ADC;
+
+#define V24_P2_CHK_ADC_CHANNEL 		10
+#define V24_P1_CHK_ADC_CHANNEL 		11
 
 word PR_OXYG_ADC;			//variabile globale per il valore ADC del sensore di pressione ossigenatore --> PTC10
 word PR_OXYG_mmHg;			//variabile globale per il valore in mmHg del sensore di pressione ossigenatore
@@ -1037,18 +1044,23 @@ unsigned char CHANGE_ADDRESS_IR_SENS;
 #define BUTTON_4 0x04
 
 
+/*PR_OXYG Sensor calibration: to 0 mmHg --> 19687 ADC count; to 50 mmHg 21439 ADC count*/
 #define PR_OXYG_GAIN 		0.028539
 #define PR_OXYG_OFFSET		19687
 
-#define PR_LEVEL_GAIN 		0.002630
+/*PR_LEVEL Sensor calibration: to 0 mmHg --> 18694 ADC count; to 20 mmHg 26650 ADC count*/
+#define PR_LEVEL_GAIN 		0.00251383
 #define PR_LEVEL_OFFSET		18694
 
+/*PR_ADS_FLT Sensor calibration: to 0 mmHg --> 19785 ADC count; to 50 mmHg 21561 ADC count*/
 #define PR_ADS_FLT_GAIN		0.028153
 #define PR_ADS_FLT_OFFSET	19785
 
+/*PR_VEN Sensor calibration: to 0 mmHg --> 19624 ADC count; to 50 mmHg 22231 ADC count*/
 #define PR_VEN_GAIN 		0.019179
 #define PR_VEN_OFFSET		19624
 
+/*PR_ART Sensor calibration: to 0 mmHg --> 19672 ADC count; to 50 mmHg 22347 ADC count*/
 #define PR_ART_GAIN 		0.018691
 #define PR_ART_OFFSET		19672
 
