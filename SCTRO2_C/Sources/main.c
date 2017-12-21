@@ -616,12 +616,14 @@ int main(void)
 
 	         /*******************************/
 	         /*UFLOW SENSOR                 */
-	         if(timerCounterUFlowSensor >= 2){
-	        	 timerCounterUFlowSensor = 0;
+//	         if(timerCounterUFlowSensor >= 2){
+//	        	 timerCounterUFlowSensor = 0;
+//
+//	        	 alwaysUFlowSensor();
+//
+//	         }
+	         Manage_UFlow_Sens();
 
-	        	 alwaysUFlowSensor();
-
-	         }
 	         Buzzer_Management();
 
 	         if(timerCounterPeltier >= 2){
