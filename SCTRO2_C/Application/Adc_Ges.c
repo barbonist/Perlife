@@ -50,8 +50,10 @@ void Dip_Switch_ADC_Init(void)
 
 void Voltage_Peltier_ADC_Init(void)
 {
-	V24_P1_CHK_ADC = 0;
-	V24_P2_CHK_ADC = 0;
+	V24_P1_CHK_ADC  = 0;
+	V24_P2_CHK_ADC  = 0;
+	V24_P1_CHK_VOLT = 0;
+	V24_P2_CHK_VOLT = 0;
 }
 
 void Manange_ADC0(void)
@@ -116,6 +118,12 @@ void Coversion_From_ADC_To_mmHg_Pressure_Sensor()
 	PR_ADS_FLT_mmHg = (PR_ADS_FLT_ADC - PR_ADS_FLT_OFFSET) * PR_ADS_FLT_GAIN;
 	PR_VEN_mmHg 	= (PR_VEN_ADC     - PR_VEN_OFFSET)     * PR_VEN_GAIN;
 	PR_ART_mmHg 	= (PR_ART_ADC     - PR_ART_OFFSET)     * PR_ART_GAIN;
+}
+
+void Coversion_From_ADC_To_Voltage()
+{
+	V24_P1_CHK_VOLT	= (V24_P1_CHK_ADC * V24_P1_CHK_GAIN + V24_P1_CHK_OFFSET);
+	V24_P2_CHK_VOLT	= (V24_P2_CHK_ADC * V24_P2_CHK_GAIN + V24_P2_CHK_OFFSET);
 }
 
 void ADC0_Calibration(void)
@@ -310,8 +318,8 @@ void 	alwaysAdcParam(void)
 	//#ifdef DEBUG_LOG_PC
 	sprintf(stringPr1, "\r %i %i; %i; %i; %i; %i; %i; %i;",
 			           /* timems,*/
-						PR_OXYG_mmHg/*(int) sensor_UFLOW[0].Average_Flow_Val*/,
-						PR_LEVEL_mmHg/*(int) sensor_UFLOW[0].Inst_Flow_Value*/,
+						V24_P1_CHK_VOLT/*PR_OXYG_mmHg*//*(int) sensor_UFLOW[0].Average_Flow_Val*/,
+						V24_P2_CHK_VOLT/*PR_LEVEL_mmHg*//*(int) sensor_UFLOW[0].Inst_Flow_Value*/,
 						PR_ADS_FLT_mmHg/*(int) sensor_UFLOW[1].Average_Flow_Val*//*(int) Air_1_Status*//*(int) (sensor_PRx[1].prSensValueFilteredWA)*/,
 						PR_VEN_mmHg/*(int) sensor_UFLOW[1].Inst_Flow_Value*//*(int) (sensor_UFLOW[0].volumeMlTot)*//*PR_VEN_mmHg*/,
 						PR_ART_mmHg/*(int) (sensorIR_TM[0].tempSensValue*10)*/,
