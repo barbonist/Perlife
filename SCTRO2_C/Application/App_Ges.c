@@ -53,6 +53,7 @@
 #include "EN_CLAMP_CONTROL.h"
 #include "EN_MOTOR_CONTROL.h"
 #include "EN_24_M_C.h"
+#include "child_gest.h"
 
 /********************************/
 /* machine state initialization */
@@ -69,6 +70,18 @@ struct machineNull stateNull[] =
 /*********CHILD LEVEL*************/
 /*********************************/
 
+// (FM)
+// machineChild    struttura usata per descrivere le attuazioni da fare in conseguenza di comandi ricevuti nello stato
+//                 parent
+// {STATE_NULL,    questo valore e' sempre STATE_NULL perche' questo campo della struttura non e' mai usato
+//  PARENT_NULL,   questo campo e' inutilizzato
+//  CHILD_NULL,    identifica il tipo di operazione da eseguire nell'ultimo switch della funzione processMachineState
+//                 normalmente dopo aver eseguito la funzione prevista in ACTION_ON_ENTRY si ferma e loop all'infinito
+//                 nella funzione individuata da ACTION_ALWAYS
+//  ACTION_NULL,  ACTION_ON_ENTRY o ACTION_ALWAYS (*)
+//  &stateNull[0], questa struttura normalmente non prevede un cambio di array di strutture
+//  &manageNull},  operazioni da eseguire in base a (*)
+
 struct machineChild stateChildNull[] =
 		  {
 		  	{STATE_NULL, PARENT_NULL, CHILD_NULL, ACTION_NULL, &stateNull[0], &manageNull},
@@ -78,7 +91,7 @@ struct machineChild stateChildNull[] =
 
 struct machineChild stateChildEntry[] =
 		  {
-		  	{STATE_NULL, PARENT_NULL, CHILD_ENTRY, ACTION_NULL, &stateNull[0], &manageNull},
+		  	{STATE_NULL, PARENT_NULL, CHILD_NULL, ACTION_NULL, &stateNull[0], &manageNull},
 
 			{STATE_NULL, PARENT_NULL, CHILD_ENTRY, ACTION_ON_ENTRY, &stateNull[0], &manageChildEntry},
 			{STATE_NULL, PARENT_NULL, CHILD_ENTRY, ACTION_ALWAYS, &stateNull[0], &manageChildEntryAlways},
@@ -95,27 +108,41 @@ struct machineChild stateChildIdle[] =
 
 struct machineChild stateChildAlarmTreat1[] =
 		  {
-			{STATE_NULL, PARENT_NULL, CHILD_NULL, ACTION_NULL, &stateNull[0], &manageNull},
-			{STATE_NULL, PARENT_NULL, CHILD_TREAT_ALARM_1_INIT, ACTION_NULL, &stateNull[0], &manageNull},
-			{STATE_NULL, PARENT_NULL, CHILD_TREAT_ALARM_1_STOP_PERFUSION, ACTION_NULL, &stateNull[0], &manageNull},
-			{STATE_NULL, PARENT_NULL, CHILD_TREAT_ALARM_1_STOP_PURIFICATION, ACTION_NULL, &stateNull[0], &manageNull},
-			{STATE_NULL, PARENT_NULL, CHILD_TREAT_ALARM_1_STOP_ALL_PUMP, ACTION_NULL, &stateNull[0], &manageNull},
-			{STATE_NULL, PARENT_NULL, CHILD_TREAT_ALARM_1_STOP_PELTIER, ACTION_NULL, &stateNull[0], &manageNull},
-			{STATE_NULL, PARENT_NULL, CHILD_TREAT_ALARM_1_STOP_ALL_ACTUATOR, ACTION_NULL, &stateNull[0], &manageNull},
-			{STATE_NULL, PARENT_NULL, CHILD_TREAT_ALARM_1_END, ACTION_NULL, &stateNull[0], &manageNull},
+			{STATE_NULL, PARENT_NULL, CHILD_NULL,                            ACTION_NULL,     &stateNull[0], &manageNull},                               /* 0 */
+			//alarm init
+			{STATE_NULL, PARENT_NULL, CHILD_TREAT_ALARM_1_INIT,              ACTION_ON_ENTRY, &stateNull[0], &manageNull},                               /* 1 */
+			{STATE_NULL, PARENT_NULL, CHILD_TREAT_ALARM_1_INIT,              ACTION_ALWAYS,   &stateNull[0], &manageChildTreatAlm1InitAlways},           /* 2 */
+			//alarm stop perfusion
+			{STATE_NULL, PARENT_NULL, CHILD_TREAT_ALARM_1_STOP_PERFUSION,    ACTION_ON_ENTRY, &stateNull[0], &manageChildTreatAlm1StopPerfEntry},        /* 3 */
+			{STATE_NULL, PARENT_NULL, CHILD_TREAT_ALARM_1_STOP_PERFUSION,    ACTION_ALWAYS,   &stateNull[0], &manageChildTreatAlm1StopPerfAlways},       /* 4 */
+			//alarm stop purification
+			{STATE_NULL, PARENT_NULL, CHILD_TREAT_ALARM_1_STOP_PURIFICATION, ACTION_NULL,     &stateNull[0], &manageChildTreatAlm1StopPurifEntry},       /* 5 */
+			{STATE_NULL, PARENT_NULL, CHILD_TREAT_ALARM_1_STOP_PURIFICATION, ACTION_ALWAYS,   &stateNull[0], &manageChildTreatAlm1StopPurifAlways},      /* 6 */
+			//alarm stop all pump
+			{STATE_NULL, PARENT_NULL, CHILD_TREAT_ALARM_1_STOP_ALL_PUMP,     ACTION_NULL,     &stateNull[0], &manageChildTreatAlm1StopAllPumpEntry},     /* 7 */
+			{STATE_NULL, PARENT_NULL, CHILD_TREAT_ALARM_1_STOP_ALL_PUMP,     ACTION_ALWAYS,   &stateNull[0], &manageChildTreatAlm1StopAllPumpAlways},    /* 8 */
+			//alarm stop peltier
+			{STATE_NULL, PARENT_NULL, CHILD_TREAT_ALARM_1_STOP_PELTIER,      ACTION_NULL,     &stateNull[0], &manageChildTreatAlm1StopPeltEntry},        /* 9 */
+			{STATE_NULL, PARENT_NULL, CHILD_TREAT_ALARM_1_STOP_PELTIER,      ACTION_ALWAYS,   &stateNull[0], &manageChildTreatAlm1StopPeltAlways},       /* 10 */
+			//alarm stop all actuator
+			{STATE_NULL, PARENT_NULL, CHILD_TREAT_ALARM_1_STOP_ALL_ACTUATOR, ACTION_NULL,     &stateNull[0], &manageChildTreatAlm1StopAllActEntry},      /* 11 */
+			{STATE_NULL, PARENT_NULL, CHILD_TREAT_ALARM_1_STOP_ALL_ACTUATOR, ACTION_ALWAYS,   &stateNull[0], &manageChildTreatAlm1StopAllActAlways},     /* 12 */
+			//alarm priming end
+			{STATE_NULL, PARENT_NULL, CHILD_TREAT_ALARM_1_END,               ACTION_NULL,     &stateNull[0], &manageNull},                               /* 13 */
+			{STATE_NULL, PARENT_NULL, CHILD_TREAT_ALARM_1_END,               ACTION_ALWAYS,   &stateNull[0], &manageNull},                               /* 14 */
 			{}
 		  };
 
 struct machineChild stateChildAlarmTreat2[] =
 		 {
-		  {STATE_NULL, PARENT_NULL, CHILD_NULL, ACTION_NULL, &stateNull[0], &manageNull},
-		  {STATE_NULL, PARENT_NULL, CHILD_TREAT_ALARM_2_INIT, ACTION_NULL, &stateNull[0], &manageNull},
-		  {STATE_NULL, PARENT_NULL, CHILD_TREAT_ALARM_2_STOP_PERFUSION, ACTION_NULL, &stateNull[0], &manageNull},
+		  {STATE_NULL, PARENT_NULL, CHILD_NULL,                            ACTION_NULL, &stateNull[0], &manageNull},
+		  {STATE_NULL, PARENT_NULL, CHILD_TREAT_ALARM_2_INIT,              ACTION_NULL, &stateNull[0], &manageNull},
+		  {STATE_NULL, PARENT_NULL, CHILD_TREAT_ALARM_2_STOP_PERFUSION,    ACTION_NULL, &stateNull[0], &manageNull},
 		  {STATE_NULL, PARENT_NULL, CHILD_TREAT_ALARM_2_STOP_PURIFICATION, ACTION_NULL, &stateNull[0], &manageNull},
-		  {STATE_NULL, PARENT_NULL, CHILD_TREAT_ALARM_2_STOP_ALL_PUMP, ACTION_NULL, &stateNull[0], &manageNull},
-		  {STATE_NULL, PARENT_NULL, CHILD_TREAT_ALARM_2_STOP_PELTIER, ACTION_NULL, &stateNull[0], &manageNull},
+		  {STATE_NULL, PARENT_NULL, CHILD_TREAT_ALARM_2_STOP_ALL_PUMP,     ACTION_NULL, &stateNull[0], &manageNull},
+		  {STATE_NULL, PARENT_NULL, CHILD_TREAT_ALARM_2_STOP_PELTIER,      ACTION_NULL, &stateNull[0], &manageNull},
 		  {STATE_NULL, PARENT_NULL, CHILD_TREAT_ALARM_2_STOP_ALL_ACTUATOR, ACTION_NULL, &stateNull[0], &manageNull},
-		  {STATE_NULL, PARENT_NULL, CHILD_TREAT_ALARM_2_END, ACTION_NULL, &stateNull[0], &manageNull},
+		  {STATE_NULL, PARENT_NULL, CHILD_TREAT_ALARM_2_END,               ACTION_NULL, &stateNull[0], &manageNull},
 		  {}
 		 };
 
@@ -123,28 +150,28 @@ struct machineChild stateChildAlarmTreat2[] =
 /***********CHILD ACTIVE***********/
 /**********************************************/
 struct machineChild stateChildAlarmPriming[] ={
-		{STATE_NULL, PARENT_NULL, CHILD_NULL, 								ACTION_NULL, 		&stateNull[0], &manageChildNull},	/* 0 */
+		{STATE_NULL, PARENT_NULL, CHILD_NULL, 								ACTION_NULL, 		&stateNull[0], &manageChildNull},	                    /* 0 */
 		//alarm init
-		{STATE_NULL, PARENT_NULL, CHILD_PRIMING_ALARM_INIT, 				ACTION_ON_ENTRY, 	&stateNull[0], &manageChildNull},	/* 1 */
-		{STATE_NULL, PARENT_NULL, CHILD_PRIMING_ALARM_INIT, 				ACTION_ALWAYS, 		&stateNull[0], &manageChildNull},	/* 2 */
+		{STATE_NULL, PARENT_NULL, CHILD_PRIMING_ALARM_INIT, 				ACTION_ON_ENTRY, 	&stateNull[0], &manageChildNull},	                    /* 1 */
+		{STATE_NULL, PARENT_NULL, CHILD_PRIMING_ALARM_INIT, 				ACTION_ALWAYS, 		&stateNull[0], &manageChildNull},	                    /* 2 */
 		//alarm stop perfusion
-		{STATE_NULL, PARENT_NULL, CHILD_PRIMING_ALARM_STOP_PERFUSION, 		ACTION_ON_ENTRY, 	&stateNull[0], &manageChildNull},	/* 3 */
-		{STATE_NULL, PARENT_NULL, CHILD_PRIMING_ALARM_STOP_PERFUSION, 		ACTION_ALWAYS, 		&stateNull[0], &manageChildNull},	/* 4 */
+		{STATE_NULL, PARENT_NULL, CHILD_PRIMING_ALARM_STOP_PERFUSION, 		ACTION_ON_ENTRY, 	&stateNull[0], &manageChildPrimAlarmStopPerfEntry},	    /* 3 */
+		{STATE_NULL, PARENT_NULL, CHILD_PRIMING_ALARM_STOP_PERFUSION, 		ACTION_ALWAYS, 		&stateNull[0], &manageChildPrimAlarmStopPerfAlways},	/* 4 */
 		//alarm stop purification
-		{STATE_NULL, PARENT_NULL, CHILD_PRIMING_ALARM_STOP_PURIFICATION, 	ACTION_ON_ENTRY, 	&stateNull[0], &manageChildNull},	/* 5 */
-		{STATE_NULL, PARENT_NULL, CHILD_PRIMING_ALARM_STOP_PURIFICATION, 	ACTION_ALWAYS, 		&stateNull[0], &manageChildNull},	/* 6 */
+		{STATE_NULL, PARENT_NULL, CHILD_PRIMING_ALARM_STOP_PURIFICATION, 	ACTION_ON_ENTRY, 	&stateNull[0], &manageChildPrimAlarmStopPurifEntry},	/* 5 */
+		{STATE_NULL, PARENT_NULL, CHILD_PRIMING_ALARM_STOP_PURIFICATION, 	ACTION_ALWAYS, 		&stateNull[0], &manageChildPrimAlarmStopPurifAlways},	/* 6 */
 		//alarm stop all pump
-		{STATE_NULL, PARENT_NULL, CHILD_PRIMING_ALARM_STOP_ALL_PUMP, 		ACTION_ON_ENTRY, 	&stateNull[0], &manageChildNull},	/* 7 */
-		{STATE_NULL, PARENT_NULL, CHILD_PRIMING_ALARM_STOP_ALL_PUMP, 		ACTION_ALWAYS, 		&stateNull[0], &manageChildNull},	/* 8 */
+		{STATE_NULL, PARENT_NULL, CHILD_PRIMING_ALARM_STOP_ALL_PUMP, 		ACTION_ON_ENTRY, 	&stateNull[0], &manageChildPrimAlarmStopAllPumpEntry},	/* 7 */
+		{STATE_NULL, PARENT_NULL, CHILD_PRIMING_ALARM_STOP_ALL_PUMP, 		ACTION_ALWAYS, 		&stateNull[0], &manageChildPrimAlarmStopAllPumpAlways},	/* 8 */
 		//alarm stop peltier
-		{STATE_NULL, PARENT_NULL, CHILD_PRIMING_ALARM_STOP_PELTIER, 		ACTION_ON_ENTRY, 	&stateNull[0], &manageChildNull},	/* 9 */
-		{STATE_NULL, PARENT_NULL, CHILD_PRIMING_ALARM_STOP_PELTIER, 		ACTION_ALWAYS, 		&stateNull[0], &manageChildNull},	/* 10 */
+		{STATE_NULL, PARENT_NULL, CHILD_PRIMING_ALARM_STOP_PELTIER, 		ACTION_ON_ENTRY, 	&stateNull[0], &manageChildPrimAlarmStopPeltEntry},	    /* 9 */
+		{STATE_NULL, PARENT_NULL, CHILD_PRIMING_ALARM_STOP_PELTIER, 		ACTION_ALWAYS, 		&stateNull[0], &manageChildPrimAlarmStopPeltAlways},	/* 10 */
 		//alarm stop all actuator
-		{STATE_NULL, PARENT_NULL, CHILD_PRIMING_ALARM_STOP_ALL_ACTUATOR, 	ACTION_ON_ENTRY, 	&stateNull[0], &manageChildNull},	/* 11 */
-		{STATE_NULL, PARENT_NULL, CHILD_PRIMING_ALARM_STOP_ALL_ACTUATOR, 	ACTION_ALWAYS, 		&stateNull[0], &manageChildNull},	/* 12 */
+		{STATE_NULL, PARENT_NULL, CHILD_PRIMING_ALARM_STOP_ALL_ACTUATOR, 	ACTION_ON_ENTRY, 	&stateNull[0], &manageChildPrimAlarmStopAllActEntry},	/* 11 */
+		{STATE_NULL, PARENT_NULL, CHILD_PRIMING_ALARM_STOP_ALL_ACTUATOR, 	ACTION_ALWAYS, 		&stateNull[0], &manageChildPrimAlarmStopAllActAlways},	/* 12 */
 		//alarm priming end
-		{STATE_NULL, PARENT_NULL, CHILD_PRIMING_ALARM_END, 					ACTION_ON_ENTRY, 	&stateNull[0], &manageChildNull},	/* 13 */
-		{STATE_NULL, PARENT_NULL, CHILD_PRIMING_ALARM_END, 					ACTION_ALWAYS, 		&stateNull[0], &manageChildNull},	/* 14 */
+		{STATE_NULL, PARENT_NULL, CHILD_PRIMING_ALARM_END, 					ACTION_ON_ENTRY, 	&stateNull[0], &manageChildNull},	                    /* 13 */
+		{STATE_NULL, PARENT_NULL, CHILD_PRIMING_ALARM_END, 					ACTION_ALWAYS, 		&stateNull[0], &manageChildNull},	                    /* 14 */
 
 		{}
 };
@@ -158,6 +185,20 @@ struct machineChild stateChildAlarmPriming[] ={
 /*********PARENT LEVEL*************/
 /*********************************/
 
+// (FM)
+// guard sono comandi che possono essere ricevuti dalla seriale, dalla tastiera, dal sistema di allarme
+
+// machineParent         struttura usata per la gestione di tutti i comandi ricevuti nel particolare stateState in cui mi trovo
+// {STATE_NULL,          questo valore e' sempre STATE_NULL perche' questo campo della struttura non e' mai usato
+//  PARENT_NULL,         questo campo identifica uno stato del parent ( cioe' del sw che gestisce i comendi ricevuti(guard))
+//                       Il codice che esegue e' quello per gestire i comandi (tastiera, seriale, ecc) a cui deve rispondere
+//  CHILD_NULL,          questo campo e' sempre fisso a CHILD_NULL perche' non viene mai usato
+//  ACTION_NULL,         questo campo indica quando (ACTION_ON_ENTRY, ACTION_ALWAYS) devo effettuare le operazioni fatte nella
+//                       funzione manageNull (*)
+//  &stateChildNull[0],  questo e' l'indirizzo dell'array di strutture machineChild associate a questo stato della macchina
+//                       Sono operazioni da eseguire in conseguenza di comandi ricevuti.
+//  &manageNull},        Operazioni da eseguire in base al valore del campo (*)
+
 struct machineParent stateParentNull[] =
 		{
 		 {STATE_NULL, PARENT_NULL, CHILD_NULL, ACTION_NULL, &stateChildNull[0], &manageNull},
@@ -167,10 +208,10 @@ struct machineParent stateParentNull[] =
 
 struct machineParent stateParentEntry[] =
 		{
-		 {STATE_NULL, PARENT_NULL, CHILD_NULL, ACTION_NULL, &stateChildIdle[0], &manageNull},
+		 {STATE_NULL, PARENT_NULL,      CHILD_NULL, ACTION_NULL,     &stateChildIdle[0],  &manageNull},              /* 0 */
 
-		 {STATE_NULL, PARENT_ENTRY, CHILD_NULL, ACTION_ON_ENTRY, &stateChildEntry[1], &manageParentEntry},
-		 {STATE_NULL, PARENT_ENTRY, CHILD_NULL, ACTION_ALWAYS, &stateChildEntry[2], &manageParentEntryAlways},
+		 {STATE_NULL, PARENT_ENTRY,     CHILD_NULL, ACTION_ON_ENTRY, &stateChildEntry[1], &manageParentEntry},       /* 1 */
+		 {STATE_NULL, PARENT_ENTRY,     CHILD_NULL, ACTION_ALWAYS,   &stateChildEntry[2], &manageParentEntryAlways}, /* 2 */
 
 		 {}
 		};
@@ -184,59 +225,59 @@ struct machineParent stateParentIdle[] =
 
 struct machineParent stateParentT1TNoDisposable[] =
 		{
-		 {STATE_NULL, PARENT_NULL, CHILD_NULL, ACTION_NULL, &stateChildIdle[0], &manageNull},
-		 {STATE_NULL, PARENT_T1_NO_DISP_INIT, CHILD_IDLE, ACTION_ON_ENTRY, &stateChildIdle[1], &manageNull},
-		 {STATE_NULL, PARENT_T1_NO_DISP_INIT, CHILD_IDLE, ACTION_ALWAYS, &stateChildIdle[1], &manageNull},
-		 {STATE_NULL, PARENT_T1_NO_DISP_CHECK_PRESS, CHILD_IDLE, ACTION_ON_ENTRY, &stateChildIdle[1], &manageNull},
-		 {STATE_NULL, PARENT_T1_NO_DISP_CHECK_PRESS, CHILD_IDLE, ACTION_ALWAYS, &stateChildIdle[1], &manageNull},
-		 {STATE_NULL, PARENT_T1_NO_DISP_CHECK_TEMP, CHILD_IDLE, ACTION_ON_ENTRY, &stateChildIdle[1], &manageNull},
-		 {STATE_NULL, PARENT_T1_NO_DISP_CHECK_TEMP, CHILD_IDLE, ACTION_ALWAYS, &stateChildIdle[1], &manageNull},
+		 {STATE_NULL, PARENT_NULL,                    CHILD_NULL, ACTION_NULL,     &stateChildIdle[0], &manageNull},
+		 {STATE_NULL, PARENT_T1_NO_DISP_INIT,         CHILD_IDLE, ACTION_ON_ENTRY, &stateChildIdle[1], &manageNull},
+		 {STATE_NULL, PARENT_T1_NO_DISP_INIT,         CHILD_IDLE, ACTION_ALWAYS,   &stateChildIdle[1], &manageNull},
+		 {STATE_NULL, PARENT_T1_NO_DISP_CHECK_PRESS,  CHILD_IDLE, ACTION_ON_ENTRY, &stateChildIdle[1], &manageNull},
+		 {STATE_NULL, PARENT_T1_NO_DISP_CHECK_PRESS,  CHILD_IDLE, ACTION_ALWAYS,   &stateChildIdle[1], &manageNull},
+		 {STATE_NULL, PARENT_T1_NO_DISP_CHECK_TEMP,   CHILD_IDLE, ACTION_ON_ENTRY, &stateChildIdle[1], &manageNull},
+		 {STATE_NULL, PARENT_T1_NO_DISP_CHECK_TEMP,   CHILD_IDLE, ACTION_ALWAYS,   &stateChildIdle[1], &manageNull},
 		 {STATE_NULL, PARENT_T1_NO_DISP_CHECK_FLWMTR, CHILD_IDLE, ACTION_ON_ENTRY, &stateChildIdle[1], &manageNull},
-		 {STATE_NULL, PARENT_T1_NO_DISP_CHECK_FLWMTR, CHILD_IDLE, ACTION_ALWAYS, &stateChildIdle[1], &manageNull},
-	     {STATE_NULL, PARENT_T1_NO_DISP_CHEK_AIR, CHILD_IDLE, ACTION_ON_ENTRY, &stateChildIdle[1], &manageNull},
-		 {STATE_NULL, PARENT_T1_NO_DISP_CHEK_AIR, CHILD_IDLE, ACTION_ALWAYS, &stateChildIdle[1], &manageNull},
-		 {STATE_NULL, PARENT_T1_NO_DISP_ALARM, CHILD_IDLE, ACTION_ON_ENTRY, &stateChildIdle[1], &manageNull},
-		 {STATE_NULL, PARENT_T1_NO_DISP_ALARM, CHILD_IDLE, ACTION_ALWAYS, &stateChildIdle[1], &manageNull},
-		 {STATE_NULL, PARENT_T1_NO_DISP_END, CHILD_IDLE, ACTION_ON_ENTRY, &stateChildIdle[1], &manageNull},
-		 {STATE_NULL, PARENT_T1_NO_DISP_END, CHILD_IDLE, ACTION_ALWAYS, &stateChildIdle[1], &manageNull},
-		 {STATE_NULL, PARENT_T1_NO_DISP_FATAL_ERROR, CHILD_IDLE, ACTION_ON_ENTRY, &stateChildIdle[1], &manageNull},
-		 {STATE_NULL, PARENT_T1_NO_DISP_FATAL_ERROR, CHILD_IDLE, ACTION_ALWAYS, &stateChildIdle[1], &manageNull},
+		 {STATE_NULL, PARENT_T1_NO_DISP_CHECK_FLWMTR, CHILD_IDLE, ACTION_ALWAYS,   &stateChildIdle[1], &manageNull},
+	     {STATE_NULL, PARENT_T1_NO_DISP_CHEK_AIR,     CHILD_IDLE, ACTION_ON_ENTRY, &stateChildIdle[1], &manageNull},
+		 {STATE_NULL, PARENT_T1_NO_DISP_CHEK_AIR,     CHILD_IDLE, ACTION_ALWAYS,   &stateChildIdle[1], &manageNull},
+		 {STATE_NULL, PARENT_T1_NO_DISP_ALARM,        CHILD_IDLE, ACTION_ON_ENTRY, &stateChildIdle[1], &manageNull},
+		 {STATE_NULL, PARENT_T1_NO_DISP_ALARM,        CHILD_IDLE, ACTION_ALWAYS,   &stateChildIdle[1], &manageNull},
+		 {STATE_NULL, PARENT_T1_NO_DISP_END,          CHILD_IDLE, ACTION_ON_ENTRY, &stateChildIdle[1], &manageNull},
+		 {STATE_NULL, PARENT_T1_NO_DISP_END,          CHILD_IDLE, ACTION_ALWAYS,   &stateChildIdle[1], &manageNull},
+		 {STATE_NULL, PARENT_T1_NO_DISP_FATAL_ERROR,  CHILD_IDLE, ACTION_ON_ENTRY, &stateChildIdle[1], &manageNull},
+		 {STATE_NULL, PARENT_T1_NO_DISP_FATAL_ERROR,  CHILD_IDLE, ACTION_ALWAYS,   &stateChildIdle[1], &manageNull},
 		 {}
 		};
 
 struct machineParent stateParentT1TWithDisposable[] =
 		{
-		 {STATE_NULL, PARENT_NULL, CHILD_NULL, ACTION_NULL, &stateChildIdle[0], &manageNull},
-		 {STATE_NULL, PARENT_T1_WITH_DISP_INIT, CHILD_IDLE, ACTION_ON_ENTRY, &stateChildIdle[1], &manageNull},
-		 {STATE_NULL, PARENT_T1_WITH_DISP_INIT, CHILD_IDLE, ACTION_ALWAYS, &stateChildIdle[1], &manageNull},
-		 {STATE_NULL, PARENT_T1_WITH_DISP_LEAK, CHILD_IDLE, ACTION_ON_ENTRY, &stateChildIdle[1], &manageNull},
-		 {STATE_NULL, PARENT_T1_WITH_DISP_LEAK, CHILD_IDLE, ACTION_ALWAYS, &stateChildIdle[1], &manageNull},
-		 {STATE_NULL, PARENT_T1_WITH_DISP_LEVEL, CHILD_IDLE, ACTION_ON_ENTRY, &stateChildIdle[1], &manageNull},
-		 {STATE_NULL, PARENT_T1_WITH_DISP_LEVEL, CHILD_IDLE, ACTION_ALWAYS, &stateChildIdle[1], &manageNull},
-		 {STATE_NULL, PARENT_T1_WITH_DISP_ALARM, CHILD_IDLE, ACTION_ON_ENTRY, &stateChildIdle[1], &manageNull},
-		 {STATE_NULL, PARENT_T1_WITH_DISP_ALARM, CHILD_IDLE, ACTION_ALWAYS, &stateChildIdle[1], &manageNull},
-		 {STATE_NULL, PARENT_T1_WITH_DISP_END, CHILD_IDLE, ACTION_ON_ENTRY, &stateChildIdle[1], &manageNull},
-		 {STATE_NULL, PARENT_T1_WITH_DISP_END, CHILD_IDLE, ACTION_ALWAYS, &stateChildIdle[1], &manageNull},
+		 {STATE_NULL, PARENT_NULL,                     CHILD_NULL, ACTION_NULL,     &stateChildIdle[0], &manageNull},
+		 {STATE_NULL, PARENT_T1_WITH_DISP_INIT,        CHILD_IDLE, ACTION_ON_ENTRY, &stateChildIdle[1], &manageNull},
+		 {STATE_NULL, PARENT_T1_WITH_DISP_INIT,        CHILD_IDLE, ACTION_ALWAYS,   &stateChildIdle[1], &manageNull},
+		 {STATE_NULL, PARENT_T1_WITH_DISP_LEAK,        CHILD_IDLE, ACTION_ON_ENTRY, &stateChildIdle[1], &manageNull},
+		 {STATE_NULL, PARENT_T1_WITH_DISP_LEAK,        CHILD_IDLE, ACTION_ALWAYS,   &stateChildIdle[1], &manageNull},
+		 {STATE_NULL, PARENT_T1_WITH_DISP_LEVEL,       CHILD_IDLE, ACTION_ON_ENTRY, &stateChildIdle[1], &manageNull},
+		 {STATE_NULL, PARENT_T1_WITH_DISP_LEVEL,       CHILD_IDLE, ACTION_ALWAYS,   &stateChildIdle[1], &manageNull},
+		 {STATE_NULL, PARENT_T1_WITH_DISP_ALARM,       CHILD_IDLE, ACTION_ON_ENTRY, &stateChildIdle[1], &manageNull},
+		 {STATE_NULL, PARENT_T1_WITH_DISP_ALARM,       CHILD_IDLE, ACTION_ALWAYS,   &stateChildIdle[1], &manageNull},
+		 {STATE_NULL, PARENT_T1_WITH_DISP_END,         CHILD_IDLE, ACTION_ON_ENTRY, &stateChildIdle[1], &manageNull},
+		 {STATE_NULL, PARENT_T1_WITH_DISP_END,         CHILD_IDLE, ACTION_ALWAYS,   &stateChildIdle[1], &manageNull},
 		 {STATE_NULL, PARENT_T1_WITH_DISP_FATAL_ERROR, CHILD_IDLE, ACTION_ON_ENTRY, &stateChildIdle[1], &manageNull},
-		 {STATE_NULL, PARENT_T1_WITH_DISP_FATAL_ERROR, CHILD_IDLE, ACTION_ALWAYS, &stateChildIdle[1], &manageNull},
+		 {STATE_NULL, PARENT_T1_WITH_DISP_FATAL_ERROR, CHILD_IDLE, ACTION_ALWAYS,   &stateChildIdle[1], &manageNull},
 		 {}
 		};
 
 struct machineParent stateParentPrimingTreatKidney1[] =
 {
-		{STATE_NULL, PARENT_NULL, CHILD_NULL, ACTION_NULL, &stateChildIdle[0], &manageNull},											/* 0 */
+		{STATE_NULL, PARENT_NULL,                         CHILD_NULL, ACTION_NULL,     &stateChildIdle[0],         &manageNull},					  /* 0 */
 		/* priming init */
-		{STATE_NULL, PARENT_PRIMING_TREAT_KIDNEY_1_INIT, CHILD_IDLE, ACTION_ON_ENTRY, &stateChildIdle[0], &manageParentPrimingEntry},	/* 1 */
-		{STATE_NULL, PARENT_PRIMING_TREAT_KIDNEY_1_INIT, CHILD_IDLE, ACTION_ALWAYS, &stateChildIdle[0], &manageParentPrimingAlways},	/* 2 */
+		{STATE_NULL, PARENT_PRIMING_TREAT_KIDNEY_1_INIT,  CHILD_IDLE, ACTION_ON_ENTRY, &stateChildIdle[0],         &manageParentPrimingEntry},	      /* 1 */
+		{STATE_NULL, PARENT_PRIMING_TREAT_KIDNEY_1_INIT,  CHILD_IDLE, ACTION_ALWAYS,   &stateChildIdle[0],         &manageParentPrimingAlways},	      /* 2 */
 		/* priming run */
-		{STATE_NULL, PARENT_PRIMING_TREAT_KIDNEY_1_RUN, CHILD_IDLE, ACTION_ON_ENTRY, &stateChildIdle[0], &manageParentPrimingEntry},	/* 3 */
-		{STATE_NULL, PARENT_PRIMING_TREAT_KIDNEY_1_RUN, CHILD_IDLE, ACTION_ALWAYS, &stateChildIdle[0], &manageParentPrimingAlways},		/* 4 */
+		{STATE_NULL, PARENT_PRIMING_TREAT_KIDNEY_1_RUN,   CHILD_IDLE, ACTION_ON_ENTRY, &stateChildIdle[0],         &manageParentPrimingEntry},	      /* 3 */
+		{STATE_NULL, PARENT_PRIMING_TREAT_KIDNEY_1_RUN,   CHILD_IDLE, ACTION_ALWAYS,   &stateChildIdle[0],         &manageParentPrimingAlways},		  /* 4 */
 		/* priming alarm */
-		{STATE_NULL, PARENT_PRIMING_TREAT_KIDNEY_1_ALARM, CHILD_IDLE, ACTION_ON_ENTRY, &stateChildAlarmPriming[1], &manageParentPrimingAlarmEntry},	/* 5 */
-		{STATE_NULL, PARENT_PRIMING_TREAT_KIDNEY_1_ALARM, CHILD_IDLE, ACTION_ALWAYS, &stateChildAlarmPriming[1], &manageParentPrimingAlarmAlways},	/* 6 */
+		{STATE_NULL, PARENT_PRIMING_TREAT_KIDNEY_1_ALARM, CHILD_IDLE, ACTION_ON_ENTRY, &stateChildAlarmPriming[1], &manageParentPrimingAlarmEntry},	  /* 5 */
+		{STATE_NULL, PARENT_PRIMING_TREAT_KIDNEY_1_ALARM, CHILD_IDLE, ACTION_ALWAYS,   &stateChildAlarmPriming[1], &manageParentPrimingAlarmAlways},  /* 6 */
 		/* priming end */
-		{STATE_NULL, PARENT_PRIMING_TREAT_KIDNEY_1_END, CHILD_IDLE, ACTION_ON_ENTRY, &stateChildIdle[0], &manageParentPrimingEntry},	/* 7 */
-		{STATE_NULL, PARENT_PRIMING_TREAT_KIDNEY_1_END, CHILD_IDLE, ACTION_ALWAYS, &stateChildIdle[0], &manageParentPrimingAlways},		/* 8 */
+		{STATE_NULL, PARENT_PRIMING_TREAT_KIDNEY_1_END,   CHILD_IDLE, ACTION_ON_ENTRY, &stateChildIdle[0],         &manageParentPrimingEntry},	      /* 7 */
+		{STATE_NULL, PARENT_PRIMING_TREAT_KIDNEY_1_END,   CHILD_IDLE, ACTION_ALWAYS,   &stateChildIdle[0],         &manageParentPrimingAlways},		  /* 8 */
 
 		{}
 };
@@ -244,19 +285,19 @@ struct machineParent stateParentPrimingTreatKidney1[] =
 
 struct machineParent stateParentTreatKidney1[] =
 {
-		{STATE_NULL, PARENT_NULL, CHILD_NULL, ACTION_NULL, &stateChildIdle[0], &manageNull},											/* 0 */
+		{STATE_NULL, PARENT_NULL,                   CHILD_NULL, ACTION_NULL,     &stateChildIdle[0],        &manageNull},						/* 0 */
 		/* priming init */
-		{STATE_NULL, PARENT_TREAT_KIDNEY_1_INIT, CHILD_IDLE, ACTION_ON_ENTRY, &stateChildIdle[0], &manageParentTreatEntry},				/* 1 */
-		{STATE_NULL, PARENT_TREAT_KIDNEY_1_INIT, CHILD_IDLE, ACTION_ALWAYS, &stateChildIdle[0], &manageParentTreatAlways},				/* 2 */
+		{STATE_NULL, PARENT_TREAT_KIDNEY_1_INIT,    CHILD_IDLE, ACTION_ON_ENTRY, &stateChildIdle[0],        &manageParentTreatEntry},			/* 1 */
+		{STATE_NULL, PARENT_TREAT_KIDNEY_1_INIT,    CHILD_IDLE, ACTION_ALWAYS,   &stateChildIdle[0],        &manageParentTreatAlways},			/* 2 */
 		/* priming run */
-		{STATE_NULL, PARENT_TREAT_KIDNEY_1_PUMP_ON, CHILD_IDLE, ACTION_ON_ENTRY, &stateChildIdle[0], &manageParentTreatEntry},			/* 3 */
-		{STATE_NULL, PARENT_TREAT_KIDNEY_1_PUMP_ON, CHILD_IDLE, ACTION_ALWAYS, &stateChildIdle[0], &manageParentTreatAlways},			/* 4 */
+		{STATE_NULL, PARENT_TREAT_KIDNEY_1_PUMP_ON, CHILD_IDLE, ACTION_ON_ENTRY, &stateChildIdle[0],        &manageParentTreatEntry},			/* 3 */
+		{STATE_NULL, PARENT_TREAT_KIDNEY_1_PUMP_ON, CHILD_IDLE, ACTION_ALWAYS,   &stateChildIdle[0],        &manageParentTreatAlways},			/* 4 */
 		/* priming alarm */
-		{STATE_NULL, PARENT_TREAT_KIDNEY_1_ALARM, CHILD_IDLE, ACTION_ON_ENTRY, &stateChildIdle[0], &manageParentTreatAlarmEntry},		/* 5 */
-		{STATE_NULL, PARENT_TREAT_KIDNEY_1_ALARM, CHILD_IDLE, ACTION_ALWAYS, &stateChildIdle[0], &manageParentTreatAlarmAlways},		/* 6 */
+		{STATE_NULL, PARENT_TREAT_KIDNEY_1_ALARM,   CHILD_IDLE, ACTION_ON_ENTRY, &stateChildAlarmTreat1[1], &manageParentTreatAlarmEntry},		/* 5 */
+		{STATE_NULL, PARENT_TREAT_KIDNEY_1_ALARM,   CHILD_IDLE, ACTION_ALWAYS,   &stateChildAlarmTreat1[1], &manageParentTreatAlarmAlways},	    /* 6 */
 		/* priming end */
-		{STATE_NULL, PARENT_TREAT_KIDNEY_1_END, CHILD_IDLE, ACTION_ON_ENTRY, &stateChildIdle[0], &manageParentTreatEntry},				/* 7 */
-		{STATE_NULL, PARENT_TREAT_KIDNEY_1_END, CHILD_IDLE, ACTION_ALWAYS, &stateChildIdle[0], &manageParentTreatAlways},				/* 8 */
+		{STATE_NULL, PARENT_TREAT_KIDNEY_1_END,     CHILD_IDLE, ACTION_ON_ENTRY, &stateChildIdle[0],        &manageParentTreatEntry},			/* 7 */
+		{STATE_NULL, PARENT_TREAT_KIDNEY_1_END,     CHILD_IDLE, ACTION_ALWAYS,   &stateChildIdle[0],        &manageParentTreatAlways},		    /* 8 */
 
 		{}
 };
@@ -265,43 +306,54 @@ struct machineParent stateParentTreatKidney1[] =
 /*********SATATE LEVEL*************/
 /*********************************/
 
+/*
+  (FM)
+  descrizione singola struttura      machineState
+  { STATE_NULL,                      stato reale della macchina
+    PARENT_NULL,                     valore sempre nullo per ora (mai usato)
+    CHILD_NULL,                      valore sempre nullo per ora (mai usato)
+    ACTION_ON_ENTRY(ACTION_NULL),    quando deve avvenire l'azione specificata nell'ultimo parametro (*)
+    &stateParentNull[0],             insirizzo dell'array di strutture machineParent da utilizzare in questo stato
+    &manageNull},                    azione da effettuare quando si entra nello stato o sempre a secondo
+                                     di quanto specificato in (*)
+*/
 struct machineState stateState[] =
 		{
 
 		 /**************************************************************************************/
 		 /******-----------------------------MACHINE STATE------------------------------********/
 		 /**************************************************************************************/
-		{STATE_NULL, PARENT_NULL, CHILD_NULL, ACTION_ON_ENTRY/*ACTION_NULL*/, &stateParentNull[0], &manageNull},							/* 0 */
+		{STATE_NULL,               PARENT_NULL, CHILD_NULL, ACTION_ON_ENTRY/*ACTION_NULL*/, &stateParentNull[0],                &manageNull},					/* 0 */
 
-		{STATE_ENTRY, PARENT_NULL, CHILD_NULL, ACTION_ON_ENTRY, &stateParentEntry[1], &manageStateEntry},									/* 1 */
-		{STATE_ENTRY, PARENT_NULL, CHILD_NULL, ACTION_ALWAYS, &stateParentEntry[2], &manageStateEntryAlways},								/* 2 */
+		{STATE_ENTRY,              PARENT_NULL, CHILD_NULL, ACTION_ON_ENTRY,                &stateParentEntry[1],               &manageStateEntry},				/* 1 */
+		{STATE_ENTRY,              PARENT_NULL, CHILD_NULL, ACTION_ALWAYS,                  &stateParentEntry[2],               &manageStateEntryAlways},		/* 2 */
 
-		{STATE_IDLE, PARENT_NULL, CHILD_NULL, ACTION_ON_ENTRY, &stateParentNull[0], &manageStateIdle},										/* 3 */
-		{STATE_IDLE, PARENT_NULL, CHILD_NULL, ACTION_ALWAYS, &stateParentNull[0], &manageStateIdleAlways},									/* 4 */
+		{STATE_IDLE,               PARENT_NULL, CHILD_NULL, ACTION_ON_ENTRY,                &stateParentNull[0],                &manageStateIdle},				/* 3 */
+		{STATE_IDLE,               PARENT_NULL, CHILD_NULL, ACTION_ALWAYS,                  &stateParentNull[0],                &manageStateIdleAlways},		/* 4 */
 
-		{STATE_SELECT_TREAT, PARENT_NULL, CHILD_NULL, ACTION_ON_ENTRY, &stateParentNull[0], &manageStateSelTreat},							/* 5 */
-		{STATE_SELECT_TREAT, PARENT_NULL, CHILD_NULL, ACTION_ALWAYS, &stateParentNull[0], &manageStateSelTreatAlways},						/* 6 */
+		{STATE_SELECT_TREAT,       PARENT_NULL, CHILD_NULL, ACTION_ON_ENTRY,                &stateParentNull[0],                &manageStateSelTreat},			/* 5 */
+		{STATE_SELECT_TREAT,       PARENT_NULL, CHILD_NULL, ACTION_ALWAYS,                  &stateParentNull[0],                &manageStateSelTreatAlways},	/* 6 */
 
-		{STATE_T1_NO_DISPOSABLE, PARENT_NULL, CHILD_NULL, ACTION_ON_ENTRY, &stateParentNull[0], &manageStateT1NoDisp},						/* 7 */
-		{STATE_T1_NO_DISPOSABLE, PARENT_NULL, CHILD_NULL, ACTION_ALWAYS, &stateParentNull[0], &manageStateT1NoDispAlways},					/* 8 */
+		{STATE_T1_NO_DISPOSABLE,   PARENT_NULL, CHILD_NULL, ACTION_ON_ENTRY,                &stateParentNull[0],                &manageStateT1NoDisp},			/* 7 */
+		{STATE_T1_NO_DISPOSABLE,   PARENT_NULL, CHILD_NULL, ACTION_ALWAYS,                  &stateParentNull[0],                &manageStateT1NoDispAlways},	/* 8 */
 
-		{STATE_MOUNTING_DISP, PARENT_NULL, CHILD_NULL, ACTION_ON_ENTRY, &stateParentNull[0], &manageStateMountDisp},						/* 9 */
-		{STATE_MOUNTING_DISP, PARENT_NULL, CHILD_NULL, ACTION_ALWAYS, &stateParentNull[0], &manageStateMountDispAlways},					/* 10 */
+		{STATE_MOUNTING_DISP,      PARENT_NULL, CHILD_NULL, ACTION_ON_ENTRY,                &stateParentNull[0],                &manageStateMountDisp},			/* 9 */
+		{STATE_MOUNTING_DISP,      PARENT_NULL, CHILD_NULL, ACTION_ALWAYS,                  &stateParentNull[0],                &manageStateMountDispAlways},	/* 10 */
 
-		{STATE_TANK_FILL, PARENT_NULL, CHILD_NULL, ACTION_ON_ENTRY, &stateParentNull[0], &manageStateTankFill},								/* 11 */
-		{STATE_TANK_FILL, PARENT_NULL, CHILD_NULL, ACTION_ALWAYS, &stateParentNull[0], &manageStateTankFillAlways},							/* 12 */
+		{STATE_TANK_FILL,          PARENT_NULL, CHILD_NULL, ACTION_ON_ENTRY,                &stateParentNull[0],                &manageStateTankFill},			/* 11 */
+		{STATE_TANK_FILL,          PARENT_NULL, CHILD_NULL, ACTION_ALWAYS,                  &stateParentNull[0],                &manageStateTankFillAlways},	/* 12 */
 
-		{STATE_PRIMING_PH_1, PARENT_NULL, CHILD_NULL, ACTION_ON_ENTRY, &stateParentPrimingTreatKidney1[1], &managePrimingPh1},				/* 13 */
-		{STATE_PRIMING_PH_1, PARENT_NULL, CHILD_NULL, ACTION_ALWAYS, &stateParentPrimingTreatKidney1[1], &managePrimingPh1Always},			/* 14 */
+		{STATE_PRIMING_PH_1,       PARENT_NULL, CHILD_NULL, ACTION_ON_ENTRY,                &stateParentPrimingTreatKidney1[1], &managePrimingPh1},				/* 13 */
+		{STATE_PRIMING_PH_1,       PARENT_NULL, CHILD_NULL, ACTION_ALWAYS,                  &stateParentPrimingTreatKidney1[1], &managePrimingPh1Always},		/* 14 */
 
-		{STATE_PRIMING_PH_2, PARENT_NULL, CHILD_NULL, ACTION_ON_ENTRY, &stateParentPrimingTreatKidney1[1], &managePrimingPh2},				/* 15 */
-		{STATE_PRIMING_PH_2, PARENT_NULL, CHILD_NULL, ACTION_ALWAYS, &stateParentPrimingTreatKidney1[1], &managePrimingPh2Always},			/* 16 */
+		{STATE_PRIMING_PH_2,       PARENT_NULL, CHILD_NULL, ACTION_ON_ENTRY,                &stateParentPrimingTreatKidney1[1], &managePrimingPh2},				/* 15 */
+		{STATE_PRIMING_PH_2,       PARENT_NULL, CHILD_NULL, ACTION_ALWAYS,                  &stateParentPrimingTreatKidney1[1], &managePrimingPh2Always},		/* 16 */
 
-		{STATE_TREATMENT_KIDNEY_1, PARENT_NULL, CHILD_NULL, ACTION_ON_ENTRY, &stateParentTreatKidney1[1], &manageStateTreatKidney1},		/* 17 */
-		{STATE_TREATMENT_KIDNEY_1, PARENT_NULL, CHILD_NULL, ACTION_ALWAYS, &stateParentTreatKidney1[1], &manageStateTreatKidney1Always},	/* 18 */
+		{STATE_TREATMENT_KIDNEY_1, PARENT_NULL, CHILD_NULL, ACTION_ON_ENTRY,                &stateParentTreatKidney1[1],        &manageStateTreatKidney1},		/* 17 */
+		{STATE_TREATMENT_KIDNEY_1, PARENT_NULL, CHILD_NULL, ACTION_ALWAYS,                  &stateParentTreatKidney1[1],        &manageStateTreatKidney1Always},/* 18 */
 
-		{STATE_EMPTY_DISPOSABLE, PARENT_NULL, CHILD_NULL, ACTION_ON_ENTRY, &stateParentNull[0], &manageStateEmptyDisp},						/* 19 */
-		{STATE_EMPTY_DISPOSABLE, PARENT_NULL, CHILD_NULL, ACTION_ALWAYS, &stateParentNull[0], &manageStateEmptyDispAlways},					/* 20 */
+		{STATE_EMPTY_DISPOSABLE,   PARENT_NULL, CHILD_NULL, ACTION_ON_ENTRY,                &stateParentNull[0],                &manageStateEmptyDisp},			/* 19 */
+		{STATE_EMPTY_DISPOSABLE,   PARENT_NULL, CHILD_NULL, ACTION_ALWAYS,                  &stateParentNull[0],                &manageStateEmptyDispAlways},	/* 20 */
 
 		/**************************************************************************************/
 		/******-----------------------------MACHINE STATE------------------------------********/
@@ -321,20 +373,20 @@ struct machineState stateState[] =
 		 //{STATE_PRIMING_TREAT_2, PARENT_NULL, CHILD_NULL, ACTION_ALWAYS, &stateParentNull[0], &manageStatePrimingTreat2Always},
 
 
-		 {STATE_TREATMENT_2, PARENT_NULL, CHILD_NULL, ACTION_ON_ENTRY, &stateParentNull[0], &manageStateTreat2},
-		 {STATE_TREATMENT_2, PARENT_NULL, CHILD_NULL, ACTION_ALWAYS, &stateParentNull[0], &manageStateTreat2},
+		 {STATE_TREATMENT_2,        PARENT_NULL, CHILD_NULL, ACTION_ON_ENTRY, &stateParentNull[0], &manageStateTreat2},
+		 {STATE_TREATMENT_2,        PARENT_NULL, CHILD_NULL, ACTION_ALWAYS,   &stateParentNull[0], &manageStateTreat2},
 
 		 {STATE_EMPTY_DISPOSABLE_1, PARENT_NULL, CHILD_NULL, ACTION_ON_ENTRY, &stateParentNull[0], &manageStateEmptyDisp1},
-		 {STATE_EMPTY_DISPOSABLE_1, PARENT_NULL, CHILD_NULL, ACTION_ALWAYS, &stateParentNull[0], &manageStateEmptyDisp1Always},
+		 {STATE_EMPTY_DISPOSABLE_1, PARENT_NULL, CHILD_NULL, ACTION_ALWAYS,   &stateParentNull[0], &manageStateEmptyDisp1Always},
 
 		 {STATE_EMPTY_DISPOSABLE_2, PARENT_NULL, CHILD_NULL, ACTION_ON_ENTRY, &stateParentNull[0], &manageStateEmptyDisp2},
-		 {STATE_EMPTY_DISPOSABLE_2, PARENT_NULL, CHILD_NULL, ACTION_ALWAYS, &stateParentNull[0], &manageStateEmptyDisp2Always},
+		 {STATE_EMPTY_DISPOSABLE_2, PARENT_NULL, CHILD_NULL, ACTION_ALWAYS,   &stateParentNull[0], &manageStateEmptyDisp2Always},
 
-		 {STATE_WASHING, PARENT_NULL, CHILD_NULL, ACTION_ON_ENTRY, &stateParentNull[0], &manageStateWashing},
-		 {STATE_WASHING, PARENT_NULL, CHILD_NULL, ACTION_ALWAYS, &stateParentNull[0], &manageStateWashingAlways},
+		 {STATE_WASHING,            PARENT_NULL, CHILD_NULL, ACTION_ON_ENTRY, &stateParentNull[0], &manageStateWashing},
+		 {STATE_WASHING,            PARENT_NULL, CHILD_NULL, ACTION_ALWAYS,   &stateParentNull[0], &manageStateWashingAlways},
 
-		 {STATE_FATAL_ERROR, PARENT_NULL, CHILD_NULL, ACTION_NULL, &stateParentNull[0], &manageStateFatalError},
-		 {STATE_FATAL_ERROR, PARENT_NULL, CHILD_NULL, ACTION_NULL, &stateParentNull[0], &manageStateFatalErrorAlways},
+		 {STATE_FATAL_ERROR,        PARENT_NULL, CHILD_NULL, ACTION_NULL,     &stateParentNull[0], &manageStateFatalError},
+		 {STATE_FATAL_ERROR,        PARENT_NULL, CHILD_NULL, ACTION_NULL,     &stateParentNull[0], &manageStateFatalErrorAlways},
 
 		 {}
 };
@@ -981,6 +1033,9 @@ void manageParentPrimingAlways(void){
 
 void manageParentPrimingAlarmEntry(void)
 {
+	/*
+	 * (FM) per ora commento tutto questo perche' per la gestione dell'allarme puo' essere fatta in diversi modi ed e'
+	 * meglio farla dentro lo switch del child
 	//static unsigned char oneShot = 0;
 	if(pumpPerist[0].dataReady == DATA_READY_FALSE)
 	{
@@ -995,40 +1050,48 @@ void manageParentPrimingAlarmEntry(void)
 	}
 
 	pumpPerist[0].entry = 0;
+	*/
 }
 
 void manageParentTreatAlarmEntry(void){
 
+	/*
+	 * (FM) per ora commento tutto questo perche' per la gestione dell'allarme puo' essere fatta in diversi modi ed e'
+	 * meglio farla dentro lo switch del child
 	if(pumpPerist[0].dataReady == DATA_READY_FALSE)
 	{
-	setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
-	setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 0);
-	setPinchPositionHighLevel(PNCHVLV1_ADDRESS, MODBUS_PINCH_LEFT_OPEN);
-	setPinchPositionHighLevel(PNCHVLV2_ADDRESS, MODBUS_PINCH_POS_CLOSED);
-	setPinchPositionHighLevel(PNCHVLV3_ADDRESS, MODBUS_PINCH_LEFT_OPEN);
+		setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
+		setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 0);
+		setPinchPositionHighLevel(PNCHVLV1_ADDRESS, MODBUS_PINCH_LEFT_OPEN);
+		setPinchPositionHighLevel(PNCHVLV2_ADDRESS, MODBUS_PINCH_POS_CLOSED);
+		setPinchPositionHighLevel(PNCHVLV3_ADDRESS, MODBUS_PINCH_LEFT_OPEN);
 
-	stopPeltierActuator();
+		stopPeltierActuator();
 	}
 
 	pumpPerist[0].actualSpeedOld = 0;
 	pumpPerist[0].entry = 0;
+	*/
 }
 
 
 
 void manageParentPrimingAlarmAlways(void){
+/*
+ * (FM) per ora commento tutto questo perche' per la gestione dell'allarme puo' essere fatta in diversi modi ed e'
+ * meglio farla dentro lo switch del child
 	//static unsigned char oneShot = 0;
 	static int speed = 0;
 	static int timerCopy = 0;
 
 	if((pumpPerist[0].dataReady == DATA_READY_FALSE) && (speed != 0))
 	{
-	setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
-	setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 0);
-	setPinchPositionHighLevel(PNCHVLV1_ADDRESS, MODBUS_PINCH_POS_CLOSED);
-	setPinchPositionHighLevel(PNCHVLV2_ADDRESS, MODBUS_PINCH_POS_CLOSED);
-	setPinchPositionHighLevel(PNCHVLV3_ADDRESS, MODBUS_PINCH_POS_CLOSED);
-	//oneShot = 1;
+		setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
+		setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 0);
+		setPinchPositionHighLevel(PNCHVLV1_ADDRESS, MODBUS_PINCH_POS_CLOSED); // forse vanno messe in scarico e non chiuse !!!!
+		setPinchPositionHighLevel(PNCHVLV2_ADDRESS, MODBUS_PINCH_POS_CLOSED);
+		setPinchPositionHighLevel(PNCHVLV3_ADDRESS, MODBUS_PINCH_POS_CLOSED);
+		//oneShot = 1;
 	}
 
 	if((timerCounterModBus%9) == 8)
@@ -1046,10 +1109,14 @@ void manageParentPrimingAlarmAlways(void){
 
 		pumpPerist[0].dataReady = DATA_READY_FALSE;
 	}
+*/
 }
 
 void manageParentTreatAlarmAlways(void){
 
+	/*
+	 * (FM) per ora commento tutto questo perche' per la gestione dell'allarme puo' essere fatta in diversi modi ed e'
+	 * meglio farla dentro lo switch del child
 	static int speed = 0;
 	static int timerCopy = 0;
 
@@ -1077,7 +1144,7 @@ void manageParentTreatAlarmAlways(void){
 
 		pumpPerist[0].dataReady = DATA_READY_FALSE;
 	}
-
+*/
 }
 
 void manageParentTreatEntry(void){
@@ -1354,6 +1421,9 @@ void manageParentEntry(void)
 	#ifdef DEBUG_ENABLE
 	Bit1_NegVal();
 	#endif
+
+	// (FM) qui posso far partire il T1 test e l'inizializzazione della comm
+	// TODO
 }
 
 void manageParentEntryAlways(void)
@@ -1365,6 +1435,12 @@ void manageParentEntryAlways(void)
 	if(index3%14000 == 0)
 		Bit1_NegVal();
 	#endif
+
+	// TODO
+	// (FM) qui posso gestire il T1 test e l'inizializzazione della comm ed alla fine
+	// devo eseguire le due istruzioni
+	currentGuard[GUARD_HW_T1T_DONE].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+	currentGuard[GUARD_COMM_ENABLED].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
 }
 
 /* CHILD LEVEL FUNCTION */
@@ -1435,10 +1511,9 @@ void readDigitalSensor(void)
 /*  This function compute the guard value in entry state   */
 /*--------------------------------------------------------*/
 static void computeMachineStateGuardEntryState(void){
-	if(
-		(currentGuard[GUARD_HW_T1T_DONE].guardValue == GUARD_VALUE_TRUE) &&
-		(currentGuard[GUARD_COMM_ENABLED].guardValue == GUARD_VALUE_TRUE)
-			){
+	if((currentGuard[GUARD_HW_T1T_DONE].guardValue == GUARD_VALUE_TRUE) &&
+		(currentGuard[GUARD_COMM_ENABLED].guardValue == GUARD_VALUE_TRUE))
+	{
 		currentGuard[GUARD_ENABLE_STATE_IDLE].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
 	}
 }
@@ -1617,6 +1692,11 @@ void processMachineState(void)
 			{
 				ptrCurrentState->callBackFunct();
 				actionFlag = 1;
+
+				// (FM) faccio in modo che dopo un aprima inizializzazione esca subito e vada
+				// nello stato STATE_ENTRY
+				if( currentGuard[GUARD_START_ENABLE].guardValue != GUARD_VALUE_TRUE)
+					currentGuard[GUARD_START_ENABLE].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
 			}
 
 			/* execute function parent and child level */
@@ -1634,11 +1714,10 @@ void processMachineState(void)
 
 		case STATE_ENTRY:
 			/* compute future state */
-			if(
-				(currentGuard[GUARD_HW_T1T_DONE].guardValue == GUARD_VALUE_TRUE) &&
-				(currentGuard[GUARD_COMM_ENABLED].guardValue == GUARD_VALUE_TRUE)
-				)
+			if((currentGuard[GUARD_HW_T1T_DONE].guardValue == GUARD_VALUE_TRUE) &&
+				(currentGuard[GUARD_COMM_ENABLED].guardValue == GUARD_VALUE_TRUE))
 			{
+				/* (FM) VADO NELLO STATO IDLE,ACTION_ON_ENTRY DATO CHE LA FASE INIZIALE DI TEST E' FINITA */
 				/* compute future state */
 				ptrFutureState = &stateState[3];
 				/* compute future parent */
@@ -1648,33 +1727,40 @@ void processMachineState(void)
 			}
 
 			/* compute parent......compute child */
+			if(ptrCurrentParent->action == ACTION_ON_ENTRY)
+			{
+				/* execute parent callback function */
+				// non serve qui verra' chiamata nella manageStateEntryAndStateAlways
+				//ptrCurrentParent->callBackFunct();
+				/* compute future parent */
+				ptrFutureParent = &stateParentEntry[2];
+			}
+			else if(ptrCurrentParent->action == ACTION_ALWAYS)
+			{
+				// non serve qui verra' chiamata nella manageStateEntryAndStateAlways
+				// ptrCurrentParent->callBackFunct();
+			}
+
+			if(ptrCurrentChild->child == CHILD_ENTRY)
+			{
+				if(ptrCurrentChild->action == ACTION_ON_ENTRY)
+				{
+					/* (FM) esegue la parte ACTION_ON_ENTRY dello stato entry - child */
+					// non serve qui verra' chiamata nella manageStateEntryAndStateAlways
+					//ptrCurrentChild->callBackFunct();
+					ptrFutureChild = &stateChildEntry[2];
+				}
+				else if(ptrCurrentChild->action == ACTION_ALWAYS){
+					/* (FM) esegue la parte ACTION_ALWAYS dello stato entry - child */
+					// non serve qui verra' chiamata nella manageStateEntryAndStateAlways
+					// ptrCurrentChild->callBackFunct();
+				}
+			}
 
 			/* execute function state level */
+            /* (FM) DOPO AVER ESEGUITO IL CODICE IN ENTRATA DELLO STATO (ACTION_ON_ENTRY) SI SPOSTA NELLO STATO ACTION_ALWAYS
+               E LI' RIMANE FINO A QUANDO NON GLI ARRIVA UN NUOVO COMANDO */
 			manageStateEntryAndStateAlways(2);
-
-			/*if(ptrCurrentState->action == ACTION_ON_ENTRY)
-			{
-				// execute state callback function
-				ptrCurrentState->callBackFunct();
-				// compute future state
-				ptrFutureState = &stateState[2];
-				// execute parent callback function
-				ptrCurrentParent->callBackFunct();
-				// compute future parent
-				ptrFutureParent = ptrFutureState->ptrParent;
-				// execute child callback function
-				ptrCurrentChild->callBackFunct();
-				// compute future child
-				ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
-				actionFlag = 1;
-			}
-			else if(ptrCurrentState->action == ACTION_ALWAYS)
-			{
-				ptrCurrentState->callBackFunct();
-				ptrCurrentParent->callBackFunct();
-				ptrCurrentChild->callBackFunct();
-			}*/
-
 			break;
 
 		case STATE_IDLE:
@@ -1683,6 +1769,8 @@ void processMachineState(void)
 				(currentGuard[GUARD_ENABLE_SELECT_TREAT_PAGE].guardValue == GUARD_VALUE_TRUE)
 				)
 			{
+			    /* (FM) HO RICEVUTO UN COMANDO (DA TASTIERA O SERIALE) CHE MI CHIEDE DI ENTRARE NELLO STATO DI
+			       SELEZIONE DEL TRATTAMENTO */
 				/* compute future state */
 				ptrFutureState = &stateState[5];
 				/* compute future parent */
@@ -1691,31 +1779,8 @@ void processMachineState(void)
 				ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
 			}
 			/* execute function state level */
+			// (FM) DOPO LA PRIMA VOLTA PASSA AUTOMATICAMENTE NELLO STATO IDLE,ACTION_ALWAYS
 			manageStateEntryAndStateAlways(4);
-
-			/*if(ptrCurrentState->action == ACTION_ON_ENTRY)
-			{
-				// execute state callback function
-				ptrCurrentState->callBackFunct();
-				// compute future state
-				ptrFutureState = &stateState[4];
-				// execute parent callback function
-				ptrCurrentParent->callBackFunct();
-				// compute future parent
-				ptrFutureParent = ptrFutureState->ptrParent;
-				// execute child callback function
-				ptrCurrentChild->callBackFunct();
-				// compute future child
-				ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
-				actionFlag = 1;
-			}
-			else if(ptrCurrentState->action == ACTION_ALWAYS)
-			{
-				ptrCurrentState->callBackFunct();
-				ptrCurrentParent->callBackFunct();
-				ptrCurrentChild->callBackFunct();
-			}*/
-
 
 			#ifdef DEBUG_ENABLE
 			Bit1_NegVal();
@@ -1725,10 +1790,9 @@ void processMachineState(void)
 
 		case STATE_SELECT_TREAT:
 			/* compute future state */
-			if(
-					(currentGuard[GUARD_ENABLE_MOUNT_DISPOSABLE].guardValue == GUARD_VALUE_TRUE)
-				)
+			if( (currentGuard[GUARD_ENABLE_MOUNT_DISPOSABLE].guardValue == GUARD_VALUE_TRUE) )
 			{
+				/* (FM) E' ARRIVATO UN COMANDO CHE MI CHIEDE DI PASSARE ALLA FASE DI INSTALLAZIONE DEL DISPOSABLE */
 				/* compute future state */
 				ptrFutureState = &stateState[9];
 				/* compute future parent */
@@ -1739,30 +1803,6 @@ void processMachineState(void)
 
 			/* execute function state level */
 			manageStateEntryAndStateAlways(6);
-
-			/*if(ptrCurrentState->action == ACTION_ON_ENTRY)
-			{
-				// execute state callback function
-				ptrCurrentState->callBackFunct();
-				// compute future state
-				ptrFutureState = &stateState[6];
-				// execute parent callback function
-				ptrCurrentParent->callBackFunct();
-				// compute future parent
-				ptrFutureParent = ptrFutureState->ptrParent;
-				// execute child callback function
-				ptrCurrentChild->callBackFunct();
-				// compute future child
-				ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
-				actionFlag = 1;
-			}
-			else if(ptrCurrentState->action == ACTION_ALWAYS)
-			{
-				ptrCurrentState->callBackFunct();
-				ptrCurrentParent->callBackFunct();
-				ptrCurrentChild->callBackFunct();
-			}*/
-
 			break;
 
 		case STATE_T1_NO_DISPOSABLE:
@@ -1773,6 +1813,8 @@ void processMachineState(void)
 				(currentGuard[GUARD_ENABLE_TANK_FILL].guardValue == GUARD_VALUE_TRUE)
 				)
 			{
+			    /* (FM) FINITA LA FASE DI MONTAGGIO DEL DISPOSABLE, POSSO PASSARE ALLA FASE DI RIEMPIMENTO
+			       DEL RECIPIENTE */
 				/* compute future state */
 				ptrFutureState = &stateState[11];
 				/* compute future parent */
@@ -1783,30 +1825,6 @@ void processMachineState(void)
 
 			/* execute function state level */
 			manageStateEntryAndStateAlways(10);
-
-			/*if(ptrCurrentState->action == ACTION_ON_ENTRY)
-			{
-				// execute state callback function
-				ptrCurrentState->callBackFunct();
-				// compute future state
-				ptrFutureState = &stateState[10];
-				// execute parent callback function
-				ptrCurrentParent->callBackFunct();
-				// compute future parent
-				ptrFutureParent = ptrFutureState->ptrParent;
-				// execute child callback function
-				ptrCurrentChild->callBackFunct();
-				// compute future child
-				ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
-				actionFlag = 1;
-			}
-			else if(ptrCurrentState->action == ACTION_ALWAYS)
-			{
-				ptrCurrentState->callBackFunct();
-				ptrCurrentParent->callBackFunct();
-				ptrCurrentChild->callBackFunct();
-			}*/
-
 			break;
 
 		case STATE_TANK_FILL:
@@ -1814,6 +1832,7 @@ void processMachineState(void)
 				(currentGuard[GUARD_ENABLE_PRIMING_PHASE_1].guardValue == GUARD_VALUE_TRUE)
 				)
 			{
+				/* (FM) FINITA LA FASE DI RIEMPIMENTO POSSO PASSARE ALLA FASE 1 DEL PRIMING */
 				/* compute future state */
 				ptrFutureState = &stateState[13];
 				/* compute future parent */
@@ -1823,30 +1842,6 @@ void processMachineState(void)
 			}
 			/* execute function state level */
 			manageStateEntryAndStateAlways(12);
-
-			/*if(ptrCurrentState->action == ACTION_ON_ENTRY)
-			{
-				// execute state callback function
-				ptrCurrentState->callBackFunct();
-				// compute future state
-				ptrFutureState = &stateState[12];
-				// execute parent callback function
-				ptrCurrentParent->callBackFunct();
-				// compute future parent
-				ptrFutureParent = ptrFutureState->ptrParent;
-				// execute child callback function
-				ptrCurrentChild->callBackFunct();
-				// compute future child
-				ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
-				actionFlag = 1;
-			}
-			else if(ptrCurrentState->action == ACTION_ALWAYS)
-			{
-				ptrCurrentState->callBackFunct();
-				ptrCurrentParent->callBackFunct();
-				ptrCurrentChild->callBackFunct();
-			}*/
-
 			break;
 
 		case STATE_PRIMING_PH_1:
@@ -1854,6 +1849,7 @@ void processMachineState(void)
 				(currentGuard[GUARD_ENABLE_PRIMING_PHASE_2].guardValue == GUARD_VALUE_TRUE)
 				)
 			{
+				/* (FM) FINITA LA FASE 1 DEL PRIMING POSSO PASSARE ALLA FASE 2 */
 				/* compute future state */
 				ptrFutureState = &stateState[15];
 				/* compute future parent */
@@ -1863,30 +1859,6 @@ void processMachineState(void)
 			}
 			/* execute function state level */
 			manageStateEntryAndStateAlways(14);
-
-			/*if(ptrCurrentState->action == ACTION_ON_ENTRY)
-			{
-				// execute state callback function
-				ptrCurrentState->callBackFunct();
-				// compute future state
-				ptrFutureState = &stateState[14];
-				// execute parent callback function
-				ptrCurrentParent->callBackFunct();
-				// compute future parent
-				ptrFutureParent = ptrFutureState->ptrParent;
-				// execute child callback function
-				ptrCurrentChild->callBackFunct();
-				// compute future child
-				ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
-				actionFlag = 1;
-			}
-			else if(ptrCurrentState->action == ACTION_ALWAYS)
-			{
-				ptrCurrentState->callBackFunct();
-				ptrCurrentParent->callBackFunct();
-				ptrCurrentChild->callBackFunct();
-			}*/
-
 			break;
 
 		case STATE_PRIMING_PH_2:
@@ -1894,6 +1866,7 @@ void processMachineState(void)
 				(currentGuard[GUARD_ENABLE_TREATMENT_KIDNEY_1].guardValue == GUARD_VALUE_TRUE)
 				)
 			{
+				/* (FM) FINITA LA FASE 2 DEL PRIMING POSSO PASSARE AL TRATTAMENTO ..KIDNEY_1 */
 				/* compute future state */
 				ptrFutureState = &stateState[17];
 				/* compute future parent */
@@ -1903,33 +1876,15 @@ void processMachineState(void)
 			}
 			/* execute function state level */
 			manageStateEntryAndStateAlways(16);
-
-			/*if(ptrCurrentState->action == ACTION_ON_ENTRY)
-			{
-				// execute state callback function
-				ptrCurrentState->callBackFunct();
-				// compute future state
-				ptrFutureState = &stateState[16];
-				// execute parent callback function
-				ptrCurrentParent->callBackFunct();
-				// compute future parent
-				ptrFutureParent = ptrFutureState->ptrParent;
-				// execute child callback function
-				ptrCurrentChild->callBackFunct();
-				// compute future child
-				ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
-				actionFlag = 1;
-			}
-			else if(ptrCurrentState->action == ACTION_ALWAYS)
-			{
-				ptrCurrentState->callBackFunct();
-				ptrCurrentParent->callBackFunct();
-				ptrCurrentChild->callBackFunct();
-			}*/
-
 			break;
 
 		case STATE_TREATMENT_KIDNEY_1:
+            /* (FM) SONO IN TRATTAMENTO A QUESTO PUNTO FUNZIONANO GLI ALLARMI E SONO IN ATTESA DELL'ATTIVAZIONE DI
+               currentGuard[GUARD_ENABLE_DISPOSABLE_EMPTY].guardEntryValue (AVVERRA' QUANDO L'UTENTE PREMERA' LO STOP ALLE POMPE
+               O SEMPLICEMENTE IL TASTO ENTER (VEDI FUNZIONE manageStateTreatKidney1Always).
+               QUANDO ARRIVERA', POTRO' TORNARE NELLO STATE_ENTRY INIZIALE (DA AGGIUNGERE).
+               TODO */
+
 			/* execute function state level */
 			manageStateEntryAndStateAlways(18);
 			break;
@@ -1964,27 +1919,32 @@ void processMachineState(void)
 	}
 
 	//questo switch andrà suddiviso e portato dentro i singoli case dello switch sopra........
+	/* (FM) POSSO FARE UNA FUNZIONE CHIAMATA stateParentPrimingTreatKidney1_func ED INSERIRE TUTTI I CASE
+	   RELATIVI AL PRIMING E CHIAMARLA SEMPRE NEI CASE STATE_PRIMING_PH_1, STATE_PRIMING_PH_2 DELLO SWITCH PRECEDENTE
+	   L'ALTRA FUNZIONE, ANALOGAMENTE POTRA' ESSERE CHIAMATA stateParentTreatKidney1_func, CONTERRA' TUTTI I CASE DAL PARENT_TREAT_KIDNEY_1_INIT
+	   IN POI. LA FUNZIONE CREATA DOVRA' ESSERE CHIAMATA NEL CASE STATE_TREATMENT_KIDNEY_1. */
 	switch(ptrCurrentParent->parent){
 		case PARENT_PRIMING_TREAT_KIDNEY_1_INIT:
 			if(buttonGUITreatment[BUTTON_CONFIRM].state == GUI_BUTTON_RELEASED)
 			{
 				releaseGUIButton(BUTTON_CONFIRM);
-
+				/* (FM) alla ricezione del comando da tastiera faccio partire la fase di priming */
 				ptrFutureParent = &stateParentPrimingTreatKidney1[3];
 			}
 
 			if(ptrCurrentParent->action == ACTION_ON_ENTRY)
-				{
-					/* execute parent callback function */
-					ptrCurrentParent->callBackFunct();
-					/* compute future parent */
-					ptrFutureParent = &stateParentPrimingTreatKidney1[2];
-				}
-			else if(ptrCurrentState->action == ACTION_ALWAYS)
-				{
-					ptrCurrentParent->callBackFunct();
-				}
+			{
+				/* execute parent callback function */
+				ptrCurrentParent->callBackFunct();
+				/* compute future parent */
+				ptrFutureParent = &stateParentPrimingTreatKidney1[2];
+			}
+			else if(ptrCurrentParent->action == ACTION_ALWAYS)
+			{
+				ptrCurrentParent->callBackFunct();
+			}
 
+			/* (FM) se si e' verificato un allarme lo faccio partire */
 			if(currentGuard[GUARD_ALARM_ACTIVE].guardValue == GUARD_VALUE_TRUE)
 			{
 				ptrFutureParent = &stateParentPrimingTreatKidney1[5];
@@ -2001,11 +1961,12 @@ void processMachineState(void)
 				/* compute future parent */
 				ptrFutureParent = &stateParentPrimingTreatKidney1[4];
 			}
-			else if(ptrCurrentState->action == ACTION_ALWAYS)
+			else if(ptrCurrentParent->action == ACTION_ALWAYS)
 			{
 				ptrCurrentParent->callBackFunct();
 			}
 
+			/* (FM) se si e' verificato un allarme lo faccio partire */
 			if(currentGuard[GUARD_ALARM_ACTIVE].guardValue == GUARD_VALUE_TRUE)
 			{
 				ptrFutureParent = &stateParentPrimingTreatKidney1[5];
@@ -2016,6 +1977,7 @@ void processMachineState(void)
 		case PARENT_PRIMING_TREAT_KIDNEY_1_ALARM:
 			if(currentGuard[GUARD_ALARM_ACTIVE].guardValue == GUARD_VALUE_FALSE)
 			{
+				/* (FM) finita la situazione di allarme posso ritornare in PARENT_PRIMING_TREAT_KIDNEY_1_INIT*/
 				ptrFutureParent = &stateParentPrimingTreatKidney1[1];
 			}
 
@@ -2026,7 +1988,7 @@ void processMachineState(void)
 				/* compute future parent */
 				ptrFutureParent = &stateParentPrimingTreatKidney1[6];
 			}
-			else if(ptrCurrentState->action == ACTION_ALWAYS)
+			else if(ptrCurrentParent->action == ACTION_ALWAYS)
 			{
 				ptrCurrentParent->callBackFunct();
 			}
@@ -2039,6 +2001,7 @@ void processMachineState(void)
 		case PARENT_TREAT_KIDNEY_1_INIT:
 			if(perfusionParam.treatVolPerfArt >= 200)
 			{
+				/* FM faccio partire la pompa */
 				ptrFutureParent = &stateParentTreatKidney1[3];
 			}
 
@@ -2047,15 +2010,17 @@ void processMachineState(void)
 				/* execute parent callback function */
 				ptrCurrentParent->callBackFunct();
 				/* compute future parent */
+				/* FM entro nello stato in cui l'azione e' di tipo ACTION_ALWAYS */
 				ptrFutureParent = &stateParentTreatKidney1[2];
 			}
-			else if(ptrCurrentState->action == ACTION_ALWAYS)
+			else if(ptrCurrentParent->action == ACTION_ALWAYS)
 			{
 				ptrCurrentParent->callBackFunct();
 			}
 
 			if(currentGuard[GUARD_ALARM_ACTIVE].guardValue == GUARD_VALUE_TRUE)
 			{
+				/* (FM) si e' verificato un allarme, passo alla sua gestione */
 				ptrFutureParent = &stateParentTreatKidney1[5];
 			}
 			break;
@@ -2066,15 +2031,17 @@ void processMachineState(void)
 				/* execute parent callback function */
 				ptrCurrentParent->callBackFunct();
 				/* compute future parent */
+				/* FM passo alla gestione ACTION_ALWAYS */
 				ptrFutureParent = &stateParentTreatKidney1[4];
 			}
-			else if(ptrCurrentState->action == ACTION_ALWAYS)
+			else if(ptrCurrentParent->action == ACTION_ALWAYS)
 			{
 				ptrCurrentParent->callBackFunct();
 			}
 
 			if(currentGuard[GUARD_ALARM_ACTIVE].guardValue == GUARD_VALUE_TRUE)
 			{
+				/* (FM) si e' verificato un allarme, passo alla sua gestione */
 				ptrFutureParent = &stateParentTreatKidney1[5];
 			}
 			break;
@@ -2082,6 +2049,7 @@ void processMachineState(void)
 		case PARENT_TREAT_KIDNEY_1_ALARM:
 			if(currentGuard[GUARD_ALARM_ACTIVE].guardValue == GUARD_VALUE_FALSE)
 			{
+				/* FM allarme finito posso ritornare nella fase iniziale del trattamento */
 				ptrFutureParent = &stateParentTreatKidney1[1];
 			}
 
@@ -2090,28 +2058,39 @@ void processMachineState(void)
 				/* execute parent callback function */
 				ptrCurrentParent->callBackFunct();
 				/* compute future parent */
+				/* (FM) passo alla gestione ACTION_ALWAYS dell'allarme */
 				ptrFutureParent = &stateParentTreatKidney1[6];
 			}
-			else if(ptrCurrentState->action == ACTION_ALWAYS)
+			else if(ptrCurrentParent->action == ACTION_ALWAYS)
 			{
 				ptrCurrentParent->callBackFunct();
+				// (FM) chiamo la funzione child che gestisce lo stato di allarme durante il trattamento
+				// Dovra fare tutte le attuazioni sulle pompe, pinch necessarie per risolvere la condizione
+				// di allarme
+				ManageStateChildAlarmTreat1();
 			}
 			break;
 
 		case PARENT_TREAT_KIDNEY_1_END:
+            /* (FM) fine del trattamento  devo rimanere fermo qui, fino a quando non ricevo un nuovo
+             comando di inizio trattamento */
 			break;
-
 
 		default:
 			break;
 	}
 
 
+    /* (FM) IL CODICE CONTENUTO POTREBBE ESSERE INSERITO ALL'INTERNO DELLA FUNZIONE stateChildAlarmPriming_func E CHIAMATA DA DENTRO
+       LA FUNZIONE stateParentPrimingTreatKidney1_func. QUESTA STESSA FUNZIONE DOVREBBE ESSERE CHIAMATA ANCHE DENTRO LA FUNZIONE
+       stateParentTreatKidney1_func NEL MOMENTO IN CUI AGGIUNGERO' LA GESTIONE DELL'ALLARME ANCHE NEL TRATTAMENTO. */
 	switch(ptrCurrentChild->child){
 		static unsigned char maskGuard;
 
 		case CHILD_PRIMING_ALARM_INIT:
 
+            /* (FM) qui ci entra quando nel ciclo switch precedente del parent e durante il priming si verifica un allarme.
+               La tabella del parent contiene gia' il riferimento alla struttura 1 di inizializzazione della tabella del child. */
 			maskGuard = (currentGuard[GUARD_ALARM_STOP_ALL_ACTUATOR].guardValue == GUARD_VALUE_TRUE) 		|
 						((currentGuard[GUARD_ALARM_STOP_ALL].guardValue == GUARD_VALUE_TRUE) << 1)			|
 						((currentGuard[GUARD_ALARM_STOP_PERF_PUMP].guardValue == GUARD_VALUE_TRUE) << 2)	|
@@ -2121,13 +2100,48 @@ void processMachineState(void)
 
 			if(ptrCurrentChild->action == ACTION_ON_ENTRY)
 			{
+				/* (FM) esegue la parte ACTION_ON_ENTRY della gestione dell'allarme */
 				ptrCurrentChild->callBackFunct();
-
 				ptrFutureChild = &stateChildAlarmPriming[2];
 			}
 			else if(ptrCurrentChild->action == ACTION_ALWAYS){
+				/* (FM) esegue la parte ACTION_ALWAYS della gestione dell'allarme */
 				ptrCurrentChild->callBackFunct();
 			}
+
+            /* (FM) probabilmente cio' che deve essere fatto per completare la gestione dell'allarme e'quello che segue.
+               I valori vengono messi a GUARD_VALUE_TRUE nella funzione manageAlarmChildGuard in base alle impostazioni
+               fatte per la gestione degli allarmi */
+            if(currentGuard[GUARD_ALARM_STOP_ALL_ACTUATOR].guardValue == GUARD_VALUE_TRUE)
+            {
+                /* (FM) risolvo la situazione di allarme andando a spegnere tutti gli attuatori */
+                ptrFutureChild = &stateChildAlarmPriming[11];
+            }
+            else if(currentGuard[GUARD_ALARM_STOP_ALL].guardValue == GUARD_VALUE_TRUE)
+            {
+            	/* (FM) risolvo la situazione di allarme andando a spegnere tutti gli attuatori e pompe */
+                ptrFutureChild = &stateChildAlarmPriming[7];
+            }
+            else if(currentGuard[GUARD_ALARM_STOP_PERF_PUMP].guardValue == GUARD_VALUE_TRUE)
+            {
+            	/* (FM) risolvo la situazione di allarme andando a spegnere la PERF PUMP */
+                ptrFutureChild = &stateChildAlarmPriming[3];
+            }
+            else if(currentGuard[GUARD_ALARM_STOP_PURIF_PUMP].guardValue == GUARD_VALUE_TRUE)
+            {
+            	/* (FM) risolvo la situazione di allarme andando a spegnere la PURIF PUMP */
+                ptrFutureChild = &stateChildAlarmPriming[5];
+            }
+            else if(currentGuard[GUARD_ALARM_STOP_OXYG_PUMP].guardValue == GUARD_VALUE_TRUE)
+            {
+            	/* (FM) risolvo la situazione di allarme andando a spegnere la OXYG PUMP */
+                ptrFutureChild = &stateChildAlarmPriming[5];
+            }
+            else if(currentGuard[GUARD_ALARM_STOP_PELTIER].guardValue == GUARD_VALUE_TRUE)
+            {
+            	/* (FM) risolvo la situazione di allarme andando ad agire sulla cella di peltier */
+                ptrFutureChild = &stateChildAlarmPriming[9];
+            }
 			break;
 
 		case CHILD_PRIMING_ALARM_STOP_PERFUSION:
@@ -2137,6 +2151,8 @@ void processMachineState(void)
 
 				ptrFutureChild = &stateChildAlarmPriming[4];
 			}
+            else if(currentGuard[GUARD_ALARM_STOP_PERF_PUMP].guardValue == GUARD_VALUE_FALSE )
+                ptrFutureChild = &stateChildAlarmPriming[13]; /* (FM) allarme chiuso */
 			else if(ptrCurrentChild->action == ACTION_ALWAYS){
 				ptrCurrentChild->callBackFunct();
 			}
@@ -2149,6 +2165,9 @@ void processMachineState(void)
 
 				ptrFutureChild = &stateChildAlarmPriming[6];
 			}
+            else if((currentGuard[GUARD_ALARM_STOP_PURIF_PUMP].guardValue == GUARD_VALUE_FALSE) ||
+                     (currentGuard[GUARD_ALARM_STOP_OXYG_PUMP].guardValue == GUARD_VALUE_FALSE) )
+                ptrFutureChild = &stateChildAlarmPriming[13]; /* (FM) allarme chiuso */
 			else if(ptrCurrentChild->action == ACTION_ALWAYS){
 				ptrCurrentChild->callBackFunct();
 			}
@@ -2161,6 +2180,8 @@ void processMachineState(void)
 
 				ptrFutureChild = &stateChildAlarmPriming[8];
 			}
+            else if(currentGuard[GUARD_ALARM_STOP_ALL].guardValue == GUARD_VALUE_FALSE )
+                ptrFutureChild = &stateChildAlarmPriming[13]; /* FM allarme chiuso */
 			else if(ptrCurrentChild->action == ACTION_ALWAYS){
 				ptrCurrentChild->callBackFunct();
 			}
@@ -2173,6 +2194,8 @@ void processMachineState(void)
 
 				ptrFutureChild = &stateChildAlarmPriming[10];
 			}
+            else if(currentGuard[GUARD_ALARM_STOP_PELTIER].guardValue == GUARD_VALUE_FALSE )
+                ptrFutureChild = &stateChildAlarmPriming[13]; /* FM allarme chiuso */
 			else if(ptrCurrentChild->action == ACTION_ALWAYS){
 				ptrCurrentChild->callBackFunct();
 			}
@@ -2182,9 +2205,10 @@ void processMachineState(void)
 			if(ptrCurrentChild->action == ACTION_ON_ENTRY)
 			{
 				ptrCurrentChild->callBackFunct();
-
 				ptrFutureChild = &stateChildAlarmPriming[12];
 			}
+            else if( currentGuard[GUARD_ALARM_STOP_ALL_ACTUATOR].guardValue == GUARD_VALUE_FALSE )
+                ptrFutureChild = &stateChildAlarmPriming[13]; /* FM allarme chiuso */
 			else if(ptrCurrentChild->action == ACTION_ALWAYS){
 				ptrCurrentChild->callBackFunct();
 			}
@@ -2194,10 +2218,11 @@ void processMachineState(void)
 			if(ptrCurrentChild->action == ACTION_ON_ENTRY)
 			{
 				ptrCurrentChild->callBackFunct();
-
 				ptrFutureChild = &stateChildAlarmPriming[14];
 			}
 			else if(ptrCurrentChild->action == ACTION_ALWAYS){
+                /* (FM) RIMANGO FERMO QUI FINO AL PROSSIMO ALLARME. NON E' NECESSARIO USCIRE DA QUESTO STATO DOPO IL TERMINE
+                   DELLA CONDIZIONE DI ALLARME. LA CONDIZIONE DI ALLARME SUCCESSIVA MI FARA' RIPARTIRE DA CHILD_PRIMING_ALARM_INIT */
 				ptrCurrentChild->callBackFunct();
 			}
 			break;
