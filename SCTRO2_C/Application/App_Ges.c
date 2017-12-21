@@ -2573,8 +2573,4 @@ void EN_24_M_C_Management(unsigned char action)
 	}
 }
 
-void Coversion_From_ADC_To_mmHg_Pressure_Sensor()
-{
-	PR_VEN_mmHg = (PR_VEN_ADC - OFFSET_PR_VEN) * GAIN_PR_VEN;
-}
 /**/

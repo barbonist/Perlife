@@ -25,6 +25,36 @@ word adcValue;
 word adcValueDummy;
 word * adcValPtr;
 
+void PR_Sens_ADC_Init()
+{
+	PR_ADS_FLT_ADC  = 0;		//variabile globale per il valore ADC del sensore di pressione del filtro assorbente --> PTB11
+	PR_ADS_FLT_mmHg = 0;		//variabile globale per il valore in mmHg del sensore di pressione del filtro assorbente
+	PR_ART_ADC 		= 0;		//variabile globale per il valore ADC del sensore di pressione arteriosa --> PTB7
+	PR_ART_mmHg		= 0;		//variabile globale per il valore in mmHg del sensore di pressione arteriosa
+	PR_VEN_ADC		= 0;		//variabile globale per il valore ADC del sensore di pressione Venoso --> PTB6
+	PR_VEN_mmHg		= 0;		//variabile globale per il valore in mmHg del sensore di pressione Venoso
+	PR_OXYG_ADC		= 0;		//variabile globale per il valore ADC del sensore di pressione ossigenatore --> PTC10
+	PR_OXYG_mmHg	= 0;		//variabile globale per il valore in mmHg del sensore di pressione ossigenatore
+	PR_LEVEL_ADC	= 0;		//variabile globale per il valore ADC del sensore di pressione di livello vaschetta --> PTC11
+	PR_LEVEL_mmHg	= 0;		//variabile globale per il valore in mmHg del sensore di pressione di livello vaschetta
+}
+
+void Dip_Switch_ADC_Init(void)
+{
+	/*inizializzo le variabili globali in cui saranno
+	 * presenti i valori ADC dei 3 DIP SWITCH*/
+	DipSwitch_0_ADC = 0;
+	DipSwitch_1_ADC = 0;
+	DipSwitch_2_ADC = 0;
+}
+
+void Voltage_Peltier_ADC_Init(void)
+{
+	V24_P1_CHK_ADC  = 0;
+	V24_P2_CHK_ADC  = 0;
+	V24_P1_CHK_VOLT = 0;
+	V24_P2_CHK_VOLT = 0;
+}
 
 void Manange_ADC0(void)
 {
@@ -35,9 +65,9 @@ void Manange_ADC0(void)
 	if (END_ADC0)
   	  {
 		/*DP_SW0 sta su AD0 channel 4; passando l'indirizzo della variabile, la valorizzo*/
-		AD0_GetChanValue16(4, &DipSwitch_0_ADC);
+		AD0_GetChanValue16(DipSwitch_0_ADC_CHANNEL, &DipSwitch_0_ADC);
 		/*DP_SW1 sta su AD0 channel 5; passando l'indirizzo della variabile, la valorizzo*/
-		AD0_GetChanValue16(5, &DipSwitch_1_ADC);
+		AD0_GetChanValue16(DipSwitch_1_ADC_CHANNEL, &DipSwitch_1_ADC);
 
 		/*resetto il flag di lettura sull'interrupt AD0_OnEnd*/
 		END_ADC0 = FALSE;
@@ -56,13 +86,22 @@ void Manange_ADC1(void)
 	if (END_ADC1)
   	  {
 		/*Peltier Voltage 2 sta su AD1 channel 10; passando l'indirizzo della variabile, la valorizzo*/
-		AD1_GetChanValue16(10, &V24_P2_CHK_ADC);
+		AD1_GetChanValue16(V24_P2_CHK_ADC_CHANNEL, &V24_P2_CHK_ADC);
 		/*Peltier Voltage 1 sta su AD1 channel 11; passando l'indirizzo della variabile, la valorizzo*/
-		AD1_GetChanValue16(11, &V24_P1_CHK_ADC);
+		AD1_GetChanValue16(V24_P1_CHK_ADC_CHANNEL, &V24_P1_CHK_ADC);
 		/*DP_SW2 sta su AD1 channel 13; passando l'indirizzo della variabile, la valorizzo*/
-		AD1_GetChanValue16(13, &DipSwitch_2_ADC);
+		AD1_GetChanValue16(DipSwitch_2_ADC_CHANNEL, &DipSwitch_2_ADC);
+
+		/*PR_OXYG sta su AD1 channel 0; passando l'indirizzo della variabile, la valorizzo*/
+		AD1_GetChanValue16(PR_OXYG_ADC_CHANNEL, &PR_OXYG_ADC);
+		/*PR_LEVEL sta su AD1 channel 1; passando l'indirizzo della variabile, la valorizzo*/
+		AD1_GetChanValue16(PR_LEVEL_ADC_CHANNEL, &PR_LEVEL_ADC);
+		/*PR_ADS_FLT sta su AD1 channel 2; passando l'indirizzo della variabile, la valorizzo*/
+		AD1_GetChanValue16(PR_ADS_FLT_ADC_CHANNEL, &PR_ADS_FLT_ADC);
 		/*PR_VEN sta su AD1 channel 4; passando l'indirizzo della variabile, la valorizzo*/
-		AD1_GetChanValue16(4, &PR_VEN_ADC);
+		AD1_GetChanValue16(PR_VEN_ADC_CHANNEL, &PR_VEN_ADC);
+		/*PR_ART sta su AD1 channel 5; passando l'indirizzo della variabile, la valorizzo*/
+		AD1_GetChanValue16(PR_ART_ADC_CHANNEL, &PR_ART_ADC);
 
 		/*resetto il flag di lettura sull'interrupt AD1_OnEnd*/
 		END_ADC1 = FALSE;
@@ -70,6 +109,21 @@ void Manange_ADC1(void)
 		/*rifaccio lo start per riattivare la conversione*/
 		AD1_Start();
   	  }
+}
+
+void Coversion_From_ADC_To_mmHg_Pressure_Sensor()
+{
+	PR_OXYG_mmHg 	= (PR_OXYG_ADC    - PR_OXYG_OFFSET)    * PR_OXYG_GAIN;
+	PR_LEVEL_mmHg 	= (PR_LEVEL_ADC   - PR_LEVEL_OFFSET)   * PR_LEVEL_GAIN;
+	PR_ADS_FLT_mmHg = (PR_ADS_FLT_ADC - PR_ADS_FLT_OFFSET) * PR_ADS_FLT_GAIN;
+	PR_VEN_mmHg 	= (PR_VEN_ADC     - PR_VEN_OFFSET)     * PR_VEN_GAIN;
+	PR_ART_mmHg 	= (PR_ART_ADC     - PR_ART_OFFSET)     * PR_ART_GAIN;
+}
+
+void Coversion_From_ADC_To_Voltage()
+{
+	V24_P1_CHK_VOLT	= (V24_P1_CHK_ADC * V24_P1_CHK_GAIN + V24_P1_CHK_OFFSET);
+	V24_P2_CHK_VOLT	= (V24_P2_CHK_ADC * V24_P2_CHK_GAIN + V24_P2_CHK_OFFSET);
 }
 
 void ADC0_Calibration(void)
@@ -100,25 +154,6 @@ void ADC1_Calibration(void)
 	END_ADC1 = FALSE;
 }
 
-void Dip_Switch_ADC_Init(void)
-{
-	/*inizializzo le variabili globali in cui saranno
-	 * presenti i valori ADC dei 3 DIP SWITCH*/
-	DipSwitch_0_ADC = 0;
-	DipSwitch_1_ADC = 0;
-	DipSwitch_2_ADC = 0;
-}
-
-void Voltage_Peltier_ADC_Init(void)
-{
-	V24_P1_CHK_ADC = 0;
-	V24_P2_CHK_ADC = 0;
-}
-
-void PR_Sens_ADC_Init()
-{
-	PR_VEN_ADC=0;
-}
 
 word * ReadAdcPr1(void)
 {
@@ -249,9 +284,9 @@ void initAdcParam(void)
 
 }
 
-void 	alwaysAdcParam(void){
-	int valPressure = 0;
-	int dummy = 0;
+void 	alwaysAdcParam(void)
+{
+
 	unsigned char * ptrChar;
 	static unsigned long timems = 0;
 
@@ -279,14 +314,15 @@ void 	alwaysAdcParam(void){
 
 	sensor_PRx[1].prSensValueFilteredWA = meanWA(8, (sensor_PRx[1].prSensValue),1);
 
-	dummy = dummy + 1;
 
 	//#ifdef DEBUG_LOG_PC
-	sprintf(stringPr1, "\r%d; %i; %i; %i; %i; %i; %i;",
-			            timems,
-						(int) (sensor_PRx[0].prSensValueFilteredWA),
-						(int) Air_1_Status/*(int) (sensor_PRx[1].prSensValueFilteredWA)*/,
-						/*(int) (sensor_UFLOW[0].volumeMlTot)*/PR_VEN_mmHg,
+	sprintf(stringPr1, "\r %i %i; %i; %i; %i; %i; %i; %i;",
+			           /* timems,*/
+						V24_P1_CHK_VOLT/*PR_OXYG_mmHg*//*(int) sensor_UFLOW[0].Average_Flow_Val*/,
+						V24_P2_CHK_VOLT/*PR_LEVEL_mmHg*//*(int) sensor_UFLOW[0].Inst_Flow_Value*/,
+						PR_ADS_FLT_mmHg/*(int) sensor_UFLOW[1].Average_Flow_Val*//*(int) Air_1_Status*//*(int) (sensor_PRx[1].prSensValueFilteredWA)*/,
+						PR_VEN_mmHg/*(int) sensor_UFLOW[1].Inst_Flow_Value*//*(int) (sensor_UFLOW[0].volumeMlTot)*//*PR_VEN_mmHg*/,
+						PR_ART_mmHg/*(int) (sensorIR_TM[0].tempSensValue*10)*/,
 						(int) (sensorIR_TM[0].tempSensValue*10),
 						(int) (sensorIR_TM[1].tempSensValue*10),
 						(int) (sensorIR_TM[2].tempSensValue*10)

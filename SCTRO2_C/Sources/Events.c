@@ -219,11 +219,50 @@ void FLOWSENS_COMM_OnRxChar(void)
 	ptrMsg_UFLOW->ptrBufferReceived = ptrMsg_UFLOW->ptrBufferReceived + 1;
 
 	ptrMsg_UFLOW->bufferReceivedLenght = ptrMsg_UFLOW->bufferReceivedLenght - 1;
-	if(ptrMsg_UFLOW->bufferReceivedLenght <= 0)
+	if(ptrMsg_UFLOW->bufferReceivedLenght == 0)
 	{
 		iflag_uflow_sens = IFLAG_UFLOW_SENS_RX;
 		ptrMsg_UFLOW->ptrBufferReceived = &ptrMsg_UFLOW->bufferReceived[0];
+
+		/*Disable Receiver Enable*/
+		FLOWSENS_RE_SetVal();
+
 	}
+}
+
+/** ===================================================================
+**     Event       :  FLOWSENS_COMM_OnTxComplete (module Events)
+**
+**     Component   :  FLOWSENS_COMM [AsynchroSerial]
+**     Description :
+**         This event indicates that the transmitter is finished
+**         transmitting all data, preamble, and break characters and is
+**         idle. It can be used to determine when it is safe to switch
+**         a line driver (e.g. in RS-485 applications).
+**         The event is available only when both <Interrupt
+**         service/event> and <Transmitter> properties are enabled.
+**     Parameters  : None
+**     Returns     : Nothing
+** ===================================================================
+*/
+void FLOWSENS_COMM_OnTxComplete(void)
+{
+  /* Write your code here ... */
+
+
+	iflag_uflow_sens = IFLAG_UFLOW_SENS_TX;
+	FLOWSENS_DE_ClrVal();
+	/*Il Receive Enable è attivo basso*/
+	FLOWSENS_RE_ClrVal();
+
+
+//	if(ptrMsg_UFLOW->byteSended >= ptrMsg_UFLOW->bufferToSendLenght)
+//	{
+////		FLOWSENS_DE_ClrVal();
+////		FLOWSENS_RE_ClrVal();
+//		//TODO		FLOWSENS_RTS_ClrVal();
+//	}
+
 }
 
 /*
@@ -240,11 +279,14 @@ void FLOWSENS_COMM_OnRxChar(void)
 void FLOWSENS_COMM_OnTxChar(void)
 {
   /* Write your code here ... */
-	ptrMsg_UFLOW->byteSended = ptrMsg_UFLOW->byteSended + 1;
-	if(ptrMsg_UFLOW->byteSended >= ptrMsg_UFLOW->bufferToSendLenght)
-	{
-		iflag_uflow_sens = IFLAG_UFLOW_SENS_TX;
-	}
+//	ptrMsg_UFLOW->byteSended = ptrMsg_UFLOW->byteSended + 1;
+//	if(ptrMsg_UFLOW->byteSended >= ptrMsg_UFLOW->bufferToSendLenght)
+//	{
+//		iflag_uflow_sens = IFLAG_UFLOW_SENS_TX;
+//		FLOWSENS_DE_ClrVal();
+//		/*Il Receive Enable è attivo basso*/
+//		FLOWSENS_RE_ClrVal();
+//	}
 }
 
 /*
@@ -724,27 +766,6 @@ void SM1_OnBlockReceived(LDD_TUserData *UserDataPtr)
 }
 
 /*
-** ===================================================================
-**     Event       :  FLOWSENS_COMM_OnTxComplete (module Events)
-**
-**     Component   :  FLOWSENS_COMM [AsynchroSerial]
-**     Description :
-**         This event indicates that the transmitter is finished
-**         transmitting all data, preamble, and break characters and is
-**         idle. It can be used to determine when it is safe to switch
-**         a line driver (e.g. in RS-485 applications).
-**         The event is available only when both <Interrupt
-**         service/event> and <Transmitter> properties are enabled.
-**     Parameters  : None
-**     Returns     : Nothing
-** ===================================================================
-*/
-void FLOWSENS_COMM_OnTxComplete(void)
-{
-  /* Write your code here ... */
-//TODO	if(ptrMsg_UFLOW->byteSended >= ptrMsg_UFLOW->bufferToSendLenght)
-	//TODO		FLOWSENS_RTS_ClrVal();
-}
 
 /*
 ** ===================================================================

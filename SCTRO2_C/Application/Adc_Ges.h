@@ -35,6 +35,8 @@ void Voltage_Peltier_ADC_Init(void);
 void Manange_ADC0(void);
 void Manange_ADC1(void);
 void PR_Sens_ADC_Init(void);
+void Coversion_From_ADC_To_mmHg_Pressure_Sensor(void);
+void Coversion_From_ADC_To_Voltage();
 void Manage_Air_Sensor_1(void);
 void Manage_Debug_led(bool Status);
 #endif /* APPLICATION_ADC_GES_H_ */
