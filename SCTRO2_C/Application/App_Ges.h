@@ -162,7 +162,6 @@ void RTS_Motor_Management(unsigned char action);
 void EN_Clamp_Control (unsigned char action);
 void EN_Motor_Control(unsigned char action);
 void EN_24_M_C_Management(unsigned char action);
-void Coversion_From_ADC_To_mmHg_Pressure_Sensor(void);
 /*******************/
 /* VARIABLE */
 /******************/

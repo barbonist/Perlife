@@ -1001,8 +1001,27 @@ word DipSwitch_2_ADC;		//Variabile globale col valore ADC del DIP_SWITCH_3
 word V24_P1_CHK_ADC;
 word V24_P2_CHK_ADC;
 
-word PR_VEN_ADC;			//variabile globale per il valore ADC del sensore di pressione Venoso
+word PR_OXYG_ADC;			//variabile globale per il valore ADC del sensore di pressione ossigenatore --> PTC10
+word PR_OXYG_mmHg;			//variabile globale per il valore in mmHg del sensore di pressione ossigenatore
+
+word PR_LEVEL_ADC;			//variabile globale per il valore ADC del sensore di pressione di livello vaschetta --> PTC11
+word PR_LEVEL_mmHg;			//variabile globale per il valore in mmHg del sensore di pressione di livello vaschetta
+
+word PR_ADS_FLT_ADC;		//variabile globale per il valore ADC del sensore di pressione del filtro assorbente --> PTB11
+word PR_ADS_FLT_mmHg;		//variabile globale per il valore in mmHg del sensore di pressione del filtro assorbente
+
+word PR_VEN_ADC;			//variabile globale per il valore ADC del sensore di pressione Venoso --> PTB6
 word PR_VEN_mmHg;			//variabile globale per il valore in mmHg del sensore di pressione Venoso
+
+word PR_ART_ADC;			//variabile globale per il valore ADC del sensore di pressione arteriosa --> PTB7
+word PR_ART_mmHg;			//variabile globale per il valore in mmHg del sensore di pressione arteriosa
+
+
+#define PR_OXYG_ADC_CHANNEL		0
+#define PR_LEVEL_ADC_CHANNEL	1
+#define PR_ADS_FLT_ADC_CHANNEL 	2
+#define PR_VEN_ADC_CHANNEL		4
+#define PR_ART_ADC_CHANNEL		5
 
 char ON_NACK_IR_TM;			//variabile globale che viene messa ad 1 se ricevo un NACK da un sensore di Temp IR
 
@@ -1017,8 +1036,21 @@ unsigned char CHANGE_ADDRESS_IR_SENS;
 #define BUTTON_3 0x03
 #define BUTTON_4 0x04
 
-#define GAIN_PR_VEN 	0.037302
-#define OFFSET_PR_VEN	19700
+
+#define PR_OXYG_GAIN 		0.028539
+#define PR_OXYG_OFFSET		19687
+
+#define PR_LEVEL_GAIN 		0.002630
+#define PR_LEVEL_OFFSET		18694
+
+#define PR_ADS_FLT_GAIN		0.028153
+#define PR_ADS_FLT_OFFSET	19785
+
+#define PR_VEN_GAIN 		0.019179
+#define PR_VEN_OFFSET		19624
+
+#define PR_ART_GAIN 		0.018691
+#define PR_ART_OFFSET		19672
 
 #define FREQ_DEBUG_LED 	10
 #define SERVICE 		0x01

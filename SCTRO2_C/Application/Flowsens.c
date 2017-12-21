@@ -61,7 +61,6 @@ void Manage_UFlow_Sens()
 {
 	static unsigned char Id_Sensor_UF = 0;
 
-
 	union NumFloatUFlowVal
 	{
 		uint32 ieee754NumFormat_Val;
@@ -80,6 +79,7 @@ void Manage_UFlow_Sens()
 			Id_Sensor_UF = 0;
 
 		ptrMsg_UFLOW = buildCmdToFlowSens(sensor_UFLOW[Id_Sensor_UF].sensorAddr,CMD_GET_VAL_CODE,0,0);
+		//ptrMsg_UFLOW = buildCmdToFlowSens(sensor_UFLOW[Id_Sensor_UF].sensorAddr,CMD_IDENT_CODE,0,0);
 		/*prima di una nuova trasmissione devo comunqie disabilitare il Receiver Enable*/
 		FLOWSENS_RE_SetVal();
 		FLOWSENS_DE_SetVal();
@@ -448,9 +448,9 @@ struct ultrsndFlowSens * buildCmdToFlowSens(unsigned char sensorAddress,
 		sensor_UFLOW[sensId].bufferToSend[9] = 0x8B;		//Accumulated volume [ul]
 		/* byte 10 - cksm */
 		sensor_UFLOW[sensId].bufferToSend[10] = computeCRCFlowSens(sensor_UFLOW[sensId].bufferToSend);
-		sensor_UFLOW[sensId].bufferToSendLenght = sensor_UFLOW[sensId].bufferToSend[1] + sensor_UFLOW[sensId].bufferToSend[2];
-		sensor_UFLOW[sensId].bufferReceivedLenght = 0x17; 	// Ricevo 21 byte (0x15) per ogni byte richeisto ne ricevo 4 quindi 12 + i 9 del formato risposta (da 0 a 7 + il ceck sum)
-		//sensor_UFLOW[sensId].bufferReceivedLenght = 0x0D; 	// Ricevo 13 byte (0x0D) only for test
+		sensor_UFLOW[sensId].bufferToSendLenght = (sensor_UFLOW[sensId].bufferToSend[1] << 8) + sensor_UFLOW[sensId].bufferToSend[2];
+		sensor_UFLOW[sensId].bufferReceivedLenght = BYTE_COUNT_GET_VAL_CODE; 	// Ricevo 21 byte (0x15) per ogni byte richeisto ne ricevo 4 quindi 12 + i 9 del formato risposta (da 0 a 7 + il ceck sum)
+		//sensor_UFLOW[sensId].bufferReceivedLenght = 0x17; 	// Ricevo 13 byte (0x0D) only for test
 		sensor_UFLOW[sensId].ptrBufferReceived = &sensor_UFLOW[sensId].bufferReceived[0];
 		break;
 
