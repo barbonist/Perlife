@@ -54,7 +54,11 @@ void initTempSensIR(void){
 	ptrData = buildCmdReadTempSensIR(0x5A, SD_TOBJ1_RAM_ADDRESS, 0);
 	ptrData = ptrData + 1;*/
 }
-
+/*funzione che chiede ogni 200 msec ad un sensore di temperatura IR il valoire; se il sensore risponde correttamente (con la corretta PEC)
+ * il valore saà memorizzato; ogni sensore sarà interrogato ogni 600 msec in quanto abbiamo 3 sensori, i valori saranno
+ * sensorIR_TM[0].tempSensValue --> temperatura del flusso di perfusione arteriosa
+ * sensorIR_TM[1].tempSensValue --> temperatura del liquido vaschetta
+ * sensorIR_TM[2].tempSensValue --> temperatura del flusso di perfusione venosa */
 void Manage_IR_Sens_Temp(void)
 {
    static unsigned char Address = FIRST_IR_TEMP_SENSOR; /*lo metto static così non la inizializza tutte le vote*/
@@ -101,7 +105,7 @@ void Manage_IR_Sens_Temp(void)
  		unsigned char index_array = Slave_Address_Sent -1;
  		unsigned char * ptrChar;
 
- 		ptrChar = &sensorIR_TM[0].bufferReceived[0];
+ 		ptrChar = &sensorIR_TM[index_array].bufferReceived[0];
 
  		/*devo salvare il dato solo dopo aver fatto il controllo della PEC Packet Error Code*/
  		/*Vado a copiarmi il dato ricevuto dal sensore IR solo se non ho ricevuto un NACK
