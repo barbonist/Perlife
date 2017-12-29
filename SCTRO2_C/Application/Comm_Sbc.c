@@ -844,59 +844,55 @@ void buildRDMachineStateResponseMsg(char code, char subcode){
 
 	/* SENS PARAMETERS */
 	/* sensors parameters: pressure adsorbent filter */
-	sbc_tx_data[index++] = (sensorsValues.pressAdsFilter >> 8) & 0xFF;
-	sbc_tx_data[index++] = (sensorsValues.pressAdsFilter     ) & 0xFF;
+	sbc_tx_data[index++] = (PR_ADS_FLT_mmHg >> 8) & 0xFF;
+	sbc_tx_data[index++] = (PR_ADS_FLT_mmHg     ) & 0xFF;
 	/* sensors parameters: pressure arterial */
-	sbc_tx_data[index++] = (sensorsValues.pressArt >> 8) & 0xFF;
-	sbc_tx_data[index++] = (sensorsValues.pressArt     ) & 0xFF;
+	sbc_tx_data[index++] = (PR_ART_mmHg >> 8) & 0xFF;
+	sbc_tx_data[index++] = (PR_ART_mmHg     ) & 0xFF;
 	/* sensors parameters: pressure venous */
-	sbc_tx_data[index++] = (sensorsValues.pressVen >> 8) & 0xFF;
-	sbc_tx_data[index++] = (sensorsValues.pressVen     ) & 0xFF;
+	sbc_tx_data[index++] = (PR_VEN_mmHg >> 8) & 0xFF;
+	sbc_tx_data[index++] = (PR_VEN_mmHg     ) & 0xFF;
 	/* sensors parameters: pressure oxygenation */
-	sbc_tx_data[index++] = (sensorsValues.pressOxy >> 8) & 0xFF;
-	sbc_tx_data[index++] = (sensorsValues.pressOxy     ) & 0xFF;
+	sbc_tx_data[index++] = (PR_OXYG_mmHg >> 8) & 0xFF;
+	sbc_tx_data[index++] = (PR_OXYG_mmHg     ) & 0xFF;
 	/* sensors parameters: pressure level */
-	sbc_tx_data[index++] = (sensorsValues.pressLevel >> 8) & 0xFF;
-	sbc_tx_data[index++] = (sensorsValues.pressLevel     ) & 0xFF;
+	sbc_tx_data[index++] = (PR_LEVEL_mmHg >> 8) & 0xFF;
+	sbc_tx_data[index++] = (PR_LEVEL_mmHg     ) & 0xFF;
 	/* sensors parameters: pressure systolic arterial */
-	sbc_tx_data[index++] = (sensorsValues.pressSystArt >> 8) & 0xFF;
+	sbc_tx_data[index++] = (sensorsValues.pressSystArt >> 8) & 0xFF; //TODO
 	sbc_tx_data[index++] = (sensorsValues.pressSystArt     ) & 0xFF;
 	/* sensors parameters: pressure diastolic arterial */
-	sbc_tx_data[index++] = (sensorsValues.pressDiasArt >> 8) & 0xFF;
+	sbc_tx_data[index++] = (sensorsValues.pressDiasArt >> 8) & 0xFF; //TODO
 	sbc_tx_data[index++] = (sensorsValues.pressDiasArt     ) & 0xFF;
 	/* sensors parameters: pressure mean arterial */
 	//TODO remove this
 	sensorsValues.pressMeanArt = sensor_PRx[0].prSensValueFilteredWA;
-	sbc_tx_data[index++] = (sensorsValues.pressMeanArt >> 8) & 0xFF;
+	sbc_tx_data[index++] = (sensorsValues.pressMeanArt >> 8) & 0xFF; //TODO
 	sbc_tx_data[index++] = (sensorsValues.pressMeanArt     ) & 0xFF;
 	/* sensors parameters: pressure systolic venous */
-	sbc_tx_data[index++] = (sensorsValues.pressSystVen >> 8) & 0xFF;
+	sbc_tx_data[index++] = (sensorsValues.pressSystVen >> 8) & 0xFF; //TODO
 	sbc_tx_data[index++] = (sensorsValues.pressSystVen     ) & 0xFF;
 	/* sensors parameters: pressure diastolic venous */
-	sbc_tx_data[index++] = (sensorsValues.pressDiasVen >> 8) & 0xFF;
+	sbc_tx_data[index++] = (sensorsValues.pressDiasVen >> 8) & 0xFF; //TODO
 	sbc_tx_data[index++] = (sensorsValues.pressDiasVen     ) & 0xFF;
 	/* sensors parameters: pressure mean venous */
-	sbc_tx_data[index++] = (sensorsValues.pressMeanVen >> 8) & 0xFF;
+	sbc_tx_data[index++] = (sensorsValues.pressMeanVen >> 8) & 0xFF; //TODO
 	sbc_tx_data[index++] = (sensorsValues.pressMeanVen     ) & 0xFF;
 	/* sensors parameters: pressure flow arterial */
-	//TODO remove this
-	sensorsValues.flowArt = (sensor_UFLOW[0].bufferReceived[18] << 8) + sensor_UFLOW[0].bufferReceived[17];
-	sbc_tx_data[index++] = (sensorsValues.flowArt >> 8) & 0xFF;
-	sbc_tx_data[index++] = (sensorsValues.flowArt     ) & 0xFF;
+	sbc_tx_data[index++] = (((int)sensor_UFLOW[0].Average_Flow_Val) >> 8) & 0xFF;  // sensorsValues.flowArt
+	sbc_tx_data[index++] = ((int)sensor_UFLOW[0].Average_Flow_Val) & 0xFF;
 	/* sensors parameters: pressure flow venous / oxygenation */
-	sbc_tx_data[index++] = (sensorsValues.flowVenOxy >> 8) & 0xFF;
-	sbc_tx_data[index++] = (sensorsValues.flowVenOxy     ) & 0xFF;
+	sbc_tx_data[index++] = (((int)sensor_UFLOW[1].Average_Flow_Val) >> 8) & 0xFF;  // sensorsValues.flowVenOxy
+	sbc_tx_data[index++] = ((int)sensor_UFLOW[1].Average_Flow_Val) & 0xFF;
 	/* sensors parameters: temperature reservoir outlet */
-	sbc_tx_data[index++] = (sensorsValues.tempResOut >> 8) & 0xFF;
-	sbc_tx_data[index++] = (sensorsValues.tempResOut     ) & 0xFF;
+	sbc_tx_data[index++] = (((int)(sensorIR_TM[0].tempSensValue*10)) >> 8) & 0xFF;
+	sbc_tx_data[index++] = (((int)(sensorIR_TM[0].tempSensValue*10))     ) & 0xFF;
 	/* sensors parameters: temperature organ inlet */
-	//TODO remove this
-	sensorsValues.tempOrganIn = (int)(sensorIR_TM[0].tempSensValue);
-	sbc_tx_data[index++] = (sensorsValues.tempOrganIn >> 8) & 0xFF;
-	sbc_tx_data[index++] = (sensorsValues.tempOrganIn     ) & 0xFF;
+	sbc_tx_data[index++] = (((int)(sensorIR_TM[1].tempSensValue*10)) >> 8) & 0xFF;
+	sbc_tx_data[index++] = (((int)(sensorIR_TM[1].tempSensValue*10))     ) & 0xFF;
 	/* sensors parameters: temperature venous / oxygenation */
-	sbc_tx_data[index++] = (sensorsValues.tempVenOxy >> 8) & 0xFF;
-	sbc_tx_data[index++] = (sensorsValues.tempVenOxy     ) & 0xFF;
+	sbc_tx_data[index++] = (((int)(sensorIR_TM[2].tempSensValue*10)) >> 8) & 0xFF;
+	sbc_tx_data[index++] = (((int)(sensorIR_TM[2].tempSensValue*10))     ) & 0xFF;
 	/* SENS PARAMETERS */
 
 	/* PERFUSION PARAMETERS */

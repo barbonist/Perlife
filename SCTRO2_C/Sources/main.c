@@ -167,6 +167,8 @@
 #include "Comm_Sbc.h"
 
 /*lint -save  -e970 Disable MISRA rule (6.3) checking. */
+void TestPump(unsigned char Adr); //only for test
+void TestPinch(unsigned char Adr);
 
 
 int main(void)
@@ -340,6 +342,17 @@ int main(void)
   timerCounterCheckModBus = 0; 	//resetto il timer di check sul modbus
   slvAddr = FIRST_ACTUATOR;		//rimetto come indirizzo da leggere il primo
 
+
+  // al reset metto tutti irami delle pich chiusi
+  setPinchPosValue (BOTTOM_PINCH_ID, MODBUS_PINCH_POS_CLOSED);
+  while (timerCounterCheckModBus < 2);
+  timerCounterCheckModBus = 0;
+  setPinchPosValue (LEFT_PINCH_ID, MODBUS_PINCH_POS_CLOSED);
+  while (timerCounterCheckModBus < 2);
+   timerCounterCheckModBus = 0;
+  setPinchPosValue (RIGHT_PINCH_ID, MODBUS_PINCH_POS_CLOSED);
+  while (timerCounterCheckModBus < 2);
+   timerCounterCheckModBus = 0;
 
   /**********MAIN LOOP START************/
   for(;;) {
@@ -624,6 +637,9 @@ int main(void)
 //	         }
 	         Manage_UFlow_Sens();
 
+	         // TestPump(2); // 2..5 usata per provare le pompe con la tastiera a bolle
+	         TestPinch(BOTTOM_PINCH_ID);   // 6..8
+
 	         Buzzer_Management();
 
 	         if(timerCounterPeltier >= 2){
@@ -660,6 +676,8 @@ int main(void)
 			 /*END funzioni per leggere i canali AD*/
 		 	 /*converte i valori ADC in mmHg dei sensori di pressione*/
 			 Coversion_From_ADC_To_mmHg_Pressure_Sensor();
+		     /*converte i valori ADC in volt per le tensioni*/
+		     Coversion_From_ADC_To_Voltage();
 
 			 /*da valutare se sreve ancora o può essere sostituita dalla mie Manange_ADC0() e Manange_ADC1()*/
 	         alwaysAdcParam();
@@ -668,11 +686,11 @@ int main(void)
 	         /********************************/
 
 	         /*********PUMP*********/
-	         /*la gestone del ModBus probabilmente sarà da rifare seguendo la scia di quanto fatto inn Debug*/
+	         /*la gestione del ModBus probabilmente sarà da rifare seguendo la scia di quanto fatto inn Debug*/
 	         if(timerCounterModBus != timerCounterModBusOld)
 	         {
 	        	 timerCounterModBusOld = timerCounterModBus;
-	        	 alwaysModBusActuator();
+	        	 //alwaysModBusActuator();
 	         }
 
 	         Manage_and_Storage_ModBus_Actuator_Data();

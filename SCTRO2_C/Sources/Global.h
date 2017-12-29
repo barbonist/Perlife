@@ -93,7 +93,7 @@ char    iFlag_modbusDataStorage;
 #define IFLAG_IDLE					0x00
 #define IFLAG_COMMAND_SENT			0x01
 #define IFLAG_COMMAND_RECEIVED		0x02
-#define TOT_NUMBER_OF_ACTAUTOR  	0x09 //gli attuatori sono 7 ma ho un offset di due per gli indirtizzi (il primo attuatore ha indirizzo 0x02
+#define LAST_ACTUATOR  				0x08 //gli attuatori sono 7 ma ho un offset di due per gli indirizzi (il primo attuatore ha indirizzo 0x02, l'ultimo ha indirizzo 0x08
 #define FIRST_ACTUATOR				0x02
 #define LAST_PUMP					0x05
 #define TOTAL_ACTUATOR				7
@@ -855,7 +855,8 @@ struct ultrsndFlowSens * ptrMsg_UFLOW; 	   /* puntatore utilizzato per spedire i
 /************************************************************************/
 #define GUI_BUTTON_NULL			0x00
 #define GUI_BUTTON_PRESSED		0x01
-#define GUI_BUTTON_RELEASED		0x00
+// (FM) non puo' essere 0x00
+#define GUI_BUTTON_RELEASED		0x02
 
 enum buttonGUIEnum{
 	BUTTON_KIDNEY = 0xA1,

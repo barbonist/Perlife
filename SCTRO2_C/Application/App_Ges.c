@@ -399,10 +399,12 @@ struct machineState stateState[] =
 void manageNull(void)
 {
 	#ifdef DEBUG_TREATMENT
-	currentGuard[GUARD_START_ENABLE].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
-	currentGuard[GUARD_HW_T1T_DONE].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
-	currentGuard[GUARD_COMM_ENABLED].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+	//currentGuard[GUARD_START_ENABLE].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+	//currentGuard[GUARD_HW_T1T_DONE].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+	//currentGuard[GUARD_COMM_ENABLED].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
 	#endif
+
+	int x = 0;
 }
 
 void manageStateLevel(void)
@@ -1667,6 +1669,61 @@ void computeMachineStateGuard(void)
 		}
 }
 
+// Adr 6..8
+void TestPinch(unsigned char Adr)
+{
+	static unsigned char PinchPos = 0;
+	if (Bubble_Keyboard_GetVal(BUTTON_1) && PinchPos != MODBUS_PINCH_POS_CLOSED)
+	{
+		PinchPos = MODBUS_PINCH_POS_CLOSED;
+		setPinchPosValue (Adr,MODBUS_PINCH_POS_CLOSED);
+	}
+	else if (Bubble_Keyboard_GetVal(BUTTON_2) && PinchPos != MODBUS_PINCH_RIGHT_OPEN)
+	{
+		PinchPos = MODBUS_PINCH_RIGHT_OPEN;
+		setPinchPosValue (Adr,MODBUS_PINCH_RIGHT_OPEN);
+	}
+	else if (Bubble_Keyboard_GetVal(BUTTON_3) && PinchPos != MODBUS_PINCH_LEFT_OPEN)
+	{
+		PinchPos = MODBUS_PINCH_LEFT_OPEN;
+		setPinchPosValue (Adr,MODBUS_PINCH_LEFT_OPEN);
+	}
+}
+
+
+unsigned int PumpAverageCurrent;
+unsigned int PumpSpeedVal;
+unsigned int PumpStatusVal;
+
+// Adr 2..5
+void TestPump(unsigned char Adr)
+{
+	static bool MotorOn = 0;
+
+	if (Bubble_Keyboard_GetVal(BUTTON_1) && !MotorOn)
+	{
+	  /*accendo il motore*/
+	  MotorOn = TRUE;
+	  EN_Motor_Control(ENABLE);
+	  setPumpSpeedValue(Adr,1000);
+	}
+	else if (Bubble_Keyboard_GetVal(BUTTON_2) && MotorOn)
+	{
+	  /*spengo il motore*/
+	  MotorOn = FALSE;
+	  EN_Motor_Control(DISABLE);
+	  setPumpSpeedValue(Adr,0);
+	}
+	else
+	{
+		PumpAverageCurrent = modbusData[Adr-2][16];
+		PumpSpeedVal = modbusData[Adr-2][17];
+		PumpStatusVal = modbusData[Adr-2][18];
+		//readPumpSpeedValue(pumpPerist[Adr - 2].pmpMySlaveAddress);
+		//readPumpSpeedValue(Adr - 2);
+	}
+}
+
 /*----------------------------------------------------------------------------*/
 /* This function compute the machine state transition based on guard - state level         */
 /*----------------------------------------------------------------------------*/
@@ -1782,9 +1839,10 @@ void processMachineState(void)
 			// (FM) DOPO LA PRIMA VOLTA PASSA AUTOMATICAMENTE NELLO STATO IDLE,ACTION_ALWAYS
 			manageStateEntryAndStateAlways(4);
 
-			#ifdef DEBUG_ENABLE
-			Bit1_NegVal();
-			#endif
+//			#ifdef DEBUG_ENABLE
+//			Bit1_NegVal();
+//			TestPump(3, 1000 );
+//			#endif
 
 			break;
 

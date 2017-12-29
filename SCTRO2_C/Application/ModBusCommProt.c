@@ -317,6 +317,29 @@ void modBusPmpInit(void)
 	pumpPerist[2].dataReady = DATA_READY_FALSE;
 	pumpPerist[2].actualSpeed = 0;
 	pumpPerist[2].actualSpeedOld = 0;
+
+	pumpPerist[3].id = 2;
+	pumpPerist[3].pmpSpeed = 0x0000;
+	pumpPerist[3].pmpGoHomeSpeed = 0x0000;
+	pumpPerist[3].pmpAccelSpeed = 0x0000;
+	pumpPerist[3].pmpCurrent = 0x0000;
+	pumpPerist[3].pmpCruiseSpeed = 0x0000;
+	pumpPerist[3].pmpStepTarget = 0x0000;
+	pumpPerist[3].pmpMySlaveAddress = 0x05;
+	pumpPerist[3].pmpFuncCode = 0xFF;
+	pumpPerist[3].pmpWriteStartAddr = 0xFFFF;
+	pumpPerist[3].pmpReadStartAddr = 0xFFFF;
+	pumpPerist[3].pmpNumeRegWrite = 0x0001;
+	pumpPerist[3].pmpNumRegRead = 0x0001;
+	pumpPerist[3].pmpWriteRegValuePtr = 0;
+	pumpPerist[3].pmpPressLoop = PRESS_LOOP_OFF;
+	pumpPerist[3].entry = 0;
+	pumpPerist[3].reqState = REQ_STATE_OFF;
+	pumpPerist[3].reqType = REQ_TYPE_IDLE;
+	pumpPerist[3].actuatorType = ACTUATOR_PUMP_TYPE;
+	pumpPerist[3].dataReady = DATA_READY_FALSE;
+	pumpPerist[3].actualSpeed = 0;
+	pumpPerist[3].actualSpeedOld = 0;
 }
 
 void modBusPinchInit(void)
@@ -421,20 +444,20 @@ void setPumpSpeedValueHighLevel(unsigned char slaveAddr, int speedValue){
 void setPumpSpeedValue(unsigned char slaveAddr, int speedValue){
 	unsigned int mySpeedValue = 0;
 	unsigned int * valModBusArrayPtr;
-	char	slvAddr;
+//	char	Address;
 	char	funcCode;
 	unsigned int	wrAddr;
 
-	slvAddr = slaveAddr;
+	//Address = slaveAddr;
 	funcCode = 0x10;
 	wrAddr = 0x0000; /* speed */
 
-	if((slvAddr >= 2) && (slvAddr <= 4)) /* pump */
+	if((slaveAddr >= 2) && (slaveAddr <= 5)) /* pump */
 		mySpeedValue = (unsigned int)speedValue;
 
 	valModBusArrayPtr = &mySpeedValue;
 
-	_funcRetValPtr = ModBusWriteRegisterReq(slvAddr,
+	_funcRetValPtr = ModBusWriteRegisterReq(slaveAddr,
 											funcCode,
 											wrAddr,
 											0x0001,
@@ -452,15 +475,15 @@ void setPumpSpeedValue(unsigned char slaveAddr, int speedValue){
 }
 
 void readPumpSpeedValue(unsigned char slaveAddr){
-	char	slvAddr;
+	//char	slvAddr;
 	char	funcCode;
 
-	slvAddr = slaveAddr;
+	//slvAddr = slaveAddr;
 	funcCode = 0x03;
 	unsigned int readAddr = 0x0011;
 	unsigned int numRegRead = 0x0001;
 
-	_funcRetValPtr = ModBusReadRegisterReq(slvAddr,
+	_funcRetValPtr = ModBusReadRegisterReq(slaveAddr,
 										   funcCode,
 											readAddr,
 											numRegRead);
@@ -546,20 +569,20 @@ void setPinchPositionHighLevel(unsigned char slaveAddr, int posValue){
 void setPinchPosValue(unsigned char slaveAddr, int posValue){
 	unsigned int myPinchPosValue = 0;
 	unsigned int * valModBusArrayPtr;
-	char	slvAddr;
+//	char	slvAddr;
 	char	funcCode;
 	unsigned int	wrAddr;
 
-	slvAddr = slaveAddr;
+//	slvAddr = slaveAddr;
 	funcCode = 0x10;
 	wrAddr = 0x0000; /* pinch position */
 
-		if((slvAddr >= 7) && (slvAddr <= 9)) /* pinch */
+		if((slaveAddr >= 6) && (slaveAddr <= 8)) /* pinch */
 			myPinchPosValue = (unsigned int)posValue;
 
 		valModBusArrayPtr = &myPinchPosValue;
 
-		_funcRetValPtr = ModBusWriteRegisterReq(slvAddr,
+		_funcRetValPtr = ModBusWriteRegisterReq(slaveAddr,
 												funcCode,
 												wrAddr,
 												0x0001,
@@ -745,14 +768,14 @@ void alwaysModBusActuator(void){
 }
 
 /*funzione per controllare lo stato dei motori*/
-void Check_Actuator_Status (char slvAddr,
+void Check_Actuator_Status (char slaveAddr,
 							char funcCode,
 							int readAddrStart,
 							int numberOfAddress)
 {
 	int snd;
 
-	_funcRetValPtr = ModBusReadRegisterReq(slvAddr,
+	_funcRetValPtr = ModBusReadRegisterReq(slaveAddr,
 										   funcCode,
 										   readAddrStart,
 										   numberOfAddress);
@@ -782,35 +805,38 @@ void Manage_and_Storage_ModBus_Actuator_Data(void)
  		iFlag_modbusDataStorage = TRUE;
  	}
  	/*chiamo la funzione ogni 50 msec*/
- 	if (timerCounterCheckModBus >= 1 &&
- 		( iFlag_actuatorCheck == IFLAG_COMMAND_RECEIVED || iFlag_actuatorCheck == IFLAG_IDLE))
+ 	if (timerCounterCheckModBus >= 1 )
     {
- 		iFlag_actuatorCheck = IFLAG_COMMAND_SENT;
- 		timerCounterCheckModBus = 0;
+     	if (iFlag_actuatorCheck != IFLAG_COMMAND_RECEIVED )
+     	{
+     		//TODO aggiungere controllo mancata risposta
+     	}
 
- 		/*chiamo la funzione col corretto number of address dipendentemente dall'attuatore (pump/pinch)*/
-        if (slvAddr <= LAST_PUMP)
-        	/*funzione che mi legge lo stato delle pompe*/
-        	Check_Actuator_Status (slvAddr,funcCode,readAddrStart,numberOfAddressCheckPump);
-        else
-        	/*funzione che mi legge lo stato delle pinch*/
-        	Check_Actuator_Status (slvAddr,funcCode,readAddrStart,numberOfAddressCheckPinch);
+     	iFlag_actuatorCheck = IFLAG_COMMAND_SENT;
+		timerCounterCheckModBus = 0;
 
+		/*chiamo la funzione col corretto number of address dipendentemente dall'attuatore (pump/pinch)*/
+		if (slvAddr <= LAST_PUMP)
+			/*funzione che mi legge lo stato delle pompe*/
+			Check_Actuator_Status (slvAddr,funcCode,readAddrStart,numberOfAddressCheckPump);
+		else
+			/*funzione che mi legge lo stato delle pinch*/
+			Check_Actuator_Status (slvAddr,funcCode,readAddrStart,numberOfAddressCheckPinch);
+
+	   /* se supero l'uiltimo attuatore, rifaccio il giro da capo*/
         /*incremento l'indirizzo per interrogare tutti gli attuatori*/
         slvAddr++;
 
-       /* quando avrò tutti gli attuatori sarà da rimettere TOT_NUMBER_OF_ACTAUTOR al posto di 0x03*/
-        if (slvAddr > 0x03)//TOT_NUMBER_OF_ACTAUTOR)
+        if (slvAddr > LAST_ACTUATOR)
 			slvAddr = FIRST_ACTUATOR;
     }
- 	/*else devo aggiungere unn controllo sulla non ricezione e non impallarmi*/
 }
 
 /*In questa funzione memorizzo i dati ricevuti in seguito
  *  alla Check_Actuator_Status nella matrice modbusData*/
 void StorageModbusData(void)
 {
-	unsigned char dataTemp[MAX_DATA_MODBUS_RECEIVED],i,slvAddr,funCode;
+	unsigned char dataTemp[MAX_DATA_MODBUS_RECEIVED],i,Address,funCode;
 	unsigned int  Pump_Average_Current	= 0,
 				  Pump_Speed_Status		= 0,
 				  Pump_Status			= 0,
@@ -829,11 +855,11 @@ void StorageModbusData(void)
 	/*riporto il puntatore nella posizione iniziale*/
 	//_funcRetVal.slvresRetPtr = _funcRetVal.slvresRetPtr - MAX_DATA_MODBUS_RECEIVED;
 
-	slvAddr = dataTemp[0];
+	Address = dataTemp[0];
 	funCode = dataTemp[1];
 
 	/*se ho l'indirizzo di una pompa*/
-	if (slvAddr <= LAST_PUMP)
+	if (Address <= LAST_PUMP)
 	{
 		/*devo trasfomare i dati ricevuti da byte in word*/
 		Pump_Average_Current = BYTES_TO_WORD(dataTemp[3], dataTemp[4]);
@@ -853,26 +879,26 @@ void StorageModbusData(void)
 	 * quella è una risposta al mio comando di Check_Actuator_Status*/
 	if (funCode == 0x03)
 	{
-		/*uso lo slvAddr come indice per la matrice
+		/*uso lo Address come indice per la matrice
 		 * ma lo decremento di due in quanto pompa con
 		 * selettore '0' corrisposnde a indirizzo '2'*/
-		if (slvAddr <= LAST_PUMP) //sono nel caso di una pompa
+		if (Address <= LAST_PUMP) //sono nel caso di una pompa
 		{
-			modbusData[slvAddr-2][16]= Pump_Average_Current;
-			modbusData[slvAddr-2][17]= Pump_Speed_Status;
-			modbusData[slvAddr-2][18]= Pump_Status;
+			modbusData[Address-2][16]= Pump_Average_Current;
+			modbusData[Address-2][17]= Pump_Speed_Status;
+			modbusData[Address-2][18]= Pump_Status;
 		}
 		else //sono nel caso di una pinch
 		{
-			modbusData[slvAddr-2][16]= Pinch_Average_Current;
-			modbusData[slvAddr-2][17]= Pinch_Status;
+			modbusData[Address-2][16]= Pinch_Average_Current;
+			modbusData[Address-2][17]= Pinch_Status;
 		}
 	}
 }
 
 void StorageModbusDataInit(void)
 {
-	unsigned char dataTemp[MAX_DATA_MODBUS_RX],i,slvAddr,funCode;
+	unsigned char dataTemp[MAX_DATA_MODBUS_RX],i,Address,funCode;
 	unsigned int  Target 				= 0,
 			      Go_To_Home_Position 	= 0,
 				  Acceleration 			= 0,
@@ -896,7 +922,7 @@ void StorageModbusDataInit(void)
 		dataTemp[i] = * (_funcRetVal.slvresRetPtr+i); //così sposto non sposto il puntatore, ma leggo direttamente quello che mi serve senza spostarlo
 	}
 
-	slvAddr = dataTemp[0];
+	Address = dataTemp[0];
 	funCode = dataTemp[1];
 
 
@@ -911,7 +937,7 @@ void StorageModbusDataInit(void)
 	FW_Version 	 		= BYTES_TO_WORD(dataTemp[65], dataTemp[66]);
 
 	/*se ho l'indirizzo di una pompa memorizzo anche...*/
-	if (slvAddr <= LAST_PUMP) //sono nel caso di una pompa
+	if (Address <= LAST_PUMP) //sono nel caso di una pompa
 	{
 		Go_To_Home_Position = BYTES_TO_WORD(dataTemp[5], dataTemp[6]);
 		Acceleration		= BYTES_TO_WORD(dataTemp[7], dataTemp[8]);
@@ -930,34 +956,34 @@ void StorageModbusDataInit(void)
 	 * quella è una risposta al mio comando di Read Revision*/
 	if (funCode == 0x03)
 	{
-		/*uso lo slvAddr come indice per la matrice
+		/*uso lo Address come indice per la matrice
 		 * ma lo decremento di due in quanto pompa con
 		 * selettore '0' corrisponde a indirizzo '2'*/
 
-		modbusData[slvAddr-2][0]  = Target;
-		modbusData[slvAddr-2][16] = Average_Current;
+		modbusData[Address-2][0]  = Target;
+		modbusData[Address-2][16] = Average_Current;
 
-		modbusData[slvAddr-2][26] = BL_Version;
-		modbusData[slvAddr-2][27] = PCB_Code_H;
-		modbusData[slvAddr-2][28] = PCB_Code_L;
-		modbusData[slvAddr-2][29] = PCB_Code_REV;
-		modbusData[slvAddr-2][30] = Serial_Number;
-		modbusData[slvAddr-2][31] = FW_Version;
+		modbusData[Address-2][26] = BL_Version;
+		modbusData[Address-2][27] = PCB_Code_H;
+		modbusData[Address-2][28] = PCB_Code_L;
+		modbusData[Address-2][29] = PCB_Code_REV;
+		modbusData[Address-2][30] = Serial_Number;
+		modbusData[Address-2][31] = FW_Version;
 
 		/*se ho l'indirizzo di una pompa memorizzo anche...*/
-		if (slvAddr <= LAST_PUMP) //sono nel caso di una pompa
+		if (Address <= LAST_PUMP) //sono nel caso di una pompa
 		{
-			modbusData[slvAddr-2][1]  = Go_To_Home_Position;
-			modbusData[slvAddr-2][2]  = Acceleration;
-			modbusData[slvAddr-2][3]  = Current_level;
-			modbusData[slvAddr-2][4]  = Cruise_Speed;
-			modbusData[slvAddr-2][5]  = Steps_Target;
-			modbusData[slvAddr-2][17] = Pump_Speed_Status;
-			modbusData[slvAddr-2][18] = Status;
+			modbusData[Address-2][1]  = Go_To_Home_Position;
+			modbusData[Address-2][2]  = Acceleration;
+			modbusData[Address-2][3]  = Current_level;
+			modbusData[Address-2][4]  = Cruise_Speed;
+			modbusData[Address-2][5]  = Steps_Target;
+			modbusData[Address-2][17] = Pump_Speed_Status;
+			modbusData[Address-2][18] = Status;
 
 		}
 		else //sono nel caso di uan pinch, lo Status è messo in un posto diverso
-			modbusData[slvAddr-2][17]= Status;
+			modbusData[Address-2][17]= Status;
 	}
 }
 /* Public function */
