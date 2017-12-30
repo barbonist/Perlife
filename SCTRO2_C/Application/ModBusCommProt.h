@@ -143,6 +143,7 @@ char	data_pmp1[252];			/* pmp1 data field */
 #define		MODBUS_PINCH_POS_CLOSED		0x0001
 #define		MODBUS_PINCH_RIGHT_OPEN		0x0004
 #define		MODBUS_PINCH_LEFT_OPEN		0x0002
+#define		MODBUS_PINCH_PROVA		    0x0003
 
 
 /* Public interface function */

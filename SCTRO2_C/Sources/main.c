@@ -258,6 +258,7 @@ int main(void)
 
 
 
+
   SBC_COMM_Enable();
     /**/
   Bit3_SetVal(); /* enable motore */
@@ -341,6 +342,7 @@ int main(void)
 
   timerCounterCheckModBus = 0; 	//resetto il timer di check sul modbus
   slvAddr = FIRST_ACTUATOR;		//rimetto come indirizzo da leggere il primo
+  timerCounterADC = 0;
 
 
   // al reset metto tutti irami delle pich chiusi
@@ -557,6 +559,14 @@ int main(void)
 		        /*converte i valori ADC in volt per le tensioni*/
 		        Coversion_From_ADC_To_Voltage();
 
+		       /*faccio lo start della cionversione sui canali AD ogni 50 msec*/
+		        if (timerCounterADC >=1)
+		        {
+					timerCounterADC = 0;
+		    		AD0_Start();
+		    		AD1_Start();
+		        }
+
 		         /*******************************/
 		         /********UFLOW SENSOR***********/
 
@@ -622,8 +632,6 @@ int main(void)
 	        	processMachineState();
 
 	        	alarmEngineAlways();
-
-	        	//alwaysModBusActuator();
 	         }
 	         /****MACHINE STATE UPDATE END****/
 
@@ -637,8 +645,8 @@ int main(void)
 //	         }
 	         Manage_UFlow_Sens();
 
-	         // TestPump(2); // 2..5 usata per provare le pompe con la tastiera a bolle
-	         TestPinch(BOTTOM_PINCH_ID);   // 6..8
+	         //TestPump(5); // 2..5 usata per provare le pompe con la tastiera a bolle
+	         TestPinch(LEFT_PINCH_ID);   // 6..8
 
 	         Buzzer_Management();
 
@@ -679,6 +687,14 @@ int main(void)
 		     /*converte i valori ADC in volt per le tensioni*/
 		     Coversion_From_ADC_To_Voltage();
 
+		     /*faccio lo start della cionversione sui canali AD ogni 50 msec*/
+			 if (timerCounterADC >=1)
+			 {
+				timerCounterADC = 0;
+				AD0_Start();
+				AD1_Start();
+			 }
+
 			 /*da valutare se sreve ancora o può essere sostituita dalla mie Manange_ADC0() e Manange_ADC1()*/
 	         alwaysAdcParam();
 	         /********************************/
@@ -690,9 +706,10 @@ int main(void)
 	         if(timerCounterModBus != timerCounterModBusOld)
 	         {
 	        	 timerCounterModBusOld = timerCounterModBus;
-	        	 //alwaysModBusActuator();
 	         }
 
+	         // il controllo sul time slot lo fa al suo interno
+        	 alwaysModBusActuator();
 	         Manage_and_Storage_ModBus_Actuator_Data();
 	         /*********PUMP*********/
 			 #endif

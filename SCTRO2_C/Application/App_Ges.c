@@ -1676,17 +1676,21 @@ void TestPinch(unsigned char Adr)
 	if (Bubble_Keyboard_GetVal(BUTTON_1) && PinchPos != MODBUS_PINCH_POS_CLOSED)
 	{
 		PinchPos = MODBUS_PINCH_POS_CLOSED;
-		setPinchPosValue (Adr,MODBUS_PINCH_POS_CLOSED);
+		//setPinchPosValue (Adr,MODBUS_PINCH_POS_CLOSED);
+		setPinchPositionHighLevel(Adr, (int)MODBUS_PINCH_POS_CLOSED);
 	}
 	else if (Bubble_Keyboard_GetVal(BUTTON_2) && PinchPos != MODBUS_PINCH_RIGHT_OPEN)
 	{
 		PinchPos = MODBUS_PINCH_RIGHT_OPEN;
-		setPinchPosValue (Adr,MODBUS_PINCH_RIGHT_OPEN);
+		//setPinchPosValue (Adr,MODBUS_PINCH_RIGHT_OPEN);
+		//setPinchPositionHighLevel(Adr, (int)MODBUS_PINCH_PROVA);
+		setPinchPositionHighLevel(Adr, (int)MODBUS_PINCH_RIGHT_OPEN);
 	}
 	else if (Bubble_Keyboard_GetVal(BUTTON_3) && PinchPos != MODBUS_PINCH_LEFT_OPEN)
 	{
 		PinchPos = MODBUS_PINCH_LEFT_OPEN;
-		setPinchPosValue (Adr,MODBUS_PINCH_LEFT_OPEN);
+		//setPinchPosValue (Adr,MODBUS_PINCH_LEFT_OPEN);
+		setPinchPositionHighLevel(Adr, (int)MODBUS_PINCH_LEFT_OPEN);
 	}
 }
 
