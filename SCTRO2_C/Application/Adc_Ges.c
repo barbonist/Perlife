@@ -71,9 +71,6 @@ void Manange_ADC0(void)
 
 		/*resetto il flag di lettura sull'interrupt AD0_OnEnd*/
 		END_ADC0 = FALSE;
-
-		/*rifaccio lo start per riattivare la conversione*/
-		AD0_Start();
   	  }
 }
 
@@ -105,9 +102,6 @@ void Manange_ADC1(void)
 
 		/*resetto il flag di lettura sull'interrupt AD1_OnEnd*/
 		END_ADC1 = FALSE;
-
-		/*rifaccio lo start per riattivare la conversione*/
-		AD1_Start();
   	  }
 }
 

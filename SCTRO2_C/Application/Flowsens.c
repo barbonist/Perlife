@@ -115,11 +115,11 @@ void Manage_UFlow_Sens()
 		 * quella che mi aspetto*/
 		if (count_byte_RX == BYTE_COUNT_GET_VAL_CODE)
 		{
-			sensor_UFLOW[Id_Buffer].Bubble_Alarm = sensor_UFLOW[Id_Buffer].bufferReceived[5] & MASK_Bubble_Alarm;
-			sensor_UFLOW[Id_Buffer].Error_during_Bubble_Detection = sensor_UFLOW[Id_Buffer].bufferReceived[5] & MASK_Error_during_Bubble_Detection;
-			sensor_UFLOW[Id_Buffer].Error_In_Flow_Meas = sensor_UFLOW[Id_Buffer].bufferReceived[5] & MASK_Error_In_Flow_Meas;
-			sensor_UFLOW[Id_Buffer].Error_In_Temp_Meas = sensor_UFLOW[Id_Buffer].bufferReceived[5] & MASK_Error_In_Temp_Meas;
-			sensor_UFLOW[Id_Buffer].Device_Fault = sensor_UFLOW[Id_Buffer].bufferReceived[5] & MASK_Device_Fault;
+			sensor_UFLOW[Id_Buffer].Bubble_Alarm 					= sensor_UFLOW[Id_Buffer].bufferReceived[5] & MASK_Bubble_Alarm;
+			sensor_UFLOW[Id_Buffer].Error_during_Bubble_Detection 	= sensor_UFLOW[Id_Buffer].bufferReceived[5] & MASK_Error_during_Bubble_Detection;
+			sensor_UFLOW[Id_Buffer].Error_In_Flow_Meas 				= sensor_UFLOW[Id_Buffer].bufferReceived[5] & MASK_Error_In_Flow_Meas;
+			sensor_UFLOW[Id_Buffer].Error_In_Temp_Meas 				= sensor_UFLOW[Id_Buffer].bufferReceived[5] & MASK_Error_In_Temp_Meas;
+			sensor_UFLOW[Id_Buffer].Device_Fault 					= sensor_UFLOW[Id_Buffer].bufferReceived[5] & MASK_Device_Fault;
 
 			numFloatUFlow_Val.ieee754NumFormat_Val = (sensor_UFLOW[Id_Buffer].bufferReceived[11] << 24) |
 													 (sensor_UFLOW[Id_Buffer].bufferReceived[10] << 16) |
@@ -128,7 +128,7 @@ void Manage_UFlow_Sens()
 
 			/*prima di memorizzare il valore, controllo che non sia un Not a Number opp un infinito
 			 * ossia che non abbia 255 nel byte formato dai bit da 0 a 6 del byte + signifativo
-			 * e del bit 7 del byet immediatamente precdente*/
+			 * e del bit 7 del byte immediatamente precdente*/
 			Check_IEEE_Number = sensor_UFLOW[Id_Buffer].bufferReceived[11] & 0x7F;
 			Check_IEEE_Number << 1;
 
@@ -138,9 +138,9 @@ void Manage_UFlow_Sens()
 
 			if (Check_IEEE_Number != 0xFF)
 			{
-				/*se sul flusso ricevo un valorte neativo lo metto a zero
+				/*se sul flusso ricevo un valore neativo lo metto a zero
 				 * in quanto il sensore di flusso ha un verso e non
-				 * può keggere flussi negativi*/
+				 * può leggere flussi negativi*/
 				if (numFloatUFlow_Val.numFormatFloat_Val < 0)
 					numFloatUFlow_Val.numFormatFloat_Val = 0;
 

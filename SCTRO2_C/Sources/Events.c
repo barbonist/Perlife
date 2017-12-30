@@ -988,6 +988,41 @@ void PELTIER2_COMM_OnError(void)
 void PELTIER2_COMM_OnRxChar(void)
 {
   /* Write your code here ... */
+	/*if(iflagPeltierMsg == IFLAG_PELTIER_MSG_START)
+	{*/
+	PELTIER2_COMM_RecvChar(ptrMsgPeltierRx);
+
+ 	#ifdef	DEBUG_COMM_SBC
+	//PC_DEBUG_COMM_SendChar(*ptrMsgPeltierRx);
+	#endif
+	/*}*/
+
+	/* the first who reads the data empty the buffer */
+	/*PELTIER_COMM_RecvChar(ptrMsgPeltierRxDummy);
+
+	iflagPeltierMsg |= ((*ptrMsgPeltierRxDummy) == 0x0D) ? 0x01 : 0x00;
+	iflagPeltierMsg |= ((*ptrMsgPeltierRxDummy) == 0x0A) ? 0x04 : 0x00;
+	iflagPeltierMsg |= ((*ptrMsgPeltierRxDummy) == 0x3E) ? 0x10 : 0x00;
+	iflagPeltierMsg |= ((*ptrMsgPeltierRxDummy) == 0x20) ? 0x40 : 0x00;*/
+
+	ptrPeltierCountRx = ptrPeltierCountRx + 1;
+	ptrMsgPeltierRx = ptrMsgPeltierRx + 1;
+
+	if(
+		((*(ptrMsgPeltierRx-1)) == 0x20) &&
+		((*(ptrMsgPeltierRx-2)) == 0x3E) &&
+		((*(ptrMsgPeltierRx-3)) == 0x0A) &&
+		((*(ptrMsgPeltierRx-4)) == 0x0D)
+		)
+	//if(iflagPeltierMsg == IFLAG_PELTIER_MSG_END)
+	{
+  		iflag_peltier_rx = IFLAG_PELTIER_RX;
+		iflagPeltierMsg = IFLAG_IDLE;
+		ptrMsgPeltierRx = &peltierDebug_rx_data[0];
+		ptrMsgDataieee754start = &peltierDebug_rx_data[ptrPeltierCountRx-12];
+		ptrMsgDataPeltierInt = &peltierDebug_rx_data[ptrPeltierCountRx-5];
+		ptrPeltierCountRx = 0;
+	}
 }
 
 /*

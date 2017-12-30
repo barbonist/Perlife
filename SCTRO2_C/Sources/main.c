@@ -64,6 +64,7 @@
 #include "VOLTAGE_M_CHK.h"
 #include "BitIoLdd37.h"
 #include "PELTIER_COMM.h"
+#include "PELTIER2_COMM.h"
 #include "ASerialLdd3.h"
 #include "PELTIER2_COMM.h"
 #include "ASerialLdd6.h"
@@ -254,8 +255,6 @@ int main(void)
   modBusPinchInit();
   modbusDataInit();
 
-
-
   SBC_COMM_Enable();
     /**/
   Bit3_SetVal(); /* enable motore */
@@ -270,8 +269,6 @@ int main(void)
   ptrPCDebugCount = 0;
 
   ptrMsgPeltierRx = &peltierDebug_rx_data[0];
-
-
 
   ptrPeltierCountRx = 0;
 
@@ -299,6 +296,11 @@ int main(void)
   EN_Clamp_Control(ENABLE);
   EN_Motor_Control(ENABLE);
   IR_TM_COMM_Enable();
+
+  /*abilitp la 24 V sui driver delle celle di peltier*/
+  EN_P_1_C_SetVal();
+  EN_P_2_C_SetVal();
+
 
   /*attendo 5 s prima di entrare nell main loop
    * per dare il tempo ai sensori di alimentarsi e
@@ -339,6 +341,7 @@ int main(void)
 
   timerCounterCheckModBus = 0; 	//resetto il timer di check sul modbus
   slvAddr = FIRST_ACTUATOR;		//rimetto come indirizzo da leggere il primo
+  timerCounterADC = 0;
 
 
   /**********MAIN LOOP START************/
@@ -544,6 +547,14 @@ int main(void)
 		        /*converte i valori ADC in volt per le tensioni*/
 		        Coversion_From_ADC_To_Voltage();
 
+		        /*faccio lo start per riattivare la conversione sui due canali AD ogni 50 msec*/
+		        if (timerCounterADC >= 1)
+		        {
+		        	timerCounterADC = 0;
+		        	AD0_Start();
+		        	AD1_Start();
+		        }
+
 		         /*******************************/
 		         /********UFLOW SENSOR***********/
 
@@ -578,6 +589,20 @@ int main(void)
 		        /*******************************/
 		        /******UFLOW SENSOR END*********/
 
+		        /*******************************/
+		        /***********PELTIER*************/
+
+				if(timerCounterPeltier >= 2){
+		        	 timerCounterPeltier = 0;
+
+		        	 if(peltierCell.readAlwaysEnable == 0)
+		        		 alwaysPeltierActuator();
+
+		         }
+			    /*********PELTIER END***********/
+				/*******************************/
+
+
 	         	Manage_Debug_led(Status_Board);
 
 	         	Manage_and_Storage_ModBus_Actuator_Data();
@@ -594,10 +619,10 @@ int main(void)
 	         pollingDataToSBCTreat();
 	         /* sbc comm - end */
 
-			/*controllo lo stato del sensore d'aria
-			 * e aggiorno la variabile globale
-			 * Air_1_Status */
-			Manage_Air_Sensor_1();
+			 /*controllo lo stato del sensore d'aria
+			  * e aggiorno la variabile globale
+			  * Air_1_Status */
+			 Manage_Air_Sensor_1();
 
 	         /*****MACHINE STATE UPDATE START****/
 	         if(timerCounterMState >= 1)

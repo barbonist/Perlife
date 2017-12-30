@@ -39,12 +39,12 @@ char    iFlag_modbusDataStorage;
 #define DEBUG_PUMP				0x02
 #define DEBUG_CENTRIF_PUMP		0x03
 #define DEBUG_PELTIER			0x04
-//#define DEBUG_COMM_SBC			0x05  //alternativa a DEBUG_TREATMENT
+#define DEBUG_COMM_SBC			0x05  //alternativa a DEBUG_TREATMENT
 #define DEBUG_MACHINE_STATE		0x06
 #define DEBUG_CONTROL			0xA5
 #define DEBUG_PROTECTION		0x5A
 #define DEBUG_LOG_PC			0x01
-#define DEBUG_TREATMENT			0xA5 //alternativa a DEBUG_COMM_SBC
+//#define DEBUG_TREATMENT			0xA5 //alternativa a DEBUG_COMM_SBC
 //#define DEBUG_I2C_TEMP_SENS		0x01
 /*#define DEBUG_FLOW_SENS			0x00*/ /*0x01*/
 /* DEBUG */
@@ -672,6 +672,7 @@ struct peltier{
 };
 
 struct peltier	peltierCell;
+struct peltier	peltierCell2;
 /* Peltier cell */
 
 /* Peristaltic pump */
@@ -840,7 +841,7 @@ struct ultrsndFlowSens{
 
 #define SAMPLE 								16			//numero di campioni su cui mediare il flusso istantaneo letto
 #define TOT_UF_SENSOR 						2
-#define BYTE_COUNT_GET_VAL_CODE 			0x17 		//numero di byet che mi aspetto in ricezione col comando di GET_VAL_CODE customizzato con 3 byte di richesta 0x82 -- 0x88 -- 0x8B
+#define BYTE_COUNT_GET_VAL_CODE 			0x17 		//numero di byte che mi aspetto in ricezione col comando di GET_VAL_CODE customizzato con 3 byte di richesta 0x82 -- 0x88 -- 0x8B
 float buffer_flow_value [TOT_UF_SENSOR][SAMPLE];
 
 struct ultrsndFlowSens sensor_UFLOW[12];

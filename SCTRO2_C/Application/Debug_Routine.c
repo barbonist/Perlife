@@ -370,7 +370,7 @@ void testCOMMSbcDebug(void){
 					case 0x26:
 					{
 						sprintf(regId, "%u", sbc_rx_data[7]);
-						PeltierAssSendCommand(READ_FLOAT_FROM_REG_XX,regId,0,"0");
+						PeltierAssSendCommand(READ_FLOAT_FROM_REG_XX,regId,0,"0",2);
 
 						word snd;
 						ptrMsgSbcRx = &sbc_rx_data;
@@ -383,7 +383,7 @@ void testCOMMSbcDebug(void){
 					case 0x28:
 					{
 						sprintf(regId, "%u", sbc_rx_data[7]);
-						PeltierAssSendCommand(READ_DATA_REGISTER_XX,regId,0,"0");
+						PeltierAssSendCommand(READ_DATA_REGISTER_XX,regId,0,"0",2);
 
 						word snd;
 						ptrMsgSbcRx = &sbc_rx_data;
@@ -397,7 +397,7 @@ void testCOMMSbcDebug(void){
 					{
 						sprintf(regId, "%u", sbc_rx_data[7]);
 						sprintf(valueIeee, "%2X%2X%2X%2X", sbc_rx_data[8], sbc_rx_data[9], sbc_rx_data[10], sbc_rx_data[11]);
-						PeltierAssSendCommand(WRITE_FLOAT_REG_XX,regId,0,valueIeee);
+						PeltierAssSendCommand(WRITE_FLOAT_REG_XX,regId,0,valueIeee,2);
 
 						word snd;
 						ptrMsgSbcRx = &sbc_rx_data;
@@ -411,7 +411,7 @@ void testCOMMSbcDebug(void){
 					{
 						sprintf(regId, "%u", sbc_rx_data[7]);
 						valueInt = sbc_rx_data[8];
-						PeltierAssSendCommand(WRITE_DATA_REGISTER_XX,regId,valueInt,"0");
+						PeltierAssSendCommand(WRITE_DATA_REGISTER_XX,regId,valueInt,"0",2);
 
 						word snd;
 						ptrMsgSbcRx = &sbc_rx_data;
@@ -423,7 +423,7 @@ void testCOMMSbcDebug(void){
 					// Peltier start
 					case 0x20:
 					{
-						PeltierAssSendCommand(START_FLAG,"0",0,"0");
+						PeltierAssSendCommand(START_FLAG,"0",0,"0",2);
 
 						word snd;
 						ptrMsgSbcRx = &sbc_rx_data;
@@ -435,7 +435,7 @@ void testCOMMSbcDebug(void){
 					// Peltier stop
 					case 0x21:
 					{
-						PeltierAssSendCommand(STOP_FLAG,"0",0,"0");
+						PeltierAssSendCommand(STOP_FLAG,"0",0,"0",2);
 
 						word snd;
 						ptrMsgSbcRx = &sbc_rx_data;
@@ -447,7 +447,7 @@ void testCOMMSbcDebug(void){
 					// Peltier write ee
 					case 0x22:
 					{
-						PeltierAssSendCommand(WRITE_REG_VAL_TO_EEPROM, "0",0,"0");
+						PeltierAssSendCommand(WRITE_REG_VAL_TO_EEPROM, "0",0,"0",2);
 
 						word snd;
 						ptrMsgSbcRx = &sbc_rx_data;
@@ -465,7 +465,7 @@ void testCOMMSbcDebug(void){
 					{
 						//build command for peltier
 						//send command to peltier
-						PeltierAssSendCommand(SHOW_CURRENT_SW,0,0,"0");
+						PeltierAssSendCommand(SHOW_CURRENT_SW,0,0,"0",2);
 						//wait for response
 					}
 					break;
@@ -479,7 +479,7 @@ void testCOMMSbcDebug(void){
 						for(char i=0; i<1; i++)
 						{
 							//while(iflagPeltierBusy == IFLAG_PELTIER_BUSY);
-							PeltierAssSendCommand(READ_FLOAT_FROM_REG_XX,REG_0_SET_POINT+i,0,"0");
+							PeltierAssSendCommand(READ_FLOAT_FROM_REG_XX,REG_0_SET_POINT+i,0,"0",2);
 						}
 						//wait for response
 					}
@@ -488,7 +488,7 @@ void testCOMMSbcDebug(void){
 					case 0x03:
 					{
 						/* when using the ieee 754 format the hex number shall be written as a string */
-						PeltierAssSendCommand(WRITE_FLOAT_REG_XX, REG_0_SET_POINT, 0, "40133333");
+						PeltierAssSendCommand(WRITE_FLOAT_REG_XX, REG_0_SET_POINT, 0, "40133333",2);
 					}
 					break;
 

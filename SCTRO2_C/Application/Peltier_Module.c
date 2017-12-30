@@ -13,9 +13,11 @@
 #include "Global.h"
 
 #include "PELTIER_COMM.h"
+#include "PELTIER2_COMM.h"
 #include "ASerialLdd3.h"
 #include "PC_DEBUG_COMM.h"
 #include "ASerialLdd2.h"
+#include "SBC_COMM.h"
 
 void peltierAssInit(void){
 	iflagPeltierBusy = IFLAG_PELTIER_FREE;
@@ -42,10 +44,34 @@ void peltierAssInit(void){
 
 	peltierCell.readAlwaysEnable = 0;
 
+	peltierCell2.commandDataFloatToWrite = 0;
+	peltierCell2.commandDataIntToWrite = 0;
+	peltierCell2.commandRegId = REG_IDLE;
+
+	peltierCell2.myFanModeSel = 1;
+	peltierCell2.myNTCSteinCoeff_A = 0.0013;
+	peltierCell2.myNTCSteinCoeff_B = 0.000235;
+	peltierCell2.myNTCSteinCoeff_C = 0.00000008;
+	peltierCell2.myOnOffDeadBand = 0.5;
+	peltierCell2.myOnOffHyster = 0.5;
+	peltierCell2.myRegMode = 2;
+	peltierCell2.mySet = 20.0;
+	peltierCell2.myTCDeadBand = 2.0;
+	peltierCell2.myTCLimit = 95;
+	peltierCell2.myThrsldMainCurrHigh = 30;
+
+	peltierCell.readAlwaysEnable = 0;
+
 	timerCounterPeltier = 0;
 
 }
 
+/*questa gestisce la macchina a stati tra trasmissione e ricezione
+ * per il driver delle peltier; bisogna farne un altra uguale
+ * per distinguere i due driver differenti.
+ * Le variabili del tipo 'peltierCell.XXXX' diventerano 'peltierCell2.XXX'
+ * la funzione 'PeltierAssSendCommand' sarà chiamata con ultimo parametro a 1
+ * se ci riferiamo al driver 1 e ultimo parametro a 2 se ci riferiamo al driver 2*/
 void alwaysPeltierActuator(void){
 	static unsigned char  myStatePos = 0;
 	static unsigned char myCountWrite = 0;
@@ -70,7 +96,7 @@ void alwaysPeltierActuator(void){
 		switch(myStatePos){
 		//FAN 1 MODE - READ
 		case 0:
-			PeltierAssSendCommand(READ_DATA_REGISTER_XX,REG_16_FAN1_MOD_SEL,0,"0");
+			PeltierAssSendCommand(READ_DATA_REGISTER_XX,REG_16_FAN1_MOD_SEL,0,"0",2);
 			ptrMsgPeltierRx = &peltierDebug_rx_data[0];
 			ptrPeltierCountRx = 0;
 			break;
@@ -78,7 +104,7 @@ void alwaysPeltierActuator(void){
 		case 1:
 			if(myDataIntActual != peltierCell.myFanModeSel)
 			{
-				PeltierAssSendCommand(WRITE_DATA_REGISTER_XX, REG_16_FAN1_MOD_SEL, peltierCell.myFanModeSel, 0);
+				PeltierAssSendCommand(WRITE_DATA_REGISTER_XX, REG_16_FAN1_MOD_SEL, peltierCell.myFanModeSel, 0,2);
 				//myStatePos = 0;
 			}
 			else
@@ -86,7 +112,7 @@ void alwaysPeltierActuator(void){
 			break;
 		//REG. MODE - READ
 		case 2:
-			PeltierAssSendCommand(READ_DATA_REGISTER_XX,REG_13_REGULATOR_MODE,0,"0");
+			PeltierAssSendCommand(READ_DATA_REGISTER_XX,REG_13_REGULATOR_MODE,0,"0",2);
 			ptrMsgPeltierRx = &peltierDebug_rx_data[0];
 			ptrPeltierCountRx = 0;
 			break;
@@ -94,7 +120,7 @@ void alwaysPeltierActuator(void){
 		case 3:
 			if(myDataIntActual != peltierCell.myRegMode)
 			{
-				PeltierAssSendCommand(WRITE_DATA_REGISTER_XX, REG_13_REGULATOR_MODE, peltierCell.myRegMode, 0);
+				PeltierAssSendCommand(WRITE_DATA_REGISTER_XX, REG_13_REGULATOR_MODE, peltierCell.myRegMode, 0,2);
 				//myStatePos = 2;
 			}
 			else
@@ -102,7 +128,7 @@ void alwaysPeltierActuator(void){
 			break;
 		//NTC STEIN COEFF A - READ
 		case 4:
-			PeltierAssSendCommand(READ_FLOAT_FROM_REG_XX,REG_59_TEMP1_STEIN_COEFF_A,0,"0");
+			PeltierAssSendCommand(READ_FLOAT_FROM_REG_XX,REG_59_TEMP1_STEIN_COEFF_A,0,"0",2);
 			ptrMsgPeltierRx = &peltierDebug_rx_data[0];
 			ptrPeltierCountRx = 0;
 			break;
@@ -120,7 +146,7 @@ void alwaysPeltierActuator(void){
 					if(myStringFloat[i] == 0x20)
 						myStringFloat[i] = 0x30;
 				}
-				PeltierAssSendCommand(WRITE_FLOAT_REG_XX, REG_59_TEMP1_STEIN_COEFF_A, 0, myStringFloat);
+				PeltierAssSendCommand(WRITE_FLOAT_REG_XX, REG_59_TEMP1_STEIN_COEFF_A, 0, myStringFloat,2);
 				//myStatePos = 4;
 			}
 			else
@@ -128,7 +154,7 @@ void alwaysPeltierActuator(void){
 			break;
 		//NTC STEIN COEFF B - READ
 		case 6:
-			PeltierAssSendCommand(READ_FLOAT_FROM_REG_XX,REG_60_TEMP1_STEIN_COEFF_B,0,"0");
+			PeltierAssSendCommand(READ_FLOAT_FROM_REG_XX,REG_60_TEMP1_STEIN_COEFF_B,0,"0",2);
 			ptrMsgPeltierRx = &peltierDebug_rx_data[0];
 			ptrPeltierCountRx = 0;
 			break;
@@ -146,7 +172,7 @@ void alwaysPeltierActuator(void){
 					if(myStringFloat[i] == 0x20)
 						myStringFloat[i] = 0x30;
 				}
-				PeltierAssSendCommand(WRITE_FLOAT_REG_XX, REG_60_TEMP1_STEIN_COEFF_B, 0, myStringFloat);
+				PeltierAssSendCommand(WRITE_FLOAT_REG_XX, REG_60_TEMP1_STEIN_COEFF_B, 0, myStringFloat,2);
 				//myStatePos = 4;
 			}
 			else
@@ -154,7 +180,7 @@ void alwaysPeltierActuator(void){
 			break;
 		//NTC STEIN COEFF C - READ
 		case 8:
-			PeltierAssSendCommand(READ_FLOAT_FROM_REG_XX,REG_61_TEMP1_STEIN_COEFF_C,0,"0");
+			PeltierAssSendCommand(READ_FLOAT_FROM_REG_XX,REG_61_TEMP1_STEIN_COEFF_C,0,"0",2);
 			ptrMsgPeltierRx = &peltierDebug_rx_data[0];
 			ptrPeltierCountRx = 0;
 			break;
@@ -172,7 +198,7 @@ void alwaysPeltierActuator(void){
 					if(myStringFloat[i] == 0x20)
 						myStringFloat[i] = 0x30;
 				}
-				PeltierAssSendCommand(WRITE_FLOAT_REG_XX, REG_61_TEMP1_STEIN_COEFF_C, 0, myStringFloat);
+				PeltierAssSendCommand(WRITE_FLOAT_REG_XX, REG_61_TEMP1_STEIN_COEFF_C, 0, myStringFloat,2);
 				//myStatePos = 4;
 			}
 			else
@@ -180,7 +206,7 @@ void alwaysPeltierActuator(void){
 			break;
 		//ON OFF DEAD BAND - READ
 		case 10:
-			PeltierAssSendCommand(READ_FLOAT_FROM_REG_XX,REG_14_ON_OFF_DEAD_BAND,0,"0");
+			PeltierAssSendCommand(READ_FLOAT_FROM_REG_XX,REG_14_ON_OFF_DEAD_BAND,0,"0",2);
 			ptrMsgPeltierRx = &peltierDebug_rx_data[0];
 			ptrPeltierCountRx = 0;
 			break;
@@ -198,7 +224,7 @@ void alwaysPeltierActuator(void){
 					if(myStringFloat[i] == 0x20)
 						myStringFloat[i] = 0x30;
 				}
-				PeltierAssSendCommand(WRITE_FLOAT_REG_XX, REG_14_ON_OFF_DEAD_BAND, 0, myStringFloat);
+				PeltierAssSendCommand(WRITE_FLOAT_REG_XX, REG_14_ON_OFF_DEAD_BAND, 0, myStringFloat,2);
 				//myStatePos = 4;
 			}
 			else
@@ -206,7 +232,7 @@ void alwaysPeltierActuator(void){
 			break;
 		//ON OFF HYST - READ
 		case 12:
-			PeltierAssSendCommand(READ_FLOAT_FROM_REG_XX,REG_15_ON_OFF_HYSTER,0,"0");
+			PeltierAssSendCommand(READ_FLOAT_FROM_REG_XX,REG_15_ON_OFF_HYSTER,0,"0",2);
 			ptrMsgPeltierRx = &peltierDebug_rx_data[0];
 			ptrPeltierCountRx = 0;
 			break;
@@ -224,7 +250,7 @@ void alwaysPeltierActuator(void){
 					if(myStringFloat[i] == 0x20)
 						myStringFloat[i] = 0x30;
 				}
-				PeltierAssSendCommand(WRITE_FLOAT_REG_XX, REG_15_ON_OFF_HYSTER, 0, myStringFloat);
+				PeltierAssSendCommand(WRITE_FLOAT_REG_XX, REG_15_ON_OFF_HYSTER, 0, myStringFloat,2);
 				//myStatePos = 4;
 			}
 			else
@@ -232,7 +258,7 @@ void alwaysPeltierActuator(void){
 			break;
 		// SET TEMP - READ
 		case 14:
-			PeltierAssSendCommand(READ_FLOAT_FROM_REG_XX,REG_0_SET_POINT,0,"0");
+			PeltierAssSendCommand(READ_FLOAT_FROM_REG_XX,REG_0_SET_POINT,0,"0",2);
 			ptrMsgPeltierRx = &peltierDebug_rx_data[0];
 			ptrPeltierCountRx = 0;
 			break;
@@ -250,7 +276,7 @@ void alwaysPeltierActuator(void){
 					if(myStringFloat[i] == 0x20)
 						myStringFloat[i] = 0x30;
 				}
-				PeltierAssSendCommand(WRITE_FLOAT_REG_XX, REG_0_SET_POINT, 0, myStringFloat);
+				PeltierAssSendCommand(WRITE_FLOAT_REG_XX, REG_0_SET_POINT, 0, myStringFloat,2);
 				//myStatePos = 4;
 			}
 			else
@@ -258,7 +284,7 @@ void alwaysPeltierActuator(void){
 			break;
 		//TC DEAD BAND - READ
 		case 16:
-			PeltierAssSendCommand(READ_FLOAT_FROM_REG_XX,REG_7_MAIN_TCDEADBAND,0,"0");
+			PeltierAssSendCommand(READ_FLOAT_FROM_REG_XX,REG_7_MAIN_TCDEADBAND,0,"0",2);
 			ptrMsgPeltierRx = &peltierDebug_rx_data[0];
 			ptrPeltierCountRx = 0;
 			break;
@@ -276,7 +302,7 @@ void alwaysPeltierActuator(void){
 					if(myStringFloat[i] == 0x20)
 						myStringFloat[i] = 0x30;
 				}
-				PeltierAssSendCommand(WRITE_FLOAT_REG_XX, REG_7_MAIN_TCDEADBAND, 0, myStringFloat);
+				PeltierAssSendCommand(WRITE_FLOAT_REG_XX, REG_7_MAIN_TCDEADBAND, 0, myStringFloat,2);
 				//myStatePos = 4;
 			}
 			else
@@ -284,7 +310,7 @@ void alwaysPeltierActuator(void){
 			break;
 		//TC LIMIT - READ
 		case 18:
-			PeltierAssSendCommand(READ_FLOAT_FROM_REG_XX,REG_6_MAIN_TCLIMIT,0,"0");
+			PeltierAssSendCommand(READ_FLOAT_FROM_REG_XX,REG_6_MAIN_TCLIMIT,0,"0",2);
 			ptrMsgPeltierRx = &peltierDebug_rx_data[0];
 			ptrPeltierCountRx = 0;
 			break;
@@ -302,7 +328,7 @@ void alwaysPeltierActuator(void){
 					if(myStringFloat[i] == 0x20)
 						myStringFloat[i] = 0x30;
 				}
-				PeltierAssSendCommand(WRITE_FLOAT_REG_XX, REG_6_MAIN_TCLIMIT, 0, myStringFloat);
+				PeltierAssSendCommand(WRITE_FLOAT_REG_XX, REG_6_MAIN_TCLIMIT, 0, myStringFloat,2);
 				//myStatePos = 4;
 			}
 			else
@@ -310,7 +336,7 @@ void alwaysPeltierActuator(void){
 			break;
 		//CURR. HIGH THRSHLD - READ
 		case 20:
-			PeltierAssSendCommand(READ_FLOAT_FROM_REG_XX,REG_47_ALARM_CURRENT_HIGH,0,"0");
+			PeltierAssSendCommand(READ_FLOAT_FROM_REG_XX,REG_47_ALARM_CURRENT_HIGH,0,"0",2);
 			ptrMsgPeltierRx = &peltierDebug_rx_data[0];
 			ptrPeltierCountRx = 0;
 			break;
@@ -328,7 +354,7 @@ void alwaysPeltierActuator(void){
 					if(myStringFloat[i] == 0x20)
 						myStringFloat[i] = 0x30;
 				}
-				PeltierAssSendCommand(WRITE_FLOAT_REG_XX, REG_47_ALARM_CURRENT_HIGH, 0, myStringFloat);
+				PeltierAssSendCommand(WRITE_FLOAT_REG_XX, REG_47_ALARM_CURRENT_HIGH, 0, myStringFloat,2);
 				//myStatePos = 4;
 			}
 			else
@@ -546,15 +572,24 @@ void alwaysPeltierActuator(void){
 }
 
 void startPeltierActuator(void){
-	PeltierAssSendCommand(START_FLAG,"0",0,"0");
+	PeltierAssSendCommand(START_FLAG,"0",0,"0",1);
+	PeltierAssSendCommand(START_FLAG,"0",0,"0",2);
 }
 
 void stopPeltierActuator(void){
-	PeltierAssSendCommand(STOP_FLAG,"0",0,"0");
+	PeltierAssSendCommand(STOP_FLAG,"0",0,"0",1);
+	PeltierAssSendCommand(STOP_FLAG,"0",0,"0",2);
 }
 
-//void PeltierAssSendCommand(char command[], char registerId, int dataIntUser, float dataFloatUser)
-void PeltierAssSendCommand(char command[], char registerId[], int dataIntUser, char dataFloatUser[8])
+/*funzione cher invia il comando sulla seriale
+ * al driver delle peltier; in base al parametro
+ * 'channel' decido se inviare sulla PELTIER_COMM (channel = 1)
+ *  oppure su PELTIER2_COMM  (channel = 2)*/
+void PeltierAssSendCommand(char command[],
+						   char registerId[],
+						   int dataIntUser,
+						   char dataFloatUser[8],
+						   unsigned char channel)
 {
 	unsigned char	startChar;
 	unsigned char	stopChar;
@@ -585,7 +620,7 @@ void PeltierAssSendCommand(char command[], char registerId[], int dataIntUser, c
 	}
 
 	/* START CHAR */
-	startChar = 0x24;
+	startChar = 0x24;		//0x24 = '$'
 	msgPeltier[0] = startChar;
 
 	stopChar = 0x0D;
@@ -782,12 +817,18 @@ void PeltierAssSendCommand(char command[], char registerId[], int dataIntUser, c
 
 	for(int i = 0; i<msgLenght; i++)
 	{
-		PELTIER_COMM_SendChar(msgPeltier[i]);
+		/*successivamente saranno da gestire entrambi i canali seriali
+		 * quindi con variabili diverse*/
+		if (channel == 1)
+			PELTIER_COMM_SendChar(msgPeltier[i]);
+		else //if (channel == 2)
+			PELTIER2_COMM_SendChar(msgPeltier[i]);
 
 		//iflag_peltier_rx = IFLAG_IDLE;
 
 		#ifdef	DEBUG_COMM_SBC
 		//PC_DEBUG_COMM_SendChar(msgPeltier[i]);
+		SBC_COMM_SendChar(msgPeltier[i]);
 		#endif
 
 		if(i == (msgLenght-1))

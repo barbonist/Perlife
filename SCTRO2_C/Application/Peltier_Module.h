@@ -187,7 +187,7 @@
 
 
 //void PeltierAssSendCommand(char command[], char registerId, int dataIntUser, float dataFloatUser);
-void PeltierAssSendCommand(char command[], char registerId[], int dataIntUser, char dataFloatUser[8]);
+void PeltierAssSendCommand(char command[], char registerId[], int dataIntUser, char dataFloatUser[8], unsigned char channel);
 void PeltierAssWaitReadyToRcv(void);
 void PeltierAssReadResponse(void);
 void peltierAssInit(void);
