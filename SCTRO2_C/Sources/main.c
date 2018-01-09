@@ -168,7 +168,7 @@
 
 /*lint -save  -e970 Disable MISRA rule (6.3) checking. */
 void TestPump(unsigned char Adr); //only for test
-void TestPinch(unsigned char Adr);
+void TestPinch(void);
 
 
 int main(void)
@@ -347,14 +347,19 @@ int main(void)
 
   // al reset metto tutti irami delle pich chiusi
   setPinchPosValue (BOTTOM_PINCH_ID, MODBUS_PINCH_POS_CLOSED);
-  while (timerCounterCheckModBus < 2);
+  while (timerCounterCheckModBus < 1);
   timerCounterCheckModBus = 0;
   setPinchPosValue (LEFT_PINCH_ID, MODBUS_PINCH_POS_CLOSED);
-  while (timerCounterCheckModBus < 2);
+  while (timerCounterCheckModBus < 1);
    timerCounterCheckModBus = 0;
   setPinchPosValue (RIGHT_PINCH_ID, MODBUS_PINCH_POS_CLOSED);
-  while (timerCounterCheckModBus < 2);
+  while (timerCounterCheckModBus < 1);
    timerCounterCheckModBus = 0;
+
+
+//   setPinchPositionHighLevel(BOTTOM_PINCH_ID, (int)MODBUS_PINCH_POS_CLOSED);
+//   setPinchPositionHighLevel(LEFT_PINCH_ID, (int)MODBUS_PINCH_POS_CLOSED);
+//   setPinchPositionHighLevel(RIGHT_PINCH_ID, (int)MODBUS_PINCH_POS_CLOSED);
 
   /**********MAIN LOOP START************/
   for(;;) {
@@ -645,8 +650,14 @@ int main(void)
 //	         }
 	         Manage_UFlow_Sens();
 
-	         //TestPump(5); // 2..5 usata per provare le pompe con la tastiera a bolle
-	         TestPinch(LEFT_PINCH_ID);   // 6..8
+	         //TestPump(2); // 2..5 usata per provare le pompe con la tastiera a bolle
+	         if( (pumpPerist[0].reqState == REQ_STATE_OFF) && (pumpPerist[0].reqType == REQ_TYPE_IDLE) &&
+	             (pumpPerist[1].reqState == REQ_STATE_OFF) && (pumpPerist[1].reqType == REQ_TYPE_IDLE) &&
+				 (pumpPerist[2].reqState == REQ_STATE_OFF) && (pumpPerist[2].reqType == REQ_TYPE_IDLE) &&
+				 (pumpPerist[3].reqState == REQ_STATE_OFF) && (pumpPerist[3].reqType == REQ_TYPE_IDLE))
+	         {
+	        	 TestPinch();     // BOTTOM_PINCH_ID = 7, LEFT_PINCH_ID = 8, RIGHT_PINCH_ID = 9
+	         }
 
 	         Buzzer_Management();
 

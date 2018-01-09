@@ -685,6 +685,7 @@ void manageStateTreatKidney1Always(void)
 
 /*-----------------------------------------------------------*/
 /* This function manages the state empty disposable activity */
+/* Entrata nello stato di svutamento del disposable          */
 /*-----------------------------------------------------------*/
 void manageStateEmptyDisp(void){
 	releaseGUIButton(BUTTON_CONFIRM);
@@ -917,7 +918,9 @@ void manageParentPrimingAlways(void){
 	if(pumpPerist[0].dataReady == DATA_READY_TRUE)
 	{
 		//iflag_pmp1_rx = IFLAG_IDLE;
-		speed = ((BYTES_TO_WORD_SIGN(msgToRecvFrame3[3], msgToRecvFrame3[4]))/100)*(timerCopy);
+		//speed = ((BYTES_TO_WORD_SIGN(msgToRecvFrame3[3], msgToRecvFrame3[4]))/100)*(timerCopy);
+		// la velocita' ora posso leggerla direttamente dall'array di registry modbus
+		speed = modbusData[pumpPerist[0].pmpMySlaveAddress-2][17];
 		volumePriming = volumePriming + (float)(speed * 0.00775);
 		perfusionParam.priVolPerfArt = (int)(volumePriming);
 		pumpPerist[0].dataReady = DATA_READY_FALSE;
@@ -971,31 +974,31 @@ void manageParentPrimingAlways(void){
 				iflag_perf = 0;
 			}
 
-		/*if(
-			(buttonGUITreatment[BUTTON_START_PRIMING].state == GUI_BUTTON_PRESSED) ||
-			(buttonGUITreatment[BUTTON_START_PERF_PUMP].state == GUI_BUTTON_PRESSED)
-			)
-		{
-			releaseGUIButton(BUTTON_START_PRIMING);
-			releaseGUIButton(BUTTON_START_PERF_PUMP);
-
-			if(iflag_perf == 0)
-			{
-				setPumpSpeedValue(pumpPerist[0].pmpMySlaveAddress, 4000);
-				iflag_perf = 1;
-			}
-		}
-		else if(
-				(buttonGUITreatment[BUTTON_STOP_ALL_PUMP].state == GUI_BUTTON_PRESSED) ||
-				(buttonGUITreatment[BUTTON_STOP_PERF_PUMP].state == GUI_BUTTON_PRESSED)
+			/*if(
+				(buttonGUITreatment[BUTTON_START_PRIMING].state == GUI_BUTTON_PRESSED) ||
+				(buttonGUITreatment[BUTTON_START_PERF_PUMP].state == GUI_BUTTON_PRESSED)
 				)
-		{
-			releaseGUIButton(BUTTON_STOP_ALL_PUMP);
-			releaseGUIButton(BUTTON_STOP_PERF_PUMP);
+			{
+				releaseGUIButton(BUTTON_START_PRIMING);
+				releaseGUIButton(BUTTON_START_PERF_PUMP);
 
-			setPumpSpeedValue(pumpPerist[0].pmpMySlaveAddress, 0);
-			iflag_perf = 0;
-		}*/
+				if(iflag_perf == 0)
+				{
+					setPumpSpeedValue(pumpPerist[0].pmpMySlaveAddress, 4000);
+					iflag_perf = 1;
+				}
+			}
+			else if(
+					(buttonGUITreatment[BUTTON_STOP_ALL_PUMP].state == GUI_BUTTON_PRESSED) ||
+					(buttonGUITreatment[BUTTON_STOP_PERF_PUMP].state == GUI_BUTTON_PRESSED)
+					)
+			{
+				releaseGUIButton(BUTTON_STOP_ALL_PUMP);
+				releaseGUIButton(BUTTON_STOP_PERF_PUMP;
+
+				setPumpSpeedValue(pumpPerist[0].pmpMySlaveAddress, 0);
+				iflag_perf = 0;
+			}*/
 
 		if((timerCounterModBus%9) == 8)
 			{
@@ -1012,7 +1015,9 @@ void manageParentPrimingAlways(void){
 		if(pumpPerist[0].dataReady == DATA_READY_TRUE)
 			{
 				//iflag_pmp1_rx = IFLAG_IDLE;
-				speed = ((BYTES_TO_WORD_SIGN(msgToRecvFrame3[3], msgToRecvFrame3[4]))/100)*(timerCopy);
+				//speed = ((BYTES_TO_WORD_SIGN(msgToRecvFrame3[3], msgToRecvFrame3[4]))/100)*(timerCopy);
+				// la velocita' ora posso leggerla direttamente dall'array di registry modbus
+				speed = modbusData[pumpPerist[0].pmpMySlaveAddress-2][17];
 				volumePriming = volumePriming + (float)(speed * 0.00775);
 				perfusionParam.priVolPerfArt = (int)(volumePriming);
 				pumpPerist[0].dataReady = DATA_READY_FALSE;
@@ -1107,8 +1112,9 @@ void manageParentPrimingAlarmAlways(void){
 
 	if(pumpPerist[0].dataReady == DATA_READY_TRUE)
 	{
-		speed = ((BYTES_TO_WORD_SIGN(msgToRecvFrame3[3], msgToRecvFrame3[4]))/100)*(timerCopy);
-
+		//speed = ((BYTES_TO_WORD_SIGN(msgToRecvFrame3[3], msgToRecvFrame3[4]))/100)*(timerCopy);
+		// la velocita' ora posso leggerla direttamente dall'array di registry modbus
+		speed = modbusData[pumpPerist[0].pmpMySlaveAddress-2][17];
 		pumpPerist[0].dataReady = DATA_READY_FALSE;
 	}
 */
@@ -1142,8 +1148,9 @@ void manageParentTreatAlarmAlways(void){
 
 	if(pumpPerist[0].dataReady == DATA_READY_TRUE)
 	{
-		speed = ((BYTES_TO_WORD_SIGN(msgToRecvFrame3[3], msgToRecvFrame3[4]))/100)*(timerCopy);
-
+		//speed = ((BYTES_TO_WORD_SIGN(msgToRecvFrame3[3], msgToRecvFrame3[4]))/100)*(timerCopy);
+		// la velocita' ora posso leggerla direttamente dall'array di registry modbus
+		speed = modbusData[pumpPerist[0].pmpMySlaveAddress-2][17];
 		pumpPerist[0].dataReady = DATA_READY_FALSE;
 	}
 */
@@ -1260,7 +1267,9 @@ void manageParentTreatAlways(void){
 		if(pumpPerist[0].dataReady == DATA_READY_TRUE)
 		{
 			//iflag_pmp1_rx = IFLAG_IDLE;
-			speed = ((BYTES_TO_WORD_SIGN(msgToRecvFrame3[3], msgToRecvFrame3[4]))/100)*(timerCopy);
+			//speed = ((BYTES_TO_WORD_SIGN(msgToRecvFrame3[3], msgToRecvFrame3[4]))/100)*(timerCopy);
+			// la velocita' ora posso leggerla direttamente dall'array di registry modbus
+			speed = modbusData[pumpPerist[0].pmpMySlaveAddress-2][17];
 			pumpPerist[0].actualSpeed = speed;
 			volumeTreatArt = volumeTreatArt + (float)(speed * 0.00775);
 			perfusionParam.treatVolPerfArt = (int)(volumeTreatArt);
@@ -1344,7 +1353,9 @@ void manageParentTreatAlways(void){
 			if(pumpPerist[0].dataReady == DATA_READY_TRUE)
 			{
 				//iflag_pmp1_rx = IFLAG_IDLE;
-				speed = ((BYTES_TO_WORD_SIGN(msgToRecvFrame3[3], msgToRecvFrame3[4]))/100)*(timerCopy);
+				//speed = ((BYTES_TO_WORD_SIGN(msgToRecvFrame3[3], msgToRecvFrame3[4]))/100)*(timerCopy);
+				// la velocita' ora posso leggerla direttamente dall'array di registry modbus
+				speed = modbusData[pumpPerist[0].pmpMySlaveAddress-2][17];
 				pumpPerist[0].actualSpeed = speed;
 				volumeTreatArt = volumeTreatArt + (float)(speed * 0.00775);
 				perfusionParam.treatVolPerfArt = (int)(volumeTreatArt);
@@ -1594,6 +1605,7 @@ static void computeMachineStateGuardPrimingPh1(void){
 
 /*--------------------------------------------------------------------*/
 /*  This function compute the guard value in priming phase 2 state   */
+/*  Controllo quando iniziare il trattamento
 /*--------------------------------------------------------------------*/
 static void computeMachineStateGuardPrimingPh2(void){
 	if(
@@ -1610,6 +1622,7 @@ static void computeMachineStateGuardPrimingPh2(void){
 
 /*--------------------------------------------------------------------*/
 /*  This function compute the guard value in treatment kidney 1 state   */
+/*  Controllo la fine del trattamento
 /*--------------------------------------------------------------------*/
 static void computeMachineStateGuardTreatment(void){
 	if(
@@ -1617,6 +1630,7 @@ static void computeMachineStateGuardTreatment(void){
 			(buttonGUITreatment[BUTTON_CONFIRM].state == GUI_BUTTON_RELEASED)
 			)
 		{
+			// passo allo svuotamento del circuito
 			currentGuard[GUARD_ENABLE_DISPOSABLE_EMPTY].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
 		}
 }
@@ -1669,30 +1683,67 @@ void computeMachineStateGuard(void)
 		}
 }
 
-// Adr 6..8
-void TestPinch(unsigned char Adr)
+
+// Adr 7..9
+void TestPinch(void)
 {
 	static unsigned char PinchPos = 0;
+	static unsigned char Adr = 7;   // BOTTOM_PINCH_ID = 7, LEFT_PINCH_ID = 8, RIGHT_PINCH_ID = 9
+	static int Counter = 0;
+	static unsigned char state = 0;
 	if (Bubble_Keyboard_GetVal(BUTTON_1) && PinchPos != MODBUS_PINCH_POS_CLOSED)
 	{
 		PinchPos = MODBUS_PINCH_POS_CLOSED;
 		//setPinchPosValue (Adr,MODBUS_PINCH_POS_CLOSED);
 		setPinchPositionHighLevel(Adr, (int)MODBUS_PINCH_POS_CLOSED);
+		Counter = 0;
+		state = 0;
 	}
 	else if (Bubble_Keyboard_GetVal(BUTTON_2) && PinchPos != MODBUS_PINCH_RIGHT_OPEN)
 	{
 		PinchPos = MODBUS_PINCH_RIGHT_OPEN;
 		//setPinchPosValue (Adr,MODBUS_PINCH_RIGHT_OPEN);
-		//setPinchPositionHighLevel(Adr, (int)MODBUS_PINCH_PROVA);
 		setPinchPositionHighLevel(Adr, (int)MODBUS_PINCH_RIGHT_OPEN);
+		Counter = 0;
+		state = 0;
 	}
 	else if (Bubble_Keyboard_GetVal(BUTTON_3) && PinchPos != MODBUS_PINCH_LEFT_OPEN)
 	{
 		PinchPos = MODBUS_PINCH_LEFT_OPEN;
 		//setPinchPosValue (Adr,MODBUS_PINCH_LEFT_OPEN);
 		setPinchPositionHighLevel(Adr, (int)MODBUS_PINCH_LEFT_OPEN);
+		Counter = 0;
+		state = 0;
 	}
+	else if (Bubble_Keyboard_GetVal(BUTTON_4) && (state == 0))
+	{
+		Counter++;
+		if( Counter > 100)
+		{
+			Adr++;
+			if(Adr == 10)
+				Adr = 7;
+			Counter = 0;
+			state = 1;
+		}
+	}
+	else if (!Bubble_Keyboard_GetVal(BUTTON_4) && (state == 1))
+	{
+		Counter++;
+		if( Counter > 100)
+		{
+			state = 0;
+			Counter = 0;
+		}
+	}
+	else
+	{
+		Counter = 0;
+	}
+
 }
+
+
 
 
 unsigned int PumpAverageCurrent;
@@ -1709,14 +1760,14 @@ void TestPump(unsigned char Adr)
 	  /*accendo il motore*/
 	  MotorOn = TRUE;
 	  EN_Motor_Control(ENABLE);
-	  setPumpSpeedValue(Adr,1000);
+	  setPumpSpeedValueHighLevel(Adr,2000);
 	}
 	else if (Bubble_Keyboard_GetVal(BUTTON_2) && MotorOn)
 	{
 	  /*spengo il motore*/
 	  MotorOn = FALSE;
 	  EN_Motor_Control(DISABLE);
-	  setPumpSpeedValue(Adr,0);
+	  setPumpSpeedValueHighLevel(Adr,0);
 	}
 	else
 	{
@@ -2386,7 +2437,9 @@ unsigned char getGUIButton(unsigned char buttonId)
 }
 
 void releaseGUIButton(unsigned char buttonId){
-	buttonGUITreatment[buttonId].state = GUI_BUTTON_RELEASED;
+	// FM visto che ora si lavora sugli eventi release, l'assenza di evento tasto diventa GUI_BUTTON_PRESSED !!!
+	//buttonGUITreatment[buttonId].state = GUI_BUTTON_RELEASED;
+	buttonGUITreatment[buttonId].state = GUI_BUTTON_PRESSED;
 }
 /**/
 

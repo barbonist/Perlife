@@ -143,7 +143,6 @@ char	data_pmp1[252];			/* pmp1 data field */
 #define		MODBUS_PINCH_POS_CLOSED		0x0001
 #define		MODBUS_PINCH_RIGHT_OPEN		0x0004
 #define		MODBUS_PINCH_LEFT_OPEN		0x0002
-#define		MODBUS_PINCH_PROVA		    0x0003
 
 
 /* Public interface function */
@@ -211,8 +210,8 @@ static unsigned int ComputeChecksum(unsigned char * data, int size);
 /* Private function */
 
 
-#define BOTTOM_PINCH_ID   6
-#define LEFT_PINCH_ID     7
-#define RIGHT_PINCH_ID    8
+#define BOTTOM_PINCH_ID   7
+#define LEFT_PINCH_ID     8
+#define RIGHT_PINCH_ID    9
 
 #endif /* APPLICATION_MODBUSCOMMPROT_H_ */

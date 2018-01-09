@@ -10,7 +10,11 @@
 
 #include "MODBUS_COMM.h"
 #include "ASerialLdd1.h"
+#include "Alarm_Con.h"
 
+void SetNonPhysicalAlm( int AlarmCode);
+void ClearNonPhysicalAlm( int AlarmCode);
+uint32_t msTick_elapsed( uint32_t last );
 
 /* Public function */
 struct func3RetStruct * ModBusReadRegisterReq(char slaveAddr,
@@ -346,7 +350,7 @@ void modBusPinchInit(void)
 {
 	pinchActuator[0].id = 0;
 	pinchActuator[0].pinchPosTarget = 0x0000;
-	pinchActuator[0].pinchMySlaveAddress = 0x06; 	//rotary selctor = 5 - pinch art
+	pinchActuator[0].pinchMySlaveAddress = 0x07; 	//rotary selctor = 5 - pinch art
 	pinchActuator[0].pinchFuncCode = 0xFF;
 	pinchActuator[0].pinchWriteStartAddr = 0xFFFF;
 	pinchActuator[0].pinchReadStartAddr = 0xFFFF;
@@ -360,7 +364,7 @@ void modBusPinchInit(void)
 
 	pinchActuator[1].id = 1;
 	pinchActuator[1].pinchPosTarget = 0x0000;
-	pinchActuator[1].pinchMySlaveAddress = 0x07;		//rotary selctor = 6 - pinch ven
+	pinchActuator[1].pinchMySlaveAddress = 0x08;		//rotary selctor = 6 - pinch ven
 	pinchActuator[1].pinchFuncCode = 0xFF;
 	pinchActuator[1].pinchWriteStartAddr = 0xFFFF;
 	pinchActuator[1].pinchReadStartAddr = 0xFFFF;
@@ -374,7 +378,7 @@ void modBusPinchInit(void)
 
 	pinchActuator[2].id = 2;
 	pinchActuator[2].pinchPosTarget = 0x0000;
-	pinchActuator[2].pinchMySlaveAddress = 0x08; 		//rotary selctor = 7 - pinch filter
+	pinchActuator[2].pinchMySlaveAddress = 0x09; 		//rotary selctor = 7 - pinch filter
 	pinchActuator[2].pinchFuncCode = 0xFF;
 	pinchActuator[2].pinchWriteStartAddr = 0xFFFF;
 	pinchActuator[2].pinchReadStartAddr = 0xFFFF;
@@ -458,7 +462,7 @@ void setPumpSpeedValue(unsigned char slaveAddr, int speedValue){
 	funcCode = 0x10;
 	wrAddr = 0x0000; /* speed */
 
-	if((slaveAddr >= 2) && (slaveAddr <= 5)) /* pump */
+	if((slaveAddr >= 2) && (slaveAddr <= 6)) /* pump */
 		mySpeedValue = (unsigned int)speedValue;
 
 	valModBusArrayPtr = &mySpeedValue;
@@ -509,7 +513,7 @@ void readPumpSpeedValueHighLevel(unsigned char slaveAddr){
 	switch((slaveAddr - 2))
 		{
 		case 0:
-			if((pumpPerist[0].reqState == REQ_STATE_OFF) && (pumpPerist[0].reqType != REQ_TYPE_WRITE))
+			if((pumpPerist[0].reqState == REQ_STATE_OFF) && (pumpPerist[0].reqType == REQ_TYPE_IDLE))
 			{
 				pumpPerist[0].reqState = REQ_STATE_ON;
 				pumpPerist[0].reqType = REQ_TYPE_READ;
@@ -553,24 +557,26 @@ void readPumpSpeedValueHighLevel(unsigned char slaveAddr){
 		}
 }
 
+
+
 void setPinchPositionHighLevel(unsigned char slaveAddr, int posValue){
 	switch(slaveAddr)
 		{
-		case 0x06:
+		case 0x07:  // pinchActuator[0].pinchMySlaveAddress
 			pinchActuator[0].reqState = REQ_STATE_ON;
 			pinchActuator[0].reqType = REQ_TYPE_WRITE;
 			pinchActuator[0].actuatorType = ACTUATOR_PINCH_TYPE;
 			pinchActuator[0].value = posValue;
 			break;
 
-		case 0x07:
+		case 0x08:  // pinchActuator[1].pinchMySlaveAddress
 			pinchActuator[1].reqState = REQ_STATE_ON;
 			pinchActuator[1].reqType = REQ_TYPE_WRITE;
 			pinchActuator[1].actuatorType = ACTUATOR_PINCH_TYPE;
 			pinchActuator[1].value = posValue;
 			break;
 
-		case 0x08:
+		case 0x09:  // pinchActuator[2].pinchMySlaveAddress
 			pinchActuator[2].reqState = REQ_STATE_ON;
 			pinchActuator[2].reqType = REQ_TYPE_WRITE;
 			pinchActuator[2].actuatorType = ACTUATOR_PINCH_TYPE;
@@ -593,7 +599,7 @@ void setPinchPosValue(unsigned char slaveAddr, int posValue){
 	funcCode = 0x10;
 	wrAddr = 0x0000; /* pinch position */
 
-		if((slaveAddr >= 6) && (slaveAddr <= 8)) /* pinch */
+		if((slaveAddr >= 7) && (slaveAddr <= 9)) /* pinch */
 			myPinchPosValue = (unsigned int)posValue;
 
 		valModBusArrayPtr = &myPinchPosValue;
@@ -622,6 +628,10 @@ bool ReadActive = FALSE;
 // Una volta terminata l'operazione mette la flag iflag_pmp1_rx a IFLAG_IDLE
 void alwaysModBusActuator(void)
 {
+	static char LasActuatorWriteID = 0;      // id dell'attuatore modbus con scrittura in corso
+	static char ActuatorWriteCnt = 0;
+	static int timerCounterModBusStart = 0;
+	static char AlarmSet = 0;
 
 	//if( iFlag_modbusDataStorage != TRUE )
 	if( ReadActive == TRUE)
@@ -642,11 +652,13 @@ void alwaysModBusActuator(void)
 			) //write
 		{
 			pumpPerist[0].reqState = REQ_STATE_OFF;
-			pumpPerist[0].reqType = REQ_TYPE_IDLE; //la scrittura ha la precedenza sulla lettura; leggo solo se il reqType è idle......questo reqType va messo in idle dopo che è stata letta tutta la risposta
+			//pumpPerist[0].reqType = REQ_TYPE_IDLE; //la scrittura ha la precedenza sulla lettura; leggo solo se il reqType è idle......questo reqType va messo in idle dopo che è stata letta tutta la risposta
 			iflag_pmp1_rx = IFLAG_PMP1_BUSY;
 			//timerCounterModBus = 0; //da verificare.....serve azzerare il contatore prima che arrivi la risposta?
 			setPumpSpeedValue(pumpPerist[0].pmpMySlaveAddress, pumpPerist[0].value);
 			WriteActive = TRUE;
+			LasActuatorWriteID = 0;
+			ActuatorWriteCnt = 0;
 		}
 		else if(
 				(pumpPerist[0].reqState == REQ_STATE_ON) &&
@@ -655,11 +667,16 @@ void alwaysModBusActuator(void)
 				) //read
 		{
 			pumpPerist[0].reqState = REQ_STATE_OFF;
+			pumpPerist[0].dataReady = DATA_READY_TRUE;
+			pumpPerist[0].reqType = REQ_TYPE_IDLE;
+			/*
+			pumpPerist[0].reqState = REQ_STATE_OFF;
 			pumpPerist[0].dataReady = DATA_READY_FALSE;
 			pumpPerist[0].reqType = REQ_TYPE_IDLE;
 			iflag_pmp1_rx = IFLAG_PMP1_BUSY;
 			//timerCounterModBus = 0; //da verificare.....serve azzerare il contatore prima che arrivi la risposta?
 			readPumpSpeedValue(pumpPerist[0].pmpMySlaveAddress);
+			*/
 		}
 		break;
 
@@ -672,11 +689,12 @@ void alwaysModBusActuator(void)
 			) //write
 		{
 			pumpPerist[1].reqState = REQ_STATE_OFF;
-			pumpPerist[1].reqType = REQ_TYPE_IDLE;
-			iflag_pmp1_rx = IFLAG_PMP1_BUSY;
 			//pumpPerist[1].reqType = REQ_TYPE_IDLE;
+			iflag_pmp1_rx = IFLAG_PMP1_BUSY;
 			setPumpSpeedValue(pumpPerist[1].pmpMySlaveAddress, pumpPerist[1].value);
 			WriteActive = TRUE;
+			LasActuatorWriteID = 1;
+			ActuatorWriteCnt = 0;
 		}
 		else if(
 				(pumpPerist[1].reqState == REQ_STATE_ON) &&
@@ -685,11 +703,17 @@ void alwaysModBusActuator(void)
 				) //read
 		{
 			pumpPerist[1].reqState = REQ_STATE_OFF;
+			// il valore della velocita' e' gia' pronto
+			pumpPerist[1].dataReady = DATA_READY_TRUE;
+			pumpPerist[1].reqType = REQ_TYPE_IDLE;
+
+			/*
+			pumpPerist[1].reqState = REQ_STATE_OFF;
 			pumpPerist[1].dataReady = DATA_READY_FALSE;
 			pumpPerist[1].reqType = REQ_TYPE_IDLE;
 			iflag_pmp1_rx = IFLAG_PMP1_BUSY;
-			//pumpPerist[1].reqType ==REQ_TYPE_IDLE;
 			readPumpSpeedValue(pumpPerist[1].pmpMySlaveAddress);
+			*/
 		}
 		break;
 
@@ -702,11 +726,12 @@ void alwaysModBusActuator(void)
 			) //write
 		{
 			pumpPerist[2].reqState = REQ_STATE_OFF;
-			pumpPerist[2].reqType = REQ_TYPE_IDLE;
-			iflag_pmp1_rx = IFLAG_PMP1_BUSY;
 			//pumpPerist[2].reqType = REQ_TYPE_IDLE;
+			iflag_pmp1_rx = IFLAG_PMP1_BUSY;
 			setPumpSpeedValue(pumpPerist[2].pmpMySlaveAddress, pumpPerist[2].value);
 			WriteActive = TRUE;
+			LasActuatorWriteID = 2;
+			ActuatorWriteCnt = 0;
 		}
 		else if(
 				(pumpPerist[2].reqState == REQ_STATE_ON) &&
@@ -715,11 +740,16 @@ void alwaysModBusActuator(void)
 				) //read
 		{
 			pumpPerist[2].reqState = REQ_STATE_OFF;
+			// il valore della velocita' e' gia' pronto
+			pumpPerist[2].dataReady = DATA_READY_TRUE;
+			pumpPerist[2].reqType = REQ_TYPE_IDLE;
+			/*
+			pumpPerist[2].reqState = REQ_STATE_OFF;
 			pumpPerist[2].dataReady = DATA_READY_FALSE;
 			pumpPerist[2].reqType = REQ_TYPE_IDLE;
 			iflag_pmp1_rx = IFLAG_PMP1_BUSY;
-			//pumpPerist[2].reqType = REQ_TYPE_IDLE;
 			readPumpSpeedValue(pumpPerist[2].pmpMySlaveAddress);
+			*/
 		}
 		break;
 
@@ -732,10 +762,12 @@ void alwaysModBusActuator(void)
 			) //write
 		{
 			pumpPerist[3].reqState = REQ_STATE_OFF;
-			pumpPerist[3].reqType = REQ_TYPE_IDLE;
+			//pumpPerist[3].reqType = REQ_TYPE_IDLE;
 			iflag_pmp1_rx = IFLAG_PMP1_BUSY;
 			setPumpSpeedValue(pumpPerist[3].pmpMySlaveAddress, pumpPerist[3].value);
 			WriteActive = TRUE;
+			LasActuatorWriteID = 3;
+			ActuatorWriteCnt = 0;
 		}
 		else if(
 				(pumpPerist[3].reqState == REQ_STATE_ON) &&
@@ -744,10 +776,16 @@ void alwaysModBusActuator(void)
 				) //read
 		{
 			pumpPerist[3].reqState = REQ_STATE_OFF;
+			// il valore della velocita' e' gia' pronto
+			pumpPerist[3].dataReady = DATA_READY_TRUE;
+			pumpPerist[3].reqType = REQ_TYPE_IDLE;
+			/*
+			pumpPerist[3].reqState = REQ_STATE_OFF;
 			pumpPerist[3].dataReady = DATA_READY_FALSE;
 			pumpPerist[3].reqType = REQ_TYPE_IDLE;
 			iflag_pmp1_rx = IFLAG_PMP1_BUSY;
 			readPumpSpeedValue(pumpPerist[3].pmpMySlaveAddress);
+			*/
 		}
 		break;
 
@@ -760,11 +798,13 @@ void alwaysModBusActuator(void)
 			) //write
 		{
 			pinchActuator[0].reqState = REQ_STATE_OFF;
-			pinchActuator[0].reqType = REQ_TYPE_IDLE; //la scrittura ha la precedenza sulla lettura; leggo solo se il reqType è idle......questo reqType va messo in idle dopo che è stata letta tutta la risposta
+			//pinchActuator[0].reqType = REQ_TYPE_IDLE; //la scrittura ha la precedenza sulla lettura; leggo solo se il reqType è idle......questo reqType va messo in idle dopo che è stata letta tutta la risposta
 			iflag_pmp1_rx = IFLAG_PMP1_BUSY;
 			//timerCounterModBus = 0; //da verificare.....serve azzerare il contatore prima che arrivi la risposta?
 			setPinchPosValue(pinchActuator[0].pinchMySlaveAddress, pinchActuator[0].value);
 			WriteActive = TRUE;
+			LasActuatorWriteID = 4;
+			ActuatorWriteCnt = 0;
 		}
 		break;
 
@@ -777,15 +817,17 @@ void alwaysModBusActuator(void)
 			) //write
 		{
 			pinchActuator[1].reqState = REQ_STATE_OFF;
-			pinchActuator[1].reqType = REQ_TYPE_IDLE; //la scrittura ha la precedenza sulla lettura; leggo solo se il reqType è idle......questo reqType va messo in idle dopo che è stata letta tutta la risposta
+			//pinchActuator[1].reqType = REQ_TYPE_IDLE; //la scrittura ha la precedenza sulla lettura; leggo solo se il reqType è idle......questo reqType va messo in idle dopo che è stata letta tutta la risposta
 			iflag_pmp1_rx = IFLAG_PMP1_BUSY;
 			//timerCounterModBus = 0; //da verificare.....serve azzerare il contatore prima che arrivi la risposta?
 			setPinchPosValue(pinchActuator[1].pinchMySlaveAddress, pinchActuator[1].value);
 			WriteActive = TRUE;
+			LasActuatorWriteID = 5;
+			ActuatorWriteCnt = 0;
 		}
 		break;
 
-	//pinch 3 - adsorbent filter
+	//pinch 3 - absorbent filter
 	case 6:
 		if(
 			(pinchActuator[2].reqState == REQ_STATE_ON) &&
@@ -794,11 +836,13 @@ void alwaysModBusActuator(void)
 			) //write
 		{
 			pinchActuator[2].reqState = REQ_STATE_OFF;
-			pinchActuator[2].reqType = REQ_TYPE_IDLE; //la scrittura ha la precedenza sulla lettura; leggo solo se il reqType è idle......questo reqType va messo in idle dopo che è stata letta tutta la risposta
+			//pinchActuator[2].reqType = REQ_TYPE_IDLE; //la scrittura ha la precedenza sulla lettura; leggo solo se il reqType è idle......questo reqType va messo in idle dopo che è stata letta tutta la risposta
 			iflag_pmp1_rx = IFLAG_PMP1_BUSY;
 			//timerCounterModBus = 0; //da verificare.....serve azzerare il contatore prima che arrivi la risposta?
 			setPinchPosValue(pinchActuator[2].pinchMySlaveAddress, pinchActuator[2].value);
 			WriteActive = TRUE;
+			LasActuatorWriteID = 6;
+			ActuatorWriteCnt = 0;
 		}
 		break;
 
@@ -812,19 +856,61 @@ void alwaysModBusActuator(void)
 
 	if((iflag_pmp1_rx == IFLAG_PMP1_RX) && (WriteActive == TRUE))
 	{
+		unsigned char Adr;
 		WriteActive = FALSE;
 		// ho ricevuto una risposta completa, leggo l'indirizzo del dispositivo che mi ha risposto
-		unsigned char Adr = *_funcRetVal.slvresRetPtr;
-		if( (Adr >= 2) && (Adr <= 5) )
+		// CONTROLLO CHE LA RISPOSTA SIA POSITIVA, ALTRIMENTI INVIO DI NUOVO il COMANDO DI SCRITTURA
+		// NELLO STESSO TIME SLOT
+		if(*(_funcRetVal.slvresRetPtr + 1) == 0x10)
 		{
-			// ho ricevuto la risposta da una pompa
-			pumpPerist[Adr - 2].dataReady = DATA_READY_TRUE;
+			// nel secondo byte della risposta ho trovato il codice della della funzione modbus  con cui
+			// ho inviato il comando. Questo vuol dire che la scrittura ha avuto successo.
+			Adr = *_funcRetVal.slvresRetPtr;
+			if( (Adr >= 2) && (Adr <= 5) )
+			{
+				// ho ricevuto la risposta da una pompa
+				pumpPerist[Adr - 2].dataReady = DATA_READY_TRUE;
+				pumpPerist[Adr - 6].reqType = REQ_TYPE_IDLE;
+			}
+			else if( (Adr >= 7) && (Adr <= 9) )
+			{
+				// ho ricevuto la risposta da un pinch
+				pinchActuator[Adr - 6].dataReady = DATA_READY_TRUE;
+				pinchActuator[Adr - 6].reqType = REQ_TYPE_IDLE;
+			}
 		}
-		else if( (Adr >= 6) && (Adr <= 8) )
+		else
 		{
-			// ho ricevuto la risposta da un pinch
-			pinchActuator[Adr - 6].dataReady = DATA_READY_TRUE;
+			if(ActuatorWriteCnt >= 2)
+			{
+				// ho fatto  3 tentativi e non sono riuscito a scrivere l'attuatore.
+				// genero un allarme
+				if(!AlarmSet)
+				{
+					SetNonPhysicalAlm((int)CODE_ALARM_MODBUS_ACTUATOR_SEND);
+					timerCounterModBusStart = timerCounterModBus;
+					AlarmSet = 1;
+				}
+				ActuatorWriteCnt = 0;
+			}
+			else
+			{
+				// il comando modbus inviato non ha avuto successo devo inviarlo di nuovo
+				iflag_pmp1_rx = IFLAG_PMP1_BUSY;
+				if(LasActuatorWriteID <= 3)
+				{
+					// stavo scrivendo su una pompa
+					setPumpSpeedValue(pumpPerist[LasActuatorWriteID].pmpMySlaveAddress, pumpPerist[LasActuatorWriteID].value);
+				}
+				else
+				{
+					// stavo scrivendo su una pinch
+					setPinchPosValue(pinchActuator[LasActuatorWriteID - 4].pinchMySlaveAddress, pinchActuator[LasActuatorWriteID - 4].value);
+				}
+				ActuatorWriteCnt++;
+			}
 		}
+
 		/*
 		for(int i=0; i<=2; i++)
 		{
@@ -841,6 +927,13 @@ void alwaysModBusActuator(void)
 		*/
 		iflag_pmp1_rx = IFLAG_IDLE;
 		//timerCounterModBus = 0; //da verificare......qui il canale è sicuramente libero
+	}
+
+	if( AlarmSet && (msTick_elapsed(timerCounterModBusStart) >= 25))
+	{
+		// dopo 250 msec tolgo automaticamente l'allarme generato per l'errore di retry su modbus
+		ClearNonPhysicalAlm( (int)CODE_ALARM_MODBUS_ACTUATOR_SEND);
+		AlarmSet = 0;
 	}
 }
 
@@ -909,7 +1002,10 @@ void Manage_and_Storage_ModBus_Actuator_Data(void)
 
 	   /* se supero l'uiltimo attuatore, rifaccio il giro da capo*/
         /*incremento l'indirizzo per interrogare tutti gli attuatori*/
-        slvAddr++;
+        if (slvAddr == 3)
+        	slvAddr= 5;
+        else
+        	slvAddr++;
 
         if (slvAddr > LAST_ACTUATOR)
 			slvAddr = FIRST_ACTUATOR;
@@ -975,8 +1071,8 @@ void StorageModbusData(void)
 		}
 		else //sono nel caso di una pinch
 		{
-			modbusData[Address-2][16]= Pinch_Average_Current;
-			modbusData[Address-2][17]= Pinch_Status;
+			modbusData[Address-3][16]= Pinch_Average_Current;
+			modbusData[Address-3][17]= Pinch_Status;
 		}
 	}
 }

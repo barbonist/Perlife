@@ -93,7 +93,7 @@ char    iFlag_modbusDataStorage;
 #define IFLAG_IDLE					0x00
 #define IFLAG_COMMAND_SENT			0x01
 #define IFLAG_COMMAND_RECEIVED		0x02
-#define LAST_ACTUATOR  				0x08 //gli attuatori sono 7 ma ho un offset di due per gli indirizzi (il primo attuatore ha indirizzo 0x02, l'ultimo ha indirizzo 0x08
+#define LAST_ACTUATOR  				0x09 //gli attuatori sono 7 ma ho un offset di due per gli indirizzi (il primo attuatore ha indirizzo 0x02, l'ultimo ha indirizzo 0x08
 #define FIRST_ACTUATOR				0x02
 #define LAST_PUMP					0x05
 #define TOTAL_ACTUATOR				7
@@ -517,7 +517,7 @@ enum MachineStateGuardId {
 	/**/
 
 
-
+	GUARD_ALARM_WAIT_CONFIRM,  // aspetto una conferma dall'operatore per rimuovere l'allarme non dovuto a cause fisiche
 	GUARD_FATAL_ERROR,
 	GUARD_END_NUMBER
 };
@@ -854,9 +854,12 @@ struct ultrsndFlowSens * ptrMsg_UFLOW; 	   /* puntatore utilizzato per spedire i
 /* 						PULSANTI GUI 									*/
 /************************************************************************/
 #define GUI_BUTTON_NULL			0x00
-#define GUI_BUTTON_PRESSED		0x01
-// (FM) non puo' essere 0x00
-#define GUI_BUTTON_RELEASED		0x02
+//#define GUI_BUTTON_PRESSED		0x01
+//#define GUI_BUTTON_RELEASED		0x00
+// (FM) ho scambiato gli eventi perche' ora si devono prendere in considerazione solo gli eventi
+// di release
+#define GUI_BUTTON_PRESSED		0x00
+#define GUI_BUTTON_RELEASED		0x01
 
 enum buttonGUIEnum{
 	BUTTON_KIDNEY = 0xA1,
