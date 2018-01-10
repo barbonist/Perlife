@@ -17,8 +17,12 @@ char	iflag_sbc_rx;
 char	iflag_sbc_tx;
 char	iflag_peltier_rx;
 char	iflag_peltier_tx;
+char	iflag_peltier2_rx;
+char	iflag_peltier2_tx;
 char	iflagPeltierBusy;
 char	iflagPeltierMsg;
+char	iflagPeltier2Busy;
+char	iflagPeltier2Msg;
 char	iflag_cntrf_pmp_rx;
 char	iflag_cntrf_pmp_tx;
 char	iflag_write_press_sensor;
@@ -120,6 +124,9 @@ unsigned char	pcDebug_tx_data[32];				/* transmitted byte to pc */
 unsigned char	peltierDebug_rx_data[256];				/* received byte from peltier */
 unsigned char	peltierDebug_rx_data_dummy[256];
 unsigned char	peltierDebug_tx_data[32];				/* transmitted byte to peltier */
+unsigned char	peltier2Debug_rx_data[256];				/* received byte from peltier */
+unsigned char	peltier2Debug_rx_data_dummy[256];
+unsigned char	peltier2Debug_tx_data[32];				/* transmitted byte to peltier */
 
 unsigned char	sbc_rx_data[256];				/* received byte from sbc */
 unsigned char	sbc_tx_data[256];				/* transmitted byte to sbc */
@@ -161,6 +168,20 @@ long retIeee754;
 unsigned long retIeee754Dummy;
 char *ptrMsgPeltierRxDummy;
 char *ptrMsgPeltierTx;
+
+unsigned char *ptrPeltier2;
+unsigned char ptrPeltier2CountRx;
+char *ptrMsgPeltier2Rx;
+char *ptrMsgData2ieee754start;
+char *ptrMsgDataPeltier2Int;
+char data2Ieee754[10];
+char data2Ieee754Dummy[10];
+char dataIntPeltier2[8];
+long ret2Ieee754;
+unsigned long ret2Ieee754Dummy;
+char *ptrMsgPeltier2RxDummy;
+char *ptrMsgPeltier2Tx;
+
 
 char dataFloatWriteLow[10];
 char dataFloatWriteHigh[10];
@@ -977,7 +998,7 @@ struct volumeTreatmentKidney{
 struct volumeTreatmentKidney myVolumeTreatmentKidney;
 
 int timerCounter;
-int timerCounterADC;
+unsigned int timerCounterADC;
 int timerCounterPID;
 int timerCounterMState;
 int timerCounterModBus;

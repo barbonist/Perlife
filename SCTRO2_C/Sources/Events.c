@@ -134,6 +134,7 @@ void SBC_COMM_OnRxChar(void)
 void SBC_COMM_OnTxChar(void)
 {
   /* Write your code here ... */
+
 	#ifdef	DEBUG_COMM_SBC
 	//PC_DEBUG_COMM_SendChar(*ptrMsgSbcTx);
 	//ptrMsgSbcTx = ptrMsgSbcTx + 1;
@@ -473,6 +474,152 @@ void PELTIER_COMM_OnTxComplete(void)
 {
   /* Write your code here ... */
 }
+/*
+** ===================================================================
+**     Event       :  PELTIER2_COMM_OnError (module Events)
+**
+**     Component   :  PELTIER2_COMM [AsynchroSerial]
+**     Description :
+**         This event is called when a channel error (not the error
+**         returned by a given method) occurs. The errors can be read
+**         using <GetError> method.
+**         The event is available only when the <Interrupt
+**         service/event> property is enabled.
+**     Parameters  : None
+**     Returns     : Nothing
+** ===================================================================
+*/
+void PELTIER2_COMM_OnError(void)
+{
+  /* Write your code here ... */
+}
+
+/*
+** ===================================================================
+**     Event       :  PELTIER2_COMM_OnRxChar (module Events)
+**
+**     Component   :  PELTIER2_COMM [AsynchroSerial]
+**     Description :
+**         This event is called after a correct character is received.
+**         The event is available only when the <Interrupt
+**         service/event> property is enabled and either the <Receiver>
+**         property is enabled or the <SCI output mode> property (if
+**         supported) is set to Single-wire mode.
+**     Parameters  : None
+**     Returns     : Nothing
+** ===================================================================
+*/
+void PELTIER2_COMM_OnRxChar(void)
+{
+  /* Write your code here ... */
+	/*if(iflagPeltierMsg == IFLAG_PELTIER_MSG_START)
+	{*/
+	PELTIER2_COMM_RecvChar(ptrMsgPeltier2Rx);
+
+ 	#ifdef	DEBUG_COMM_SBC
+	//PC_DEBUG_COMM_SendChar(*ptrMsgPeltierRx);
+	#endif
+	/*}*/
+
+	/* the first who reads the data empty the buffer */
+	/*PELTIER_COMM_RecvChar(ptrMsgPeltierRxDummy);
+
+	iflagPeltierMsg |= ((*ptrMsgPeltierRxDummy) == 0x0D) ? 0x01 : 0x00;
+	iflagPeltierMsg |= ((*ptrMsgPeltierRxDummy) == 0x0A) ? 0x04 : 0x00;
+	iflagPeltierMsg |= ((*ptrMsgPeltierRxDummy) == 0x3E) ? 0x10 : 0x00;
+	iflagPeltierMsg |= ((*ptrMsgPeltierRxDummy) == 0x20) ? 0x40 : 0x00;*/
+
+	ptrPeltier2CountRx = ptrPeltier2CountRx + 1;
+	ptrMsgPeltier2Rx = ptrMsgPeltier2Rx + 1;
+
+	if(
+		((*(ptrMsgPeltier2Rx-1)) == 0x20) &&
+		((*(ptrMsgPeltier2Rx-2)) == 0x3E) &&
+		((*(ptrMsgPeltier2Rx-3)) == 0x0A) &&
+		((*(ptrMsgPeltier2Rx-4)) == 0x0D)
+		)
+	//if(iflagPeltierMsg == IFLAG_PELTIER_MSG_END)
+	{
+  		iflag_peltier2_rx = IFLAG_PELTIER_RX;
+		iflagPeltier2Msg = IFLAG_IDLE;
+		ptrMsgPeltier2Rx = &peltier2Debug_rx_data[0];
+		ptrMsgData2ieee754start = &peltier2Debug_rx_data[ptrPeltierCountRx-12];
+		ptrMsgDataPeltier2Int = &peltier2Debug_rx_data[ptrPeltierCountRx-5];
+		ptrPeltier2CountRx = 0;
+	}
+}
+
+/*
+** ===================================================================
+**     Event       :  PELTIER2_COMM_OnTxChar (module Events)
+**
+**     Component   :  PELTIER2_COMM [AsynchroSerial]
+**     Description :
+**         This event is called after a character is transmitted.
+**     Parameters  : None
+**     Returns     : Nothing
+** ===================================================================
+*/
+void PELTIER2_COMM_OnTxChar(void)
+{
+  /* Write your code here ... */
+}
+
+/*
+** ===================================================================
+**     Event       :  PELTIER2_COMM_OnFullRxBuf (module Events)
+**
+**     Component   :  PELTIER2_COMM [AsynchroSerial]
+**     Description :
+**         This event is called when the input buffer is full;
+**         i.e. after reception of the last character
+**         that was successfully placed into input buffer.
+**     Parameters  : None
+**     Returns     : Nothing
+** ===================================================================
+*/
+void PELTIER2_COMM_OnFullRxBuf(void)
+{
+  /* Write your code here ... */
+}
+
+/*
+** ===================================================================
+**     Event       :  PELTIER2_COMM_OnFreeTxBuf (module Events)
+**
+**     Component   :  PELTIER2_COMM [AsynchroSerial]
+**     Description :
+**         This event is called after the last character in output
+**         buffer is transmitted.
+**     Parameters  : None
+**     Returns     : Nothing
+** ===================================================================
+*/
+void PELTIER2_COMM_OnFreeTxBuf(void)
+{
+  /* Write your code here ... */
+}
+
+/*
+** ===================================================================
+**     Event       :  PELTIER2_COMM_OnTxComplete (module Events)
+**
+**     Component   :  PELTIER2_COMM [AsynchroSerial]
+**     Description :
+**         This event indicates that the transmitter is finished
+**         transmitting all data, preamble, and break characters and is
+**         idle. It can be used to determine when it is safe to switch
+**         a line driver (e.g. in RS-485 applications).
+**         The event is available only when both <Interrupt
+**         service/event> and <Transmitter> properties are enabled.
+**     Parameters  : None
+**     Returns     : Nothing
+** ===================================================================
+*/
+void PELTIER2_COMM_OnTxComplete(void)
+{
+  /* Write your code here ... */
+}
 
 /*
 ** ===================================================================
@@ -488,6 +635,8 @@ void PELTIER_COMM_OnTxComplete(void)
 **     Returns     : Nothing
 ** ===================================================================
 */
+
+
 void AD1_OnEnd(void)
 {
   /* Write your code here ... */
@@ -582,6 +731,7 @@ void PC_DEBUG_COMM_OnRxChar(void)
 void PC_DEBUG_COMM_OnTxChar(void)
 {
   /* Write your code here ... */
+
 }
 
 /*
@@ -950,152 +1100,7 @@ void AD0_OnCalibrationEnd(void)
   /* Write your code here ... */
 }
 
-/*
-** ===================================================================
-**     Event       :  PELTIER2_COMM_OnError (module Events)
-**
-**     Component   :  PELTIER2_COMM [AsynchroSerial]
-**     Description :
-**         This event is called when a channel error (not the error
-**         returned by a given method) occurs. The errors can be read
-**         using <GetError> method.
-**         The event is available only when the <Interrupt
-**         service/event> property is enabled.
-**     Parameters  : None
-**     Returns     : Nothing
-** ===================================================================
-*/
-void PELTIER2_COMM_OnError(void)
-{
-  /* Write your code here ... */
-}
 
-/*
-** ===================================================================
-**     Event       :  PELTIER2_COMM_OnRxChar (module Events)
-**
-**     Component   :  PELTIER2_COMM [AsynchroSerial]
-**     Description :
-**         This event is called after a correct character is received.
-**         The event is available only when the <Interrupt
-**         service/event> property is enabled and either the <Receiver>
-**         property is enabled or the <SCI output mode> property (if
-**         supported) is set to Single-wire mode.
-**     Parameters  : None
-**     Returns     : Nothing
-** ===================================================================
-*/
-void PELTIER2_COMM_OnRxChar(void)
-{
-  /* Write your code here ... */
-	/*if(iflagPeltierMsg == IFLAG_PELTIER_MSG_START)
-	{*/
-	PELTIER2_COMM_RecvChar(ptrMsgPeltierRx);
-
- 	#ifdef	DEBUG_COMM_SBC
-	//PC_DEBUG_COMM_SendChar(*ptrMsgPeltierRx);
-	#endif
-	/*}*/
-
-	/* the first who reads the data empty the buffer */
-	/*PELTIER_COMM_RecvChar(ptrMsgPeltierRxDummy);
-
-	iflagPeltierMsg |= ((*ptrMsgPeltierRxDummy) == 0x0D) ? 0x01 : 0x00;
-	iflagPeltierMsg |= ((*ptrMsgPeltierRxDummy) == 0x0A) ? 0x04 : 0x00;
-	iflagPeltierMsg |= ((*ptrMsgPeltierRxDummy) == 0x3E) ? 0x10 : 0x00;
-	iflagPeltierMsg |= ((*ptrMsgPeltierRxDummy) == 0x20) ? 0x40 : 0x00;*/
-
-	ptrPeltierCountRx = ptrPeltierCountRx + 1;
-	ptrMsgPeltierRx = ptrMsgPeltierRx + 1;
-
-	if(
-		((*(ptrMsgPeltierRx-1)) == 0x20) &&
-		((*(ptrMsgPeltierRx-2)) == 0x3E) &&
-		((*(ptrMsgPeltierRx-3)) == 0x0A) &&
-		((*(ptrMsgPeltierRx-4)) == 0x0D)
-		)
-	//if(iflagPeltierMsg == IFLAG_PELTIER_MSG_END)
-	{
-  		iflag_peltier_rx = IFLAG_PELTIER_RX;
-		iflagPeltierMsg = IFLAG_IDLE;
-		ptrMsgPeltierRx = &peltierDebug_rx_data[0];
-		ptrMsgDataieee754start = &peltierDebug_rx_data[ptrPeltierCountRx-12];
-		ptrMsgDataPeltierInt = &peltierDebug_rx_data[ptrPeltierCountRx-5];
-		ptrPeltierCountRx = 0;
-	}
-}
-
-/*
-** ===================================================================
-**     Event       :  PELTIER2_COMM_OnTxChar (module Events)
-**
-**     Component   :  PELTIER2_COMM [AsynchroSerial]
-**     Description :
-**         This event is called after a character is transmitted.
-**     Parameters  : None
-**     Returns     : Nothing
-** ===================================================================
-*/
-void PELTIER2_COMM_OnTxChar(void)
-{
-  /* Write your code here ... */
-}
-
-/*
-** ===================================================================
-**     Event       :  PELTIER2_COMM_OnFullRxBuf (module Events)
-**
-**     Component   :  PELTIER2_COMM [AsynchroSerial]
-**     Description :
-**         This event is called when the input buffer is full;
-**         i.e. after reception of the last character 
-**         that was successfully placed into input buffer.
-**     Parameters  : None
-**     Returns     : Nothing
-** ===================================================================
-*/
-void PELTIER2_COMM_OnFullRxBuf(void)
-{
-  /* Write your code here ... */
-}
-
-/*
-** ===================================================================
-**     Event       :  PELTIER2_COMM_OnFreeTxBuf (module Events)
-**
-**     Component   :  PELTIER2_COMM [AsynchroSerial]
-**     Description :
-**         This event is called after the last character in output
-**         buffer is transmitted.
-**     Parameters  : None
-**     Returns     : Nothing
-** ===================================================================
-*/
-void PELTIER2_COMM_OnFreeTxBuf(void)
-{
-  /* Write your code here ... */
-}
-
-/*
-** ===================================================================
-**     Event       :  PELTIER2_COMM_OnTxComplete (module Events)
-**
-**     Component   :  PELTIER2_COMM [AsynchroSerial]
-**     Description :
-**         This event indicates that the transmitter is finished
-**         transmitting all data, preamble, and break characters and is
-**         idle. It can be used to determine when it is safe to switch
-**         a line driver (e.g. in RS-485 applications).
-**         The event is available only when both <Interrupt
-**         service/event> and <Transmitter> properties are enabled.
-**     Parameters  : None
-**     Returns     : Nothing
-** ===================================================================
-*/
-void PELTIER2_COMM_OnTxComplete(void)
-{
-  /* Write your code here ... */
-}
 
 /*
 ** ===================================================================

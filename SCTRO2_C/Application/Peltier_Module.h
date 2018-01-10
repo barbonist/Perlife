@@ -192,6 +192,7 @@ void PeltierAssWaitReadyToRcv(void);
 void PeltierAssReadResponse(void);
 void peltierAssInit(void);
 void alwaysPeltierActuator(void);
+void alwaysPeltier2Actuator(void);
 void startPeltierActuator(void);
 void stopPeltierActuator(void);
 

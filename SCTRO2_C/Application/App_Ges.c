@@ -519,15 +519,18 @@ void manageStateTankFillAlways(void)
 
 		if(myTempValue == 40)
 		{
-			peltierCell.mySet = myTempValue - 80;
+			peltierCell.mySet  = myTempValue - 80;
+			peltierCell2.mySet = myTempValue - 80;
 		}
 		else if(myTempValue == 360)
 		{
-			peltierCell.mySet = myTempValue + 60;
+			peltierCell.mySet  = myTempValue + 60;
+			peltierCell2.mySet = myTempValue + 60;
 		}
 		else
 		{
-			peltierCell.mySet = 200;
+			peltierCell.mySet  = 200;
+			peltierCell2.mySet = 200;
 		}
 	}
 
@@ -835,7 +838,8 @@ void manageParentPrimingEntry(void){
 		setPinchPositionHighLevel(PNCHVLV3_ADDRESS, MODBUS_PINCH_RIGHT_OPEN);
 
 		startPeltierActuator();
-		peltierCell.readAlwaysEnable = 1;
+		peltierCell.readAlwaysEnable  = 1;
+		peltierCell2.readAlwaysEnable = 1;
 
  		pumpPerist[0].entry = 1;
 	}
@@ -1165,6 +1169,7 @@ void manageParentTreatEntry(void){
 
 		startPeltierActuator();
 		peltierCell.readAlwaysEnable = 1;
+		peltierCell2.readAlwaysEnable = 1;
 
 		pumpPerist[0].entry = 1;
 	}

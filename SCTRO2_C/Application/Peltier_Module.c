@@ -60,7 +60,7 @@ void peltierAssInit(void){
 	peltierCell2.myTCLimit = 95;
 	peltierCell2.myThrsldMainCurrHigh = 30;
 
-	peltierCell.readAlwaysEnable = 0;
+	peltierCell2.readAlwaysEnable = 0;
 
 	timerCounterPeltier = 0;
 
@@ -96,7 +96,7 @@ void alwaysPeltierActuator(void){
 		switch(myStatePos){
 		//FAN 1 MODE - READ
 		case 0:
-			PeltierAssSendCommand(READ_DATA_REGISTER_XX,REG_16_FAN1_MOD_SEL,0,"0",2);
+			PeltierAssSendCommand(READ_DATA_REGISTER_XX,REG_16_FAN1_MOD_SEL,0,"0",1);
 			ptrMsgPeltierRx = &peltierDebug_rx_data[0];
 			ptrPeltierCountRx = 0;
 			break;
@@ -104,7 +104,7 @@ void alwaysPeltierActuator(void){
 		case 1:
 			if(myDataIntActual != peltierCell.myFanModeSel)
 			{
-				PeltierAssSendCommand(WRITE_DATA_REGISTER_XX, REG_16_FAN1_MOD_SEL, peltierCell.myFanModeSel, 0,2);
+				PeltierAssSendCommand(WRITE_DATA_REGISTER_XX, REG_16_FAN1_MOD_SEL, peltierCell.myFanModeSel, 0,1);
 				//myStatePos = 0;
 			}
 			else
@@ -112,7 +112,7 @@ void alwaysPeltierActuator(void){
 			break;
 		//REG. MODE - READ
 		case 2:
-			PeltierAssSendCommand(READ_DATA_REGISTER_XX,REG_13_REGULATOR_MODE,0,"0",2);
+			PeltierAssSendCommand(READ_DATA_REGISTER_XX,REG_13_REGULATOR_MODE,0,"0",1);
 			ptrMsgPeltierRx = &peltierDebug_rx_data[0];
 			ptrPeltierCountRx = 0;
 			break;
@@ -120,7 +120,7 @@ void alwaysPeltierActuator(void){
 		case 3:
 			if(myDataIntActual != peltierCell.myRegMode)
 			{
-				PeltierAssSendCommand(WRITE_DATA_REGISTER_XX, REG_13_REGULATOR_MODE, peltierCell.myRegMode, 0,2);
+				PeltierAssSendCommand(WRITE_DATA_REGISTER_XX, REG_13_REGULATOR_MODE, peltierCell.myRegMode, 0,1);
 				//myStatePos = 2;
 			}
 			else
@@ -128,7 +128,7 @@ void alwaysPeltierActuator(void){
 			break;
 		//NTC STEIN COEFF A - READ
 		case 4:
-			PeltierAssSendCommand(READ_FLOAT_FROM_REG_XX,REG_59_TEMP1_STEIN_COEFF_A,0,"0",2);
+			PeltierAssSendCommand(READ_FLOAT_FROM_REG_XX,REG_59_TEMP1_STEIN_COEFF_A,0,"0",1);
 			ptrMsgPeltierRx = &peltierDebug_rx_data[0];
 			ptrPeltierCountRx = 0;
 			break;
@@ -146,7 +146,7 @@ void alwaysPeltierActuator(void){
 					if(myStringFloat[i] == 0x20)
 						myStringFloat[i] = 0x30;
 				}
-				PeltierAssSendCommand(WRITE_FLOAT_REG_XX, REG_59_TEMP1_STEIN_COEFF_A, 0, myStringFloat,2);
+				PeltierAssSendCommand(WRITE_FLOAT_REG_XX, REG_59_TEMP1_STEIN_COEFF_A, 0, myStringFloat,1);
 				//myStatePos = 4;
 			}
 			else
@@ -154,7 +154,7 @@ void alwaysPeltierActuator(void){
 			break;
 		//NTC STEIN COEFF B - READ
 		case 6:
-			PeltierAssSendCommand(READ_FLOAT_FROM_REG_XX,REG_60_TEMP1_STEIN_COEFF_B,0,"0",2);
+			PeltierAssSendCommand(READ_FLOAT_FROM_REG_XX,REG_60_TEMP1_STEIN_COEFF_B,0,"0",1);
 			ptrMsgPeltierRx = &peltierDebug_rx_data[0];
 			ptrPeltierCountRx = 0;
 			break;
@@ -172,7 +172,7 @@ void alwaysPeltierActuator(void){
 					if(myStringFloat[i] == 0x20)
 						myStringFloat[i] = 0x30;
 				}
-				PeltierAssSendCommand(WRITE_FLOAT_REG_XX, REG_60_TEMP1_STEIN_COEFF_B, 0, myStringFloat,2);
+				PeltierAssSendCommand(WRITE_FLOAT_REG_XX, REG_60_TEMP1_STEIN_COEFF_B, 0, myStringFloat,1);
 				//myStatePos = 4;
 			}
 			else
@@ -180,7 +180,7 @@ void alwaysPeltierActuator(void){
 			break;
 		//NTC STEIN COEFF C - READ
 		case 8:
-			PeltierAssSendCommand(READ_FLOAT_FROM_REG_XX,REG_61_TEMP1_STEIN_COEFF_C,0,"0",2);
+			PeltierAssSendCommand(READ_FLOAT_FROM_REG_XX,REG_61_TEMP1_STEIN_COEFF_C,0,"0",1);
 			ptrMsgPeltierRx = &peltierDebug_rx_data[0];
 			ptrPeltierCountRx = 0;
 			break;
@@ -198,7 +198,7 @@ void alwaysPeltierActuator(void){
 					if(myStringFloat[i] == 0x20)
 						myStringFloat[i] = 0x30;
 				}
-				PeltierAssSendCommand(WRITE_FLOAT_REG_XX, REG_61_TEMP1_STEIN_COEFF_C, 0, myStringFloat,2);
+				PeltierAssSendCommand(WRITE_FLOAT_REG_XX, REG_61_TEMP1_STEIN_COEFF_C, 0, myStringFloat,1);
 				//myStatePos = 4;
 			}
 			else
@@ -206,7 +206,7 @@ void alwaysPeltierActuator(void){
 			break;
 		//ON OFF DEAD BAND - READ
 		case 10:
-			PeltierAssSendCommand(READ_FLOAT_FROM_REG_XX,REG_14_ON_OFF_DEAD_BAND,0,"0",2);
+			PeltierAssSendCommand(READ_FLOAT_FROM_REG_XX,REG_14_ON_OFF_DEAD_BAND,0,"0",1);
 			ptrMsgPeltierRx = &peltierDebug_rx_data[0];
 			ptrPeltierCountRx = 0;
 			break;
@@ -224,7 +224,7 @@ void alwaysPeltierActuator(void){
 					if(myStringFloat[i] == 0x20)
 						myStringFloat[i] = 0x30;
 				}
-				PeltierAssSendCommand(WRITE_FLOAT_REG_XX, REG_14_ON_OFF_DEAD_BAND, 0, myStringFloat,2);
+				PeltierAssSendCommand(WRITE_FLOAT_REG_XX, REG_14_ON_OFF_DEAD_BAND, 0, myStringFloat,1);
 				//myStatePos = 4;
 			}
 			else
@@ -232,7 +232,7 @@ void alwaysPeltierActuator(void){
 			break;
 		//ON OFF HYST - READ
 		case 12:
-			PeltierAssSendCommand(READ_FLOAT_FROM_REG_XX,REG_15_ON_OFF_HYSTER,0,"0",2);
+			PeltierAssSendCommand(READ_FLOAT_FROM_REG_XX,REG_15_ON_OFF_HYSTER,0,"0",1);
 			ptrMsgPeltierRx = &peltierDebug_rx_data[0];
 			ptrPeltierCountRx = 0;
 			break;
@@ -250,7 +250,7 @@ void alwaysPeltierActuator(void){
 					if(myStringFloat[i] == 0x20)
 						myStringFloat[i] = 0x30;
 				}
-				PeltierAssSendCommand(WRITE_FLOAT_REG_XX, REG_15_ON_OFF_HYSTER, 0, myStringFloat,2);
+				PeltierAssSendCommand(WRITE_FLOAT_REG_XX, REG_15_ON_OFF_HYSTER, 0, myStringFloat,1);
 				//myStatePos = 4;
 			}
 			else
@@ -258,7 +258,7 @@ void alwaysPeltierActuator(void){
 			break;
 		// SET TEMP - READ
 		case 14:
-			PeltierAssSendCommand(READ_FLOAT_FROM_REG_XX,REG_0_SET_POINT,0,"0",2);
+			PeltierAssSendCommand(READ_FLOAT_FROM_REG_XX,REG_0_SET_POINT,0,"0",1);
 			ptrMsgPeltierRx = &peltierDebug_rx_data[0];
 			ptrPeltierCountRx = 0;
 			break;
@@ -276,7 +276,7 @@ void alwaysPeltierActuator(void){
 					if(myStringFloat[i] == 0x20)
 						myStringFloat[i] = 0x30;
 				}
-				PeltierAssSendCommand(WRITE_FLOAT_REG_XX, REG_0_SET_POINT, 0, myStringFloat,2);
+				PeltierAssSendCommand(WRITE_FLOAT_REG_XX, REG_0_SET_POINT, 0, myStringFloat,1);
 				//myStatePos = 4;
 			}
 			else
@@ -284,7 +284,7 @@ void alwaysPeltierActuator(void){
 			break;
 		//TC DEAD BAND - READ
 		case 16:
-			PeltierAssSendCommand(READ_FLOAT_FROM_REG_XX,REG_7_MAIN_TCDEADBAND,0,"0",2);
+			PeltierAssSendCommand(READ_FLOAT_FROM_REG_XX,REG_7_MAIN_TCDEADBAND,0,"0",1);
 			ptrMsgPeltierRx = &peltierDebug_rx_data[0];
 			ptrPeltierCountRx = 0;
 			break;
@@ -302,7 +302,7 @@ void alwaysPeltierActuator(void){
 					if(myStringFloat[i] == 0x20)
 						myStringFloat[i] = 0x30;
 				}
-				PeltierAssSendCommand(WRITE_FLOAT_REG_XX, REG_7_MAIN_TCDEADBAND, 0, myStringFloat,2);
+				PeltierAssSendCommand(WRITE_FLOAT_REG_XX, REG_7_MAIN_TCDEADBAND, 0, myStringFloat,1);
 				//myStatePos = 4;
 			}
 			else
@@ -310,7 +310,7 @@ void alwaysPeltierActuator(void){
 			break;
 		//TC LIMIT - READ
 		case 18:
-			PeltierAssSendCommand(READ_FLOAT_FROM_REG_XX,REG_6_MAIN_TCLIMIT,0,"0",2);
+			PeltierAssSendCommand(READ_FLOAT_FROM_REG_XX,REG_6_MAIN_TCLIMIT,0,"0",1);
 			ptrMsgPeltierRx = &peltierDebug_rx_data[0];
 			ptrPeltierCountRx = 0;
 			break;
@@ -328,7 +328,7 @@ void alwaysPeltierActuator(void){
 					if(myStringFloat[i] == 0x20)
 						myStringFloat[i] = 0x30;
 				}
-				PeltierAssSendCommand(WRITE_FLOAT_REG_XX, REG_6_MAIN_TCLIMIT, 0, myStringFloat,2);
+				PeltierAssSendCommand(WRITE_FLOAT_REG_XX, REG_6_MAIN_TCLIMIT, 0, myStringFloat,1);
 				//myStatePos = 4;
 			}
 			else
@@ -336,7 +336,7 @@ void alwaysPeltierActuator(void){
 			break;
 		//CURR. HIGH THRSHLD - READ
 		case 20:
-			PeltierAssSendCommand(READ_FLOAT_FROM_REG_XX,REG_47_ALARM_CURRENT_HIGH,0,"0",2);
+			PeltierAssSendCommand(READ_FLOAT_FROM_REG_XX,REG_47_ALARM_CURRENT_HIGH,0,"0",1);
 			ptrMsgPeltierRx = &peltierDebug_rx_data[0];
 			ptrPeltierCountRx = 0;
 			break;
@@ -354,7 +354,7 @@ void alwaysPeltierActuator(void){
 					if(myStringFloat[i] == 0x20)
 						myStringFloat[i] = 0x30;
 				}
-				PeltierAssSendCommand(WRITE_FLOAT_REG_XX, REG_47_ALARM_CURRENT_HIGH, 0, myStringFloat,2);
+				PeltierAssSendCommand(WRITE_FLOAT_REG_XX, REG_47_ALARM_CURRENT_HIGH, 0, myStringFloat,1);
 				//myStatePos = 4;
 			}
 			else
@@ -571,6 +571,506 @@ void alwaysPeltierActuator(void){
 
 }
 
+/*funzione replicata per la gestione della comunicazione col
+ * secondo driver per la seconda peltier*/
+void alwaysPeltier2Actuator(void){
+	static unsigned char  myStatePos2 = 0;
+	static unsigned char myCountWrite = 0;
+	static char myDataIntPeltier2[8];
+	static int myDataIntActual = 0;
+	static float myDataFloatActual = 0;
+	static char myDataIeee754[8];
+	static unsigned long myUnsignedLongActual;
+	static char myStringFloat[8];
+	static char dummy = 0;
+
+	static union NumFloatUnion{
+				uint32 ieee754NUmFormat;
+				float numFormatFloat;
+			} myNumFloatActual;
+
+
+	//if(timerCounterPeltier >= 2){
+		//timerCounterPeltier = 0;
+	if(iflag_peltier2_rx == IFLAG_IDLE){
+		//iflag_peltier_rx = IFLAG_BUSY;
+		switch(myStatePos2){
+		//FAN 1 MODE - READ
+		case 0:
+			PeltierAssSendCommand(READ_DATA_REGISTER_XX,REG_16_FAN1_MOD_SEL,0,"0",2);
+			ptrMsgPeltier2Rx = &peltier2Debug_rx_data[0];
+			ptrPeltier2CountRx = 0;
+			break;
+		//FAN 1 MODE - WRITE
+		case 1:
+			if(myDataIntActual != peltierCell2.myFanModeSel)
+			{
+				PeltierAssSendCommand(WRITE_DATA_REGISTER_XX, REG_16_FAN1_MOD_SEL, peltierCell2.myFanModeSel, 0,2);
+				//myStatePos2 = 0;
+			}
+			else
+				myStatePos2 = 2;
+			break;
+		//REG. MODE - READ
+		case 2:
+			PeltierAssSendCommand(READ_DATA_REGISTER_XX,REG_13_REGULATOR_MODE,0,"0",2);
+			ptrMsgPeltier2Rx = &peltier2Debug_rx_data[0];
+			ptrPeltier2CountRx = 0;
+			break;
+		//REG. MODE - WRITE
+		case 3:
+			if(myDataIntActual != peltierCell2.myRegMode)
+			{
+				PeltierAssSendCommand(WRITE_DATA_REGISTER_XX, REG_13_REGULATOR_MODE, peltierCell2.myRegMode, 0,2);
+				//myStatePos2 = 2;
+			}
+			else
+				myStatePos2 = 4;
+			break;
+		//NTC STEIN COEFF A - READ
+		case 4:
+			PeltierAssSendCommand(READ_FLOAT_FROM_REG_XX,REG_59_TEMP1_STEIN_COEFF_A,0,"0",2);
+			ptrMsgPeltier2Rx = &peltier2Debug_rx_data[0];
+			ptrPeltier2CountRx = 0;
+			break;
+		//NTC STEIN COEFF A - WRITE
+		case 5:
+			if(myNumFloatActual.numFormatFloat != peltierCell2.myNTCSteinCoeff_A)
+			{
+				myNumFloatActual.numFormatFloat = peltierCell2.myNTCSteinCoeff_A;
+				sprintf(myStringFloat, "%2X%2X%2X%2X", 	(unsigned char)(myNumFloatActual.ieee754NUmFormat >> 24),
+														(unsigned char)(myNumFloatActual.ieee754NUmFormat >> 16),
+														(unsigned char)(myNumFloatActual.ieee754NUmFormat >> 8),
+														(unsigned char)(myNumFloatActual.ieee754NUmFormat));
+				for(char i=0; i<8; i++)
+				{
+					if(myStringFloat[i] == 0x20)
+						myStringFloat[i] = 0x30;
+				}
+				PeltierAssSendCommand(WRITE_FLOAT_REG_XX, REG_59_TEMP1_STEIN_COEFF_A, 0, myStringFloat,2);
+				//myStatePos2 = 4;
+			}
+			else
+				myStatePos2 = 6;
+			break;
+		//NTC STEIN COEFF B - READ
+		case 6:
+			PeltierAssSendCommand(READ_FLOAT_FROM_REG_XX,REG_60_TEMP1_STEIN_COEFF_B,0,"0",2);
+			ptrMsgPeltier2Rx = &peltier2Debug_rx_data[0];
+			ptrPeltier2CountRx = 0;
+			break;
+		//NTC STEIN COEFF B - WRITE
+		case 7:
+			if(myNumFloatActual.numFormatFloat != peltierCell2.myNTCSteinCoeff_B)
+			{
+				myNumFloatActual.numFormatFloat = peltierCell2.myNTCSteinCoeff_B;
+				sprintf(myStringFloat, "%2X%2X%2X%2X", 	(unsigned char)(myNumFloatActual.ieee754NUmFormat>>24),
+														(unsigned char)(myNumFloatActual.ieee754NUmFormat>>16),
+														(unsigned char)(myNumFloatActual.ieee754NUmFormat>>8),
+														(unsigned char)(myNumFloatActual.ieee754NUmFormat));
+				for(char i=0; i<8; i++)
+				{
+					if(myStringFloat[i] == 0x20)
+						myStringFloat[i] = 0x30;
+				}
+				PeltierAssSendCommand(WRITE_FLOAT_REG_XX, REG_60_TEMP1_STEIN_COEFF_B, 0, myStringFloat,2);
+				//myStatePos2 = 4;
+			}
+			else
+				myStatePos2 = 8;
+			break;
+		//NTC STEIN COEFF C - READ
+		case 8:
+			PeltierAssSendCommand(READ_FLOAT_FROM_REG_XX,REG_61_TEMP1_STEIN_COEFF_C,0,"0",2);
+			ptrMsgPeltier2Rx = &peltier2Debug_rx_data[0];
+			ptrPeltier2CountRx = 0;
+			break;
+		//NTC STEIN COEFF C - WRITE
+		case 9:
+			if(myNumFloatActual.numFormatFloat != peltierCell2.myNTCSteinCoeff_C)
+			{
+				myNumFloatActual.numFormatFloat = peltierCell2.myNTCSteinCoeff_C;
+				sprintf(myStringFloat, "%2X%2X%2X%2X", 	(unsigned char)(myNumFloatActual.ieee754NUmFormat>>24),
+														(unsigned char)(myNumFloatActual.ieee754NUmFormat>>16),
+														(unsigned char)(myNumFloatActual.ieee754NUmFormat>>8),
+														(unsigned char)(myNumFloatActual.ieee754NUmFormat));
+				for(char i=0; i<8; i++)
+				{
+					if(myStringFloat[i] == 0x20)
+						myStringFloat[i] = 0x30;
+				}
+				PeltierAssSendCommand(WRITE_FLOAT_REG_XX, REG_61_TEMP1_STEIN_COEFF_C, 0, myStringFloat,2);
+				//myStatePos2 = 4;
+			}
+			else
+				myStatePos2 = 10;
+			break;
+		//ON OFF DEAD BAND - READ
+		case 10:
+			PeltierAssSendCommand(READ_FLOAT_FROM_REG_XX,REG_14_ON_OFF_DEAD_BAND,0,"0",2);
+			ptrMsgPeltier2Rx = &peltier2Debug_rx_data[0];
+			ptrPeltier2CountRx = 0;
+			break;
+		//ON OFF DEAD BAND - WRITE
+		case 11:
+			if(myNumFloatActual.numFormatFloat != peltierCell2.myOnOffDeadBand)
+			{
+				myNumFloatActual.numFormatFloat = peltierCell2.myOnOffDeadBand;
+				sprintf(myStringFloat, "%2X%2X%2X%2X", 	(unsigned char)(myNumFloatActual.ieee754NUmFormat>>24),
+														(unsigned char)(myNumFloatActual.ieee754NUmFormat>>16),
+														(unsigned char)(myNumFloatActual.ieee754NUmFormat>>8),
+														(unsigned char)(myNumFloatActual.ieee754NUmFormat));
+				for(char i=0; i<8; i++)
+				{
+					if(myStringFloat[i] == 0x20)
+						myStringFloat[i] = 0x30;
+				}
+				PeltierAssSendCommand(WRITE_FLOAT_REG_XX, REG_14_ON_OFF_DEAD_BAND, 0, myStringFloat,2);
+				//myStatePos2 = 4;
+			}
+			else
+				myStatePos2 = 12;
+			break;
+		//ON OFF HYST - READ
+		case 12:
+			PeltierAssSendCommand(READ_FLOAT_FROM_REG_XX,REG_15_ON_OFF_HYSTER,0,"0",2);
+			ptrMsgPeltier2Rx = &peltier2Debug_rx_data[0];
+			ptrPeltier2CountRx = 0;
+			break;
+		//ON OFF HYST - WRITE
+		case 13:
+			if(myNumFloatActual.numFormatFloat != peltierCell2.myOnOffHyster)
+			{
+				myNumFloatActual.numFormatFloat = peltierCell2.myOnOffHyster;
+				sprintf(myStringFloat, "%2X%2X%2X%2X", 	(unsigned char)(myNumFloatActual.ieee754NUmFormat>>24),
+														(unsigned char)(myNumFloatActual.ieee754NUmFormat>>16),
+														(unsigned char)(myNumFloatActual.ieee754NUmFormat>>8),
+														(unsigned char)(myNumFloatActual.ieee754NUmFormat));
+				for(char i=0; i<8; i++)
+				{
+					if(myStringFloat[i] == 0x20)
+						myStringFloat[i] = 0x30;
+				}
+				PeltierAssSendCommand(WRITE_FLOAT_REG_XX, REG_15_ON_OFF_HYSTER, 0, myStringFloat,2);
+				//myStatePos2 = 4;
+			}
+			else
+				myStatePos2 = 14;
+			break;
+		// SET TEMP - READ
+		case 14:
+			PeltierAssSendCommand(READ_FLOAT_FROM_REG_XX,REG_0_SET_POINT,0,"0",2);
+			ptrMsgPeltier2Rx = &peltier2Debug_rx_data[0];
+			ptrPeltier2CountRx = 0;
+			break;
+		//SET TEMP - WRITE
+		case 15:
+			if(myNumFloatActual.numFormatFloat != peltierCell2.mySet)
+			{
+				myNumFloatActual.numFormatFloat = peltierCell2.mySet;
+				sprintf(myStringFloat, "%2X%2X%2X%2X", 	(unsigned char)(myNumFloatActual.ieee754NUmFormat>>24),
+														(unsigned char)(myNumFloatActual.ieee754NUmFormat>>16),
+														(unsigned char)(myNumFloatActual.ieee754NUmFormat>>8),
+														(unsigned char)(myNumFloatActual.ieee754NUmFormat));
+				for(char i=0; i<8; i++)
+				{
+					if(myStringFloat[i] == 0x20)
+						myStringFloat[i] = 0x30;
+				}
+				PeltierAssSendCommand(WRITE_FLOAT_REG_XX, REG_0_SET_POINT, 0, myStringFloat,2);
+				//myStatePos2 = 4;
+			}
+			else
+				myStatePos2 = 16;
+			break;
+		//TC DEAD BAND - READ
+		case 16:
+			PeltierAssSendCommand(READ_FLOAT_FROM_REG_XX,REG_7_MAIN_TCDEADBAND,0,"0",2);
+			ptrMsgPeltier2Rx = &peltier2Debug_rx_data[0];
+			ptrPeltier2CountRx = 0;
+			break;
+		//TC DEAD BAND - WRITE
+		case 17:
+			if(myNumFloatActual.numFormatFloat != peltierCell2.myTCDeadBand)
+			{
+				myNumFloatActual.numFormatFloat = peltierCell2.myTCDeadBand;
+				sprintf(myStringFloat, "%2X%2X%2X%2X", 	(unsigned char)(myNumFloatActual.ieee754NUmFormat>>24),
+														(unsigned char)(myNumFloatActual.ieee754NUmFormat>>16),
+														(unsigned char)(myNumFloatActual.ieee754NUmFormat>>8),
+														(unsigned char)(myNumFloatActual.ieee754NUmFormat));
+				for(char i=0; i<8; i++)
+				{
+					if(myStringFloat[i] == 0x20)
+						myStringFloat[i] = 0x30;
+				}
+				PeltierAssSendCommand(WRITE_FLOAT_REG_XX, REG_7_MAIN_TCDEADBAND, 0, myStringFloat,2);
+				//myStatePos2 = 4;
+			}
+			else
+				myStatePos2 = 18;
+			break;
+		//TC LIMIT - READ
+		case 18:
+			PeltierAssSendCommand(READ_FLOAT_FROM_REG_XX,REG_6_MAIN_TCLIMIT,0,"0",2);
+			ptrMsgPeltier2Rx = &peltier2Debug_rx_data[0];
+			ptrPeltier2CountRx = 0;
+			break;
+		//TC LIMIT - WRITE
+		case 19:
+			if(myNumFloatActual.numFormatFloat != peltierCell2.myTCLimit)
+			{
+				myNumFloatActual.numFormatFloat = peltierCell2.myTCLimit;
+				sprintf(myStringFloat, "%2X%2X%2X%2X", 	(unsigned char)(myNumFloatActual.ieee754NUmFormat>>24),
+														(unsigned char)(myNumFloatActual.ieee754NUmFormat>>16),
+														(unsigned char)(myNumFloatActual.ieee754NUmFormat>>8),
+														(unsigned char)(myNumFloatActual.ieee754NUmFormat));
+				for(char i=0; i<8; i++)
+				{
+					if(myStringFloat[i] == 0x20)
+						myStringFloat[i] = 0x30;
+				}
+				PeltierAssSendCommand(WRITE_FLOAT_REG_XX, REG_6_MAIN_TCLIMIT, 0, myStringFloat,2);
+				//myStatePos2 = 4;
+			}
+			else
+				myStatePos2 = 20;
+			break;
+		//CURR. HIGH THRSHLD - READ
+		case 20:
+			PeltierAssSendCommand(READ_FLOAT_FROM_REG_XX,REG_47_ALARM_CURRENT_HIGH,0,"0",2);
+			ptrMsgPeltier2Rx = &peltier2Debug_rx_data[0];
+			ptrPeltier2CountRx = 0;
+			break;
+		//CURR. HIGH THRSHLD - WRITE
+		case 21:
+			if(myNumFloatActual.numFormatFloat != peltierCell2.myThrsldMainCurrHigh)
+			{
+				myNumFloatActual.numFormatFloat = peltierCell2.myThrsldMainCurrHigh;
+				sprintf(myStringFloat, "%2X%2X%2X%2X", 	(unsigned char)(myNumFloatActual.ieee754NUmFormat>>24),
+														(unsigned char)(myNumFloatActual.ieee754NUmFormat>>16),
+														(unsigned char)(myNumFloatActual.ieee754NUmFormat>>8),
+														(unsigned char)(myNumFloatActual.ieee754NUmFormat));
+				for(char i=0; i<8; i++)
+				{
+					if(myStringFloat[i] == 0x20)
+						myStringFloat[i] = 0x30;
+				}
+				PeltierAssSendCommand(WRITE_FLOAT_REG_XX, REG_47_ALARM_CURRENT_HIGH, 0, myStringFloat,2);
+				//myStatePos2 = 4;
+			}
+			else
+				myStatePos2 = 0;
+			break;
+
+		default:
+			break;
+		}
+	}
+
+	if(iflag_peltier2_rx == IFLAG_PELTIER_RX){
+		iflag_peltier2_rx = IFLAG_IDLE;
+
+		for(int i=0; i<8; i++)
+		{
+			myDataIntPeltier2[i] = 0;
+			myDataIeee754[i] = 0;
+		}
+
+		switch(myStatePos2){
+
+		case 0:
+		case 2:
+			myDataIntPeltier2[0] = *ptrMsgDataPeltier2Int;
+			myDataIntActual = strtol(myDataIntPeltier2,NULL,16);
+			myStatePos2 = myStatePos2 + 1;
+			myCountWrite = 0;
+			break;
+
+		case 1:
+		case 3:
+			myStatePos2 = myStatePos2 + 1;
+			//myStatePos2 = 0;
+			/*myCountWrite = myCountWrite + 1;
+			if(myCountWrite >= 10) //scritture ripetute......vado avanti
+			{
+				myStatePos2 = myStatePos2 + 1;
+			}*/
+			break;
+
+		case 4:
+			myDataIeee754[0] = *ptrMsgData2ieee754start;
+			myDataIeee754[1] = *(ptrMsgData2ieee754start+1);
+			myDataIeee754[2] = *(ptrMsgData2ieee754start+2);
+			myDataIeee754[3] = *(ptrMsgData2ieee754start+3);
+			myDataIeee754[4] = *(ptrMsgData2ieee754start+4);
+			myDataIeee754[5] = *(ptrMsgData2ieee754start+5);
+			myDataIeee754[6] = *(ptrMsgData2ieee754start+6);
+			myDataIeee754[7] = *(ptrMsgData2ieee754start+7);
+			myUnsignedLongActual = strtoul(myDataIeee754,NULL,16);
+			myNumFloatActual.ieee754NUmFormat = myUnsignedLongActual;
+			myStatePos2 = myStatePos2 + 1;
+			myCountWrite = 0;
+			break;
+
+		case 5:
+			myStatePos2 = myStatePos2 + 1;
+			break;
+
+		case 6:
+			myDataIeee754[0] = *ptrMsgData2ieee754start;
+			myDataIeee754[1] = *(ptrMsgData2ieee754start+1);
+			myDataIeee754[2] = *(ptrMsgData2ieee754start+2);
+			myDataIeee754[3] = *(ptrMsgData2ieee754start+3);
+			myDataIeee754[4] = *(ptrMsgData2ieee754start+4);
+			myDataIeee754[5] = *(ptrMsgData2ieee754start+5);
+			myDataIeee754[6] = *(ptrMsgData2ieee754start+6);
+			myDataIeee754[7] = *(ptrMsgData2ieee754start+7);
+			myUnsignedLongActual = strtoul(myDataIeee754,NULL,16);
+			myNumFloatActual.ieee754NUmFormat = myUnsignedLongActual;
+			myStatePos2 = myStatePos2 + 1;
+			break;
+
+		case 7:
+			myStatePos2 = myStatePos2 + 1;
+			break;
+
+		case 8:
+			myDataIeee754[0] = *ptrMsgData2ieee754start;
+			myDataIeee754[1] = *(ptrMsgData2ieee754start+1);
+			myDataIeee754[2] = *(ptrMsgData2ieee754start+2);
+			myDataIeee754[3] = *(ptrMsgData2ieee754start+3);
+			myDataIeee754[4] = *(ptrMsgData2ieee754start+4);
+			myDataIeee754[5] = *(ptrMsgData2ieee754start+5);
+			myDataIeee754[6] = *(ptrMsgData2ieee754start+6);
+			myDataIeee754[7] = *(ptrMsgData2ieee754start+7);
+			myUnsignedLongActual = strtoul(myDataIeee754,NULL,16);
+			myNumFloatActual.ieee754NUmFormat = myUnsignedLongActual;
+			myStatePos2 = myStatePos2 + 1;
+			break;
+
+		case 9:
+			myStatePos2 = myStatePos2 + 1;
+			break;
+
+		case 10:
+			myDataIeee754[0] = *ptrMsgData2ieee754start;
+			myDataIeee754[1] = *(ptrMsgData2ieee754start+1);
+			myDataIeee754[2] = *(ptrMsgData2ieee754start+2);
+			myDataIeee754[3] = *(ptrMsgData2ieee754start+3);
+			myDataIeee754[4] = *(ptrMsgData2ieee754start+4);
+			myDataIeee754[5] = *(ptrMsgData2ieee754start+5);
+			myDataIeee754[6] = *(ptrMsgData2ieee754start+6);
+			myDataIeee754[7] = *(ptrMsgData2ieee754start+7);
+			myUnsignedLongActual = strtoul(myDataIeee754,NULL,16);
+			myNumFloatActual.ieee754NUmFormat = myUnsignedLongActual;
+			myStatePos2 = myStatePos2 + 1;
+			break;
+
+		case 11:
+			myStatePos2 = myStatePos2 + 1;
+			break;
+
+		case 12:
+			myDataIeee754[0] = *ptrMsgData2ieee754start;
+			myDataIeee754[1] = *(ptrMsgData2ieee754start+1);
+			myDataIeee754[2] = *(ptrMsgData2ieee754start+2);
+			myDataIeee754[3] = *(ptrMsgData2ieee754start+3);
+			myDataIeee754[4] = *(ptrMsgData2ieee754start+4);
+			myDataIeee754[5] = *(ptrMsgData2ieee754start+5);
+			myDataIeee754[6] = *(ptrMsgData2ieee754start+6);
+			myDataIeee754[7] = *(ptrMsgData2ieee754start+7);
+			myUnsignedLongActual = strtoul(myDataIeee754,NULL,16);
+			myNumFloatActual.ieee754NUmFormat = myUnsignedLongActual;
+			myStatePos2 = myStatePos2 + 1;
+			break;
+
+		case 13:
+			myStatePos2 = myStatePos2 + 1;
+			break;
+
+		case 14:
+			myDataIeee754[0] = *ptrMsgData2ieee754start;
+			myDataIeee754[1] = *(ptrMsgData2ieee754start+1);
+			myDataIeee754[2] = *(ptrMsgData2ieee754start+2);
+			myDataIeee754[3] = *(ptrMsgData2ieee754start+3);
+			myDataIeee754[4] = *(ptrMsgData2ieee754start+4);
+			myDataIeee754[5] = *(ptrMsgData2ieee754start+5);
+			myDataIeee754[6] = *(ptrMsgData2ieee754start+6);
+			myDataIeee754[7] = *(ptrMsgData2ieee754start+7);
+			myUnsignedLongActual = strtoul(myDataIeee754,NULL,16);
+			myNumFloatActual.ieee754NUmFormat = myUnsignedLongActual;
+			myStatePos2 = myStatePos2 + 1;
+			break;
+
+		case 15:
+			myStatePos2 = myStatePos2 + 1;
+			break;
+
+		case 16:
+			myDataIeee754[0] = *ptrMsgData2ieee754start;
+			myDataIeee754[1] = *(ptrMsgData2ieee754start+1);
+			myDataIeee754[2] = *(ptrMsgData2ieee754start+2);
+			myDataIeee754[3] = *(ptrMsgData2ieee754start+3);
+			myDataIeee754[4] = *(ptrMsgData2ieee754start+4);
+			myDataIeee754[5] = *(ptrMsgData2ieee754start+5);
+			myDataIeee754[6] = *(ptrMsgData2ieee754start+6);
+			myDataIeee754[7] = *(ptrMsgData2ieee754start+7);
+			myUnsignedLongActual = strtoul(myDataIeee754,NULL,16);
+			myNumFloatActual.ieee754NUmFormat = myUnsignedLongActual;
+			myStatePos2 = myStatePos2 + 1;
+			break;
+
+		case 17:
+			myStatePos2 = myStatePos2 + 1;
+			break;
+
+		case 18:
+			myDataIeee754[0] = *ptrMsgData2ieee754start;
+			myDataIeee754[1] = *(ptrMsgData2ieee754start+1);
+			myDataIeee754[2] = *(ptrMsgData2ieee754start+2);
+			myDataIeee754[3] = *(ptrMsgData2ieee754start+3);
+			myDataIeee754[4] = *(ptrMsgData2ieee754start+4);
+			myDataIeee754[5] = *(ptrMsgData2ieee754start+5);
+			myDataIeee754[6] = *(ptrMsgData2ieee754start+6);
+			myDataIeee754[7] = *(ptrMsgData2ieee754start+7);
+			myUnsignedLongActual = strtoul(myDataIeee754,NULL,16);
+			myNumFloatActual.ieee754NUmFormat = myUnsignedLongActual;
+			myStatePos2 = myStatePos2 + 1;
+			break;
+
+		case 19:
+			myStatePos2 = myStatePos2 + 1;
+			break;
+
+		case 20:
+			myDataIeee754[0] = *ptrMsgData2ieee754start;
+			myDataIeee754[1] = *(ptrMsgData2ieee754start+1);
+			myDataIeee754[2] = *(ptrMsgData2ieee754start+2);
+			myDataIeee754[3] = *(ptrMsgData2ieee754start+3);
+			myDataIeee754[4] = *(ptrMsgData2ieee754start+4);
+			myDataIeee754[5] = *(ptrMsgData2ieee754start+5);
+			myDataIeee754[6] = *(ptrMsgData2ieee754start+6);
+			myDataIeee754[7] = *(ptrMsgData2ieee754start+7);
+			myUnsignedLongActual = strtoul(myDataIeee754,NULL,16);
+			myNumFloatActual.ieee754NUmFormat = myUnsignedLongActual;
+			myStatePos2 = myStatePos2 + 1;
+			break;
+
+		case 21:
+			myStatePos2 = 0;
+			break;
+
+
+		default:
+			break;
+		}
+
+		/*for(int i=0; i<40; i++){
+			peltierDebug_rx_data[i] = 0;
+		}*/
+	}
+
+}
 void startPeltierActuator(void){
 	PeltierAssSendCommand(START_FLAG,"0",0,"0",1);
 	PeltierAssSendCommand(START_FLAG,"0",0,"0",2);
