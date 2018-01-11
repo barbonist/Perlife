@@ -49,7 +49,7 @@ char    iFlag_modbusDataStorage;
 /*#define DEBUG_FLOW_SENS			0x00*/ /*0x01*/
 /* DEBUG */
 
-#define STR_DBG_LENGHT				40
+#define STR_DBG_LENGHT				100
 
 #define	IFLAG_PC_RX					0x01 /* new data on rx 232 pc */
 #define IFLAG_PC_TX					0x01 /* new data to rx 232 pc */
@@ -843,7 +843,7 @@ struct ultrsndFlowSens{
 #define BYTE_COUNT_GET_VAL_CODE 			0x17 		//numero di byet che mi aspetto in ricezione col comando di GET_VAL_CODE customizzato con 3 byte di richesta 0x82 -- 0x88 -- 0x8B
 float buffer_flow_value [TOT_UF_SENSOR][SAMPLE];
 
-struct ultrsndFlowSens sensor_UFLOW[12];
+struct ultrsndFlowSens sensor_UFLOW[2];
 struct ultrsndFlowSens * ptrCurrent_UFLOW; /* puntatore a struttura corrente - sensore attualmente interrogato */
 struct ultrsndFlowSens * ptrMsg_UFLOW; 	   /* puntatore utilizzato per spedire il messaggio */
 /************************************************************************/

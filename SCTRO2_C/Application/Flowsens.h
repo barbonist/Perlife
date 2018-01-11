@@ -10,7 +10,7 @@
 
 /*The Address permitted are 12, from 0x01 to 0x0C*/
 #define FLOW_SENSOR_ONE_ADDR	0x01 /* address of flowsensor n°1 - arterial line */
-#define FLOW_SENSOR_TWO_ADDR	0x0C /* address of flowsensor n°2 - venous line */
+#define FLOW_SENSOR_TWO_ADDR	0x02 /* address of flowsensor n°2 - venous line */
 
 #define CMD_PING_CODE			0x29
 #define CMD_RESTART_CODE		0x16

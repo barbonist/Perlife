@@ -294,6 +294,7 @@ void 	alwaysAdcParam(void)
 
 	sensor_PRx[0].prSensAdcPtr = sensor_PRx[0].readAdctPtr();
 	sensor_PRx[0].prSensAdc = *sensor_PRx[0].prSensAdcPtr;
+	//sensor_PRx[0].prSensAdc = PR_ART_ADC;
 	sensor_PRx[0].prSensValue = sensor_PRx[0].prSensGain *
 								(((float)sensor_PRx[0].prSensAdc/65535)*1617 - sensor_PRx[0].prSensOffsetVal) +
 								sensor_PRx[0].prSensOffset;
@@ -310,17 +311,33 @@ void 	alwaysAdcParam(void)
 
 
 	//#ifdef DEBUG_LOG_PC
-	sprintf(stringPr1, "\r %i %i; %i; %i; %i; %i; %i; %i;",
-			           /* timems,*/
-						V24_P1_CHK_VOLT/*PR_OXYG_mmHg*//*(int) sensor_UFLOW[0].Average_Flow_Val*/,
-						V24_P2_CHK_VOLT/*PR_LEVEL_mmHg*//*(int) sensor_UFLOW[0].Inst_Flow_Value*/,
-						PR_ADS_FLT_mmHg/*(int) sensor_UFLOW[1].Average_Flow_Val*//*(int) Air_1_Status*//*(int) (sensor_PRx[1].prSensValueFilteredWA)*/,
-						PR_VEN_mmHg/*(int) sensor_UFLOW[1].Inst_Flow_Value*//*(int) (sensor_UFLOW[0].volumeMlTot)*//*PR_VEN_mmHg*/,
-						PR_ART_mmHg/*(int) (sensorIR_TM[0].tempSensValue*10)*/,
-						(int) (sensorIR_TM[0].tempSensValue*10),
-						(int) (sensorIR_TM[1].tempSensValue*10),
-						(int) (sensorIR_TM[2].tempSensValue*10)
-			);
+//	sprintf(stringPr1, "\r %i %i; %i; %i; %i; %i; %i; %i; %i; %d;",
+//			           /* timems,*/
+	//					V24_P1_CHK_VOLT/*PR_OXYG_mmHg*//*(int) sensor_UFLOW[0].Average_Flow_Val*/,
+	//						V24_P2_CHK_VOLT/*PR_LEVEL_mmHg*//*(int) sensor_UFLOW[0].Inst_Flow_Value*/,
+	//						PR_ADS_FLT_mmHg/*(int) sensor_UFLOW[1].Average_Flow_Val*//*(int) Air_1_Status*//*(int) (sensor_PRx[1].prSensValueFilteredWA)*/,
+	//						PR_VEN_mmHg/*(int) sensor_UFLOW[1].Inst_Flow_Value*//*(int) (sensor_UFLOW[0].volumeMlTot)*//*PR_VEN_mmHg*/,
+	//						PR_ART_mmHg/*(int) (sensorIR_TM[0].tempSensValue*10)*/,
+	//						(int) (sensorIR_TM[0].tempSensValue*10),
+	//						(int) (sensorIR_TM[1].tempSensValue*10),
+	//						(int) (sensorIR_TM[2].tempSensValue*10),
+	//						(int) (sensor_PRx[0].prSensValueFilteredWA),
+	//						(int) pumpPerist[0].actualSpeed
+	//			);
+
+//		sprintf(stringPr1, "\r %i; %i; %i; %i; %i; %i; %i; %d;",
+//				           /* timems,*/
+//								PR_ADS_FLT_mmHg/*(int) sensor_UFLOW[1].Average_Flow_Val*//*(int) Air_1_Status*//*(int) (sensor_PRx[1].prSensValueFilteredWA)*/,
+//								PR_VEN_mmHg/*(int) sensor_UFLOW[1].Inst_Flow_Value*//*(int) (sensor_UFLOW[0].volumeMlTot)*//*PR_VEN_mmHg*/,
+//								PR_ART_mmHg/*(int) (sensorIR_TM[0].tempSensValue*10)*/,
+//								(int) (sensorIR_TM[0].tempSensValue*10),
+//								(int) (sensorIR_TM[1].tempSensValue*10),
+//								(int) (sensorIR_TM[2].tempSensValue*10),
+//								(int) (sensor_PRx[0].prSensValueFilteredWA),
+//								(int) pumpPerist[0].actualSpeed
+//					);
+
+
 //	sprintf(stringPr1, "\r%d; %i; %i; %i; %i; %i;",
 //			            timems,
 //						(int) (sensorIR_TM[0].errorNACK),
@@ -330,11 +347,11 @@ void 	alwaysAdcParam(void)
 //						(int) (sensorIR_TM[1].errorPEC),
 //						(int) (sensorIR_TM[2].errorPEC)
 //			);
-	for(int i=0; i<STR_DBG_LENGHT; i++)
-	{
-		PC_DEBUG_COMM_SendChar(stringPr1[i]);
-	}
-	PC_DEBUG_COMM_SendChar(0x0A);
+//	for(int i=0; i<STR_DBG_LENGHT; i++)
+//	{
+//		PC_DEBUG_COMM_SendChar(stringPr1[i]);
+//	}
+//	PC_DEBUG_COMM_SendChar(0x0A);
 //	#endif
 
 	sensor_PRx[1].prSensAdcPtr = sensor_PRx[1].readAdctPtr();

@@ -166,10 +166,14 @@
 #include "Temp_sensIR.h"
 #include "Comm_Sbc.h"
 
+
+ extern unsigned char Released1;
+ extern unsigned char Released2;
+
 /*lint -save  -e970 Disable MISRA rule (6.3) checking. */
 void TestPump(unsigned char Adr); //only for test
 void TestPinch(void);
-
+void GenerateSBCComm(void);
 
 int main(void)
 /*lint -restore Enable MISRA rule (6.3) checking. */
@@ -637,7 +641,14 @@ int main(void)
 	        	processMachineState();
 
 	        	alarmEngineAlways();
+		        GenerateSBCComm();
 	         }
+
+	         if(ReadKey1()) // per debug con la tastiera a bolle
+	        	 Released1 = 1;
+	         if(ReadKey2()) // per debug con la tastiera a bolle
+	        	 Released2 = 1;
+
 	         /****MACHINE STATE UPDATE END****/
 
 	         /*******************************/
@@ -650,7 +661,8 @@ int main(void)
 //	         }
 	         Manage_UFlow_Sens();
 
-	         //TestPump(2); // 2..5 usata per provare le pompe con la tastiera a bolle
+	         /*
+	         TestPump(2); // 2..5 usata per provare le pompe con la tastiera a bolle
 	         if( (pumpPerist[0].reqState == REQ_STATE_OFF) && (pumpPerist[0].reqType == REQ_TYPE_IDLE) &&
 	             (pumpPerist[1].reqState == REQ_STATE_OFF) && (pumpPerist[1].reqType == REQ_TYPE_IDLE) &&
 				 (pumpPerist[2].reqState == REQ_STATE_OFF) && (pumpPerist[2].reqType == REQ_TYPE_IDLE) &&
@@ -658,6 +670,7 @@ int main(void)
 	         {
 	        	 TestPinch();     // BOTTOM_PINCH_ID = 7, LEFT_PINCH_ID = 8, RIGHT_PINCH_ID = 9
 	         }
+	         */
 
 	         Buzzer_Management();
 
@@ -701,13 +714,13 @@ int main(void)
 		     /*faccio lo start della cionversione sui canali AD ogni 50 msec*/
 			 if (timerCounterADC >=1)
 			 {
+				/*da valutare se sreve ancora o può essere sostituita dalla mie Manange_ADC0() e Manange_ADC1()*/
+				alwaysAdcParam();
 				timerCounterADC = 0;
 				AD0_Start();
 				AD1_Start();
 			 }
 
-			 /*da valutare se sreve ancora o può essere sostituita dalla mie Manange_ADC0() e Manange_ADC1()*/
-	         alwaysAdcParam();
 	         /********************************/
 	         /*				ADC				 */
 	         /********************************/

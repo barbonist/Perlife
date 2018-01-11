@@ -63,8 +63,70 @@ void alarmEngineAlways(void){
 	}
 }
 
+/*
+int AlarmActiveFlag = 0;
+void alarmEngineAlways(void){
+	static StartAlmArrIdx = 0; // posizione dell'allarme corrente e posizione di partenza per ogni scansione dell'array di strutture
+	static int AlmState = 0;
+	int i;
+
+	//verifica physic pressioni
+	manageAlarmPhysicPressSens();
+
+	//verifica physic flow sensor
+	manageAlarmPhysicUFlowSens();
+
+	//verifica physic ir temp sens
+	manageAlarmPhysicTempSens();
+
+	//for(int i=0; i<ALARM_ACTIVE_IN_STRUCT; i++)
+	for(i=StartAlmArrIdx; i<ALARM_ACTIVE_IN_STRUCT; i++)
+	{
+		if((alarmList[i].physic == PHYSIC_TRUE) && (alarmList[i].active != ACTIVE_TRUE))
+		{
+			ptrAlarmCurrent = &alarmList[i];
+			alarmList[i].prySafetyActionFunc();
+
+			// FM forse qui devo interrompere perche' ho trovato una condizione di allarme da attivare
+			// e devo gestirla prima di andare a vedere le altre
+			StartAlmArrIdx = i;
+			AlarmActiveFlag = 1;
+			AlmState = 1;
+			break;
+		}
+		else if((alarmList[i].active == ACTIVE_TRUE) && (alarmList[i].physic == PHYSIC_FALSE))
+		{
+			ptrAlarmCurrent = &alarmList[i];
+			alarmList[i].prySafetyActionFunc();
+
+			// FM forse qui devo interrompere perche' ho trovato una condizione di allarme da disattivare
+			// e devo gestirla prima di andare a vedere le altre
+			break;
+		}
+	}
+
+	switch (AlmState)
+	{
+		case 0:
+			if(i == ALARM_ACTIVE_IN_STRUCT)
+				StartAlmArrIdx = 0;
+			break;
+		case 1:
+			if(!AlarmActiveFlag)
+			{
+				AlmState = 0;
+				StartAlmArrIdx++;
+				if(StartAlmArrIdx == ALARM_ACTIVE_IN_STRUCT)
+					StartAlmArrIdx = 0;
+			}
+			break;
+	}
+}
+*/
+
 void manageAlarmPhysicPressSens(void){
-	if(sensor_PRx[0].prSensValue > 80)
+	//if(sensor_PRx[0].prSensValue > 80)
+	if(PR_ART_mmHg > 80)
 		{
 			alarmList[0].physic = PHYSIC_TRUE;
 		}

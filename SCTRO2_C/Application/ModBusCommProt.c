@@ -513,7 +513,8 @@ void readPumpSpeedValueHighLevel(unsigned char slaveAddr){
 	switch((slaveAddr - 2))
 		{
 		case 0:
-			if((pumpPerist[0].reqState == REQ_STATE_OFF) && (pumpPerist[0].reqType == REQ_TYPE_IDLE))
+			//if((pumpPerist[0].reqState == REQ_STATE_OFF) && (pumpPerist[0].reqType == REQ_TYPE_IDLE))
+			if(pumpPerist[0].reqState == REQ_STATE_OFF)
 			{
 				pumpPerist[0].reqState = REQ_STATE_ON;
 				pumpPerist[0].reqType = REQ_TYPE_READ;
@@ -523,7 +524,8 @@ void readPumpSpeedValueHighLevel(unsigned char slaveAddr){
 			break;
 
 		case 1:
-			if((pumpPerist[1].reqState == REQ_STATE_OFF) && (pumpPerist[1].reqType == REQ_TYPE_IDLE))
+			//if((pumpPerist[1].reqState == REQ_STATE_OFF) && (pumpPerist[1].reqType == REQ_TYPE_IDLE))
+			if(pumpPerist[1].reqState == REQ_STATE_OFF)
 			{
 				pumpPerist[1].reqState = REQ_STATE_ON;
 				pumpPerist[1].reqType = REQ_TYPE_READ;
@@ -533,7 +535,8 @@ void readPumpSpeedValueHighLevel(unsigned char slaveAddr){
 			break;
 
 		case 2:
-			if((pumpPerist[2].reqState == REQ_STATE_OFF) && (pumpPerist[2].reqType == REQ_TYPE_IDLE))
+			//if((pumpPerist[2].reqState == REQ_STATE_OFF) && (pumpPerist[2].reqType == REQ_TYPE_IDLE))
+			if(pumpPerist[2].reqState == REQ_STATE_OFF)
 			{
 				pumpPerist[2].reqState = REQ_STATE_ON;
 				pumpPerist[2].reqType = REQ_TYPE_READ;
@@ -543,7 +546,8 @@ void readPumpSpeedValueHighLevel(unsigned char slaveAddr){
 			break;
 
 		case 3:
-			if((pumpPerist[3].reqState == REQ_STATE_OFF) && (pumpPerist[3].reqType == REQ_TYPE_IDLE))
+			//if((pumpPerist[3].reqState == REQ_STATE_OFF) && (pumpPerist[3].reqType == REQ_TYPE_IDLE))
+			if(pumpPerist[3].reqState == REQ_STATE_OFF)
 			{
 				pumpPerist[3].reqState = REQ_STATE_ON;
 				pumpPerist[3].reqType = REQ_TYPE_READ;
@@ -861,7 +865,8 @@ void alwaysModBusActuator(void)
 		// ho ricevuto una risposta completa, leggo l'indirizzo del dispositivo che mi ha risposto
 		// CONTROLLO CHE LA RISPOSTA SIA POSITIVA, ALTRIMENTI INVIO DI NUOVO il COMANDO DI SCRITTURA
 		// NELLO STESSO TIME SLOT
-		if(*(_funcRetVal.slvresRetPtr + 1) == 0x10)
+		//if(*(_funcRetVal.slvresRetPtr + 1) == 0x10)
+		if(1)
 		{
 			// nel secondo byte della risposta ho trovato il codice della della funzione modbus  con cui
 			// ho inviato il comando. Questo vuol dire che la scrittura ha avuto successo.
@@ -870,13 +875,13 @@ void alwaysModBusActuator(void)
 			{
 				// ho ricevuto la risposta da una pompa
 				pumpPerist[Adr - 2].dataReady = DATA_READY_TRUE;
-				pumpPerist[Adr - 6].reqType = REQ_TYPE_IDLE;
+				pumpPerist[Adr - 2].reqType = REQ_TYPE_IDLE;
 			}
 			else if( (Adr >= 7) && (Adr <= 9) )
 			{
 				// ho ricevuto la risposta da un pinch
-				pinchActuator[Adr - 6].dataReady = DATA_READY_TRUE;
-				pinchActuator[Adr - 6].reqType = REQ_TYPE_IDLE;
+				pinchActuator[Adr - 7].dataReady = DATA_READY_TRUE;
+				pinchActuator[Adr - 7].reqType = REQ_TYPE_IDLE;
 			}
 		}
 		else
@@ -892,6 +897,10 @@ void alwaysModBusActuator(void)
 					AlarmSet = 1;
 				}
 				ActuatorWriteCnt = 0;
+				if( (Adr >= 2) && (Adr <= 5) )
+					pumpPerist[Adr - 2].reqType = REQ_TYPE_IDLE;
+				else if( (Adr >= 7) && (Adr <= 9) )
+					pinchActuator[Adr - 7].reqType = REQ_TYPE_IDLE;
 			}
 			else
 			{
@@ -927,6 +936,19 @@ void alwaysModBusActuator(void)
 		*/
 		iflag_pmp1_rx = IFLAG_IDLE;
 		//timerCounterModBus = 0; //da verificare......qui il canale è sicuramente libero
+	}
+	else
+	{
+		/*
+		for(int i=0; i<=3; i++)
+		{
+			if((pumpPerist[i].reqState == REQ_STATE_OFF) && (pumpPerist[i].reqType != REQ_TYPE_IDLE))
+			{
+				if(pumpIdleTimeout)
+				pumpPerist[i].reqType = REQ_TYPE_IDLE;
+			}
+		}
+	*/
 	}
 
 	if( AlarmSet && (msTick_elapsed(timerCounterModBusStart) >= 25))
