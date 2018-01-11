@@ -204,6 +204,7 @@ int main(void)
 
   /* Write your code here */
 
+  LevelBuzzer = SILENT;
   initAllGuard();
   initAllState();
   initGUIButton();
@@ -555,6 +556,7 @@ int main(void)
 		        	AD1_Start();
 		        }
 
+		        Buzzer_Management(LevelBuzzer);
 		         /*******************************/
 		         /********UFLOW SENSOR***********/
 
@@ -649,7 +651,7 @@ int main(void)
 //	         }
 	         Manage_UFlow_Sens();
 
-	         Buzzer_Management();
+	         Buzzer_Management(LevelBuzzer);
 
 	         if(timerCounterPeltier >= 2){
 	        	 timerCounterPeltier = 0;

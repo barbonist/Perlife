@@ -37,6 +37,15 @@ static void computeMachineStateGuardTreatment(void);
 void processMachineState(void);
 static void manageStateEntryAndStateAlways(unsigned short stateId);
 
+typedef enum
+{
+	SILENT  = 0,
+	LOW 	= 1,
+	MEDIUM 	= 2,
+	HIGH   	= 3,
+}BUZZER_LEVEL;
+
+BUZZER_LEVEL LevelBuzzer;
 
 /* STATE LEVEL FUNCTION */
 /**************************************************************************************/
@@ -154,7 +163,7 @@ void resetParamWordFromGUI(unsigned char parId);
 void Display_7S_Management();
 void Cover_Sensor_GetVal();
 unsigned char Bubble_Keyboard_GetVal(unsigned char Button);
-void Buzzer_Management();
+void Buzzer_Management(BUZZER_LEVEL level);
 void Heater_ON();
 void Set_Lamp(unsigned char level);
 void Reset_Lamp(unsigned char level);

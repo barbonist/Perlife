@@ -136,6 +136,7 @@ unsigned char	sbc_tx_data[256];				/* transmitted byte to sbc */
 
 /**/
 
+
 enum CommandId {
 	COMMAND_ID_NULL		= 0x00,
 	COMMAND_ID_ST      	= 0x20,

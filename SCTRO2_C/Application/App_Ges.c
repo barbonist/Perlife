@@ -2447,16 +2447,31 @@ unsigned char Bubble_Keyboard_GetVal(unsigned char Button)
 	return (button_Value);
 }
 
-void Buzzer_Management()
+void Buzzer_Management(BUZZER_LEVEL level)
 {
-//	BUZZER_LOW_C_SetVal(); 		//attiva il buzzer low
-//	BUZZER_LOW_C_ClrVal(); 		//disattiva il buzzer low
+	switch (level)
+	{
+		case SILENT:
+			BUZZER_LOW_C_ClrVal(); 		//disattiva il buzzer low
+			BUZZER_MEDIUM_C_ClrVal();	//disattiva il buzzer Medium
+			BUZZER_HIGH_C_ClrVal();		//disattiva il buzzer HIGH
+			break;
 
-//	BUZZER_MEDIUM_C_SetVal();	//attiva il buzzer Medium
-//	BUZZER_MEDIUM_C_ClrVal();	//disattiva il buzzer Medium
+		case LOW:
+			BUZZER_LOW_C_SetVal(); 		//attiva il buzzer low
+			break;
 
-//	BUZZER_HIGH_C_SetVal();		//attiva il buzzer High
-//	BUZZER_HIGH_C_ClrVal();		//disattiva il buzzer Medium
+		case MEDIUM:
+			BUZZER_MEDIUM_C_SetVal();	//attiva il buzzer Medium
+			break;
+
+		case HIGH:
+			BUZZER_HIGH_C_SetVal();		//attiva il buzzer High
+			break;
+
+		default:
+			break;
+	}
 }
 
 void Heater_ON()
@@ -2471,20 +2486,20 @@ void Set_Lamp(unsigned char level)
 {
 	switch (level)
 	{
-	case LAMP_LEVEL_LOW:
-		LAMP_LOW_SetVal();
-		break;
+		case LAMP_LEVEL_LOW:
+			LAMP_LOW_SetVal();
+			break;
 
-	case LAMP_LEVEL_MEDIUM:
-		LAMP_MEDIUM_SetVal();
-		break;
+		case LAMP_LEVEL_MEDIUM:
+			LAMP_MEDIUM_SetVal();
+			break;
 
-	case LAMP_LEVEL_HIGH:
-		LAMP_HIGH_SetVal();
-		break;
+		case LAMP_LEVEL_HIGH:
+			LAMP_HIGH_SetVal();
+			break;
 
-	default:
-		break;
+		default:
+			break;
 	}
 }
 
