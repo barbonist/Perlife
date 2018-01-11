@@ -12,11 +12,7 @@
 #include "Peltier_Module.h"
 
 #include "Pins1.h"
-#include "Bit1.h"
-#include "Bit2.h"
-#include "BitIoLdd1.h"
 
-#include "BitIoLdd2.h"
 #include "MODBUS_COMM.h"
 #include "ASerialLdd1.h"
 
@@ -1501,9 +1497,7 @@ void alwaysPumpPressLoop(unsigned char pmpId, unsigned char *PidFirstTime){
 
 void manageParentEntry(void)
 {
-	#ifdef DEBUG_ENABLE
-	Bit1_NegVal();
-	#endif
+
 
 	// (FM) qui posso far partire il T1 test e l'inizializzazione della comm
 	// TODO
@@ -1511,13 +1505,11 @@ void manageParentEntry(void)
 
 void manageParentEntryAlways(void)
 {
-	#ifdef DEBUG_ENABLE
+
 	static int index3 = 0;
 	index3++;
 
-	if(index3%14000 == 0)
-		Bit1_NegVal();
-	#endif
+
 
 	// TODO
 	// (FM) qui posso gestire il T1 test e l'inizializzazione della comm ed alla fine
@@ -1539,9 +1531,7 @@ void manageChildNull(void)
 
 void manageChildEntry(void)
 {
-	#ifdef DEBUG_ENABLE
-	Bit1_NegVal();
-	#endif
+
 }
 
 void manageChildEntryAlways(void)
@@ -1549,9 +1539,6 @@ void manageChildEntryAlways(void)
 	#ifdef DEBUG_ENABLE
 	static int index2 = 0;
 	index2++;
-
-	if(index2%12000 == 0)
-		Bit2_NegVal();
 	#endif
 }
 
@@ -1891,9 +1878,6 @@ void processMachineState(void)
 			#ifdef DEBUG_ENABLE
 			static int index = 0;
 			index++;
-
-			if(index%32000 == 0)
-				Bit1_NegVal();
 			#endif
 
 			break;

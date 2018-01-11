@@ -53,10 +53,6 @@
 #include "BitIoLdd13.h"
 #include "PC_DEBUG_COMM.h"
 #include "ASerialLdd2.h"
-#include "Bit3.h"
-#include "BitIoLdd1.h"
-#include "Bit4.h"
-#include "BitIoLdd2.h"
 #include "AD1.h"
 #include "AdcLdd1.h"
 #include "VOLTAGE_B_CHK.h"
@@ -100,10 +96,13 @@
 #include "AIR_SENSOR.h"
 #include "BitsIoLdd1.h"
 #include "AIR_T_1.h"
+
 #include "BitIoLdd38.h"
 #include "AIR_T_2.h"
+
 #include "BitIoLdd39.h"
 #include "AIR_T_3.h"
+
 #include "BitIoLdd40.h"
 #include "COMP_PWM.h"
 #include "BitIoLdd41.h"
@@ -142,10 +141,6 @@
 #include "BitIoLdd18.h"
 #include "BUBBLE_KEYBOARD_BUTTON4.h"
 #include "BitIoLdd19.h"
-#include "Bit1.h"
-#include "BitIoLdd20.h"
-#include "Bit2.h"
-#include "BitIoLdd21.h"
 /* Including shared modules, which are used for whole project */
 #include "PE_Types.h"
 #include "PE_Error.h"
@@ -265,8 +260,6 @@ int main(void)
 
   SBC_COMM_Enable();
     /**/
-  Bit3_SetVal(); /* enable motore */
-  Bit4_SetVal();
 
   static int index = 0;
   //ptrMsgSbcRx = &msg_sbc_rx[0];

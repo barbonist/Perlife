@@ -965,7 +965,7 @@ void Check_Actuator_Status (char slaveAddr,
 							int readAddrStart,
 							int numberOfAddress)
 {
-	int snd;
+	word snd;
 
 	_funcRetValPtr = ModBusReadRegisterReq(slaveAddr,
 										   funcCode,
