@@ -9,16 +9,19 @@
 #include "Global.h"
 #include "Flowsens.h"
 
-
+// FM questa lista devo costruirla mettendo prima i PHYSIC_TRUE e poi i PHYSIC_FALSE,
+// ognuno deve poi essere ordinato in base alla priorita' ???
 struct alarm alarmList[] =
 {
 		//{CODE_ALARM0, PHYSIC_TRUE, TYPE_ALARM_CONTROL, PRIORITY_LOW, OVRD_ENABLE, SILENCE_ALLOWED},
-		{CODE_ALARM_PRESS_ART_HIGH, PHYSIC_TRUE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL, PRIORITY_HIGH, 2000, 2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull}, 		/* 0 */
-		{CODE_ALARM_PRESS_ART_LOW, PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL, PRIORITY_HIGH, 2000, 2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull}, 		/* 1 */
-		{CODE_ALARM_AIR_PRES_ART, PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL, PRIORITY_HIGH, 1000, 2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_ALLOWED, &alarmManageNull}, 				/* 2 */
-		{CODE_ALARM_TEMP_ART_HIGH, PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_PERF_PUMP, PRIORITY_HIGH, 5000, 2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull}, 	/* 3 */
-		{CODE_ALARM_PRESS_ADS_FILTER_HIGH, PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL, PRIORITY_HIGH, 2000, 2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull},	/* 4 */
-		{}																																																						/* 5 */
+		{CODE_ALARM_PRESS_ART_HIGH,        PHYSIC_TRUE,  ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL,       PRIORITY_HIGH, 2000, 2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull}, 		/* 0 */
+		{CODE_ALARM_PRESS_ART_LOW,         PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL,       PRIORITY_HIGH, 2000, 2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull}, 		/* 1 */
+		{CODE_ALARM_AIR_PRES_ART,          PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL,       PRIORITY_HIGH, 1000, 2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_ALLOWED,     &alarmManageNull}, 		/* 2 */
+		{CODE_ALARM_TEMP_ART_HIGH,         PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_PERF_PUMP, PRIORITY_HIGH, 5000, 2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull}, 	    /* 3 */
+		{CODE_ALARM_PRESS_ADS_FILTER_HIGH, PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL,       PRIORITY_HIGH, 2000, 2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull},	    /* 4 */
+		{CODE_ALARM_MODBUS_ACTUATOR_SEND,  PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_WAIT_CONFIRM,   PRIORITY_LOW,     0,    0, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull},	    /* 5 */
+
+		{}																																																						            /* 6 */
 
 };
 
@@ -41,19 +44,89 @@ void alarmEngineAlways(void){
 	{
 		if((alarmList[i].physic == PHYSIC_TRUE) && (alarmList[i].active != ACTIVE_TRUE))
 		{
-			alarmList[i].prySafetyActionFunc();
 			ptrAlarmCurrent = &alarmList[i];
+			alarmList[i].prySafetyActionFunc();
+
+			// FM forse qui devo interrompere perche' ho trovato una condizione di allarme da attivare
+			// e devo gestirla prima di andare a vedere le altre
+			break;
 		}
 		else if((alarmList[i].active == ACTIVE_TRUE) && (alarmList[i].physic == PHYSIC_FALSE))
 		{
-			alarmList[i].prySafetyActionFunc();
 			ptrAlarmCurrent = &alarmList[i];
+			alarmList[i].prySafetyActionFunc();
+
+			// FM forse qui devo interrompere perche' ho trovato una condizione di allarme da disattivare
+			// e devo gestirla prima di andare a vedere le altre
+			break;
 		}
 	}
 }
 
+/*
+int AlarmActiveFlag = 0;
+void alarmEngineAlways(void){
+	static StartAlmArrIdx = 0; // posizione dell'allarme corrente e posizione di partenza per ogni scansione dell'array di strutture
+	static int AlmState = 0;
+	int i;
+
+	//verifica physic pressioni
+	manageAlarmPhysicPressSens();
+
+	//verifica physic flow sensor
+	manageAlarmPhysicUFlowSens();
+
+	//verifica physic ir temp sens
+	manageAlarmPhysicTempSens();
+
+	//for(int i=0; i<ALARM_ACTIVE_IN_STRUCT; i++)
+	for(i=StartAlmArrIdx; i<ALARM_ACTIVE_IN_STRUCT; i++)
+	{
+		if((alarmList[i].physic == PHYSIC_TRUE) && (alarmList[i].active != ACTIVE_TRUE))
+		{
+			ptrAlarmCurrent = &alarmList[i];
+			alarmList[i].prySafetyActionFunc();
+
+			// FM forse qui devo interrompere perche' ho trovato una condizione di allarme da attivare
+			// e devo gestirla prima di andare a vedere le altre
+			StartAlmArrIdx = i;
+			AlarmActiveFlag = 1;
+			AlmState = 1;
+			break;
+		}
+		else if((alarmList[i].active == ACTIVE_TRUE) && (alarmList[i].physic == PHYSIC_FALSE))
+		{
+			ptrAlarmCurrent = &alarmList[i];
+			alarmList[i].prySafetyActionFunc();
+
+			// FM forse qui devo interrompere perche' ho trovato una condizione di allarme da disattivare
+			// e devo gestirla prima di andare a vedere le altre
+			break;
+		}
+	}
+
+	switch (AlmState)
+	{
+		case 0:
+			if(i == ALARM_ACTIVE_IN_STRUCT)
+				StartAlmArrIdx = 0;
+			break;
+		case 1:
+			if(!AlarmActiveFlag)
+			{
+				AlmState = 0;
+				StartAlmArrIdx++;
+				if(StartAlmArrIdx == ALARM_ACTIVE_IN_STRUCT)
+					StartAlmArrIdx = 0;
+			}
+			break;
+	}
+}
+*/
+
 void manageAlarmPhysicPressSens(void){
-	if(sensor_PRx[0].prSensValue > 80)
+	//if(sensor_PRx[0].prSensValue > 80)
+	if(PR_ART_mmHg > 80)
 		{
 			alarmList[0].physic = PHYSIC_TRUE;
 		}
@@ -96,6 +169,43 @@ void manageAlarmPhysicUFlowSens(void){
 	}
 }
 
+// Imposto un allarme non fisico da inviare ad SBC
+void SetNonPhysicalAlm( int AlarmCode)
+{
+	switch (AlarmCode)
+	{
+		case CODE_ALARM_MODBUS_ACTUATOR_SEND:
+			// faccio partire un allarme perche' ho superato il numero delle retry nella scrittura su modbus
+			//alarmList[5].active = ACTIVE_TRUE;
+			alarmList[5].physic = PHYSIC_TRUE;  // uso questo parametro per far partire l'allarme
+			break;
+	}
+}
+
+// Ritorna 1 se e' un allarme non gestito tramite le tabelle child
+int IsNonPhysicalAlm(int AlarmCode)
+{
+	int NonPhysAlm = 0;
+	if(AlarmCode == CODE_ALARM_MODBUS_ACTUATOR_SEND)
+		NonPhysAlm = 1;
+	return NonPhysAlm;
+}
+
+// Deve essere chiamata per togliere gli allarmi attivati tramite la SetNonPhysicalAlm
+// Potrebbe essere chiamata automaticamente dopo un certo tempo che l'allarme e' stato inviato. se e' un
+// allarme che non implica alcuna azione sul sistema (tipo arresto pompe)
+void ClearNonPhysicalAlm( int AlarmCode)
+{
+	switch (AlarmCode)
+	{
+		case CODE_ALARM_MODBUS_ACTUATOR_SEND:
+			//alarmList[5].active = ACTIVE_TRUE;
+			alarmList[5].physic = PHYSIC_FALSE;  // uso questo parametro per terminare l'allarme
+			break;
+	}
+}
+
+
 void alarmManageNull(void)
 {
 	static unsigned char dummy = 0;
@@ -106,18 +216,33 @@ void alarmManageNull(void)
 	elapsedExitTime = elapsedExitTime + 50;
 	if((ptrAlarmCurrent->active != ACTIVE_TRUE) && (elapsedEntryTime > ptrAlarmCurrent->entryTime))
 	{
+		// entro nella gestione di un allarme che ha bisogno di azioni sugli attuatori
 		elapsedEntryTime = 0;
 		elapsedExitTime = 0;
 		ptrAlarmCurrent->active = ACTIVE_TRUE;
 		currentGuard[GUARD_ALARM_ACTIVE].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
 
+		// FM ora AlarmCurrent contiene l'allarme attivo corrente che sara' inviato ad SBC
+		alarmCurrent = *ptrAlarmCurrent;
+		if(IsNonPhysicalAlm((int)alarmCurrent.code))
+		{
+			// e' solo una segnalazione, l'allarme non deve essere gestito tramite le tabelle child
+			currentGuard[GUARD_ALARM_ACTIVE].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
+		}
+
 		manageAlarmChildGuard(ptrAlarmCurrent);
 	}
-	else if((ptrAlarmCurrent->active == ACTIVE_TRUE) && (elapsedExitTime > ptrAlarmCurrent->exitTime)){
+	else if((ptrAlarmCurrent->active == ACTIVE_TRUE) && (elapsedExitTime > ptrAlarmCurrent->exitTime))
+	{
+		// esco dalla gestione di un allarme che ha bisogno di azioni sugli attuatori
 		elapsedEntryTime = 0;
 		elapsedExitTime = 0;
 		ptrAlarmCurrent->active = ACTIVE_FALSE;
 		currentGuard[GUARD_ALARM_ACTIVE].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
+
+		// FM l'allarme e' stato disattivato perche' non sono piu'
+		// verificate le condizioni fisiche che lo hanno generato
+		memset(&alarmCurrent, 0, sizeof(struct alarm));
 
 		manageAlarmChildGuard(ptrAlarmCurrent);
 	}
@@ -175,8 +300,26 @@ void manageAlarmChildGuard(struct alarm * ptrAlarm){
 			currentGuard[GUARD_ALARM_STOP_PELTIER].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
 		break;
 
+	case SECURITY_WAIT_CONFIRM:
+		if(myAlarmPointer->active == ACTIVE_TRUE)
+			currentGuard[GUARD_ALARM_WAIT_CONFIRM].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+		else
+			currentGuard[GUARD_ALARM_WAIT_CONFIRM].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
+		break;
+
 	default:
 		break;
 	}
 
+}
+
+// ritorna il numero di intervalli di 50 msec trascorsi dal valore last
+int msTick_elapsed( int last )
+{
+	int elapsed = timerCounterModBus;
+	if ( elapsed >= last )
+		elapsed -= last;
+	else
+		elapsed += (0xFFFFFFFFUL - last + 1);
+	return elapsed;
 }

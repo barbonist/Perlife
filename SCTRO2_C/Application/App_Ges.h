@@ -125,7 +125,7 @@ void manageParentTreatAlarmAlways(void);
 
 void setPumpPressLoop(unsigned char pmpId, unsigned char valOnOff);
 unsigned char getPumpPressLoop(unsigned char pmpId);
-void alwaysPumpPressLoop(unsigned char pmpId);
+void alwaysPumpPressLoop(unsigned char pmpId, unsigned char *PidFirstTime);
 
 void manageParentEntry(void);
 void manageParentEntryAlways(void);

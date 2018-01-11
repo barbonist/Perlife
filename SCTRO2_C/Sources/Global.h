@@ -43,17 +43,17 @@ char    iFlag_modbusDataStorage;
 #define DEBUG_PUMP				0x02
 #define DEBUG_CENTRIF_PUMP		0x03
 #define DEBUG_PELTIER			0x04
-#define DEBUG_COMM_SBC			0x05  //alternativa a DEBUG_TREATMENT
+//#define DEBUG_COMM_SBC			0x05  //alternativa a DEBUG_TREATMENT
 #define DEBUG_MACHINE_STATE		0x06
 #define DEBUG_CONTROL			0xA5
 #define DEBUG_PROTECTION		0x5A
 #define DEBUG_LOG_PC			0x01
-//#define DEBUG_TREATMENT			0xA5 //alternativa a DEBUG_COMM_SBC
+#define DEBUG_TREATMENT			0xA5 //alternativa a DEBUG_COMM_SBC
 //#define DEBUG_I2C_TEMP_SENS		0x01
 /*#define DEBUG_FLOW_SENS			0x00*/ /*0x01*/
 /* DEBUG */
 
-#define STR_DBG_LENGHT				40
+#define STR_DBG_LENGHT				100
 
 #define	IFLAG_PC_RX					0x01 /* new data on rx 232 pc */
 #define IFLAG_PC_TX					0x01 /* new data to rx 232 pc */
@@ -97,7 +97,7 @@ char    iFlag_modbusDataStorage;
 #define IFLAG_IDLE					0x00
 #define IFLAG_COMMAND_SENT			0x01
 #define IFLAG_COMMAND_RECEIVED		0x02
-#define TOT_NUMBER_OF_ACTAUTOR  	0x09 //gli attuatori sono 7 ma ho un offset di due per gli indirtizzi (il primo attuatore ha indirizzo 0x02
+#define LAST_ACTUATOR  				0x09 //gli attuatori sono 7 ma ho un offset di due per gli indirizzi (il primo attuatore ha indirizzo 0x02, l'ultimo ha indirizzo 0x08
 #define FIRST_ACTUATOR				0x02
 #define LAST_PUMP					0x05
 #define TOTAL_ACTUATOR				7
@@ -539,7 +539,7 @@ enum MachineStateGuardId {
 	/**/
 
 
-
+	GUARD_ALARM_WAIT_CONFIRM,  // aspetto una conferma dall'operatore per rimuovere l'allarme non dovuto a cause fisiche
 	GUARD_FATAL_ERROR,
 	GUARD_END_NUMBER
 };
@@ -866,7 +866,7 @@ struct ultrsndFlowSens{
 #define BYTE_COUNT_GET_VAL_CODE 			0x17 		//numero di byte che mi aspetto in ricezione col comando di GET_VAL_CODE customizzato con 3 byte di richesta 0x82 -- 0x88 -- 0x8B
 float buffer_flow_value [TOT_UF_SENSOR][SAMPLE];
 
-struct ultrsndFlowSens sensor_UFLOW[12];
+struct ultrsndFlowSens sensor_UFLOW[2];
 struct ultrsndFlowSens * ptrCurrent_UFLOW; /* puntatore a struttura corrente - sensore attualmente interrogato */
 struct ultrsndFlowSens * ptrMsg_UFLOW; 	   /* puntatore utilizzato per spedire il messaggio */
 /************************************************************************/
@@ -877,8 +877,12 @@ struct ultrsndFlowSens * ptrMsg_UFLOW; 	   /* puntatore utilizzato per spedire i
 /* 						PULSANTI GUI 									*/
 /************************************************************************/
 #define GUI_BUTTON_NULL			0x00
-#define GUI_BUTTON_PRESSED		0x01
-#define GUI_BUTTON_RELEASED		0x00
+//#define GUI_BUTTON_PRESSED		0x01
+//#define GUI_BUTTON_RELEASED		0x00
+// (FM) ho scambiato gli eventi perche' ora si devono prendere in considerazione solo gli eventi
+// di release
+#define GUI_BUTTON_PRESSED		0x00
+#define GUI_BUTTON_RELEASED		0x01
 
 enum buttonGUIEnum{
 	BUTTON_KIDNEY = 0xA1,

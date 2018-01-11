@@ -90,7 +90,9 @@ void manageChildPrimAlarmStopPerfAlways(void)
 	if(pumpPerist[0].dataReady == DATA_READY_TRUE)
 	{
 		pumpPerist[0].dataReady = DATA_READY_FALSE;
-		speed = ((BYTES_TO_WORD_SIGN(msgToRecvFrame3[3], msgToRecvFrame3[4]))/100)*(timerCopy);
+		//speed = ((BYTES_TO_WORD_SIGN(msgToRecvFrame3[3], msgToRecvFrame3[4]))/100)*(timerCopy);
+		// la velocita' ora posso leggerla direttamente dall'array di registry modbus
+		speed = modbusData[pumpPerist[0].pmpMySlaveAddress-2][17];
 	}
 }
 
@@ -128,7 +130,9 @@ void manageChildPrimAlarmStopPurifAlways(void)
 	if(pumpPerist[1].dataReady == DATA_READY_TRUE)
 	{
 		pumpPerist[1].dataReady = DATA_READY_FALSE;
-		speed = ((BYTES_TO_WORD_SIGN(msgToRecvFrame3[3], msgToRecvFrame3[4]))/100)*(timerCopy);
+		//speed = ((BYTES_TO_WORD_SIGN(msgToRecvFrame3[3], msgToRecvFrame3[4]))/100)*(timerCopy);
+		// la velocita' ora posso leggerla direttamente dall'array di registry modbus
+		speed = modbusData[pumpPerist[1].pmpMySlaveAddress-2][17];
 	}
 }
 
@@ -168,7 +172,9 @@ void manageChildPrimAlarmStopAllPumpAlways(void)
 	if(pumpPerist[0].dataReady == DATA_READY_TRUE)
 	{
 		pumpPerist[0].dataReady = DATA_READY_FALSE;
-		speed = ((BYTES_TO_WORD_SIGN(msgToRecvFrame3[3], msgToRecvFrame3[4]))/100)*(timerCopy);
+		//speed = ((BYTES_TO_WORD_SIGN(msgToRecvFrame3[3], msgToRecvFrame3[4]))/100)*(timerCopy);
+		// la velocita' ora posso leggerla direttamente dall'array di registry modbus
+		speed = modbusData[pumpPerist[0].pmpMySlaveAddress-2][17];
 	}
 }
 
@@ -231,8 +237,9 @@ void manageChildPrimAlarmStopAllActAlways(void)
 
 	if(pumpPerist[0].dataReady == DATA_READY_TRUE)
 	{
-		speed = ((BYTES_TO_WORD_SIGN(msgToRecvFrame3[3], msgToRecvFrame3[4]))/100)*(timerCopy);
-
+		//speed = ((BYTES_TO_WORD_SIGN(msgToRecvFrame3[3], msgToRecvFrame3[4]))/100)*(timerCopy);
+		// la velocita' ora posso leggerla direttamente dall'array di registry modbus
+		speed = modbusData[pumpPerist[0].pmpMySlaveAddress-2][17];
 		pumpPerist[0].dataReady = DATA_READY_FALSE;
 	}
 }
@@ -315,7 +322,9 @@ void manageChildTreatAlm1StopPerfAlways(void)
 	if(pumpPerist[0].dataReady == DATA_READY_TRUE)
 	{
 		pumpPerist[0].dataReady = DATA_READY_FALSE;
-		speed = ((BYTES_TO_WORD_SIGN(msgToRecvFrame3[3], msgToRecvFrame3[4]))/100)*(timerCopy);
+		//speed = ((BYTES_TO_WORD_SIGN(msgToRecvFrame3[3], msgToRecvFrame3[4]))/100)*(timerCopy);
+		// la velocita' ora posso leggerla direttamente dall'array di registry modbus
+		speed = modbusData[pumpPerist[0].pmpMySlaveAddress-2][17];
 	}
 }
 
@@ -353,7 +362,9 @@ void manageChildTreatAlm1StopPurifAlways(void)
 	if(pumpPerist[1].dataReady == DATA_READY_TRUE)
 	{
 		pumpPerist[1].dataReady = DATA_READY_FALSE;
-		speed = ((BYTES_TO_WORD_SIGN(msgToRecvFrame3[3], msgToRecvFrame3[4]))/100)*(timerCopy);
+		//speed = ((BYTES_TO_WORD_SIGN(msgToRecvFrame3[3], msgToRecvFrame3[4]))/100)*(timerCopy);
+		// la velocita' ora posso leggerla direttamente dall'array di registry modbus
+		speed = modbusData[pumpPerist[1].pmpMySlaveAddress-2][17];
 	}
 }
 
@@ -393,7 +404,9 @@ void manageChildTreatAlm1StopAllPumpAlways(void)
 	if(pumpPerist[0].dataReady == DATA_READY_TRUE)
 	{
 		pumpPerist[0].dataReady = DATA_READY_FALSE;
-		speed = ((BYTES_TO_WORD_SIGN(msgToRecvFrame3[3], msgToRecvFrame3[4]))/100)*(timerCopy);
+		//speed = ((BYTES_TO_WORD_SIGN(msgToRecvFrame3[3], msgToRecvFrame3[4]))/100)*(timerCopy);
+		// la velocita' ora posso leggerla direttamente dall'array di registry modbus
+		speed = modbusData[pumpPerist[0].pmpMySlaveAddress-2][17];
 	}
 }
 
@@ -456,8 +469,10 @@ void manageChildTreatAlm1StopAllActAlways(void)
 
 	if(pumpPerist[0].dataReady == DATA_READY_TRUE)
 	{
-		speed = ((BYTES_TO_WORD_SIGN(msgToRecvFrame3[3], msgToRecvFrame3[4]))/100)*(timerCopy);
+		//speed = ((BYTES_TO_WORD_SIGN(msgToRecvFrame3[3], msgToRecvFrame3[4]))/100)*(timerCopy);
 		pumpPerist[0].dataReady = DATA_READY_FALSE;
+		// la velocita' ora posso leggerla direttamente dall'array di registry modbus
+		speed = modbusData[pumpPerist[0].pmpMySlaveAddress-2][17];
 	}
 }
 

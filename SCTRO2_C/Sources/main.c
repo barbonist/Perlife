@@ -167,8 +167,14 @@
 #include "Temp_sensIR.h"
 #include "Comm_Sbc.h"
 
-/*lint -save  -e970 Disable MISRA rule (6.3) checking. */
 
+ extern unsigned char Released1;
+ extern unsigned char Released2;
+
+/*lint -save  -e970 Disable MISRA rule (6.3) checking. */
+void TestPump(unsigned char Adr); //only for test
+void TestPinch(void);
+void GenerateSBCComm(void);
 
 int main(void)
 /*lint -restore Enable MISRA rule (6.3) checking. */
@@ -255,6 +261,7 @@ int main(void)
   modBusPmpInit();
   modBusPinchInit();
   modbusDataInit();
+
 
   SBC_COMM_Enable();
     /**/
@@ -344,6 +351,22 @@ int main(void)
   slvAddr = FIRST_ACTUATOR;		//rimetto come indirizzo da leggere il primo
   timerCounterADC = 0;
 
+
+  // al reset metto tutti irami delle pich chiusi
+  setPinchPosValue (BOTTOM_PINCH_ID, MODBUS_PINCH_POS_CLOSED);
+  while (timerCounterCheckModBus < 1);
+  timerCounterCheckModBus = 0;
+  setPinchPosValue (LEFT_PINCH_ID, MODBUS_PINCH_POS_CLOSED);
+  while (timerCounterCheckModBus < 1);
+   timerCounterCheckModBus = 0;
+  setPinchPosValue (RIGHT_PINCH_ID, MODBUS_PINCH_POS_CLOSED);
+  while (timerCounterCheckModBus < 1);
+   timerCounterCheckModBus = 0;
+
+
+//   setPinchPositionHighLevel(BOTTOM_PINCH_ID, (int)MODBUS_PINCH_POS_CLOSED);
+//   setPinchPositionHighLevel(LEFT_PINCH_ID, (int)MODBUS_PINCH_POS_CLOSED);
+//   setPinchPositionHighLevel(RIGHT_PINCH_ID, (int)MODBUS_PINCH_POS_CLOSED);
 
   /**********MAIN LOOP START************/
   for(;;) {
@@ -636,9 +659,14 @@ int main(void)
 	        	processMachineState();
 
 	        	alarmEngineAlways();
-
-	        	//alwaysModBusActuator();
+		        GenerateSBCComm();
 	         }
+
+	         if(ReadKey1()) // per debug con la tastiera a bolle
+	        	 Released1 = 1;
+	         if(ReadKey2()) // per debug con la tastiera a bolle
+	        	 Released2 = 1;
+
 	         /****MACHINE STATE UPDATE END****/
 
 	         /*******************************/
@@ -651,9 +679,20 @@ int main(void)
 //	         }
 	         Manage_UFlow_Sens();
 
-	         Buzzer_Management(LevelBuzzer);
+	         /*
+	         TestPump(2); // 2..5 usata per provare le pompe con la tastiera a bolle
+	         if( (pumpPerist[0].reqState == REQ_STATE_OFF) && (pumpPerist[0].reqType == REQ_TYPE_IDLE) &&
+	             (pumpPerist[1].reqState == REQ_STATE_OFF) && (pumpPerist[1].reqType == REQ_TYPE_IDLE) &&
+				 (pumpPerist[2].reqState == REQ_STATE_OFF) && (pumpPerist[2].reqType == REQ_TYPE_IDLE) &&
+				 (pumpPerist[3].reqState == REQ_STATE_OFF) && (pumpPerist[3].reqType == REQ_TYPE_IDLE))
+	         {
+	        	 TestPinch();     // BOTTOM_PINCH_ID = 7, LEFT_PINCH_ID = 8, RIGHT_PINCH_ID = 9
+	         }
+	         */
+			Buzzer_Management(LevelBuzzer);
 
-	         if(timerCounterPeltier >= 2){
+			if(timerCounterPeltier >= 2)
+			{
 	        	 timerCounterPeltier = 0;
 
 	        	 if(peltierCell.readAlwaysEnable == 0)
@@ -687,21 +726,32 @@ int main(void)
 			 /*END funzioni per leggere i canali AD*/
 		 	 /*converte i valori ADC in mmHg dei sensori di pressione*/
 			 Coversion_From_ADC_To_mmHg_Pressure_Sensor();
+		     /*converte i valori ADC in volt per le tensioni*/
+		     Coversion_From_ADC_To_Voltage();
 
+		     /*faccio lo start della cionversione sui canali AD ogni 50 msec*/
+			 if (timerCounterADC >=1)
+			 {
 			 /*da valutare se sreve ancora o può essere sostituita dalla mie Manange_ADC0() e Manange_ADC1()*/
 	         alwaysAdcParam();
+				timerCounterADC = 0;
+				AD0_Start();
+				AD1_Start();
+			 }
+
 	         /********************************/
 	         /*				ADC				 */
 	         /********************************/
 
 	         /*********PUMP*********/
-	         /*la gestone del ModBus probabilmente sarà da rifare seguendo la scia di quanto fatto inn Debug*/
+	         /*la gestione del ModBus probabilmente sarà da rifare seguendo la scia di quanto fatto inn Debug*/
 	         if(timerCounterModBus != timerCounterModBusOld)
 	         {
 	        	 timerCounterModBusOld = timerCounterModBus;
-	        	 alwaysModBusActuator();
 	         }
 
+	         // il controllo sul time slot lo fa al suo interno
+        	 alwaysModBusActuator();
 	         Manage_and_Storage_ModBus_Actuator_Data();
 	         /*********PUMP*********/
 			 #endif
