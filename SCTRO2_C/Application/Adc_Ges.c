@@ -294,20 +294,20 @@ void 	alwaysAdcParam(void)
 
 	sensor_PRx[0].prSensAdcPtr = sensor_PRx[0].readAdctPtr();
 	sensor_PRx[0].prSensAdc = *sensor_PRx[0].prSensAdcPtr;
-	//sensor_PRx[0].prSensAdc = PR_ART_ADC;
-	sensor_PRx[0].prSensValue = sensor_PRx[0].prSensGain *
+	sensor_PRx[0].prSensValue = PR_ART_ADC;
+	/*sensor_PRx[0].prSensValue = sensor_PRx[0].prSensGain *
 								(((float)sensor_PRx[0].prSensAdc/65535)*1617 - sensor_PRx[0].prSensOffsetVal) +
-								sensor_PRx[0].prSensOffset;
+								sensor_PRx[0].prSensOffset;*/
 
 	sensor_PRx[0].prSensValueFilteredWA = meanWA(8, (sensor_PRx[0].prSensValue),0);
 
-	sensor_PRx[1].prSensAdcPtr = sensor_PRx[1].readAdctPtr();
+	/*sensor_PRx[1].prSensAdcPtr = sensor_PRx[1].readAdctPtr();
 	sensor_PRx[1].prSensAdc = *sensor_PRx[1].prSensAdcPtr;
 	sensor_PRx[1].prSensValue = sensor_PRx[1].prSensGain *
 								(((float)sensor_PRx[1].prSensAdc/65535)*1617 - sensor_PRx[1].prSensOffsetVal) +
 								sensor_PRx[1].prSensOffset;
 
-	sensor_PRx[1].prSensValueFilteredWA = meanWA(8, (sensor_PRx[1].prSensValue),1);
+	sensor_PRx[1].prSensValueFilteredWA = meanWA(8, (sensor_PRx[1].prSensValue),1);*/
 
 
 	//#ifdef DEBUG_LOG_PC

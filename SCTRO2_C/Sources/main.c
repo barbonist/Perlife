@@ -331,20 +331,34 @@ int main(void)
   /*prima di entrare nel loop infinito chiedo i dati di targa agli attuatori
    * devo ricevere i dati di tutte le pompe in massimo un secondo;
    * quando avrò tutti gli attuatori sarà da rimettere TOT_NUMBER_OF_ACTAUTOR al posto di 0x03*/
-  while (slvAddr <= 0x03 /*TOT_NUMBER_OF_ACTAUTOR*/ && timerCounterCheckModBus <= 20)
+  slvAddr = FIRST_ACTUATOR;
+
+  while (slvAddr <= LAST_ACTUATOR && timerCounterCheckModBus <= 20)
   {
 	  /*se ho ricevuto opp sono in IDLE quindi non ho ancora inviato il primo messaggio, invio il messaggio*/
 	  if (iFlag_actuatorCheck == IFLAG_COMMAND_RECEIVED || iFlag_actuatorCheck == IFLAG_IDLE)
 	  {
 		  iFlag_actuatorCheck = IFLAG_COMMAND_SENT;
-		  Check_Actuator_Status (slvAddr,funcCode,readAddrStartReadRevision,numberOfAddressReadRevision);
+
+		  /*L'indirizzo slvAddr = 6 non è usato*/
+		  if (slvAddr == 6)
+				slvAddr= 7;
+
+		/*chiamo la funzione col corretto number of address dipendentemente dall'attuatore (pump/pinch)*/
+		if (slvAddr <= LAST_PUMP)
+			/*funzione che mi legge lo stato delle pompe*/
+			Check_Actuator_Status (slvAddr,funcCode,readAddrStartReadRevision,numberOfAddressReadRevision);
+		else
+			/*funzione che mi legge lo stato delle pinch*/
+			Check_Actuator_Status (slvAddr,funcCode,readAddrStartReadRevision,numberOfAddressReadRevision);
 	  }
 	  /*Se ho ricevuto vado a salvarmi i dati nella matrice 'modbusData'*/
 	  if (iFlag_actuatorCheck == IFLAG_COMMAND_RECEIVED)
 	  {
 		  StorageModbusDataInit();
 		  /*dopo che ho memorizzato la risposta posso passare al prossimo attuatore*/
-		  slvAddr++;
+
+	        slvAddr++;
 	  }
   }
 
@@ -680,8 +694,8 @@ int main(void)
 //	         }
 	         Manage_UFlow_Sens();
 
-	         /*
-	         TestPump(2); // 2..5 usata per provare le pompe con la tastiera a bolle
+
+	         /*TestPump(4); // 2..5 usata per provare le pompe con la tastiera a bolle
 	         if( (pumpPerist[0].reqState == REQ_STATE_OFF) && (pumpPerist[0].reqType == REQ_TYPE_IDLE) &&
 	             (pumpPerist[1].reqState == REQ_STATE_OFF) && (pumpPerist[1].reqType == REQ_TYPE_IDLE) &&
 				 (pumpPerist[2].reqState == REQ_STATE_OFF) && (pumpPerist[2].reqType == REQ_TYPE_IDLE) &&

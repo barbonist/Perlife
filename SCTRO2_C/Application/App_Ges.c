@@ -870,7 +870,7 @@ void manageParentPrimingAlways(void){
 	{
 		setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 2000);
 		//setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 3000);
-		setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 10*parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FOW].value);
+		setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FOW].value);
 		setPinchPositionHighLevel(PNCHVLV1_ADDRESS, MODBUS_PINCH_RIGHT_OPEN);
 		setPinchPositionHighLevel(PNCHVLV3_ADDRESS, MODBUS_PINCH_RIGHT_OPEN);
 
@@ -889,7 +889,7 @@ void manageParentPrimingAlways(void){
 		releaseGUIButton(BUTTON_START_OXYGEN_PUMP);
 
 		//setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 3000);
-		setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 10*parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FOW].value);
+		setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FOW].value);
 	}
 	else if(buttonGUITreatment[BUTTON_STOP_ALL_PUMP].state == GUI_BUTTON_RELEASED)
 	{
@@ -944,7 +944,7 @@ void manageParentPrimingAlways(void){
 			{
 				setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 2000);
 				//setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 3000);
-				setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 10*parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FOW].value);
+				setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FOW].value);
 				setPinchPositionHighLevel(PNCHVLV1_ADDRESS, MODBUS_PINCH_RIGHT_OPEN);
 				setPinchPositionHighLevel(PNCHVLV3_ADDRESS, MODBUS_PINCH_RIGHT_OPEN);
 
@@ -963,7 +963,7 @@ void manageParentPrimingAlways(void){
 				releaseGUIButton(BUTTON_START_OXYGEN_PUMP);
 
 				//setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 3000);
-				setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 10*parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FOW].value);
+				setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FOW].value);
 			}
 			else if(buttonGUITreatment[BUTTON_STOP_ALL_PUMP].state == GUI_BUTTON_RELEASED)
 			{
@@ -1234,7 +1234,7 @@ void manageParentTreatAlways(void){
 		{
 			setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 2000); //pump 0: start value = 20 rpm than pressure loop
 			//setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 3000); //pump 1: start value = 30 rpm than open loop
-			setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 10*parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FOW].value);
+			setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FOW].value);
 			releaseGUIButton(BUTTON_START_PRIMING);
 
 			//if(iflag_perf == 0)
@@ -1259,7 +1259,7 @@ void manageParentTreatAlways(void){
 			releaseGUIButton(BUTTON_START_OXYGEN_PUMP);
 
 			//setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 3000); //pump 1: start value = 30 rpm than open loop
-			setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 10*parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FOW].value);
+			setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FOW].value);
 		}
 
 		if(
@@ -1338,7 +1338,7 @@ void manageParentTreatAlways(void){
 			{
 				setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 2000); //pump 0: start value = 20 rpm than pressure loop
 				//setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 3000); //pump 1: start value = 30 rpm than open loop
-				setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 10*parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FOW].value);
+				setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FOW].value);
 				releaseGUIButton(BUTTON_START_PRIMING);
 
 				//if(iflag_perf == 0)
@@ -1363,7 +1363,7 @@ void manageParentTreatAlways(void){
 				releaseGUIButton(BUTTON_START_OXYGEN_PUMP);
 
 				//setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 3000); //pump 1: start value = 30 rpm than open loop
-				setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 10*parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FOW].value);
+				setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FOW].value);
 			}
 
 			if(
@@ -1686,10 +1686,9 @@ static void computeMachineStateGuardPrimingPh2(void){
 /*  Controllo la fine del trattamento
 /*--------------------------------------------------------------------*/
 static void computeMachineStateGuardTreatment(void){
-	if(
-			(buttonGUITreatment[BUTTON_STOP_ALL_PUMP].state == GUI_BUTTON_RELEASED) &&
-			(buttonGUITreatment[BUTTON_CONFIRM].state == GUI_BUTTON_RELEASED)
-			)
+	if((buttonGUITreatment[BUTTON_STOP_ALL_PUMP].state == GUI_BUTTON_RELEASED) &&
+	   (buttonGUITreatment[BUTTON_CONFIRM].state == GUI_BUTTON_RELEASED)
+	   /*parameterWordSetFromGUI[PAR_SET_DESIRED_DURATION].value >= 0 TreatDur*/ )
 		{
 			// passo allo svuotamento del circuito
 			currentGuard[GUARD_ENABLE_DISPOSABLE_EMPTY].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
@@ -2058,8 +2057,17 @@ void processMachineState(void)
             /* (FM) SONO IN TRATTAMENTO A QUESTO PUNTO FUNZIONANO GLI ALLARMI E SONO IN ATTESA DELL'ATTIVAZIONE DI
                currentGuard[GUARD_ENABLE_DISPOSABLE_EMPTY].guardEntryValue (AVVERRA' QUANDO L'UTENTE PREMERA' LO STOP ALLE POMPE
                O SEMPLICEMENTE IL TASTO ENTER (VEDI FUNZIONE manageStateTreatKidney1Always).
-               QUANDO ARRIVERA', POTRO' TORNARE NELLO STATE_ENTRY INIZIALE (DA AGGIUNGERE).
-               TODO */
+               QUANDO ARRIVERA', POTRO' TORNARE NELLO STATE_ENTRY INIZIALE*/
+			if( currentGuard[GUARD_ENABLE_DISPOSABLE_EMPTY].guardValue == GUARD_VALUE_TRUE )
+			{
+				currentGuard[GUARD_ENABLE_DISPOSABLE_EMPTY].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
+				// TODOinrealta' dovrei andare nello stato 17 perche' dovrei fare lo svuotamento
+				ptrFutureState = &stateState[3];
+				/* compute future parent */
+				ptrFutureParent = ptrFutureState->ptrParent;
+				/* compute future child */
+				ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
+			}
 
 			/* execute function state level */
 			manageStateEntryAndStateAlways(18);
@@ -2792,10 +2800,10 @@ void DebugString()
 //							(int) pumpPerist[0].actualSpeed
 //				);
 	sprintf(stringPr, "\r %i; %i; %i; %i; %i;-%d;",
-							PR_ADS_FLT_mmHg,
-							PR_VEN_mmHg,
-							PR_ART_mmHg,
+							(int) (sensorIR_TM[0].tempSensValue*10)/*PR_ADS_FLT_mmHg*/,
+							(int) (sensorIR_TM[1].tempSensValue*10)/*PR_VEN_mmHg*/,
 							(int) (sensorIR_TM[2].tempSensValue*10),
+							PR_ART_mmHg,
 							(int) (sensor_PRx[0].prSensValueFilteredWA),
 							(int) pumpPerist[0].actualSpeed
 				);
@@ -2908,10 +2916,15 @@ void GenEvntParentPrim(void)
 		case PARENT_PRIMING_TREAT_KIDNEY_1_INIT:
 			if(Released2)
 			{
-				setGUIButton((unsigned char)BUTTON_CONFIRM);
-				setGUIButton((unsigned char)BUTTON_START_PRIMING);
-				Released2 = 0;
-				DebugStringStr("START POMPA");
+				if(ptrCurrentParent->action == ACTION_ALWAYS)
+				{
+					setGUIButton((unsigned char)BUTTON_CONFIRM);
+					setGUIButton((unsigned char)BUTTON_START_PRIMING);
+					parameterWordSetFromGUI[PAR_SET_PRESS_ART_TARGET].value = 20;
+					//parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FOW].value = 1000;
+					Released2 = 0;
+					DebugStringStr("START POMPA");
+				}
 			}
 			break;
 
@@ -2938,6 +2951,10 @@ void GenEvntParentTreat(void)
 //			{
 //				/* FM faccio partire la pompa */
 //			}
+			if(ptrCurrentParent->action == ACTION_ON_ENTRY)
+			{
+				DebugStringStr("STATE_TREATMENT_KIDNEY_1___");
+			}
 			break;
 
 		case PARENT_TREAT_KIDNEY_1_PUMP_ON:
@@ -3037,7 +3054,7 @@ void GenerateSBCComm(void)
 				// Qui se serve posso impostare subito il volume per uscire subito dal priming
 				parameterWordSetFromGUI[PAR_SET_PRIMING_VOL_PERFUSION].value = 1500;
 				parameterWordSetFromGUI[PAR_SET_PRESS_ART_TARGET].value = 20;
-				perfusionParam.priVolPerfArt = 1550;
+				perfusionParam.priVolPerfArt = 1300;
 				setGUIButton((unsigned char)BUTTON_CONFIRM);
 				DebugStringStr("STATE_TREATMENT_KIDNEY_1");
 				Released1 = 0;

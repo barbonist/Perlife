@@ -1014,7 +1014,11 @@ void Manage_and_Storage_ModBus_Actuator_Data(void)
      	iFlag_actuatorCheck = IFLAG_COMMAND_SENT;
 		timerCounterCheckModBus = 0;
 
-		/*chiamo la funzione col corretto number of address dipendentemente dall'attuatore (pump/pinch)*/
+		/*L'indirizzo slvAddr = 6 non è usato*/
+		if (slvAddr == 6)
+        	slvAddr= 7;
+
+        /*chiamo la funzione col corretto number of address dipendentemente dall'attuatore (pump/pinch)*/
 		if (slvAddr <= LAST_PUMP)
 			/*funzione che mi legge lo stato delle pompe*/
 			Check_Actuator_Status (slvAddr,funcCode,readAddrStart,numberOfAddressCheckPump);
@@ -1024,9 +1028,7 @@ void Manage_and_Storage_ModBus_Actuator_Data(void)
 
 	   /* se supero l'uiltimo attuatore, rifaccio il giro da capo*/
         /*incremento l'indirizzo per interrogare tutti gli attuatori*/
-        if (slvAddr == 3)
-        	slvAddr= 5;
-        else
+
         	slvAddr++;
 
         if (slvAddr > LAST_ACTUATOR)
@@ -1163,30 +1165,41 @@ void StorageModbusDataInit(void)
 		 * ma lo decremento di due in quanto pompa con
 		 * selettore '0' corrisponde a indirizzo '2'*/
 
-		modbusData[Address-2][0]  = Target;
-		modbusData[Address-2][16] = Average_Current;
 
-		modbusData[Address-2][26] = BL_Version;
-		modbusData[Address-2][27] = PCB_Code_H;
-		modbusData[Address-2][28] = PCB_Code_L;
-		modbusData[Address-2][29] = PCB_Code_REV;
-		modbusData[Address-2][30] = Serial_Number;
-		modbusData[Address-2][31] = FW_Version;
 
 		/*se ho l'indirizzo di una pompa memorizzo anche...*/
 		if (Address <= LAST_PUMP) //sono nel caso di una pompa
 		{
+			modbusData[Address-2][0]  = Target;
 			modbusData[Address-2][1]  = Go_To_Home_Position;
 			modbusData[Address-2][2]  = Acceleration;
 			modbusData[Address-2][3]  = Current_level;
 			modbusData[Address-2][4]  = Cruise_Speed;
 			modbusData[Address-2][5]  = Steps_Target;
+			modbusData[Address-2][16] = Average_Current;
 			modbusData[Address-2][17] = Pump_Speed_Status;
 			modbusData[Address-2][18] = Status;
+			modbusData[Address-2][26] = BL_Version;
+			modbusData[Address-2][27] = PCB_Code_H;
+			modbusData[Address-2][28] = PCB_Code_L;
+			modbusData[Address-2][29] = PCB_Code_REV;
+			modbusData[Address-2][30] = Serial_Number;
+			modbusData[Address-2][31] = FW_Version;
 
 		}
 		else //sono nel caso di uan pinch, lo Status è messo in un posto diverso
-			modbusData[Address-2][17]= Status;
+		{
+
+			modbusData[Address-3][0]  = Target;
+			modbusData[Address-3][16] = Average_Current;
+			modbusData[Address-3][17]= Status;
+			modbusData[Address-3][26] = BL_Version;
+			modbusData[Address-3][27] = PCB_Code_H;
+			modbusData[Address-3][28] = PCB_Code_L;
+			modbusData[Address-3][29] = PCB_Code_REV;
+			modbusData[Address-3][30] = Serial_Number;
+			modbusData[Address-3][31] = FW_Version;
+		}
 	}
 }
 /* Public function */

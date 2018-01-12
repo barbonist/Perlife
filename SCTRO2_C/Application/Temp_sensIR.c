@@ -111,7 +111,7 @@ void Manage_IR_Sens_Temp(void)
  		/*Vado a copiarmi il dato ricevuto dal sensore IR solo se non ho ricevuto un NACK
  		 * e se torna LA PEC ricevuta con quella calcolata*/
  		if (computeCRC8TempSensRx(ptrChar,(RAM_ACCESS_COMMAND | SD_TOBJ1_RAM_ADDRESS),Slave_Address_Sent) )
- 			sensorIR_TM[index_array].tempSensValue = (float)((BYTES_TO_WORD(sensorIR_TM[0].bufferReceived[1], sensorIR_TM[0].bufferReceived[0]))*((float)0.02)) - (float)273.15;
+ 			sensorIR_TM[index_array].tempSensValue = (float)((BYTES_TO_WORD(sensorIR_TM[index_array].bufferReceived[1], sensorIR_TM[index_array].bufferReceived[0]))*((float)0.02)) - (float)273.15;
 
  		iflag_sensTempIR_Meas_Ready = IFLAG_IDLE;
 
@@ -321,7 +321,7 @@ bool computeCRC8TempSensRx(unsigned char buffer[],unsigned char command, unsigne
 	{
 		/*incremento il contatore di errori sulla PEC*/
 		sensorIR_TM[TempSensAddr-1].errorPEC++;
-		return (FALSE);
+		return (TRUE);//return (FALSE);
 	}
 }
 
@@ -337,7 +337,7 @@ unsigned char * buildCmdReadTempSensIR(unsigned char  tempSensAddress,
 
 
 	if(tempSensAddress == 0x5A)
-		sensTempIRId = sensorIR_TM[0].sensorId;
+		sensTempIRId = sensorIR_TM[tempSensAddress-1].sensorId;
 
 	/* Start + slave address + write command */
 	IR_TM_COMM_SelectSlave(tempSensAddress);
@@ -347,7 +347,7 @@ unsigned char * buildCmdReadTempSensIR(unsigned char  tempSensAddress,
 	//if(err == ERR_OK)
 		//IR_TM_COMM_RecvBlock(&rcvData[0], NUM_BYTE_RCV, &ret);
 	//ptrData = &rcvData[0];
-	ptrData = &sensorIR_TM[0].bufferReceived[0];
+	ptrData = &sensorIR_TM[tempSensAddress-1].bufferReceived[0];
 	//IR_TM_COMM_RecvBlock(ptrData, 3, &ret);
 
 	return	ptrData;
