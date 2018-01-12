@@ -111,6 +111,8 @@
 #include "TI1.h"
 #include "TimerIntLdd1.h"
 #include "TU2.h"
+#include "System_Tick.h"
+#include "TimerIntLdd2.h"
 #include "D_7S_DP.h"
 #include "BitIoLdd22.h"
 #include "D_7S_G.h"
@@ -230,6 +232,7 @@ int main(void)
   timerCounterCheckModBus = 0;
   timerCounterCheckTempIRSens = 0;
   timerCounterLedBoard = 0;
+  Prescaler_Tick_Timer = 0;
 
   iFlag_actuatorCheck = IFLAG_IDLE;
   iFlag_modbusDataStorage = FALSE;

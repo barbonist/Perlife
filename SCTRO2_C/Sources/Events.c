@@ -991,50 +991,7 @@ void IR_TM_COMM_OnNACK(void)
 	ON_NACK_IR_TM = TRUE;
 }
 
-/*
-** ===================================================================
-**     Event       :  TU1_OnCounterRestart (module Events)
-**
-**     Component   :  TU1 [TimerUnit_LDD]
-*/
-/*!
-**     @brief
-**         Called if counter overflow/underflow or counter is
-**         reinitialized by modulo or compare register matching.
-**         OnCounterRestart event and Timer unit must be enabled. See
-**         [SetEventMask] and [GetEventMask] methods. This event is
-**         available only if a [Interrupt] is enabled.
-**     @param
-**         UserDataPtr     - Pointer to the user or
-**                           RTOS specific data. The pointer passed as
-**                           the parameter of Init method.
-*/
-/* ===================================================================*/
-void TU1_OnCounterRestart(LDD_TUserData *UserDataPtr)
-{
-  /* Write your code here ... */
-  /*interrupt usato per i timer che scatta ogni 50 ms*/
-  timerCounter = timerCounter + 1;
 
-  timerCounterADC = timerCounterADC + 1;
-
-  timerCounterPID = timerCounterPID + 1;
-
-  timerCounterMState = timerCounterMState + 1;
-
-  timerCounterModBus = timerCounterModBus + 1;
-
-  timerCounterUFlowSensor = timerCounterUFlowSensor + 1;
-
-  timerCounterPeltier = timerCounterPeltier + 1;
-
-  timerCounterCheckModBus++;
-
-  timerCounterCheckTempIRSens++;
-
-  timerCounterLedBoard++;
-
-}
 
 /*
 ** ===================================================================
@@ -1192,6 +1149,53 @@ void IR_TM_COMM_OnArbitLost(void)
 {
   /* Write your code here ... */
 	int a =0;
+}
+
+/*
+** ===================================================================
+**     Event       :  System_Tick_OnInterrupt (module Events)
+**
+**     Component   :  System_Tick [TimerInt]
+**     Description :
+**         When a timer interrupt occurs this event is called (only
+**         when the component is enabled - <Enable> and the events are
+**         enabled - <EnableEvent>). This event is enabled only if a
+**         <interrupt service/event> is enabled.
+**     Parameters  : None
+**     Returns     : Nothing
+** ===================================================================
+*/
+void System_Tick_OnInterrupt(void)
+{
+  /* Write your code here ... */
+	Prescaler_Tick_Timer++;
+	LAMP_LOW_NegVal();
+
+	if (Prescaler_Tick_Timer >=5)
+	{
+	  Prescaler_Tick_Timer = 0;
+	  LAMP_MEDIUM_NegVal();
+	  /*interrupt usato per i timer che scatta ogni 50 ms*/
+	  timerCounter = timerCounter + 1;
+
+	  timerCounterADC = timerCounterADC + 1;
+
+	  timerCounterPID = timerCounterPID + 1;
+
+	  timerCounterMState = timerCounterMState + 1;
+
+	  timerCounterModBus = timerCounterModBus + 1;
+
+	  timerCounterUFlowSensor = timerCounterUFlowSensor + 1;
+
+	  timerCounterPeltier = timerCounterPeltier + 1;
+
+	  timerCounterCheckModBus++;
+
+	  timerCounterCheckTempIRSens++;
+
+	  timerCounterLedBoard++;
+	}
 }
 
 /* END Events */

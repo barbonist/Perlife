@@ -169,10 +169,12 @@
       <PathName>C:\PROGETTI\0353000_Perlife_FW\SCTRO2_C\Generated_Code\Pins1.c</PathName>
       <PathName>C:\PROGETTI\0353000_Perlife_FW\SCTRO2_C\Generated_Code\RTS_MOTOR.c</PathName>
       <PathName>C:\PROGETTI\0353000_Perlife_FW\SCTRO2_C\Generated_Code\SBC_COMM.c</PathName>
+      <PathName>C:\PROGETTI\0353000_Perlife_FW\SCTRO2_C\Generated_Code\System_Tick.c</PathName>
       <PathName>C:\PROGETTI\0353000_Perlife_FW\SCTRO2_C\Generated_Code\TI1.c</PathName>
       <PathName>C:\PROGETTI\0353000_Perlife_FW\SCTRO2_C\Generated_Code\TU1.c</PathName>
       <PathName>C:\PROGETTI\0353000_Perlife_FW\SCTRO2_C\Generated_Code\TU2.c</PathName>
       <PathName>C:\PROGETTI\0353000_Perlife_FW\SCTRO2_C\Generated_Code\TimerIntLdd1.c</PathName>
+      <PathName>C:\PROGETTI\0353000_Perlife_FW\SCTRO2_C\Generated_Code\TimerIntLdd2.c</PathName>
       <PathName>C:\PROGETTI\0353000_Perlife_FW\SCTRO2_C\Generated_Code\VOLTAGE_B_CHK.c</PathName>
       <PathName>C:\PROGETTI\0353000_Perlife_FW\SCTRO2_C\Generated_Code\VOLTAGE_M_CHK.c</PathName>
       <PathName>C:\PROGETTI\0353000_Perlife_FW\SCTRO2_C\Project_Settings\Startup_Code\startup.c</PathName>
@@ -304,10 +306,12 @@
       <PathName>C:\PROGETTI\0353000_Perlife_FW\SCTRO2_C\Generated_Code\Pins1.h</PathName>
       <PathName>C:\PROGETTI\0353000_Perlife_FW\SCTRO2_C\Generated_Code\RTS_MOTOR.h</PathName>
       <PathName>C:\PROGETTI\0353000_Perlife_FW\SCTRO2_C\Generated_Code\SBC_COMM.h</PathName>
+      <PathName>C:\PROGETTI\0353000_Perlife_FW\SCTRO2_C\Generated_Code\System_Tick.h</PathName>
       <PathName>C:\PROGETTI\0353000_Perlife_FW\SCTRO2_C\Generated_Code\TI1.h</PathName>
       <PathName>C:\PROGETTI\0353000_Perlife_FW\SCTRO2_C\Generated_Code\TU1.h</PathName>
       <PathName>C:\PROGETTI\0353000_Perlife_FW\SCTRO2_C\Generated_Code\TU2.h</PathName>
       <PathName>C:\PROGETTI\0353000_Perlife_FW\SCTRO2_C\Generated_Code\TimerIntLdd1.h</PathName>
+      <PathName>C:\PROGETTI\0353000_Perlife_FW\SCTRO2_C\Generated_Code\TimerIntLdd2.h</PathName>
       <PathName>C:\PROGETTI\0353000_Perlife_FW\SCTRO2_C\Generated_Code\VOLTAGE_B_CHK.h</PathName>
       <PathName>C:\PROGETTI\0353000_Perlife_FW\SCTRO2_C\Generated_Code\VOLTAGE_M_CHK.h</PathName>
       <PathName>C:\PROGETTI\0353000_Perlife_FW\SCTRO2_C\Generated_Code\Vectors_Config.h</PathName>

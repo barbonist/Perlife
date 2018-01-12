@@ -1109,7 +1109,7 @@ unsigned char Air_1_Status;				//variabile globale per vedere lo stato del senso
 unsigned char slvAddr;					//variabile globale per l'indirizzo degli attuatori: FIRST_ACTUATOR = 0x02, LAST_ACTUATOR = 0x08
 unsigned char * ptrDataTemperatureIR;
 
-
+unsigned char Prescaler_Tick_Timer;
 
 /**/
 

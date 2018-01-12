@@ -113,6 +113,8 @@
 #include "TI1.h"
 #include "TimerIntLdd1.h"
 #include "TU2.h"
+#include "System_Tick.h"
+#include "TimerIntLdd2.h"
 #include "D_7S_DP.h"
 #include "BitIoLdd22.h"
 #include "D_7S_G.h"
@@ -681,27 +683,6 @@ void IR_TM_COMM_OnNACK(void);
 
 /*
 ** ===================================================================
-**     Event       :  TU1_OnCounterRestart (module Events)
-**
-**     Component   :  TU1 [TimerUnit_LDD]
-*/
-/*!
-**     @brief
-**         Called if counter overflow/underflow or counter is
-**         reinitialized by modulo or compare register matching.
-**         OnCounterRestart event and Timer unit must be enabled. See
-**         [SetEventMask] and [GetEventMask] methods. This event is
-**         available only if a [Interrupt] is enabled.
-**     @param
-**         UserDataPtr     - Pointer to the user or
-**                           RTOS specific data. The pointer passed as
-**                           the parameter of Init method.
-*/
-/* ===================================================================*/
-void TU1_OnCounterRestart(LDD_TUserData *UserDataPtr);
-
-/*
-** ===================================================================
 **     Event       :  FLASH1_OnOperationComplete (module Events)
 **
 **     Component   :  FLASH1 [FLASH_LDD]
@@ -917,6 +898,22 @@ void TI1_OnInterrupt(void);
 ** ===================================================================
 */
 void IR_TM_COMM_OnArbitLost(void);
+
+/*
+** ===================================================================
+**     Event       :  System_Tick_OnInterrupt (module Events)
+**
+**     Component   :  System_Tick [TimerInt]
+**     Description :
+**         When a timer interrupt occurs this event is called (only
+**         when the component is enabled - <Enable> and the events are
+**         enabled - <EnableEvent>). This event is enabled only if a
+**         <interrupt service/event> is enabled.
+**     Parameters  : None
+**     Returns     : Nothing
+** ===================================================================
+*/
+void System_Tick_OnInterrupt(void);
 
 /* END Events */
 
