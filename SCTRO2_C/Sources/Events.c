@@ -1169,12 +1169,11 @@ void System_Tick_OnInterrupt(void)
 {
   /* Write your code here ... */
 	Prescaler_Tick_Timer++;
-	LAMP_LOW_NegVal();
 
 	if (Prescaler_Tick_Timer >=5)
 	{
 	  Prescaler_Tick_Timer = 0;
-	  LAMP_MEDIUM_NegVal();
+
 	  /*interrupt usato per i timer che scatta ogni 50 ms*/
 	  timerCounter = timerCounter + 1;
 

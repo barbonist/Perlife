@@ -263,6 +263,11 @@ int main(void)
 
   SBC_COMM_Enable();
     /**/
+  /*abilito l'RTS per la trasmissionme verso i motori;
+   * la lascio sempre attiva tanto ogni 50 msec al massimo
+   *  sarò sempre io a fare la trasmisisone interrogando i driver*/
+
+  RTS_MOTOR_SetVal();
 
   static int index = 0;
   //ptrMsgSbcRx = &msg_sbc_rx[0];
