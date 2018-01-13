@@ -1465,8 +1465,8 @@ void alwaysPumpPressLoop(unsigned char pmpId, unsigned char *PidFirstTime){
     }
 
 	// FM sostituito con il valore in mmHg
-	//pressSample0 = sensor_PRx[0].prSensValueFilteredWA;
-	pressSample0 = PR_ART_mmHg;
+
+    pressSample0 = PR_ART_mmHg_Filtered;
 	errPress = parameterWordSetFromGUI[PAR_SET_PRESS_ART_TARGET].value - pressSample0;
 
 	deltaSpeed = (int)((parKITC*errPress) - (parKP*(pressSample0 - pressSample1)) - (parKD_TC*(pressSample0 - 2*pressSample1 + pressSample2)));
@@ -1701,15 +1701,16 @@ static void computeMachineStateGuardTreatment(void){
 		// passo allo svuotamento del circuito
 		currentGuard[GUARD_ENABLE_DISPOSABLE_EMPTY].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
 	}
-	/*
 	else if(TreatDuration >= parameterWordSetFromGUI[PAR_SET_DESIRED_DURATION].value)
 	{
 		// esaurita la durata massima del trattamento
 		// forzo lo stop alle pompe passo allo svuotamento del circuito
-		setGUIButton((unsigned char)BUTTON_STOP_ALL_PUMP);
+		setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
+		setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 0);
 		currentGuard[GUARD_ENABLE_DISPOSABLE_EMPTY].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+
+		DebugStringStr("TREATMENT END");
 	}
-	*/
 }
 
 
@@ -1955,6 +1956,7 @@ void processMachineState(void)
 				(currentGuard[GUARD_ENABLE_SELECT_TREAT_PAGE].guardValue == GUARD_VALUE_TRUE)
 				)
 			{
+				currentGuard[GUARD_ENABLE_SELECT_TREAT_PAGE].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
 			    /* (FM) HO RICEVUTO UN COMANDO (DA TASTIERA O SERIALE) CHE MI CHIEDE DI ENTRARE NELLO STATO DI
 			       SELEZIONE DEL TRATTAMENTO */
 
@@ -1984,6 +1986,7 @@ void processMachineState(void)
 			/* compute future state */
 			if( (currentGuard[GUARD_ENABLE_MOUNT_DISPOSABLE].guardValue == GUARD_VALUE_TRUE) )
 			{
+				currentGuard[GUARD_ENABLE_MOUNT_DISPOSABLE].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
 				/* (FM) E' ARRIVATO UN COMANDO CHE MI CHIEDE DI PASSARE ALLA FASE DI INSTALLAZIONE DEL DISPOSABLE */
 				/* compute future state */
 				ptrFutureState = &stateState[9];
@@ -2005,6 +2008,7 @@ void processMachineState(void)
 				(currentGuard[GUARD_ENABLE_TANK_FILL].guardValue == GUARD_VALUE_TRUE)
 				)
 			{
+				currentGuard[GUARD_ENABLE_TANK_FILL].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
 			    /* (FM) FINITA LA FASE DI MONTAGGIO DEL DISPOSABLE, POSSO PASSARE ALLA FASE DI RIEMPIMENTO
 			       DEL RECIPIENTE */
 				/* compute future state */
@@ -2024,6 +2028,7 @@ void processMachineState(void)
 				(currentGuard[GUARD_ENABLE_PRIMING_PHASE_1].guardValue == GUARD_VALUE_TRUE)
 				)
 			{
+				currentGuard[GUARD_ENABLE_PRIMING_PHASE_1].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
 				/* (FM) FINITA LA FASE DI RIEMPIMENTO POSSO PASSARE ALLA FASE 1 DEL PRIMING */
 				/* compute future state */
 				ptrFutureState = &stateState[13];
@@ -2041,6 +2046,7 @@ void processMachineState(void)
 				(currentGuard[GUARD_ENABLE_PRIMING_PHASE_2].guardValue == GUARD_VALUE_TRUE)
 				)
 			{
+				currentGuard[GUARD_ENABLE_PRIMING_PHASE_2].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
 				/* (FM) FINITA LA FASE 1 DEL PRIMING POSSO PASSARE ALLA FASE 2 */
 				/* compute future state */
 				ptrFutureState = &stateState[15];
@@ -2058,6 +2064,7 @@ void processMachineState(void)
 				(currentGuard[GUARD_ENABLE_TREATMENT_KIDNEY_1].guardValue == GUARD_VALUE_TRUE)
 				)
 			{
+				currentGuard[GUARD_ENABLE_TREATMENT_KIDNEY_1].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
 				/* (FM) FINITA LA FASE 2 DEL PRIMING POSSO PASSARE AL TRATTAMENTO ..KIDNEY_1 */
 				/* compute future state */
 				ptrFutureState = &stateState[17];
@@ -2078,7 +2085,7 @@ void processMachineState(void)
 			if( currentGuard[GUARD_ENABLE_DISPOSABLE_EMPTY].guardValue == GUARD_VALUE_TRUE )
 			{
 				currentGuard[GUARD_ENABLE_DISPOSABLE_EMPTY].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
-				// TODOinrealta' dovrei andare nello stato 17 perche' dovrei fare lo svuotamento
+				// TODO inrealta' dovrei andare nello stato 17 perche' dovrei fare lo svuotamento
 				ptrFutureState = &stateState[3];
 				/* compute future parent */
 				ptrFutureParent = ptrFutureState->ptrParent;

@@ -8,6 +8,8 @@
 #include "Alarm_Con.h"
 #include "Global.h"
 #include "Flowsens.h"
+#include "string.h"
+
 
 // FM questa lista devo costruirla mettendo prima i PHYSIC_TRUE e poi i PHYSIC_FALSE,
 // ognuno deve poi essere ordinato in base alla priorita' ???
@@ -25,11 +27,42 @@ struct alarm alarmList[] =
 
 };
 
+void DebugStringStr(char *s);
+void ShowAlarmName(int i)
+{
+	switch (i)
+	{
+		case CODE_ALARM_PRESS_ART_HIGH:
+			DebugStringStr("ALARM_PRESS_ART_HIGH");
+			break;
+		case CODE_ALARM_PRESS_ART_LOW:
+			DebugStringStr("ALARM_PRESS_ART_LOW");
+			break;
+		case CODE_ALARM_AIR_PRES_ART:
+			DebugStringStr("ALARM_AIR_PRES_ART");
+			break;
+		case CODE_ALARM_TEMP_ART_HIGH:
+			DebugStringStr("ALARM_TEMP_ART_HIGH");
+			break;
+		case CODE_ALARM_PRESS_ADS_FILTER_HIGH:
+			DebugStringStr("ALARM_PRESS_ADS_FILTER_HIGH");
+			break;
+		case CODE_ALARM_MODBUS_ACTUATOR_SEND:
+			DebugStringStr("ALARM_MODBUS_ACTUATOR_SEND");
+			break;
+	}
+
+}
+
+
 void alarmConInit(void){
 	ptrAlarmCurrent = &alarmList[0];
 }
 
 void alarmEngineAlways(void){
+
+	static int StrAlarmWritten = 0;
+	int i;
 
 	//verifica physic pressioni
 	manageAlarmPhysicPressSens();
@@ -40,7 +73,7 @@ void alarmEngineAlways(void){
 	//verifica physic ir temp sens
 	manageAlarmPhysicTempSens();
 
-	for(int i=0; i<ALARM_ACTIVE_IN_STRUCT; i++)
+	for(i=0; i<ALARM_ACTIVE_IN_STRUCT; i++)
 	{
 		if((alarmList[i].physic == PHYSIC_TRUE) && (alarmList[i].active != ACTIVE_TRUE))
 		{
@@ -59,6 +92,24 @@ void alarmEngineAlways(void){
 			// FM forse qui devo interrompere perche' ho trovato una condizione di allarme da disattivare
 			// e devo gestirla prima di andare a vedere le altre
 			break;
+		}
+	}
+
+	if( !StrAlarmWritten && (i < ALARM_ACTIVE_IN_STRUCT))
+	{
+		StrAlarmWritten = 1;
+	}
+	else if(StrAlarmWritten)
+	{
+		if(i < ALARM_ACTIVE_IN_STRUCT)
+		{
+			// allarme in corso
+		}
+		else
+		{
+			// allarme terminato
+			StrAlarmWritten = 0;
+			ShowAlarmName(i);
 		}
 	}
 }
@@ -204,7 +255,6 @@ void ClearNonPhysicalAlm( int AlarmCode)
 			break;
 	}
 }
-
 
 void alarmManageNull(void)
 {
