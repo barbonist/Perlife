@@ -1115,4 +1115,6 @@ unsigned char Prescaler_Tick_Timer;
 
 /**/
 
+typedef enum{KidneyTreat = 0, LiverTreat} TREATMENT_TYPE;
+
 #endif /* SOURCES_GLOBAL_H_ */

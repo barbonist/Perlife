@@ -56,6 +56,10 @@ float pressSample1 = 0;  // FM Questi due vanno inizializzati alla pressione cor
 float pressSample2 = 0;
 unsigned char PidFirstTime[4];
 
+// durata massima del trattamento
+unsigned long StartTreatmentTime = 0;
+
+
 unsigned char Debug_Bubble_Keyboard_GetVal(unsigned char Button)
 {
 	return Bubble_Keyboard_GetVal(Button);
@@ -293,16 +297,16 @@ struct machineParent stateParentPrimingTreatKidney1[] =
 struct machineParent stateParentTreatKidney1[] =
 {
 		{STATE_NULL, PARENT_NULL,                   CHILD_NULL, ACTION_NULL,     &stateChildIdle[0],        &manageNull},						/* 0 */
-		/* priming init */
+		/* treatment init */
 		{STATE_NULL, PARENT_TREAT_KIDNEY_1_INIT,    CHILD_IDLE, ACTION_ON_ENTRY, &stateChildIdle[0],        &manageParentTreatEntry},			/* 1 */
 		{STATE_NULL, PARENT_TREAT_KIDNEY_1_INIT,    CHILD_IDLE, ACTION_ALWAYS,   &stateChildIdle[0],        &manageParentTreatAlways},			/* 2 */
-		/* priming run */
+		/* treatment run */
 		{STATE_NULL, PARENT_TREAT_KIDNEY_1_PUMP_ON, CHILD_IDLE, ACTION_ON_ENTRY, &stateChildIdle[0],        &manageParentTreatEntry},			/* 3 */
 		{STATE_NULL, PARENT_TREAT_KIDNEY_1_PUMP_ON, CHILD_IDLE, ACTION_ALWAYS,   &stateChildIdle[0],        &manageParentTreatAlways},			/* 4 */
-		/* priming alarm */
+		/* treatment alarm */
 		{STATE_NULL, PARENT_TREAT_KIDNEY_1_ALARM,   CHILD_IDLE, ACTION_ON_ENTRY, &stateChildAlarmTreat1[1], &manageParentTreatAlarmEntry},		/* 5 */
 		{STATE_NULL, PARENT_TREAT_KIDNEY_1_ALARM,   CHILD_IDLE, ACTION_ALWAYS,   &stateChildAlarmTreat1[1], &manageParentTreatAlarmAlways},	    /* 6 */
-		/* priming end */
+		/* treatment end */
 		{STATE_NULL, PARENT_TREAT_KIDNEY_1_END,     CHILD_IDLE, ACTION_ON_ENTRY, &stateChildIdle[0],        &manageParentTreatEntry},			/* 7 */
 		{STATE_NULL, PARENT_TREAT_KIDNEY_1_END,     CHILD_IDLE, ACTION_ALWAYS,   &stateChildIdle[0],        &manageParentTreatAlways},		    /* 8 */
 
@@ -1675,6 +1679,7 @@ static void computeMachineStateGuardPrimingPh2(void){
 		(iflag_pmp1_rx == IFLAG_PMP1_RX)*/
 		)
 	{
+		StartTreatmentTime = timerCounterModBus;
 		currentGuard[GUARD_ENABLE_TREATMENT_KIDNEY_1].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
 		releaseGUIButton(BUTTON_CONFIRM);
 		//setPumpSpeedValue(pumpPerist[0].pmpMySlaveAddress, 0);
@@ -1686,13 +1691,25 @@ static void computeMachineStateGuardPrimingPh2(void){
 /*  Controllo la fine del trattamento
 /*--------------------------------------------------------------------*/
 static void computeMachineStateGuardTreatment(void){
+
+	unsigned long TreatDuration;
+	// tempo trascorso di trattamento in sec
+	TreatDuration = msTick_elapsed(StartTreatmentTime) * 50L / 1000;
 	if((buttonGUITreatment[BUTTON_STOP_ALL_PUMP].state == GUI_BUTTON_RELEASED) &&
-	   (buttonGUITreatment[BUTTON_CONFIRM].state == GUI_BUTTON_RELEASED)
-	   /*parameterWordSetFromGUI[PAR_SET_DESIRED_DURATION].value >= 0 TreatDur*/ )
-		{
-			// passo allo svuotamento del circuito
-			currentGuard[GUARD_ENABLE_DISPOSABLE_EMPTY].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
-		}
+	   (buttonGUITreatment[BUTTON_CONFIRM].state == GUI_BUTTON_RELEASED))
+	{
+		// passo allo svuotamento del circuito
+		currentGuard[GUARD_ENABLE_DISPOSABLE_EMPTY].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+	}
+	/*
+	else if(TreatDuration >= parameterWordSetFromGUI[PAR_SET_DESIRED_DURATION].value)
+	{
+		// esaurita la durata massima del trattamento
+		// forzo lo stop alle pompe passo allo svuotamento del circuito
+		setGUIButton((unsigned char)BUTTON_STOP_ALL_PUMP);
+		currentGuard[GUARD_ENABLE_DISPOSABLE_EMPTY].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+	}
+	*/
 }
 
 
@@ -2187,6 +2204,7 @@ void processMachineState(void)
 			{
 				/* FM faccio partire la pompa */
 				ptrFutureParent = &stateParentTreatKidney1[3];
+				ptrFutureChild = ptrFutureParent->ptrChild;
 			}
 
 			if(ptrCurrentParent->action == ACTION_ON_ENTRY)
@@ -2196,6 +2214,7 @@ void processMachineState(void)
 				/* compute future parent */
 				/* FM entro nello stato in cui l'azione e' di tipo ACTION_ALWAYS */
 				ptrFutureParent = &stateParentTreatKidney1[2];
+				ptrFutureChild = ptrFutureParent->ptrChild;
 			}
 			else if(ptrCurrentParent->action == ACTION_ALWAYS)
 			{
@@ -2206,6 +2225,7 @@ void processMachineState(void)
 			{
 				/* (FM) si e' verificato un allarme, passo alla sua gestione */
 				ptrFutureParent = &stateParentTreatKidney1[5];
+				ptrFutureChild = ptrFutureParent->ptrChild;
 			}
 			break;
 
@@ -2217,6 +2237,7 @@ void processMachineState(void)
 				/* compute future parent */
 				/* FM passo alla gestione ACTION_ALWAYS */
 				ptrFutureParent = &stateParentTreatKidney1[4];
+				ptrFutureChild = ptrFutureParent->ptrChild;
 			}
 			else if(ptrCurrentParent->action == ACTION_ALWAYS)
 			{
@@ -2227,6 +2248,7 @@ void processMachineState(void)
 			{
 				/* (FM) si e' verificato un allarme, passo alla sua gestione */
 				ptrFutureParent = &stateParentTreatKidney1[5];
+				ptrFutureChild = ptrFutureParent->ptrChild;
 			}
 			break;
 
@@ -2235,6 +2257,7 @@ void processMachineState(void)
 			{
 				/* FM allarme finito posso ritornare nella fase iniziale del trattamento */
 				ptrFutureParent = &stateParentTreatKidney1[1];
+				ptrFutureChild = ptrFutureParent->ptrChild;
 			}
 
 			if(ptrCurrentParent->action == ACTION_ON_ENTRY)
@@ -2244,6 +2267,7 @@ void processMachineState(void)
 				/* compute future parent */
 				/* (FM) passo alla gestione ACTION_ALWAYS dell'allarme */
 				ptrFutureParent = &stateParentTreatKidney1[6];
+				ptrFutureChild = ptrFutureParent->ptrChild;
 			}
 			else if(ptrCurrentParent->action == ACTION_ALWAYS)
 			{
@@ -2799,13 +2823,14 @@ void DebugString()
 //							(int) (sensor_PRx[0].prSensValueFilteredWA),
 //							(int) pumpPerist[0].actualSpeed
 //				);
-	sprintf(stringPr, "\r %i; %i; %i; %i; %i;-%d;",
+	sprintf(stringPr, "\r %i; %i; %i; %i; %i;-%d; %d;",
 							(int) (sensorIR_TM[0].tempSensValue*10)/*PR_ADS_FLT_mmHg*/,
 							(int) (sensorIR_TM[1].tempSensValue*10)/*PR_VEN_mmHg*/,
 							(int) (sensorIR_TM[2].tempSensValue*10),
 							PR_ART_mmHg,
 							(int) (sensor_PRx[0].prSensValueFilteredWA),
-							(int) pumpPerist[0].actualSpeed
+							(int) pumpPerist[0].actualSpeed,
+							(int)perfusionParam.priVolPerfArt
 				);
 
 
@@ -2916,19 +2941,30 @@ void GenEvntParentPrim(void)
 		case PARENT_PRIMING_TREAT_KIDNEY_1_INIT:
 			if(Released2)
 			{
+				Released2 = 0;
 				if(ptrCurrentParent->action == ACTION_ALWAYS)
 				{
 					setGUIButton((unsigned char)BUTTON_CONFIRM);
 					setGUIButton((unsigned char)BUTTON_START_PRIMING);
 					parameterWordSetFromGUI[PAR_SET_PRESS_ART_TARGET].value = 20;
 					//parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FOW].value = 1000;
-					Released2 = 0;
 					DebugStringStr("START POMPA");
+					// evito che all'entry del parent mi fermi le pompe
+					pumpPerist[0].entry = 1;
 				}
 			}
 			break;
 
 		case PARENT_PRIMING_TREAT_KIDNEY_1_RUN:
+			if(Released2)
+			{
+				Released2 = 0;
+				if(ptrCurrentParent->action == ACTION_ALWAYS)
+				{
+					setGUIButton((unsigned char)BUTTON_CONFIRM);
+					DebugStringStr("STATE_TREATMENT_KIDNEY_1");
+				}
+			}
 			break;
 
 		case PARENT_PRIMING_TREAT_KIDNEY_1_ALARM:
@@ -2973,6 +3009,13 @@ void GenEvntParentTreat(void)
 
 
 // viene chiamata ad intervalli di 50 msec
+// sequenza di tasti 1,2 della tastiera a bolle fino ad arrivare a STATE_PRIMING_1
+//  tasto 2 per lo start della pompa nella fase STATE_PRIMING_1 dopo un po..
+//  tasto 1 per passare a STATE_PRIMING_2 dopo un po..
+//  tasto 2 per dare lo start alla pompa in STATE_PRIMING_2 una volta
+//          raggiunto il volume richiesto di  50 ml premere di nuovo ..
+//  tasto 2 passo alla fase di trattamento poi ...
+//  tasto 1 faccio partire le pompe all'inizio del trattamento
 void GenerateSBCComm(void)
 {
 	static int timerCounterGenSBCComm = 0;
@@ -2982,8 +3025,18 @@ void GenerateSBCComm(void)
 		case STATE_IDLE:
 			if(Released1)
 			{
-				setGUIButton((unsigned char)BUTTON_KIDNEY);
 				Released1 = 0;
+				setGUIButton((unsigned char)BUTTON_KIDNEY);
+
+				//---------------------------------------------------------------
+				// IMPOSTO ALCUNI PARAMETRI NECESSARI AL TRATTAMENTO
+				// Imposto un volume molto basso per uscire subito dal priming
+				parameterWordSetFromGUI[PAR_SET_PRIMING_VOL_PERFUSION].value = 25;
+				parameterWordSetFromGUI[PAR_SET_PRESS_ART_TARGET].value = 20;
+				// imposto il volume iniziale (NON SERVE)
+				//perfusionParam.priVolPerfArt = 1300;
+				// due minuti di trattamento
+				parameterWordSetFromGUI[PAR_SET_DESIRED_DURATION].value = 60;
 			}
 			else if(Released2)
 			{
@@ -3051,10 +3104,6 @@ void GenerateSBCComm(void)
 		case STATE_PRIMING_PH_2:
 			if(Released1)
 			{
-				// Qui se serve posso impostare subito il volume per uscire subito dal priming
-				parameterWordSetFromGUI[PAR_SET_PRIMING_VOL_PERFUSION].value = 1500;
-				parameterWordSetFromGUI[PAR_SET_PRESS_ART_TARGET].value = 20;
-				perfusionParam.priVolPerfArt = 1300;
 				setGUIButton((unsigned char)BUTTON_CONFIRM);
 				DebugStringStr("STATE_TREATMENT_KIDNEY_1");
 				Released1 = 0;
