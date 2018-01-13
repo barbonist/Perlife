@@ -5,16 +5,30 @@
  *      Author: W15
  */
 
-#include "ModBusCommProt.h"
 #include "Global.h"
+#include "ModBusCommProt.h"
 
 #include "MODBUS_COMM.h"
 #include "ASerialLdd1.h"
 #include "Alarm_Con.h"
 
+
+TREATMENT_TYPE TreatmentType = KidneyTreat;
+
 void SetNonPhysicalAlm( int AlarmCode);
 void ClearNonPhysicalAlm( int AlarmCode);
 uint32_t msTick_elapsed( uint32_t last );
+
+
+TREATMENT_TYPE GetTreatmentType(void)
+{
+	return TreatmentType;
+}
+
+void SetTreatmentType(TREATMENT_TYPE tt)
+{
+	TreatmentType = tt;
+}
 
 /* Public function */
 struct func3RetStruct * ModBusReadRegisterReq(char slaveAddr,
@@ -251,7 +265,7 @@ struct func17RetStruct * ModBusRWRegisterReq(char slaveAddr,
 	return _func17RetValPtr;
 }
 
-void modBusPmpInit(void)
+void modBusPmpInit(TREATMENT_TYPE tt)
 {
 	pumpPerist[0].id = 0;
 	pumpPerist[0].pmpSpeed = 0x0000;
@@ -260,7 +274,11 @@ void modBusPmpInit(void)
 	pumpPerist[0].pmpCurrent = 0x0000;
 	pumpPerist[0].pmpCruiseSpeed = 0x0000;
 	pumpPerist[0].pmpStepTarget = 0x0000;
-	pumpPerist[0].pmpMySlaveAddress = 0x02;		//rotary selctor = 0 - pump art
+	if(tt == KidneyTreat)
+		pumpPerist[0].pmpMySlaveAddress = PPAR ;   // 0x02;	 rotary selctor = 0 - pump art
+	else//if(TreatmentType == LiverTreat)
+		pumpPerist[0].pmpMySlaveAddress = PPAF;	   // 0x03  rotary selctor = 1 - pump art
+
 	pumpPerist[0].pmpFuncCode = 0xFF;
 	pumpPerist[0].pmpWriteStartAddr = 0xFFFF;
 	pumpPerist[0].pmpReadStartAddr = 0xFFFF;
@@ -283,7 +301,9 @@ void modBusPmpInit(void)
 	pumpPerist[1].pmpCurrent = 0x0000;
 	pumpPerist[1].pmpCruiseSpeed = 0x0000;
 	pumpPerist[1].pmpStepTarget = 0x0000;
-	pumpPerist[1].pmpMySlaveAddress = 0x03;		//rotary selctor = 1 - pump oxyg
+	/* rotary selctor = 2 - pump oxyg per rene e fegato
+	 *	(nel fegato e' collegata anche alla linea venosa)*/
+	pumpPerist[1].pmpMySlaveAddress = PPV1;
 	pumpPerist[1].pmpFuncCode = 0xFF;
 	pumpPerist[1].pmpWriteStartAddr = 0xFFFF;
 	pumpPerist[1].pmpReadStartAddr = 0xFFFF;
@@ -306,7 +326,9 @@ void modBusPmpInit(void)
 	pumpPerist[2].pmpCurrent = 0x0000;
 	pumpPerist[2].pmpCruiseSpeed = 0x0000;
 	pumpPerist[2].pmpStepTarget = 0x0000;
-	pumpPerist[2].pmpMySlaveAddress = 0x04;		//rotary selctor = 2
+	/* rotary selctor = 2 - pump oxyg per rene e fegato
+	 *	(nel fegato e' collegata anche alla linea venosa)*/
+	pumpPerist[2].pmpMySlaveAddress = PPV2;		//rotary selctor = 3
 	pumpPerist[2].pmpFuncCode = 0xFF;
 	pumpPerist[2].pmpWriteStartAddr = 0xFFFF;
 	pumpPerist[2].pmpReadStartAddr = 0xFFFF;
@@ -329,7 +351,7 @@ void modBusPmpInit(void)
 	pumpPerist[3].pmpCurrent = 0x0000;
 	pumpPerist[3].pmpCruiseSpeed = 0x0000;
 	pumpPerist[3].pmpStepTarget = 0x0000;
-	pumpPerist[3].pmpMySlaveAddress = 0x05;
+	pumpPerist[3].pmpMySlaveAddress = PPAF;   //usata solo sul treat fegato per linea venosa
 	pumpPerist[3].pmpFuncCode = 0xFF;
 	pumpPerist[3].pmpWriteStartAddr = 0xFFFF;
 	pumpPerist[3].pmpReadStartAddr = 0xFFFF;
@@ -426,7 +448,8 @@ void setPumpSpeedValueHighLevel(unsigned char slaveAddr, int speedValue){
 		pumpPerist[1].reqType = REQ_TYPE_WRITE;
 		pumpPerist[1].actuatorType = ACTUATOR_PUMP_TYPE;
 		pumpPerist[1].value = speedValue;
-		break;
+		// il breake' stato tolto volutamente perche' le due pump devono lavorare insieme
+	//	break;
 
 	case 2:
 		pumpPerist[2].reqState = REQ_STATE_ON;

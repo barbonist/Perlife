@@ -181,6 +181,7 @@ int main(void)
   bool MOTORE_ACCESO = FALSE;
   bool MOTORE_ACCESO_2 = FALSE;
   bool Status_Board;
+  TREATMENT_TYPE TreatType = KidneyTreat;
 
  #ifdef	DEBUG_COMM_SBC
   Status_Board = SERVICE;
@@ -256,7 +257,7 @@ int main(void)
   stateSensTempIR = 0;
  #endif
 
-  modBusPmpInit();
+  modBusPmpInit(TreatType);
   modBusPinchInit();
   modbusDataInit();
 
