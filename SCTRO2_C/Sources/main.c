@@ -564,8 +564,6 @@ int main(void)
 	         	//SBC_COMM_Enable();
 	         	testCOMMSbcDebug();
 
-	         	/*da valutare se sreve ancora o può essere sostituita dalla mie Manange_ADC0() e Manange_ADC1()*/
-	         	alwaysAdcParam();
 
 	         	/*Gestisco i sensori di Temp IR la funzione viene chiamata a giro
 	         	 * di programa ma al suo interno i sensori saranno interrogati
@@ -688,14 +686,7 @@ int main(void)
 
 	         /*******************************/
 	         /*UFLOW SENSOR                 */
-//	         if(timerCounterUFlowSensor >= 2){
-//	        	 timerCounterUFlowSensor = 0;
-//
-//	        	 alwaysUFlowSensor();
-//
-//	         }
 	         Manage_UFlow_Sens();
-
 
 	         /*TestPump(4); // 2..5 usata per provare le pompe con la tastiera a bolle
 	         if( (pumpPerist[0].reqState == REQ_STATE_OFF) && (pumpPerist[0].reqType == REQ_TYPE_IDLE) &&
@@ -719,11 +710,8 @@ int main(void)
 	         /********************************/
 	         /*             I2C	             */
 	         /********************************/
-	        // alwaysIRTempSensRead();
 	         Manage_IR_Sens_Temp();
 
-	         /*******************************/
-	         /*UFLOW SENSOR                 */
 
 
 	         /********************************/

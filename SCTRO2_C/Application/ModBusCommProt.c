@@ -267,6 +267,8 @@ struct func17RetStruct * ModBusRWRegisterReq(char slaveAddr,
 
 void modBusPmpInit(TREATMENT_TYPE tt)
 {
+
+	/***************** PMP 1********************/
 	pumpPerist[0].id = 0;
 	pumpPerist[0].pmpSpeed = 0x0000;
 	pumpPerist[0].pmpGoHomeSpeed = 0x0000;
@@ -274,6 +276,7 @@ void modBusPmpInit(TREATMENT_TYPE tt)
 	pumpPerist[0].pmpCurrent = 0x0000;
 	pumpPerist[0].pmpCruiseSpeed = 0x0000;
 	pumpPerist[0].pmpStepTarget = 0x0000;
+
 	if(tt == KidneyTreat)
 		pumpPerist[0].pmpMySlaveAddress = PPAR ;   // 0x02;	 rotary selctor = 0 - pump art
 	else//if(TreatmentType == LiverTreat)
@@ -294,6 +297,7 @@ void modBusPmpInit(TREATMENT_TYPE tt)
 	pumpPerist[0].actualSpeed = 0;
 	pumpPerist[0].actualSpeedOld = 0;
 
+	/***************** PMP 2********************/
 	pumpPerist[1].id = 1;
 	pumpPerist[1].pmpSpeed = 0x0000;
 	pumpPerist[1].pmpGoHomeSpeed = 0x0000;
@@ -301,9 +305,11 @@ void modBusPmpInit(TREATMENT_TYPE tt)
 	pumpPerist[1].pmpCurrent = 0x0000;
 	pumpPerist[1].pmpCruiseSpeed = 0x0000;
 	pumpPerist[1].pmpStepTarget = 0x0000;
+
 	/* rotary selctor = 2 - pump oxyg per rene e fegato
 	 *	(nel fegato e' collegata anche alla linea venosa)*/
 	pumpPerist[1].pmpMySlaveAddress = PPV1;
+
 	pumpPerist[1].pmpFuncCode = 0xFF;
 	pumpPerist[1].pmpWriteStartAddr = 0xFFFF;
 	pumpPerist[1].pmpReadStartAddr = 0xFFFF;
@@ -319,6 +325,7 @@ void modBusPmpInit(TREATMENT_TYPE tt)
 	pumpPerist[1].actualSpeed = 0;
 	pumpPerist[1].actualSpeedOld = 0;
 
+	/***************** PMP 3********************/
 	pumpPerist[2].id = 2;
 	pumpPerist[2].pmpSpeed = 0x0000;
 	pumpPerist[2].pmpGoHomeSpeed = 0x0000;
@@ -344,6 +351,7 @@ void modBusPmpInit(TREATMENT_TYPE tt)
 	pumpPerist[2].actualSpeed = 0;
 	pumpPerist[2].actualSpeedOld = 0;
 
+	/***************** PMP 4********************/
 	pumpPerist[3].id = 2;
 	pumpPerist[3].pmpSpeed = 0x0000;
 	pumpPerist[3].pmpGoHomeSpeed = 0x0000;
@@ -370,9 +378,10 @@ void modBusPmpInit(TREATMENT_TYPE tt)
 
 void modBusPinchInit(void)
 {
+	/***************** PINCH 1********************/
 	pinchActuator[0].id = 0;
 	pinchActuator[0].pinchPosTarget = 0x0000;
-	pinchActuator[0].pinchMySlaveAddress = 0x07; 	//rotary selctor = 5 - pinch art
+	pinchActuator[0].pinchMySlaveAddress = PINCH_2WPVF; 	//rotary selctor = 5 - pinch art
 	pinchActuator[0].pinchFuncCode = 0xFF;
 	pinchActuator[0].pinchWriteStartAddr = 0xFFFF;
 	pinchActuator[0].pinchReadStartAddr = 0xFFFF;
@@ -384,9 +393,10 @@ void modBusPinchInit(void)
 	pinchActuator[0].actuatorType = ACTUATOR_PINCH_TYPE;
 	pinchActuator[0].dataReady = DATA_READY_FALSE;
 
+	/***************** PINCH 2********************/
 	pinchActuator[1].id = 1;
 	pinchActuator[1].pinchPosTarget = 0x0000;
-	pinchActuator[1].pinchMySlaveAddress = 0x08;		//rotary selctor = 6 - pinch ven
+	pinchActuator[1].pinchMySlaveAddress = PINCH_2WPVA;		//rotary selctor = 6 - pinch ven
 	pinchActuator[1].pinchFuncCode = 0xFF;
 	pinchActuator[1].pinchWriteStartAddr = 0xFFFF;
 	pinchActuator[1].pinchReadStartAddr = 0xFFFF;
@@ -398,9 +408,10 @@ void modBusPinchInit(void)
 	pinchActuator[1].actuatorType = ACTUATOR_PINCH_TYPE;
 	pinchActuator[1].dataReady = DATA_READY_FALSE;
 
+	/***************** PINCH 3********************/
 	pinchActuator[2].id = 2;
 	pinchActuator[2].pinchPosTarget = 0x0000;
-	pinchActuator[2].pinchMySlaveAddress = 0x09; 		//rotary selctor = 7 - pinch filter
+	pinchActuator[2].pinchMySlaveAddress = PINCH_2WPVV; 		//rotary selctor = 7 - pinch filter
 	pinchActuator[2].pinchFuncCode = 0xFF;
 	pinchActuator[2].pinchWriteStartAddr = 0xFFFF;
 	pinchActuator[2].pinchReadStartAddr = 0xFFFF;
@@ -412,6 +423,7 @@ void modBusPinchInit(void)
 	pinchActuator[2].actuatorType = ACTUATOR_PINCH_TYPE;
 	pinchActuator[2].dataReady = DATA_READY_FALSE;
 
+	/***************** NOT USED********************/
 	pinchActuator[3].id = 3;
 	pinchActuator[3].pinchPosTarget = 0x0000;
 	pinchActuator[3].pinchMySlaveAddress = 0xA0;		//rotary selctor = 8
@@ -448,7 +460,7 @@ void setPumpSpeedValueHighLevel(unsigned char slaveAddr, int speedValue){
 		pumpPerist[1].reqType = REQ_TYPE_WRITE;
 		pumpPerist[1].actuatorType = ACTUATOR_PUMP_TYPE;
 		pumpPerist[1].value = speedValue;
-		// il breake' stato tolto volutamente perche' le due pump devono lavorare insieme
+		// il break e' stato tolto volutamente perche' le due pump devono lavorare insieme --> a livello logico sono un unica pompa
 	//	break;
 
 	case 2:
@@ -464,6 +476,7 @@ void setPumpSpeedValueHighLevel(unsigned char slaveAddr, int speedValue){
 		pumpPerist[3].actuatorType = ACTUATOR_PUMP_TYPE;
 		pumpPerist[3].value = speedValue;
 		break;
+
 	default:
 		break;
 	}
@@ -583,8 +596,6 @@ void readPumpSpeedValueHighLevel(unsigned char slaveAddr){
 			break;
 		}
 }
-
-
 
 void setPinchPositionHighLevel(unsigned char slaveAddr, int posValue){
 	switch(slaveAddr)
@@ -873,7 +884,7 @@ void alwaysModBusActuator(void)
 		}
 		break;
 
-	//pinch 4
+	//pinch 4 NOT USED
 	case 7:
 		break;
 
