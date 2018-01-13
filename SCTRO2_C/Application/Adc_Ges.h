@@ -24,8 +24,6 @@ word * ReadAdcPr3(void);
 //word * ReadAdcTm1(void);
 word * ReadAdcTm2(void);
 
-void	initAdcParam(void);
-void 	alwaysAdcParam(void);
 
 int meanWA(unsigned char dimNum, int newSensVal, char IdSens);
 void ADC1_Calibration(void);
@@ -37,6 +35,7 @@ void Manange_ADC1(void);
 void PR_Sens_ADC_Init(void);
 void Coversion_From_ADC_To_mmHg_Pressure_Sensor(void);
 void Coversion_From_ADC_To_Voltage();
+void Pressure_sensor_Fltered ();
 void Manage_Air_Sensor_1(void);
 void Manage_Debug_led(bool Status);
 #endif /* APPLICATION_ADC_GES_H_ */

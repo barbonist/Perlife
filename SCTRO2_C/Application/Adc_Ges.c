@@ -114,6 +114,15 @@ void Coversion_From_ADC_To_mmHg_Pressure_Sensor()
 	PR_ART_mmHg 	= (PR_ART_ADC     - PR_ART_OFFSET)     * PR_ART_GAIN;
 }
 
+void Pressure_sensor_Fltered ()
+{
+	PR_OXYG_mmHg_Filtered		= meanWA(8,PR_OXYG_mmHg,0);
+	PR_LEVEL_mmHg_Filtered		= meanWA(8,PR_LEVEL_mmHg,1);
+	PR_ADS_FLT_mmHg_Filtered	= meanWA(8,PR_ADS_FLT_mmHg,2);
+	PR_VEN_mmHg_Filtered		= meanWA(8,PR_VEN_mmHg,3);
+	PR_ART_mmHg_Filtered		= meanWA(8,PR_ART_mmHg,4);
+}
+
 void Coversion_From_ADC_To_Voltage()
 {
 	V24_P1_CHK_VOLT	= (V24_P1_CHK_ADC * V24_P1_CHK_GAIN + V24_P1_CHK_OFFSET);
@@ -212,195 +221,9 @@ word * ReadAdcTm2(void)
 	return adcValPtr;
 }
 
-void initAdcParam(void)
+
+int meanWA(unsigned char dimNum, int newSensVal, char IdSens)
 {
-	iflag_read_press_sensor = IFLAG_IDLE;
-	timerCounterADC = 0;
-
-	sensor_PRx[0].prSensGain = 1;
-	sensor_PRx[0].prSensOffset = 0;
-	sensor_PRx[0].prSensOffsetVal = 0;
-	sensor_PRx[0].prSensValue = 0;
-	sensor_PRx[0].prSensValueFilteredWA = 0;
-	sensor_PRx[0].readAdctPtr = ReadAdcPr1;
-
-	sensor_PRx[1].prSensGain = 1;
-	sensor_PRx[1].prSensOffset = 0;
-	sensor_PRx[1].prSensOffsetVal = 0;
-	sensor_PRx[1].prSensValue = 0;
-	sensor_PRx[1].prSensValueFilteredWA = 0;
-	sensor_PRx[1].readAdctPtr = ReadAdcPr2;
-
-	sensor_PRx[2].prSensGain = 1;
-	sensor_PRx[2].prSensOffset = 0;
-	sensor_PRx[2].prSensOffsetVal = 0;
-	sensor_PRx[2].prSensValue = 0;
-	sensor_PRx[2].prSensValueFilteredWA = 0;
-	sensor_PRx[2].readAdctPtr = ReadAdcPr3;
-
-	/*iflag_write_temp_sensor = IFLAG_IDLE;
-	sensor_TMx[0].tempSensGain = 0;
-	sensor_TMx[0].tempSensOffset = 0;
-	sensor_TMx[0].tempSensOffsetVal = 0;
-	sensor_TMx[0].tempSensValue = 0;
-	sensor_TMx[0].readAdctPtr = ReadAdcTm1;*/
-
-	sensor_TMx[1].tempSensGain = 0;
-	sensor_TMx[1].tempSensOffset = 0;
-	sensor_TMx[1].tempSensOffsetVal = 0;
-	sensor_TMx[1].tempSensValue = 0;
-	sensor_TMx[1].readAdctPtr = ReadAdcTm2;
-
-	/***********************/
-	sensor_PRx[0].prSensAdcPtr = sensor_PRx[0].readAdctPtr();
-	sensor_PRx[0].prSensAdc = *sensor_PRx[0].prSensAdcPtr;
-	sensor_PRx[0].prSensValue = sensor_PRx[0].prSensGain *
-								(((float)((float)sensor_PRx[0].prSensAdc/65535))*3.3 - sensor_PRx[0].prSensOffsetVal) +
-								sensor_PRx[0].prSensOffset;
-	sensor_PRx[0].prSensOffset = - sensor_PRx[0].prSensValue * ((float)(1000/2.04));
-
-
-	sensor_PRx[1].prSensAdcPtr = sensor_PRx[1].readAdctPtr();
-	sensor_PRx[1].prSensAdc = *sensor_PRx[1].prSensAdcPtr;
-	sensor_PRx[1].prSensValue = sensor_PRx[1].prSensGain *
-								(((float)((float)sensor_PRx[1].prSensAdc/65535))*3.3 - sensor_PRx[1].prSensOffsetVal) +
-								sensor_PRx[1].prSensOffset;
-	sensor_PRx[1].prSensOffset = - sensor_PRx[1].prSensValue * ((float)(1000/2.04));
-
-
-	sensor_PRx[2].prSensAdcPtr = sensor_PRx[2].readAdctPtr();
-	sensor_PRx[2].prSensAdc = *sensor_PRx[2].prSensAdcPtr;
-	sensor_PRx[2].prSensValue = sensor_PRx[2].prSensGain *
-								(((float)((float)sensor_PRx[2].prSensAdc/65535))*3.3 - sensor_PRx[2].prSensOffsetVal) +
-								sensor_PRx[2].prSensOffset;
-	sensor_PRx[2].prSensOffset = - sensor_PRx[2].prSensValue * ((float)(1000/2.04));
-	/***********************/
-
-}
-
-void 	alwaysAdcParam(void)
-{
-
-	unsigned char * ptrChar;
-	static unsigned long timems = 0;
-
-	static char stringPr1[STR_DBG_LENGHT];
-
-	if(timerCounterADC >= 1)
-	{
-	iflag_read_press_sensor = IFLAG_READ_PR_SENSOR;
-	timerCounterADC = 0;
-	timems = timems + 50;
-
-	sensor_PRx[0].prSensAdcPtr = sensor_PRx[0].readAdctPtr();
-	sensor_PRx[0].prSensAdc = *sensor_PRx[0].prSensAdcPtr;
-	sensor_PRx[0].prSensValue = PR_ART_ADC;
-	/*sensor_PRx[0].prSensValue = sensor_PRx[0].prSensGain *
-								(((float)sensor_PRx[0].prSensAdc/65535)*1617 - sensor_PRx[0].prSensOffsetVal) +
-								sensor_PRx[0].prSensOffset;*/
-
-	sensor_PRx[0].prSensValueFilteredWA = meanWA(8, (sensor_PRx[0].prSensValue),0);
-
-	/*sensor_PRx[1].prSensAdcPtr = sensor_PRx[1].readAdctPtr();
-	sensor_PRx[1].prSensAdc = *sensor_PRx[1].prSensAdcPtr;
-	sensor_PRx[1].prSensValue = sensor_PRx[1].prSensGain *
-								(((float)sensor_PRx[1].prSensAdc/65535)*1617 - sensor_PRx[1].prSensOffsetVal) +
-								sensor_PRx[1].prSensOffset;
-
-	sensor_PRx[1].prSensValueFilteredWA = meanWA(8, (sensor_PRx[1].prSensValue),1);*/
-
-
-	//#ifdef DEBUG_LOG_PC
-//	sprintf(stringPr1, "\r %i %i; %i; %i; %i; %i; %i; %i; %i; %d;",
-//			           /* timems,*/
-	//					V24_P1_CHK_VOLT/*PR_OXYG_mmHg*//*(int) sensor_UFLOW[0].Average_Flow_Val*/,
-	//						V24_P2_CHK_VOLT/*PR_LEVEL_mmHg*//*(int) sensor_UFLOW[0].Inst_Flow_Value*/,
-	//						PR_ADS_FLT_mmHg/*(int) sensor_UFLOW[1].Average_Flow_Val*//*(int) Air_1_Status*//*(int) (sensor_PRx[1].prSensValueFilteredWA)*/,
-	//						PR_VEN_mmHg/*(int) sensor_UFLOW[1].Inst_Flow_Value*//*(int) (sensor_UFLOW[0].volumeMlTot)*//*PR_VEN_mmHg*/,
-	//						PR_ART_mmHg/*(int) (sensorIR_TM[0].tempSensValue*10)*/,
-	//						(int) (sensorIR_TM[0].tempSensValue*10),
-	//						(int) (sensorIR_TM[1].tempSensValue*10),
-	//						(int) (sensorIR_TM[2].tempSensValue*10),
-	//						(int) (sensor_PRx[0].prSensValueFilteredWA),
-	//						(int) pumpPerist[0].actualSpeed
-	//			);
-
-//		sprintf(stringPr1, "\r %i; %i; %i; %i; %i; %i; %i; %d;",
-//				           /* timems,*/
-//								PR_ADS_FLT_mmHg/*(int) sensor_UFLOW[1].Average_Flow_Val*//*(int) Air_1_Status*//*(int) (sensor_PRx[1].prSensValueFilteredWA)*/,
-//								PR_VEN_mmHg/*(int) sensor_UFLOW[1].Inst_Flow_Value*//*(int) (sensor_UFLOW[0].volumeMlTot)*//*PR_VEN_mmHg*/,
-//								PR_ART_mmHg/*(int) (sensorIR_TM[0].tempSensValue*10)*/,
-//								(int) (sensorIR_TM[0].tempSensValue*10),
-//								(int) (sensorIR_TM[1].tempSensValue*10),
-//								(int) (sensorIR_TM[2].tempSensValue*10),
-//								(int) (sensor_PRx[0].prSensValueFilteredWA),
-//								(int) pumpPerist[0].actualSpeed
-//					);
-
-
-//	sprintf(stringPr1, "\r%d; %i; %i; %i; %i; %i;",
-//			            timems,
-//						(int) (sensorIR_TM[0].errorNACK),
-//						(int) (sensorIR_TM[1].errorNACK),
-//						(int) (sensorIR_TM[2].errorNACK),
-//						(int) (sensorIR_TM[0].errorPEC),
-//						(int) (sensorIR_TM[1].errorPEC),
-//						(int) (sensorIR_TM[2].errorPEC)
-//			);
-//	for(int i=0; i<STR_DBG_LENGHT; i++)
-//	{
-//		PC_DEBUG_COMM_SendChar(stringPr1[i]);
-//	}
-//	PC_DEBUG_COMM_SendChar(0x0A);
-//	#endif
-
-	sensor_PRx[1].prSensAdcPtr = sensor_PRx[1].readAdctPtr();
-	sensor_PRx[1].prSensAdc = *sensor_PRx[1].prSensAdcPtr;
-	sensor_PRx[1].prSensValue = sensor_PRx[1].prSensGain *
-								(((float)sensor_PRx[1].prSensAdc/65535)*1617 - sensor_PRx[1].prSensOffsetVal) +
-								sensor_PRx[1].prSensOffset;
-
-	sensor_PRx[2].prSensAdcPtr = sensor_PRx[2].readAdctPtr();
-	sensor_PRx[2].prSensAdc = *sensor_PRx[2].prSensAdcPtr;
-	sensor_PRx[2].prSensValue = sensor_PRx[2].prSensGain *
-								(((float)sensor_PRx[2].prSensAdc/65535)*1617 - sensor_PRx[2].prSensOffsetVal) +
-								sensor_PRx[2].prSensOffset;
-	}
-}
-
-int meanWA(unsigned char dimNum, int newSensVal, char IdSens){
-	//fatto così faccio la media fra tutti i sensori contemporaneamente in quanto non specifico
-	//su quale sensore fare la media
-	/*
-	static int circularBuffer[64];
-	static int circBuffAdd[64];
-	int numSumValue = 0;
-	int denValue=0;
-	int numTotal=0;
-
-	if(dimNum <= 64){
-	for(int i=(dimNum-1); i>0; i--)
-	{
-		denValue = denValue + i;
-
-		circularBuffer[i] = circularBuffer[i-1];
-		circBuffAdd[i] = circularBuffer[i]*(dimNum-i);
-		numSumValue = numSumValue + circBuffAdd[i];
-
-	}
-	circularBuffer[0] = newSensVal;
-	numSumValue = numSumValue + (circularBuffer[0]*dimNum);
-	denValue = denValue + dimNum;
-	numTotal = (numSumValue/denValue);
-
-	return numTotal;
-	}
-	else
-		return 0;
-	*/
-
-	//rifaccio lo stesso codice ma provando a passare per paramento l'id del sensore
-
 	static int circularBuffer[4] [64]; //uso una matrice di 4 array, uno per ogni sensore
 	static int circBuffAdd[4] [64];    //uso una matrice di 4 array, uno per ogni sensore
 	int numSumValue = 0;
