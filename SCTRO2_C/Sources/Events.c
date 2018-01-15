@@ -1168,7 +1168,10 @@ void IR_TM_COMM_OnArbitLost(void)
 void System_Tick_OnInterrupt(void)
 {
   /* Write your code here ... */
+	FreeRunCnt10msec++;
 	Prescaler_Tick_Timer++;
+	Prescaler_Tick_TEST++;
+
 
 	if (Prescaler_Tick_Timer >=5)
 	{

@@ -165,8 +165,9 @@
 #include "Comm_Sbc.h"
 
 
- extern unsigned char Released1;
- extern unsigned char Released2;
+extern bool WriteActive;
+extern unsigned char Released1;
+extern unsigned char Released2;
 
 /*lint -save  -e970 Disable MISRA rule (6.3) checking. */
 void TestPump(unsigned char Adr); //only for test
@@ -232,6 +233,8 @@ int main(void)
   timerCounterCheckTempIRSens = 0;
   timerCounterLedBoard = 0;
   Prescaler_Tick_Timer = 0;
+  Prescaler_Tick_TEST=0;
+  FreeRunCnt10msec = 0;
 
   iFlag_actuatorCheck = IFLAG_IDLE;
   iFlag_modbusDataStorage = FALSE;
@@ -665,7 +668,11 @@ int main(void)
 			 Manage_Air_Sensor_1();
 
 	         /*****MACHINE STATE UPDATE START****/
-	         if(timerCounterMState >= 1)
+        	 testCOMMSbcDebug();
+			 // il controllo sul time slot lo fa al suo interno
+			// alwaysModBusActuator();
+
+        	 if(timerCounterMState >= 1)
 	         {
 	        	timerCounterMState = 0;
 
@@ -753,11 +760,12 @@ int main(void)
 	         if(timerCounterModBus != timerCounterModBusOld)
 	         {
 	        	 timerCounterModBusOld = timerCounterModBus;
+	        	 alwaysModBusActuator();
 	         }
 
-	         // il controllo sul time slot lo fa al suo interno
-        	 alwaysModBusActuator();
-	         Manage_and_Storage_ModBus_Actuator_Data();
+	         if (!iflag_sbc_rx && !WriteActive)
+	        	 Manage_and_Storage_ModBus_Actuator_Data();
+
 	         /*********PUMP*********/
 			 #endif
 

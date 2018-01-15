@@ -726,11 +726,15 @@ void pollingSBCCommTreat(void){
 			{
 				if(sbc_rx_data[8] == 0x01)
 				{
-					setGUIButton(sbc_rx_data[7]);
+					// FM scambiati eventi
+					//setGUIButton(sbc_rx_data[7]);
+					releaseGUIButton(sbc_rx_data[7]);
 				}
 				else
 				{
-					releaseGUIButton(sbc_rx_data[7]);
+					// FM scambiati eventi
+					// releaseGUIButton(sbc_rx_data[7]);
+					setGUIButton(sbc_rx_data[7]);
 				}
 				myCommunicatorToSBC.dataButtonSBCReadyFlag = DATA_COMM_READY_TO_BE_SEND;
 			}

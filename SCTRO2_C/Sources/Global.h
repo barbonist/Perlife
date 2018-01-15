@@ -912,6 +912,7 @@ enum buttonGUIEnum{
 	BUTTON_RESET = 0xB3,
 	BUTTON_BACK = 0xB5,
 	BUTTON_START_PRIMING = 0xB7,
+	BUTTON_STOP_PRIMING = 0xB8,
 	BUTTON_STOP_ALL_PUMP = 0xB9,
 	BUTTON_EN_PERFUSION = 0xC1,
 	BUTTON_EN_OXYGENATION = 0xC2,
@@ -1027,6 +1028,7 @@ int timerCounter;
 unsigned int timerCounterADC;
 int timerCounterPID;
 int timerCounterMState;
+int FreeRunCnt10msec;
 int timerCounterModBus;
 int timerCounterUFlowSensor;
 int timerCounterPeltier;
@@ -1116,6 +1118,7 @@ unsigned char slvAddr;					//variabile globale per l'indirizzo degli attuatori: 
 unsigned char * ptrDataTemperatureIR;
 
 unsigned char Prescaler_Tick_Timer;
+unsigned char Prescaler_Tick_TEST;
 
 /**/
 

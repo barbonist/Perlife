@@ -873,7 +873,6 @@ void manageParentPrimingAlways(void){
 	if(buttonGUITreatment[BUTTON_START_PRIMING].state == GUI_BUTTON_RELEASED)
 	{
 		setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 2000);
-		//setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 3000);
 		setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FOW].value);
 		setPinchPositionHighLevel(PNCHVLV1_ADDRESS, MODBUS_PINCH_RIGHT_OPEN);
 		setPinchPositionHighLevel(PNCHVLV3_ADDRESS, MODBUS_PINCH_RIGHT_OPEN);
@@ -908,6 +907,12 @@ void manageParentPrimingAlways(void){
 
 		setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
 		iflag_perf = 0;
+	}
+	else if(buttonGUITreatment[BUTTON_STOP_PRIMING].state == GUI_BUTTON_RELEASED)
+	{
+		setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
+		setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 0);
+		releaseGUIButton(BUTTON_STOP_PRIMING);
 	}
 	else if(buttonGUITreatment[BUTTON_STOP_OXYGEN_PUMP].state == GUI_BUTTON_RELEASED)
 	{
@@ -1603,6 +1608,8 @@ static void computeMachineStateGuardIdle(void){
 	    )
 	{
 		currentGuard[GUARD_ENABLE_SELECT_TREAT_PAGE].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+		releaseGUIButton(BUTTON_KIDNEY);
+		releaseGUIButton(BUTTON_CONFIRM);
 	}
 	else if(Debug_Bubble_Keyboard_GetVal(BUTTON_3))  // TODO eliminare, solo per debug
 	{
@@ -1621,6 +1628,9 @@ static void computeMachineStateGuardSelTreat(void){
 	 )
 	{
 		currentGuard[GUARD_ENABLE_MOUNT_DISPOSABLE].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+		releaseGUIButton(BUTTON_EN_PERFUSION);
+		releaseGUIButton(BUTTON_EN_OXYGENATION);
+		releaseGUIButton(BUTTON_CONFIRM);
 	}
 }
 
@@ -1635,6 +1645,9 @@ static void computeMachineStateGuardMountDisp(void){
 			)
 	{
 		currentGuard[GUARD_ENABLE_TANK_FILL].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+		releaseGUIButton(BUTTON_PERF_DISP_MOUNTED);
+		releaseGUIButton(BUTTON_OXYG_DISP_MOUNTED);
+		releaseGUIButton(BUTTON_CONFIRM);
 	}
 }
 
@@ -1648,6 +1661,7 @@ static void computeMachineStateGuardTankFill(void){
 			)
 	{
 		currentGuard[GUARD_ENABLE_PRIMING_PHASE_1].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+		releaseGUIButton(BUTTON_PERF_TANK_FILL);
 		releaseGUIButton(BUTTON_CONFIRM);
 	}
 }
@@ -1662,6 +1676,7 @@ static void computeMachineStateGuardPrimingPh1(void){
 			)
 	{
 		currentGuard[GUARD_ENABLE_PRIMING_PHASE_2].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+		releaseGUIButton(BUTTON_PERF_FILTER_MOUNT);
 		releaseGUIButton(BUTTON_CONFIRM);
 		//setPumpSpeedValue(pumpPerist[0].pmpMySlaveAddress, 0);
 	}
@@ -1700,6 +1715,8 @@ static void computeMachineStateGuardTreatment(void){
 	{
 		// passo allo svuotamento del circuito
 		currentGuard[GUARD_ENABLE_DISPOSABLE_EMPTY].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+		releaseGUIButton(BUTTON_STOP_ALL_PUMP);
+		releaseGUIButton(BUTTON_CONFIRM);
 	}
 	else if(TreatDuration >= parameterWordSetFromGUI[PAR_SET_DESIRED_DURATION].value)
 	{
@@ -2954,7 +2971,6 @@ void GenEvntParentPrim(void)
 					setGUIButton((unsigned char)BUTTON_CONFIRM);
 					setGUIButton((unsigned char)BUTTON_START_PRIMING);
 					parameterWordSetFromGUI[PAR_SET_PRESS_ART_TARGET].value = 20;
-					//parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FOW].value = 1000;
 					DebugStringStr("START POMPA");
 					// evito che all'entry del parent mi fermi le pompe
 					pumpPerist[0].entry = 1;
@@ -3044,6 +3060,7 @@ void GenerateSBCComm(void)
 				//perfusionParam.priVolPerfArt = 1300;
 				// due minuti di trattamento
 				parameterWordSetFromGUI[PAR_SET_DESIRED_DURATION].value = 60;
+				parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FOW].value = 1000;
 			}
 			else if(Released2)
 			{

@@ -308,6 +308,7 @@ void modBusPmpInit(TREATMENT_TYPE tt)
 
 	/* rotary selctor = 2 - pump oxyg per rene e fegato
 	 *	(nel fegato e' collegata anche alla linea venosa)*/
+
 	pumpPerist[1].pmpMySlaveAddress = PPV1;
 
 	pumpPerist[1].pmpFuncCode = 0xFF;
@@ -352,14 +353,19 @@ void modBusPmpInit(TREATMENT_TYPE tt)
 	pumpPerist[2].actualSpeedOld = 0;
 
 	/***************** PMP 4********************/
-	pumpPerist[3].id = 2;
+	pumpPerist[3].id = 3;
 	pumpPerist[3].pmpSpeed = 0x0000;
 	pumpPerist[3].pmpGoHomeSpeed = 0x0000;
 	pumpPerist[3].pmpAccelSpeed = 0x0000;
 	pumpPerist[3].pmpCurrent = 0x0000;
 	pumpPerist[3].pmpCruiseSpeed = 0x0000;
 	pumpPerist[3].pmpStepTarget = 0x0000;
-	pumpPerist[3].pmpMySlaveAddress = PPAF;   //usata solo sul treat fegato per linea venosa
+
+	if(tt == KidneyTreat)
+		pumpPerist[3].pmpMySlaveAddress = PPAF ;   // 0x03;	 rotary selctor = 1 - noy used fot kidney therapy
+	else//if(TreatmentType == LiverTreat)
+		pumpPerist[3].pmpMySlaveAddress = PPAR;	   // 0x02  rotary selctor = 0 - pump art
+
 	pumpPerist[3].pmpFuncCode = 0xFF;
 	pumpPerist[3].pmpWriteStartAddr = 0xFFFF;
 	pumpPerist[3].pmpReadStartAddr = 0xFFFF;
@@ -456,25 +462,25 @@ void setPumpSpeedValueHighLevel(unsigned char slaveAddr, int speedValue){
 		break;
 
 	case 1:
+		pumpPerist[3].reqState = REQ_STATE_ON;
+		pumpPerist[3].reqType = REQ_TYPE_WRITE;
+		pumpPerist[3].actuatorType = ACTUATOR_PUMP_TYPE;
+		pumpPerist[3].value = speedValue;
+		break;
+
+	case 2:
 		pumpPerist[1].reqState = REQ_STATE_ON;
 		pumpPerist[1].reqType = REQ_TYPE_WRITE;
 		pumpPerist[1].actuatorType = ACTUATOR_PUMP_TYPE;
 		pumpPerist[1].value = speedValue;
 		// il break e' stato tolto volutamente perche' le due pump devono lavorare insieme --> a livello logico sono un unica pompa
-	//	break;
+		//break;
 
-	case 2:
+	case 3:
 		pumpPerist[2].reqState = REQ_STATE_ON;
 		pumpPerist[2].reqType = REQ_TYPE_WRITE;
 		pumpPerist[2].actuatorType = ACTUATOR_PUMP_TYPE;
 		pumpPerist[2].value = speedValue;
-		break;
-
-	case 3:
-		pumpPerist[3].reqState = REQ_STATE_ON;
-		pumpPerist[3].reqType = REQ_TYPE_WRITE;
-		pumpPerist[3].actuatorType = ACTUATOR_PUMP_TYPE;
-		pumpPerist[3].value = speedValue;
 		break;
 
 	default:
@@ -561,6 +567,17 @@ void readPumpSpeedValueHighLevel(unsigned char slaveAddr){
 
 		case 1:
 			//if((pumpPerist[1].reqState == REQ_STATE_OFF) && (pumpPerist[1].reqType == REQ_TYPE_IDLE))
+			if(pumpPerist[3].reqState == REQ_STATE_OFF)
+			{
+				pumpPerist[3].reqState = REQ_STATE_ON;
+				pumpPerist[3].reqType = REQ_TYPE_READ;
+				pumpPerist[3].actuatorType = ACTUATOR_PUMP_TYPE;
+				pumpPerist[3].dataReady = DATA_READY_FALSE;
+			}
+			break;
+
+		case 2:
+			//if((pumpPerist[2].reqState == REQ_STATE_OFF) && (pumpPerist[2].reqType == REQ_TYPE_IDLE))
 			if(pumpPerist[1].reqState == REQ_STATE_OFF)
 			{
 				pumpPerist[1].reqState = REQ_STATE_ON;
@@ -570,25 +587,14 @@ void readPumpSpeedValueHighLevel(unsigned char slaveAddr){
 			}
 			break;
 
-		case 2:
-			//if((pumpPerist[2].reqState == REQ_STATE_OFF) && (pumpPerist[2].reqType == REQ_TYPE_IDLE))
+		case 3:
+			//if((pumpPerist[3].reqState == REQ_STATE_OFF) && (pumpPerist[3].reqType == REQ_TYPE_IDLE))
 			if(pumpPerist[2].reqState == REQ_STATE_OFF)
 			{
 				pumpPerist[2].reqState = REQ_STATE_ON;
 				pumpPerist[2].reqType = REQ_TYPE_READ;
 				pumpPerist[2].actuatorType = ACTUATOR_PUMP_TYPE;
 				pumpPerist[2].dataReady = DATA_READY_FALSE;
-			}
-			break;
-
-		case 3:
-			//if((pumpPerist[3].reqState == REQ_STATE_OFF) && (pumpPerist[3].reqType == REQ_TYPE_IDLE))
-			if(pumpPerist[3].reqState == REQ_STATE_OFF)
-			{
-				pumpPerist[3].reqState = REQ_STATE_ON;
-				pumpPerist[3].reqType = REQ_TYPE_READ;
-				pumpPerist[3].actuatorType = ACTUATOR_PUMP_TYPE;
-				pumpPerist[3].dataReady = DATA_READY_FALSE;
 			}
 			break;
 
@@ -680,6 +686,7 @@ void alwaysModBusActuator(void)
 	}
 
 	switch((timerCounterModBus%9))
+	//switch((FreeRunCnt10msec%9))
 	{
 	//pump 0
 	case 0:
