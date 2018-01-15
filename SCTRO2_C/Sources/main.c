@@ -220,8 +220,6 @@ int main(void)
 
   peltierAssInit();
 
-  initAdcParam();
-
   initUFlowSensor();
   initTempSensIR();
 
@@ -566,8 +564,6 @@ int main(void)
 	         	//SBC_COMM_Enable();
 	         	testCOMMSbcDebug();
 
-	         	/*da valutare se sreve ancora o può essere sostituita dalla mie Manange_ADC0() e Manange_ADC1()*/
-	         	alwaysAdcParam();
 
 	         	/*Gestisco i sensori di Temp IR la funzione viene chiamata a giro
 	         	 * di programa ma al suo interno i sensori saranno interrogati
@@ -584,8 +580,11 @@ int main(void)
 		        /*END funzioni per leggere i canali AD*/
 		        /*converte i valori ADC in mmHg dei sensori di pressione*/
 		        Coversion_From_ADC_To_mmHg_Pressure_Sensor();
+		        /*filtra i valori di mmHg dei sensori di pressione*/
+		        Pressure_sensor_Fltered();
 		        /*converte i valori ADC in volt per le tensioni*/
 		        Coversion_From_ADC_To_Voltage();
+
 
 		        /*faccio lo start per riattivare la conversione sui due canali AD ogni 50 msec*/
 		        if (timerCounterADC >= 1)
@@ -687,14 +686,7 @@ int main(void)
 
 	         /*******************************/
 	         /*UFLOW SENSOR                 */
-//	         if(timerCounterUFlowSensor >= 2){
-//	        	 timerCounterUFlowSensor = 0;
-//
-//	        	 alwaysUFlowSensor();
-//
-//	         }
 	         Manage_UFlow_Sens();
-
 
 	         /*TestPump(4); // 2..5 usata per provare le pompe con la tastiera a bolle
 	         if( (pumpPerist[0].reqState == REQ_STATE_OFF) && (pumpPerist[0].reqType == REQ_TYPE_IDLE) &&
@@ -718,11 +710,8 @@ int main(void)
 	         /********************************/
 	         /*             I2C	             */
 	         /********************************/
-	        // alwaysIRTempSensRead();
 	         Manage_IR_Sens_Temp();
 
-	         /*******************************/
-	         /*UFLOW SENSOR                 */
 
 
 	         /********************************/
@@ -742,14 +731,14 @@ int main(void)
 			 /*END funzioni per leggere i canali AD*/
 		 	 /*converte i valori ADC in mmHg dei sensori di pressione*/
 			 Coversion_From_ADC_To_mmHg_Pressure_Sensor();
+			 /*filtra i valori di mmHg dei sensori di pressione*/
+			 Pressure_sensor_Fltered();
 		     /*converte i valori ADC in volt per le tensioni*/
 		     Coversion_From_ADC_To_Voltage();
 
 		     /*faccio lo start della cionversione sui canali AD ogni 50 msec*/
 			 if (timerCounterADC >=1)
 			 {
-			 /*da valutare se sreve ancora o può essere sostituita dalla mie Manange_ADC0() e Manange_ADC1()*/
-	         alwaysAdcParam();
 				timerCounterADC = 0;
 				AD0_Start();
 				AD1_Start();
