@@ -701,6 +701,7 @@ void pollingSBCCommTreat(void){
 		byte code = sbc_rx_data[SBC_RX_DATA_POS_CODE];
 		byte subcode = sbc_rx_data[SBC_RX_DATA_POS_SUBCODE];
 
+
 		/* decodifica messaggio */
 		switch(code)
 		{
@@ -745,6 +746,7 @@ void pollingSBCCommTreat(void){
 		}
 	}
 }
+
 
 void pollingDataToSBCTreat(void)
 {
@@ -972,6 +974,7 @@ void buildRDMachineStateResponseMsg(char code, char subcode){
 void buildButtonSBCResponseMsg(char code, char subcode, unsigned char buttonId)
 {
 	byte index = 0;
+
 
 	sbc_tx_data[index++] = 0xA5;
 	sbc_tx_data[index++] = 0xAA;

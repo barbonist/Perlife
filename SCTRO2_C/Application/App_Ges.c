@@ -994,6 +994,12 @@ void manageParentPrimingAlways(void){
 				setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 0);
 				iflag_perf = 0;
 			}
+			else if(buttonGUITreatment[BUTTON_STOP_PRIMING].state == GUI_BUTTON_RELEASED)
+			{
+				setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
+				setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 0);
+				releaseGUIButton(BUTTON_STOP_PRIMING);
+			}
 
 			/*if(
 				(buttonGUITreatment[BUTTON_START_PRIMING].state == GUI_BUTTON_PRESSED) ||
@@ -1845,34 +1851,78 @@ unsigned int PumpAverageCurrent;
 unsigned int PumpSpeedVal;
 unsigned int PumpStatusVal;
 
-// Adr 2..5
-void TestPump(unsigned char Adr)
-{
-	static bool MotorOn = 0;
+// Test portata doppia pompa Davide CAPPI
+//void TestPump(unsigned char Adr)
+//{
+//	static bool MotorOn = 0;
+//
+//	if (Bubble_Keyboard_GetVal(BUTTON_1) && !MotorOn)
+//	{
+//	  /*accendo il motore*/
+//	  MotorOn = TRUE;
+//	  EN_Motor_Control(ENABLE);
+//	  setPumpSpeedValueHighLevel(Adr,7500);
+//	}
+//	else if (Bubble_Keyboard_GetVal(BUTTON_2) && !MotorOn)
+//	{
+//	  /*accendo il motore*/
+//	  MotorOn = TRUE;
+//	  EN_Motor_Control(ENABLE);
+//	  setPumpSpeedValueHighLevel(Adr,10000);
+//	}
+//	else if (Bubble_Keyboard_GetVal(BUTTON_3) && !MotorOn)
+//	{
+//	  /*accendo il motore*/
+//	  MotorOn = TRUE;
+//	  EN_Motor_Control(ENABLE);
+//	  setPumpSpeedValueHighLevel(Adr,13000);
+//	}
+//	else if (Bubble_Keyboard_GetVal(BUTTON_4) && MotorOn)
+//	{
+//	  /*spengo il motore*/
+//	  MotorOn = FALSE;
+//	  EN_Motor_Control(DISABLE);
+//	  setPumpSpeedValueHighLevel(Adr,0);
+//	}
+//	else
+//	{
+//		PumpAverageCurrent = modbusData[Adr-2][16];
+//		PumpSpeedVal = modbusData[Adr-2][17];
+//		PumpStatusVal = modbusData[Adr-2][18];
+//		//readPumpSpeedValue(pumpPerist[Adr - 2].pmpMySlaveAddress);
+//		//readPumpSpeedValue(Adr - 2);
+//	}
+//}
 
-	if (Bubble_Keyboard_GetVal(BUTTON_1) && !MotorOn)
-	{
-	  /*accendo il motore*/
-	  MotorOn = TRUE;
-	  EN_Motor_Control(ENABLE);
-	  setPumpSpeedValueHighLevel(Adr,2000);
-	}
-	else if (Bubble_Keyboard_GetVal(BUTTON_2) && MotorOn)
-	{
-	  /*spengo il motore*/
-	  MotorOn = FALSE;
-	  EN_Motor_Control(DISABLE);
-	  setPumpSpeedValueHighLevel(Adr,0);
-	}
-	else
-	{
-		PumpAverageCurrent = modbusData[Adr-2][16];
-		PumpSpeedVal = modbusData[Adr-2][17];
-		PumpStatusVal = modbusData[Adr-2][18];
-		//readPumpSpeedValue(pumpPerist[Adr - 2].pmpMySlaveAddress);
-		//readPumpSpeedValue(Adr - 2);
-	}
-}
+
+// Adr 2..5
+//void TestPump(unsigned char Adr)
+//{
+//	static bool MotorOn = 0;
+//
+//	if (Bubble_Keyboard_GetVal(BUTTON_1) && !MotorOn)
+//	{
+//	  /*accendo il motore*/
+//	  MotorOn = TRUE;
+//	  EN_Motor_Control(ENABLE);
+//	  setPumpSpeedValueHighLevel(Adr,2000);
+//	}
+//	else if (Bubble_Keyboard_GetVal(BUTTON_4) && MotorOn)
+//	{
+//	  /*spengo il motore*/
+//	  MotorOn = FALSE;
+//	  EN_Motor_Control(DISABLE);
+//	  setPumpSpeedValueHighLevel(Adr,0);
+//	}
+//	else
+//	{
+//		PumpAverageCurrent = modbusData[Adr-2][16];
+//		PumpSpeedVal = modbusData[Adr-2][17];
+//		PumpStatusVal = modbusData[Adr-2][18];
+//		//readPumpSpeedValue(pumpPerist[Adr - 2].pmpMySlaveAddress);
+//		//readPumpSpeedValue(Adr - 2);
+//	}
+//}
 
 /*----------------------------------------------------------------------------*/
 /* This function compute the machine state transition based on guard - state level         */
@@ -2971,6 +3021,8 @@ void GenEvntParentPrim(void)
 					setGUIButton((unsigned char)BUTTON_CONFIRM);
 					setGUIButton((unsigned char)BUTTON_START_PRIMING);
 					parameterWordSetFromGUI[PAR_SET_PRESS_ART_TARGET].value = 20;
+					setGUIButton((unsigned char)BUTTON_START_OXYGEN_PUMP);
+
 					DebugStringStr("START POMPA");
 					// evito che all'entry del parent mi fermi le pompe
 					pumpPerist[0].entry = 1;
@@ -3163,5 +3215,64 @@ void GenerateSBCComm(void)
 		DebugString();
 	}
 }
+
+
+// Non so perche' questa da sola non funziona
+// Adr 2..5
+//void TestPump1(unsigned char Adr )
+//{
+//	static bool MotorOn = 0;
+//	int wait;
+//
+//	if (Bubble_Keyboard_GetVal(BUTTON_1))
+//	{
+//	  /*accendo il motore*/
+//	  MotorOn = TRUE;
+//
+//	  wait = FreeRunCnt10msec;
+//	  while ((FreeRunCnt10msec - wait) == 0);
+//	  setPumpSpeedValue(4, (int) 5000);
+//
+//	  wait = FreeRunCnt10msec;
+//	  while ((FreeRunCnt10msec - wait) == 0);
+//	  setPumpSpeedValue(5, (int) 5000);
+//	}
+//	else if (Bubble_Keyboard_GetVal(BUTTON_2))
+//	{
+//	  /*spengo il motore*/
+//	  MotorOn = TRUE;
+//
+//	  wait = FreeRunCnt10msec;
+//	  while ((FreeRunCnt10msec - wait) == 0);
+//	  setPumpSpeedValue(4, (int) 4000);
+//	  wait = FreeRunCnt10msec;
+//	  while ((FreeRunCnt10msec - wait) >= 2);
+//	  setPumpSpeedValue(5, (int) 4000);
+//	}
+//	else if (Bubble_Keyboard_GetVal(BUTTON_3))
+//	{
+//	  /*spengo il motore*/
+//	  MotorOn = TRUE;
+//
+//	  wait = FreeRunCnt10msec;
+//	  while ((FreeRunCnt10msec - wait) == 0);
+//	  setPumpSpeedValue(4, (int) 3000);
+//
+//	  wait = FreeRunCnt10msec;
+//	  while ((FreeRunCnt10msec - wait) >= 2);
+//	  setPumpSpeedValue(5, (int) 3000);
+//	}
+//	else if (Bubble_Keyboard_GetVal(BUTTON_4))
+//	{
+//		  /*spengo il motore*/
+//		  MotorOn = FALSE;
+//		  wait = FreeRunCnt10msec;
+//		  while ((FreeRunCnt10msec - wait) >= 2);
+//		  setPumpSpeedValue(4, (int)0);
+//		  wait = FreeRunCnt10msec;
+//		  while ((FreeRunCnt10msec - wait) >= 2);
+//		  setPumpSpeedValue(5, (int)0);
+//	}
+//}
 
 /**/

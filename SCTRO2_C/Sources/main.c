@@ -174,6 +174,8 @@ void TestPump(unsigned char Adr); //only for test
 void TestPinch(void);
 void GenerateSBCComm(void);
 
+
+int timerCounterModBusOld = 0;
 int main(void)
 /*lint -restore Enable MISRA rule (6.3) checking. */
 {
@@ -183,6 +185,11 @@ int main(void)
   bool MOTORE_ACCESO_2 = FALSE;
   bool Status_Board;
   TREATMENT_TYPE TreatType = KidneyTreat;
+  pollingDataFromSBC = 0;
+  pollingDataToSBC = 0;
+  codeDBG = 0;
+  subcodeDBG = 0;
+
 
  #ifdef	DEBUG_COMM_SBC
   Status_Board = SERVICE;
@@ -264,6 +271,7 @@ int main(void)
 
 
   SBC_COMM_Enable();
+  initCommSBC();
     /**/
   /*abilito l'RTS per la trasmissionme verso i motori;
    * la lascio sempre attiva tanto ogni 50 msec al massimo
@@ -291,9 +299,7 @@ int main(void)
 
   char dummy;
 
-  int timerCounterModBusOld = 0;
-  /* For example: for(;;) { } */
-
+  //int timerCounterModBusOld = 0;
 
   /*faccio lo start dei canali AD per far scattare l'interrupt
    * dentro l'interrupt farò lo stop e poi lo start lo rifarò
@@ -329,6 +335,21 @@ int main(void)
 		  timerCounterCheckModBus = 0;
 	  }
   }
+
+//  QUESTO CODICE POTREBBE ESSERE NECESSARIO SCOMMENTARLO SE NON FOSSE SUFFICIENTE LA
+//  CORRENTE DI PILOTAGGIO DELLE POMPE
+  timerCounterCheckModBus = 0;
+  setPumpCurrentValue((unsigned char)2, (int)24);
+  while (timerCounterCheckModBus < 1);
+  timerCounterCheckModBus = 0;
+  setPumpCurrentValue((unsigned char)3, (int)24);
+  while (timerCounterCheckModBus < 1);
+  timerCounterCheckModBus = 0;
+  setPumpCurrentValue((unsigned char)4, (int)24);    // imposto la CURRENT LEVEL a 24
+  while (timerCounterCheckModBus < 1);
+  timerCounterCheckModBus = 0;
+  setPumpCurrentValue((unsigned char)5, (int)24);
+  while (timerCounterCheckModBus < 1);
 
   /*prima di entrare nel loop infinito chiedo i dati di targa agli attuatori
    * devo ricevere i dati di tutte le pompe in massimo un secondo;
@@ -380,10 +401,11 @@ int main(void)
   while (timerCounterCheckModBus < 1);
    timerCounterCheckModBus = 0;
 
-
 //   setPinchPositionHighLevel(BOTTOM_PINCH_ID, (int)MODBUS_PINCH_POS_CLOSED);
 //   setPinchPositionHighLevel(LEFT_PINCH_ID, (int)MODBUS_PINCH_POS_CLOSED);
 //   setPinchPositionHighLevel(RIGHT_PINCH_ID, (int)MODBUS_PINCH_POS_CLOSED);
+
+
 
   /**********MAIN LOOP START************/
   for(;;) {
@@ -657,7 +679,6 @@ int main(void)
 
 			 #ifdef DEBUG_TREATMENT
 	         /* sbc comm - start */
-	         initCommSBC();
 	         pollingSBCCommTreat();
 	         pollingDataToSBCTreat();
 	         /* sbc comm - end */
@@ -668,10 +689,6 @@ int main(void)
 			 Manage_Air_Sensor_1();
 
 	         /*****MACHINE STATE UPDATE START****/
-        	 testCOMMSbcDebug();
-			 // il controllo sul time slot lo fa al suo interno
-			// alwaysModBusActuator();
-
         	 if(timerCounterMState >= 1)
 	         {
 	        	timerCounterMState = 0;
@@ -757,11 +774,8 @@ int main(void)
 
 	         /*********PUMP*********/
 	         /*la gestione del ModBus probabilmente sarà da rifare seguendo la scia di quanto fatto inn Debug*/
-	         if(timerCounterModBus != timerCounterModBusOld)
-	         {
-	        	 timerCounterModBusOld = timerCounterModBus;
-	        	 alwaysModBusActuator();
-	         }
+
+	         alwaysModBusActuator();
 
 	         if (!iflag_sbc_rx && !WriteActive)
 	        	 Manage_and_Storage_ModBus_Actuator_Data();

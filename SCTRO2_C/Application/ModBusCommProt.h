@@ -178,6 +178,7 @@ void modbusDataInit(void);
 
 
 void setPumpSpeedValueHighLevel(unsigned char slaveAddr, int speedValue);
+void setPumpCurrentValue(unsigned char slaveAddr, int currValue);
 void setPumpSpeedValue(unsigned char slaveAddr, int speedValue);
 void readPumpSpeedValueHighLevel(unsigned char slaveAddr);
 void readPumpSpeedValue(unsigned char slaveAddr);

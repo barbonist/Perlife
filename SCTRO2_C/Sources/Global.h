@@ -1123,6 +1123,10 @@ unsigned char Prescaler_Tick_TEST;
 /**/
 
 /**/
+int pollingDataFromSBC;
+int pollingDataToSBC;
+unsigned char codeDBG;
+unsigned char subcodeDBG;
 
 typedef enum{KidneyTreat = 0, LiverTreat} TREATMENT_TYPE;
 
