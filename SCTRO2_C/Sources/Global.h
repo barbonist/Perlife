@@ -946,13 +946,17 @@ struct buttonGUI buttonGUITreatment[214];
 /************************************************************************/
 enum paramWordSetFromSBC{
 	PAR_SET_PRIMING_VOL_PERFUSION = 0x10,
-	PAR_SET_PRIMING_VOL_PURIFICATION = 0x30,
-	PAR_SET_PRIMING_VOL_OXYGENATION = 0x50,
-	PAR_SET_OXYGENATOR_FOW = 0x70,
-	PAR_SET_TEMPERATURE = 0xA0,
-	PAR_SET_PRESS_ART_TARGET = 0xB1,
+	PAR_SET_THERAPY_TYPE = 0x20,
+	PAR_SET_PRIMING_VOL_PURIFICATION = 0x30,       // ml
+	PAR_SET_PRIMING_TEMPERATURE_PERFUSION = 0x40,  // temperatura in °C moltiplicata per 10
+	PAR_SET_PRIMING_VOL_OXYGENATION = 0x50,        // ml
+	PAR_SET_OXYGENATOR_ACTIVE = 0x60,              // 1 = no, 2 = si, 0 = undefined
+	PAR_SET_OXYGENATOR_FLOW = 0x70,                // ml/min
+	PAR_SET_DEPURATION_ACTIVE = 0x80,              // 1 = no, 2 = si, 0 = undefined
+	PAR_SET_TEMPERATURE = 0xA0,                    // temperatura in °C moltiplicata per 10
+	PAR_SET_PRESS_ART_TARGET = 0xB1,               // mmHg
 	PAR_SET_DESIRED_DURATION = 0xB3,
-	PAR_SET_MAX_FLOW_PERFUSION = 0xB7,
+	PAR_SET_MAX_FLOW_PERFUSION = 0xB7,             // ml/min
 	PAR_SET_PRESS_VEN_TARGET = 0xC2,
 	PAR_SET_PURIF_FLOW_TARGET = 0xD3,
 	PAR_SET_PURIF_UF_FLOW_TARGET = 0xE4,
@@ -1128,6 +1132,19 @@ int pollingDataToSBC;
 unsigned char codeDBG;
 unsigned char subcodeDBG;
 
-typedef enum{KidneyTreat = 0, LiverTreat} TREATMENT_TYPE;
+// durata globale del trattamento in secondi
+unsigned long TreatDuration;
+
+typedef enum{Undef = 0, KidneyTreat = 0x10, LiverTreat = 0x50} THERAPY_TYPE;
+
+// volume massimo in ml trasferito nel reservoir
+#define MAX_VOLUME_RESERVOIR     2000
+// volume minimo in ml trasferito nel reservoir
+#define MIN_VOLUME_RESERVOIR     1000
+
+// temperatura massima nel priming in °C
+#define MAX_TEMP_PRIMING         37
+// temperatura minima nel priming in °C
+#define MIN_TEMP_PRIMING         4
 
 #endif /* SOURCES_GLOBAL_H_ */

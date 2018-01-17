@@ -38,4 +38,6 @@ void Coversion_From_ADC_To_Voltage();
 void Pressure_sensor_Fltered ();
 void Manage_Air_Sensor_1(void);
 void Manage_Debug_led(bool Status);
+unsigned char ReadKey1(void);
+unsigned char ReadKey2(void);
 #endif /* APPLICATION_ADC_GES_H_ */

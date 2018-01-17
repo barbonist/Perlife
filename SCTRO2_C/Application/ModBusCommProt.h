@@ -172,7 +172,7 @@ struct func17RetStruct * ModBusRWRegisterReq(char slaveAddr,
 									unsigned int * writeRegisterValue
 									);
 
-void modBusPmpInit(TREATMENT_TYPE tt);
+void modBusPmpInit(THERAPY_TYPE tt);
 void modBusPinchInit(void);
 void modbusDataInit(void);
 
@@ -208,12 +208,10 @@ static void FrameInitFunc3(void);
 static void FrameInitFunc10(void);
 static void FrameInitFunc17(void);
 static unsigned int ComputeChecksum(unsigned char * data, int size);
+unsigned long msTick_elapsed( unsigned long last );
+void SetNonPhysicalAlm( int AlarmCode);
+void ClearNonPhysicalAlm( int AlarmCode);
 /* Private function */
-
-
-#define BOTTOM_PINCH_ID   7
-#define LEFT_PINCH_ID     8
-#define RIGHT_PINCH_ID    9
 
 #define		PPAR         		0x02 /* pump 1 address - pump art per rene / depurazione vaschetta per fegato*/
 #define		PPAF		        0x03 /* pump 2 address - pump art per fegato */
@@ -223,7 +221,7 @@ static unsigned int ComputeChecksum(unsigned char * data, int size);
 #define		PINCH_2WPVA	        0x08 /* pinch valve 2 arteriosa */
 #define		PINCH_2WPVV	        0x09 /* pinch valve 2 venosa */
 
-void SetTreatmentType(TREATMENT_TYPE tt);
-TREATMENT_TYPE GetTreatmentType(void);
+void SetTherapyType(THERAPY_TYPE tt);
+THERAPY_TYPE GetTherapyType(void);
 
 #endif /* APPLICATION_MODBUSCOMMPROT_H_ */

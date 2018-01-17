@@ -13,21 +13,20 @@
 #include "Alarm_Con.h"
 
 
-TREATMENT_TYPE TreatmentType = KidneyTreat;
+THERAPY_TYPE TherapyType = KidneyTreat;
 
-void SetNonPhysicalAlm( int AlarmCode);
-void ClearNonPhysicalAlm( int AlarmCode);
+
 uint32_t msTick_elapsed( uint32_t last );
 
 
-TREATMENT_TYPE GetTreatmentType(void)
+THERAPY_TYPE GetTherapyType(void)
 {
-	return TreatmentType;
+	return TherapyType;
 }
 
-void SetTreatmentType(TREATMENT_TYPE tt)
+void SetTherapyType(THERAPY_TYPE tt)
 {
-	TreatmentType = tt;
+	TherapyType = tt;
 }
 
 /* Public function */
@@ -265,7 +264,7 @@ struct func17RetStruct * ModBusRWRegisterReq(char slaveAddr,
 	return _func17RetValPtr;
 }
 
-void modBusPmpInit(TREATMENT_TYPE tt)
+void modBusPmpInit(THERAPY_TYPE tt)
 {
 
 	/***************** PMP 1********************/
@@ -279,8 +278,13 @@ void modBusPmpInit(TREATMENT_TYPE tt)
 
 	if(tt == KidneyTreat)
 		pumpPerist[0].pmpMySlaveAddress = PPAR ;   // 0x02;	 rotary selctor = 0 - pump art
-	else//if(TreatmentType == LiverTreat)
+	else if(TherapyType == LiverTreat)
 		pumpPerist[0].pmpMySlaveAddress = PPAF;	   // 0x03  rotary selctor = 1 - pump art
+	else
+	{
+		// se il parametro e' indefinito metto il rene
+		pumpPerist[0].pmpMySlaveAddress = PPAR ;   // 0x02;	 rotary selctor = 0 - pump art
+	}
 
 	pumpPerist[0].pmpFuncCode = 0xFF;
 	pumpPerist[0].pmpWriteStartAddr = 0xFFFF;
@@ -363,8 +367,13 @@ void modBusPmpInit(TREATMENT_TYPE tt)
 
 	if(tt == KidneyTreat)
 		pumpPerist[3].pmpMySlaveAddress = PPAF ;   // 0x03;	 rotary selctor = 1 - noy used fot kidney therapy
-	else//if(TreatmentType == LiverTreat)
+	else if(TherapyType == LiverTreat)
 		pumpPerist[3].pmpMySlaveAddress = PPAR;	   // 0x02  rotary selctor = 0 - pump art
+	else
+	{
+		// se il parametro e' indefinito metto il rene
+		pumpPerist[3].pmpMySlaveAddress = PPAF ;   // 0x03;	 rotary selctor = 1 - noy used fot kidney therapy
+	}
 
 	pumpPerist[3].pmpFuncCode = 0xFF;
 	pumpPerist[3].pmpWriteStartAddr = 0xFFFF;
@@ -608,8 +617,8 @@ void readPumpSpeedValueHighLevel(unsigned char slaveAddr){
 	switch(StructId)
 		{
 		case 0:
-			//if((pumpPerist[0].reqState == REQ_STATE_OFF) && (pumpPerist[0].reqType == REQ_TYPE_IDLE))
-			if(pumpPerist[0].reqState == REQ_STATE_OFF)
+			if((pumpPerist[0].reqState == REQ_STATE_OFF) && (pumpPerist[0].reqType == REQ_TYPE_IDLE))
+			//if(pumpPerist[0].reqState == REQ_STATE_OFF)
 			{
 				pumpPerist[0].reqState = REQ_STATE_ON;
 				pumpPerist[0].reqType = REQ_TYPE_READ;
@@ -619,8 +628,8 @@ void readPumpSpeedValueHighLevel(unsigned char slaveAddr){
 			break;
 
 		case 1:
-			//if((pumpPerist[1].reqState == REQ_STATE_OFF) && (pumpPerist[1].reqType == REQ_TYPE_IDLE))
-			if(pumpPerist[1].reqState == REQ_STATE_OFF)
+			if((pumpPerist[1].reqState == REQ_STATE_OFF) && (pumpPerist[1].reqType == REQ_TYPE_IDLE))
+			//if(pumpPerist[1].reqState == REQ_STATE_OFF)
 			{
 				pumpPerist[1].reqState = REQ_STATE_ON;
 				pumpPerist[1].reqType = REQ_TYPE_READ;
@@ -630,8 +639,8 @@ void readPumpSpeedValueHighLevel(unsigned char slaveAddr){
 			break;
 
 		case 2:
-			//if((pumpPerist[2].reqState == REQ_STATE_OFF) && (pumpPerist[2].reqType == REQ_TYPE_IDLE))
-			if(pumpPerist[2].reqState == REQ_STATE_OFF)
+			if((pumpPerist[2].reqState == REQ_STATE_OFF) && (pumpPerist[2].reqType == REQ_TYPE_IDLE))
+			//if(pumpPerist[2].reqState == REQ_STATE_OFF)
 			{
 				pumpPerist[2].reqState = REQ_STATE_ON;
 				pumpPerist[2].reqType = REQ_TYPE_READ;
@@ -641,8 +650,8 @@ void readPumpSpeedValueHighLevel(unsigned char slaveAddr){
 			break;
 
 		case 3:
-			//if((pumpPerist[3].reqState == REQ_STATE_OFF) && (pumpPerist[3].reqType == REQ_TYPE_IDLE))
-			if(pumpPerist[3].reqState == REQ_STATE_OFF)
+			if((pumpPerist[3].reqState == REQ_STATE_OFF) && (pumpPerist[3].reqType == REQ_TYPE_IDLE))
+			//if(pumpPerist[3].reqState == REQ_STATE_OFF)
 			{
 				pumpPerist[3].reqState = REQ_STATE_ON;
 				pumpPerist[3].reqType = REQ_TYPE_READ;
@@ -732,6 +741,7 @@ void alwaysModBusActuator(void)
 	static char ActuatorWriteCnt = 0;
 	static int timerCounterModBusStart = 0;
 	static char AlarmSet = 0;
+
 
 
 	//if( iFlag_modbusDataStorage != TRUE )
@@ -968,13 +978,13 @@ void alwaysModBusActuator(void)
 		if((*(_funcRetVal.slvresRetPtr + 1) == 0x10) && ((Adr - 2) == LasActuatorWriteID))
 		{
 			// ho ricevuto la risposta dalla pompa
-			//pumpPerist[Adr - 2].dataReady = DATA_READY_TRUE; non serve questo
+			pumpPerist[Adr - 2].dataReady = DATA_READY_TRUE;
 			pumpPerist[Adr - 2].reqType = REQ_TYPE_IDLE;
 		}
 		else if((*(_funcRetVal.slvresRetPtr + 1) == 0x10) && ((Adr - 7) == (LasActuatorWriteID - 4)))
 		{
 			// ho ricevuto la risposta da un pinch
-			//pinchActuator[Adr - 7].dataReady = DATA_READY_TRUE; non serve questo
+			pinchActuator[Adr - 7].dataReady = DATA_READY_TRUE;
 			pinchActuator[Adr - 7].reqType = REQ_TYPE_IDLE;
 		}
 		else
@@ -984,11 +994,15 @@ void alwaysModBusActuator(void)
 			{
 				// l'ultima scrittura era una pompa
 				setPumpSpeedValueHighLevel(pumpPerist[LasActuatorWriteID].pmpMySlaveAddress, pumpPerist[LasActuatorWriteID].value);
+				pumpPerist[LasActuatorWriteID].dataReady = DATA_READY_TRUE;
+				pumpPerist[LasActuatorWriteID].reqType = REQ_TYPE_IDLE;
 			}
-			else
+			else if(LasActuatorWriteID <= 6)
 			{
 				// l'ultima scrittura era una pinch
 				setPinchPositionHighLevel(pinchActuator[LasActuatorWriteID - 4].pinchMySlaveAddress, pinchActuator[LasActuatorWriteID - 4].value);
+				pinchActuator[LasActuatorWriteID - 4].dataReady = DATA_READY_TRUE; //non serve questo
+				pinchActuator[LasActuatorWriteID - 4].reqType = REQ_TYPE_IDLE;
 			}
 
 //			if(ActuatorWriteCnt >= 2)
@@ -1072,6 +1086,7 @@ void Manage_and_Storage_ModBus_Actuator_Data(void)
  		StorageModbusData();
  		iFlag_modbusDataStorage = TRUE;
  		ReadActive = FALSE;
+ 		iflag_pmp1_rx = IFLAG_IDLE; //libero la flafg di ricezione per la alwaysModBusActuator
  	}
  	/*chiamo la funzione ogni 50 msec*/
  	if (timerCounterCheckModBus >= 1)

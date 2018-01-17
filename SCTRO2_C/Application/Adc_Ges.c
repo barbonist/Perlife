@@ -224,8 +224,8 @@ word * ReadAdcTm2(void)
 
 int meanWA(unsigned char dimNum, int newSensVal, char IdSens)
 {
-	static int circularBuffer[4] [64]; //uso una matrice di 4 array, uno per ogni sensore
-	static int circBuffAdd[4] [64];    //uso una matrice di 4 array, uno per ogni sensore
+	static int circularBuffer[5] [64]; //uso una matrice di 4 array, uno per ogni sensore
+	static int circBuffAdd[5] [64];    //uso una matrice di 4 array, uno per ogni sensore
 	int numSumValue = 0;
 	int denValue=0;
 	int numTotal=0;

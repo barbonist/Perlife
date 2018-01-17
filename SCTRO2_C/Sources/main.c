@@ -184,7 +184,7 @@ int main(void)
   bool MOTORE_ACCESO = FALSE;
   bool MOTORE_ACCESO_2 = FALSE;
   bool Status_Board;
-  TREATMENT_TYPE TreatType = KidneyTreat;
+  THERAPY_TYPE TreatType = KidneyTreat;
   pollingDataFromSBC = 0;
   pollingDataToSBC = 0;
   codeDBG = 0;
@@ -391,13 +391,13 @@ int main(void)
 
 
   // al reset metto tutti irami delle pich chiusi
-  setPinchPosValue (BOTTOM_PINCH_ID, MODBUS_PINCH_POS_CLOSED);
+  setPinchPosValue (PINCH_2WPVF, MODBUS_PINCH_POS_CLOSED);
   while (timerCounterCheckModBus < 1);
   timerCounterCheckModBus = 0;
-  setPinchPosValue (LEFT_PINCH_ID, MODBUS_PINCH_POS_CLOSED);
+  setPinchPosValue (PINCH_2WPVA, MODBUS_PINCH_POS_CLOSED);
   while (timerCounterCheckModBus < 1);
    timerCounterCheckModBus = 0;
-  setPinchPosValue (RIGHT_PINCH_ID, MODBUS_PINCH_POS_CLOSED);
+  setPinchPosValue (PINCH_2WPVV, MODBUS_PINCH_POS_CLOSED);
   while (timerCounterCheckModBus < 1);
    timerCounterCheckModBus = 0;
 
