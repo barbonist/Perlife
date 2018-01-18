@@ -16,39 +16,52 @@
 struct alarm alarmList[] =
 {
 		//{CODE_ALARM0, PHYSIC_TRUE, TYPE_ALARM_CONTROL, PRIORITY_LOW, OVRD_ENABLE, SILENCE_ALLOWED},
-		{CODE_ALARM_PRESS_ART_HIGH,        PHYSIC_TRUE,  ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL,       PRIORITY_HIGH, 2000, 2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull}, 		/* 0 */
-		{CODE_ALARM_PRESS_ART_LOW,         PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL,       PRIORITY_HIGH, 2000, 2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull}, 		/* 1 */
-		{CODE_ALARM_AIR_PRES_ART,          PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL,       PRIORITY_HIGH, 1000, 2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_ALLOWED,     &alarmManageNull}, 		/* 2 */
-		{CODE_ALARM_TEMP_ART_HIGH,         PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_PERF_PUMP, PRIORITY_HIGH, 5000, 2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull}, 	    /* 3 */
-		{CODE_ALARM_PRESS_ADS_FILTER_HIGH, PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL,       PRIORITY_HIGH, 2000, 2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull},	    /* 4 */
-		{CODE_ALARM_MODBUS_ACTUATOR_SEND,  PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_WAIT_CONFIRM,   PRIORITY_LOW,     0,    0, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull},	    /* 5 */
+		{CODE_ALARM_PRESS_ART_HIGH,        PHYSIC_TRUE,  ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR, PRIORITY_HIGH, 2000, 2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull}, 		/* 0 */
+		{CODE_ALARM_PRESS_ART_LOW,         PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR, PRIORITY_HIGH, 2000, 2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull}, 		/* 1 */
+		{CODE_ALARM_AIR_PRES_ART,          PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR, PRIORITY_HIGH, 1000, 2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_ALLOWED,     &alarmManageNull}, 		/* 2 */
+		{CODE_ALARM_TEMP_ART_HIGH,         PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR, PRIORITY_HIGH, 5000, 2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull}, 	    /* 3 */
+		{CODE_ALARM_PRESS_ADS_FILTER_HIGH, PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR, PRIORITY_HIGH, 2000, 2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull},	    /* 4 */
+		{CODE_ALARM_MODBUS_ACTUATOR_SEND,  PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_WAIT_CONFIRM,      PRIORITY_LOW,     0,    0, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull},	    /* 5 */
 
-		{}																																																						            /* 6 */
+		{}																																																						                /* 6 */
 
 };
 
-void DebugStringStr(char *s);
-void ShowAlarmName(int i)
+
+void ShowAlarmStr(int i, char * str)
 {
+	char s[100];
 	switch (i)
 	{
 		case CODE_ALARM_PRESS_ART_HIGH:
-			DebugStringStr("ALARM_PRESS_ART_HIGH");
+			strcpy(s, "ALARM_PRESS_ART_HIGH");
+			strcat(s, str);
+			DebugStringStr(s);
 			break;
 		case CODE_ALARM_PRESS_ART_LOW:
-			DebugStringStr("ALARM_PRESS_ART_LOW");
+			strcpy(s, "ALARM_PRESS_ART_LOW");
+			strcat(s, str);
+			DebugStringStr(s);
 			break;
 		case CODE_ALARM_AIR_PRES_ART:
-			DebugStringStr("ALARM_AIR_PRES_ART");
+			strcpy(s, "ALARM_AIR_PRES_ART");
+			strcat(s, str);
+			DebugStringStr(s);
 			break;
 		case CODE_ALARM_TEMP_ART_HIGH:
-			DebugStringStr("ALARM_TEMP_ART_HIGH");
+			strcpy(s, "ALARM_TEMP_ART_HIGH");
+			strcat(s, str);
+			DebugStringStr(s);
 			break;
 		case CODE_ALARM_PRESS_ADS_FILTER_HIGH:
-			DebugStringStr("ALARM_PRESS_ADS_FILTER_HIGH");
+			strcpy(s, "ALARM_PRESS_ADS_FILTER_HIGH");
+			strcat(s, str);
+			DebugStringStr(s);
 			break;
 		case CODE_ALARM_MODBUS_ACTUATOR_SEND:
-			DebugStringStr("ALARM_MODBUS_ACTUATOR_SEND");
+			strcpy(s, "ALARM_MODBUS_ACTUATOR_SEND");
+			strcat(s, str);
+			DebugStringStr(s);
 			break;
 	}
 
@@ -59,10 +72,14 @@ void alarmConInit(void){
 	ptrAlarmCurrent = &alarmList[0];
 }
 
+int StartAlmArrIdx = 0;
+int i;
+
 void alarmEngineAlways(void){
 
 	static int StrAlarmWritten = 0;
-	int i;
+	static int IdxCurrAlarm = 0xff;
+	//int i;
 
 	//verifica physic pressioni
 	manageAlarmPhysicPressSens();
@@ -73,76 +90,17 @@ void alarmEngineAlways(void){
 	//verifica physic ir temp sens
 	manageAlarmPhysicTempSens();
 
-	for(i=0; i<ALARM_ACTIVE_IN_STRUCT; i++)
-	{
-		if((alarmList[i].physic == PHYSIC_TRUE) && (alarmList[i].active != ACTIVE_TRUE))
-		{
-			ptrAlarmCurrent = &alarmList[i];
-			alarmList[i].prySafetyActionFunc();
-
-			// FM forse qui devo interrompere perche' ho trovato una condizione di allarme da attivare
-			// e devo gestirla prima di andare a vedere le altre
-			break;
-		}
-		else if((alarmList[i].active == ACTIVE_TRUE) && (alarmList[i].physic == PHYSIC_FALSE))
-		{
-			ptrAlarmCurrent = &alarmList[i];
-			alarmList[i].prySafetyActionFunc();
-
-			// FM forse qui devo interrompere perche' ho trovato una condizione di allarme da disattivare
-			// e devo gestirla prima di andare a vedere le altre
-			break;
-		}
-	}
-
-	if( !StrAlarmWritten && (i < ALARM_ACTIVE_IN_STRUCT))
-	{
-		StrAlarmWritten = 1;
-	}
-	else if(StrAlarmWritten)
-	{
-		if(i < ALARM_ACTIVE_IN_STRUCT)
-		{
-			// allarme in corso
-		}
-		else
-		{
-			// allarme terminato
-			StrAlarmWritten = 0;
-			ShowAlarmName(i);
-		}
-	}
-}
-
-/*
-int AlarmActiveFlag = 0;
-void alarmEngineAlways(void){
-	static StartAlmArrIdx = 0; // posizione dell'allarme corrente e posizione di partenza per ogni scansione dell'array di strutture
-	static int AlmState = 0;
-	int i;
-
-	//verifica physic pressioni
-	manageAlarmPhysicPressSens();
-
-	//verifica physic flow sensor
-	manageAlarmPhysicUFlowSens();
-
-	//verifica physic ir temp sens
-	manageAlarmPhysicTempSens();
-
-	//for(int i=0; i<ALARM_ACTIVE_IN_STRUCT; i++)
 	for(i=StartAlmArrIdx; i<ALARM_ACTIVE_IN_STRUCT; i++)
 	{
 		if((alarmList[i].physic == PHYSIC_TRUE) && (alarmList[i].active != ACTIVE_TRUE))
 		{
 			ptrAlarmCurrent = &alarmList[i];
 			alarmList[i].prySafetyActionFunc();
+			StartAlmArrIdx = i;
+			//IdxCurrAlarm = i;
 
 			// FM forse qui devo interrompere perche' ho trovato una condizione di allarme da attivare
 			// e devo gestirla prima di andare a vedere le altre
-			StartAlmArrIdx = i;
-			AlarmActiveFlag = 1;
-			AlmState = 1;
 			break;
 		}
 		else if((alarmList[i].active == ACTIVE_TRUE) && (alarmList[i].physic == PHYSIC_FALSE))
@@ -150,34 +108,43 @@ void alarmEngineAlways(void){
 			ptrAlarmCurrent = &alarmList[i];
 			alarmList[i].prySafetyActionFunc();
 
+			//StartAlmArrIdx = i;  // allarme finito riparto dall'inizio della struttura
+			//IdxCurrAlarm = i;
+
 			// FM forse qui devo interrompere perche' ho trovato una condizione di allarme da disattivare
 			// e devo gestirla prima di andare a vedere le altre
 			break;
 		}
 	}
 
-	switch (AlmState)
+	/*
+	if( !StrAlarmWritten && (StartAlmArrIdx < ALARM_ACTIVE_IN_STRUCT))
 	{
-		case 0:
-			if(i == ALARM_ACTIVE_IN_STRUCT)
-				StartAlmArrIdx = 0;
-			break;
-		case 1:
-			if(!AlarmActiveFlag)
-			{
-				AlmState = 0;
-				StartAlmArrIdx++;
-				if(StartAlmArrIdx == ALARM_ACTIVE_IN_STRUCT)
-					StartAlmArrIdx = 0;
-			}
-			break;
+		if(alarmList[IdxCurrAlarm].active == ACTIVE_TRUE)
+			StrAlarmWritten = 1;
 	}
+	else if(StrAlarmWritten == 1)
+	{
+		ShowAlarmStr((int)alarmList[IdxCurrAlarm].code, " alarm");
+		StrAlarmWritten = 2;
+	}
+	else if(StrAlarmWritten == 2)
+	{
+		if(alarmList[IdxCurrAlarm].active == ACTIVE_FALSE)
+		{
+			// allarme terminato
+			StrAlarmWritten = 0;
+			ShowAlarmStr((int)alarmList[IdxCurrAlarm].code, " terminato");
+			StartAlmArrIdx = 0;
+		}
+	}
+	*/
 }
-*/
+
 
 void manageAlarmPhysicPressSens(void){
 	//if(sensor_PRx[0].prSensValue > 80)
-	if(PR_ART_mmHg > 80)
+	if(PR_ART_mmHg_Filtered > 80)
 		{
 			alarmList[0].physic = PHYSIC_TRUE;
 		}
@@ -281,6 +248,7 @@ void alarmManageNull(void)
 		}
 
 		manageAlarmChildGuard(ptrAlarmCurrent);
+		ShowAlarmStr((int)alarmList[StartAlmArrIdx].code, " alarm");
 	}
 	else if((ptrAlarmCurrent->active == ACTIVE_TRUE) && (elapsedExitTime > ptrAlarmCurrent->exitTime))
 	{
@@ -295,6 +263,10 @@ void alarmManageNull(void)
 		memset(&alarmCurrent, 0, sizeof(struct alarm));
 
 		manageAlarmChildGuard(ptrAlarmCurrent);
+
+		// allarme terminato riparto dall'indice 0 dell'array di strutture
+		ShowAlarmStr((int)alarmList[StartAlmArrIdx].code, " terminato");
+		StartAlmArrIdx = 0;
 	}
 
 
@@ -364,7 +336,7 @@ void manageAlarmChildGuard(struct alarm * ptrAlarm){
 }
 
 // ritorna il numero di intervalli di 50 msec trascorsi dal valore last
-int msTick_elapsed( int last )
+unsigned long msTick_elapsed( unsigned long last )
 {
 	int elapsed = timerCounterModBus;
 	if ( elapsed >= last )

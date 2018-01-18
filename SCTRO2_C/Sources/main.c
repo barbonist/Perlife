@@ -168,6 +168,7 @@
 extern bool WriteActive;
 extern unsigned char Released1;
 extern unsigned char Released2;
+extern unsigned char Released3;
 
 /*lint -save  -e970 Disable MISRA rule (6.3) checking. */
 void TestPump(unsigned char Adr); //only for test
@@ -189,6 +190,10 @@ int main(void)
   pollingDataToSBC = 0;
   codeDBG = 0;
   subcodeDBG = 0;
+  Released1 = 0;
+  Released2 = 0;
+  Released3 = 0;
+
 
 
  #ifdef	DEBUG_COMM_SBC
@@ -705,6 +710,8 @@ int main(void)
 	        	 Released1 = 1;
 	         if(ReadKey2()) // per debug con la tastiera a bolle
 	        	 Released2 = 1;
+	         if(ReadKey3()) // per debug con la tastiera a bolle
+	        	 Released3 = 1;
 
 	         /****MACHINE STATE UPDATE END****/
 

@@ -42,6 +42,7 @@
 #include "EN_CLAMP_CONTROL.h"
 #include "EN_MOTOR_CONTROL.h"
 #include "EN_24_M_C.h"
+#include "child_gest.h"
 
 
 extern struct machineChild stateChildAlarmTreat1[];
@@ -189,10 +190,10 @@ void manageChildPrimAlarmStopPeltAlways(void)
 	stopPeltierActuator();
 }
 
-
 /* Manage CHILD_PRIMING_ALARM_STOP_ALL_ACTUATOR entry state */
 void manageChildPrimAlarmStopAllActEntry(void)
 {
+	/*
 	if(pumpPerist[0].dataReady == DATA_READY_FALSE)
 	{
 		setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
@@ -205,11 +206,17 @@ void manageChildPrimAlarmStopAllActEntry(void)
 	}
 
 	pumpPerist[0].entry = 0;
+	*/
+
+	// chiamo la stessa funzione usata nello stato di trattamento, tanto le cose da fare
+	// sono le stesse (per ora)
+	manageChildTreatAlm1StopAllActEntry();
 }
 
 /* Manage CHILD_PRIMING_ALARM_STOP_ALL_ACTUATOR always state */
 void manageChildPrimAlarmStopAllActAlways(void)
 {
+	/*
 	static int speed = 0;
 	static int timerCopy = 0;
 
@@ -238,6 +245,12 @@ void manageChildPrimAlarmStopAllActAlways(void)
 		speed = modbusData[pumpPerist[0].pmpMySlaveAddress-2][17];
 		pumpPerist[0].dataReady = DATA_READY_FALSE;
 	}
+	*/
+
+
+	// chiamo la stessa funzione usata nello stato di trattamento, tanto le cose da fare
+	// sono le stesse (per ora)
+	manageChildTreatAlm1StopAllActAlways();
 }
 
 
@@ -372,6 +385,8 @@ void manageChildTreatAlm1StopAllPumpEntry(void)
 	{
 		setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
 		setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 0);
+		/*setPumpSpeedValueHighLevel(pumpPerist[2].pmpMySlaveAddress, 0); viene comandata direttamente col comasndo di quella sopra*/
+		setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, 0);
 	}
 	pumpPerist[0].entry = 0;
 }
@@ -386,6 +401,8 @@ void manageChildTreatAlm1StopAllPumpAlways(void)
 	{
 		setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
 		setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 0);
+		/*setPumpSpeedValueHighLevel(pumpPerist[2].pmpMySlaveAddress, 0); viene comandata direttamente col comasndo di quella sopra*/
+		setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, 0);
 	}
 
 	if((timerCounterModBus%9) == 8)
@@ -425,33 +442,136 @@ void manageChildTreatAlm1StopPeltAlways(void)
 /* Manage CHILD_TREAT_ALARM_1_STOP_ALL_ACTUATOR entry state */
 void manageChildTreatAlm1StopAllActEntry(void)
 {
-	if(pumpPerist[0].dataReady == DATA_READY_FALSE)
+	//gestisco gli attuatori in allarme solo se ho impostato una terapia valida
+//	if(pumpPerist[0].dataReady == DATA_READY_FALSE && TherapyType != Undef)
+//	{
+//		setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
+//		setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 0);
+//		/*setPumpSpeedValueHighLevel(pumpPerist[2].pmpMySlaveAddress, 0); viene comandata direttamente col comando di quella sopra*/
+//		setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, 0);
+//
+//		setPinchPositionHighLevel(PINCH_2WPVF, MODBUS_PINCH_LEFT_OPEN);
+//		setPinchPositionHighLevel(PINCH_2WPVA, MODBUS_PINCH_LEFT_OPEN);
+//
+//		if (TherapyType == LiverTreat)
+//			setPinchPositionHighLevel(PINCH_2WPVV, MODBUS_PINCH_LEFT_OPEN);
+//		else if (TherapyType == KidneyTreat)
+//		{
+//			//in TherapyType == KidneyTreat non è usata quindi preferisco non muoverla
+//		}
+//
+//		stopPeltierActuator();
+//	}
+//
+//	pumpPerist[0].entry = 0;
+	THERAPY_TYPE TherType = GetTherapyType();
+
+	//gestisco gli attuatori in allarme solo se ho impostato una terapia valida
+	if (TherType != Undef)
 	{
-		setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
-		setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 0);
-		setPinchPositionHighLevel(PNCHVLV1_ADDRESS, MODBUS_PINCH_POS_CLOSED);
-		setPinchPositionHighLevel(PNCHVLV2_ADDRESS, MODBUS_PINCH_POS_CLOSED);
-		setPinchPositionHighLevel(PNCHVLV3_ADDRESS, MODBUS_PINCH_POS_CLOSED);
+		if(pumpPerist[0].dataReady == DATA_READY_FALSE)
+		{
+			setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
+		}
+		if(pumpPerist[1].dataReady == DATA_READY_FALSE)
+		{
+			setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 0);
+		}
+		/*viene comandata direttamente col comando di quella sopra*/
+//		if(pumpPerist[2].dataReady == DATA_READY_FALSE)
+//		{
+//			setPumpSpeedValueHighLevel(pumpPerist[2].pmpMySlaveAddress, 0);
+//		}
+		if(pumpPerist[3].dataReady == DATA_READY_FALSE)
+		{
+			setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, 0);
+		}
+
+		setPinchPositionHighLevel(PINCH_2WPVF, MODBUS_PINCH_LEFT_OPEN);
+		setPinchPositionHighLevel(PINCH_2WPVA, MODBUS_PINCH_LEFT_OPEN);
+
+		if (TherType == LiverTreat)
+			setPinchPositionHighLevel(PINCH_2WPVV, MODBUS_PINCH_LEFT_OPEN);
+		else if (TherType == KidneyTreat)
+		{
+			//in TherapyType == KidneyTreat non è usata quindi preferisco non muoverla
+		}
 
 		stopPeltierActuator();
 	}
 
 	pumpPerist[0].entry = 0;
+	pumpPerist[1].entry = 0;
+	pumpPerist[2].entry = 0;
+	pumpPerist[3].entry = 0;
 }
 
 /* Manage CHILD_TREAT_ALARM_1_STOP_ALL_ACTUATOR always state */
 void manageChildTreatAlm1StopAllActAlways(void)
 {
-	static int speed = 0;
 	static int timerCopy = 0;
+	THERAPY_TYPE TherType = GetTherapyType();
 
-	if((pumpPerist[0].dataReady == DATA_READY_FALSE) && (speed != 0))
+//	if((pumpPerist[0].dataReady == DATA_READY_FALSE) && (speed_pmp1 != 0))
+//	{
+//		setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
+//		setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 0);
+//		/*setPumpSpeedValueHighLevel(pumpPerist[2].pmpMySlaveAddress, 0); viene comandata direttamente col comando di quella sopra*/
+//		setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, 0);
+//
+//		setPinchPositionHighLevel(PINCH_2WPVF, MODBUS_PINCH_LEFT_OPEN);
+//		setPinchPositionHighLevel(PINCH_2WPVA, MODBUS_PINCH_LEFT_OPEN);
+//
+//		if (TherapyType == LiverTreat)
+//			setPinchPositionHighLevel(PINCH_2WPVV, MODBUS_PINCH_LEFT_OPEN);
+//		else if (TherapyType == KidneyTreat)
+//		{
+//			//in TherapyType == KidneyTreat non è usata quindi preferisco non muoverla
+//		}
+//	}
+
+	//gestisco gli attuatori in allarme solo se ho impostato una terapia valida
+	if (TherType != Undef)
 	{
-		setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
-		setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 0);
-		setPinchPositionHighLevel(PNCHVLV1_ADDRESS, MODBUS_PINCH_POS_CLOSED); // forse vanno messe in scarico e non chiuse !!!!
-		setPinchPositionHighLevel(PNCHVLV2_ADDRESS, MODBUS_PINCH_POS_CLOSED);
-		setPinchPositionHighLevel(PNCHVLV3_ADDRESS, MODBUS_PINCH_POS_CLOSED);
+		if(pumpPerist[0].dataReady == DATA_READY_FALSE && (pumpPerist[0].actualSpeed != 0))
+		{
+			setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
+		}
+		if(pumpPerist[1].dataReady == DATA_READY_FALSE  && ( (pumpPerist[1].actualSpeed != 0) || (pumpPerist[2].actualSpeed != 0)) )
+		{
+			setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 0);
+		}
+		/*viene comandata direttamente col comando di quella sopra*/
+//		if(pumpPerist[2].dataReady == DATA_READY_FALSE  && (pumpPerist[2].actualSpeed != 0))
+//		{
+//			setPumpSpeedValueHighLevel(pumpPerist[2].pmpMySlaveAddress, 0);
+//		}
+		if(pumpPerist[3].dataReady == DATA_READY_FALSE  && (pumpPerist[3].actualSpeed != 0))
+		{
+			setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, 0);
+		}
+
+		if (modbusData[PINCH_2WPVF-3][17] != MODBUS_PINCH_LEFT_OPEN)
+		{
+			setPinchPositionHighLevel(PINCH_2WPVF, MODBUS_PINCH_LEFT_OPEN);
+		}
+
+		if (modbusData[PINCH_2WPVA-3][17] != MODBUS_PINCH_LEFT_OPEN)
+		{
+			setPinchPositionHighLevel(PINCH_2WPVA, MODBUS_PINCH_LEFT_OPEN);
+		}
+
+		if ( modbusData[PINCH_2WPVV-3][17] != MODBUS_PINCH_LEFT_OPEN && TherType == LiverTreat)
+		{
+			setPinchPositionHighLevel(PINCH_2WPVV, MODBUS_PINCH_LEFT_OPEN);
+		}
+
+		else if (modbusData[PINCH_2WPVV-3][17] != MODBUS_PINCH_LEFT_OPEN && TherType == KidneyTreat)
+		{
+			//in TherapyType == KidneyTreat non è usata quindi preferisco non muoverla
+		}
+
+		stopPeltierActuator();
 	}
 
 	if((timerCounterModBus%9) == 8)
@@ -463,13 +583,13 @@ void manageChildTreatAlm1StopAllActAlways(void)
 		readPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress);
 	}
 
-	if(pumpPerist[0].dataReady == DATA_READY_TRUE)
-	{
-		//speed = ((BYTES_TO_WORD_SIGN(msgToRecvFrame3[3], msgToRecvFrame3[4]))/100)*(timerCopy);
-		pumpPerist[0].dataReady = DATA_READY_FALSE;
-		// la velocita' ora posso leggerla direttamente dall'array di registry modbus
-		speed = modbusData[pumpPerist[0].pmpMySlaveAddress-2][17];
-	}
+	pumpPerist[0].actualSpeed =  modbusData[pumpPerist[0].pmpMySlaveAddress-2][17];
+
+	pumpPerist[1].actualSpeed = modbusData[pumpPerist[1].pmpMySlaveAddress-2][17];
+
+	pumpPerist[2].actualSpeed = modbusData[pumpPerist[2].pmpMySlaveAddress-2][17];
+
+	pumpPerist[3].actualSpeed = modbusData[pumpPerist[3].pmpMySlaveAddress-2][17];
 }
 
 

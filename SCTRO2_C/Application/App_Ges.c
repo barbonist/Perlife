@@ -581,6 +581,9 @@ void managePrimingPh1(void)
 	timerCounter = 0;
 
 	pumpPerist[0].entry = 0;
+	pumpPerist[1].entry = 0;
+	pumpPerist[2].entry = 0;
+	pumpPerist[3].entry = 0;
 
 	#ifdef DEBUG_ENABLE
 
@@ -651,6 +654,9 @@ void managePrimingPh2(void)
 	releaseGUIButton(BUTTON_CONFIRM);
 
 	pumpPerist[0].entry = 0;
+	pumpPerist[1].entry = 0;
+	pumpPerist[2].entry = 0;
+	pumpPerist[3].entry = 0;
 
 	#ifdef DEBUG_ENABLE
 
@@ -777,7 +783,10 @@ void manageStatePrimingTreat1Always(void)
 /*-----------------------------------------------------------*/
 void manageStatePrimingTreat2(void)
 {
-
+	pumpPerist[0].entry = 0;
+	pumpPerist[1].entry = 0;
+	pumpPerist[2].entry = 0;
+	pumpPerist[3].entry = 0;
 }
 
 void manageStatePrimingTreat2Always(void)
@@ -858,22 +867,55 @@ void manageStateFatalErrorAlways(void)
 /* PARENT LEVEL FUNCTION */
 
 void manageParentPrimingEntry(void){
-
-	iflag_pmp1_rx = IFLAG_IDLE;
+//  Codice originale
+//	iflag_pmp1_rx = IFLAG_IDLE;
+//
+//	if(pumpPerist[0].entry == 0)
+//	{
+//		setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
+//		setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 0);
+//		setPinchPositionHighLevel(PNCHVLV1_ADDRESS, MODBUS_PINCH_RIGHT_OPEN);
+//		setPinchPositionHighLevel(PNCHVLV3_ADDRESS, MODBUS_PINCH_RIGHT_OPEN);
+//
+//		startPeltierActuator();
+//		peltierCell.readAlwaysEnable  = 1;
+//		peltierCell2.readAlwaysEnable = 1;
+//
+// 		pumpPerist[0].entry = 1;
+//	}
 
 	if(pumpPerist[0].entry == 0)
 	{
 		setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
-		setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 0);
-		setPinchPositionHighLevel(PNCHVLV1_ADDRESS, MODBUS_PINCH_RIGHT_OPEN);
-		setPinchPositionHighLevel(PNCHVLV3_ADDRESS, MODBUS_PINCH_RIGHT_OPEN);
+		setPinchPositionHighLevel(PINCH_2WPVF, MODBUS_PINCH_RIGHT_OPEN);
+		setPinchPositionHighLevel(PINCH_2WPVA, MODBUS_PINCH_RIGHT_OPEN);
 
 		startPeltierActuator();
-		peltierCell.readAlwaysEnable  = 1;
+		peltierCell.readAlwaysEnable = 1;
 		peltierCell2.readAlwaysEnable = 1;
 
- 		pumpPerist[0].entry = 1;
+		pumpPerist[0].entry = 1;
 	}
+
+	if(pumpPerist[1].entry == 0)
+	{
+		setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 0);
+		pumpPerist[1].entry = 1;
+	}
+
+	/*viene comandata direttamente col comando di quella sopra*/
+//	if(pumpPerist[2].entry == 0)
+//	{
+//		setPumpSpeedValueHighLevel(pumpPerist[2].pmpMySlaveAddress, 0);
+//		pumpPerist[2].entry = 1;
+//	}
+
+	if(pumpPerist[3].entry == 0)
+	{
+		setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, 0);
+		pumpPerist[3].entry = 1;
+	}
+
 }
 
 void manageParentPrimingAlways(void){
@@ -1209,7 +1251,10 @@ void manageParentTreatAlarmAlways(void){
 */
 }
 
+// In questa funzione ci va quando sono nella fase iniziale del trattamento
+// Le pompe verranno fatte partire successivamente su richiesta da parte dell'utente
 void manageParentTreatEntry(void){
+/*
 	//iflag_pmp1_rx = IFLAG_IDLE;
 	//static unsigned char entry = 0;
 
@@ -1231,6 +1276,41 @@ void manageParentTreatEntry(void){
 
 		pumpPerist[0].entry = 1;
 	}
+*/
+
+	if(pumpPerist[0].entry == 0)
+	{
+		setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
+		setPinchPositionHighLevel(PINCH_2WPVF, MODBUS_PINCH_RIGHT_OPEN);
+		setPinchPositionHighLevel(PINCH_2WPVA, MODBUS_PINCH_RIGHT_OPEN);
+		setPumpPressLoop(0, PRESS_LOOP_OFF);
+
+		startPeltierActuator();
+		peltierCell.readAlwaysEnable = 1;
+		peltierCell2.readAlwaysEnable = 1;
+
+		pumpPerist[0].entry = 1;
+	}
+
+	if(pumpPerist[1].entry == 0)
+	{
+		setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 0);
+		pumpPerist[1].entry = 1;
+	}
+
+	/*viene comandata direttamente col comando di quella sopra*/
+//	if(pumpPerist[2].entry == 0)
+//	{
+//		setPumpSpeedValueHighLevel(pumpPerist[2].pmpMySlaveAddress, 0);
+//		pumpPerist[2].entry = 1;
+//	}
+
+	if(pumpPerist[3].entry == 0)
+	{
+		setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, 0);
+		pumpPerist[3].entry = 1;
+	}
+
 }
 
 
@@ -1304,7 +1384,7 @@ void manageParentTreatAlways(void){
 
 		if(
 			(getPumpPressLoop(0) == PRESS_LOOP_ON) &&
-			(timerCounterPID >=5)
+			(timerCounterPID >=1)
 			)
 		{
 			timerCounterPID = 0;
@@ -1408,7 +1488,7 @@ void manageParentTreatAlways(void){
 
 			if(
 				(getPumpPressLoop(0) == PRESS_LOOP_ON) &&
-				(timerCounterPID >=5)
+				(timerCounterPID >=1)
 				)
 			{
 				timerCounterPID = 0;
@@ -1463,12 +1543,12 @@ void manageParentTreatAlways(void){
 			break;
 		}
 
-		if(Debug_Bubble_Keyboard_GetVal(BUTTON_4))  // TODO eliminare, solo per debug
-		{
-				currentGuard[GUARD_ENABLE_TREATMENT_KIDNEY_1].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
-				// forzo evento di release sul tasto BUTTON_START_PERF_PUMP
-				setGUIButton((unsigned char)BUTTON_START_PERF_PUMP);
-		}
+//		if(Debug_Bubble_Keyboard_GetVal(BUTTON_4))  // TODO eliminare, solo per debug
+//		{
+//				currentGuard[GUARD_ENABLE_TREATMENT_KIDNEY_1].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+//				// forzo evento di release sul tasto BUTTON_START_PERF_PUMP
+//				setGUIButton((unsigned char)BUTTON_START_PERF_PUMP);
+//		}
 
 }
 
@@ -2235,6 +2315,7 @@ void processMachineState(void)
 				releaseGUIButton(BUTTON_CONFIRM);
 				/* (FM) alla ricezione del comando da tastiera faccio partire la fase di priming */
 				ptrFutureParent = &stateParentPrimingTreatKidney1[3];
+				ptrFutureChild = ptrFutureParent->ptrChild;
 			}
 
 			if(ptrCurrentParent->action == ACTION_ON_ENTRY)
@@ -2243,6 +2324,7 @@ void processMachineState(void)
 				ptrCurrentParent->callBackFunct();
 				/* compute future parent */
 				ptrFutureParent = &stateParentPrimingTreatKidney1[2];
+				ptrFutureChild = ptrFutureParent->ptrChild;
 			}
 			else if(ptrCurrentParent->action == ACTION_ALWAYS)
 			{
@@ -2265,6 +2347,7 @@ void processMachineState(void)
 				ptrCurrentParent->callBackFunct();
 				/* compute future parent */
 				ptrFutureParent = &stateParentPrimingTreatKidney1[4];
+				ptrFutureChild = ptrFutureParent->ptrChild;
 			}
 			else if(ptrCurrentParent->action == ACTION_ALWAYS)
 			{
@@ -2284,6 +2367,7 @@ void processMachineState(void)
 			{
 				/* (FM) finita la situazione di allarme posso ritornare in PARENT_PRIMING_TREAT_KIDNEY_1_INIT*/
 				ptrFutureParent = &stateParentPrimingTreatKidney1[1];
+				ptrFutureChild = ptrFutureParent->ptrChild;
 			}
 
 			if(ptrCurrentParent->action == ACTION_ON_ENTRY)
@@ -2292,6 +2376,7 @@ void processMachineState(void)
 				ptrCurrentParent->callBackFunct();
 				/* compute future parent */
 				ptrFutureParent = &stateParentPrimingTreatKidney1[6];
+				ptrFutureChild = ptrFutureParent->ptrChild;
 			}
 			else if(ptrCurrentParent->action == ACTION_ALWAYS)
 			{
@@ -3064,8 +3149,45 @@ unsigned char ReadKey2(void)
 	return Released;
 }
 
+unsigned char ReadKey3(void)
+{
+	static int Counter = 0;
+	static unsigned char state = 0;
+	unsigned char Released = 0;
+	unsigned char key;
+
+	key = Bubble_Keyboard_GetVal(BUTTON_3);
+	if (key && (state == 0))
+	{
+		Counter++;
+		if( Counter > 100)
+		{
+			Counter = 0;
+			state = 1; // tasto premuto
+			Released = 0;
+		}
+	}
+	else if (!key && (state == 1))
+	{
+		Counter++;
+		if( Counter > 100)
+		{
+			state = 0;  // tasto rilasciato
+			Counter = 0;
+			Released = 1;
+		}
+	}
+	else
+	{
+		Counter = 0;
+	}
+	return Released;
+}
+
+
 unsigned char Released1;
 unsigned char Released2;
+unsigned char Released3;
 
 
 void GenEvntParentPrim(void)
@@ -3077,15 +3199,26 @@ void GenEvntParentPrim(void)
 				Released2 = 0;
 				if(ptrCurrentParent->action == ACTION_ALWAYS)
 				{
-					setGUIButton((unsigned char)BUTTON_CONFIRM);
 					setGUIButton((unsigned char)BUTTON_START_PRIMING);
-					parameterWordSetFromGUI[PAR_SET_PRESS_ART_TARGET].value = 20;
+					parameterWordSetFromGUI[PAR_SET_PRESS_ART_TARGET].value = 60;
 					setGUIButton((unsigned char)BUTTON_START_OXYGEN_PUMP);
-
-					DebugStringStr("START POMPA");
 					// evito che all'entry del parent mi fermi le pompe
 					pumpPerist[0].entry = 1;
+
+					if(perfusionParam.priVolPerfArt < parameterWordSetFromGUI[PAR_SET_PRIMING_VOL_PERFUSION].value)
+					{
+						setGUIButton((unsigned char)BUTTON_CONFIRM);
+					}
+					else
+					{
+						DebugStringStr("START POMPA");
+					}
 				}
+			}
+			if(Released3)
+			{
+				setGUIButton((unsigned char)BUTTON_START_PRIMING);
+				Released3 = 0;
 			}
 			break;
 
@@ -3099,9 +3232,19 @@ void GenEvntParentPrim(void)
 					DebugStringStr("STATE_TREATMENT_KIDNEY_1");
 				}
 			}
+			if(Released3)
+			{
+				setGUIButton((unsigned char)BUTTON_START_PRIMING);
+				Released3 = 0;
+			}
 			break;
 
 		case PARENT_PRIMING_TREAT_KIDNEY_1_ALARM:
+			if(Released3)
+			{
+				setGUIButton((unsigned char)BUTTON_START_PRIMING);
+				Released3 = 0;
+			}
 			break;
 
 		case PARENT_PRIMING_TREAT_KIDNEY_1_END:
@@ -3145,11 +3288,16 @@ void GenEvntParentTreat(void)
 // viene chiamata ad intervalli di 50 msec
 // sequenza di tasti 1,2 della tastiera a bolle fino ad arrivare a STATE_PRIMING_1
 //  tasto 2 per lo start della pompa nella fase STATE_PRIMING_1 dopo un po..
+//          Con il Tasto 3 faccio ripartire le pompe dopo un allarme
 //  tasto 1 per passare a STATE_PRIMING_2 dopo un po..
 //  tasto 2 per dare lo start alla pompa in STATE_PRIMING_2 una volta
 //          raggiunto il volume richiesto di  50 ml premere di nuovo ..
+//          Con il Tasto 3 faccio ripartire le pompe dopo un allarme
 //  tasto 2 passo alla fase di trattamento poi ...
 //  tasto 1 faccio partire le pompe all'inizio del trattamento
+//          Con il Tasto 3 faccio ripartire le pompe dopo un allarme
+//          DEVO USARE QUESTO TASTO ANCHE PER FAR RIPARTIRE I MOTORI
+//          DOPO UN ALLARME E QUANDO SONO IN TRATTAMENTO
 void GenerateSBCComm(void)
 {
 	static int timerCounterGenSBCComm = 0;
@@ -3235,6 +3383,13 @@ void GenerateSBCComm(void)
 				GenEvntParentPrim();
 				Released2 = 0;
 			}
+			else if(Released3)
+			{
+				// Questo tasto viene usato in GenEvntParentPrim per far ripartire la pompa
+				// dopo un allarme
+				GenEvntParentPrim();
+				Released3 = 0;
+			}
 			break;
 		case STATE_PRIMING_PH_2:
 			if(Released1)
@@ -3245,9 +3400,16 @@ void GenerateSBCComm(void)
 			}
 			else if(Released2)
 			{
-				// Questo tasto viene usato in GenEvntParentPrim per far partire la pompa
+				// Questo tasto viene usato in GenEvntParentPrim per far ripartire la pompa
 				GenEvntParentPrim();
 				Released2 = 0;
+			}
+			else if(Released3)
+			{
+				// Questo tasto viene usato in GenEvntParentPrim per far partire la pompa
+				// dopo un allarme
+				GenEvntParentPrim();
+				Released3 = 0;
 			}
 			break;
 		case STATE_TREATMENT_KIDNEY_1:

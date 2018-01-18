@@ -778,8 +778,8 @@ void alwaysModBusActuator(void)
 			}
 			else if(
 					(pumpPerist[0].reqState == REQ_STATE_ON) &&
-					(pumpPerist[0].reqType == REQ_TYPE_READ) &&
-					(iflag_pmp1_rx != IFLAG_PMP1_BUSY)
+					(pumpPerist[0].reqType == REQ_TYPE_READ) /*&&
+					(iflag_pmp1_rx != IFLAG_PMP1_BUSY)*/
 					) //read
 			{
 				pumpPerist[0].reqState = REQ_STATE_OFF;
@@ -814,8 +814,8 @@ void alwaysModBusActuator(void)
 			}
 			else if(
 					(pumpPerist[1].reqState == REQ_STATE_ON) &&
-					(pumpPerist[1].reqType == REQ_TYPE_READ) &&
-					(iflag_pmp1_rx != IFLAG_PMP1_BUSY)
+					(pumpPerist[1].reqType == REQ_TYPE_READ) /*&&
+					(iflag_pmp1_rx != IFLAG_PMP1_BUSY)*/
 					) //read
 			{
 				pumpPerist[1].reqState = REQ_STATE_OFF;
@@ -851,8 +851,8 @@ void alwaysModBusActuator(void)
 			}
 			else if(
 					(pumpPerist[2].reqState == REQ_STATE_ON) &&
-					(pumpPerist[2].reqType == REQ_TYPE_READ) &&
-					(iflag_pmp1_rx != IFLAG_PMP1_BUSY)
+					(pumpPerist[2].reqType == REQ_TYPE_READ) /*&&
+					(iflag_pmp1_rx != IFLAG_PMP1_BUSY)*/
 					) //read
 			{
 				pumpPerist[2].reqState = REQ_STATE_OFF;
@@ -887,8 +887,8 @@ void alwaysModBusActuator(void)
 			}
 			else if(
 					(pumpPerist[3].reqState == REQ_STATE_ON) &&
-					(pumpPerist[3].reqType == REQ_TYPE_READ) &&
-					(iflag_pmp1_rx != IFLAG_PMP1_BUSY)
+					(pumpPerist[3].reqType == REQ_TYPE_READ) /*&&
+					(iflag_pmp1_rx != IFLAG_PMP1_BUSY)*/
 					) //read
 			{
 				pumpPerist[3].reqState = REQ_STATE_OFF;
@@ -978,13 +978,13 @@ void alwaysModBusActuator(void)
 		if((*(_funcRetVal.slvresRetPtr + 1) == 0x10) && ((Adr - 2) == LasActuatorWriteID))
 		{
 			// ho ricevuto la risposta dalla pompa
-			pumpPerist[Adr - 2].dataReady = DATA_READY_TRUE;
+			//pumpPerist[Adr - 2].dataReady = DATA_READY_TRUE;
 			pumpPerist[Adr - 2].reqType = REQ_TYPE_IDLE;
 		}
 		else if((*(_funcRetVal.slvresRetPtr + 1) == 0x10) && ((Adr - 7) == (LasActuatorWriteID - 4)))
 		{
 			// ho ricevuto la risposta da un pinch
-			pinchActuator[Adr - 7].dataReady = DATA_READY_TRUE;
+			//pinchActuator[Adr - 7].dataReady = DATA_READY_TRUE;
 			pinchActuator[Adr - 7].reqType = REQ_TYPE_IDLE;
 		}
 		else
@@ -994,14 +994,14 @@ void alwaysModBusActuator(void)
 			{
 				// l'ultima scrittura era una pompa
 				setPumpSpeedValueHighLevel(pumpPerist[LasActuatorWriteID].pmpMySlaveAddress, pumpPerist[LasActuatorWriteID].value);
-				pumpPerist[LasActuatorWriteID].dataReady = DATA_READY_TRUE;
+				//pumpPerist[LasActuatorWriteID].dataReady = DATA_READY_TRUE;
 				pumpPerist[LasActuatorWriteID].reqType = REQ_TYPE_IDLE;
 			}
 			else if(LasActuatorWriteID <= 6)
 			{
 				// l'ultima scrittura era una pinch
 				setPinchPositionHighLevel(pinchActuator[LasActuatorWriteID - 4].pinchMySlaveAddress, pinchActuator[LasActuatorWriteID - 4].value);
-				pinchActuator[LasActuatorWriteID - 4].dataReady = DATA_READY_TRUE; //non serve questo
+				//pinchActuator[LasActuatorWriteID - 4].dataReady = DATA_READY_TRUE; //non serve questo
 				pinchActuator[LasActuatorWriteID - 4].reqType = REQ_TYPE_IDLE;
 			}
 

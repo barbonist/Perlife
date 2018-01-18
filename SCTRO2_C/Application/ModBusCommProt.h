@@ -97,8 +97,16 @@ char	data_pmp1[252];			/* pmp1 data field */
 #define		PMP3_ADDRESS		0x04 /* pump 3 address */
 #define		PMP4_ADDRESS		0x05 /* pump 4 address */
 #define		PNCHVLV1_ADDRESS	0x07 /* pinch valve 1 address - pinch art */
-#define		PNCHVLV2_ADDRESS	0x09 /* pinch valve 2 address - pinch ven */
+#define		PNCHVLV2_ADDRESS	0x09 /* pinch valve 3 address - pinch ven */
 #define		PNCHVLV3_ADDRESS	0x08 /* pinch valve 2 address - pinch filter */
+
+#define		PPAR         		0x02 /* pump 1 address - pump art per rene / depurazione vaschetta per fegato*/
+#define		PPAF		        0x03 /* pump 2 address - pump art per fegato */
+#define		PPV1		        0x04 /* pump 3 address - pump oxyg */
+#define		PPV2		        0x05 /* pump 4 address - pump oxyg */
+#define		PINCH_2WPVF	        0x07 /* pinch valve 1 per filtro */
+#define		PINCH_2WPVA	        0x08 /* pinch valve 2 arteriosa */
+#define		PINCH_2WPVV	        0x09 /* pinch valve 3 venosa */
 
 /* MODBUS Function Code */
 #define		FUNC_READ_RGSTR			0x03 /* function read holding registers */
@@ -213,13 +221,7 @@ void SetNonPhysicalAlm( int AlarmCode);
 void ClearNonPhysicalAlm( int AlarmCode);
 /* Private function */
 
-#define		PPAR         		0x02 /* pump 1 address - pump art per rene / depurazione vaschetta per fegato*/
-#define		PPAF		        0x03 /* pump 2 address - pump art per fegato */
-#define		PPV1		        0x04 /* pump 3 address - pump oxyg */
-#define		PPV2		        0x05 /* pump 4 address - pump oxyg */
-#define		PINCH_2WPVF	        0x07 /* pinch valve 1 per filtro */
-#define		PINCH_2WPVA	        0x08 /* pinch valve 2 arteriosa */
-#define		PINCH_2WPVV	        0x09 /* pinch valve 2 venosa */
+
 
 void SetTherapyType(THERAPY_TYPE tt);
 THERAPY_TYPE GetTherapyType(void);
