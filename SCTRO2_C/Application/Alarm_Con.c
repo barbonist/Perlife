@@ -9,6 +9,8 @@
 #include "Global.h"
 #include "Flowsens.h"
 #include "string.h"
+#include "PE_Types.h"
+#include "ModBusCommProt.h"
 
 
 // FM questa lista devo costruirla mettendo prima i PHYSIC_TRUE e poi i PHYSIC_FALSE,
@@ -16,14 +18,16 @@
 struct alarm alarmList[] =
 {
 		//{CODE_ALARM0, PHYSIC_TRUE, TYPE_ALARM_CONTROL, PRIORITY_LOW, OVRD_ENABLE, SILENCE_ALLOWED},
-		{CODE_ALARM_PRESS_ART_HIGH,        PHYSIC_TRUE,  ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR, PRIORITY_HIGH, 2000, 2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull}, 		/* 0 */
+		{CODE_ALARM_PRESS_ART_HIGH,        PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR, PRIORITY_HIGH, 2000, 2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull}, 		/* 0 */
 		{CODE_ALARM_PRESS_ART_LOW,         PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR, PRIORITY_HIGH, 2000, 2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull}, 		/* 1 */
 		{CODE_ALARM_AIR_PRES_ART,          PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR, PRIORITY_HIGH, 1000, 2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_ALLOWED,     &alarmManageNull}, 		/* 2 */
 		{CODE_ALARM_TEMP_ART_HIGH,         PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR, PRIORITY_HIGH, 5000, 2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull}, 	    /* 3 */
 		{CODE_ALARM_PRESS_ADS_FILTER_HIGH, PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR, PRIORITY_HIGH, 2000, 2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull},	    /* 4 */
-		{CODE_ALARM_MODBUS_ACTUATOR_SEND,  PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_WAIT_CONFIRM,      PRIORITY_LOW,     0,    0, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull},	    /* 5 */
+		{CODE_ALARM_FLOW_PERF_ART_HIGH,    PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR, PRIORITY_HIGH, 2000, 2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull}, 		/* 5 */
+		{CODE_ALARM_MODBUS_ACTUATOR_SEND,  PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_WAIT_CONFIRM,      PRIORITY_LOW,     0,    0, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull},	    /* 6 */
 
-		{}																																																						                /* 6 */
+
+		{}
 
 };
 
@@ -194,8 +198,8 @@ void SetNonPhysicalAlm( int AlarmCode)
 	{
 		case CODE_ALARM_MODBUS_ACTUATOR_SEND:
 			// faccio partire un allarme perche' ho superato il numero delle retry nella scrittura su modbus
-			//alarmList[5].active = ACTIVE_TRUE;
-			alarmList[5].physic = PHYSIC_TRUE;  // uso questo parametro per far partire l'allarme
+			//alarmList[6].active = ACTIVE_TRUE;
+			alarmList[6].physic = PHYSIC_TRUE;  // uso questo parametro per far partire l'allarme
 			break;
 	}
 }
@@ -222,6 +226,46 @@ void ClearNonPhysicalAlm( int AlarmCode)
 			break;
 	}
 }
+
+void manageAlarmPhysicFlowPerfArtHigh(void){
+
+	int FlowMax = 0;
+	bool chekFlow = FALSE;
+
+
+	switch (GetTherapyType())
+	{
+		case LiverTreat:
+			FlowMax = FLOW_LIVER_MAX;
+			chekFlow = TRUE;
+			break;
+
+		case KidneyTreat:
+			FlowMax = FLOW_KIDNEY_MAX;
+			chekFlow = TRUE;
+			break;
+
+		default:
+			chekFlow = FALSE;
+			break;
+
+	}
+
+	if (chekFlow)
+	{
+		if(sensor_UFLOW[0].Average_Flow_Val > FlowMax)
+		{
+			/*l'indice dell'array deve corrispondere all'indice della riga della tabella alarmList*/
+			alarmList[5].physic = PHYSIC_TRUE;
+		}
+		else
+		{
+			alarmList[5].physic = PHYSIC_FALSE;
+		}
+	}
+
+}
+
 
 void alarmManageNull(void)
 {

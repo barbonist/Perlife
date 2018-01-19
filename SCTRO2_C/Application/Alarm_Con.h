@@ -22,6 +22,7 @@
 #define CODE_ALARM_PRESS_PLASMA_FILTER_HIGH		0X06
 #define CODE_ALARM_PRESS_FRACTION_FILTER_HIGH	0X07
 #define CODE_ALARM_PRESS_OXYG_INLET				0x08
+#define CODE_ALARM_FLOW_PERF_ART_HIGH			0x09
 
 #define CODE_ALARM_TEMP_ART_HIGH				0x10
 #define CODE_ALARM_TEMP_ART_LOW					0x11
@@ -93,11 +94,15 @@
 #define MEMO_NOT_ALLOWED		0x5A
 
 
+#define FLOW_LIVER_MAX   400
+#define FLOW_KIDNEY_MAX  500
+
 
 void alarmConInit(void);
 void alarmEngineAlways(void);
 void alarmManageNull(void);
 void manageAlarmChildGuard(struct alarm * ptrAlarm);
+void manageAlarmPhysicFlowPerfArtHigh(void);
 
 void manageAlarmPhysicPressSens(void);
 void manageAlarmPhysicTempSens(void);
