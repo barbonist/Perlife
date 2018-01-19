@@ -100,6 +100,13 @@ void Manange_ADC1(void)
 		/*PR_ART sta su AD1 channel 5; passando l'indirizzo della variabile, la valorizzo*/
 		AD1_GetChanValue16(PR_ART_ADC_CHANNEL, &PR_ART_ADC);
 
+		/*converte i valori ADC in mmHg dei sensori di pressione*/
+		Coversion_From_ADC_To_mmHg_Pressure_Sensor();
+		/*filtra i valori di mmHg dei sensori di pressione*/
+		Pressure_sensor_Fltered();
+		/*converte i valori ADC in volt per le tensioni*/
+		Coversion_From_ADC_To_Voltage();
+
 		/*resetto il flag di lettura sull'interrupt AD1_OnEnd*/
 		END_ADC1 = FALSE;
   	  }

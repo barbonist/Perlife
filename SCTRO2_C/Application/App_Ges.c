@@ -595,6 +595,33 @@ void managePrimingPh1Always(void)
 	static char iflag_perf = 0;
 	static char iflag_oxyg = 0;
 
+	//-------------------------------------------------------------------
+	// Questo codice era nello stato ..TANK_FILL, lo ho spostato qui perche' non passo
+	// piu' per quello stato
+	static float myTempValue = 200;
+
+	if(myTempValue != parameterWordSetFromGUI[PAR_SET_TEMPERATURE].value){
+		myTempValue = parameterWordSetFromGUI[PAR_SET_TEMPERATURE].value;
+
+		if(myTempValue == 40)
+		{
+			peltierCell.mySet  = myTempValue - 80;
+			peltierCell2.mySet = myTempValue - 80;
+		}
+		else if(myTempValue == 360)
+		{
+			peltierCell.mySet  = myTempValue + 60;
+			peltierCell2.mySet = myTempValue + 60;
+		}
+		else
+		{
+			peltierCell.mySet  = 200;
+			peltierCell2.mySet = 200;
+		}
+	}
+	//-----------------------------------------------------------------------
+
+
 	//guard macchina a stati
 	computeMachineStateGuardPrimingPh1();
 
@@ -641,9 +668,6 @@ void managePrimingPh1Always(void)
 		iflag_perf = 0;
 	}*/
 
-	#ifdef DEBUG_ENABLE
-
-	#endif
 }
 
 /*--------------------------------------------------------------*/
@@ -709,6 +733,9 @@ void manageStateTreatKidney1(void)
 	releaseGUIButton(BUTTON_CONFIRM);
 
 	pumpPerist[0].entry = 0;
+	pumpPerist[1].entry = 0;
+	pumpPerist[2].entry = 0;
+	pumpPerist[3].entry = 0;
 }
 
 void manageStateTreatKidney1Always(void)
@@ -1561,18 +1588,27 @@ unsigned char getPumpPressLoop(unsigned char pmpId){
 	return pumpPerist[pmpId].pmpPressLoop;
 }
 
+float parKITC = 0.2;
+float parKP = 1;
+float parKD_TC = 0.8;
+float GlobINTEG;
+float GlobPROP;
+float GlobDER;
+int deltaSpeed = 0;
+int actualSpeed = 0;
 
 void alwaysPumpPressLoop(unsigned char pmpId, unsigned char *PidFirstTime){
-	int deltaSpeed = 0;
-	static int actualSpeed = 0;
+	//int deltaSpeed = 0;
+	//static int actualSpeed = 0;
 	//static int actualSpeedOld = 0;
-	float parKITC = 0.2;
-	float parKP = 1;
-	float parKD_TC = 0.8;
+	//float parKITC = 0.0; //0.2;
+	//float parKP = 5.0;   //1;
+	//float parKD_TC = 0.0; //0.8;
 	float pressSample0 = 0;
 	//static float pressSample1 = 0;  // FM Questi due vanno inizializzati alla pressione corrente prima di far partire il pid
 	//static float pressSample2 = 0;
 	float errPress = 0;
+	float Max_RPM_for_Flow_Max = ( parameterWordSetFromGUI[PAR_SET_MAX_FLOW_PERFUSION].value / PUMP_ART_GAIN);
 
     if(*PidFirstTime == PRESS_LOOP_ON)
     {
@@ -1585,16 +1621,44 @@ void alwaysPumpPressLoop(unsigned char pmpId, unsigned char *PidFirstTime){
     pressSample0 = PR_ART_mmHg_Filtered;
 	errPress = parameterWordSetFromGUI[PAR_SET_PRESS_ART_TARGET].value - pressSample0;
 
+	GlobINTEG = parKITC*errPress;
+	GlobPROP = parKP*(pressSample0 - pressSample1);
+	GlobDER = parKD_TC*(pressSample0 - 2*pressSample1 + pressSample2);
+
 	deltaSpeed = (int)((parKITC*errPress) - (parKP*(pressSample0 - pressSample1)) - (parKD_TC*(pressSample0 - 2*pressSample1 + pressSample2)));
 
 	// valutare se mettere il deltaSpeed = 0 nel caso deltaSpeed sia negativo in modo da non far andare actualSpeed a zero troppo in fretta
 	// in alternativa il deltaSpeed va considerato solo se è abbastanza negativo
 	if((deltaSpeed < -2) || (deltaSpeed > 2))
-		actualSpeed = actualSpeed + deltaSpeed;
+	{
+		if (deltaSpeed < 0)
+		{
+			actualSpeed = actualSpeed + deltaSpeed;
+		}
+		else
+		{
+			if (sensor_UFLOW[0].Average_Flow_Val > ( parameterWordSetFromGUI[PAR_SET_MAX_FLOW_PERFUSION].value))
 
-	if(actualSpeed >= 50)
-		actualSpeed = 50;
-	else if(actualSpeed <= 0)
+			{
+				actualSpeed = actualSpeed; /*non aumento la velocità*/
+			}
+			else if ( (actualSpeed + deltaSpeed  ) > Max_RPM_for_Flow_Max )
+			{
+				actualSpeed = Max_RPM_for_Flow_Max;
+			}
+			else
+			{
+				actualSpeed = actualSpeed + deltaSpeed;
+			}
+		}
+	}
+
+//	if(actualSpeed >= 50)
+//		actualSpeed = 50;
+//	else if(actualSpeed <= 0)
+//		actualSpeed = 0;
+
+	if(actualSpeed < 0)
 		actualSpeed = 0;
 
 	if(actualSpeed != pumpPerist[pmpId].actualSpeedOld){
@@ -1610,9 +1674,22 @@ void alwaysPumpPressLoop(unsigned char pmpId, unsigned char *PidFirstTime){
 
 	pressSample2 = pressSample1;
 	pressSample1 = pressSample0;
+
+	DebugStringPID(); // debug
 }
 
-
+/*
+previous_error = 0
+integral = 0
+loop:
+  error = setpoint - measured_value
+  integral = integral + error*dt
+  derivative = (error - previous_error)/dt
+  output = Kp*error + Ki*integral + Kd*derivative
+  previous_error = error
+  wait(dt)
+  goto loop
+*/
 
 
 void manageParentEntry(void)
@@ -2768,6 +2845,28 @@ void setParamWordFromGUI(unsigned char parId, int value){
 		if(value < (MIN_TEMP_PRIMING * 10))
 			value = MIN_TEMP_PRIMING * 10;
 	}
+	else if (parId == PAR_SET_MAX_FLOW_PERFUSION)
+	{
+		int MaxFlow;
+		int MinFlow;
+
+		if (GetTherapyType() == KidneyTreat)
+		{
+			MaxFlow = MAX_FLOW_ART_KIDNEY;
+			MinFlow = MIN_FLOW_ART_KIDNEY;
+		}
+		else if (GetTherapyType() == LiverTreat)
+		{
+			MaxFlow = MAX_FLOW_ART_LIVER;
+			MinFlow = MIN_FLOW_ART_LIVER;
+		}
+
+		// controllo range del volume di liquido caricato nel reservoir
+		if(value >= MaxFlow)
+			value = MaxFlow;
+		if(value <= MinFlow)
+			value = MinFlow;
+	}
 
 	parameterWordSetFromGUI[parId].value = value;
 }
@@ -3050,8 +3149,6 @@ void DebugString()
 //							(int) pumpPerist[2].actualSpeed
 //				);
 
-
-
 	for(int i=0; i<STR_DBG_LENGHT; i++)
 	{
 		if(stringPr[i])
@@ -3061,6 +3158,31 @@ void DebugString()
 	}
 	PC_DEBUG_COMM_SendChar(0x0A);
 }
+
+void DebugStringPID()
+{
+	static char stringPid[STR_DBG_LENGHT];
+
+	sprintf(stringPid, "\r %i; %i; %i; %i; %i; %d; %d;",
+							(int)(GlobINTEG * 100),
+							(int)(GlobPROP * 100),
+							(int)(GlobDER * 100),
+							PR_ART_mmHg_Filtered,
+							deltaSpeed,
+							(int) actualSpeed,
+							(int) perfusionParam.priVolPerfArt
+				);
+
+	for(int i=0; i<STR_DBG_LENGHT; i++)
+	{
+		if(stringPid[i])
+			PC_DEBUG_COMM_SendChar(stringPid[i]);
+		else
+			break;
+	}
+//	PC_DEBUG_COMM_SendChar(0x0A);
+}
+
 
 void DebugStringStr(char *s)
 {
@@ -3320,6 +3442,7 @@ void GenerateSBCComm(void)
 				// 10 minuti di trattamento
 				parameterWordSetFromGUI[PAR_SET_DESIRED_DURATION].value = 600;
 				parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value = 1000;
+				parameterWordSetFromGUI[PAR_SET_MAX_FLOW_PERFUSION].value = 500;
 			}
 			else if(Released2)
 			{
@@ -3430,10 +3553,18 @@ void GenerateSBCComm(void)
 	}
 
 	// DEBUG visualizzo alcuni dati su seriale di debug ogni secondo
-	if(msTick_elapsed(timerCounterGenSBCComm) >= 20)
+	if(msTick_elapsed(timerCounterGenSBCComm) >= 20 &&
+
+	  (ptrCurrentState->state != STATE_TREATMENT_KIDNEY_1) )
 	{
 		timerCounterGenSBCComm = timerCounterModBus;
 		DebugString();
+	}
+	else if(msTick_elapsed(timerCounterGenSBCComm) >= 20 &&
+	     (ptrCurrentState->state == STATE_TREATMENT_KIDNEY_1) )
+	{
+		timerCounterGenSBCComm = timerCounterModBus;
+		//DebugStringPID();
 	}
 }
 

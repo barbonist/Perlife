@@ -1147,4 +1147,10 @@ typedef enum{Undef = 0, KidneyTreat = 0x10, LiverTreat = 0x50} THERAPY_TYPE;
 // temperatura minima nel priming in °C
 #define MIN_TEMP_PRIMING         4
 
+#define MAX_FLOW_ART_KIDNEY		500
+#define MAX_FLOW_ART_LIVER		400
+#define MIN_FLOW_ART_KIDNEY		50
+#define MIN_FLOW_ART_LIVER		50
+#define PUMP_ART_GAIN			9 /* ml/GIRO */
+
 #endif /* SOURCES_GLOBAL_H_ */
