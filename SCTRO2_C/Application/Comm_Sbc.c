@@ -755,7 +755,7 @@ void pollingDataToSBCTreat(void)
 		word snd;
 
 		/*reset flag */
-		myCommunicatorToSBC.dataMachineStateReadyFlag == DATA_COMM_IDLE;
+		myCommunicatorToSBC.dataMachineStateReadyFlag = DATA_COMM_IDLE;
 
 		/* build response message */
 		buildRDMachineStateResponseMsg(COMMAND_ID_ST,sbc_rx_data[6]);
@@ -850,20 +850,20 @@ void buildRDMachineStateResponseMsg(char code, char subcode){
 
 	/* SENS PARAMETERS */
 	/* sensors parameters: pressure adsorbent filter */
-	sbc_tx_data[index++] = (PR_ADS_FLT_mmHg >> 8) & 0xFF;
-	sbc_tx_data[index++] = (PR_ADS_FLT_mmHg     ) & 0xFF;
+	sbc_tx_data[index++] = (PR_ADS_FLT_mmHg_Filtered >> 8) & 0xFF;
+	sbc_tx_data[index++] = (PR_ADS_FLT_mmHg_Filtered) & 0xFF;
 	/* sensors parameters: pressure arterial */
-	sbc_tx_data[index++] = (PR_ART_mmHg >> 8) & 0xFF;
-	sbc_tx_data[index++] = (PR_ART_mmHg     ) & 0xFF;
+	sbc_tx_data[index++] = (PR_ART_mmHg_Filtered >> 8) & 0xFF;
+	sbc_tx_data[index++] = (PR_ART_mmHg_Filtered) & 0xFF;
 	/* sensors parameters: pressure venous */
-	sbc_tx_data[index++] = (PR_VEN_mmHg >> 8) & 0xFF;
-	sbc_tx_data[index++] = (PR_VEN_mmHg     ) & 0xFF;
+	sbc_tx_data[index++] = (PR_VEN_mmHg_Filtered >> 8) & 0xFF;
+	sbc_tx_data[index++] = (PR_VEN_mmHg_Filtered) & 0xFF;
 	/* sensors parameters: pressure oxygenation */
 	sbc_tx_data[index++] = (PR_OXYG_mmHg >> 8) & 0xFF;
-	sbc_tx_data[index++] = (PR_OXYG_mmHg     ) & 0xFF;
+	sbc_tx_data[index++] = (PR_OXYG_mmHg_Filtered) & 0xFF;
 	/* sensors parameters: pressure level */
 	sbc_tx_data[index++] = (PR_LEVEL_mmHg >> 8) & 0xFF;
-	sbc_tx_data[index++] = (PR_LEVEL_mmHg     ) & 0xFF;
+	sbc_tx_data[index++] = (PR_LEVEL_mmHg_Filtered) & 0xFF;
 	/* sensors parameters: pressure systolic arterial */
 	sbc_tx_data[index++] = (sensorsValues.pressSystArt >> 8) & 0xFF; //TODO
 	sbc_tx_data[index++] = (sensorsValues.pressSystArt     ) & 0xFF;

@@ -62,6 +62,17 @@ unsigned char PidFirstTime[4];
 // durata massima del trattamento
 unsigned long StartTreatmentTime = 0;
 
+// VARIABILI USATE DURANTE LA FASE DI MOUNTING
+// numero di parametri ricevuti durante la fase di mounting
+unsigned char ParamRcvdInMounting[4];
+int AllParametersReceived;
+
+void CallInIdleState(void)
+{
+	memset(ParamRcvdInMounting, 0, sizeof(ParamRcvdInMounting));
+	AllParametersReceived = 0;
+}
+
 
 unsigned char Debug_Bubble_Keyboard_GetVal(unsigned char Button)
 {
@@ -357,11 +368,13 @@ struct machineState stateState[] =
 		{STATE_TANK_FILL,          PARENT_NULL, CHILD_NULL, ACTION_ON_ENTRY,                &stateParentNull[0],                &manageStateTankFill},			/* 11 */
 		{STATE_TANK_FILL,          PARENT_NULL, CHILD_NULL, ACTION_ALWAYS,                  &stateParentNull[0],                &manageStateTankFillAlways},	/* 12 */
 
-		{STATE_PRIMING_PH_1,       PARENT_NULL, CHILD_NULL, ACTION_ON_ENTRY,                &stateParentPrimingTreatKidney1[1], &managePrimingPh1},				/* 13 */
-		{STATE_PRIMING_PH_1,       PARENT_NULL, CHILD_NULL, ACTION_ALWAYS,                  &stateParentPrimingTreatKidney1[1], &managePrimingPh1Always},		/* 14 */
+		// Questa volta entro direttamente nello stato run del priming perche' non e' prevista la ricezione di un comando BUTTON_CONFIRM
+		{STATE_PRIMING_PH_1,       PARENT_NULL, CHILD_NULL, ACTION_ON_ENTRY,                &stateParentPrimingTreatKidney1[3], &managePrimingPh1},				/* 13 */
+		{STATE_PRIMING_PH_1,       PARENT_NULL, CHILD_NULL, ACTION_ALWAYS,                  &stateParentPrimingTreatKidney1[3], &managePrimingPh1Always},		/* 14 */
 
-		{STATE_PRIMING_PH_2,       PARENT_NULL, CHILD_NULL, ACTION_ON_ENTRY,                &stateParentPrimingTreatKidney1[1], &managePrimingPh2},				/* 15 */
-		{STATE_PRIMING_PH_2,       PARENT_NULL, CHILD_NULL, ACTION_ALWAYS,                  &stateParentPrimingTreatKidney1[1], &managePrimingPh2Always},		/* 16 */
+		// Questa volta entro direttamente nello stato run del priming perche' non e' prevista la ricezione di un comando BUTTON_CONFIRM
+		{STATE_PRIMING_PH_2,       PARENT_NULL, CHILD_NULL, ACTION_ON_ENTRY,                &stateParentPrimingTreatKidney1[3], &managePrimingPh2},				/* 15 */
+		{STATE_PRIMING_PH_2,       PARENT_NULL, CHILD_NULL, ACTION_ALWAYS,                  &stateParentPrimingTreatKidney1[3], &managePrimingPh2Always},		/* 16 */
 
 		{STATE_TREATMENT_KIDNEY_1, PARENT_NULL, CHILD_NULL, ACTION_ON_ENTRY,                &stateParentTreatKidney1[1],        &manageStateTreatKidney1},		/* 17 */
 		{STATE_TREATMENT_KIDNEY_1, PARENT_NULL, CHILD_NULL, ACTION_ALWAYS,                  &stateParentTreatKidney1[1],        &manageStateTreatKidney1Always},/* 18 */
@@ -456,20 +469,15 @@ void manageStateEntryAlways(void)
 /*-----------------------------------------------------------*/
 void manageStateIdle(void)
 {
-	releaseGUIButton(BUTTON_CONFIRM);
+	// inizializzo a 0 il numero di parametri ricevuti durante la fase di montaggio
+	CallInIdleState();
 
-	#ifdef DEBUG_ENABLE
-	//Bit1_NegVal();
-	#endif
+	releaseGUIButton(BUTTON_CONFIRM);
 }
 
 void manageStateIdleAlways(void)
 {
 	computeMachineStateGuardIdle();
-
-	#ifdef DEBUG_ENABLE
-	//Bit2_NegVal();
-	#endif
 }
 
 /*-----------------------------------------------------------*/
@@ -504,24 +512,117 @@ void manageStateSelTreatAlways(void)
 void manageStateMountDisp(void)
 {
 	releaseGUIButton(BUTTON_CONFIRM);
+}
 
-	//-----------------------------------------------------------------------------
-	// TODO Questo blocco di codice viene usato solo in debug per fare saltare lo
-	// stato STATE_MOUNTING_DISP (per ora non ci sono i segnali da SBC)
-//	setGUIButton((unsigned char)BUTTON_PERF_DISP_MOUNTED);
-//	setGUIButton((unsigned char)BUTTON_OXYG_DISP_MOUNTED);
-//	setGUIButton((unsigned char)BUTTON_CONFIRM);
-//	DebugStringStr("STATE_TANK_FILL");
-	//-----------------------------------------------------------------------------
+
+void HandlePinch( int cmd)
+{
+	switch (cmd)
+	{
+		case BUTTON_PINCH_2WPVF_RIGHT_OPEN:   //= 0xA0,   // pinch filter (pinch in basso aperto a destra)
+			setPinchPositionHighLevel(PINCH_2WPVF, MODBUS_PINCH_RIGHT_OPEN);
+			break;
+		case BUTTON_PINCH_2WPVF_LEFT_OPEN:    //= 0xA1,    // pinch filter (pinch in basso aperto a sinistra)
+			setPinchPositionHighLevel(PINCH_2WPVF, MODBUS_PINCH_LEFT_OPEN);
+			break;
+		case BUTTON_PINCH_2WPVF_BOTH_CLOSED:  //= 0xA2,  // pinch filter (pinch in basso entrambi chiusi)
+			setPinchPositionHighLevel(PINCH_2WPVF, MODBUS_PINCH_POS_CLOSED);
+			break;
+
+		case BUTTON_PINCH_2WPVA_RIGHT_OPEN:   // = 0xA3,   // pinch arterial (pinch di sinistra - aperto a destra)
+			setPinchPositionHighLevel(PINCH_2WPVA, MODBUS_PINCH_RIGHT_OPEN);
+			break;
+		case BUTTON_PINCH_2WPVA_LEFT_OPEN:    // = 0xA4,    // pinch arterial (pinch di sinistra - aperto a sinistra)
+			setPinchPositionHighLevel(PINCH_2WPVA, MODBUS_PINCH_LEFT_OPEN);
+			break;
+		case BUTTON_PINCH_2WPVA_BOTH_CLOSED:  // = 0xA5,  // pinch arterial (pinch di sinistra - entrambi chiusi)
+			setPinchPositionHighLevel(PINCH_2WPVA, MODBUS_PINCH_POS_CLOSED);
+			break;
+
+		case BUTTON_PINCH_2WPVV_RIGHT_OPEN:   // = 0xA6,   // pinch venous (pinch di destra - aperto a destra)
+			setPinchPositionHighLevel(PINCH_2WPVV, MODBUS_PINCH_RIGHT_OPEN);
+			break;
+		case BUTTON_PINCH_2WPVV_LEFT_OPEN:    // = 0xA7,    // pinch venous (pinch di destra - aperto a sinistra)
+			setPinchPositionHighLevel(PINCH_2WPVV, MODBUS_PINCH_LEFT_OPEN);
+			break;
+		case BUTTON_PINCH_2WPVV_BOTH_CLOSED:  // = 0xA8,  // pinch venous (pinch di destra - entrambi chiusi)
+			setPinchPositionHighLevel(PINCH_2WPVV, MODBUS_PINCH_POS_CLOSED);
+			break;
+	}
 }
 
 void manageStateMountDispAlways(void)
 {
-	computeMachineStateGuardMountDisp();
+	// questa funzione non viene piu' usata
+	//computeMachineStateGuardMountDisp();
 
-	#ifdef DEBUG_ENABLE
+	// numero di parametri ricevuti durante la fase di montaggio
+	if(ParamRcvdInMounting[0] && ParamRcvdInMounting[1] && ParamRcvdInMounting[2] && ParamRcvdInMounting[3] )
+	{
+		// ho ricevuto tutti i parametri che dovevo ricevere, invio il comando che mi fa iniziare il priming
+		AllParametersReceived = 1;
+	}
+	else if(buttonGUITreatment[BUTTON_PINCH_2WPVF_RIGHT_OPEN].state == GUI_BUTTON_RELEASED)
+	{
+		// pinch filter (pinch in basso aperto a destra)
+		releaseGUIButton(BUTTON_PINCH_2WPVF_RIGHT_OPEN);
+		HandlePinch(BUTTON_PINCH_2WPVF_RIGHT_OPEN);
+	}
+	else if(buttonGUITreatment[BUTTON_PINCH_2WPVF_LEFT_OPEN].state == GUI_BUTTON_RELEASED)
+	{
+		// pinch filter (pinch in basso aperto a sinistra)
+		releaseGUIButton(BUTTON_PINCH_2WPVF_LEFT_OPEN);
+		HandlePinch(BUTTON_PINCH_2WPVF_LEFT_OPEN);
+	}
+	else if(buttonGUITreatment[BUTTON_PINCH_2WPVF_BOTH_CLOSED].state == GUI_BUTTON_RELEASED)
+	{
+		// pinch filter (pinch in basso entrambi chiusi)
+		releaseGUIButton(BUTTON_PINCH_2WPVF_BOTH_CLOSED);
+		HandlePinch(BUTTON_PINCH_2WPVF_BOTH_CLOSED);
+	}
+	else if(buttonGUITreatment[BUTTON_PINCH_2WPVA_RIGHT_OPEN].state == GUI_BUTTON_RELEASED)
+	{
+		// pinch arterial (pinch di sinistra - aperto a destra)
+		releaseGUIButton(BUTTON_PINCH_2WPVA_RIGHT_OPEN);
+		HandlePinch(BUTTON_PINCH_2WPVA_RIGHT_OPEN);
+	}
+	else if(buttonGUITreatment[BUTTON_PINCH_2WPVA_LEFT_OPEN].state == GUI_BUTTON_RELEASED)
+	{
+		// pinch arterial (pinch di sinistra - aperto a sinistra)
+		releaseGUIButton(BUTTON_PINCH_2WPVA_LEFT_OPEN);
+		HandlePinch(BUTTON_PINCH_2WPVA_LEFT_OPEN);
+	}
+	else if(buttonGUITreatment[BUTTON_PINCH_2WPVA_BOTH_CLOSED].state == GUI_BUTTON_RELEASED)
+	{
+		// pinch arterial (pinch di sinistra - entrambi chiusi)
+		releaseGUIButton(BUTTON_PINCH_2WPVA_BOTH_CLOSED);
+		HandlePinch(BUTTON_PINCH_2WPVA_BOTH_CLOSED);
+	}
+	else if(buttonGUITreatment[BUTTON_PINCH_2WPVV_RIGHT_OPEN].state == GUI_BUTTON_RELEASED)
+	{
+		// pinch venous (pinch di destra - aperto a destra)
+		releaseGUIButton(BUTTON_PINCH_2WPVV_RIGHT_OPEN);
+		HandlePinch(BUTTON_PINCH_2WPVV_RIGHT_OPEN);
+	}
+	else if(buttonGUITreatment[BUTTON_PINCH_2WPVV_LEFT_OPEN].state == GUI_BUTTON_RELEASED)
+	{
+		// pinch venous (pinch di destra - aperto a sinistra)
+		releaseGUIButton(BUTTON_PINCH_2WPVV_LEFT_OPEN);
+		HandlePinch(BUTTON_PINCH_2WPVV_LEFT_OPEN);
+	}
+	else if(buttonGUITreatment[BUTTON_PINCH_2WPVV_BOTH_CLOSED].state == GUI_BUTTON_RELEASED)
+	{
+		// pinch venous (pinch di destra - aperto a sinistra)
+		releaseGUIButton(BUTTON_PINCH_2WPVV_BOTH_CLOSED);
+		HandlePinch(BUTTON_PINCH_2WPVV_BOTH_CLOSED);
+	}
 
-	#endif
+	if(AllParametersReceived && (buttonGUITreatment[BUTTON_START_PRIMING].state == GUI_BUTTON_RELEASED))
+	{
+		releaseGUIButton(BUTTON_START_PRIMING);
+		AllParametersReceived = 0;
+		currentGuard[GUARD_ENABLE_TANK_FILL].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+	}
 }
 
 /*--------------------------------------------------------------*/
@@ -529,19 +630,20 @@ void manageStateMountDispAlways(void)
 /*--------------------------------------------------------------*/
 void manageStateTankFill(void)
 {
-	releaseGUIButton(BUTTON_CONFIRM);
+	//releaseGUIButton(BUTTON_CONFIRM);
 
-	//-----------------------------------------------------------------------------
-	// TODO Questo blocco di codice viene usato solo in debug per fare saltare lo
-	// stato STATE_TANK_FILL (non so se ci sono i segnali su SBC e se servira' questo stato)
-//	setGUIButton((unsigned char)BUTTON_PERF_TANK_FILL);
-//	setGUIButton((unsigned char)BUTTON_CONFIRM);
-//	DebugStringStr("STATE_PRIMING_PH_1");
-	//-----------------------------------------------------------------------------
+	// FORZO IL PASSAGGIO IMMEDIATO ALLO STATO GUARD_ENABLE_PRIMING_PHASE_1 PERCHE' ORA LO
+	// TANK_FILL NON SERVE PIU', MA LO LASCIO PER OGNI EVENIENZA
+	currentGuard[GUARD_ENABLE_PRIMING_PHASE_1].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+	// forzo anche uno start priming per il nuovo stato, dato che lo avevo gia' ricevuto
+	// prima
+	setGUIButton(BUTTON_START_PRIMING);
 }
 
 void manageStateTankFillAlways(void)
 {
+//QUESTA FUNZIONE NON DEVE FARE PIU' NIENTE DATO CHE LO STATO TANK_FILL ORA E' SOLO UNO STATO DI PASSAGGIO
+/*
 	static float myTempValue = 200;
 
 	if(myTempValue != parameterWordSetFromGUI[PAR_SET_TEMPERATURE].value){
@@ -569,6 +671,7 @@ void manageStateTankFillAlways(void)
 	#ifdef DEBUG_ENABLE
 
 	#endif
+*/
 }
 
 /*--------------------------------------------------------------*/
@@ -622,7 +725,7 @@ void managePrimingPh1Always(void)
 	//-----------------------------------------------------------------------
 
 
-	//guard macchina a stati
+	//guard macchina a stati (controllo quando arriva il segnale per i passaggio alla fase 2)
 	computeMachineStateGuardPrimingPh1();
 
 	//gestione attuatori modbus (pump e pinch)
@@ -736,6 +839,17 @@ void manageStateTreatKidney1(void)
 	pumpPerist[1].entry = 0;
 	pumpPerist[2].entry = 0;
 	pumpPerist[3].entry = 0;
+
+	// confermo il fermo di tutte le pompe, gia' inviato nella fase
+	// di priming_2 - run
+	setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
+	setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 0);
+	if(GetTherapyType() == LiverTreat)
+	{
+		// se sono nel trattamento fegato fermo anche l'altro motore !!
+		setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, 0);
+	}
+
 }
 
 void manageStateTreatKidney1Always(void)
@@ -943,6 +1057,14 @@ void manageParentPrimingEntry(void){
 		pumpPerist[3].entry = 1;
 	}
 
+	// tolgo eventuali comandi impostati per errore
+	releaseGUIButton(BUTTON_STOP_OXYGEN_PUMP);
+	releaseGUIButton(BUTTON_STOP_PRIMING);
+	releaseGUIButton(BUTTON_STOP_PERF_PUMP);
+	releaseGUIButton(BUTTON_STOP_ALL_PUMP);
+	releaseGUIButton(BUTTON_START_OXYGEN_PUMP);
+	releaseGUIButton(BUTTON_START_PERF_PUMP);
+
 }
 
 void manageParentPrimingAlways(void){
@@ -1086,6 +1208,19 @@ void manageParentPrimingAlways(void){
 				setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 0);
 				releaseGUIButton(BUTTON_STOP_PRIMING);
 			}
+			else if(((float)perfusionParam.priVolPerfArt >= ((float)parameterWordSetFromGUI[PAR_SET_PRIMING_VOL_PERFUSION].value * PERC_OF_PRIM_FOR_FILTER / 100.0)) ||
+					(perfusionParam.priVolPerfArt >= parameterWordSetFromGUI[PAR_SET_PRIMING_VOL_PERFUSION].value))
+			{
+				// fermo le pompe ed aspetto
+				setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
+				setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 0);
+				if(GetTherapyType() == LiverTreat)
+				{
+					// se sono nel trattamento fegato fermo anche l'altro motore !!
+					setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, 0);
+				}
+			}
+
 
 			/*if(
 				(buttonGUITreatment[BUTTON_START_PRIMING].state == GUI_BUTTON_PRESSED) ||
@@ -1706,8 +1841,6 @@ void manageParentEntryAlways(void)
 	static int index3 = 0;
 	index3++;
 
-
-
 	// TODO
 	// (FM) qui posso gestire il T1 test e l'inizializzazione della comm ed alla fine
 	// devo eseguire le due istruzioni
@@ -1832,6 +1965,7 @@ static void computeMachineStateGuardSelTreat(void){
 /*  This function compute the guard value in mounting disposable state   */
 /*--------------------------------------------------------------------*/
 static void computeMachineStateGuardMountDisp(void){
+	/* Questi comandi non ci sono piu' nella nuova macchina a stati
 	if(
 		(buttonGUITreatment[BUTTON_PERF_DISP_MOUNTED].state == GUI_BUTTON_RELEASED) &&
 		(buttonGUITreatment[BUTTON_OXYG_DISP_MOUNTED].state == GUI_BUTTON_RELEASED) &&
@@ -1841,14 +1975,18 @@ static void computeMachineStateGuardMountDisp(void){
 		currentGuard[GUARD_ENABLE_TANK_FILL].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
 		releaseGUIButton(BUTTON_PERF_DISP_MOUNTED);
 		releaseGUIButton(BUTTON_OXYG_DISP_MOUNTED);
-		releaseGUIButton(BUTTON_CONFIRM);
+		//releaseGUIButton(BUTTON_CONFIRM);
 	}
+	*/
+
+	// controllo che sia finito il posizionamento delle pinch poi passo alla fase di priming
 }
 
 /*--------------------------------------------------------------------*/
 /*  This function compute the guard value in tank fill state   */
 /*--------------------------------------------------------------------*/
 static void computeMachineStateGuardTankFill(void){
+/*
 	if(
 		(buttonGUITreatment[BUTTON_PERF_TANK_FILL].state == GUI_BUTTON_RELEASED) &&
 		(buttonGUITreatment[BUTTON_CONFIRM].state == GUI_BUTTON_RELEASED)
@@ -1858,12 +1996,14 @@ static void computeMachineStateGuardTankFill(void){
 		releaseGUIButton(BUTTON_PERF_TANK_FILL);
 		releaseGUIButton(BUTTON_CONFIRM);
 	}
+*/
 }
 
 /*--------------------------------------------------------------------*/
 /*  This function compute the guard value in priming phase 1 state   */
 /*--------------------------------------------------------------------*/
 static void computeMachineStateGuardPrimingPh1(void){
+/*	CODICE ORIGINALE
 	if(
 		(buttonGUITreatment[BUTTON_PERF_FILTER_MOUNT].state == GUI_BUTTON_RELEASED) &&
 		(buttonGUITreatment[BUTTON_CONFIRM].state == GUI_BUTTON_RELEASED)
@@ -1874,7 +2014,17 @@ static void computeMachineStateGuardPrimingPh1(void){
 		releaseGUIButton(BUTTON_CONFIRM);
 		//setPumpSpeedValue(pumpPerist[0].pmpMySlaveAddress, 0);
 	}
-
+	*/
+	if( buttonGUITreatment[BUTTON_PRIMING_FILT_INS_CONFIRM].state == GUI_BUTTON_RELEASED)
+	{
+		currentGuard[GUARD_ENABLE_PRIMING_PHASE_2].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+		releaseGUIButton(BUTTON_PRIMING_FILT_INS_CONFIRM);
+	}
+	else if(buttonGUITreatment[BUTTON_PRIMING_ABANDON].state == GUI_BUTTON_RELEASED)
+	{
+		releaseGUIButton(BUTTON_PRIMING_ABANDON);
+		currentGuard[GUARD_ABANDON_PRIMING].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+	}
 }
 
 /*--------------------------------------------------------------------*/
@@ -1882,16 +2032,29 @@ static void computeMachineStateGuardPrimingPh1(void){
 /*  Controllo quando iniziare il trattamento
 /*--------------------------------------------------------------------*/
 static void computeMachineStateGuardPrimingPh2(void){
+/* vecchia gestione
 	if(
 		(perfusionParam.priVolPerfArt >= parameterWordSetFromGUI[PAR_SET_PRIMING_VOL_PERFUSION].value) &&
-		(buttonGUITreatment[BUTTON_CONFIRM].state == GUI_BUTTON_RELEASED) /*&&
-		(iflag_pmp1_rx == IFLAG_PMP1_RX)*/
+		(buttonGUITreatment[BUTTON_CONFIRM].state == GUI_BUTTON_RELEASED) / *&&
+		(iflag_pmp1_rx == IFLAG_PMP1_RX)* /
 		)
 	{
 		StartTreatmentTime = timerCounterModBus;
 		currentGuard[GUARD_ENABLE_TREATMENT_KIDNEY_1].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
 		releaseGUIButton(BUTTON_CONFIRM);
 		//setPumpSpeedValue(pumpPerist[0].pmpMySlaveAddress, 0);
+	}
+*/
+	if(perfusionParam.priVolPerfArt >= parameterWordSetFromGUI[PAR_SET_PRIMING_VOL_PERFUSION].value)
+	{
+		// ho raggiunto il volume di priming, passo in trattamento
+		StartTreatmentTime = timerCounterModBus;
+		currentGuard[GUARD_ENABLE_TREATMENT_KIDNEY_1].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+	}
+	else if(buttonGUITreatment[BUTTON_PRIMING_ABANDON].state == GUI_BUTTON_RELEASED)
+	{
+		releaseGUIButton(BUTTON_PRIMING_ABANDON);
+		currentGuard[GUARD_ABANDON_PRIMING].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
 	}
 }
 
@@ -2165,6 +2328,7 @@ void processMachineState(void)
 				ptrFutureParent = ptrFutureState->ptrParent;
 				/* compute future child */
 				ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
+				DebugStringStr("IDLE");
 			}
 
 			/* compute parent......compute child */
@@ -2219,11 +2383,14 @@ void processMachineState(void)
 				// della tastiera a bolle
 				//ptrFutureState = &stateState[17];
 
-				ptrFutureState = &stateState[5];
+				// Passo direttamente allo stato mounting disposable senza passare per STATE_SELECT_TREAT
+				// perche' il trattamento e' gia' stato selezionato.
+				ptrFutureState = &stateState[9];
 				/* compute future parent */
 				ptrFutureParent = ptrFutureState->ptrParent;
 				/* compute future child */
 				ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
+				DebugStringStr("STATE_MOUNTING_DISP");
 			}
 			/* execute function state level */
 			// (FM) DOPO LA PRIMA VOLTA PASSA AUTOMATICAMENTE NELLO STATO IDLE,ACTION_ALWAYS
@@ -2236,7 +2403,7 @@ void processMachineState(void)
 
 			break;
 
-		case STATE_SELECT_TREAT:
+		case STATE_SELECT_TREAT:     // NON E' USATO CON LA GESTIONE DA SERVICE
 			/* compute future state */
 			if( (currentGuard[GUARD_ENABLE_MOUNT_DISPOSABLE].guardValue == GUARD_VALUE_TRUE) )
 			{
@@ -2271,12 +2438,14 @@ void processMachineState(void)
 				ptrFutureParent = ptrFutureState->ptrParent;
 				/* compute future child */
 				ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
+				DebugStringStr("STATE_PRIMING_PH_1");
 			}
 
 			/* execute function state level */
 			manageStateEntryAndStateAlways(10);
 			break;
 
+		// ORA DA QUESTO STATO PASSO DIRETTAMENTE ALLO STATO DI PRIMING SENZA ASPETTARE ALCUN SEGNALE
 		case STATE_TANK_FILL:
 			if(
 				(currentGuard[GUARD_ENABLE_PRIMING_PHASE_1].guardValue == GUARD_VALUE_TRUE)
@@ -2308,6 +2477,18 @@ void processMachineState(void)
 				ptrFutureParent = ptrFutureState->ptrParent;
 				/* compute future child */
 				ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
+				DebugStringStr("STATE_PRIMING_PH_2");
+			}
+			else if(currentGuard[GUARD_ABANDON_PRIMING].guardValue == GUARD_VALUE_TRUE)
+			{
+				currentGuard[GUARD_ABANDON_PRIMING].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
+				/* (FM) HO DECISO DI ABBANDONARE IL PRIMING, RITORNO IN IDLE */
+				/* compute future state */
+				ptrFutureState = &stateState[3];
+				/* compute future parent */
+				ptrFutureParent = ptrFutureState->ptrParent;
+				/* compute future child */
+				ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
 			}
 			/* execute function state level */
 			manageStateEntryAndStateAlways(14);
@@ -2322,6 +2503,19 @@ void processMachineState(void)
 				/* (FM) FINITA LA FASE 2 DEL PRIMING POSSO PASSARE AL TRATTAMENTO ..KIDNEY_1 */
 				/* compute future state */
 				ptrFutureState = &stateState[17];
+				/* compute future parent */
+				ptrFutureParent = ptrFutureState->ptrParent;
+				/* compute future child */
+				ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
+				DebugStringStr("STATE_TREATMENT_KIDNEY_1");
+
+			}
+			else if(currentGuard[GUARD_ABANDON_PRIMING].guardValue == GUARD_VALUE_TRUE)
+			{
+				currentGuard[GUARD_ABANDON_PRIMING].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
+				/* (FM) HO DECISO DI ABBANDONARE IL PRIMING, RITORNO IN IDLE */
+				/* compute future state */
+				ptrFutureState = &stateState[3];
 				/* compute future parent */
 				ptrFutureParent = ptrFutureState->ptrParent;
 				/* compute future child */
@@ -2418,6 +2612,10 @@ void processMachineState(void)
 			break;
 
 		case PARENT_PRIMING_TREAT_KIDNEY_1_RUN:
+			if((float)perfusionParam.priVolPerfArt >= ((float)parameterWordSetFromGUI[PAR_SET_PRIMING_VOL_PERFUSION].value * PERC_OF_PRIM_FOR_FILTER / 100.0))
+			{
+				// posso usarlo per un eventuale cambio di stato nel parent ed entrare in una fase di caricamento del filtro
+			}
 			if(ptrCurrentParent->action == ACTION_ON_ENTRY)
 			{
 				/* execute parent callback function */
@@ -2767,13 +2965,22 @@ void initAllGuard(void)
 
 /**/
 void initGUIButton(void){
-
-	buttonGUITreatment[BUTTON_KIDNEY].state = GUI_BUTTON_NULL;
-	buttonGUITreatment[BUTTON_LIVER].state = GUI_BUTTON_NULL;
+	buttonGUITreatment[BUTTON_PINCH_2WPVF_RIGHT_OPEN].state = GUI_BUTTON_NULL;
+	buttonGUITreatment[BUTTON_PINCH_2WPVF_LEFT_OPEN].state = GUI_BUTTON_NULL;
+	buttonGUITreatment[BUTTON_PINCH_2WPVF_BOTH_CLOSED].state = GUI_BUTTON_NULL;
+	buttonGUITreatment[BUTTON_PINCH_2WPVA_RIGHT_OPEN].state = GUI_BUTTON_NULL;
+	buttonGUITreatment[BUTTON_PINCH_2WPVA_LEFT_OPEN].state = GUI_BUTTON_NULL;
+	buttonGUITreatment[BUTTON_PINCH_2WPVA_BOTH_CLOSED].state = GUI_BUTTON_NULL;
+	buttonGUITreatment[BUTTON_PINCH_2WPVV_RIGHT_OPEN].state = GUI_BUTTON_NULL;
+	buttonGUITreatment[BUTTON_PINCH_2WPVV_LEFT_OPEN].state = GUI_BUTTON_NULL;
+	buttonGUITreatment[BUTTON_PINCH_2WPVV_BOTH_CLOSED].state = GUI_BUTTON_NULL;
 	buttonGUITreatment[BUTTON_CONFIRM].state = GUI_BUTTON_NULL;
 	buttonGUITreatment[BUTTON_RESET].state = GUI_BUTTON_NULL;
-	buttonGUITreatment[BUTTON_BACK].state = GUI_BUTTON_NULL;
+	buttonGUITreatment[BUTTON_PRIMING_END_CONFIRM].state = GUI_BUTTON_NULL;
+	buttonGUITreatment[BUTTON_PRIMING_FILT_INS_CONFIRM].state = GUI_BUTTON_NULL;
+	buttonGUITreatment[BUTTON_PRIMING_ABANDON].state = GUI_BUTTON_NULL;
 	buttonGUITreatment[BUTTON_START_PRIMING].state = GUI_BUTTON_NULL;
+	buttonGUITreatment[BUTTON_STOP_PRIMING].state = GUI_BUTTON_NULL;
 	buttonGUITreatment[BUTTON_STOP_ALL_PUMP].state = GUI_BUTTON_NULL;
 	buttonGUITreatment[BUTTON_EN_PERFUSION].state = GUI_BUTTON_NULL;
 	buttonGUITreatment[BUTTON_EN_OXYGENATION].state = GUI_BUTTON_NULL;
@@ -2789,6 +2996,7 @@ void initGUIButton(void){
 	buttonGUITreatment[BUTTON_PERF_TANK_FILL].state = GUI_BUTTON_NULL;
 	buttonGUITreatment[BUTTON_PERF_FILTER_MOUNT].state = GUI_BUTTON_NULL;
 
+	buttonGUITreatment[BUTTON_KIDNEY].state = GUI_BUTTON_NULL; // TODO da togliere, messo solo per debug
 }
 
 // forzo stato GUI_BUTTON_RELEASED sul tasto buttonId
@@ -2828,6 +3036,8 @@ void initSetParamFromGUI(void){
 	parameterWordSetFromGUI[PAR_SET_PURIF_UF_FLOW_TARGET].value = 0;
 }
 
+
+
 void setParamWordFromGUI(unsigned char parId, int value){
 	if(parId == PAR_SET_PRIMING_VOL_PERFUSION)
 	{
@@ -2836,6 +3046,8 @@ void setParamWordFromGUI(unsigned char parId, int value){
 			value = MAX_VOLUME_RESERVOIR;
 		if(value < MIN_VOLUME_RESERVOIR)
 			value = MIN_VOLUME_RESERVOIR;
+		ParamRcvdInMounting[0] = 1;
+		DebugStringStr("PAR_SET_PRIMING_VOL_PERFUSION");
 	}
 	else if(parId == PAR_SET_PRIMING_TEMPERATURE_PERFUSION)
 	{
@@ -2844,6 +3056,18 @@ void setParamWordFromGUI(unsigned char parId, int value){
 			value = MAX_TEMP_PRIMING * 10;
 		if(value < (MIN_TEMP_PRIMING * 10))
 			value = MIN_TEMP_PRIMING * 10;
+		ParamRcvdInMounting[1] = 1;
+		DebugStringStr("PAR_SET_PRIMING_TEMPERATURE_PERFUSION");
+	}
+	else if(parId == PAR_SET_OXYGENATOR_ACTIVE)
+	{
+		ParamRcvdInMounting[2] = 1;
+		DebugStringStr("PAR_SET_OXYGENATOR_ACTIVE");
+	}
+	else if(parId == PAR_SET_DEPURATION_ACTIVE)
+	{
+		ParamRcvdInMounting[3] = 1;
+		DebugStringStr("PAR_SET_DEPURATION_ACTIVE");
 	}
 	else if (parId == PAR_SET_MAX_FLOW_PERFUSION)
 	{

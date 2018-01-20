@@ -225,5 +225,6 @@ void ClearNonPhysicalAlm( int AlarmCode);
 
 void SetTherapyType(THERAPY_TYPE tt);
 THERAPY_TYPE GetTherapyType(void);
+void UpdatePumpSpeed(void);
 
 #endif /* APPLICATION_MODBUSCOMMPROT_H_ */

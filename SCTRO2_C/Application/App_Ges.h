@@ -175,4 +175,6 @@ void EN_24_M_C_Management(unsigned char action);
 /* VARIABLE */
 /******************/
 
+void CallInIdleState(void);
+
 #endif /* APPLICATION_APP_GES_H_ */

@@ -103,6 +103,6 @@ void manageAlarmPhysicPressSens(void);
 void manageAlarmPhysicTempSens(void);
 void manageAlarmPhysicUFlowSens(void);
 void DebugStringStr(char *s);
-
+void DebugStringPID();
 
 #endif /* APPLICATION_ALARM_CON_H_ */

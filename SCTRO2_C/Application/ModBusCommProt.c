@@ -14,6 +14,11 @@
 
 
 THERAPY_TYPE TherapyType = KidneyTreat;
+bool WriteActive = FALSE;
+bool ReadActive = FALSE;
+char LasActuatorWriteID = 0;      // id dell'attuatore modbus con scrittura in corso
+
+extern int timerCounterModBusOld;
 
 
 uint32_t msTick_elapsed( uint32_t last );
@@ -474,9 +479,31 @@ int SelectStruct(unsigned char slaveAddr)
 	return StructId;
 }
 
+// se ci sono dei valori di velocita' da aggiornare lo faccio
+void UpdatePumpSpeed(void)
+{
+	if(!WriteActive)
+	{
+		for(int i = 0; i < 4; i++)
+		{
+			if(pumpPerist[i].newSpeedValue != pumpPerist[i].value)
+			{
+				setPumpSpeedValueHighLevel(pumpPerist[i].pmpMySlaveAddress, pumpPerist[i].newSpeedValue);
+			}
+		}
+	}
+}
+
 void setPumpSpeedValueHighLevel(unsigned char slaveAddr, int speedValue){
 
 	int StructId = SelectStruct(slaveAddr);
+
+	pumpPerist[StructId].newSpeedValue = speedValue;
+	if(WriteActive && (LasActuatorWriteID == StructId))
+	{
+		// c'e' una scrittura in corso devo aspettare che finisca
+		return;
+	}
 
 	//switch((slaveAddr - 2))
 	switch(StructId)
@@ -613,6 +640,10 @@ void readPumpSpeedValue(unsigned char slaveAddr){
 
 void readPumpSpeedValueHighLevel(unsigned char slaveAddr){
 	int StructId = SelectStruct(slaveAddr);
+
+	pumpPerist[StructId].ReadRequestPending = 1;
+
+	/*
 	//switch((slaveAddr - 2))
 	switch(StructId)
 		{
@@ -663,6 +694,7 @@ void readPumpSpeedValueHighLevel(unsigned char slaveAddr){
 		default:
 			break;
 		}
+		*/
 }
 
 void setPinchPositionHighLevel(unsigned char slaveAddr, int posValue){
@@ -728,16 +760,12 @@ void setPinchPosValue(unsigned char slaveAddr, int posValue){
 		}
 }
 
-bool WriteActive = FALSE;
-bool ReadActive = FALSE;
-extern int timerCounterModBusOld;
 
 
 // ogni 50 msec controlla un attuatore ed esegue l'operazione richiesta.
 // Una volta terminata l'operazione mette la flag iflag_pmp1_rx a IFLAG_IDLE
 void alwaysModBusActuator(void)
 {
-	static char LasActuatorWriteID = 0;      // id dell'attuatore modbus con scrittura in corso
 	static char ActuatorWriteCnt = 0;
 	static int timerCounterModBusStart = 0;
 	static char AlarmSet = 0;
@@ -771,8 +799,8 @@ void alwaysModBusActuator(void)
 				//pumpPerist[0].reqType = REQ_TYPE_IDLE; //la scrittura ha la precedenza sulla lettura; leggo solo se il reqType è idle......questo reqType va messo in idle dopo che è stata letta tutta la risposta
 				iflag_pmp1_rx = IFLAG_PMP1_BUSY;
 				//timerCounterModBus = 0; //da verificare.....serve azzerare il contatore prima che arrivi la risposta?
-				setPumpSpeedValue(pumpPerist[0].pmpMySlaveAddress, pumpPerist[0].value);
 				WriteActive = TRUE;
+				setPumpSpeedValue(pumpPerist[0].pmpMySlaveAddress, pumpPerist[0].value);
 				LasActuatorWriteID = 0;
 				ActuatorWriteCnt = 0;
 			}
@@ -794,6 +822,12 @@ void alwaysModBusActuator(void)
 				readPumpSpeedValue(pumpPerist[0].pmpMySlaveAddress);
 				*/
 			}
+
+			if(pumpPerist[0].ReadRequestPending)
+			{
+				pumpPerist[0].dataReady = DATA_READY_TRUE;
+				pumpPerist[0].ReadRequestPending = 0;
+			}
 			break;
 
 		//pump 1
@@ -807,8 +841,8 @@ void alwaysModBusActuator(void)
 				pumpPerist[1].reqState = REQ_STATE_OFF;
 				//pumpPerist[1].reqType = REQ_TYPE_IDLE;
 				iflag_pmp1_rx = IFLAG_PMP1_BUSY;
-				setPumpSpeedValue(pumpPerist[1].pmpMySlaveAddress, pumpPerist[1].value);
 				WriteActive = TRUE;
+				setPumpSpeedValue(pumpPerist[1].pmpMySlaveAddress, pumpPerist[1].value);
 				LasActuatorWriteID = 1;
 				ActuatorWriteCnt = 0;
 			}
@@ -831,6 +865,11 @@ void alwaysModBusActuator(void)
 				readPumpSpeedValue(pumpPerist[1].pmpMySlaveAddress);
 				*/
 			}
+			if(pumpPerist[1].ReadRequestPending)
+			{
+				pumpPerist[1].dataReady = DATA_READY_TRUE;
+				pumpPerist[1].ReadRequestPending = 0;
+			}
 			break;
 
 		//pump 2
@@ -844,8 +883,8 @@ void alwaysModBusActuator(void)
 				pumpPerist[2].reqState = REQ_STATE_OFF;
 				//pumpPerist[2].reqType = REQ_TYPE_IDLE;
 				iflag_pmp1_rx = IFLAG_PMP1_BUSY;
-				setPumpSpeedValue(pumpPerist[2].pmpMySlaveAddress, pumpPerist[2].value);
 				WriteActive = TRUE;
+				setPumpSpeedValue(pumpPerist[2].pmpMySlaveAddress, pumpPerist[2].value);
 				LasActuatorWriteID = 2;
 				ActuatorWriteCnt = 0;
 			}
@@ -867,6 +906,11 @@ void alwaysModBusActuator(void)
 				readPumpSpeedValue(pumpPerist[2].pmpMySlaveAddress);
 				*/
 			}
+			if(pumpPerist[2].ReadRequestPending)
+			{
+				pumpPerist[2].dataReady = DATA_READY_TRUE;
+				pumpPerist[2].ReadRequestPending = 0;
+			}
 			break;
 
 		//pump 3
@@ -880,8 +924,8 @@ void alwaysModBusActuator(void)
 				pumpPerist[3].reqState = REQ_STATE_OFF;
 				//pumpPerist[3].reqType = REQ_TYPE_IDLE;
 				iflag_pmp1_rx = IFLAG_PMP1_BUSY;
-				setPumpSpeedValue(pumpPerist[3].pmpMySlaveAddress, pumpPerist[3].value);
 				WriteActive = TRUE;
+				setPumpSpeedValue(pumpPerist[3].pmpMySlaveAddress, pumpPerist[3].value);
 				LasActuatorWriteID = 3;
 				ActuatorWriteCnt = 0;
 			}
@@ -903,6 +947,11 @@ void alwaysModBusActuator(void)
 				readPumpSpeedValue(pumpPerist[3].pmpMySlaveAddress);
 				*/
 			}
+			if(pumpPerist[3].ReadRequestPending)
+			{
+				pumpPerist[3].dataReady = DATA_READY_TRUE;
+				pumpPerist[3].ReadRequestPending = 0;
+			}
 			break;
 
 		//pinch 1 - arterial
@@ -917,8 +966,8 @@ void alwaysModBusActuator(void)
 				//pinchActuator[0].reqType = REQ_TYPE_IDLE; //la scrittura ha la precedenza sulla lettura; leggo solo se il reqType è idle......questo reqType va messo in idle dopo che è stata letta tutta la risposta
 				iflag_pmp1_rx = IFLAG_PMP1_BUSY;
 				//timerCounterModBus = 0; //da verificare.....serve azzerare il contatore prima che arrivi la risposta?
-				setPinchPosValue(pinchActuator[0].pinchMySlaveAddress, pinchActuator[0].value);
 				WriteActive = TRUE;
+				setPinchPosValue(pinchActuator[0].pinchMySlaveAddress, pinchActuator[0].value);
 				LasActuatorWriteID = 4;
 				ActuatorWriteCnt = 0;
 			}
@@ -936,8 +985,8 @@ void alwaysModBusActuator(void)
 				//pinchActuator[1].reqType = REQ_TYPE_IDLE; //la scrittura ha la precedenza sulla lettura; leggo solo se il reqType è idle......questo reqType va messo in idle dopo che è stata letta tutta la risposta
 				iflag_pmp1_rx = IFLAG_PMP1_BUSY;
 				//timerCounterModBus = 0; //da verificare.....serve azzerare il contatore prima che arrivi la risposta?
-				setPinchPosValue(pinchActuator[1].pinchMySlaveAddress, pinchActuator[1].value);
 				WriteActive = TRUE;
+				setPinchPosValue(pinchActuator[1].pinchMySlaveAddress, pinchActuator[1].value);
 				LasActuatorWriteID = 5;
 				ActuatorWriteCnt = 0;
 			}
@@ -955,8 +1004,8 @@ void alwaysModBusActuator(void)
 				//pinchActuator[2].reqType = REQ_TYPE_IDLE; //la scrittura ha la precedenza sulla lettura; leggo solo se il reqType è idle......questo reqType va messo in idle dopo che è stata letta tutta la risposta
 				iflag_pmp1_rx = IFLAG_PMP1_BUSY;
 				//timerCounterModBus = 0; //da verificare.....serve azzerare il contatore prima che arrivi la risposta?
-				setPinchPosValue(pinchActuator[2].pinchMySlaveAddress, pinchActuator[2].value);
 				WriteActive = TRUE;
+				setPinchPosValue(pinchActuator[2].pinchMySlaveAddress, pinchActuator[2].value);
 				LasActuatorWriteID = 6;
 				ActuatorWriteCnt = 0;
 			}

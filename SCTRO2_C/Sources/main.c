@@ -686,6 +686,8 @@ int main(void)
 	         /* sbc comm - start */
 	         pollingSBCCommTreat();
 	         pollingDataToSBCTreat();
+
+
 	         /* sbc comm - end */
 
 			 /*controllo lo stato del sensore d'aria
@@ -703,7 +705,8 @@ int main(void)
 	        	processMachineState();
 
 	        	alarmEngineAlways();
-		        GenerateSBCComm();
+		        //GenerateSBCComm();
+
 	         }
 
 	         if(ReadKey1()) // per debug con la tastiera a bolle
@@ -777,6 +780,10 @@ int main(void)
 	         /*la gestione del ModBus probabilmente sarà da rifare seguendo la scia di quanto fatto inn Debug*/
 
 	         alwaysModBusActuator();
+	         // si possono verificare delle chiamate alla setPumpSpeedValueHighLevel quando ci sono
+	         // delle scritture in corso. Per evitare di perderle e per evitare di corrompere le flag devo
+	         // chiamare questa funzione
+	         UpdatePumpSpeed();
 
 	         if (!iflag_sbc_rx && !WriteActive)
 	        	 Manage_and_Storage_ModBus_Actuator_Data();

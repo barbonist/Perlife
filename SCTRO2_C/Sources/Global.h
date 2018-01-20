@@ -483,6 +483,7 @@ enum MachineStateGuardId {
 	GUARD_ENABLE_PRIMING_PHASE_2,
 	GUARD_ENABLE_TREATMENT_KIDNEY_1,
 	GUARD_ENABLE_DISPOSABLE_EMPTY,
+	GUARD_ABANDON_PRIMING,
 	/*********************/
 	/* STATE LEVEL GUARD */
 	/*********************/
@@ -734,6 +735,8 @@ struct Peristaltic_Pump {
 	unsigned char			dataReady;
 	unsigned char			actualSpeed;
 	int						actualSpeedOld;
+	int                     newSpeedValue; // nuovo valore di velocita' arrivato prima della conclusione della scrittura precedente
+	unsigned char           ReadRequestPending;  // e' arrivata una richiesta di lettura della velocita' della pompa
 };
 
 struct Peristaltic_Pump		pumpPerist[4];
@@ -906,14 +909,25 @@ struct ultrsndFlowSens * ptrMsg_UFLOW; 	   /* puntatore utilizzato per spedire i
 #define GUI_BUTTON_RELEASED		0x01
 
 enum buttonGUIEnum{
-	BUTTON_KIDNEY = 0xA1,
-	BUTTON_LIVER = 0xA9,
+	BUTTON_PINCH_2WPVF_RIGHT_OPEN = 0xA0,   // pinch filter (pinch in basso aperto a destra)
+	BUTTON_PINCH_2WPVF_LEFT_OPEN = 0xA1,    // pinch filter (pinch in basso aperto a sinistra)
+	BUTTON_PINCH_2WPVF_BOTH_CLOSED = 0xA2,  // pinch filter (pinch in basso entrambi chiusi)
+	BUTTON_PINCH_2WPVA_RIGHT_OPEN = 0xA3,   // pinch arterial (pinch di sinistra - aperto a destra)
+	BUTTON_PINCH_2WPVA_LEFT_OPEN = 0xA4,    // pinch arterial (pinch di sinistra - aperto a sinistra)
+	BUTTON_PINCH_2WPVA_BOTH_CLOSED = 0xA5,  // pinch arterial (pinch di sinistra - entrambi chiusi)
+	BUTTON_PINCH_2WPVV_RIGHT_OPEN = 0xA6,   // pinch venous (pinch di destra - aperto a destra)
+	BUTTON_PINCH_2WPVV_LEFT_OPEN = 0xA7,    // pinch venous (pinch di destra - aperto a sinistra)
+	BUTTON_PINCH_2WPVV_BOTH_CLOSED = 0xA8,  // pinch venous (pinch di destra - entrambi chiusi)
+
 	BUTTON_CONFIRM = 0xB1,
 	BUTTON_RESET = 0xB3,
-	BUTTON_BACK = 0xB5,
+	BUTTON_PRIMING_END_CONFIRM = 0xB4,
+	BUTTON_PRIMING_FILT_INS_CONFIRM = 0xB5,
+	BUTTON_PRIMING_ABANDON = 0xB6,
 	BUTTON_START_PRIMING = 0xB7,
 	BUTTON_STOP_PRIMING = 0xB8,
 	BUTTON_STOP_ALL_PUMP = 0xB9,
+
 	BUTTON_EN_PERFUSION = 0xC1,
 	BUTTON_EN_OXYGENATION = 0xC2,
 	BUTTON_EN_PURIFICATION = 0xC3,
@@ -923,11 +937,15 @@ enum buttonGUIEnum{
 	BUTTON_STOP_OXYGEN_PUMP = 0xC7,
 	BUTTON_START_PURIF_PUMP = 0xC8,
 	BUTTON_STOP_PURIF_PUMP = 0xC9,
+
 	BUTTON_PERF_DISP_MOUNTED = 0xD1,
 	BUTTON_OXYG_DISP_MOUNTED = 0xD2,
 	BUTTON_PERF_TANK_FILL = 0xD3,
 	BUTTON_PERF_FILTER_MOUNT = 0xD4,
-	BUTTON_END_NUMBER = 20
+
+	BUTTON_KIDNEY = 0xE0,  // TODO da togliere, messo solo per debug
+
+	BUTTON_END_NUMBER = 31
 };
 
 struct buttonGUI{
@@ -1136,6 +1154,7 @@ unsigned char subcodeDBG;
 unsigned long TreatDuration;
 
 typedef enum{Undef = 0, KidneyTreat = 0x10, LiverTreat = 0x50} THERAPY_TYPE;
+typedef enum{NOT_DEF = 0, NO = 1, YES = 2} PARAMETER_ACTIVE_TYPE;
 
 // volume massimo in ml trasferito nel reservoir
 #define MAX_VOLUME_RESERVOIR     2000
@@ -1153,4 +1172,7 @@ typedef enum{Undef = 0, KidneyTreat = 0x10, LiverTreat = 0x50} THERAPY_TYPE;
 #define MIN_FLOW_ART_LIVER		50
 #define PUMP_ART_GAIN			9 /* ml/GIRO */
 
+
+// percentuale del priming per l'inserimento del filtro
+#define PERC_OF_PRIM_FOR_FILTER    95
 #endif /* SOURCES_GLOBAL_H_ */

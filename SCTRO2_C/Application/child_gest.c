@@ -90,6 +90,7 @@ void manageChildPrimAlarmStopPerfAlways(void)
 		//speed = ((BYTES_TO_WORD_SIGN(msgToRecvFrame3[3], msgToRecvFrame3[4]))/100)*(timerCopy);
 		// la velocita' ora posso leggerla direttamente dall'array di registry modbus
 		speed = modbusData[pumpPerist[0].pmpMySlaveAddress-2][17];
+		pumpPerist[0].dataReady = DATA_READY_FALSE;
 	}
 }
 
@@ -130,6 +131,7 @@ void manageChildPrimAlarmStopPurifAlways(void)
 		//speed = ((BYTES_TO_WORD_SIGN(msgToRecvFrame3[3], msgToRecvFrame3[4]))/100)*(timerCopy);
 		// la velocita' ora posso leggerla direttamente dall'array di registry modbus
 		speed = modbusData[pumpPerist[1].pmpMySlaveAddress-2][17];
+		pumpPerist[1].dataReady = DATA_READY_FALSE;
 	}
 }
 
@@ -172,6 +174,7 @@ void manageChildPrimAlarmStopAllPumpAlways(void)
 		//speed = ((BYTES_TO_WORD_SIGN(msgToRecvFrame3[3], msgToRecvFrame3[4]))/100)*(timerCopy);
 		// la velocita' ora posso leggerla direttamente dall'array di registry modbus
 		speed = modbusData[pumpPerist[0].pmpMySlaveAddress-2][17];
+		pumpPerist[0].dataReady = DATA_READY_FALSE;
 	}
 }
 
@@ -334,6 +337,7 @@ void manageChildTreatAlm1StopPerfAlways(void)
 		//speed = ((BYTES_TO_WORD_SIGN(msgToRecvFrame3[3], msgToRecvFrame3[4]))/100)*(timerCopy);
 		// la velocita' ora posso leggerla direttamente dall'array di registry modbus
 		speed = modbusData[pumpPerist[0].pmpMySlaveAddress-2][17];
+		pumpPerist[0].dataReady = DATA_READY_FALSE;
 	}
 }
 
@@ -374,6 +378,7 @@ void manageChildTreatAlm1StopPurifAlways(void)
 		//speed = ((BYTES_TO_WORD_SIGN(msgToRecvFrame3[3], msgToRecvFrame3[4]))/100)*(timerCopy);
 		// la velocita' ora posso leggerla direttamente dall'array di registry modbus
 		speed = modbusData[pumpPerist[1].pmpMySlaveAddress-2][17];
+		pumpPerist[1].dataReady = DATA_READY_FALSE;
 	}
 }
 
@@ -420,6 +425,7 @@ void manageChildTreatAlm1StopAllPumpAlways(void)
 		//speed = ((BYTES_TO_WORD_SIGN(msgToRecvFrame3[3], msgToRecvFrame3[4]))/100)*(timerCopy);
 		// la velocita' ora posso leggerla direttamente dall'array di registry modbus
 		speed = modbusData[pumpPerist[0].pmpMySlaveAddress-2][17];
+		pumpPerist[0].dataReady = DATA_READY_FALSE;
 	}
 }
 
