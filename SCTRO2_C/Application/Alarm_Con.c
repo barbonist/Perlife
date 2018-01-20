@@ -24,7 +24,9 @@ struct alarm alarmList[] =
 		{CODE_ALARM_TEMP_ART_HIGH,         PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR, PRIORITY_HIGH, 5000, 2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull}, 	    /* 3 */
 		{CODE_ALARM_PRESS_ADS_FILTER_HIGH, PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR, PRIORITY_HIGH, 2000, 2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull},	    /* 4 */
 		{CODE_ALARM_FLOW_PERF_ART_HIGH,    PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR, PRIORITY_HIGH, 2000, 2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull}, 		/* 5 */
-		{CODE_ALARM_MODBUS_ACTUATOR_SEND,  PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_WAIT_CONFIRM,      PRIORITY_LOW,     0,    0, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull},	    /* 6 */
+		{CODE_ALARM_FLOW_ART_NOT_DETECTED, PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR, PRIORITY_HIGH, 2000, 2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull}, 		/* 6 */
+		{CODE_ALARM_FLOW_VEN_HIGH, 		   PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR, PRIORITY_HIGH, 2000, 2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull}, 		/* 7 */
+		{CODE_ALARM_MODBUS_ACTUATOR_SEND,  PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_WAIT_CONFIRM,      PRIORITY_LOW,     0,    0, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull},	    /* 8 */
 
 
 		{}
@@ -94,6 +96,12 @@ void alarmEngineAlways(void){
 	//verifica physic ir temp sens
 	manageAlarmPhysicTempSens();
 
+	//verifica physic flusso di perfusione arteriosa alto
+	manageAlarmPhysicFlowPerfArtHigh();
+
+	//verifica physic flusso d perfusione arteriosa non rilevato
+	manageAlarmPhysicFlowArtNotDetected();
+
 	for(i=StartAlmArrIdx; i<ALARM_ACTIVE_IN_STRUCT; i++)
 	{
 		if((alarmList[i].physic == PHYSIC_TRUE) && (alarmList[i].active != ACTIVE_TRUE))
@@ -146,34 +154,47 @@ void alarmEngineAlways(void){
 }
 
 
-void manageAlarmPhysicPressSens(void){
-	//if(sensor_PRx[0].prSensValue > 80)
-	if(PR_ART_mmHg_Filtered > 80)
-		{
-			alarmList[0].physic = PHYSIC_TRUE;
-		}
-	else
-		{
-			alarmList[0].physic = PHYSIC_FALSE;
-		}
+void manageAlarmPhysicPressSens(void)
+{
 
-	if(sensor_PRx[1].prSensValue > 100)
-		{
-			alarmList[4].physic = PHYSIC_TRUE;
-		}
-	else
-		{
-			alarmList[4].physic = PHYSIC_FALSE;
-		}
-}
-
-void manageAlarmPhysicTempSens(void){
-	if((sensorIR_TM[0].tempSensValue > 40.0)){
-		alarmList[3].physic = PHYSIC_TRUE;
+	if(PR_ART_mmHg_Filtered > PR_ART_HIGH)
+	{
+		alarmList[PRESS_ART_HIGH].physic = PHYSIC_TRUE;
 	}
 	else
 	{
-		alarmList[3].physic = PHYSIC_FALSE;
+		alarmList[PRESS_ART_HIGH].physic = PHYSIC_FALSE;
+	}
+
+	if(PR_ADS_FLT_mmHg_Filtered > PR_ADS_FILTER_HIGH)
+	{
+		alarmList[PRESS_ADS_FILTER_HIGH].physic = PHYSIC_TRUE;
+	}
+	else
+	{
+		alarmList[PRESS_ADS_FILTER_HIGH].physic = PHYSIC_FALSE;
+	}
+
+	if(PR_VEN_mmHg_Filtered > PR_VEN_HIGH)
+	{
+		alarmList[PRESS_VEN_HIGH].physic = PHYSIC_TRUE;
+	}
+	else
+	{
+		alarmList[PRESS_VEN_HIGH].physic = PHYSIC_FALSE;
+	}
+
+}
+
+void manageAlarmPhysicTempSens(void)
+{
+	if((sensorIR_TM[0].tempSensValue > 40.0))
+	{
+		alarmList[TEMP_ART_HIGH].physic = PHYSIC_TRUE;
+	}
+	else
+	{
+		alarmList[TEMP_ART_HIGH].physic = PHYSIC_FALSE;
 	}
 }
 
@@ -183,11 +204,11 @@ void manageAlarmPhysicUFlowSens(void){
 		(sensor_UFLOW[0].bubblePresence == MASK_ERROR_BUBBLE_ALARM)
 		)
 	{
-		alarmList[2].physic = PHYSIC_TRUE;
+		alarmList[AIR_PRES_ART].physic = PHYSIC_TRUE;
 	}
 	else
 	{
-		alarmList[2].physic = PHYSIC_FALSE;
+		alarmList[AIR_PRES_ART].physic = PHYSIC_FALSE;
 	}
 }
 
@@ -199,7 +220,7 @@ void SetNonPhysicalAlm( int AlarmCode)
 		case CODE_ALARM_MODBUS_ACTUATOR_SEND:
 			// faccio partire un allarme perche' ho superato il numero delle retry nella scrittura su modbus
 			//alarmList[6].active = ACTIVE_TRUE;
-			alarmList[6].physic = PHYSIC_TRUE;  // uso questo parametro per far partire l'allarme
+			alarmList[MODBUS_ACTUATOR_SEND].physic = PHYSIC_TRUE;  // uso questo parametro per far partire l'allarme
 			break;
 	}
 }
@@ -222,12 +243,13 @@ void ClearNonPhysicalAlm( int AlarmCode)
 	{
 		case CODE_ALARM_MODBUS_ACTUATOR_SEND:
 			//alarmList[5].active = ACTIVE_TRUE;
-			alarmList[5].physic = PHYSIC_FALSE;  // uso questo parametro per terminare l'allarme
+			alarmList[MODBUS_ACTUATOR_SEND].physic = PHYSIC_FALSE;  // uso questo parametro per terminare l'allarme
 			break;
 	}
 }
 
-void manageAlarmPhysicFlowPerfArtHigh(void){
+void manageAlarmPhysicFlowPerfArtHigh(void)
+{
 
 	int FlowMax = 0;
 	bool chekFlow = FALSE;
@@ -256,14 +278,29 @@ void manageAlarmPhysicFlowPerfArtHigh(void){
 		if(sensor_UFLOW[0].Average_Flow_Val > FlowMax)
 		{
 			/*l'indice dell'array deve corrispondere all'indice della riga della tabella alarmList*/
-			alarmList[5].physic = PHYSIC_TRUE;
+			alarmList[FLOW_PERF_ART_HIGH].physic = PHYSIC_TRUE;
 		}
 		else
 		{
-			alarmList[5].physic = PHYSIC_FALSE;
+			alarmList[FLOW_PERF_ART_HIGH].physic = PHYSIC_FALSE;
 		}
 	}
 
+}
+
+void manageAlarmPhysicFlowArtNotDetected(void)
+{
+
+	if (sensor_UFLOW[0].RequestMsgProcessed > MAX_MSG_FLOW_SENS_ART_NOT_DETECTED)
+	{
+		alarmList[FLOW_ART_NOT_DETECTED].physic = PHYSIC_TRUE;
+		sensor_UFLOW[0].RequestMsgProcessed = 0;
+		/*in nquesto caso bisogna comunicarlo all'SBC che metterà a video un pop up per le possibili soluzioni*/
+	}
+	else
+	{
+		alarmList[FLOW_ART_NOT_DETECTED].physic = PHYSIC_FALSE;
+	}
 }
 
 

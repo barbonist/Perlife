@@ -30,6 +30,7 @@ void initUFlowSensor(void)
 	sensor_UFLOW[0].byteSended = 0;
 	sensor_UFLOW[0].bubbleSize = 0;
 	sensor_UFLOW[0].bubblePresence = 0;
+	sensor_UFLOW[0].RequestMsgProcessed = 0;
 
 	sensor_UFLOW[1].sensorId = 1;
 	sensor_UFLOW[1].sensorAddr = FLOW_SENSOR_TWO_ADDR;
@@ -42,6 +43,7 @@ void initUFlowSensor(void)
 	sensor_UFLOW[1].byteSended = 0;
 	sensor_UFLOW[1].bubbleSize = 0;
 	sensor_UFLOW[1].bubblePresence = 0;
+	sensor_UFLOW[1].RequestMsgProcessed = 0;
 
 	/*Disable Data and Receiver enable */
 	FLOWSENS_DE_ClrVal();
@@ -88,6 +90,10 @@ void Manage_UFlow_Sens()
 		{
 			FLOWSENS_COMM_SendChar(ptrMsg_UFLOW->bufferToSend[k]);
 		}
+
+		/*incremento il contatore dei messaggi inviati per quel sensore*/
+		sensor_UFLOW[Id_Sensor_UF].RequestMsgProcessed++;
+
 		/*ho spedito, incremento per spedire il prossimo*/
 		Id_Sensor_UF++;
 	}
@@ -147,6 +153,9 @@ void Manage_UFlow_Sens()
 				sensor_UFLOW[Id_Buffer].Inst_Flow_Value = numFloatUFlow_Val.numFormatFloat_Val;
 				//sensor_UFLOW[Id_Buffer].Average_Flow_Val = Average_Flow_Value(Id_Buffer, numFloatUFlow_Val.numFormatFloat_Val);
 				sensor_UFLOW[Id_Buffer].Average_Flow_Val = Average_Flow_Value(Id_Buffer, sensor_UFLOW[Id_Buffer].Inst_Flow_Value);
+
+				/*decremento il contatore dei messaggi inviati per quel sensore*/
+				sensor_UFLOW[Id_Buffer].RequestMsgProcessed--;
 			}
 
 			numFloatUFlow_Val.ieee754NumFormat_Val = (sensor_UFLOW[Id_Buffer].bufferReceived[16] << 24) |

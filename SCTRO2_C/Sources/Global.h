@@ -875,6 +875,7 @@ struct ultrsndFlowSens{
 	unsigned char Error_In_Flow_Meas;
 	unsigned char Error_In_Temp_Meas;
 	unsigned char Device_Fault;
+	unsigned char RequestMsgProcessed;  //la incremento quando mand o il messaggio, la decremento quando ricevo al risposta; se supera 25 do allarme
 };
 #define MASK_Bubble_Alarm					0x01
 #define MASK_Error_during_Bubble_Detection	0x10
