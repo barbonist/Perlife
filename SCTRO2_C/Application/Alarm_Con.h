@@ -99,7 +99,9 @@
 
 #define MAX_MSG_FLOW_SENS_ART_NOT_DETECTED 	25
 #define PR_ART_HIGH							100
+#define PR_ART_LOW							1
 #define PR_VEN_HIGH							10
+#define PR_VEN_LOW							1
 #define PR_ADS_FILTER_HIGH					250
 
 enum ALARM
@@ -112,6 +114,7 @@ enum ALARM
 	 FLOW_PERF_ART_HIGH,
 	 FLOW_ART_NOT_DETECTED,
 	 PRESS_VEN_HIGH,
+	 PRESS_VEN_LOW,
 	 MODBUS_ACTUATOR_SEND
 };
 
