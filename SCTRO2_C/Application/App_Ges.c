@@ -73,6 +73,11 @@ int AllParametersReceived;
 // vale 1 se e' arrivato il comando da sbc per impostare il tipo di terapia
 char TherapyCmdArrived;
 
+float volumePriming = 0;
+float volumeTreatArt = 0;
+
+
+
 void CallInIdleState(void)
 {
 	memset(ParamRcvdInMounting, 0, sizeof(ParamRcvdInMounting));
@@ -83,17 +88,12 @@ void CallInIdleState(void)
 	initAllGuard();
 	initGUIButton();
 
-//	setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
-//	setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 0);
-//	setPinchPositionHighLevel(PINCH_2WPVF, MODBUS_PINCH_RIGHT_OPEN);
-//	setPinchPositionHighLevel(PINCH_2WPVA, MODBUS_PINCH_RIGHT_OPEN);
-//
-//	if(GetTherapyType() == LiverTreat)
-//	{
-//		// se sono nel trattamento fegato fermo anche l'altro motore !!
-//		setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, 0);
-//		setPinchPositionHighLevel(PINCH_2WPVV, MODBUS_PINCH_RIGHT_OPEN);
-//	}
+	// inserisco un valore di terapia indefinita per costringe sbc ad inviare una nuova terapia prima di ripartire per un secondo trattamento
+	// non faccio la init perche' verra' fatta dopo che avro' selezionato la nuova terapia
+	SetTherapyType(Undef);
+
+	volumeTreatArt = 0;
+	volumePriming = 0;
 }
 
 
@@ -908,6 +908,13 @@ void manageStatePrimingWaitAlways(void){
 	else if(buttonGUITreatment[BUTTON_PRIMING_ABANDON].state == GUI_BUTTON_RELEASED)
 	{
 		releaseGUIButton(BUTTON_PRIMING_ABANDON);
+		setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
+		setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 0);
+		if(GetTherapyType() == LiverTreat)
+		{
+			// se sono nel trattamento fegato fermo anche l'altro motore !!
+			setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, 0);
+		}
 		currentGuard[GUARD_ABANDON_PRIMING].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
 	}
 //	else if(parameterWordSetFromGUI[PAR_SET_PRIMING_VOL_PERFUSION].value > perfusionParam.priVolPerfArt)
@@ -934,6 +941,13 @@ void manageStatePrimingRicircoloAlways(void)
 	if(buttonGUITreatment[BUTTON_PRIMING_ABANDON].state == GUI_BUTTON_RELEASED)
 	{
 		releaseGUIButton(BUTTON_PRIMING_ABANDON);
+		setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
+		setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 0);
+		if(GetTherapyType() == LiverTreat)
+		{
+			// se sono nel trattamento fegato fermo anche l'altro motore !!
+			setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, 0);
+		}
 		currentGuard[GUARD_ABANDON_PRIMING].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
 	}
 //	else if(buttonGUITreatment[BUTTON_START_TREATMENT].state == GUI_BUTTON_RELEASED)
@@ -970,6 +984,13 @@ void manageStateWaitTreatmentAlways(void)
 	if(buttonGUITreatment[BUTTON_PRIMING_ABANDON].state == GUI_BUTTON_RELEASED)
 	{
 		releaseGUIButton(BUTTON_PRIMING_ABANDON);
+		setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
+		setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 0);
+		if(GetTherapyType() == LiverTreat)
+		{
+			// se sono nel trattamento fegato fermo anche l'altro motore !!
+			setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, 0);
+		}
 		currentGuard[GUARD_ABANDON_PRIMING].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
 	}
 //	else if(buttonGUITreatment[BUTTON_START_TREATMENT].state == GUI_BUTTON_RELEASED)
@@ -1184,7 +1205,6 @@ void manageParentPrimingAlways(void){
 	static char iflag_oxyg = 0;
 	int speed = 0;
 	static int timerCopy = 0;
-	static float volumePriming = 0;
 
 	//manage pump
 	switch(ptrCurrentParent->parent){
@@ -1644,12 +1664,12 @@ void manageParentTreatEntry(void){
 }
 
 
+
 void manageParentTreatAlways(void){
 		static char iflag_perf = 0;
 		static char iflag_oxyg = 0;
 		int speed = 0;
 		static int timerCopy = 0;
-		static float volumeTreatArt = 0;
 
 		//manage pump
 		switch(ptrCurrentParent->parent){
@@ -1703,8 +1723,6 @@ void manageParentTreatAlways(void){
 			// potrebbe partire anche se non dovrebbe.
 			pressSample1 = PR_ART_mmHg;
 			pressSample2 = PR_ART_mmHg;
-			pumpPerist[0].reqState == REQ_STATE_OFF;  // prova
-			pumpPerist[0].reqType = REQ_TYPE_IDLE;
 		}
 		else if(buttonGUITreatment[BUTTON_START_OXYGEN_PUMP].state == GUI_BUTTON_RELEASED){
 			releaseGUIButton(BUTTON_START_OXYGEN_PUMP);
@@ -2087,10 +2105,10 @@ static void computeMachineStateGuardIdle(void){
 	if(parameterWordSetFromGUI[PAR_SET_THERAPY_TYPE].value == (word)KidneyTreat)
 	{
 		SetTherapyType(KidneyTreat);
-		modBusPmpInit(GetTherapyType());
 		//releaseGUIButton(BUTTON_KIDNEY);
 		if(TherapyCmdArrived)
 		{
+			UpdatePmpAddress(GetTherapyType());
 			currentGuard[GUARD_ENABLE_SELECT_TREAT_PAGE].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
 			TherapyCmdArrived = 0;
 		}
@@ -2098,9 +2116,9 @@ static void computeMachineStateGuardIdle(void){
 	else if (parameterWordSetFromGUI[PAR_SET_THERAPY_TYPE].value == (word)LiverTreat)
 	{
 		SetTherapyType(LiverTreat);
-		modBusPmpInit(GetTherapyType());
 		if(TherapyCmdArrived)
 		{
+			UpdatePmpAddress(GetTherapyType());
 			currentGuard[GUARD_ENABLE_SELECT_TREAT_PAGE].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
 			TherapyCmdArrived = 0;
 		}
@@ -2191,6 +2209,13 @@ static void computeMachineStateGuardPrimingPh1(void){
 	else if(buttonGUITreatment[BUTTON_PRIMING_ABANDON].state == GUI_BUTTON_RELEASED)
 	{
 		releaseGUIButton(BUTTON_PRIMING_ABANDON);
+		setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
+		setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 0);
+		if(GetTherapyType() == LiverTreat)
+		{
+			// se sono nel trattamento fegato fermo anche l'altro motore !!
+			setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, 0);
+		}
 		currentGuard[GUARD_ABANDON_PRIMING].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
 	}
 }
@@ -2221,6 +2246,13 @@ static void computeMachineStateGuardPrimingPh2(void){
 	else if(buttonGUITreatment[BUTTON_PRIMING_ABANDON].state == GUI_BUTTON_RELEASED)
 	{
 		releaseGUIButton(BUTTON_PRIMING_ABANDON);
+		setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
+		setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 0);
+		if(GetTherapyType() == LiverTreat)
+		{
+			// se sono nel trattamento fegato fermo anche l'altro motore !!
+			setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, 0);
+		}
 		currentGuard[GUARD_ABANDON_PRIMING].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
 	}
 }
@@ -2231,7 +2263,11 @@ static void computeMachineStateGuardPrimingPh2(void){
 /*  This function compute the guard value in treatment kidney 1 state   */
 /*  Controllo la fine del trattamento
 /*--------------------------------------------------------------------*/
-static void computeMachineStateGuardTreatment(void){
+static void computeMachineStateGuardTreatment(void)
+{
+//	static int EndTreatmentState = 0;
+//	static unsigned long StartTimeout = 0;
+//	unsigned long ul;
 
 	// tempo trascorso di trattamento in sec
 	TreatDuration = msTick_elapsed(StartTreatmentTime) * 50L / 1000;
@@ -2263,13 +2299,49 @@ static void computeMachineStateGuardTreatment(void){
 		setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, newSpeedPmp_0);
 		setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, newSpeedPmp1_2);
 
-
 		if ( CommandModBusPMPExecute(newSpeedPmp_0,newSpeedPmp1_2,newSpeedPmp_3) )
 		{
 			currentGuard[GUARD_ENABLE_DISPOSABLE_EMPTY].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
 			DebugStringStr("TREATMENT END");
 		}
+		else
+		{
+			// controllo il tempo trascorso per un eventuale timeout di errore
+		}
 	}
+
+/*aggiunta gestione con timer per cambio stato --> da testare*/
+//	if( (EndTreatmentState == 0) && (TreatDuration >= isec) )
+//	{
+//		// esaurita la durata massima del trattamento
+//		// forzo lo stop alle pompe passo allo svuotamento del circuito
+//		setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, newSpeedPmp_0);
+//		setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, newSpeedPmp1_2);
+//		StartTimeout = (unsigned long)timerCounterModBus;
+//
+//		EndTreatmentState = 1;
+//	}
+//	else if(EndTreatmentState == 1)
+//	{
+//		setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, newSpeedPmp_0);
+//		setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, newSpeedPmp1_2);
+//		if ( CommandModBusPMPExecute(newSpeedPmp_0,newSpeedPmp1_2,newSpeedPmp_3) )
+//		{
+//			currentGuard[GUARD_ENABLE_DISPOSABLE_EMPTY].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+//			DebugStringStr("TREATMENT END");
+//			EndTreatmentState = 0;
+//		}
+//		else
+//		{
+//			// controllo il tempo trascorso per un eventuale timeout di errore
+//			ul = msTick_elapsed(StartTimeout) * 50L;
+//			if(ul > 100)
+//			{
+//				// trascorsi 100 msec do un allarme
+//			}
+//		}
+//	}
+
 }
 
 

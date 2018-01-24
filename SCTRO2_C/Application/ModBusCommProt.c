@@ -271,6 +271,30 @@ struct func17RetStruct * ModBusRWRegisterReq(char slaveAddr,
 	return _func17RetValPtr;
 }
 
+void UpdatePmpAddress(THERAPY_TYPE tt)
+{
+	if(tt == KidneyTreat)
+		pumpPerist[0].pmpMySlaveAddress = PPAR ;   // 0x02;	 rotary selctor = 0 - pump art
+	else if(TherapyType == LiverTreat)
+		pumpPerist[0].pmpMySlaveAddress = PPAF;	   // 0x03  rotary selctor = 1 - pump art
+	else
+	{
+		// se il parametro e' indefinito metto il rene
+		pumpPerist[0].pmpMySlaveAddress = PPAR ;   // 0x02;	 rotary selctor = 0 - pump art
+	}
+
+	if(tt == KidneyTreat)
+		pumpPerist[3].pmpMySlaveAddress = PPAF ;   // 0x03;	 rotary selctor = 1 - noy used fot kidney therapy
+	else if(TherapyType == LiverTreat)
+		pumpPerist[3].pmpMySlaveAddress = PPAR;	   // 0x02  rotary selctor = 0 - pump art
+	else
+	{
+		// se il parametro e' indefinito metto il rene
+		pumpPerist[3].pmpMySlaveAddress = PPAF ;   // 0x03;	 rotary selctor = 1 - noy used fot kidney therapy
+	}
+}
+
+
 void modBusPmpInit(THERAPY_TYPE tt)
 {
 
