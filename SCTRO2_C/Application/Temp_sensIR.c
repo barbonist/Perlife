@@ -29,6 +29,7 @@ void initTempSensIR(void){
 		sensorIR_TM[i].tempSensAdc 		 = 0;
 		sensorIR_TM[i].errorNACK		 = 0;
 		sensorIR_TM[i].errorPEC			 = 0;
+		sensorIR_TM[i].ErrorMSG			 = 0;
 
 		for(char j = 0; j<4; j++)
 		{
@@ -84,6 +85,8 @@ void Manage_IR_Sens_Temp(void)
  		 * Quando scatterà l'interrupt di trasmissione 'void IR_TM_COMM_OnTransmitData(void)'
  		 * andrò ad effettuare la lettura con 'IR_TM_COMM_RecvBlock(ptrDataTemperatureIR, 3, &ret);'*/
  		ptrDataTemperatureIR = buildCmdReadTempSensIR(Address, (RAM_ACCESS_COMMAND | SD_TOBJ1_RAM_ADDRESS), 0);
+ 		/*incremento i possibili errori dpovuti a non risposte o a risposte con PEC errate; se ricevo benbe resetto questo contatore*/
+ 		sensorIR_TM[Address].ErrorMSG++;
  		/*incremento l'indirizzo così al prossimo giro interrogo il sensore successivo*/
  		Address++;
     }
@@ -111,7 +114,11 @@ void Manage_IR_Sens_Temp(void)
  		/*Vado a copiarmi il dato ricevuto dal sensore IR solo se non ho ricevuto un NACK
  		 * e se torna LA PEC ricevuta con quella calcolata*/
  		if (computeCRC8TempSensRx(ptrChar,(RAM_ACCESS_COMMAND | SD_TOBJ1_RAM_ADDRESS),Slave_Address_Sent) )
+ 		{
  			sensorIR_TM[index_array].tempSensValue = (float)((BYTES_TO_WORD(sensorIR_TM[index_array].bufferReceived[1], sensorIR_TM[index_array].bufferReceived[0]))*((float)0.02)) - (float)273.15;
+ 			/*ho ricevuto bene, resetto il contatore consecutivo di errore*/
+ 			sensorIR_TM[index_array].ErrorMSG = 0;
+ 		}
 
  		iflag_sensTempIR_Meas_Ready = IFLAG_IDLE;
 
@@ -285,8 +292,8 @@ bool computeCRC8TempSensRx(unsigned char buffer[],unsigned char command, unsigne
 	unsigned char bufferPEC[NUM_BYTE_CRC_RX];
 	unsigned char PEC_CALCULATED, PEC_RX;
 
-	/*Il sensore IR calcola invia la PEC nel terzo byet (i primi due sono i valori di temp)
-	 * il calcolo lo fa usandi 5 bytecon:
+	/*Il sensore IR calcola e invia la PEC nel terzo byte (i primi due sono i valori di temp)
+	 * il calcolo lo fa usando 5 byte con:
 	 * 1) Slave Address *2
 	 * 2) Command (nel caso di comando di lettura si ha (RAM_ACCESS_COMMAND | SD_TOBJ1_RAM_ADDRESS) ovvero 0x0007
 	 * 3) (Slave Address *2) +1
@@ -321,7 +328,7 @@ bool computeCRC8TempSensRx(unsigned char buffer[],unsigned char command, unsigne
 	{
 		/*incremento il contatore di errori sulla PEC*/
 		sensorIR_TM[TempSensAddr-1].errorPEC++;
-		return (TRUE);//return (FALSE);
+		return (FALSE);
 	}
 }
 

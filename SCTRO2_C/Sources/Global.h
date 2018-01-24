@@ -100,6 +100,7 @@ char    iFlag_modbusDataStorage;
 #define LAST_ACTUATOR  				0x09 //gli attuatori sono 7 ma ho un offset di due per gli indirizzi (il primo attuatore ha indirizzo 0x02, l'ultimo ha indirizzo 0x08
 #define FIRST_ACTUATOR				0x02
 #define LAST_PUMP					0x05
+#define FIRST_PINCH					0x06
 #define TOTAL_ACTUATOR				7
 #define TOTAL_MODBUS_DATA			32
 #define MAX_DATA_MODBUS_RECEIVED	11
@@ -761,6 +762,7 @@ struct Pinch_Valve {
 struct Pinch_Valve			pinchActuator[5];
 
 word modbusData [TOTAL_ACTUATOR] [TOTAL_MODBUS_DATA];
+unsigned char CountErrorModbusMSG[8];
 /* Pinch */
 /************************************************************************/
 /* 						ACTUATOR 										*/
@@ -843,6 +845,7 @@ struct tempIRSensor{
 	unsigned char * ptrValToRead;
 	word errorNACK;
 	word errorPEC;
+	unsigned char ErrorMSG;
 };
 
 struct tempIRSensor sensorIR_TM[3];

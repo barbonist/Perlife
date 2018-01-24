@@ -802,8 +802,10 @@ void pollingDataToSBCTreat(void)
 	}
 }
 
-void buildRDMachineStateResponseMsg(char code, char subcode){
+void buildRDMachineStateResponseMsg(char code, char subcode)
+{
 	byte index = 0;
+	unsigned int life = FreeRunCnt10msec *10;
 
 	sbc_tx_data[index++] = 0xA5;
 	sbc_tx_data[index++] = 0xAA;
@@ -820,14 +822,26 @@ void buildRDMachineStateResponseMsg(char code, char subcode){
 
 	/* STATUS PARAMETERS */
 	/* TODO status parameters: life  */
+	sbc_tx_data[index++] = (life >> 8) & 0xFF;
+	sbc_tx_data[index++] = life & 0xFF;
+	/* TODO status parameters: rev fw-H
+	 * potrei usare questa come versione FW
+	 * della CON usando 5 bit per il primo numero
+	 * 5 bit per il seocndo numero e 6 bit per il
+	 * terzo numero avendo quindi una versione massima
+	 * pari a 32.32.64  */
+
 	sbc_tx_data[index++] = 0x00;
 	sbc_tx_data[index++] = 0x00;
-	/* TODO status parameters: rev fw-H  */
+	/* TODO status parameters: rev fw-H
+	 * potrei usare questa come versione FW
+	 * della PRO usando 5 bit per il primo numero
+	 * 5 bit per il seocndo numero e 6 bit per il
+	 * terzo numero avendo quindi una versione massima
+	 * pari a 32.32.64  */
 	sbc_tx_data[index++] = 0x00;
 	sbc_tx_data[index++] = 0x00;
-	/* TODO status parameters: rev fw-L  */
-	sbc_tx_data[index++] = 0x00;
-	sbc_tx_data[index++] = 0x00;
+
 	/* status parameters: alarm code */
 	sbc_tx_data[index++] = (alarmCurrent.code >> 8 ) & 0xFF;
 	sbc_tx_data[index++] = (alarmCurrent.code 	    ) & 0xFF;
@@ -850,20 +864,20 @@ void buildRDMachineStateResponseMsg(char code, char subcode){
 
 	/* SENS PARAMETERS */
 	/* sensors parameters: pressure adsorbent filter */
-	sbc_tx_data[index++] = (PR_ADS_FLT_mmHg >> 8) & 0xFF;
-	sbc_tx_data[index++] = (PR_ADS_FLT_mmHg     ) & 0xFF;
+	sbc_tx_data[index++] = (PR_ADS_FLT_mmHg_Filtered >> 8) & 0xFF;
+	sbc_tx_data[index++] = (PR_ADS_FLT_mmHg_Filtered     ) & 0xFF;
 	/* sensors parameters: pressure arterial */
-	sbc_tx_data[index++] = (PR_ART_mmHg >> 8) & 0xFF;
-	sbc_tx_data[index++] = (PR_ART_mmHg     ) & 0xFF;
+	sbc_tx_data[index++] = (PR_ART_mmHg_Filtered >> 8) & 0xFF;
+	sbc_tx_data[index++] = (PR_ART_mmHg_Filtered     ) & 0xFF;
 	/* sensors parameters: pressure venous */
-	sbc_tx_data[index++] = (PR_VEN_mmHg >> 8) & 0xFF;
-	sbc_tx_data[index++] = (PR_VEN_mmHg     ) & 0xFF;
+	sbc_tx_data[index++] = (PR_VEN_mmHg_Filtered >> 8) & 0xFF;
+	sbc_tx_data[index++] = (PR_VEN_mmHg_Filtered     ) & 0xFF;
 	/* sensors parameters: pressure oxygenation */
-	sbc_tx_data[index++] = (PR_OXYG_mmHg >> 8) & 0xFF;
-	sbc_tx_data[index++] = (PR_OXYG_mmHg     ) & 0xFF;
+	sbc_tx_data[index++] = (PR_OXYG_mmHg_Filtered >> 8) & 0xFF;
+	sbc_tx_data[index++] = (PR_OXYG_mmHg_Filtered     ) & 0xFF;
 	/* sensors parameters: pressure level */
-	sbc_tx_data[index++] = (PR_LEVEL_mmHg >> 8) & 0xFF;
-	sbc_tx_data[index++] = (PR_LEVEL_mmHg     ) & 0xFF;
+	sbc_tx_data[index++] = (PR_LEVEL_mmHg_Filtered >> 8) & 0xFF;
+	sbc_tx_data[index++] = (PR_LEVEL_mmHg_Filtered     ) & 0xFF;
 	/* sensors parameters: pressure systolic arterial */
 	sbc_tx_data[index++] = (sensorsValues.pressSystArt >> 8) & 0xFF; //TODO
 	sbc_tx_data[index++] = (sensorsValues.pressSystArt     ) & 0xFF;

@@ -27,7 +27,8 @@ struct alarm alarmList[] =
 		{CODE_ALARM_FLOW_ART_NOT_DETECTED, PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR, PRIORITY_HIGH, 2000, 2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull}, 		/* 6 */
 		{CODE_ALARM_PRESS_VEN_HIGH, 	   PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR, PRIORITY_HIGH, 2000, 2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull}, 		/* 7 */
 		{CODE_ALARM_PRESS_VEN_LOW, 		   PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR, PRIORITY_HIGH, 2000, 2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull}, 		/* 8 */
-		{CODE_ALARM_MODBUS_ACTUATOR_SEND,  PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_WAIT_CONFIRM,      PRIORITY_LOW,     0,    0, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull},	    /* 9 */
+		{CODE_ALARM_TEMP_SENS_NOT_DETECTED,PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR, PRIORITY_HIGH, 2000, 2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull}, 		/* 9 */
+		{CODE_ALARM_MODBUS_ACTUATOR_SEND,  PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_WAIT_CONFIRM,      PRIORITY_LOW,     0,    0, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull},	    /* 10 */
 
 
 		{}
@@ -82,26 +83,177 @@ void alarmConInit(void){
 int StartAlmArrIdx = 0;
 int i;
 
-void alarmEngineAlways(void){
+void alarmEngineAlways(void)
+{
 
 	static int StrAlarmWritten = 0;
 	static int IdxCurrAlarm = 0xff;
-	//int i;
 
-	//verifica physic pressioni
-	manageAlarmPhysicPressSens();
 
-	//verifica physic flow sensor
-	manageAlarmPhysicUFlowSens();
+/*Faccio uno switch su tutta la macchina a stati in modo
+ * gestire ogni allarme in funzioine dello stato in cui sono*/
 
-	//verifica physic ir temp sens
-	manageAlarmPhysicTempSens();
+	switch(ptrCurrentState->state)
+	{
+		case STATE_NULL:
+		{
+			manageAlarmFlowSensNotDetected();
+			manageAlarmIrTempSensNotDetected();
+			break;
+		}
 
-	//verifica physic flusso di perfusione arteriosa alto
-	manageAlarmPhysicFlowPerfArtHigh();
+		case STATE_ENTRY:
+		{
+			manageAlarmFlowSensNotDetected();
+			manageAlarmIrTempSensNotDetected();
+			break;
+		}
 
-	//verifica physic flusso d perfusione arteriosa non rilevato
-	manageAlarmPhysicFlowArtNotDetected();
+		case STATE_IDLE:
+		{
+			manageAlarmFlowSensNotDetected();
+			manageAlarmIrTempSensNotDetected();
+			break;
+		}
+
+		case STATE_SELECT_TREAT:
+		{
+			manageAlarmFlowSensNotDetected();
+			manageAlarmIrTempSensNotDetected();
+			break;
+		}
+
+		case STATE_T1_NO_DISPOSABLE:
+		{
+			manageAlarmFlowSensNotDetected();
+			manageAlarmIrTempSensNotDetected();
+			break;
+		}
+
+		case STATE_MOUNTING_DISP:
+		{
+			manageAlarmFlowSensNotDetected();
+			manageAlarmIrTempSensNotDetected();
+			break;
+		}
+
+		case STATE_TANK_FILL:
+		{
+			manageAlarmFlowSensNotDetected();
+			manageAlarmIrTempSensNotDetected();
+			break;
+		}
+
+		case STATE_PRIMING_PH_1:
+		{
+			manageAlarmFlowSensNotDetected();
+			manageAlarmIrTempSensNotDetected();
+			break;
+		}
+
+		case STATE_PRIMING_PH_2:
+		{
+			manageAlarmFlowSensNotDetected();
+			manageAlarmIrTempSensNotDetected();
+			break;
+		}
+
+		case STATE_TREATMENT_KIDNEY_1:
+		{
+			//verifica physic pressioni
+			manageAlarmPhysicPressSens();
+
+			//verifica physic flow sensor
+			manageAlarmPhysicUFlowSens();
+
+			//verifica physic ir temp sens
+			manageAlarmPhysicTempSens();
+
+			//verifica physic flusso di perfusione arteriosa alto
+			manageAlarmPhysicFlowPerfArtHigh();
+
+			//verifica  flusso  non rilevato
+			manageAlarmFlowSensNotDetected();
+			//verifica temperatura noin rilevata
+			manageAlarmIrTempSensNotDetected();
+			break;
+		}
+
+		/*case STATE_T1_WITH_DISPOSABLE:
+		{
+			break;
+		}
+
+		case STATE_PRIMING_TREAT_1:
+		{
+			break;
+		}
+
+		case STATE_PRIMING_TREAT_2:
+		{
+			break;
+		}*/
+
+
+		case STATE_TREATMENT_2:
+		{
+			//verifica physic pressioni
+			manageAlarmPhysicPressSens();
+
+			//verifica physic flow sensor
+			manageAlarmPhysicUFlowSens();
+
+			//verifica physic ir temp sens
+			manageAlarmPhysicTempSens();
+
+			//verifica physic flusso di perfusione arteriosa alto
+			manageAlarmPhysicFlowPerfArtHigh();
+
+			//verifica  flusso  non rilevato
+			manageAlarmFlowSensNotDetected();
+			//verifica temperatura noin rilevata
+			manageAlarmIrTempSensNotDetected();
+			break;
+		}
+
+		case STATE_EMPTY_DISPOSABLE_1:
+		{
+			//verifica  flusso  non rilevato
+			manageAlarmFlowSensNotDetected();
+			//verifica temperatura noin rilevata
+			manageAlarmIrTempSensNotDetected();
+			break;
+		}
+
+		case STATE_EMPTY_DISPOSABLE_2:
+		{
+			//verifica  flusso  non rilevato
+			manageAlarmFlowSensNotDetected();
+			//verifica temperatura noin rilevata
+			manageAlarmIrTempSensNotDetected();
+			break;
+		}
+
+		case STATE_WASHING:
+		{
+			//verifica  flusso  non rilevato
+			manageAlarmFlowSensNotDetected();
+			//verifica temperatura noin rilevata
+			manageAlarmIrTempSensNotDetected();
+			break;
+		}
+
+		case STATE_FATAL_ERROR:
+		{
+			break;
+		}
+
+		default:
+		{
+			break;
+		}
+	}
+
 
 	for(i=StartAlmArrIdx; i<ALARM_ACTIVE_IN_STRUCT; i++)
 	{
@@ -309,21 +461,62 @@ void manageAlarmPhysicFlowPerfArtHigh(void)
 
 }
 
-void manageAlarmPhysicFlowArtNotDetected(void)
+void manageAlarmFlowSensNotDetected(void)
 {
 
-	if (sensor_UFLOW[0].RequestMsgProcessed > MAX_MSG_FLOW_SENS_ART_NOT_DETECTED)
+	for (int i = 0; i <2; i++)
 	{
-		alarmList[FLOW_ART_NOT_DETECTED].physic = PHYSIC_TRUE;
-		sensor_UFLOW[0].RequestMsgProcessed = 0;
-		/*in nquesto caso bisogna comunicarlo all'SBC che metterà a video un pop up per le possibili soluzioni*/
-	}
-	else
-	{
-		alarmList[FLOW_ART_NOT_DETECTED].physic = PHYSIC_FALSE;
+		/*se non ricevo 10 msg consecutivi da un sensore di flusso ossia il sensore non risposnde per 5 secondi consecutivi vado in allarme*/
+		if (sensor_UFLOW[i].RequestMsgProcessed > MAX_MSG_CONSECUTIVE_FLOW_SENS_NOT_DETECTED)
+		{
+			alarmList[FLOW_SENS_NOT_DETECTED].physic = PHYSIC_TRUE;
+			sensor_UFLOW[i].RequestMsgProcessed = 0;
+			/*in questo caso bisogna comunicarlo all'SBC che metterà a video un pop up per le possibili soluzioni*/
+		}
+		else
+		{
+			alarmList[FLOW_SENS_NOT_DETECTED].physic = PHYSIC_FALSE;
+		}
 	}
 }
 
+void manageAlarmIrTempSensNotDetected(void)
+{
+
+	for (int i = 0; i <3; i++)
+	{
+		/*se non ricevo 10 msg consecutivi da un sensore di temperatura ossia il sensore non risposnde per 6 secondi consecutivi vado in allarme*/
+		if (sensorIR_TM[i].ErrorMSG > MAX_MSG_CONSECUTIVE_IR_TEMP_SENS_NOT_DETECTED)
+		{
+			alarmList[IR_SENS_NOT_DETECTED].physic = PHYSIC_TRUE;
+			sensorIR_TM[i].ErrorMSG = 0;
+		}
+
+		else
+		{
+			alarmList[IR_SENS_NOT_DETECTED].physic = PHYSIC_FALSE;
+		}
+	}
+}
+
+void manageAlarmActuatorModbusNotRespond(void)
+{
+
+	for (int i = 0; i <8; i++)
+	{
+		/*se non ricevo 10 msg consecutivi da un sensore di temperatura ossia il sensore non risposnde per 6 secondi consecutivi vado in allarme*/
+		if (CountErrorModbusMSG[i] = 0 > MAX_MSG_CONSECUTIVE_ACTUATOR_MODBUS_NOT_RESPOND)
+		{
+			alarmList[MODBUS_ACTUATOR_SEND].physic = PHYSIC_TRUE;
+			CountErrorModbusMSG[i] = 0;
+		}
+
+		else
+		{
+			alarmList[MODBUS_ACTUATOR_SEND].physic = PHYSIC_FALSE;
+		}
+	}
+}
 
 void alarmManageNull(void)
 {
