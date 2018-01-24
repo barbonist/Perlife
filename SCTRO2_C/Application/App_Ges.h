@@ -80,6 +80,16 @@ void manageStateTreatKidney1Always(void);
 
 void manageStateEmptyDisp(void);
 void manageStateEmptyDispAlways(void);
+
+void manageStatePrimingWait(void);
+void manageStatePrimingWaitAlways(void);
+
+void manageStatePrimingRicircolo(void);
+void manageStatePrimingRicircoloAlways(void);
+
+void manageStateWaitTreatmentAlways(void);
+void manageStateWaitTreatment(void);
+
 /**************************************************************************************/
 /******-----------------------------TREATMENT----------------------------------********/
 /**************************************************************************************/

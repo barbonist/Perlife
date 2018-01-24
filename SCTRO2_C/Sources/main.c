@@ -705,7 +705,7 @@ int main(void)
 	        	processMachineState();
 
 	        	alarmEngineAlways();
-		        //GenerateSBCComm();
+		        GenerateSBCComm();
 
 	         }
 
@@ -785,8 +785,8 @@ int main(void)
 	         // chiamare questa funzione
 	         UpdatePumpSpeed();
 
-	         if (!iflag_sbc_rx && !WriteActive)
-	        	 Manage_and_Storage_ModBus_Actuator_Data();
+	         if (!iflag_sbc_rx && !WriteActive);
+	        	Manage_and_Storage_ModBus_Actuator_Data();
 
 	         /*********PUMP*********/
 			 #endif

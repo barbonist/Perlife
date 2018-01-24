@@ -5,8 +5,10 @@
  *      Author: W15
  */
 
-#include "Comm_Sbc.h"
 #include "Global.h"
+#include "PE_Types.h"
+#include "Comm_Sbc.h"
+
 #include "ModBusCommProt.h"
 #include "App_Ges.h"
 
@@ -14,7 +16,7 @@
 #include "stdio.h"
 #include "stdlib.h"
 
-#include "PE_Types.h"
+
 
 #include "SBC_COMM.h"
 #include "ASerialLdd5.h"
@@ -804,6 +806,7 @@ void pollingDataToSBCTreat(void)
 
 void buildRDMachineStateResponseMsg(char code, char subcode){
 	byte index = 0;
+	int life = FreeRunCnt10msec * 10;
 
 	sbc_tx_data[index++] = 0xA5;
 	sbc_tx_data[index++] = 0xAA;
@@ -820,8 +823,8 @@ void buildRDMachineStateResponseMsg(char code, char subcode){
 
 	/* STATUS PARAMETERS */
 	/* TODO status parameters: life  */
-	sbc_tx_data[index++] = 0x00;
-	sbc_tx_data[index++] = 0x00;
+	sbc_tx_data[index++] = (life >> 8) & 0xFF;
+	sbc_tx_data[index++] = life & 0xFF;
 	/* TODO status parameters: rev fw-H  */
 	sbc_tx_data[index++] = 0x00;
 	sbc_tx_data[index++] = 0x00;
@@ -859,10 +862,10 @@ void buildRDMachineStateResponseMsg(char code, char subcode){
 	sbc_tx_data[index++] = (PR_VEN_mmHg_Filtered >> 8) & 0xFF;
 	sbc_tx_data[index++] = (PR_VEN_mmHg_Filtered) & 0xFF;
 	/* sensors parameters: pressure oxygenation */
-	sbc_tx_data[index++] = (PR_OXYG_mmHg >> 8) & 0xFF;
+	sbc_tx_data[index++] = (PR_OXYG_mmHg_Filtered >> 8) & 0xFF;
 	sbc_tx_data[index++] = (PR_OXYG_mmHg_Filtered) & 0xFF;
 	/* sensors parameters: pressure level */
-	sbc_tx_data[index++] = (PR_LEVEL_mmHg >> 8) & 0xFF;
+	sbc_tx_data[index++] = (PR_LEVEL_mmHg_Filtered >> 8) & 0xFF;
 	sbc_tx_data[index++] = (PR_LEVEL_mmHg_Filtered) & 0xFF;
 	/* sensors parameters: pressure systolic arterial */
 	sbc_tx_data[index++] = (sensorsValues.pressSystArt >> 8) & 0xFF; //TODO

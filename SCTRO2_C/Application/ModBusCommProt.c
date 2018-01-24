@@ -6,11 +6,13 @@
  */
 
 #include "Global.h"
+#include "PE_Types.h"
 #include "ModBusCommProt.h"
 
 #include "MODBUS_COMM.h"
 #include "ASerialLdd1.h"
 #include "Alarm_Con.h"
+
 
 
 THERAPY_TYPE TherapyType = KidneyTreat;
@@ -499,11 +501,17 @@ void setPumpSpeedValueHighLevel(unsigned char slaveAddr, int speedValue){
 	int StructId = SelectStruct(slaveAddr);
 
 	pumpPerist[StructId].newSpeedValue = speedValue;
+	if(StructId == 1)
+		pumpPerist[2].newSpeedValue = speedValue;
 	if(WriteActive && (LasActuatorWriteID == StructId))
 	{
 		// c'e' una scrittura in corso devo aspettare che finisca
 		return;
 	}
+
+	/*se la velocità che mi da lo slave è uguale a quella che vorrei impostare non attuo il comando*/
+	if (pumpPerist[StructId].newSpeedValue == modbusData[slaveAddr-2][17])
+		return;
 
 	//switch((slaveAddr - 2))
 	switch(StructId)
@@ -1092,6 +1100,26 @@ void alwaysModBusActuator(void)
 //	}
 }
 
+bool CommandModBusPMPExecute(int SpeedPMP_0, int SpeedPMP_1_2, int SpeedPMP_3)
+{
+
+	unsigned int Speed_Pmp_0 = modbusData [0][17];
+	unsigned int Speed_Pmp_1 = modbusData [1][17];
+	unsigned int Speed_Pmp_2 = modbusData [2][17];
+	unsigned int Speed_Pmp_3 = modbusData [2][17];
+
+	if (Speed_Pmp_0 == SpeedPMP_0    &&
+		Speed_Pmp_1 == SpeedPMP_1_2 &&
+		Speed_Pmp_2 == SpeedPMP_1_2 &&
+		Speed_Pmp_2 == SpeedPMP_3
+		)
+	{
+		return (TRUE);
+	}
+	else
+		return(FALSE);
+}
+
 /*funzione per controllare lo stato dei motori*/
 void Check_Actuator_Status (char slaveAddr,
 							char funcCode,
@@ -1146,6 +1174,7 @@ void Manage_and_Storage_ModBus_Actuator_Data(void)
      	}
 
      	iFlag_actuatorCheck = IFLAG_COMMAND_SENT;
+     	iFlag_modbusDataStorage = FALSE;
 		timerCounterCheckModBus = 0;
 
 		/*L'indirizzo slvAddr = 6 non è usato*/

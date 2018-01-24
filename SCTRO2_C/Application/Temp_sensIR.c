@@ -5,9 +5,10 @@
  *      Author: W15
  */
 
-#include "Temp_sensIR.h"
+
 #include "Global.h"
 #include "PE_Types.h"
+#include "Temp_sensIR.h"
 #include "IR_TM_COMM.h"
 
 #define NUM_BYTE_CRC	4

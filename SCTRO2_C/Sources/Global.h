@@ -8,6 +8,10 @@
 #ifndef SOURCES_GLOBAL_H_
 #define SOURCES_GLOBAL_H_
 
+// TODO commentare questo define nella versione definitiva perche' deve essere usato solo per il
+// debug con il software di service fatto da Luca.
+#define DEBUG_WITH_SERVICE_SBC 0
+
 /* Syncronization flag */
 char	iflag_pc_rx;
 char	iflag_pc_tx;
@@ -299,6 +303,9 @@ enum State {
 	STATE_PRIMING_PH_1,
 	STATE_PRIMING_PH_2,
 	STATE_TREATMENT_KIDNEY_1,
+	STATE_PRIMING_WAIT,
+	STATE_PRIMING_RICIRCOLO,
+	STATE_WAIT_TREATMENT,
 	STATE_EMPTY_DISPOSABLE,
 	/*********************/
 	/* 		STATE  		 */
@@ -484,6 +491,8 @@ enum MachineStateGuardId {
 	GUARD_ENABLE_TREATMENT_KIDNEY_1,
 	GUARD_ENABLE_DISPOSABLE_EMPTY,
 	GUARD_ABANDON_PRIMING,
+	GUARD_ENABLE_PRIMING_WAIT,
+	GUARD_ENABLE_WAIT_TREATMENT,
 	/*********************/
 	/* STATE LEVEL GUARD */
 	/*********************/
@@ -927,6 +936,7 @@ enum buttonGUIEnum{
 	BUTTON_START_PRIMING = 0xB7,
 	BUTTON_STOP_PRIMING = 0xB8,
 	BUTTON_STOP_ALL_PUMP = 0xB9,
+	BUTTON_START_TREATMENT = 0xBA, // viene dato alla fine del ricircolo per far partire il trattamento
 
 	BUTTON_EN_PERFUSION = 0xC1,
 	BUTTON_EN_OXYGENATION = 0xC2,
@@ -1175,4 +1185,8 @@ typedef enum{NOT_DEF = 0, NO = 1, YES = 2} PARAMETER_ACTIVE_TYPE;
 
 // percentuale del priming per l'inserimento del filtro
 #define PERC_OF_PRIM_FOR_FILTER    95
+
+// fattore di conversione del flusso in giri al minuto per le pompe dell'ossigenatore
+#define OXYG_FLOW_TO_RPM_CONV 18.3
+
 #endif /* SOURCES_GLOBAL_H_ */

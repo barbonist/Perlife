@@ -5,12 +5,14 @@
  *      Author: W15
  */
 
+
+#include "Global.h"
+#include "PE_Types.h"
 #include "Flowsens.h"
 #include "FLOWSENS_RE.h"
 #include "FLOWSENS_DE.h"
-#include "Global.h"
 
-#include "PE_Types.h"
+
 
 #include "FLOWSENS_COMM.h"
 
