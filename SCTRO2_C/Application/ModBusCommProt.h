@@ -180,6 +180,7 @@ struct func17RetStruct * ModBusRWRegisterReq(char slaveAddr,
 									unsigned int * writeRegisterValue
 									);
 
+void UpdatePmpAddress(THERAPY_TYPE tt);
 void modBusPmpInit(THERAPY_TYPE tt);
 void modBusPinchInit(void);
 void modbusDataInit(void);
