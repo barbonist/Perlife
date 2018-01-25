@@ -937,6 +937,7 @@ enum buttonGUIEnum{
 	BUTTON_STOP_PRIMING = 0xB8,
 	BUTTON_STOP_ALL_PUMP = 0xB9,
 	BUTTON_START_TREATMENT = 0xBA, // viene dato alla fine del ricircolo per far partire il trattamento
+	BUTTON_STOP_TREATMENT = 0xBB,  // ferma le pompe e ferma il conteggio del trattamento
 
 	BUTTON_EN_PERFUSION = 0xC1,
 	BUTTON_EN_OXYGENATION = 0xC2,
@@ -1162,6 +1163,7 @@ unsigned char subcodeDBG;
 
 // durata globale del trattamento in secondi
 unsigned long TreatDuration;
+unsigned long TotalTreatDuration;
 
 typedef enum{Undef = 0, KidneyTreat = 0x10, LiverTreat = 0x50} THERAPY_TYPE;
 typedef enum{NOT_DEF = 0, NO = 1, YES = 2} PARAMETER_ACTIVE_TYPE;
@@ -1188,5 +1190,16 @@ typedef enum{NOT_DEF = 0, NO = 1, YES = 2} PARAMETER_ACTIVE_TYPE;
 
 // fattore di conversione del flusso in giri al minuto per le pompe dell'ossigenatore
 #define OXYG_FLOW_TO_RPM_CONV 18.3
+
+// definisco il fattore di conversione tra velocita' in rpm/min in ml/interval dove
+// interval e' il periodo su cui calcolo la quantita' di liquido pompata.
+// Quantita' di liquido pompata nell'intervallo di 450 msec.
+// 1 / 60 * 0.450 * 9.3
+#define CONV_RPMMIN_TO_ML_PER_INTERVAL  (float)0.06975
+// valore originale del codice
+//#define CONV_RPMMIN_TO_ML_PER_INTERVAL  (float)0.00775
+// intervallo di tempo in msec per cui devo vedere la temperatura di ricircolo raggiunta prima di chiudere lo stato
+// e passare  all trattamento
+#define TIMEOUT_TEMPERATURE_RICIRC 2000L
 
 #endif /* SOURCES_GLOBAL_H_ */

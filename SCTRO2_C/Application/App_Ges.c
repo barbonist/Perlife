@@ -63,7 +63,7 @@ float pressSample1 = 0;  // FM Questi due vanno inizializzati alla pressione cor
 float pressSample2 = 0;
 unsigned char PidFirstTime[4];
 
-// durata massima del trattamento
+// tick di inizio del trattamento
 unsigned long StartTreatmentTime = 0;
 
 // VARIABILI USATE DURANTE LA FASE DI MOUNTING
@@ -73,9 +73,11 @@ int AllParametersReceived;
 // vale 1 se e' arrivato il comando da sbc per impostare il tipo di terapia
 char TherapyCmdArrived;
 
+// ferma il conteggio del tempo durante il trattamento
+unsigned char StopTreatmentTime;
+
 float volumePriming = 0;
 float volumeTreatArt = 0;
-
 
 
 void CallInIdleState(void)
@@ -92,8 +94,15 @@ void CallInIdleState(void)
 	// non faccio la init perche' verra' fatta dopo che avro' selezionato la nuova terapia
 	SetTherapyType(Undef);
 
+	// inizializzo a 0 il volume accumulato per il priming
 	volumeTreatArt = 0;
+	perfusionParam.treatVolPerfArt = 0;
+	// inizializzo a 0 il volume accumulato durante il trattamento
 	volumePriming = 0;
+	perfusionParam.priVolPerfArt = 0;
+	TotalTreatDuration = 0;
+	StartTreatmentTime = 0;
+	TreatDuration = 0;
 }
 
 
@@ -664,12 +673,30 @@ void manageStateTankFill(void)
 {
 	//releaseGUIButton(BUTTON_CONFIRM);
 
-	// FORZO IL PASSAGGIO IMMEDIATO ALLO STATO GUARD_ENABLE_PRIMING_PHASE_1 PERCHE' ORA LO
-	// TANK_FILL NON SERVE PIU', MA LO LASCIO PER OGNI EVENIENZA
-	currentGuard[GUARD_ENABLE_PRIMING_PHASE_1].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
-	// forzo anche uno start priming per il nuovo stato, dato che lo avevo gia' ricevuto
-	// prima
-	setGUIButton(BUTTON_START_PRIMING);
+	if(((PARAMETER_ACTIVE_TYPE)parameterWordSetFromGUI[PAR_SET_DEPURATION_ACTIVE].value) == YES)
+	{
+		// FORZO IL PASSAGGIO IMMEDIATO ALLO STATO GUARD_ENABLE_PRIMING_PHASE_1 PERCHE' ORA LO
+		// TANK_FILL NON SERVE PIU', MA LO LASCIO PER OGNI EVENIENZA
+		currentGuard[GUARD_ENABLE_PRIMING_PHASE_1].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+		// forzo anche uno start priming per il nuovo stato, dato che lo avevo gia' ricevuto
+		// prima
+		setGUIButton(BUTTON_START_PRIMING);
+	}
+	else if(((PARAMETER_ACTIVE_TYPE)parameterWordSetFromGUI[PAR_SET_DEPURATION_ACTIVE].value) == NO)
+	{
+		// vado direttamente alla fase di priming_ph2
+
+		// FORZO IL PASSAGGIO IMMEDIATO ALLO STATO GUARD_ENABLE_PRIMING_PHASE_2 PERCHE' ORA LO
+		// TANK_FILL NON SERVE PIU', MA LO LASCIO PER OGNI EVENIENZA
+		currentGuard[GUARD_ENABLE_PRIMING_PHASE_2].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+		// forzo anche uno start priming per il nuovo stato, dato che lo avevo gia' ricevuto
+		// prima
+		setGUIButton(BUTTON_START_PRIMING);
+	}
+	else
+	{
+		// non si dovrebbe mai verificare perche' il controllo viene fatto nello stato precedente
+	}
 }
 
 void manageStateTankFillAlways(void)
@@ -813,6 +840,9 @@ void managePrimingPh2(void)
 	pumpPerist[2].entry = 0;
 	pumpPerist[3].entry = 0;
 
+	//currentGuard[GUARD_ENABLE_PRIMING_WAIT].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
+	//currentGuard[GUARD_ENABLE_PRIMING_WAIT].guardValue = GUARD_VALUE_FALSE;
+
 }
 
 void managePrimingPh2Always(void)
@@ -917,26 +947,27 @@ void manageStatePrimingWaitAlways(void){
 		}
 		currentGuard[GUARD_ABANDON_PRIMING].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
 	}
-//	else if(parameterWordSetFromGUI[PAR_SET_PRIMING_VOL_PERFUSION].value > perfusionParam.priVolPerfArt)
-//	{
-//		// devo ritornare nello stato di priming_ph2 perche' devo aggiungere altro liquido
-//		currentGuard[GUARD_ENABLE_PRIMING_PHASE_2].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
-//	}
-
+	else if(parameterWordSetFromGUI[PAR_SET_PRIMING_VOL_PERFUSION].value > perfusionParam.priVolPerfArt)
+	{
+		// dopo che era finito il priming precedente mi e' stato inviato un nuovo volume
+		// quindi, devo ritornare nello stato di priming_ph2 perche' devo aggiungere altro liquido
+		currentGuard[GUARD_ENABLE_PRIMING_PHASE_2].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+	}
 }
 
 //------------------------------------------------------------------
-void manageStatePrimingRicircolo(void){
+void manageStatePrimingRicircolo(void)
+{
 }
 
 void manageStatePrimingRicircoloAlways(void)
 {
-	float tmpr;
-	word tmpr_trgt;
-	// temperatura raggiunta dal reservoir
-	tmpr = ((int)(sensorIR_TM[0].tempSensValue*10));
-	// temperatura da raggiungere moltiplicata per 10
-	tmpr_trgt = parameterWordSetFromGUI[PAR_SET_PRIMING_TEMPERATURE_PERFUSION].value;
+//	float tmpr;
+//	word tmpr_trgt;
+//	// temperatura raggiunta dal reservoir
+//	tmpr = ((int)(sensorIR_TM[0].tempSensValue*10));
+//	// temperatura da raggiungere moltiplicata per 10
+//	tmpr_trgt = parameterWordSetFromGUI[PAR_SET_PRIMING_TEMPERATURE_PERFUSION].value;
 
 	if(buttonGUITreatment[BUTTON_PRIMING_ABANDON].state == GUI_BUTTON_RELEASED)
 	{
@@ -950,19 +981,6 @@ void manageStatePrimingRicircoloAlways(void)
 		}
 		currentGuard[GUARD_ABANDON_PRIMING].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
 	}
-//	else if(buttonGUITreatment[BUTTON_START_TREATMENT].state == GUI_BUTTON_RELEASED)
-//	{
-//		// e' arrivato il comando di partenza del trattamento uso BUTTON_START_TREATMENT
-//		// perche' mi fa partire subito le pompe
-//		releaseGUIButton(BUTTON_START_TREATMENT);
-//		// memorizzo il tempo di inizio trattamento
-//		StartTreatmentTime = (unsigned long)timerCounterModBus;
-//		currentGuard[GUARD_ENABLE_TREATMENT_KIDNEY_1].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
-//	}
-
-
-
-
 //	// temperatura del reservoir
 //	else if((tmpr >= (float)(tmpr_trgt - 10)) && (tmpr <= (float)(tmpr_trgt + 10)))
 //	{
@@ -1199,6 +1217,49 @@ void manageParentPrimingEntry(void){
 
 }
 
+unsigned char TemperatureStateMach(void)
+{
+	static unsigned long RicircTimeout;
+	static unsigned char TempStateMach = 0;
+	unsigned char TempReached = 0;
+
+	float tmpr;
+	word tmpr_trgt;
+	// temperatura raggiunta dal reservoir
+	tmpr = ((int)(sensorIR_TM[0].tempSensValue*10));
+	// temperatura da raggiungere moltiplicata per 10
+	tmpr_trgt = parameterWordSetFromGUI[PAR_SET_PRIMING_TEMPERATURE_PERFUSION].value;
+
+	switch (TempStateMach)
+	{
+		case 0:
+			if((tmpr >= (float)(tmpr_trgt - 10)) && (tmpr <= (float)(tmpr_trgt + 10)))
+			{
+				// ho raggiunto la temperatura target
+				TempStateMach = 1;
+				RicircTimeout = timerCounterModBus;
+			}
+			break;
+		case 1:
+			if((tmpr >= (float)(tmpr_trgt - 10)) && (tmpr <= (float)(tmpr_trgt + 10)))
+			{
+				// ho raggiunto la temperatura target
+				if(msTick_elapsed(RicircTimeout) * 50L >= TIMEOUT_TEMPERATURE_RICIRC)
+				{
+					// per almeno 2 secondi la temperatura si e' mantenuta nell'intorno del target
+					TempReached = 1;
+					TempStateMach = 0;
+				}
+			}
+			else
+			{
+				TempStateMach = 0;
+			}
+			break;
+	}
+	return TempReached;
+}
+
 void manageParentPrimingAlways(void){
 
 	static char iflag_perf = 0;
@@ -1206,13 +1267,15 @@ void manageParentPrimingAlways(void){
 	int speed = 0;
 	static int timerCopy = 0;
 
+
 	//manage pump
 	switch(ptrCurrentParent->parent){
 	case PARENT_PRIMING_TREAT_KIDNEY_1_INIT:
 	if(buttonGUITreatment[BUTTON_START_PRIMING].state == GUI_BUTTON_RELEASED)
 	{
 		setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 2000);
-		setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, (int)((float)parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value / OXYG_FLOW_TO_RPM_CONV * 100.0));
+		if(((PARAMETER_ACTIVE_TYPE)parameterWordSetFromGUI[PAR_SET_OXYGENATOR_ACTIVE].value) == YES)
+			setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, (int)((float)parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value / OXYG_FLOW_TO_RPM_CONV * 100.0));
 		setPinchPositionHighLevel(PNCHVLV1_ADDRESS, MODBUS_PINCH_RIGHT_OPEN);
 		setPinchPositionHighLevel(PNCHVLV3_ADDRESS, MODBUS_PINCH_RIGHT_OPEN);
 
@@ -1230,13 +1293,17 @@ void manageParentPrimingAlways(void){
 	{
 		releaseGUIButton(BUTTON_START_OXYGEN_PUMP);
 
-		//setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 3000);
 		setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, (int)((float)parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value / OXYG_FLOW_TO_RPM_CONV * 100.0));
 	}
 	else if(buttonGUITreatment[BUTTON_STOP_ALL_PUMP].state == GUI_BUTTON_RELEASED)
 	{
 		setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
 		setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 0);
+		if(GetTherapyType() == LiverTreat)
+		{
+			// se sono nel trattamento fegato fermo anche l'altro motore !!
+			setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, 0);
+		}
 		releaseGUIButton(BUTTON_STOP_ALL_PUMP);
 
 	}
@@ -1251,6 +1318,11 @@ void manageParentPrimingAlways(void){
 	{
 		setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
 		setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 0);
+		if(GetTherapyType() == LiverTreat)
+		{
+			// se sono nel trattamento fegato fermo anche l'altro motore !!
+			setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, 0);
+		}
 		releaseGUIButton(BUTTON_STOP_PRIMING);
 	}
 	else if(buttonGUITreatment[BUTTON_STOP_OXYGEN_PUMP].state == GUI_BUTTON_RELEASED)
@@ -1281,7 +1353,7 @@ void manageParentPrimingAlways(void){
 		// la velocita' ora posso leggerla direttamente dall'array di registry modbus
 		speed = modbusData[pumpPerist[0].pmpMySlaveAddress-2][17] / 100;
 		pumpPerist[0].actualSpeed = speed;
-		volumePriming = volumePriming + (float)(speed * 0.00775);
+		volumePriming = volumePriming + (float)(speed * CONV_RPMMIN_TO_ML_PER_INTERVAL);
 		perfusionParam.priVolPerfArt = (int)(volumePriming);
 		pumpPerist[0].dataReady = DATA_READY_FALSE;
 	}
@@ -1291,8 +1363,8 @@ void manageParentPrimingAlways(void){
 			if(buttonGUITreatment[BUTTON_START_PRIMING].state == GUI_BUTTON_RELEASED)
 			{
 				setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 2000);
-				//setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 3000);
-				setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, (int)((float)parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value / OXYG_FLOW_TO_RPM_CONV * 100.0));
+				if(((PARAMETER_ACTIVE_TYPE)parameterWordSetFromGUI[PAR_SET_OXYGENATOR_ACTIVE].value) == YES)
+					setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, (int)((float)parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value / OXYG_FLOW_TO_RPM_CONV * 100.0));
 				setPinchPositionHighLevel(PNCHVLV1_ADDRESS, MODBUS_PINCH_RIGHT_OPEN);
 				setPinchPositionHighLevel(PNCHVLV3_ADDRESS, MODBUS_PINCH_RIGHT_OPEN);
 
@@ -1309,14 +1381,17 @@ void manageParentPrimingAlways(void){
 			else if(buttonGUITreatment[BUTTON_START_OXYGEN_PUMP].state == GUI_BUTTON_RELEASED)
 			{
 				releaseGUIButton(BUTTON_START_OXYGEN_PUMP);
-
-				//setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 3000);
 				setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, (int)((float)parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value / OXYG_FLOW_TO_RPM_CONV * 100.0));
 			}
 			else if(buttonGUITreatment[BUTTON_STOP_ALL_PUMP].state == GUI_BUTTON_RELEASED)
 			{
 				setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
 				setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 0);
+				if(GetTherapyType() == LiverTreat)
+				{
+					// se sono nel trattamento fegato fermo anche l'altro motore !!
+					setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, 0);
+				}
 				releaseGUIButton(BUTTON_STOP_ALL_PUMP);
 			}
 			else if(buttonGUITreatment[BUTTON_STOP_PERF_PUMP].state == GUI_BUTTON_RELEASED)
@@ -1337,6 +1412,11 @@ void manageParentPrimingAlways(void){
 			{
 				setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
 				setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 0);
+				if(GetTherapyType() == LiverTreat)
+				{
+					// se sono nel trattamento fegato fermo anche l'altro motore !!
+					setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, 0);
+				}
 				releaseGUIButton(BUTTON_STOP_PRIMING);
 			}
 #ifdef DEBUG_WITH_SERVICE_SBC
@@ -1374,14 +1454,15 @@ void manageParentPrimingAlways(void){
 			}
 			else if(ptrCurrentState->state == STATE_PRIMING_RICIRCOLO)
 			{
-				float tmpr;
-				word tmpr_trgt;
-				// temperatura raggiunta dal reservoir
-				tmpr = ((int)(sensorIR_TM[0].tempSensValue*10));
-				// temperatura da raggiungere moltiplicata per 10
-				tmpr_trgt = parameterWordSetFromGUI[PAR_SET_PRIMING_TEMPERATURE_PERFUSION].value;
+//				float tmpr;
+//				word tmpr_trgt;
+//				// temperatura raggiunta dal reservoir
+//				tmpr = ((int)(sensorIR_TM[0].tempSensValue*10));
+//				// temperatura da raggiungere moltiplicata per 10
+//				tmpr_trgt = parameterWordSetFromGUI[PAR_SET_PRIMING_TEMPERATURE_PERFUSION].value;
 
-				if((tmpr >= (float)(tmpr_trgt - 10)) && (tmpr <= (float)(tmpr_trgt + 10)))
+				//if((tmpr >= (float)(tmpr_trgt - 10)) && (tmpr <= (float)(tmpr_trgt + 10)))
+				if(TemperatureStateMach())
 				{
 					// ho raggiunto la temperatura ( + o - un grado)richiesta posso passare nello stato di
 					// attesa ricezione comando di start trattamento
@@ -1394,16 +1475,17 @@ void manageParentPrimingAlways(void){
 						setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, 0);
 					}
 					//currentGuard[GUARD_ENABLE_WAIT_TREATMENT].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
-					StartTreatmentTime = (unsigned long)timerCounterModBus;
+					//StartTreatmentTime = (unsigned long)timerCounterModBus;
 					currentGuard[GUARD_ENABLE_TREATMENT_KIDNEY_1].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
 				}
 			}
-			else if(ptrCurrentState->state == STATE_PRIMING_WAIT &&
-					parameterWordSetFromGUI[PAR_SET_PRIMING_VOL_PERFUSION].value > perfusionParam.priVolPerfArt)
-			{
-				// devo ritornare nello stato di priming_ph2 perche' devo aggiungere altro liquido
-				currentGuard[GUARD_ENABLE_PRIMING_PHASE_2].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
-			}
+//			Questo non serve tanto non ci passa mai perche' nello stato STATE_PRIMING_WAIT non viene impostata la ManageParentPrimingAlways
+//			else if(ptrCurrentState->state == STATE_PRIMING_WAIT &&
+//					parameterWordSetFromGUI[PAR_SET_PRIMING_VOL_PERFUSION].value > perfusionParam.priVolPerfArt)
+//			{
+//				// devo ritornare nello stato di priming_ph2 perche' devo aggiungere altro liquido
+//				currentGuard[GUARD_ENABLE_PRIMING_PHASE_2].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+//			}
 
 
 			/*if(
@@ -1457,7 +1539,7 @@ void manageParentPrimingAlways(void){
 				if(ptrCurrentState->state != STATE_PRIMING_RICIRCOLO)
 				{
 					// nella fase di ricircolo non aggiorno piu' il volume
-					volumePriming = volumePriming + (float)(speed * 0.00775);
+					volumePriming = volumePriming + (float)(speed * CONV_RPMMIN_TO_ML_PER_INTERVAL);
 					perfusionParam.priVolPerfArt = (int)(volumePriming);
 				}
 				pumpPerist[0].dataReady = DATA_READY_FALSE;
@@ -1678,9 +1760,28 @@ void manageParentTreatAlways(void){
 		{
 			setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
 			setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 0);
+			if(GetTherapyType() == LiverTreat)
+			{
+				// se sono nel trattamento fegato fermo anche l'altro motore !!
+				setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, 0);
+			}
 			releaseGUIButton(BUTTON_STOP_ALL_PUMP);
-
 			setPumpPressLoop(0, PRESS_LOOP_OFF);
+		}
+		else if(buttonGUITreatment[BUTTON_STOP_TREATMENT].state == GUI_BUTTON_RELEASED)
+		{
+			// fermo le pompe ed il conteggio del tempo e volume del trattamento
+			setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
+			setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 0);
+			if(GetTherapyType() == LiverTreat)
+			{
+				// se sono nel trattamento fegato fermo anche l'altro motore !!
+				setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, 0);
+			}
+			releaseGUIButton(BUTTON_STOP_TREATMENT);
+			setPumpPressLoop(0, PRESS_LOOP_OFF);
+			TotalTreatDuration += TreatDuration;
+			TreatDuration = 0;
 		}
 		else if(buttonGUITreatment[BUTTON_STOP_PERF_PUMP].state == GUI_BUTTON_RELEASED)
 		{
@@ -1701,8 +1802,9 @@ void manageParentTreatAlways(void){
 		else if(buttonGUITreatment[BUTTON_START_TREATMENT].state == GUI_BUTTON_RELEASED)
 		{
 			setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 2000); //pump 0: start value = 20 rpm than pressure loop
-			//setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 3000); //pump 1: start value = 30 rpm than open loop
-			setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, (int)((float)parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value / OXYG_FLOW_TO_RPM_CONV * 100.0));
+			//pump 1: start value = 30 rpm than open loop
+			if(((PARAMETER_ACTIVE_TYPE)parameterWordSetFromGUI[PAR_SET_OXYGENATOR_ACTIVE].value) == YES)
+				setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, (int)((float)parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value / OXYG_FLOW_TO_RPM_CONV * 100.0));
 			releaseGUIButton(BUTTON_START_TREATMENT);
 
 			//if(iflag_perf == 0)
@@ -1727,7 +1829,7 @@ void manageParentTreatAlways(void){
 		else if(buttonGUITreatment[BUTTON_START_OXYGEN_PUMP].state == GUI_BUTTON_RELEASED){
 			releaseGUIButton(BUTTON_START_OXYGEN_PUMP);
 
-			//setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 3000); //pump 1: start value = 30 rpm than open loop
+			//pump 1: start value = 30 rpm than open loop
 			setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress,(int)((float)parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value / OXYG_FLOW_TO_RPM_CONV * 100.0));
 		}
 
@@ -1772,7 +1874,7 @@ void manageParentTreatAlways(void){
 			// la velocita' ora posso leggerla direttamente dall'array di registry modbus
 			speed = modbusData[pumpPerist[0].pmpMySlaveAddress-2][17] / 100;
 			pumpPerist[0].actualSpeed = speed;
-			volumeTreatArt = volumeTreatArt + (float)(speed * 0.00775);
+			volumeTreatArt = volumeTreatArt + (float)(speed * CONV_RPMMIN_TO_ML_PER_INTERVAL);
 			perfusionParam.treatVolPerfArt = (int)(volumeTreatArt);
 			pumpPerist[0].dataReady = DATA_READY_FALSE;
 		}
@@ -1786,6 +1888,21 @@ void manageParentTreatAlways(void){
 				releaseGUIButton(BUTTON_STOP_ALL_PUMP);
 
 				setPumpPressLoop(0, PRESS_LOOP_OFF);
+			}
+			else if(buttonGUITreatment[BUTTON_STOP_TREATMENT].state == GUI_BUTTON_RELEASED)
+			{
+				// fermo le pompe ed il conteggio del tempo e volume del trattamento
+				setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
+				setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 0);
+				if(GetTherapyType() == LiverTreat)
+				{
+					// se sono nel trattamento fegato fermo anche l'altro motore !!
+					setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, 0);
+				}
+				releaseGUIButton(BUTTON_STOP_TREATMENT);
+				setPumpPressLoop(0, PRESS_LOOP_OFF);
+				TotalTreatDuration += TreatDuration;
+				TreatDuration = 0;
 			}
 			else if(buttonGUITreatment[BUTTON_STOP_PERF_PUMP].state == GUI_BUTTON_RELEASED)
 			{
@@ -1806,8 +1923,9 @@ void manageParentTreatAlways(void){
 			else if(buttonGUITreatment[BUTTON_START_TREATMENT].state == GUI_BUTTON_RELEASED)
 			{
 				setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 2000); //pump 0: start value = 20 rpm than pressure loop
-				//setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 3000); //pump 1: start value = 30 rpm than open loop
-				setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, (int)((float)parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value / OXYG_FLOW_TO_RPM_CONV * 100.0));
+				//pump 1: start value = 30 rpm than open loop
+				if(((PARAMETER_ACTIVE_TYPE)parameterWordSetFromGUI[PAR_SET_OXYGENATOR_ACTIVE].value) == YES)
+					setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, (int)((float)parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value / OXYG_FLOW_TO_RPM_CONV * 100.0));
 				releaseGUIButton(BUTTON_START_TREATMENT);
 
 				//if(iflag_perf == 0)
@@ -1816,6 +1934,7 @@ void manageParentTreatAlways(void){
 				// potrebbe partire anche se non dovrebbe.
 				pressSample1 = PR_ART_mmHg;
 				pressSample2 = PR_ART_mmHg;
+				StartTreatmentTime = (unsigned long)timerCounterModBus;
 			}
 			else if(buttonGUITreatment[BUTTON_START_PERF_PUMP].state == GUI_BUTTON_RELEASED){
 				releaseGUIButton(BUTTON_START_PERF_PUMP);
@@ -1831,7 +1950,7 @@ void manageParentTreatAlways(void){
 			else if(buttonGUITreatment[BUTTON_START_OXYGEN_PUMP].state == GUI_BUTTON_RELEASED){
 				releaseGUIButton(BUTTON_START_OXYGEN_PUMP);
 
-				//setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 3000); //pump 1: start value = 30 rpm than open loop
+				//pump 1: start value = 30 rpm than open loop
 				setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, (int)((float)parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value / OXYG_FLOW_TO_RPM_CONV * 100.0));
 			}
 
@@ -1874,7 +1993,7 @@ void manageParentTreatAlways(void){
 				// la velocita' ora posso leggerla direttamente dall'array di registry modbus
 				speed = modbusData[pumpPerist[0].pmpMySlaveAddress-2][17];
 				pumpPerist[0].actualSpeed = speed / 100;
-				volumeTreatArt = volumeTreatArt + (float)(speed * 0.00775);
+				volumeTreatArt = volumeTreatArt + (float)(speed * CONV_RPMMIN_TO_ML_PER_INTERVAL);
 				perfusionParam.treatVolPerfArt = (int)(volumeTreatArt);
 				pumpPerist[0].dataReady = DATA_READY_FALSE;
 			}
@@ -1991,19 +2110,6 @@ void alwaysPumpPressLoop(unsigned char pmpId, unsigned char *PidFirstTime){
 
 	//DebugStringPID(); // debug
 }
-
-/*
-previous_error = 0
-integral = 0
-loop:
-  error = setpoint - measured_value
-  integral = integral + error*dt
-  derivative = (error - previous_error)/dt
-  output = Kp*error + Ki*integral + Kd*derivative
-  previous_error = error
-  wait(dt)
-  goto loop
-*/
 
 
 void manageParentEntry(void)
@@ -2238,12 +2344,7 @@ static void computeMachineStateGuardPrimingPh2(void){
 		//setPumpSpeedValue(pumpPerist[0].pmpMySlaveAddress, 0);
 	}
 */
-	if(perfusionParam.priVolPerfArt >= parameterWordSetFromGUI[PAR_SET_PRIMING_VOL_PERFUSION].value)
-	{
-		// spostata nella funzione chiamata nello stato parent
-		//currentGuard[GUARD_ENABLE_PRIMING_WAIT].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
-	}
-	else if(buttonGUITreatment[BUTTON_PRIMING_ABANDON].state == GUI_BUTTON_RELEASED)
+	if(buttonGUITreatment[BUTTON_PRIMING_ABANDON].state == GUI_BUTTON_RELEASED)
 	{
 		releaseGUIButton(BUTTON_PRIMING_ABANDON);
 		setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
@@ -2270,7 +2371,8 @@ static void computeMachineStateGuardTreatment(void)
 //	unsigned long ul;
 
 	// tempo trascorso di trattamento in sec
-	TreatDuration = msTick_elapsed(StartTreatmentTime) * 50L / 1000;
+	if(StartTreatmentTime)
+		TreatDuration = msTick_elapsed(StartTreatmentTime) * 50L / 1000;
 
 	// DA INSERIRE QUANDO VOGLIO USCIRE ED ANDARE ALLO SVUOTAMENTO
 //	if((buttonGUITreatment[BUTTON_STOP_ALL_PUMP].state == GUI_BUTTON_RELEASED) &&
@@ -2292,7 +2394,7 @@ static void computeMachineStateGuardTreatment(void)
 	int newSpeedPmp1_2 = 0;
 	int newSpeedPmp_3 = 0;
 
-	if(TreatDuration >= isec)
+	if((TotalTreatDuration + TreatDuration) >= isec)
 	{
 		// esaurita la durata massima del trattamento
 		// forzo lo stop alle pompe passo allo svuotamento del circuito
@@ -2385,8 +2487,12 @@ void computeMachineStateGuard(void)
 	for(int i = 0; i <= GUARD_END_NUMBER; i++)
 		{
 			if(currentGuard[i].guardEntryValue == GUARD_ENTRY_VALUE_TRUE)
+			{
 				currentGuard[i].guardValue = GUARD_VALUE_TRUE;
-			else if(currentGuard[i].guardEntryValue == GUARD_ENTRY_VALUE_FALSE){
+
+			}
+			else if(currentGuard[i].guardEntryValue == GUARD_ENTRY_VALUE_FALSE &&
+					currentGuard[i].guardValue != GUARD_VALUE_FALSE ){
 				currentGuard[i].guardValue = GUARD_VALUE_FALSE;
 			}
 		}
@@ -2691,19 +2797,11 @@ void processMachineState(void)
 			    /* (FM) FINITA LA FASE DI MONTAGGIO DEL DISPOSABLE, POSSO PASSARE ALLA FASE DI RIEMPIMENTO
 			       DEL RECIPIENTE */
 				/* compute future state */
-				if( !parameterWordSetFromGUI[PAR_SET_OXYGENATOR_ACTIVE].value)
-				{
-					// passo direttamente allo stato priming_ph2 perche' non devo inserire il filtro
-					// e quindi non devo fermarmi al 95%
-					ptrFutureState = &stateState[15];
-				}
-				else
-					ptrFutureState = &stateState[11];
+				ptrFutureState = &stateState[11];
 				/* compute future parent */
 				ptrFutureParent = ptrFutureState->ptrParent;
 				/* compute future child */
 				ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
-				DebugStringStr("STATE_PRIMING_PH_1");
 			}
 
 			/* execute function state level */
@@ -2712,9 +2810,7 @@ void processMachineState(void)
 
 		// ORA DA QUESTO STATO PASSO DIRETTAMENTE ALLO STATO DI PRIMING SENZA ASPETTARE ALCUN SEGNALE
 		case STATE_TANK_FILL:
-			if(
-				(currentGuard[GUARD_ENABLE_PRIMING_PHASE_1].guardValue == GUARD_VALUE_TRUE)
-				)
+			if((currentGuard[GUARD_ENABLE_PRIMING_PHASE_1].guardValue == GUARD_VALUE_TRUE))
 			{
 				currentGuard[GUARD_ENABLE_PRIMING_PHASE_1].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
 				/* (FM) FINITA LA FASE DI RIEMPIMENTO POSSO PASSARE ALLA FASE 1 DEL PRIMING */
@@ -2724,7 +2820,21 @@ void processMachineState(void)
 				ptrFutureParent = ptrFutureState->ptrParent;
 				/* compute future child */
 				ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
+				DebugStringStr("STATE_PRIMING_PH_1");
 			}
+			else if((currentGuard[GUARD_ENABLE_PRIMING_PHASE_2].guardValue == GUARD_VALUE_TRUE))
+			{
+				currentGuard[GUARD_ENABLE_PRIMING_PHASE_2].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
+				/* VADO DIRETTAMENTE ALLA FASE 2 DEL PRIMING PER POI ANDARE IN RICIRCOLO */
+				/* compute future state */
+				ptrFutureState = &stateState[15];
+				/* compute future parent */
+				ptrFutureParent = ptrFutureState->ptrParent;
+				/* compute future child */
+				ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
+				DebugStringStr("STATE_PRIMING_PH_2");
+			}
+
 			/* execute function state level */
 			manageStateEntryAndStateAlways(12);
 			break;
@@ -2773,6 +2883,8 @@ void processMachineState(void)
 				ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
 				DebugStringStr("STATE_PRIMING_WAIT");
 
+				/*torno indietro nella macchina a stati quindi resetto la flag di entry sullo stato in cui sono*/
+				currentGuard[GUARD_ENABLE_PRIMING_PHASE_2].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
 			}
 			else if(currentGuard[GUARD_ABANDON_PRIMING].guardValue == GUARD_VALUE_TRUE)
 			{
@@ -2838,12 +2950,16 @@ void processMachineState(void)
 				{
 					// il volume e' stato modificato ritorno nella fase di riempimento
 					currentGuard[GUARD_ENABLE_PRIMING_PHASE_2].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
-					ptrFutureState = &stateState[3];
+
+					ptrFutureState = &stateState[15];
 					/* compute future parent */
 					ptrFutureParent = ptrFutureState->ptrParent;
 					/* compute future child */
 					ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
 					DebugStringStr("STATE_PRIMING_PHASE_2");
+
+					/*torno indietro nella macchina a stati quindi resetto la flag di entry sullo stato in cui sono*/
+					currentGuard[GUARD_ENABLE_PRIMING_WAIT].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
 				}
 
 				/* execute function state level */
@@ -3342,6 +3458,7 @@ void initGUIButton(void){
 	buttonGUITreatment[BUTTON_STOP_PRIMING].state = GUI_BUTTON_NULL;
 	buttonGUITreatment[BUTTON_STOP_ALL_PUMP].state = GUI_BUTTON_NULL;
 	buttonGUITreatment[BUTTON_START_TREATMENT].state = GUI_BUTTON_NULL; // viene dato alla fine del ricircolo per far partire il trattamento
+	buttonGUITreatment[BUTTON_STOP_TREATMENT].state = GUI_BUTTON_NULL;
 	buttonGUITreatment[BUTTON_EN_PERFUSION].state = GUI_BUTTON_NULL;
 	buttonGUITreatment[BUTTON_EN_OXYGENATION].state = GUI_BUTTON_NULL;
 	buttonGUITreatment[BUTTON_EN_PURIFICATION].state = GUI_BUTTON_NULL;
@@ -3398,7 +3515,8 @@ void initSetParamFromGUI(void){
 
 
 
-void setParamWordFromGUI(unsigned char parId, int value){
+void setParamWordFromGUI(unsigned char parId, int value)
+{
 	if(parId == PAR_SET_PRIMING_VOL_PERFUSION)
 	{
 		// controllo range del volume di liquido caricato nel reservoir
@@ -3406,11 +3524,14 @@ void setParamWordFromGUI(unsigned char parId, int value){
 			value = MAX_VOLUME_RESERVOIR;
 		if(value < MIN_VOLUME_RESERVOIR)
 			value = MIN_VOLUME_RESERVOIR;
+#ifdef DEBUG_WITH_SERVICE_SBC
+		if(!ParamRcvdInMounting[0])
+			value = 62; // usato per debug con service sbc
+		else
+			value = 93;
+#endif
 		ParamRcvdInMounting[0] = 1;
 		DebugStringStr("PAR_SET_PRIMING_VOL_PERFUSION");
-#ifdef DEBUG_WITH_SERVICE_SBC
-		value = 20; // usato per debug con service sbc
-#endif
 	}
 	else if(parId == PAR_SET_PRIMING_TEMPERATURE_PERFUSION)
 	{
@@ -3427,13 +3548,33 @@ void setParamWordFromGUI(unsigned char parId, int value){
 	}
 	else if(parId == PAR_SET_OXYGENATOR_ACTIVE)
 	{
-		ParamRcvdInMounting[2] = 1;
-		DebugStringStr("PAR_SET_OXYGENATOR_ACTIVE");
+		if((PARAMETER_ACTIVE_TYPE)value == YES)
+		{
+			ParamRcvdInMounting[2] = 1;
+			DebugStringStr("PAR_SET_OXYGENATOR_ACTIVE");
+		}
+		else if((PARAMETER_ACTIVE_TYPE)value == NO)
+		{
+			ParamRcvdInMounting[2] = 1;
+			DebugStringStr("PAR_SET_OXYGENATOR_NOT_ACTIVE");
+		}
+		else
+			DebugStringStr("PAR_SET_OXYGENATOR_UNDEF");
 	}
 	else if(parId == PAR_SET_DEPURATION_ACTIVE)
 	{
-		ParamRcvdInMounting[3] = 1;
-		DebugStringStr("PAR_SET_DEPURATION_ACTIVE");
+		if((PARAMETER_ACTIVE_TYPE)value == YES)
+		{
+			ParamRcvdInMounting[3] = 1;
+			DebugStringStr("PAR_SET_DEPURATION_ACTIVE");
+		}
+		else if((PARAMETER_ACTIVE_TYPE)value == NO)
+		{
+			ParamRcvdInMounting[3] = 1;
+			DebugStringStr("PAR_SET_DEPURATION_NOT_ACTIVE");
+		}
+		else
+			DebugStringStr("PAR_SET_DEPURATION_UNDEF");
 	}
 	else if (parId == PAR_SET_MAX_FLOW_PERFUSION)
 	{
@@ -3736,7 +3877,7 @@ void DebugString()
 							(int) (sensorIR_TM[1].tempSensValue*10)/*PR_VEN_mmHg*/,
 							(int) (sensorIR_TM[2].tempSensValue*10),
 							PR_ART_mmHg_Filtered,
-							TreatDuration,
+							TotalTreatDuration + TreatDuration,
 							(int) pumpPerist[0].actualSpeed,
 							(int) perfusionParam.priVolPerfArt
 				);

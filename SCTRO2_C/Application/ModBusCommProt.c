@@ -520,9 +520,15 @@ void UpdatePumpSpeed(void)
 	}
 }
 
+
 void setPumpSpeedValueHighLevel(unsigned char slaveAddr, int speedValue){
 
 	int StructId = SelectStruct(slaveAddr);
+
+	// se seleziono la pompa 0 ed il trattamento e' il fegato devo negare la velocita'
+	// perche', deve girare in senso orario
+	if((StructId == 0) && (GetTherapyType() == LiverTreat))
+		speedValue = -speedValue;
 
 	pumpPerist[StructId].newSpeedValue = speedValue;
 	if(StructId == 1)
@@ -589,11 +595,11 @@ void setPumpCurrentValue(unsigned char slaveAddr, int currValue){
 
 	valModBusArrayPtr = &mycurrValue;
 
-	_funcRetValPtr = ModBusWriteRegisterReq(slaveAddr,
-											funcCode,
-											wrAddr,
-											0x0001,
-											valModBusArrayPtr);
+	_funcRetValPtr = (struct funcRetStruct *)ModBusWriteRegisterReq(slaveAddr,
+											                        funcCode,
+											                        wrAddr,
+											                        0x0001,
+											                        valModBusArrayPtr);
 	//send command to actuator
 	_funcRetVal.ptr_msg = _funcRetValPtr->ptr_msg;
 	_funcRetVal.mstreqRetStructNumByte = _funcRetValPtr->mstreqRetStructNumByte;
@@ -628,11 +634,11 @@ void setPumpSpeedValue(unsigned char slaveAddr, int speedValue){
 
 	valModBusArrayPtr = &mySpeedValue;
 
-	_funcRetValPtr = ModBusWriteRegisterReq(slaveAddr,
-											funcCode,
-											wrAddr,
-											0x0001,
-											valModBusArrayPtr);
+	_funcRetValPtr = (struct funcRetStruct *)ModBusWriteRegisterReq(slaveAddr,
+											                        funcCode,
+											                        wrAddr,
+											                        0x0001,
+											                        valModBusArrayPtr);
 	//send command to actuator
 	_funcRetVal.ptr_msg = _funcRetValPtr->ptr_msg;
 	_funcRetVal.mstreqRetStructNumByte = _funcRetValPtr->mstreqRetStructNumByte;
@@ -654,10 +660,10 @@ void readPumpSpeedValue(unsigned char slaveAddr){
 	unsigned int readAddr = 0x0011;
 	unsigned int numRegRead = 0x0001;
 
-	_funcRetValPtr = ModBusReadRegisterReq(slaveAddr,
-										   funcCode,
-											readAddr,
-											numRegRead);
+	_funcRetValPtr = (struct funcRetStruct *)ModBusReadRegisterReq(slaveAddr,
+										                           funcCode,
+											                       readAddr,
+											                       numRegRead);
 
 	_funcRetVal.ptr_msg = _funcRetValPtr->ptr_msg;
 	_funcRetVal.mstreqRetStructNumByte = _funcRetValPtr->mstreqRetStructNumByte;
@@ -775,11 +781,11 @@ void setPinchPosValue(unsigned char slaveAddr, int posValue){
 
 		valModBusArrayPtr = &myPinchPosValue;
 
-		_funcRetValPtr = ModBusWriteRegisterReq(slaveAddr,
-												funcCode,
-												wrAddr,
-												0x0001,
-												valModBusArrayPtr);
+		_funcRetValPtr = (struct funcRetStruct *)ModBusWriteRegisterReq(slaveAddr,
+												                        funcCode,
+												                        wrAddr,
+												                        0x0001,
+												                        valModBusArrayPtr);
 		//send command to actuator
 		_funcRetVal.ptr_msg = _funcRetValPtr->ptr_msg;
 		_funcRetVal.mstreqRetStructNumByte = _funcRetValPtr->mstreqRetStructNumByte;
@@ -1152,10 +1158,10 @@ void Check_Actuator_Status (char slaveAddr,
 {
 	word snd;
 
-	_funcRetValPtr = ModBusReadRegisterReq(slaveAddr,
-										   funcCode,
-										   readAddrStart,
-										   numberOfAddress);
+	_funcRetValPtr = (struct funcRetStruct *)ModBusReadRegisterReq(slaveAddr,
+										                           funcCode,
+										                           readAddrStart,
+										                           numberOfAddress);
 
 	_funcRetVal.ptr_msg = _funcRetValPtr->ptr_msg;
 	_funcRetVal.mstreqRetStructNumByte = _funcRetValPtr->mstreqRetStructNumByte;
