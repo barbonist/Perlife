@@ -12,6 +12,8 @@
 // debug con il software di service fatto da Luca.
 #define DEBUG_WITH_SERVICE_SBC 0
 
+
+
 /* Syncronization flag */
 char	iflag_pc_rx;
 char	iflag_pc_tx;
@@ -989,7 +991,10 @@ enum paramWordSetFromSBC{
 	PAR_SET_PRESS_VEN_TARGET = 0xC2,
 	PAR_SET_PURIF_FLOW_TARGET = 0xD3,
 	PAR_SET_PURIF_UF_FLOW_TARGET = 0xE4,
-	PAR_SET_WORD_END_NUMBER = PAR_SET_PURIF_UF_FLOW_TARGET
+	/*da qui in poi parametri non passati dal PC ma
+	 * define sul source code definiti con 0xFX*/
+	PAR_SET_VENOUS_PRESS_TARGET = 0xF1,
+	PAR_SET_WORD_END_NUMBER = PAR_SET_VENOUS_PRESS_TARGET
 };
 
 struct parWordSetFromGUI{
@@ -1160,6 +1165,7 @@ int pollingDataFromSBC;
 int pollingDataToSBC;
 unsigned char codeDBG;
 unsigned char subcodeDBG;
+bool Service;
 
 // durata globale del trattamento in secondi
 unsigned long TreatDuration;
@@ -1201,5 +1207,27 @@ typedef enum{NOT_DEF = 0, NO = 1, YES = 2} PARAMETER_ACTIVE_TYPE;
 // intervallo di tempo in msec per cui devo vedere la temperatura di ricircolo raggiunta prima di chiudere lo stato
 // e passare  all trattamento
 #define TIMEOUT_TEMPERATURE_RICIRC 2000L
+
+/*
+Abbiamo fatto andare le pompe ad una velocità fissa da 100 RPM, scoprendo che
+la pressione media misurata sul sensore era di circa 130 mmHg.
+A questo punto, supponendo pressione atmosferica sull'organo, visto che iul tubo
+di uscita è stato lasciato in aria, abbiamo imposto il set point del pid a 120 mmHg.
+
+Usando solo la formula proporzionale:
+deltaSpeed = K * errore
+Abbiamo trovato il minimo valore di K che mandava in oscillazione la pressione:
+Ku = 0.05.
+Il periodo dell'oscillazione Pu è stato toirvato in 0.4 sec.
+a questo punto abbiamo trovato i tre coefficienti del PID:
+
+Kp = 0.6 * Ku = 0.03
+Ki = 2Kp/Pu   = 0.15
+Kd = Kp*Pu/8  = 0.0015
+*/
+
+#define PID_KP_VENOSA (float)0.03
+#define PID_KI_VENOSA (float)0.15
+#define PID_KD_VENOSA (float)0.0015
 
 #endif /* SOURCES_GLOBAL_H_ */

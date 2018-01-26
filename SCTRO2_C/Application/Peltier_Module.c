@@ -5,12 +5,14 @@
  *      Author: W15
  */
 
+#include "PE_Types.h"
+#include "Global.h"
 #include "string.h"
 #include "stdio.h"
 #include "stdlib.h"
 
 #include "Peltier_Module.h"
-#include "Global.h"
+
 
 #include "PELTIER_COMM.h"
 #include "PELTIER2_COMM.h"

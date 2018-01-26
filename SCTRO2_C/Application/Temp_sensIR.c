@@ -6,8 +6,8 @@
  */
 
 
-#include "Global.h"
 #include "PE_Types.h"
+#include "Global.h"
 #include "Temp_sensIR.h"
 #include "IR_TM_COMM.h"
 

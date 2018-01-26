@@ -114,6 +114,12 @@ void SBC_COMM_OnRxChar(void)
 		)
 	{
 		iflag_sbc_rx |= IFLAG_SBC_RX;
+
+		if (sbc_rx_data[5] == 0xCC)
+			Service = TRUE;
+		else
+			Service = FALSE;
+
 		ptrSbcCountRx = 0;
 		//ptrMsgSbcRx = &msg_sbc_rx[0];
 		ptrMsgSbcRx = &sbc_rx_data[0];

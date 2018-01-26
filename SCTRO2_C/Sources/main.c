@@ -164,7 +164,10 @@
 #include "Temp_sensIR.h"
 #include "Comm_Sbc.h"
 
-
+void alwaysPumpPressLoopVen(unsigned char pmpId, unsigned char *PidFirstTime);
+extern unsigned char PidFirstTime[4];
+extern float pressSample1_Ven;
+extern float pressSample2_Ven;
 extern bool WriteActive;
 extern unsigned char Released1;
 extern unsigned char Released2;
@@ -175,6 +178,7 @@ void TestPump(unsigned char Adr); //only for test
 void TestPinch(void);
 void GenerateSBCComm(void);
 
+int FreeRunCnt10msecOld;
 
 int timerCounterModBusOld = 0;
 int main(void)
@@ -226,6 +230,7 @@ int main(void)
   initAllState();
   initGUIButton();
   initSetParamFromGUI();
+  initSetParamInSourceCode();
 
   alarmConInit();
   initPerfusionParam();
@@ -247,6 +252,7 @@ int main(void)
   Prescaler_Tick_Timer = 0;
   Prescaler_Tick_TEST=0;
   FreeRunCnt10msec = 0;
+  Service = FALSE;
 
   iFlag_actuatorCheck = IFLAG_IDLE;
   iFlag_modbusDataStorage = FALSE;
@@ -409,8 +415,6 @@ int main(void)
 //   setPinchPositionHighLevel(BOTTOM_PINCH_ID, (int)MODBUS_PINCH_POS_CLOSED);
 //   setPinchPositionHighLevel(LEFT_PINCH_ID, (int)MODBUS_PINCH_POS_CLOSED);
 //   setPinchPositionHighLevel(RIGHT_PINCH_ID, (int)MODBUS_PINCH_POS_CLOSED);
-
-
 
   /**********MAIN LOOP START************/
   for(;;) {
@@ -683,17 +687,24 @@ int main(void)
 	         /***********DEBUG END*************/
 
 			 #ifdef DEBUG_TREATMENT
-	         /* sbc comm - start */
-	         pollingSBCCommTreat();
-	         pollingDataToSBCTreat();
+	         if (Service)
+	        	 testCOMMSbcDebug();
+
+	         else
+	         {
+				 /* sbc comm - start */
+				 pollingSBCCommTreat();
+				 pollingDataToSBCTreat();
+	         }
 
 
 	         /* sbc comm - end */
-
 			 /*controllo lo stato del sensore d'aria
 			  * e aggiorno la variabile globale
 			  * Air_1_Status */
+
 			 Manage_Air_Sensor_1();
+
 
 	         /*****MACHINE STATE UPDATE START****/
         	 if(timerCounterMState >= 1)
@@ -747,11 +758,11 @@ int main(void)
 	         Manage_IR_Sens_Temp();
 
 
-
 	         /********************************/
-	         /*           DEBUG LED          */
+	         /*           DEBUG LED          *
 	         /********************************/
 	         Manage_Debug_led(Status_Board);
+
 	         /********************************/
 	         /*           DEBUG LED  END     */
 	         /********************************/
@@ -759,10 +770,12 @@ int main(void)
 	         /********************************/
 	         /*             ADC	             */
 	         /********************************/
+
 			 /*funzioni per leggere i canali AD*/
 			 Manange_ADC0();
 			 Manange_ADC1();
 			 /*END funzioni per leggere i canali AD*/
+
 
 		     /*faccio lo start della cionversione sui canali AD ogni 50 msec*/
 			 if (timerCounterADC >=1)
@@ -772,6 +785,7 @@ int main(void)
 				AD1_Start();
 			 }
 
+
 	         /********************************/
 	         /*				ADC				 */
 	         /********************************/
@@ -780,6 +794,7 @@ int main(void)
 	         /*la gestione del ModBus probabilmente sarà da rifare seguendo la scia di quanto fatto inn Debug*/
 
 	         alwaysModBusActuator();
+
 	         // si possono verificare delle chiamate alla setPumpSpeedValueHighLevel quando ci sono
 	         // delle scritture in corso. Per evitare di perderle e per evitare di corrompere le flag devo
 	         // chiamare questa funzione
@@ -787,6 +802,8 @@ int main(void)
 
 	         if (!iflag_sbc_rx && !WriteActive);
 	        	Manage_and_Storage_ModBus_Actuator_Data();
+
+
 
 	         /*********PUMP*********/
 			 #endif

@@ -5,8 +5,9 @@
  *      Author: W15
  */
 
-#include "Global.h"
+
 #include "PE_Types.h"
+#include "Global.h"
 #include "Adc_Ges.h"
 #include "AD0.h"
 #include "AD1.h"

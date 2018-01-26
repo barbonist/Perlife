@@ -6,8 +6,8 @@
  */
 
 
-#include "Global.h"
 #include "PE_Types.h"
+#include "Global.h"
 #include "Flowsens.h"
 #include "FLOWSENS_RE.h"
 #include "FLOWSENS_DE.h"

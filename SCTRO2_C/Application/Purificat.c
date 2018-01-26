@@ -5,8 +5,10 @@
  *      Author: W15
  */
 
-#include "Purificat.h"
+#include "PE_Types.h"
 #include "Global.h"
+#include "Purificat.h"
+
 
 void initPurifParam(void){
 	purificatParam.flowAbsorbFilt = 0x0000;

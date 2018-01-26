@@ -5,8 +5,8 @@
  *      Author: W15
  */
 
-#include "Global.h"
 #include "PE_Types.h"
+#include "Global.h"
 #include "ModBusCommProt.h"
 
 #include "MODBUS_COMM.h"

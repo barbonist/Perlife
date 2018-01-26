@@ -5,8 +5,10 @@
  *      Author: W15
  */
 
-#include "Perfusion.h"
+#include "PE_Types.h"
 #include "Global.h"
+#include "Perfusion.h"
+
 
 
 void initPerfusionParam(void){
