@@ -3513,6 +3513,18 @@ void initSetParamFromGUI(void){
 	parameterWordSetFromGUI[PAR_SET_PURIF_UF_FLOW_TARGET].value = 0;
 }
 
+void CheckOxygenationSpeed(word value)
+{
+	if(parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value != value)
+	{
+		// ho ricevuto un valore del flusso di ossigenazione diverso dal precedente
+		// devo aggiornare la velocita' delle pompe
+		if(((PARAMETER_ACTIVE_TYPE)parameterWordSetFromGUI[PAR_SET_OXYGENATOR_ACTIVE].value) == YES)
+		{
+			setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, (int)((float)value / OXYG_FLOW_TO_RPM_CONV * 100.0));
+		}
+	}
+}
 
 
 void setParamWordFromGUI(unsigned char parId, int value)
@@ -3597,6 +3609,10 @@ void setParamWordFromGUI(unsigned char parId, int value)
 			value = MaxFlow;
 		if(value <= MinFlow)
 			value = MinFlow;
+	}
+	else if(parId == PAR_SET_OXYGENATOR_FLOW)
+	{
+		CheckOxygenationSpeed(value);
 	}
 	else if(parId == PAR_SET_THERAPY_TYPE)
 	{
