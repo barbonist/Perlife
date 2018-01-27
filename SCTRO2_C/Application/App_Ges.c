@@ -2149,10 +2149,10 @@ void alwaysPumpPressLoop(unsigned char pmpId, unsigned char *PidFirstTime){
 
 // Pid per perfusione venosa
 
-float parKITC_Ven = PID_KI_VENOSA;
+float parKITC_Ven = 0.15;
 //float parKP_Ven = 0.05;
-float parKP_Ven = PID_KP_VENOSA;
-float parKD_TC_Ven = PID_KD_VENOSA;
+float parKP_Ven = 0.03;
+float parKD_TC_Ven = 0.0015;
 float GlobINTEG_Ven;
 float GlobPROP_Ven;
 float GlobDER_Ven;

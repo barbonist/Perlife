@@ -54,7 +54,10 @@ char    iFlag_modbusDataStorage;
 #define DEBUG_CONTROL			0xA5
 #define DEBUG_PROTECTION		0x5A
 #define DEBUG_LOG_PC			0x01
-#define DEBUG_TREATMENT			0xA5 //alternativa a DEBUG_COMM_SBC
+//#define DEBUG_TREATMENT			0xA5 //alternativa a DEBUG_COMM_SBC
+/*define din compilazione per tuning pPID venoso Liver alternativa a DEBUG_TREATMENT
+ * dopo aver tunato il pid va cancellata e va rimessa DEBUG_TREATMENT*/
+#define TUNING_PID_VEN_LIVER
 //#define DEBUG_I2C_TEMP_SENS		0x01
 /*#define DEBUG_FLOW_SENS			0x00*/ /*0x01*/
 /* DEBUG */
@@ -1207,27 +1210,5 @@ typedef enum{NOT_DEF = 0, NO = 1, YES = 2} PARAMETER_ACTIVE_TYPE;
 // intervallo di tempo in msec per cui devo vedere la temperatura di ricircolo raggiunta prima di chiudere lo stato
 // e passare  all trattamento
 #define TIMEOUT_TEMPERATURE_RICIRC 2000L
-
-/*
-Abbiamo fatto andare le pompe ad una velocità fissa da 100 RPM, scoprendo che
-la pressione media misurata sul sensore era di circa 130 mmHg.
-A questo punto, supponendo pressione atmosferica sull'organo, visto che iul tubo
-di uscita è stato lasciato in aria, abbiamo imposto il set point del pid a 120 mmHg.
-
-Usando solo la formula proporzionale:
-deltaSpeed = K * errore
-Abbiamo trovato il minimo valore di K che mandava in oscillazione la pressione:
-Ku = 0.05.
-Il periodo dell'oscillazione Pu è stato toirvato in 0.4 sec.
-a questo punto abbiamo trovato i tre coefficienti del PID:
-
-Kp = 0.6 * Ku = 0.03
-Ki = 2Kp/Pu   = 0.15
-Kd = Kp*Pu/8  = 0.0015
-*/
-
-#define PID_KP_VENOSA (float)0.03
-#define PID_KI_VENOSA (float)0.15
-#define PID_KD_VENOSA (float)0.0015
 
 #endif /* SOURCES_GLOBAL_H_ */

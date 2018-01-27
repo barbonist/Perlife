@@ -416,6 +416,16 @@ int main(void)
 //   setPinchPositionHighLevel(LEFT_PINCH_ID, (int)MODBUS_PINCH_POS_CLOSED);
 //   setPinchPositionHighLevel(RIGHT_PINCH_ID, (int)MODBUS_PINCH_POS_CLOSED);
 
+#ifdef TUNING_PID_VEN_LIVER
+   // attivo il pid sull'ossigenazione e perfusione venosa per provare i
+   // coefficienti
+	setPumpPressLoop(1, PRESS_LOOP_ON);
+	pressSample1_Ven = 0;
+	pressSample2_Ven = 0;
+	FreeRunCnt10msecOld = 0;
+#endif
+
+
   /**********MAIN LOOP START************/
   for(;;) {
 	  	  	 /***********DEBUG START*************/
@@ -686,7 +696,21 @@ int main(void)
 		 	 #endif
 	         /***********DEBUG END*************/
 
-			 #ifdef DEBUG_TREATMENT
+			// #ifdef DEBUG_TREATMENT
+#ifdef TUNING_PID_VEN_LIVER
+
+				if((getPumpPressLoop(1) == PRESS_LOOP_ON) && (timerCounterPID >=1))
+				{
+					timerCounterPID = 0;
+					alwaysPumpPressLoopVen(1, &PidFirstTime[1]);
+				}
+
+				if(FreeRunCnt10msec != FreeRunCnt10msecOld)
+				{
+					FreeRunCnt10msecOld = FreeRunCnt10msec;
+					DebugStringPID();
+				}
+
 	         if (Service)
 	        	 testCOMMSbcDebug();
 
@@ -699,6 +723,7 @@ int main(void)
 
 
 	         /* sbc comm - end */
+#else
 			 /*controllo lo stato del sensore d'aria
 			  * e aggiorno la variabile globale
 			  * Air_1_Status */
@@ -757,10 +782,12 @@ int main(void)
 	         /********************************/
 	         Manage_IR_Sens_Temp();
 
+#endif
 
 	         /********************************/
 	         /*           DEBUG LED          *
 	         /********************************/
+#ifdef TUNING_PID_VEN_LIVER
 	         Manage_Debug_led(Status_Board);
 
 	         /********************************/
@@ -794,7 +821,7 @@ int main(void)
 	         /*la gestione del ModBus probabilmente sarà da rifare seguendo la scia di quanto fatto inn Debug*/
 
 	         alwaysModBusActuator();
-
+#else
 	         // si possono verificare delle chiamate alla setPumpSpeedValueHighLevel quando ci sono
 	         // delle scritture in corso. Per evitare di perderle e per evitare di corrompere le flag devo
 	         // chiamare questa funzione
@@ -802,11 +829,11 @@ int main(void)
 
 	         if (!iflag_sbc_rx && !WriteActive);
 	        	Manage_and_Storage_ModBus_Actuator_Data();
-
+#endif
 
 
 	         /*********PUMP*********/
-			 #endif
+		//	 #endif
 
   }
   /**********MAIN LOOP END**************/
