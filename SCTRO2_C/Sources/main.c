@@ -821,7 +821,7 @@ int main(void)
 	         /*la gestione del ModBus probabilmente sarà da rifare seguendo la scia di quanto fatto inn Debug*/
 
 	         alwaysModBusActuator();
-#else
+
 	         // si possono verificare delle chiamate alla setPumpSpeedValueHighLevel quando ci sono
 	         // delle scritture in corso. Per evitare di perderle e per evitare di corrompere le flag devo
 	         // chiamare questa funzione
