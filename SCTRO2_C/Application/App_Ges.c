@@ -2076,7 +2076,7 @@ void alwaysPumpPressLoop(unsigned char pmpId, unsigned char *PidFirstTime){
 	//static float pressSample1 = 0;  // FM Questi due vanno inizializzati alla pressione corrente prima di far partire il pid
 	//static float pressSample2 = 0;
 	float errPress = 0;
-	float Max_RPM_for_Flow_Max = ( parameterWordSetFromGUI[PAR_SET_MAX_FLOW_PERFUSION].value / PUMP_ART_GAIN);
+	int Max_RPM_for_Flow_Max = (int) ( parameterWordSetFromGUI[PAR_SET_MAX_FLOW_PERFUSION].value / PUMP_ART_GAIN);
 
     if(*PidFirstTime == PRESS_LOOP_ON)
     {
@@ -2147,32 +2147,30 @@ void alwaysPumpPressLoop(unsigned char pmpId, unsigned char *PidFirstTime){
 }
 
 
-// Pid per perfusione venosa
-
-float parKITC_Ven = PID_KI_VENOSA;
-//float parKP_Ven = 0.05;
-float parKP_Ven = PID_KP_VENOSA;
-float parKD_TC_Ven = PID_KD_VENOSA;
-float GlobINTEG_Ven;
-float GlobPROP_Ven;
-float GlobDER_Ven;
-int deltaSpeed_Ven = 0;
-int actualSpeed_Ven = 0;
-
+// Pid per perfusione venosa per trattamento Liver
 void alwaysPumpPressLoopVen(unsigned char pmpId, unsigned char *PidFirstTime){
-	//int deltaSpeed = 0;
-	//static int actualSpeed = 0;
-	//static int actualSpeedOld = 0;
-	//float parKITC = 0.0; //0.2;
-	//float parKP = 5.0;   //1;
-	//float parKD_TC = 0.0; //0.8;
-	float pressSample0_Ven = 0;
-	//static float pressSample1 = 0;  // FM Questi due vanno inizializzati alla pressione corrente prima di far partire il pid
-	//static float pressSample2 = 0;
-	float errPress = 0;
-	float Max_RPM_for_Flow_Max = 120.0; //( parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value / (PUMP_ART_GAIN * 2.0));
 
-    if(*PidFirstTime == PRESS_LOOP_ON)
+	float parKITC_Ven = PID_KI_VENOSA;
+	//float parKP_Ven = 0.05;
+	float parKP_Ven = PID_KP_VENOSA;
+	float parKD_TC_Ven = PID_KD_VENOSA;
+
+	int deltaSpeed_Ven = 0;
+	int actualSpeed_Ven = 0;
+
+	float pressSample0_Ven = 0;
+
+	float errPress = 0;
+	/*il valore sottostante, indica la massima velocità delle pompe
+	 * sarà da ripristyinare quello in funzione del flusso ovvero:
+	 * (int) ( parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value / (PUMP_OXY_GAIN * 2.0));*/
+	int Max_RPM_for_Flow_Max = MAX_SPPED_PUMP_OXY;
+
+    /*funzione col solo proporzionale usata per mandare in oscillazione la pressione
+     * e calcolare il K minimo e il periodo di oscillazione
+     * //	deltaSpeed_Ven = parKP_Ven * errPress;*/
+
+	if(*PidFirstTime == PRESS_LOOP_ON)
     {
     	*PidFirstTime = PRESS_LOOP_OFF;
     	actualSpeed_Ven = (int)pumpPerist[pmpId].actualSpeed;
@@ -2181,19 +2179,10 @@ void alwaysPumpPressLoopVen(unsigned char pmpId, unsigned char *PidFirstTime){
     pressSample0_Ven = PR_VEN_mmHg_Filtered;
 	errPress = parameterWordSetFromGUI[PAR_SET_VENOUS_PRESS_TARGET].value - pressSample0_Ven;
 
-	GlobINTEG_Ven = parKITC_Ven * errPress;
-	GlobPROP_Ven = parKP_Ven * (pressSample0_Ven - pressSample1_Ven);
-	GlobDER_Ven = parKD_TC_Ven * (pressSample0_Ven - 2*pressSample1_Ven + pressSample2_Ven);
-
 	deltaSpeed_Ven = (int)((parKITC_Ven * errPress) -
 			         (parKP_Ven * (pressSample0_Ven - pressSample1_Ven)) -
 					 (parKD_TC_Ven * (pressSample0_Ven - 2 * pressSample1_Ven + pressSample2_Ven)));
-//	deltaSpeed_Ven = parKP_Ven * errPress;
 
-	if (errPress < 0)
-	{
-		int a = 0;
-	}
 
 	// valutare se mettere il deltaSpeed = 0 nel caso deltaSpeed sia negativo in modo da non far andare actualSpeed a zero troppo in fretta
 	// in alternativa il deltaSpeed va considerato solo se è abbastanza negativo
@@ -2216,10 +2205,7 @@ void alwaysPumpPressLoopVen(unsigned char pmpId, unsigned char *PidFirstTime){
 			}
 			else
 			{
-				if(actualSpeed_Ven > 100)
-					actualSpeed_Ven = 100;
-				else
-					actualSpeed_Ven = actualSpeed_Ven + deltaSpeed_Ven;
+				actualSpeed_Ven = actualSpeed_Ven + deltaSpeed_Ven;
 			}
 		}
 	}
@@ -2238,8 +2224,6 @@ void alwaysPumpPressLoopVen(unsigned char pmpId, unsigned char *PidFirstTime){
 
 	//DebugStringPID(); // debug
 }
-
-
 
 void manageParentEntry(void)
 {
@@ -4068,23 +4052,23 @@ void DebugStringPID()
 //				);
 
 
-	sprintf(stringPid, "\r %i; %i; %i; %i; %i; %d; %d;",
-							(int)(GlobINTEG_Ven * 100),
-							(int)(GlobPROP_Ven * 100),
-							(int)(GlobDER_Ven * 100),
-							PR_VEN_mmHg_Filtered,
-							deltaSpeed_Ven,
-							(int) actualSpeed_Ven,
-							(int) perfusionParam.priVolPerfArt
-				);
+//	sprintf(stringPid, "\r %i; %i; %i; %i; %i; %d; %d;",
+//							(int)(GlobINTEG_Ven * 100),
+//							(int)(GlobPROP_Ven * 100),
+//							(int)(GlobDER_Ven * 100),
+//							PR_VEN_mmHg_Filtered,
+//							deltaSpeed_Ven,
+//							(int) actualSpeed_Ven,
+//							(int) perfusionParam.priVolPerfArt
+//				);
 
-	for(int i=0; i<STR_DBG_LENGHT; i++)
-	{
-		if(stringPid[i])
-			PC_DEBUG_COMM_SendChar(stringPid[i]);
-		else
-			break;
-	}
+//	for(int i=0; i<STR_DBG_LENGHT; i++)
+//	{
+//		if(stringPid[i])
+//			PC_DEBUG_COMM_SendChar(stringPid[i]);
+//		else
+//			break;
+//	}
 //	PC_DEBUG_COMM_SendChar(0x0A);
 }
 

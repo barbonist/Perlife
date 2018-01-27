@@ -49,15 +49,17 @@ char    iFlag_modbusDataStorage;
 #define DEBUG_PUMP				0x02
 #define DEBUG_CENTRIF_PUMP		0x03
 #define DEBUG_PELTIER			0x04
-//#define DEBUG_COMM_SBC			0x05  //alternativa a DEBUG_TREATMENT
+
 #define DEBUG_MACHINE_STATE		0x06
 #define DEBUG_CONTROL			0xA5
 #define DEBUG_PROTECTION		0x5A
 #define DEBUG_LOG_PC			0x01
-#define DEBUG_TREATMENT			0xA5 //alternativa a DEBUG_COMM_SBC
+
 //#define DEBUG_I2C_TEMP_SENS		0x01
 /*#define DEBUG_FLOW_SENS			0x00*/ /*0x01*/
 /* DEBUG */
+
+//#define SERVICE_ACTIVE_TOGETHER_THERAPY
 
 #define STR_DBG_LENGHT				100
 
@@ -1189,6 +1191,7 @@ typedef enum{NOT_DEF = 0, NO = 1, YES = 2} PARAMETER_ACTIVE_TYPE;
 #define MIN_FLOW_ART_KIDNEY		50
 #define MIN_FLOW_ART_LIVER		50
 #define PUMP_ART_GAIN			9 /* ml/GIRO */
+#define PUMP_OXY_GAIN			9
 
 
 // percentuale del priming per l'inserimento del filtro

@@ -200,7 +200,7 @@ int main(void)
 
 
 
- #ifdef	DEBUG_COMM_SBC
+ #ifdef	SERVICE_ACTIVE_TOGETHER_THERAPY
   Status_Board = SERVICE;
  #else
   Status_Board = TREAT;
@@ -261,20 +261,6 @@ int main(void)
 
   OK_START = FALSE;
   ON_NACK_IR_TM = FALSE;
-
-  #ifdef	DEBUG_I2C_TEMP_SENS
-  unsigned char rcvData[20];
-  unsigned char * ptrData;
-  unsigned char * ptrDatawR;
-  unsigned char err;
-  unsigned char stateSensTempIR;
-  word ret;
-  for(char i=0; i<20;i++)
-  {
-  	 rcvData[i] = 0;
-  }
-  stateSensTempIR = 0;
- #endif
 
   modBusPmpInit(TreatType);
   modBusPinchInit();
@@ -418,276 +404,10 @@ int main(void)
 
   /**********MAIN LOOP START************/
   for(;;) {
-	  	  	 /***********DEBUG START*************/
-			 #ifdef DEBUG_ENABLE
-//	  	  	  	  index++;
-//	         	  if(index%32000 == 0)
-//	         		 FLOWSENS_RE_NegVal();
-//	         	  else if(index%65000 == 0)
-//	         	  {
-//	         		 FLOWSENS_DE_NegVal();
-//	         		 index = 0;
-//	         	  }
-
-				#ifdef	DEBUG_ADC
-	         	  //testADCDebug();
-	         	 //MySPIPtr = SM1_Init(NULL);
-	         	 //Error = SM1_SelectConfiguration(MySPIPtr, 1U, 0U);
-	         	 //Error = SM1_ReceiveBlock(MySPIPtr, InpData, 4);
-	         	 //Error = SM1_SendBlock(MySPIPtr, OutData, 4);
-	         	 //while (!(iflag_spi_rx == IFLAG_SPI_RX_TRUE)) {};
-				#endif
-
-				#ifdef	DEBUG_PUMP
-	         	 //testPUMPDebug();
-				#endif
-
-				#ifdef	DEBUG_CENTRIF_PUMP
-	         	//testCENTRFPUMPDebug();
-				#endif
-
-				#ifdef	DEBUG_PELTIER
-	         	//testPELTIERDebug();
-				#endif
-
-				#ifdef DEBUG_FLOW_SENS
-	         	  if(index%10000 == 0)
-	         	  {
-	         		  ptrMsg_UFLOW = buildCmdToFlowSens(FLOW_SENSOR_ONE_ADDR,
-	         				  	  	  	  	  	  	  	CMD_GET_VAL_CODE /*CMD_IDENT_CODE*/,
-													   0,
-													   0,
-													   ID_FLOW_VAL_MLMIN);
 
 
-					 FLOWSENS_RE_SetVal();
-					 FLOWSENS_DE_SetVal();
-	         		  for(char k = 0; k < ptrMsg_UFLOW->bufferToSendLenght; k++)
-						{
-							//FLOWSENS_RTS_SetVal();
-							FLOWSENS_COMM_SendChar(ptrMsg_UFLOW->bufferToSend[k]);
-						}
-
-	         		 while(!(iflag_uflow_sens == IFLAG_UFLOW_SENS_RX))
-	         			 {
-	         			 dummy++;
-	         			 }
-
-	         	  }
-
-				/*while(!(iflag_uflow_sens == IFLAG_UFLOW_SENS_RX)){
-					iflag_uflow_sens = IFLAG_IDLE;
-				};*/
-				#endif
-
-				#ifdef	DEBUG_I2C_TEMP_SENS
-
-	         	 //if(index%10000 == 0)
-	         	  switch(stateSensTempIR)
-	         	  {
-	         	  case 0:
-	         		 if(iflag_sensTempIR == IFLAG_IDLE)
-	         		 	 {
-	         		 	   //IR_TM_COMM_Disable();
-	         		 	    IR_TM_COMM_Enable();
-	         		 	    ptrData = buildCmdReadTempSensIR(0x01, (EEPROM_ACCESS_COMMAND | SD_TOMIN_E2_ADDRESS), 0);
-	         		 	    //ptrData = buildCmdWriteTempSensIR(0x5A, (EEPROM_ACCESS_COMMAND | SD_TOMAX_E2_ADDRESS), 0xBE01);
-
-	         		 	    iflag_sensTempIR = IFLAG_SENS_TEMPIR_WAIT;
-	         		 	  }
-
-	         		if(iflag_sensTempIR == IFLAG_SENS_TEMPIR_TX)
-	         		{
-	         		//IR_TM_COMM_SelectSlave(0x5A);
-	         			err = IR_TM_COMM_RecvBlock(ptrData, 3, &ret);
-	         			iflag_sensTempIR = IFLAG_SENS_TEMPIR_WAIT;
-	         			stateSensTempIR = 1;
-	         		}
-	         		  break;
-
-	         	  case 1:
-	         		 if(index%10000 == 0)
-	         		  {
-	         		 	 iflag_sensTempIR = IFLAG_IDLE;
-	         		 	 stateSensTempIR = 2;
-	         		  }
-	         		  break;
-
-	         	  case 2:
-	         		  if(iflag_sensTempIR == IFLAG_IDLE)
-	         		  {
-
-	         			ptrDatawR = buildCmdWriteTempSensIR(0x01, (EEPROM_ACCESS_COMMAND | SD_TOMIN_E2_ADDRESS), 0x62E5);
-
-	         			iflag_sensTempIR = IFLAG_SENS_TEMPIR_WAIT;
-	         		  }
-
-	         		 if(iflag_sensTempIR == IFLAG_SENS_TEMPIR_TX)
-	         		 {
-	         			stateSensTempIR = 3;
-	         			IR_TM_COMM_Disable();
-	         			//IR_TM_COMM_Enable();
-	         		 }
-	         		  break;
-
-	         	  case 3:
-	         		 if(index%10000 == 0)
-	         		 {
-	         			iflag_sensTempIR = IFLAG_IDLE;
-	         			stateSensTempIR = 4;
-	         		 }
-	         		  break;
-
-	         	 case 4:
-	         		if(iflag_sensTempIR == IFLAG_IDLE)
-	         		{
-	         			IR_TM_COMM_Enable();
-	         			ptrDatawR = buildCmdWriteTempSensIR(0x01, (EEPROM_ACCESS_COMMAND | SD_TOMIN_E2_ADDRESS), 0x62E5);
-	         			iflag_sensTempIR = IFLAG_SENS_TEMPIR_WAIT;
-	         		}
-
-
-	         		if(iflag_sensTempIR == IFLAG_SENS_TEMPIR_TX)
-	         		{
-	         			stateSensTempIR = 5;
-	         			IR_TM_COMM_Disable();
-	         			//IR_TM_COMM_Enable();
-	         		}
-	         	 	 break;
-
-	         	 case 5:
-	         		 if(index%10000 == 0)
-	         		{
-	         			 iflag_sensTempIR = IFLAG_IDLE;
-	         			 stateSensTempIR = 0;
-	         			 //Cpu_SystemReset();
-	         		}
-	         		 break;
-
-	         	  default:
-	         		  break;
-	         	  }
-
-	         	  //if((iflag_sensTempIR == IFLAG_IDLE))
-	         	 //{
-	         		 //IR_TM_COMM_Disable();
-	         		 //IR_TM_COMM_Enable();
-	         		 //ptrData = buildCmdReadTempSensIR(0x5A, (EEPROM_ACCESS_COMMAND | SD_SMBUS_E2_ADDRESS), 0);
-	         		//ptrData = buildCmdWriteTempSensIR(0x5A, (EEPROM_ACCESS_COMMAND | SD_TOMAX_E2_ADDRESS), 0xBE01);
-	         		//iflag_sensTempIR = IFLAG_SENS_TEMPIR_WAIT;
-
-	         	 //}
-	         	 /*else if((iflag_sensTempIR == IFLAG_SENS_TEMPIR_TX) && (iflag_sensTempIRRW == IFLAG_SENS_TEMPIR_WRITE))
-	         	 {
-	         		iflag_sensTempIRRW = IFLAG_IDLE;
-	         		ptrData = buildCmdReadTempSensIR(0x01, (EEPROM_ACCESS_COMMAND | SD_SMBUS_E2_ADDRESS), 0);
-	         		iflag_sensTempIR = IFLAG_SENS_TEMPIR_WAIT;
-	         	 }*/
-
-	         	 //if((iflag_sensTempIR == IFLAG_SENS_TEMPIR_TX))
-	         	 //{
-	         		//IR_TM_COMM_SelectSlave(0x5A);
-	         		//err = IR_TM_COMM_RecvBlock(ptrData, 3, &ret);
-	         		//iflag_sensTempIR = IFLAG_SENS_TEMPIR_WAIT;
-	         		//iflag_sensTempIR = IFLAG_IDLE;
-	         	 //}
-
-	         	#endif
-
-				#ifdef	DEBUG_COMM_SBC
-	         	//SBC_COMM_Enable();
-	         	testCOMMSbcDebug();
-
-
-	         	/*Gestisco i sensori di Temp IR la funzione viene chiamata a giro
-	         	 * di programa ma al suo interno i sensori saranno interrogati
-	         	 * ogni 200 msec quindi il giro completo sei tre sensori sarà fatto ogni 600 msec*/
-	         	Manage_IR_Sens_Temp();
-
-	         	/*controllo lo stato del sensore d'aria	         	 * e aggiorno la variabile globale
-	         	 * Air_1_Status */
-	         	Manage_Air_Sensor_1();
-
-		        /*funzioni per leggere i canali AD*/
-		        Manange_ADC0();
-		        Manange_ADC1();
-		        /*END funzioni per leggere i canali AD*/
-		        /*converte i valori ADC in mmHg dei sensori di pressione*/
-		        Coversion_From_ADC_To_mmHg_Pressure_Sensor();
-		        /*filtra i valori di mmHg dei sensori di pressione*/
-		        Pressure_sensor_Fltered();
-		        /*converte i valori ADC in volt per le tensioni*/
-		        Coversion_From_ADC_To_Voltage();
-
-
-		        /*faccio lo start per riattivare la conversione sui due canali AD ogni 50 msec*/
-		        if (timerCounterADC >= 1)
-		        {
-		        	timerCounterADC = 0;
-		        	AD0_Start();
-		        	AD1_Start();
-		        }
-
-		        Buzzer_Management(LevelBuzzer);
-		         /*******************************/
-		         /********UFLOW SENSOR***********/
-
-		        Manage_UFlow_Sens();
-
-		        /*ATTIVA IL MOTORE CON LA TASTIERTA A BOLLE---> SOLO PER TEST*/
-//				if (Bubble_Keyboard_GetVal(BUTTON_1) && !MOTORE_ACCESO)
-//				{
-//					  /*accendo il motore*/
-//					  MOTORE_ACCESO = TRUE;
-//					 // EN_Motor_Control(ENABLE);
-//					  /*faccio partire la pompa con 2 come indirizzo
-//					   * corrispondente a 0 come rotary select e 10 RPM come speed*/
-//					  setPumpSpeedValue(3,8000);
-//				}
-//				if (Bubble_Keyboard_GetVal(BUTTON_2) && MOTORE_ACCESO)
-//				{
-//					  /*spengo il motore*/
-//					  MOTORE_ACCESO = FALSE;
-//					 // EN_Motor_Control(DISABLE);
-//					  /*Fermo la pompa con 2 come indirizzo
-//					   * corrispondente a 0 come rotary select e 0 RPM come speed*/
-//					  setPumpSpeedValue(3,0);
-//				}
-
-//		        if(timerCounterUFlowSensor >= 2)
-//		        {
-//	         		timerCounterUFlowSensor = 0;
-//
-//	         		alwaysUFlowSensor();
-//	         	}
-		        /*******************************/
-		        /******UFLOW SENSOR END*********/
-
-		        /*******************************/
-		        /***********PELTIER*************/
-
-				if(timerCounterPeltier >= 2){
-		        	 timerCounterPeltier = 0;
-
-		        	 if(peltierCell.readAlwaysEnable == 0)
-		        		 alwaysPeltierActuator();
-
-		         }
-			    /*********PELTIER END***********/
-				/*******************************/
-
-
-	         	Manage_Debug_led(Status_Board);
-
-	         	Manage_and_Storage_ModBus_Actuator_Data();
-
-				#endif
-
-		 	 #endif
-	         /***********DEBUG END*************/
-
-			 #ifdef DEBUG_TREATMENT
-	         if (Service)
+#ifdef SERVICE_ACTIVE_TOGETHER_THERAPY
+	  	  if (Service)
 	        	 testCOMMSbcDebug();
 
 	         else
@@ -696,8 +416,12 @@ int main(void)
 				 pollingSBCCommTreat();
 				 pollingDataToSBCTreat();
 	         }
+#else
 
-
+		 /* sbc comm - start */
+		 pollingSBCCommTreat();
+		 pollingDataToSBCTreat();
+#endif
 	         /* sbc comm - end */
 			 /*controllo lo stato del sensore d'aria
 			  * e aggiorno la variabile globale
@@ -785,7 +509,6 @@ int main(void)
 				AD1_Start();
 			 }
 
-
 	         /********************************/
 	         /*				ADC				 */
 	         /********************************/
@@ -803,118 +526,12 @@ int main(void)
 	         if (!iflag_sbc_rx && !WriteActive);
 	        	Manage_and_Storage_ModBus_Actuator_Data();
 
-
-
 	         /*********PUMP*********/
-			 #endif
 
   }
   /**********MAIN LOOP END**************/
 
-  /*********MAIN LOOP TEST**************/
 
-  /*MAIN loop per la gestione della pinch tramite tastiera a bolle*/
-  EN_24_M_C_Management(ENABLE);
-  EN_Clamp_Control(ENABLE);
-  for(;;)
-  {
-	  if (Bubble_Keyboard_GetVal(BUTTON_1) && PINCH_POSITION != MODBUS_PINCH_POS_CLOSED)
-	  {
-		  PINCH_POSITION = MODBUS_PINCH_POS_CLOSED;
-		  /*Pinch con rottay select = 5 e position = MODBUS_PINCH_POS_CLOSED*/
-		  setPinchPosValue (7,MODBUS_PINCH_POS_CLOSED);
-	  }
-	  if (Bubble_Keyboard_GetVal(BUTTON_2) && PINCH_POSITION != MODBUS_PINCH_RIGHT_OPEN)
-	  {
-		  PINCH_POSITION = MODBUS_PINCH_RIGHT_OPEN;
-		  /*Pinch con rottay select = 5 e position = MODBUS_PINCH_POS_CLOSED*/
-		  setPinchPosValue (7,MODBUS_PINCH_RIGHT_OPEN);
-	  }
-	  if (Bubble_Keyboard_GetVal(BUTTON_3) && PINCH_POSITION != MODBUS_PINCH_LEFT_OPEN)
-	  {
-		  PINCH_POSITION = MODBUS_PINCH_LEFT_OPEN;
-		  /*Pinch con rottay select = 5 e position = MODBUS_PINCH_POS_CLOSED*/
-		  setPinchPosValue (7,MODBUS_PINCH_LEFT_OPEN);
-	  }
-
-  }
-
-  /*MAIN loop per la gestione del motore pinch tramite tastiera a bolle*/
-  EN_24_M_C_Management(ENABLE);
-  for(;;)
-  {
-	  if (Bubble_Keyboard_GetVal(BUTTON_1) && !MOTORE_ACCESO)
-	  {
-		  /*accendo il motore*/
-		  MOTORE_ACCESO = TRUE;
-		  EN_Motor_Control(ENABLE);
-		  /*faccio partire la pompa con 2 come indirizzo
-		   * corrispondente a 0 come rotary select e 10 RPM come speed*/
-		  setPumpSpeedValue(2,1000);
-	  }
-	  if (Bubble_Keyboard_GetVal(BUTTON_2) && MOTORE_ACCESO)
-	  {
-		  /*spengo il motore*/
-		  MOTORE_ACCESO = FALSE;
-		  EN_Motor_Control(DISABLE);
-		  /*Fermo la pompa con 2 come indirizzo
-		   * corrispondente a 0 come rotary select e 0 RPM come speed*/
-		  setPumpSpeedValue(2,0);
-	  }
-
-  }
-
-  /*MAIN loop per la gestione di due motori tramite tastiera a bolle*/
-  EN_24_M_C_Management(ENABLE);
-  EN_Motor_Control(ENABLE);
-  EN_Clamp_Control(ENABLE);
-  for(;;)
-  {
-	  if (Bubble_Keyboard_GetVal(BUTTON_1) && Bubble_Keyboard_GetVal(BUTTON_2))
-	  {
-		  /*do l'enable ai canali pinch e motor*/
-		  EN_Motor_Control(ENABLE);
-		  EN_Clamp_Control(ENABLE);
-	  }
-	  else if (Bubble_Keyboard_GetVal(BUTTON_3) && Bubble_Keyboard_GetVal(BUTTON_4))
-	  {
-		  /*disabilito i canali pinch e motor*/
-		  EN_Motor_Control(DISABLE);
-		  EN_Clamp_Control(DISABLE);
-	  }
-	  else if (Bubble_Keyboard_GetVal(BUTTON_1) && !MOTORE_ACCESO)
-	  {
-		  /*accendo il motore*/
-		  MOTORE_ACCESO = TRUE;
-		  /*faccio partire la pompa con 2 come indirizzo
-		   * corrispondente a 0 come rotary select e 20 RPM come speed*/
-		  setPumpSpeedValue(2,5000);
-	  }
-	  else if (Bubble_Keyboard_GetVal(BUTTON_2) && MOTORE_ACCESO)
-	  {
-		  /*spengo il motore*/
-		  MOTORE_ACCESO = FALSE;
-		  /*Fermo la pompa con 2 come indirizzo
-		   * corrispondente a 0 come rotary select e 0 RPM come speed*/
-		  setPumpSpeedValue(2,0);
-	  }
-	  else if (Bubble_Keyboard_GetVal(BUTTON_3) && !MOTORE_ACCESO_2)
-	  {
-		  /*accendo il motore*/
-		  MOTORE_ACCESO_2 = TRUE;
-		  /*faccio partire la pompa con 3 come indirizzo
-		   * corrispondente a 1 come rotary select e 50 RPM come speed*/
-		  setPumpSpeedValue(3,2000);
-	  }
-	  else if (Bubble_Keyboard_GetVal(BUTTON_4) && MOTORE_ACCESO_2)
-	  {
-		  /*spengo il motore*/
-		  MOTORE_ACCESO_2 = FALSE;
-		  /*Fermo la pompa con 3 come indirizzo
-		   * corrispondente a 1 come rotary select e 0 RPM come speed*/
-		  setPumpSpeedValue(3,0);
-	  }
-  }
   /*********MAIN LOOP TEST END **************/
 
   /*** Don't write any code pass this line, or it will be deleted during code generation. ***/

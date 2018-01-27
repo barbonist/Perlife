@@ -16,6 +16,8 @@
 #define MASK_SECURITY_STOP_OXYG_PUMP		0x10
 #define MASK_SECURITY_STOP_PELTIER			0x20
 
+#define MAX_SPPED_PUMP_OXY 					100 //valore massimo di velocità per il pid su linea venosa (Liver) della doppia pompa di ossigenazione
+
 /* MACHINE STATE FUNCTION */
 void manageNull(void);
 void manageStateLevel(void);
