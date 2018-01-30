@@ -16,8 +16,13 @@
 #define MASK_SECURITY_STOP_OXYG_PUMP		0x10
 #define MASK_SECURITY_STOP_PELTIER			0x20
 
-#define MAX_SPPED_PUMP_OXY 					100 //valore massimo di velocità per il pid su linea venosa (Liver) della doppia pompa di ossigenazione
+#define parKITC_Ven 						0.15
+#define parKP_Ven 							0.03
+#define parKD_TC_Ven 						0.0015
 
+#define SET_POINT_PRESSURE_INIT				130
+#define DELTA_PRESSURE						30
+#define GAIN_PRESSURE						1
 /* MACHINE STATE FUNCTION */
 void manageNull(void);
 void manageStateLevel(void);
@@ -38,6 +43,7 @@ static void computeMachineStateGuardPrimingPh2(void);
 static void computeMachineStateGuardTreatment(void);
 void processMachineState(void);
 static void manageStateEntryAndStateAlways(unsigned short stateId);
+int get_Set_Point_Pressure(int Speed);
 
 typedef enum
 {

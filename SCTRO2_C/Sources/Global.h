@@ -54,7 +54,10 @@ char    iFlag_modbusDataStorage;
 #define DEBUG_CONTROL			0xA5
 #define DEBUG_PROTECTION		0x5A
 #define DEBUG_LOG_PC			0x01
-
+//#define DEBUG_TREATMENT			0xA5 //alternativa a DEBUG_COMM_SBC
+/*define din compilazione per tuning pPID venoso Liver alternativa a DEBUG_TREATMENT
+ * dopo aver tunato il pid va cancellata e va rimessa DEBUG_TREATMENT*/
+#define TUNING_PID_VEN_LIVER
 //#define DEBUG_I2C_TEMP_SENS		0x01
 /*#define DEBUG_FLOW_SENS			0x00*/ /*0x01*/
 /* DEBUG */

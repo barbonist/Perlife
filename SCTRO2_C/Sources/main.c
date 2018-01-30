@@ -402,6 +402,16 @@ int main(void)
 //   setPinchPositionHighLevel(LEFT_PINCH_ID, (int)MODBUS_PINCH_POS_CLOSED);
 //   setPinchPositionHighLevel(RIGHT_PINCH_ID, (int)MODBUS_PINCH_POS_CLOSED);
 
+#ifdef TUNING_PID_VEN_LIVER
+   // attivo il pid sull'ossigenazione e perfusione venosa per provare i
+   // coefficienti
+	setPumpPressLoop(1, PRESS_LOOP_ON);
+	pressSample1_Ven = 0;
+	pressSample2_Ven = 0;
+	FreeRunCnt10msecOld = 0;
+#endif
+
+
   /**********MAIN LOOP START************/
   for(;;) {
 
@@ -423,6 +433,7 @@ int main(void)
 		 pollingDataToSBCTreat();
 #endif
 	         /* sbc comm - end */
+
 			 /*controllo lo stato del sensore d'aria
 			  * e aggiorno la variabile globale
 			  * Air_1_Status */
@@ -486,6 +497,7 @@ int main(void)
 	         /********************************/
 	         /*           DEBUG LED          *
 	         /********************************/
+
 	         Manage_Debug_led(Status_Board);
 
 	         /********************************/
@@ -526,6 +538,7 @@ int main(void)
 
 	         if (!iflag_sbc_rx && !WriteActive);
 	        	Manage_and_Storage_ModBus_Actuator_Data();
+
 
 	         /*********PUMP*********/
 
