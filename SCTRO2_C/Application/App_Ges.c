@@ -2416,7 +2416,7 @@ void alwaysPumpPressLoopVen(unsigned char pmpId, unsigned char *PidFirstTime){
 
 	// valutare se mettere il deltaSpeed = 0 nel caso deltaSpeed sia negativo in modo da non far andare actualSpeed a zero troppo in fretta
 	// in alternativa il deltaSpeed va considerato solo se è abbastanza negativo
-	if((deltaSpeed_Ven < -2) || (deltaSpeed_Ven > 2))
+	if((deltaSpeed_Ven < -1) || (deltaSpeed_Ven > 1))
 	{
 		TargetRaggiunto = 0; // target non raggiunto
 		if (deltaSpeed_Ven < 0)
@@ -2436,7 +2436,7 @@ void alwaysPumpPressLoopVen(unsigned char pmpId, unsigned char *PidFirstTime){
 			}
 			else
 			{
-				if(actualSpeed_Ven > 100)
+				if(actualSpeed_Ven >= 100)
 					actualSpeed_Ven = 100;
 				else
 					actualSpeed_Ven = actualSpeed_Ven + deltaSpeed_Ven;
