@@ -189,5 +189,7 @@ void EN_24_M_C_Management(unsigned char action);
 /******************/
 
 void CallInIdleState(void);
+word GetTotalPrimingVolumePerf(void);
+
 
 #endif /* APPLICATION_APP_GES_H_ */

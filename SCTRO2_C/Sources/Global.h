@@ -59,7 +59,7 @@ char    iFlag_modbusDataStorage;
 /*#define DEBUG_FLOW_SENS			0x00*/ /*0x01*/
 /* DEBUG */
 
-//#define SERVICE_ACTIVE_TOGETHER_THERAPY
+#define SERVICE_ACTIVE_TOGETHER_THERAPY
 
 #define STR_DBG_LENGHT				100
 
@@ -1211,6 +1211,9 @@ typedef enum{NOT_DEF = 0, NO = 1, YES = 2} PARAMETER_ACTIVE_TYPE;
 // e passare  all trattamento
 #define TIMEOUT_TEMPERATURE_RICIRC 2000L
 
+// volume aggiuntivo in ml da considerare in priming per tenere conto
+// del riempimento del disposable
+#define VOLUME_DISPOSABLE  200
 /*
 Abbiamo fatto andare le pompe ad una velocità fissa da 100 RPM, scoprendo che
 la pressione media misurata sul sensore era di circa 130 mmHg.
@@ -1234,3 +1237,4 @@ Kd = Kp*Pu/8  = 0.0015
 #define PID_KD_VENOSA (float)0.0015
 
 #endif /* SOURCES_GLOBAL_H_ */
+

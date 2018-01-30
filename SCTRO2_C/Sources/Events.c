@@ -27,10 +27,11 @@
 /* MODULE Events */
 
 #include "Cpu.h"
+#include "Global.h"
 #include "Events.h"
 #include "Init_Config.h"
 #include "PDD_Includes.h"
-#include "Global.h"
+
 
 #ifdef __cplusplus
 extern "C" {

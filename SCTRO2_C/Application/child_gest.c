@@ -48,7 +48,7 @@
 
 
 extern struct machineChild stateChildAlarmTreat1[];
-
+extern THERAPY_TYPE TherapyType;
 
 /* --------------------------------------------------------------------------------------------
  * CHILD LEVEL FUNCTION FOR PRIMING 1 e 2
@@ -198,21 +198,6 @@ void manageChildPrimAlarmStopPeltAlways(void)
 /* Manage CHILD_PRIMING_ALARM_STOP_ALL_ACTUATOR entry state */
 void manageChildPrimAlarmStopAllActEntry(void)
 {
-	/*
-	if(pumpPerist[0].dataReady == DATA_READY_FALSE)
-	{
-		setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
-		setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 0);
-		setPinchPositionHighLevel(PNCHVLV1_ADDRESS, MODBUS_PINCH_POS_CLOSED);
-		setPinchPositionHighLevel(PNCHVLV2_ADDRESS, MODBUS_PINCH_POS_CLOSED);
-		setPinchPositionHighLevel(PNCHVLV3_ADDRESS, MODBUS_PINCH_POS_CLOSED);
-
-		stopPeltierActuator();
-	}
-
-	pumpPerist[0].entry = 0;
-	*/
-
 	// chiamo la stessa funzione usata nello stato di trattamento, tanto le cose da fare
 	// sono le stesse (per ora)
 	manageChildTreatAlm1StopAllActEntry();
@@ -221,38 +206,6 @@ void manageChildPrimAlarmStopAllActEntry(void)
 /* Manage CHILD_PRIMING_ALARM_STOP_ALL_ACTUATOR always state */
 void manageChildPrimAlarmStopAllActAlways(void)
 {
-	/*
-	static int speed = 0;
-	static int timerCopy = 0;
-
-	if((pumpPerist[0].dataReady == DATA_READY_FALSE) && (speed != 0))
-	{
-		setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
-		setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 0);
-		setPinchPositionHighLevel(PNCHVLV1_ADDRESS, MODBUS_PINCH_POS_CLOSED); // forse vanno messe in scarico e non chiuse !!!!
-		setPinchPositionHighLevel(PNCHVLV2_ADDRESS, MODBUS_PINCH_POS_CLOSED);
-		setPinchPositionHighLevel(PNCHVLV3_ADDRESS, MODBUS_PINCH_POS_CLOSED);
-	}
-
-	if((timerCounterModBus%9) == 8)
-	{
-		if(timerCounterModBus != 0)
-			timerCopy = timerCounterModBus;
-		timerCounter = 0;
-
-		readPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress);
-	}
-
-	if(pumpPerist[0].dataReady == DATA_READY_TRUE)
-	{
-		//speed = ((BYTES_TO_WORD_SIGN(msgToRecvFrame3[3], msgToRecvFrame3[4]))/100)*(timerCopy);
-		// la velocita' ora posso leggerla direttamente dall'array di registry modbus
-		speed = modbusData[pumpPerist[0].pmpMySlaveAddress-2][17];
-		pumpPerist[0].dataReady = DATA_READY_FALSE;
-	}
-	*/
-
-
 	// chiamo la stessa funzione usata nello stato di trattamento, tanto le cose da fare
 	// sono le stesse (per ora)
 	manageChildTreatAlm1StopAllActAlways();
@@ -495,11 +448,17 @@ void manageChildTreatAlm1StopAllActEntry(void)
 			setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, 0);
 		}
 
-		setPinchPositionHighLevel(PINCH_2WPVF, MODBUS_PINCH_LEFT_OPEN);
-		setPinchPositionHighLevel(PINCH_2WPVA, MODBUS_PINCH_LEFT_OPEN);
+		// TODO fermo tutti gli attuatori, quindi forse e' piu' giusto collegare
+		// tutto al recipiente
+		setPinchPositionHighLevel(PINCH_2WPVF, MODBUS_PINCH_RIGHT_OPEN);   // old MODBUS_PINCH_LEFT_OPEN
+
+		setPinchPositionHighLevel(PINCH_2WPVA, MODBUS_PINCH_LEFT_OPEN);   // old MODBUS_PINCH_LEFT_OPEN
 
 		if (TherType == LiverTreat)
+		{
+			// ho selezionato il fegato, quindi devo interrompere anche il circuito venoso
 			setPinchPositionHighLevel(PINCH_2WPVV, MODBUS_PINCH_LEFT_OPEN);
+		}
 		else if (TherType == KidneyTreat)
 		{
 			//in TherapyType == KidneyTreat non è usata quindi preferisco non muoverla
@@ -561,6 +520,8 @@ void manageChildTreatAlm1StopAllActAlways(void)
 
 		if (modbusData[PINCH_2WPVF-3][17] != MODBUS_PINCH_LEFT_OPEN)
 		{
+			// TODO da impostare in modo corretto, forse e' piu' giusto collegare
+			// tutto al recipiente
 			setPinchPositionHighLevel(PINCH_2WPVF, MODBUS_PINCH_LEFT_OPEN);
 		}
 

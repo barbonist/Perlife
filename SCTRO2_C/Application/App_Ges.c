@@ -58,6 +58,7 @@
 #include "string.h"
 
 
+extern THERAPY_TYPE TherapyType;
 float pressSample1_Ven = 0;
 float pressSample2_Ven = 0;
 
@@ -949,7 +950,7 @@ void manageStatePrimingWaitAlways(void){
 		}
 		currentGuard[GUARD_ABANDON_PRIMING].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
 	}
-	else if(parameterWordSetFromGUI[PAR_SET_PRIMING_VOL_PERFUSION].value > perfusionParam.priVolPerfArt)
+	else if(GetTotalPrimingVolumePerf() > perfusionParam.priVolPerfArt) // parameterWordSetFromGUI[PAR_SET_PRIMING_VOL_PERFUSION].value
 	{
 		// dopo che era finito il priming precedente mi e' stato inviato un nuovo volume
 		// quindi, devo ritornare nello stato di priming_ph2 perche' devo aggiungere altro liquido
@@ -1154,28 +1155,25 @@ void manageStateFatalErrorAlways(void)
 /* PARENT LEVEL FUNCTION */
 
 void manageParentPrimingEntry(void){
-//  Codice originale
-//	iflag_pmp1_rx = IFLAG_IDLE;
-//
-//	if(pumpPerist[0].entry == 0)
-//	{
-//		setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
-//		setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 0);
-//		setPinchPositionHighLevel(PNCHVLV1_ADDRESS, MODBUS_PINCH_RIGHT_OPEN);
-//		setPinchPositionHighLevel(PNCHVLV3_ADDRESS, MODBUS_PINCH_RIGHT_OPEN);
-//
-//		startPeltierActuator();
-//		peltierCell.readAlwaysEnable  = 1;
-//		peltierCell2.readAlwaysEnable = 1;
-//
-// 		pumpPerist[0].entry = 1;
-//	}
 
 	if(pumpPerist[0].entry == 0)
 	{
 		setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
-		setPinchPositionHighLevel(PINCH_2WPVF, MODBUS_PINCH_RIGHT_OPEN);
+		if((ptrCurrentState->state == STATE_PRIMING_PH_1) ||
+		   ((PARAMETER_ACTIVE_TYPE)parameterWordSetFromGUI[PAR_SET_DEPURATION_ACTIVE].value == NO))
+		{
+			// in questo caso il liquido passa per il bypass del filtro che deve essere riempito
+			setPinchPositionHighLevel(PINCH_2WPVF, MODBUS_PINCH_LEFT_OPEN);
+		}
+		else
+			setPinchPositionHighLevel(PINCH_2WPVF, MODBUS_PINCH_RIGHT_OPEN);
+
 		setPinchPositionHighLevel(PINCH_2WPVA, MODBUS_PINCH_RIGHT_OPEN);
+		if(TherapyType == LiverTreat)
+		{
+			// ho selezionato il fegato, quindi devo riempire anche il circuito venoso
+			setPinchPositionHighLevel(PINCH_2WPVV, MODBUS_PINCH_RIGHT_OPEN);
+		}
 
 		startPeltierActuator();
 		peltierCell.readAlwaysEnable = 1;
@@ -1278,8 +1276,18 @@ void manageParentPrimingAlways(void){
 		setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 2000);
 		if(((PARAMETER_ACTIVE_TYPE)parameterWordSetFromGUI[PAR_SET_OXYGENATOR_ACTIVE].value) == YES)
 			setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, (int)((float)parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value / OXYG_FLOW_TO_RPM_CONV * 100.0));
-		setPinchPositionHighLevel(PNCHVLV1_ADDRESS, MODBUS_PINCH_RIGHT_OPEN);
-		setPinchPositionHighLevel(PNCHVLV3_ADDRESS, MODBUS_PINCH_RIGHT_OPEN);
+
+		if((ptrCurrentState->state == STATE_PRIMING_PH_1) ||
+		   ((PARAMETER_ACTIVE_TYPE)parameterWordSetFromGUI[PAR_SET_DEPURATION_ACTIVE].value == NO))
+			setPinchPositionHighLevel(PINCH_2WPVF, MODBUS_PINCH_LEFT_OPEN);
+		else
+			setPinchPositionHighLevel(PINCH_2WPVF, MODBUS_PINCH_RIGHT_OPEN);
+		setPinchPositionHighLevel(PINCH_2WPVA, MODBUS_PINCH_RIGHT_OPEN);
+		if(TherapyType == LiverTreat)
+		{
+			// ho selezionato il fegato, quindi devo riempire anche il circuito venoso
+			setPinchPositionHighLevel(PINCH_2WPVV, MODBUS_PINCH_RIGHT_OPEN);
+		}
 
 		releaseGUIButton(BUTTON_START_PRIMING);
 	}
@@ -1288,8 +1296,17 @@ void manageParentPrimingAlways(void){
 		releaseGUIButton(BUTTON_START_PERF_PUMP);
 
 		setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 2000);
-		setPinchPositionHighLevel(PNCHVLV1_ADDRESS, MODBUS_PINCH_RIGHT_OPEN);
-		setPinchPositionHighLevel(PNCHVLV3_ADDRESS, MODBUS_PINCH_RIGHT_OPEN);
+		if((ptrCurrentState->state == STATE_PRIMING_PH_1) ||
+		   ((PARAMETER_ACTIVE_TYPE)parameterWordSetFromGUI[PAR_SET_DEPURATION_ACTIVE].value == NO))
+			setPinchPositionHighLevel(PINCH_2WPVF, MODBUS_PINCH_LEFT_OPEN);
+		else
+			setPinchPositionHighLevel(PINCH_2WPVF, MODBUS_PINCH_RIGHT_OPEN);
+		setPinchPositionHighLevel(PINCH_2WPVA, MODBUS_PINCH_RIGHT_OPEN);
+		if(TherapyType == LiverTreat)
+		{
+			// ho selezionato il fegato, quindi devo riempire anche il circuito venoso
+			setPinchPositionHighLevel(PINCH_2WPVV, MODBUS_PINCH_RIGHT_OPEN);
+		}
 	}
 	else if(buttonGUITreatment[BUTTON_START_OXYGEN_PUMP].state == GUI_BUTTON_RELEASED)
 	{
@@ -1367,8 +1384,17 @@ void manageParentPrimingAlways(void){
 				setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 2000);
 				if(((PARAMETER_ACTIVE_TYPE)parameterWordSetFromGUI[PAR_SET_OXYGENATOR_ACTIVE].value) == YES)
 					setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, (int)((float)parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value / OXYG_FLOW_TO_RPM_CONV * 100.0));
-				setPinchPositionHighLevel(PNCHVLV1_ADDRESS, MODBUS_PINCH_RIGHT_OPEN);
-				setPinchPositionHighLevel(PNCHVLV3_ADDRESS, MODBUS_PINCH_RIGHT_OPEN);
+				if((ptrCurrentState->state == STATE_PRIMING_PH_1) ||
+				   ((PARAMETER_ACTIVE_TYPE)parameterWordSetFromGUI[PAR_SET_DEPURATION_ACTIVE].value == NO))
+					setPinchPositionHighLevel(PINCH_2WPVF, MODBUS_PINCH_LEFT_OPEN);
+				else
+					setPinchPositionHighLevel(PINCH_2WPVF, MODBUS_PINCH_RIGHT_OPEN);
+				setPinchPositionHighLevel(PINCH_2WPVA, MODBUS_PINCH_RIGHT_OPEN);
+				if(TherapyType == LiverTreat)
+				{
+					// ho selezionato il fegato, quindi devo riempire anche il circuito venoso
+					setPinchPositionHighLevel(PINCH_2WPVV, MODBUS_PINCH_RIGHT_OPEN);
+				}
 
 				releaseGUIButton(BUTTON_START_PRIMING);
 			}
@@ -1377,8 +1403,17 @@ void manageParentPrimingAlways(void){
 				releaseGUIButton(BUTTON_START_PERF_PUMP);
 
 				setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 2000);
-				setPinchPositionHighLevel(PNCHVLV1_ADDRESS, MODBUS_PINCH_RIGHT_OPEN);
-				setPinchPositionHighLevel(PNCHVLV3_ADDRESS, MODBUS_PINCH_RIGHT_OPEN);
+				if((ptrCurrentState->state == STATE_PRIMING_PH_1) ||
+				   ((PARAMETER_ACTIVE_TYPE)parameterWordSetFromGUI[PAR_SET_DEPURATION_ACTIVE].value == NO))
+					setPinchPositionHighLevel(PINCH_2WPVF, MODBUS_PINCH_LEFT_OPEN);
+				else
+					setPinchPositionHighLevel(PINCH_2WPVF, MODBUS_PINCH_RIGHT_OPEN);
+				setPinchPositionHighLevel(PINCH_2WPVA, MODBUS_PINCH_RIGHT_OPEN);
+				if(TherapyType == LiverTreat)
+				{
+					// ho selezionato il fegato, quindi devo riempire anche il circuito venoso
+					setPinchPositionHighLevel(PINCH_2WPVV, MODBUS_PINCH_RIGHT_OPEN);
+				}
 			}
 			else if(buttonGUITreatment[BUTTON_START_OXYGEN_PUMP].state == GUI_BUTTON_RELEASED)
 			{
@@ -1423,11 +1458,11 @@ void manageParentPrimingAlways(void){
 			}
 #ifdef DEBUG_WITH_SERVICE_SBC
 			else if((ptrCurrentState->state == STATE_PRIMING_PH_1) &&
-					((float)perfusionParam.priVolPerfArt >= ((float)parameterWordSetFromGUI[PAR_SET_PRIMING_VOL_PERFUSION].value * 50 / 100.0)))
+					((float)perfusionParam.priVolPerfArt >= ((float)GetTotalPrimingVolumePerf() * 50 / 100.0)))  // parameterWordSetFromGUI[PAR_SET_PRIMING_VOL_PERFUSION].value
 #else
 			// nel caso di debug considero il 50%
 			else if((ptrCurrentState->state == STATE_PRIMING_PH_1) &&
-					((float)perfusionParam.priVolPerfArt >= ((float)parameterWordSetFromGUI[PAR_SET_PRIMING_VOL_PERFUSION].value * PERC_OF_PRIM_FOR_FILTER / 100.0)))
+					((float)perfusionParam.priVolPerfArt >= ((float)GetTotalPrimingVolumePerf() * PERC_OF_PRIM_FOR_FILTER / 100.0)))  // parameterWordSetFromGUI[PAR_SET_PRIMING_VOL_PERFUSION].value
 #endif
 			{
 				// ho raggiunto il 95% del volume, fermo le pompe ed aspetto il caricamento del filtro
@@ -1440,7 +1475,7 @@ void manageParentPrimingAlways(void){
 				}
 			}
 			else if((ptrCurrentState->state == STATE_PRIMING_PH_2) &&
-					(perfusionParam.priVolPerfArt >= parameterWordSetFromGUI[PAR_SET_PRIMING_VOL_PERFUSION].value))
+					(perfusionParam.priVolPerfArt >= GetTotalPrimingVolumePerf())) // parameterWordSetFromGUI[PAR_SET_PRIMING_VOL_PERFUSION].value
 			{
 				// ho raggiunto il volume complessivo, fermo le pompe ed aspetto
 				setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
@@ -1483,7 +1518,7 @@ void manageParentPrimingAlways(void){
 			}
 //			Questo non serve tanto non ci passa mai perche' nello stato STATE_PRIMING_WAIT non viene impostata la ManageParentPrimingAlways
 //			else if(ptrCurrentState->state == STATE_PRIMING_WAIT &&
-//					parameterWordSetFromGUI[PAR_SET_PRIMING_VOL_PERFUSION].value > perfusionParam.priVolPerfArt)
+//					GetTotalPrimingVolumePerf() > perfusionParam.priVolPerfArt)
 //			{
 //				// devo ritornare nello stato di priming_ph2 perche' devo aggiungere altro liquido
 //				currentGuard[GUARD_ENABLE_PRIMING_PHASE_2].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
@@ -1575,7 +1610,7 @@ void manageParentPrimingAlarmEntry(void)
 	{
 	setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
 	setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 0);
-	setPinchPositionHighLevel(PNCHVLV1_ADDRESS, MODBUS_PINCH_POS_CLOSED);
+	setPinchPositionHighLevel(PINCH_2WPVF, MODBUS_PINCH_POS_CLOSED);
 	setPinchPositionHighLevel(PNCHVLV2_ADDRESS, MODBUS_PINCH_POS_CLOSED);
 	setPinchPositionHighLevel(PNCHVLV3_ADDRESS, MODBUS_PINCH_POS_CLOSED);
 	//oneShot = 1;
@@ -1596,7 +1631,7 @@ void manageParentTreatAlarmEntry(void){
 	{
 		setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
 		setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 0);
-		setPinchPositionHighLevel(PNCHVLV1_ADDRESS, MODBUS_PINCH_LEFT_OPEN);
+		setPinchPositionHighLevel(PINCH_2WPVF, MODBUS_PINCH_LEFT_OPEN);
 		setPinchPositionHighLevel(PNCHVLV2_ADDRESS, MODBUS_PINCH_POS_CLOSED);
 		setPinchPositionHighLevel(PNCHVLV3_ADDRESS, MODBUS_PINCH_LEFT_OPEN);
 
@@ -1622,7 +1657,7 @@ void manageParentPrimingAlarmAlways(void){
 	{
 		setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
 		setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 0);
-		setPinchPositionHighLevel(PNCHVLV1_ADDRESS, MODBUS_PINCH_POS_CLOSED); // forse vanno messe in scarico e non chiuse !!!!
+		setPinchPositionHighLevel(PINCH_2WPVF, MODBUS_PINCH_POS_CLOSED); // forse vanno messe in scarico e non chiuse !!!!
 		setPinchPositionHighLevel(PNCHVLV2_ADDRESS, MODBUS_PINCH_POS_CLOSED);
 		setPinchPositionHighLevel(PNCHVLV3_ADDRESS, MODBUS_PINCH_POS_CLOSED);
 		//oneShot = 1;
@@ -1660,7 +1695,7 @@ void manageParentTreatAlarmAlways(void){
 	{
 		setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
 		setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 0);
-		setPinchPositionHighLevel(PNCHVLV1_ADDRESS, MODBUS_PINCH_LEFT_OPEN);
+		setPinchPositionHighLevel(PINCH_2WPVF, MODBUS_PINCH_LEFT_OPEN);
 		setPinchPositionHighLevel(PNCHVLV2_ADDRESS, MODBUS_PINCH_POS_CLOSED);
 		setPinchPositionHighLevel(PNCHVLV3_ADDRESS, MODBUS_PINCH_LEFT_OPEN);
 	}
@@ -1688,35 +1723,23 @@ void manageParentTreatAlarmAlways(void){
 // In questa funzione ci va quando sono nella fase iniziale del trattamento
 // Le pompe verranno fatte partire successivamente su richiesta da parte dell'utente
 void manageParentTreatEntry(void){
-/*
-	//iflag_pmp1_rx = IFLAG_IDLE;
-	//static unsigned char entry = 0;
-
-	//if((iflag_pmp1_rx == IFLAG_PMP1_RX) || (timerCounter >= 10))
-	//if(entry == 0)
-	if(pumpPerist[0].entry == 0)
-	{
-		timerCounter = 0;
-		setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
-		setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 0);
-		setPinchPositionHighLevel(PNCHVLV1_ADDRESS, MODBUS_PINCH_RIGHT_OPEN);
-		setPinchPositionHighLevel(PNCHVLV3_ADDRESS, MODBUS_PINCH_RIGHT_OPEN);
-		setPumpPressLoop(0, PRESS_LOOP_OFF);
-		//entry = 1;
-
-		startPeltierActuator();
-		peltierCell.readAlwaysEnable = 1;
-		peltierCell2.readAlwaysEnable = 1;
-
-		pumpPerist[0].entry = 1;
-	}
-*/
-
 	if(pumpPerist[0].entry == 0)
 	{
 		setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
-		setPinchPositionHighLevel(PINCH_2WPVF, MODBUS_PINCH_RIGHT_OPEN);
-		setPinchPositionHighLevel(PINCH_2WPVA, MODBUS_PINCH_RIGHT_OPEN);
+		if(((PARAMETER_ACTIVE_TYPE)parameterWordSetFromGUI[PAR_SET_DEPURATION_ACTIVE].value == NO))
+		{
+			// il filtro non viene usato quindi devo passare sempre sul bypass
+			setPinchPositionHighLevel(PINCH_2WPVF, MODBUS_PINCH_LEFT_OPEN);
+		}
+		else
+			setPinchPositionHighLevel(PINCH_2WPVF, MODBUS_PINCH_RIGHT_OPEN);
+		// quando entro in trattamento la pinch deve essere attaccata all'organo
+		setPinchPositionHighLevel(PINCH_2WPVA, MODBUS_PINCH_LEFT_OPEN);
+		if(TherapyType == LiverTreat)
+		{
+			// ho selezionato il fegato, quindi se entro in trattamento devo collegarmi all'organo
+			setPinchPositionHighLevel(PINCH_2WPVV, MODBUS_PINCH_LEFT_OPEN);
+		}
 		setPumpPressLoop(0, PRESS_LOOP_OFF);
 
 		startPeltierActuator();
@@ -2446,7 +2469,7 @@ static void computeMachineStateGuardPrimingPh1(void){
 static void computeMachineStateGuardPrimingPh2(void){
 /* vecchia gestione
 	if(
-		(perfusionParam.priVolPerfArt >= parameterWordSetFromGUI[PAR_SET_PRIMING_VOL_PERFUSION].value) &&
+		(perfusionParam.priVolPerfArt >= GetTotalPrimingVolumePerf()) &&
 		(buttonGUITreatment[BUTTON_CONFIRM].state == GUI_BUTTON_RELEASED) / *&&
 		(iflag_pmp1_rx == IFLAG_PMP1_RX)* /
 		)
@@ -2750,6 +2773,15 @@ unsigned int PumpStatusVal;
 //		//readPumpSpeedValue(Adr - 2);
 //	}
 //}
+
+// ritorna il volume complessivo di priming tenendo conto anche del volume di liquido
+// necessario per riempire il disposable
+word GetTotalPrimingVolumePerf(void)
+{
+	word TotVolume;
+	TotVolume = parameterWordSetFromGUI[PAR_SET_PRIMING_VOL_PERFUSION].value + VOLUME_DISPOSABLE;
+	return TotVolume;
+}
 
 /*----------------------------------------------------------------------------*/
 /* This function compute the machine state transition based on guard - state level         */
@@ -3200,7 +3232,7 @@ void processMachineState(void)
 			break;
 
 		case PARENT_PRIMING_TREAT_KIDNEY_1_RUN:
-//			if((float)perfusionParam.priVolPerfArt >= ((float)parameterWordSetFromGUI[PAR_SET_PRIMING_VOL_PERFUSION].value * PERC_OF_PRIM_FOR_FILTER / 100.0))
+//			if((float)perfusionParam.priVolPerfArt >= ((float)GetTotalPrimingVolumePerf() * PERC_OF_PRIM_FOR_FILTER / 100.0))
 //			{
 //				// posso usarlo per un eventuale cambio di stato nel parent ed entrare in una fase di caricamento del filtro
 //			}
@@ -4216,7 +4248,7 @@ void GenEvntParentPrim(void)
 					// evito che all'entry del parent mi fermi le pompe
 					pumpPerist[0].entry = 1;
 
-					if(perfusionParam.priVolPerfArt < parameterWordSetFromGUI[PAR_SET_PRIMING_VOL_PERFUSION].value)
+					if(perfusionParam.priVolPerfArt < GetTotalPrimingVolumePerf())
 					{
 						setGUIButton((unsigned char)BUTTON_CONFIRM);
 					}

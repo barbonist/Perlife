@@ -442,6 +442,7 @@ int main(void)
 	        	alarmEngineAlways();
 		        GenerateSBCComm();
 
+
 	         }
 
 	         if(ReadKey1()) // per debug con la tastiera a bolle
