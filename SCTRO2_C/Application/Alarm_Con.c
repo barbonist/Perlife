@@ -402,7 +402,8 @@ void manageAlarmPhysicPressSens(void)
 		alarmList[PRESS_ADS_FILTER_HIGH].physic = PHYSIC_FALSE;
 	}
 
-	if(PR_VEN_mmHg_Filtered > PR_VEN_HIGH)
+	/*il sensore Venoso è suato solo nel trattamento Liver, il Kidney non ha la linea Venosa*/
+	if(PR_VEN_mmHg_Filtered > PR_VEN_HIGH && GetTherapyType() == LiverTreat)
 	{
 		alarmList[PRESS_VEN_HIGH].physic = PHYSIC_TRUE;
 	}
@@ -411,7 +412,7 @@ void manageAlarmPhysicPressSens(void)
 		alarmList[PRESS_VEN_HIGH].physic = PHYSIC_FALSE;
 	}
 
-	if(PR_VEN_mmHg_Filtered <= PR_VEN_LOW)
+	if(PR_VEN_mmHg_Filtered <= PR_VEN_LOW && GetTherapyType() == LiverTreat)
 	{
 		alarmList[PRESS_VEN_LOW].physic = PHYSIC_TRUE;
 	}

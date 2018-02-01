@@ -102,7 +102,7 @@
 #define MAX_MSG_CONSECUTIVE_IR_TEMP_SENS_NOT_DETECTED 		10
 #define PR_ART_HIGH											100
 #define PR_ART_LOW											1
-#define PR_VEN_HIGH											10
+#define PR_VEN_HIGH											160//10
 #define PR_VEN_LOW											1
 #define PR_ADS_FILTER_HIGH									250
 #define MAX_MSG_CONSECUTIVE_ACTUATOR_MODBUS_NOT_RESPOND 	10
