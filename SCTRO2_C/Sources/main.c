@@ -343,11 +343,18 @@ int main(void)
   setPumpCurrentValue((unsigned char)3, (int)24);
   while (timerCounterCheckModBus < 1);
   timerCounterCheckModBus = 0;
-  setPumpCurrentValue((unsigned char)4, (int)24);    // imposto la CURRENT LEVEL a 24
+  setPumpCurrentValue((unsigned char)4, (int)28);    // imposto la CURRENT LEVEL a 24
   while (timerCounterCheckModBus < 1);
   timerCounterCheckModBus = 0;
-  setPumpCurrentValue((unsigned char)5, (int)24);
+  setPumpCurrentValue((unsigned char)5, (int)28);
   while (timerCounterCheckModBus < 1);
+
+  setPumpAccelerationValue((unsigned char)4, (int)30);    // imposto la CURRENT LEVEL a 24
+  while (timerCounterCheckModBus < 1);
+  timerCounterCheckModBus = 0;
+  setPumpAccelerationValue((unsigned char)5, (int)30);
+  while (timerCounterCheckModBus < 1);
+
 
   /*prima di entrare nel loop infinito chiedo i dati di targa agli attuatori
    * devo ricevere i dati di tutte le pompe in massimo un secondo;
@@ -419,7 +426,7 @@ int main(void)
 
 #ifdef SERVICE_ACTIVE_TOGETHER_THERAPY
 	  	  if (Service)
-	        	 testCOMMSbcDebug();
+	  		 Service_SBC();
 
 	         else
 	         {

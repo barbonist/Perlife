@@ -32,6 +32,7 @@ void initUFlowSensor(void)
 	sensor_UFLOW[0].byteSended = 0;
 	sensor_UFLOW[0].bubbleSize = 0;
 	sensor_UFLOW[0].bubblePresence = 0;
+	sensor_UFLOW[0].RequestMsgProcessed = 0;
 
 	sensor_UFLOW[1].sensorId = 1;
 	sensor_UFLOW[1].sensorAddr = FLOW_SENSOR_TWO_ADDR;
@@ -44,6 +45,7 @@ void initUFlowSensor(void)
 	sensor_UFLOW[1].byteSended = 0;
 	sensor_UFLOW[1].bubbleSize = 0;
 	sensor_UFLOW[1].bubblePresence = 0;
+	sensor_UFLOW[1].RequestMsgProcessed = 0;
 
 	/*Disable Data and Receiver enable */
 	FLOWSENS_DE_ClrVal();
@@ -90,6 +92,10 @@ void Manage_UFlow_Sens()
 		{
 			FLOWSENS_COMM_SendChar(ptrMsg_UFLOW->bufferToSend[k]);
 		}
+
+		/*incremento il contatore dei messaggi inviati per quel sensore*/
+		sensor_UFLOW[Id_Sensor_UF].RequestMsgProcessed++;
+
 		/*ho spedito, incremento per spedire il prossimo*/
 		Id_Sensor_UF++;
 	}
@@ -149,27 +155,17 @@ void Manage_UFlow_Sens()
 				sensor_UFLOW[Id_Buffer].Inst_Flow_Value = numFloatUFlow_Val.numFormatFloat_Val;
 				//sensor_UFLOW[Id_Buffer].Average_Flow_Val = Average_Flow_Value(Id_Buffer, numFloatUFlow_Val.numFormatFloat_Val);
 				sensor_UFLOW[Id_Buffer].Average_Flow_Val = Average_Flow_Value(Id_Buffer, sensor_UFLOW[Id_Buffer].Inst_Flow_Value);
+
+				/*decremento il contatore dei messaggi inviati per quel sensore*/
+				sensor_UFLOW[Id_Buffer].RequestMsgProcessed = 0;
 			}
 
-			numFloatUFlow_Val.ieee754NumFormat_Val = (sensor_UFLOW[Id_Buffer].bufferReceived[16] << 24) |
-													 (sensor_UFLOW[Id_Buffer].bufferReceived[15] << 16) |
-													 (sensor_UFLOW[Id_Buffer].bufferReceived[14] << 8) |
-													 (sensor_UFLOW[Id_Buffer].bufferReceived[13]);
-
-			/*prima di memorizzare il valore, controllo che non sia un Not a Number opp un infinito
-			 * ossia che non abbia 255 nel byte formato dai bit da 0 a 6 del byte + signifativo
-			 * e del bit 7 del byet immediatamente precdente*/
-			Check_IEEE_Number = sensor_UFLOW[Id_Buffer].bufferReceived[16] & 0x7F;
-			Check_IEEE_Number << 1;
-
-			temp = sensor_UFLOW[Id_Buffer].bufferReceived[15] & 0x80;
-			temp >> 7;
-			Check_IEEE_Number |= temp;
-
-			if (Check_IEEE_Number != 0xFF)
-			{
-				sensor_UFLOW[Id_Buffer].Temperature = numFloatUFlow_Val.numFormatFloat_Val;
-			}
+			/*DA TESTARE
+			 * qui dovrebbe esserci la laregezza della bolla dall'ultima richiesta
+			 * 1 indica 0.1 mm, 2 0.2 mm e così via; una bolla di 40 ul con un tubo da 4.8
+			 * di diametro interno avrebbe una largezza di circa 2.3 mm quindi darò allarme
+			 * se in questo byte ho un numero > 23 && != FF (is an error)*/
+			sensor_UFLOW[Id_Buffer].bubbleSize = sensor_UFLOW[Id_Buffer].bufferReceived[13];
 
 			numFloatUFlow_Val.ieee754NumFormat_Val = (sensor_UFLOW[Id_Buffer].bufferReceived[21] << 24) |
 													 (sensor_UFLOW[Id_Buffer].bufferReceived[20] << 16) |
@@ -177,7 +173,7 @@ void Manage_UFlow_Sens()
 													 (sensor_UFLOW[Id_Buffer].bufferReceived[18]);
 			/*prima di memorizzare il valore, controllo che non sia un Not a Number opp un infinito
 			 * ossia che non abbia 255 nel byte formato dai bit da 0 a 6 del byte + signifativo
-			 * e del bit 7 del byet immediatamente precdente*/
+			 * e del bit 7 del byte immediatamente precdente*/
 			Check_IEEE_Number = sensor_UFLOW[Id_Buffer].bufferReceived[21] & 0x7F;
 			Check_IEEE_Number << 1;
 
@@ -329,13 +325,14 @@ struct ultrsndFlowSens * buildCmdToFlowSens(unsigned char sensorAddress,
 		/* byte 7 - requested data */
 		sensor_UFLOW[sensId].bufferToSend[7] = 0x82;		//Measured instantaneous value of flow [ml/min] float format, in case of fault: 0
 		/* byte 8 - requested data */
-		sensor_UFLOW[sensId].bufferToSend[8] = 0x88;		//Measured value of temperarature [°C], in case of error: 255.5 °C
+		sensor_UFLOW[sensId].bufferToSend[8] = 0x2A;		//Size of largest occurred bubble since last request [0.1 mm], in range of 0…10 mm, in case of fault: 255
 		/* byte 9 - requested data */
 		sensor_UFLOW[sensId].bufferToSend[9] = 0x8B;		//Accumulated volume [ul]
 		/* byte 10 - cksm */
 		sensor_UFLOW[sensId].bufferToSend[10] = computeCRCFlowSens(sensor_UFLOW[sensId].bufferToSend);
 		sensor_UFLOW[sensId].bufferToSendLenght = (sensor_UFLOW[sensId].bufferToSend[1] << 8) + sensor_UFLOW[sensId].bufferToSend[2];
-		sensor_UFLOW[sensId].bufferReceivedLenght = BYTE_COUNT_GET_VAL_CODE; 	// Ricevo 21 byte (0x15) per ogni byte richeisto ne ricevo 4 quindi 12 + i 9 del formato risposta (da 0 a 7 + il ceck sum)
+		/* Ricevo 21 byte (0x12): per 0x82 e 0x8B e 0x2A ricevo 5 byte a testa (il prio con la replica della richiesta gli altri 4 col dato richiesto, + i due del CRC */
+		sensor_UFLOW[sensId].bufferReceivedLenght = BYTE_COUNT_GET_VAL_CODE;
 		//sensor_UFLOW[sensId].bufferReceivedLenght = 0x17; 	// Ricevo 13 byte (0x0D) only for test
 		sensor_UFLOW[sensId].ptrBufferReceived = &sensor_UFLOW[sensId].bufferReceived[0];
 		break;

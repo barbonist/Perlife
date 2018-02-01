@@ -29,11 +29,13 @@
 #define CODE_ALARM_TEMP_VEN_LOW					0x13
 #define CODE_ALARM_TEMP_NTC_HIGH				0x14
 #define CODE_ALARM_TEMP_NTC_LOW					0x15
+#define CODE_ALARM_TEMP_SENS_NOT_DETECTED		0x16
 
-#define CODE_ALARM_FLOW_ART_HIGH				0x20
-#define CODE_ALARM_FLOW_ART_LOW					0x21
+#define CODE_ALARM_FLOW_PERF_ART_HIGH			0x20
+#define CODE_ALARM_FLOW_PERF_ART_LOW			0x21
 #define CODE_ALARM_FLOW_VEN_HIGH				0x22
 #define CODE_ALARM_FLOW_VEN_LOW					0x23
+#define CODE_ALARM_FLOW_ART_NOT_DETECTED		0x24
 
 #define CODE_ALARM_TANK_LEVEL_LOW				0x30
 
@@ -93,11 +95,41 @@
 #define MEMO_NOT_ALLOWED		0x5A
 
 
+#define FLOW_LIVER_MAX   400
+#define FLOW_KIDNEY_MAX  500
+
+#define MAX_MSG_CONSECUTIVE_FLOW_SENS_NOT_DETECTED 			10
+#define MAX_MSG_CONSECUTIVE_IR_TEMP_SENS_NOT_DETECTED 		10
+#define PR_ART_HIGH											100
+#define PR_ART_LOW											1
+#define PR_VEN_HIGH											10
+#define PR_VEN_LOW											1
+#define PR_ADS_FILTER_HIGH									250
+#define MAX_MSG_CONSECUTIVE_ACTUATOR_MODBUS_NOT_RESPOND 	10
+
+enum ALARM
+{
+	 PRESS_ART_HIGH = 0,
+	 PRESS_ART_LOW,
+	 AIR_PRES_ART,
+	 TEMP_ART_HIGH,
+	 PRESS_ADS_FILTER_HIGH,
+	 FLOW_PERF_ART_HIGH,
+	 FLOW_SENS_NOT_DETECTED,
+	 PRESS_VEN_HIGH,
+	 PRESS_VEN_LOW,
+	 IR_SENS_NOT_DETECTED,
+	 MODBUS_ACTUATOR_SEND
+};
 
 void alarmConInit(void);
 void alarmEngineAlways(void);
 void alarmManageNull(void);
 void manageAlarmChildGuard(struct alarm * ptrAlarm);
+void manageAlarmPhysicFlowPerfArtHigh(void);
+void manageAlarmFlowSensNotDetected(void);
+void manageAlarmIrTempSensNotDetected(void);
+void manageAlarmActuatorModbusNotRespond(void);
 
 void manageAlarmPhysicPressSens(void);
 void manageAlarmPhysicTempSens(void);

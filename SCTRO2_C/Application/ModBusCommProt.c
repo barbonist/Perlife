@@ -297,6 +297,8 @@ void UpdatePmpAddress(THERAPY_TYPE tt)
 
 void modBusPmpInit(THERAPY_TYPE tt)
 {
+	for (int i=0; i<8; i++)
+		CountErrorModbusMSG[i] = 0;
 
 	/***************** PMP 1********************/
 	pumpPerist[0].id = 0;
@@ -607,6 +609,35 @@ void setPumpCurrentValue(unsigned char slaveAddr, int currValue){
 	}
 }
 
+// imposta il valore di CURRENT LEVEL dell'attuatore
+void setPumpAccelerationValue(unsigned char slaveAddr, int acc)
+{
+	unsigned int mycurrValue = 0;
+	unsigned int * valModBusArrayPtr;
+	char	funcCode = 0x10;
+	unsigned int	wrAddr = 0x0002; /* current level */
+
+	if((slaveAddr >= 2) && (slaveAddr <= 6)) /* pump */
+		mycurrValue = (unsigned int)acc;
+
+	valModBusArrayPtr = &mycurrValue;
+
+	_funcRetValPtr = (struct funcRetStruct *)ModBusWriteRegisterReq(slaveAddr,
+											                        funcCode,
+											                        wrAddr,
+											                        0x0001,
+											                        valModBusArrayPtr);
+	//send command to actuator
+	_funcRetVal.ptr_msg = _funcRetValPtr->ptr_msg;
+	_funcRetVal.mstreqRetStructNumByte = _funcRetValPtr->mstreqRetStructNumByte;
+	_funcRetVal.slvresRetPtr = _funcRetValPtr->slvresRetPtr;
+	_funcRetVal.slvresRetNumByte = _funcRetValPtr->slvresRetNumByte;
+
+	for(char k = 0; k < _funcRetVal.mstreqRetStructNumByte; k++)
+	{
+		MODBUS_COMM_SendChar(*(_funcRetVal.ptr_msg+k));
+	}
+}
 
 /*Funzione che riceve in ingresso l'indirizzo con un offset di 2
  * ad esempio se ho rotary select = 0 devo mandare due e la velocità
@@ -1206,6 +1237,8 @@ void Manage_and_Storage_ModBus_Actuator_Data(void)
 		if (slvAddr == 6)
         	slvAddr= 7;
 
+		CountErrorModbusMSG[slvAddr]++;
+
         /*chiamo la funzione col corretto number of address dipendentemente dall'attuatore (pump/pinch)*/
 		if (slvAddr <= LAST_PUMP)
 			/*funzione che mi legge lo stato delle pompe*/
@@ -1252,18 +1285,23 @@ void StorageModbusData(void)
 	funCode = dataTemp[1];
 
 	/*se ho l'indirizzo di una pompa*/
-	if (Address <= LAST_PUMP)
+	if (Address >= FIRST_ACTUATOR && Address <= LAST_PUMP)
 	{
 		/*devo trasfomare i dati ricevuti da byte in word*/
 		Pump_Average_Current = BYTES_TO_WORD(dataTemp[3], dataTemp[4]);
 		Pump_Speed_Status	 = BYTES_TO_WORD(dataTemp[5], dataTemp[6]);
 		Pump_Status 		 = BYTES_TO_WORD(dataTemp[7], dataTemp[8]);
 	}
-	else /*ho l'indirizzo di una pinch*/
+	/*se ho l'indirizzo di una pinch*/
+	else if (Address >= FIRST_PINCH && Address <= LAST_ACTUATOR)
 	{
 		/*devo trasfomare i dati ricevuti da byte in word*/
 		Pinch_Average_Current = BYTES_TO_WORD(dataTemp[3], dataTemp[4]);
 		Pinch_Status	 	  = BYTES_TO_WORD(dataTemp[5], dataTemp[6]);
+	}
+	else
+	{
+		/*ho ricevuto qualcosa con un indirizzo non valido*/
 	}
 
 
@@ -1275,16 +1313,26 @@ void StorageModbusData(void)
 		/*uso lo Address come indice per la matrice
 		 * ma lo decremento di due in quanto pompa con
 		 * selettore '0' corrisposnde a indirizzo '2'*/
-		if (Address <= LAST_PUMP) //sono nel caso di una pompa
+		/*se ho l'indirizzo di una pompa*/
+		if (Address >= FIRST_ACTUATOR && Address <= LAST_PUMP)
 		{
 			modbusData[Address-2][16]= Pump_Average_Current;
 			modbusData[Address-2][17]= Pump_Speed_Status;
 			modbusData[Address-2][18]= Pump_Status;
+			/*azzero per quello slave il contatore di messaggi
+			 * che onn hano avuto risposta in modo da contare
+			 * le mancate risposte consecutive*/
+			CountErrorModbusMSG[Address-2] = 0;
 		}
-		else //sono nel caso di una pinch
+		/*se ho l'indirizzo di una pinch*/
+		else if (Address >= FIRST_PINCH && Address <= LAST_ACTUATOR)
 		{
 			modbusData[Address-3][16]= Pinch_Average_Current;
 			modbusData[Address-3][17]= Pinch_Status;
+			/*azzero per quello slave il contatore di messaggi
+			 * che onn hano avuto risposta in modo da contare
+			 * le mancate risposte consecutive*/
+			CountErrorModbusMSG[Address-3] = 0;
 		}
 	}
 }

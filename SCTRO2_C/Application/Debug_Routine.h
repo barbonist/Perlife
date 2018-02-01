@@ -14,24 +14,9 @@
 #include "Peltier_Module.h"
 #include "Adc_Ges.h"
 
-#ifdef DEBUG_ADC
-void testADCDebug(void);
-#endif
 
-#ifdef	DEBUG_PUMP
-void testPUMPDebug(void);
-#endif
-
-#ifdef	DEBUG_CENTRIF_PUMP
-void testCENTRFPUMPDebug(void);
-#endif
-
-#ifdef	DEBUG_PELTIER
-void testPELTIERDebug(void);
-#endif
-
-#ifdef	DEBUG_COMM_SBC
-void testCOMMSbcDebug(void);
+#ifdef	SERVICE_ACTIVE_TOGETHER_THERAPY
+void Service_SBC(void);
 #endif
 
 #endif /* APPLICATION_DEBUG_ROUTINE_H_ */

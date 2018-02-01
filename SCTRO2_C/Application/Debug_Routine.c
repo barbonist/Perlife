@@ -28,23 +28,8 @@
 #include "stdio.h"
 #include "stdlib.h"
 
-void testADCDebug(void){
 
-}
-
-void testPUMPDebug(void){
-
-}
-
-void testCENTRFPUMPDebug(void){
-
-}
-
-void testPELTIERDebug(void){
-
-}
-
-void testCOMMSbcDebug(void){
+void Service_SBC(void){
 
 	char cmdId;
 	unsigned int * valModBusArrayPtr;
