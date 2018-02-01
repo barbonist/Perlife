@@ -508,14 +508,14 @@ int main(void)
 	         /********************************/
 			 /*      CHECK COVER PUMP        */
 			 /********************************/
-	         /*a giro di priogramma controllo lo stato dei cover delle pompe
+	         /*a giro di programma controllo lo stato dei cover delle pompe
 	          * Poi nella gestione degli allarmi, in funzione dello stato
 	          * in cui sono, se un cover è aperto, fermo tutte le pompe, metto le pinch in sicurezza
 	          * (vaschetta quelle in alto ovvero posizione a destra)
 	          * e SBC metterà a video 'cover pump open'. quando tutti
-	          * i coperchi saranno chiusi (la funzioine restituisce 4)
-	          * tolgo la condizione di allarme, SBC metterà a viodeo il retry
-	          * e solo allora potrò far ripartire le pompe e riprendere con la macchinan a stati*/
+	          * i coperchi saranno chiusi (la funzione restituisce 4)
+	          * tolgo la condizione di allarme, SBC metterà a video il retry
+	          * e solo allora potrò far ripartire le pompe e riprendere con la macchina a stati*/
 	         CheckCoverPump();
 
 	         /********************************/
