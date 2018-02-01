@@ -337,16 +337,16 @@ int main(void)
 //  QUESTO CODICE POTREBBE ESSERE NECESSARIO SCOMMENTARLO SE NON FOSSE SUFFICIENTE LA
 //  CORRENTE DI PILOTAGGIO DELLE POMPE
   timerCounterCheckModBus = 0;
-  setPumpCurrentValue((unsigned char)2, (int)24);
+  setPumpCurrentValue((unsigned char)2, (int)31);
   while (timerCounterCheckModBus < 1);
   timerCounterCheckModBus = 0;
-  setPumpCurrentValue((unsigned char)3, (int)24);
+  setPumpCurrentValue((unsigned char)3, (int)31);
   while (timerCounterCheckModBus < 1);
   timerCounterCheckModBus = 0;
-  setPumpCurrentValue((unsigned char)4, (int)28);    // imposto la CURRENT LEVEL a 24
+  setPumpCurrentValue((unsigned char)4, (int)31);    // imposto la CURRENT LEVEL a 24
   while (timerCounterCheckModBus < 1);
   timerCounterCheckModBus = 0;
-  setPumpCurrentValue((unsigned char)5, (int)28);
+  setPumpCurrentValue((unsigned char)5, (int)31);
   while (timerCounterCheckModBus < 1);
 
   setPumpAccelerationValue((unsigned char)4, (int)30);    // imposto la CURRENT LEVEL a 24

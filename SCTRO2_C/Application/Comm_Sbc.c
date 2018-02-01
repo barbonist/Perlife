@@ -831,12 +831,18 @@ void buildRDMachineStateResponseMsg(char code, char subcode)
 	 * della CON usando 5 bit per il primo numero
 	 * 5 bit per il seocndo numero e 6 bit per il
 	 * terzo numero avendo quindi una versione massima
-	 * pari a 32.32.64  */	/* TODO status parameters: rev fw-H
+	 * pari a 32.32.64  */
+
+	sbc_tx_data[index++] = 0x00;
+	sbc_tx_data[index++] = 0x00;
+
+	/* TODO status parameters: rev fw-H
 	 * potrei usare questa come versione FW
 	 * della PRO usando 5 bit per il primo numero
 	 * 5 bit per il seocndo numero e 6 bit per il
 	 * terzo numero avendo quindi una versione massima
 	 * pari a 32.32.64  */
+
 	sbc_tx_data[index++] = 0x00;
 	sbc_tx_data[index++] = 0x00;
 
@@ -881,6 +887,7 @@ void buildRDMachineStateResponseMsg(char code, char subcode)
 
 	sbc_tx_data[index++] = (PR_LEVEL_mmHg_Filtered >> 8) & 0xFF;
 	sbc_tx_data[index++] = (PR_LEVEL_mmHg_Filtered) & 0xFF;
+
 	/* sensors parameters: pressure systolic arterial */
 	sbc_tx_data[index++] = (sensorsValues.pressSystArt >> 8) & 0xFF; //TODO
 	sbc_tx_data[index++] = (sensorsValues.pressSystArt     ) & 0xFF;
@@ -888,8 +895,7 @@ void buildRDMachineStateResponseMsg(char code, char subcode)
 	sbc_tx_data[index++] = (sensorsValues.pressDiasArt >> 8) & 0xFF; //TODO
 	sbc_tx_data[index++] = (sensorsValues.pressDiasArt     ) & 0xFF;
 	/* sensors parameters: pressure mean arterial */
-	//TODO remove this
-	sensorsValues.pressMeanArt = sensor_PRx[0].prSensValueFilteredWA;
+
 	sbc_tx_data[index++] = (sensorsValues.pressMeanArt >> 8) & 0xFF; //TODO
 	sbc_tx_data[index++] = (sensorsValues.pressMeanArt     ) & 0xFF;
 	/* sensors parameters: pressure systolic venous */
@@ -901,6 +907,7 @@ void buildRDMachineStateResponseMsg(char code, char subcode)
 	/* sensors parameters: pressure mean venous */
 	sbc_tx_data[index++] = (sensorsValues.pressMeanVen >> 8) & 0xFF; //TODO
 	sbc_tx_data[index++] = (sensorsValues.pressMeanVen     ) & 0xFF;
+
 	/* sensors parameters: pressure flow arterial */
 	sbc_tx_data[index++] = (((int)sensor_UFLOW[0].Average_Flow_Val) >> 8) & 0xFF;  // sensorsValues.flowArt
 	sbc_tx_data[index++] = ((int)sensor_UFLOW[0].Average_Flow_Val) & 0xFF;
@@ -949,6 +956,7 @@ void buildRDMachineStateResponseMsg(char code, char subcode)
 	/* perfusion parameters: treatment duration perfusion venous / oxygenation */
 	sbc_tx_data[index++] = (perfusionParam.treatDurPerVenOxy >> 8) & 0xFF;
 	sbc_tx_data[index++] = (perfusionParam.treatDurPerVenOxy     ) & 0xFF;
+
 	/* perfusion parameters: unload volume adsorbent filter */
 	sbc_tx_data[index++] = (perfusionParam.unlVolAdsFilter >> 8) & 0xFF;
 	sbc_tx_data[index++] = (perfusionParam.unlVolAdsFilter     ) & 0xFF;
@@ -967,9 +975,11 @@ void buildRDMachineStateResponseMsg(char code, char subcode)
 	/* perfusion parameters: unload duration perfusion venous / oxygenation */
 	sbc_tx_data[index++] = (perfusionParam.unlDurPerVenOxy >> 8) & 0xFF;
 	sbc_tx_data[index++] = (perfusionParam.unlDurPerVenOxy     ) & 0xFF;
+
 	/* perfusion parameters: renal resistence */
 	sbc_tx_data[index++] = (perfusionParam.renalResistance >> 8) & 0xFF;
 	sbc_tx_data[index++] = (perfusionParam.renalResistance     ) & 0xFF;
+
 	/* perfusion parameters: pulsatility */
 	sbc_tx_data[index++] = (perfusionParam.pulsatility >> 8) & 0xFF;
 	sbc_tx_data[index++] = (perfusionParam.pulsatility     ) & 0xFF;
