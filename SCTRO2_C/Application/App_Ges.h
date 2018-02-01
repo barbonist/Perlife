@@ -196,6 +196,7 @@ void EN_24_M_C_Management(unsigned char action);
 
 void CallInIdleState(void);
 word GetTotalPrimingVolumePerf(void);
-
+void CheckOxygenationSpeed(word value);
+void alwaysPumpPressLoopVen(unsigned char pmpId, unsigned char *PidFirstTime);;
 
 #endif /* APPLICATION_APP_GES_H_ */

@@ -48,7 +48,6 @@
 
 
 extern struct machineChild stateChildAlarmTreat1[];
-extern THERAPY_TYPE TherapyType;
 
 /* --------------------------------------------------------------------------------------------
  * CHILD LEVEL FUNCTION FOR PRIMING 1 e 2
@@ -88,10 +87,10 @@ void manageChildPrimAlarmStopPerfAlways(void)
 
 	if(pumpPerist[0].dataReady == DATA_READY_TRUE)
 	{
-		pumpPerist[0].dataReady = DATA_READY_FALSE;
 		//speed = ((BYTES_TO_WORD_SIGN(msgToRecvFrame3[3], msgToRecvFrame3[4]))/100)*(timerCopy);
 		// la velocita' ora posso leggerla direttamente dall'array di registry modbus
-		speed = modbusData[pumpPerist[0].pmpMySlaveAddress-2][17];
+		speed = modbusData[pumpPerist[0].pmpMySlaveAddress-2][17] / 100;
+		pumpPerist[0].actualSpeed = speed;
 		pumpPerist[0].dataReady = DATA_READY_FALSE;
 	}
 }
@@ -184,14 +183,12 @@ void manageChildPrimAlarmStopAllPumpAlways(void)
 /* Manage CHILD_PRIMING_ALARM_STOP_PELTIER entry state */
 void manageChildPrimAlarmStopPeltEntry(void)
 {
-	// TODO
 	stopPeltierActuator();
 }
 
 /* Manage CHILD_PRIMING_ALARM_STOP_PELTIER always state */
 void manageChildPrimAlarmStopPeltAlways(void)
 {
-	// TODO
 	stopPeltierActuator();
 }
 
@@ -388,14 +385,12 @@ void manageChildTreatAlm1StopAllPumpAlways(void)
 /* Manage CHILD_TREAT_ALARM_1_STOP_PELTIER entry state */
 void manageChildTreatAlm1StopPeltEntry(void)
 {
-	// TODO
 	stopPeltierActuator();
 }
 
 /* Manage CHILD_TREAT_ALARM_1_STOP_PELTIER always state */
 void manageChildTreatAlm1StopPeltAlways(void)
 {
-	// TODO
 	stopPeltierActuator();
 }
 
@@ -404,39 +399,21 @@ void manageChildTreatAlm1StopPeltAlways(void)
 void manageChildTreatAlm1StopAllActEntry(void)
 {
 	//gestisco gli attuatori in allarme solo se ho impostato una terapia valida
-//	if(pumpPerist[0].dataReady == DATA_READY_FALSE && TherapyType != Undef)
-//	{
-//		setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
-//		setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 0);
-//		/*setPumpSpeedValueHighLevel(pumpPerist[2].pmpMySlaveAddress, 0); viene comandata direttamente col comando di quella sopra*/
-//		setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, 0);
-//
-//		setPinchPositionHighLevel(PINCH_2WPVF, MODBUS_PINCH_LEFT_OPEN);
-//		setPinchPositionHighLevel(PINCH_2WPVA, MODBUS_PINCH_LEFT_OPEN);
-//
-//		if (TherapyType == LiverTreat)
-//			setPinchPositionHighLevel(PINCH_2WPVV, MODBUS_PINCH_LEFT_OPEN);
-//		else if (TherapyType == KidneyTreat)
-//		{
-//			//in TherapyType == KidneyTreat non è usata quindi preferisco non muoverla
-//		}
-//
-//		stopPeltierActuator();
-//	}
-//
-//	pumpPerist[0].entry = 0;
 	THERAPY_TYPE TherType = GetTherapyType();
 
-	//gestisco gli attuatori in allarme solo se ho impostato una terapia valida
 	if (TherType != Undef)
 	{
 		if(pumpPerist[0].dataReady == DATA_READY_FALSE)
 		{
 			setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
+			if(getPumpPressLoop(0) == PRESS_LOOP_ON)
+				setPumpPressLoop(0, PRESS_LOOP_OFF);
 		}
 		if(pumpPerist[1].dataReady == DATA_READY_FALSE)
 		{
 			setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 0);
+			if(getPumpPressLoop(1) == PRESS_LOOP_ON)
+				setPumpPressLoop(1, PRESS_LOOP_OFF);
 		}
 		/*viene comandata direttamente col comando di quella sopra*/
 //		if(pumpPerist[2].dataReady == DATA_READY_FALSE)
@@ -448,16 +425,17 @@ void manageChildTreatAlm1StopAllActEntry(void)
 			setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, 0);
 		}
 
-		// TODO fermo tutti gli attuatori, quindi forse e' piu' giusto collegare
-		// tutto al recipiente
-		setPinchPositionHighLevel(PINCH_2WPVF, MODBUS_PINCH_RIGHT_OPEN);   // old MODBUS_PINCH_LEFT_OPEN
 
-		setPinchPositionHighLevel(PINCH_2WPVA, MODBUS_PINCH_LEFT_OPEN);   // old MODBUS_PINCH_LEFT_OPEN
+		// bypasso il filtro
+		setPinchPositionHighLevel(PINCH_2WPVF, MODBUS_PINCH_LEFT_OPEN);   // old MODBUS_PINCH_LEFT_OPEN
+		// pich arteriosa collegata al recipiente
+		setPinchPositionHighLevel(PINCH_2WPVA, MODBUS_PINCH_RIGHT_OPEN);   // old MODBUS_PINCH_LEFT_OPEN
 
 		if (TherType == LiverTreat)
 		{
-			// ho selezionato il fegato, quindi devo interrompere anche il circuito venoso
-			setPinchPositionHighLevel(PINCH_2WPVV, MODBUS_PINCH_LEFT_OPEN);
+			// ho selezionato il fegato, quindi devo interrompere anche il circuito venoso e lo collego
+			// direttamente al recipiente
+			setPinchPositionHighLevel(PINCH_2WPVV, MODBUS_PINCH_RIGHT_OPEN);
 		}
 		else if (TherType == KidneyTreat)
 		{
@@ -478,24 +456,6 @@ void manageChildTreatAlm1StopAllActAlways(void)
 {
 	static int timerCopy = 0;
 	THERAPY_TYPE TherType = GetTherapyType();
-
-//	if((pumpPerist[0].dataReady == DATA_READY_FALSE) && (speed_pmp1 != 0))
-//	{
-//		setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
-//		setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 0);
-//		/*setPumpSpeedValueHighLevel(pumpPerist[2].pmpMySlaveAddress, 0); viene comandata direttamente col comando di quella sopra*/
-//		setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, 0);
-//
-//		setPinchPositionHighLevel(PINCH_2WPVF, MODBUS_PINCH_LEFT_OPEN);
-//		setPinchPositionHighLevel(PINCH_2WPVA, MODBUS_PINCH_LEFT_OPEN);
-//
-//		if (TherapyType == LiverTreat)
-//			setPinchPositionHighLevel(PINCH_2WPVV, MODBUS_PINCH_LEFT_OPEN);
-//		else if (TherapyType == KidneyTreat)
-//		{
-//			//in TherapyType == KidneyTreat non è usata quindi preferisco non muoverla
-//		}
-//	}
 
 	//gestisco gli attuatori in allarme solo se ho impostato una terapia valida
 	if (TherType != Undef)
@@ -520,44 +480,37 @@ void manageChildTreatAlm1StopAllActAlways(void)
 
 		if (modbusData[PINCH_2WPVF-3][17] != MODBUS_PINCH_LEFT_OPEN)
 		{
-			// TODO da impostare in modo corretto, forse e' piu' giusto collegare
-			// tutto al recipiente
+			// metto in bypass il filtro per sicurezza
 			setPinchPositionHighLevel(PINCH_2WPVF, MODBUS_PINCH_LEFT_OPEN);
 		}
 
-		if (modbusData[PINCH_2WPVA-3][17] != MODBUS_PINCH_LEFT_OPEN)
+		if (modbusData[PINCH_2WPVA-3][17] != MODBUS_PINCH_RIGHT_OPEN)
 		{
-			setPinchPositionHighLevel(PINCH_2WPVA, MODBUS_PINCH_LEFT_OPEN);
+			setPinchPositionHighLevel(PINCH_2WPVA, MODBUS_PINCH_RIGHT_OPEN);
 		}
 
-		if ( modbusData[PINCH_2WPVV-3][17] != MODBUS_PINCH_LEFT_OPEN && TherType == LiverTreat)
+		if ( modbusData[PINCH_2WPVV-3][17] != MODBUS_PINCH_RIGHT_OPEN && TherType == LiverTreat)
 		{
-			setPinchPositionHighLevel(PINCH_2WPVV, MODBUS_PINCH_LEFT_OPEN);
+			setPinchPositionHighLevel(PINCH_2WPVV, MODBUS_PINCH_RIGHT_OPEN);
 		}
-
 		else if (modbusData[PINCH_2WPVV-3][17] != MODBUS_PINCH_LEFT_OPEN && TherType == KidneyTreat)
 		{
 			//in TherapyType == KidneyTreat non è usata quindi preferisco non muoverla
 		}
-
 		stopPeltierActuator();
 	}
 
-	if((timerCounterModBus%9) == 8)
-	{
-		if(timerCounterModBus != 0)
-			timerCopy = timerCounterModBus;
-		timerCounter = 0;
-
-		readPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress);
-	}
+//	if((timerCounterModBus%9) == 8)
+//	{
+//		if(timerCounterModBus != 0)
+//			timerCopy = timerCounterModBus;
+//		timerCounter = 0;
+//		readPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress);
+//	}
 
 	pumpPerist[0].actualSpeed =  modbusData[pumpPerist[0].pmpMySlaveAddress-2][17];
-
 	pumpPerist[1].actualSpeed = modbusData[pumpPerist[1].pmpMySlaveAddress-2][17];
-
 	pumpPerist[2].actualSpeed = modbusData[pumpPerist[2].pmpMySlaveAddress-2][17];
-
 	pumpPerist[3].actualSpeed = modbusData[pumpPerist[3].pmpMySlaveAddress-2][17];
 }
 

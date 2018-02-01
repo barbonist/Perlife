@@ -525,11 +525,6 @@ void setPumpSpeedValueHighLevel(unsigned char slaveAddr, int speedValue){
 
 	int StructId = SelectStruct(slaveAddr);
 
-	// se seleziono la pompa 0 ed il trattamento e' il fegato devo negare la velocita'
-	// perche', deve girare in senso orario
-	if((StructId == 0) && (GetTherapyType() == LiverTreat))
-		speedValue = -speedValue;
-
 	pumpPerist[StructId].newSpeedValue = speedValue;
 	if(StructId == 1)
 		pumpPerist[2].newSpeedValue = speedValue;
@@ -1136,12 +1131,12 @@ bool CommandModBusPMPExecute(int SpeedPMP_0, int SpeedPMP_1_2, int SpeedPMP_3)
 	unsigned int Speed_Pmp_0 = modbusData [0][17];
 	unsigned int Speed_Pmp_1 = modbusData [1][17];
 	unsigned int Speed_Pmp_2 = modbusData [2][17];
-	unsigned int Speed_Pmp_3 = modbusData [2][17];
+	unsigned int Speed_Pmp_3 = modbusData [3][17];
 
 	if (Speed_Pmp_0 == SpeedPMP_0    &&
 		Speed_Pmp_1 == SpeedPMP_1_2 &&
 		Speed_Pmp_2 == SpeedPMP_1_2 &&
-		Speed_Pmp_2 == SpeedPMP_3
+		Speed_Pmp_3 == SpeedPMP_3
 		)
 	{
 		return (TRUE);
@@ -1394,6 +1389,20 @@ void StorageModbusDataInit(void)
 			modbusData[Address-3][31] = FW_Version;
 		}
 	}
+}
+
+
+/*funzione che ritorna il numero della pompa con il
+ * cover perto oppure 4 se tutti i cover sono chiusi*/
+unsigned char CheckCoverPump()
+{
+	for (unsigned char i= 0; i<4; i++)
+	{
+		if (modbusData[i][18] & 0x0200)
+			return(i);
+	}
+
+	return(4);
 }
 /* Public function */
 

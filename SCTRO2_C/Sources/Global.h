@@ -54,10 +54,7 @@ char    iFlag_modbusDataStorage;
 #define DEBUG_CONTROL			0xA5
 #define DEBUG_PROTECTION		0x5A
 #define DEBUG_LOG_PC			0x01
-//#define DEBUG_TREATMENT			0xA5 //alternativa a DEBUG_COMM_SBC
-/*define din compilazione per tuning pPID venoso Liver alternativa a DEBUG_TREATMENT
- * dopo aver tunato il pid va cancellata e va rimessa DEBUG_TREATMENT*/
-#define TUNING_PID_VEN_LIVER
+#define DEBUG_TREATMENT			0xA5 //alternativa a DEBUG_COMM_SBC
 //#define DEBUG_I2C_TEMP_SENS		0x01
 /*#define DEBUG_FLOW_SENS			0x00*/ /*0x01*/
 /* DEBUG */
@@ -1214,9 +1211,6 @@ typedef enum{NOT_DEF = 0, NO = 1, YES = 2} PARAMETER_ACTIVE_TYPE;
 // e passare  all trattamento
 #define TIMEOUT_TEMPERATURE_RICIRC 2000L
 
-// volume aggiuntivo in ml da considerare in priming per tenere conto
-// del riempimento del disposable
-#define VOLUME_DISPOSABLE  200
 /*
 Abbiamo fatto andare le pompe ad una velocità fissa da 100 RPM, scoprendo che
 la pressione media misurata sul sensore era di circa 130 mmHg.
@@ -1238,6 +1232,30 @@ Kd = Kp*Pu/8  = 0.0015
 #define PID_KP_VENOSA (float)0.03
 #define PID_KI_VENOSA (float)0.15
 #define PID_KD_VENOSA (float)0.0015
+
+/*
+//----------------------------------------------------------------------------------------------------------
+// i valori che seguono sono da considerare nel funzionamento normale
+// volume in ml nel reservoir prima di far partire le pompe di ossigenazione e pompa depurazione nel fegato
+#define MIN_LIQ_IN_RES_TO_START_OXY_VEN    400
+// volume aggiuntivo in ml da considerare in priming per tenere conto
+// del riempimento del disposable
+#define VOLUME_DISPOSABLE  200
+//----------------------------------------------------------------------------------------------------------
+*/
+// velocita' con cui faccio partire, per ora, la pompa di depurazione
+#define LIVER_PPAR_SPEED 2000
+// velocita' con cui faccio partire, per ora, la pompa di ossigenazione e perfusione venosa nel caso di priming
+#define LIVER_PRIMING_PMP_OXYG_SPEED 2000
+
+//----------------------------------------------------------------------------------------------------------
+// i valori che seguono sono da considerare per il debug interno
+// volume in ml nel reservoir prima di far partire le pompe di ossigenazione e pompa depurazione nel fegato
+#define MIN_LIQ_IN_RES_TO_START_OXY_VEN    15
+// volume aggiuntivo in ml da considerare in priming per tenere conto
+// del riempimento del disposable
+#define VOLUME_DISPOSABLE  10
+//----------------------------------------------------------------------------------------------------------
 
 #endif /* SOURCES_GLOBAL_H_ */
 

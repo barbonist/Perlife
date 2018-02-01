@@ -163,8 +163,9 @@
 #include "Flowsens.h"
 #include "Temp_sensIR.h"
 #include "Comm_Sbc.h"
+#include "Debug_Routine.h"
 
-void alwaysPumpPressLoopVen(unsigned char pmpId, unsigned char *PidFirstTime);
+
 extern unsigned char PidFirstTime[4];
 extern float pressSample1_Ven;
 extern float pressSample2_Ven;
@@ -402,14 +403,14 @@ int main(void)
 //   setPinchPositionHighLevel(LEFT_PINCH_ID, (int)MODBUS_PINCH_POS_CLOSED);
 //   setPinchPositionHighLevel(RIGHT_PINCH_ID, (int)MODBUS_PINCH_POS_CLOSED);
 
-#ifdef TUNING_PID_VEN_LIVER
-   // attivo il pid sull'ossigenazione e perfusione venosa per provare i
-   // coefficienti
-	setPumpPressLoop(1, PRESS_LOOP_ON);
-	pressSample1_Ven = 0;
-	pressSample2_Ven = 0;
-	FreeRunCnt10msecOld = 0;
-#endif
+//#ifdef TUNING_PID_VEN_LIVER
+//   // attivo il pid sull'ossigenazione e perfusione venosa per provare i
+//   // coefficienti
+//	setPumpPressLoop(1, PRESS_LOOP_ON);
+//	pressSample1_Ven = 0;
+//	pressSample2_Ven = 0;
+//	FreeRunCnt10msecOld = 0;
+//#endif
 
 
   /**********MAIN LOOP START************/
@@ -503,6 +504,19 @@ int main(void)
 	         /********************************/
 	         /*           DEBUG LED  END     */
 	         /********************************/
+
+	         /********************************/
+			 /*      CHECK COVER PUMP        */
+			 /********************************/
+	         /*a giro di priogramma controllo lo stato dei cover delle pompe
+	          * Poi nella gestione degli allarmi, in funzione dello stato
+	          * in cui sono, se un cover è aperto, fermo tutte le pompe, metto le pinch in sicurezza
+	          * (vaschetta quelle in alto ovvero posizione a destra)
+	          * e SBC metterà a video 'cover pump open'. quando tutti
+	          * i coperchi saranno chiusi (la funzioine restituisce 4)
+	          * tolgo la condizione di allarme, SBC metterà a viodeo il retry
+	          * e solo allora potrò far ripartire le pompe e riprendere con la macchinan a stati*/
+	         CheckCoverPump();
 
 	         /********************************/
 	         /*             ADC	             */

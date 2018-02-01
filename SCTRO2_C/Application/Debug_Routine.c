@@ -136,22 +136,35 @@ void testCOMMSbcDebug(void){
 							word wrAddrStop  = BYTES_TO_WORD(sbc_rx_data[10], sbc_rx_data[11]);
 							word numberOfAddress = wrAddrStop - wrAddrStart + 1;
 
-							for(int i = 0 ; i < numberOfAddress ; i++)
+							if (numberOfAddress == 1)
 							{
-								valModBusArray[i] = (sbc_rx_data[12+2*i] << 8)  + sbc_rx_data[13+2*i];
-							}
-							valModBusArrayPtr = &valModBusArray[0];
+								int dato = BYTES_TO_WORD(sbc_rx_data[12], sbc_rx_data[13]);
 
-							_funcRetValPtr = ModBusWriteRegisterReq(slvAddr,
-																	funcCode,
-																	wrAddrStart,
-																	numberOfAddress,
-																	valModBusArrayPtr);
-							//send command to actuator
-							_funcRetVal.ptr_msg = _funcRetValPtr->ptr_msg;
-							_funcRetVal.mstreqRetStructNumByte = _funcRetValPtr->mstreqRetStructNumByte;
-							_funcRetVal.slvresRetPtr = _funcRetValPtr->slvresRetPtr;
-							_funcRetVal.slvresRetNumByte = _funcRetValPtr->slvresRetNumByte;
+								if (slvAddr >=2 && slvAddr <=5)
+									setPumpSpeedValueHighLevel(slvAddr, dato);
+								else if (slvAddr >=7 && slvAddr <=9)
+									setPinchPositionHighLevel(slvAddr, dato);
+							}
+							else
+							{
+								for(int i = 0 ; i < numberOfAddress ; i++)
+								{
+									valModBusArray[i] = (sbc_rx_data[12+2*i] << 8)  + sbc_rx_data[13+2*i];
+								}
+								valModBusArrayPtr = &valModBusArray[0];
+
+								_funcRetValPtr = ModBusWriteRegisterReq(slvAddr,
+																		funcCode,
+																		wrAddrStart,
+																		numberOfAddress,
+																		valModBusArrayPtr);
+								//send command to actuator
+								_funcRetVal.ptr_msg = _funcRetValPtr->ptr_msg;
+								_funcRetVal.mstreqRetStructNumByte = _funcRetValPtr->mstreqRetStructNumByte;
+								_funcRetVal.slvresRetPtr = _funcRetValPtr->slvresRetPtr;
+								_funcRetVal.slvresRetNumByte = _funcRetValPtr->slvresRetNumByte;
+							}
+
 
 							word snd;
 							MODBUS_COMM_SendBlock(_funcRetVal.ptr_msg,

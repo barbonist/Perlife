@@ -205,6 +205,7 @@ void Check_Actuator_Status (
 void Manage_and_Storage_ModBus_Actuator_Data(void);
 void StorageModbusData(void);
 void StorageModbusDataInit(void);
+unsigned char CheckCoverPump();
 
 /* Public interface function */
 
