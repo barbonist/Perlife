@@ -1363,11 +1363,9 @@ void manageParentPrimingAlways(void){
 
 	if((timerCounterModBus%9) == 8)
 	{
-		//timerCopy = timerCounter;
 		if(timerCounterModBus != 0)
 			timerCopy = timerCounterModBus;
 		timerCounter = 0;
-		//timerCounterModBus = 0;
 
 		//readPumpSpeedValue(pumpPerist[0].pmpMySlaveAddress);
 		readPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress);
@@ -1604,11 +1602,9 @@ void manageParentPrimingAlways(void){
 
 		if((timerCounterModBus%9) == 8)
 			{
-				//timerCopy = timerCounter;
 				if(timerCounterModBus != 0)
 					timerCopy = timerCounterModBus;
 				timerCounter = 0;
-				//timerCounterModBus = 0;
 
 				//readPumpSpeedValue(pumpPerist[0].pmpMySlaveAddress);
 				readPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress);
@@ -1994,11 +1990,9 @@ void manageParentTreatAlways(void){
 
 		if((timerCounterModBus%9) == 8)
 		{
-			//timerCopy = timerCounter;
 			if(timerCounterModBus != 0)
 				timerCopy = timerCounterModBus;
-			timerCounter = 0;
-
+            timerCounter = 0;
 			readPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress);
 			// non ho messo la pompa 2 perche'  e' agganciata alla 1
 			readPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress);
@@ -2178,10 +2172,9 @@ void manageParentTreatAlways(void){
 
 			if((timerCounterModBus%9) == 8)
 			{
-			//timerCopy = timerCounter;
 				if(timerCounterModBus != 0)
 					timerCopy = timerCounterModBus;
-				timerCounter = 0;
+                timerCounter = 0;
 
 				readPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress);
 				// non ho messo la pompa 2 perche'  e' agganciata alla 1

@@ -81,7 +81,6 @@ void manageChildPrimAlarmStopPerfAlways(void)
 		if(timerCounterModBus != 0)
 			timerCopy = timerCounterModBus;
 		timerCounter = 0;
-
 		readPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress);
 	}
 
@@ -128,10 +127,9 @@ void manageChildPrimAlarmStopPurifAlways(void)
 
 	if(pumpPerist[1].dataReady == DATA_READY_TRUE)
 	{
-		pumpPerist[1].dataReady = DATA_READY_FALSE;
-		//speed = ((BYTES_TO_WORD_SIGN(msgToRecvFrame3[3], msgToRecvFrame3[4]))/100)*(timerCopy);
 		// la velocita' ora posso leggerla direttamente dall'array di registry modbus
 		speed = modbusData[pumpPerist[1].pmpMySlaveAddress-2][17];
+		pumpPerist[1].actualSpeed = speed;
 		pumpPerist[1].dataReady = DATA_READY_FALSE;
 	}
 }
@@ -141,24 +139,32 @@ void manageChildPrimAlarmStopPurifAlways(void)
 void manageChildPrimAlarmStopAllPumpEntry(void)
 {
 	if(pumpPerist[0].dataReady == DATA_READY_FALSE)
-	{
 		setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
+	if(pumpPerist[1].dataReady == DATA_READY_FALSE)
 		setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 0);
-	}
+	// manca lo stop alla pompa 2 perche' e' legata alla pompa 1
+	if((GetTherapyType() == LiverTreat) && (pumpPerist[3].dataReady == DATA_READY_FALSE))
+		setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, 0);
+
 	pumpPerist[0].entry = 0;
+	pumpPerist[1].entry = 0;
+	pumpPerist[3].entry = 0;
 }
 
 /* Manage CHILD_PRIMING_ALARM_STOP_ALL_PUMP always state */
 void manageChildPrimAlarmStopAllPumpAlways(void)
 {
-	static int speed = 0;
+	static int speed0 = 0;
+	static int speed1 = 0;
+	static int speed3 = 0;
 	static int timerCopy = 0;
 
-	if((pumpPerist[0].dataReady == DATA_READY_FALSE) && (speed != 0))
-	{
+	if((pumpPerist[0].dataReady == DATA_READY_FALSE) && (speed0 != 0))
 		setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
+	if((pumpPerist[1].dataReady == DATA_READY_FALSE) && (speed1 != 0))
 		setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 0);
-	}
+	if((GetTherapyType() == LiverTreat) && (pumpPerist[3].dataReady == DATA_READY_FALSE) && (speed3 != 0))
+		setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, 0);
 
 	if((timerCounterModBus%9) == 8)
 	{
@@ -167,15 +173,30 @@ void manageChildPrimAlarmStopAllPumpAlways(void)
 		timerCounter = 0;
 
 		readPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress);
+		readPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress);
+		if(GetTherapyType() == LiverTreat)
+			readPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress);
 	}
 
 	if(pumpPerist[0].dataReady == DATA_READY_TRUE)
 	{
-		pumpPerist[0].dataReady = DATA_READY_FALSE;
 		//speed = ((BYTES_TO_WORD_SIGN(msgToRecvFrame3[3], msgToRecvFrame3[4]))/100)*(timerCopy);
 		// la velocita' ora posso leggerla direttamente dall'array di registry modbus
-		speed = modbusData[pumpPerist[0].pmpMySlaveAddress-2][17];
+		speed0 = modbusData[pumpPerist[0].pmpMySlaveAddress-2][17];
+		pumpPerist[0].actualSpeed = speed0;
 		pumpPerist[0].dataReady = DATA_READY_FALSE;
+	}
+	if(pumpPerist[1].dataReady == DATA_READY_TRUE)
+	{
+		speed1 = modbusData[pumpPerist[1].pmpMySlaveAddress-2][17];
+		pumpPerist[1].actualSpeed = speed1;
+		pumpPerist[1].dataReady = DATA_READY_FALSE;
+	}
+	if((GetTherapyType() == LiverTreat) && pumpPerist[3].dataReady == DATA_READY_TRUE)
+	{
+		speed3 = modbusData[pumpPerist[3].pmpMySlaveAddress-2][17];
+		pumpPerist[3].actualSpeed = speed3;
+		pumpPerist[3].dataReady = DATA_READY_FALSE;
 	}
 }
 
@@ -215,7 +236,6 @@ void manageChildPrimAlarmStopAllActAlways(void)
  * Per ora le funzioni per la sicurezza nel caso di allarme durante il trattamento sono le
  * stesse del priming.
  * --------------------------------------------------------------------------------------------*/
-
 
 /* Manage CHILD_TREAT_ALARM_1_INIT always state */
 void manageChildTreatAlm1InitAlways(void)
@@ -285,10 +305,10 @@ void manageChildTreatAlm1StopPerfAlways(void)
 
 	if(pumpPerist[0].dataReady == DATA_READY_TRUE)
 	{
-		pumpPerist[0].dataReady = DATA_READY_FALSE;
 		//speed = ((BYTES_TO_WORD_SIGN(msgToRecvFrame3[3], msgToRecvFrame3[4]))/100)*(timerCopy);
 		// la velocita' ora posso leggerla direttamente dall'array di registry modbus
 		speed = modbusData[pumpPerist[0].pmpMySlaveAddress-2][17];
+		pumpPerist[0].actualSpeed = speed;
 		pumpPerist[0].dataReady = DATA_READY_FALSE;
 	}
 }
@@ -326,10 +346,10 @@ void manageChildTreatAlm1StopPurifAlways(void)
 
 	if(pumpPerist[1].dataReady == DATA_READY_TRUE)
 	{
-		pumpPerist[1].dataReady = DATA_READY_FALSE;
 		//speed = ((BYTES_TO_WORD_SIGN(msgToRecvFrame3[3], msgToRecvFrame3[4]))/100)*(timerCopy);
 		// la velocita' ora posso leggerla direttamente dall'array di registry modbus
 		speed = modbusData[pumpPerist[1].pmpMySlaveAddress-2][17];
+		pumpPerist[1].actualSpeed = speed;
 		pumpPerist[1].dataReady = DATA_READY_FALSE;
 	}
 }
@@ -339,28 +359,38 @@ void manageChildTreatAlm1StopPurifAlways(void)
 void manageChildTreatAlm1StopAllPumpEntry(void)
 {
 	if(pumpPerist[0].dataReady == DATA_READY_FALSE)
-	{
 		setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
+	if(pumpPerist[1].dataReady == DATA_READY_FALSE)
 		setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 0);
-		/*setPumpSpeedValueHighLevel(pumpPerist[2].pmpMySlaveAddress, 0); viene comandata direttamente col comasndo di quella sopra*/
+
+	/*setPumpSpeedValueHighLevel(pumpPerist[2].pmpMySlaveAddress, 0); viene comandata direttamente col comasndo di quella sopra*/
+
+	if((GetTherapyType() == LiverTreat) && pumpPerist[3].dataReady == DATA_READY_FALSE)
 		setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, 0);
-	}
+
 	pumpPerist[0].entry = 0;
+	pumpPerist[1].entry = 0;
+	pumpPerist[3].entry = 0;
 }
 
 /* Manage CHILD_TREAT_ALARM_1_STOP_ALL_PUMP always state */
 void manageChildTreatAlm1StopAllPumpAlways(void)
 {
-	static int speed = 0;
+	static int speed0 = 0;
+	static int speed1 = 0;
+	static int speed3 = 0;
 	static int timerCopy = 0;
 
-	if((pumpPerist[0].dataReady == DATA_READY_FALSE) && (speed != 0))
-	{
+	if(pumpPerist[0].dataReady == DATA_READY_FALSE && (speed0 != 0))
 		setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
+	if(pumpPerist[1].dataReady == DATA_READY_FALSE && (speed1 != 0))
 		setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 0);
-		/*setPumpSpeedValueHighLevel(pumpPerist[2].pmpMySlaveAddress, 0); viene comandata direttamente col comasndo di quella sopra*/
+
+	/*setPumpSpeedValueHighLevel(pumpPerist[2].pmpMySlaveAddress, 0); viene comandata direttamente col comasndo di quella sopra*/
+
+	if((GetTherapyType() == LiverTreat) && (pumpPerist[3].dataReady == DATA_READY_FALSE) && (speed3 != 0))
 		setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, 0);
-	}
+
 
 	if((timerCounterModBus%9) == 8)
 	{
@@ -369,15 +399,34 @@ void manageChildTreatAlm1StopAllPumpAlways(void)
 		timerCounter = 0;
 
 		readPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress);
+		readPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress);
+		if(GetTherapyType() == LiverTreat)
+			readPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress);
 	}
 
 	if(pumpPerist[0].dataReady == DATA_READY_TRUE)
 	{
-		pumpPerist[0].dataReady = DATA_READY_FALSE;
 		//speed = ((BYTES_TO_WORD_SIGN(msgToRecvFrame3[3], msgToRecvFrame3[4]))/100)*(timerCopy);
 		// la velocita' ora posso leggerla direttamente dall'array di registry modbus
-		speed = modbusData[pumpPerist[0].pmpMySlaveAddress-2][17];
+		speed0 = modbusData[pumpPerist[0].pmpMySlaveAddress-2][17];
+		pumpPerist[0].actualSpeed = speed0;
 		pumpPerist[0].dataReady = DATA_READY_FALSE;
+	}
+
+	if(pumpPerist[1].dataReady == DATA_READY_TRUE)
+	{
+		// la velocita' ora posso leggerla direttamente dall'array di registry modbus
+		speed1 = modbusData[pumpPerist[1].pmpMySlaveAddress-2][17];
+		pumpPerist[1].actualSpeed = speed1;
+		pumpPerist[1].dataReady = DATA_READY_FALSE;
+	}
+
+	if((GetTherapyType() == LiverTreat) && (pumpPerist[3].dataReady == DATA_READY_TRUE))
+	{
+		// la velocita' ora posso leggerla direttamente dall'array di registry modbus
+		speed3 = modbusData[pumpPerist[3].pmpMySlaveAddress-2][17];
+		pumpPerist[3].actualSpeed = speed3;
+		pumpPerist[3].dataReady = DATA_READY_FALSE;
 	}
 }
 
@@ -420,7 +469,7 @@ void manageChildTreatAlm1StopAllActEntry(void)
 //		{
 //			setPumpSpeedValueHighLevel(pumpPerist[2].pmpMySlaveAddress, 0);
 //		}
-		if(pumpPerist[3].dataReady == DATA_READY_FALSE)
+		if((GetTherapyType() == LiverTreat) && (pumpPerist[3].dataReady == DATA_READY_FALSE))
 		{
 			setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, 0);
 		}
@@ -473,7 +522,7 @@ void manageChildTreatAlm1StopAllActAlways(void)
 //		{
 //			setPumpSpeedValueHighLevel(pumpPerist[2].pmpMySlaveAddress, 0);
 //		}
-		if(pumpPerist[3].dataReady == DATA_READY_FALSE  && (pumpPerist[3].actualSpeed != 0))
+		if((TherType == LiverTreat) && (pumpPerist[3].dataReady == DATA_READY_FALSE)  && (pumpPerist[3].actualSpeed != 0))
 		{
 			setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, 0);
 		}
