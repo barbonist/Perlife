@@ -1002,28 +1002,6 @@ void IR_TM_COMM_OnNACK(void)
 
 /*
 ** ===================================================================
-**     Event       :  FLASH1_OnOperationComplete (module Events)
-**
-**     Component   :  FLASH1 [FLASH_LDD]
-*/
-/*!
-**     @brief
-**         Called at the end of the whole write / erase operation. if
-**         the event is enabled. See SetEventMask() and GetEventMask()
-**         methods.
-**     @param
-**         UserDataPtr     - Pointer to the user or
-**                           RTOS specific data. This pointer is passed
-**                           as the parameter of Init method.
-*/
-/* ===================================================================*/
-void FLASH1_OnOperationComplete(LDD_TUserData *UserDataPtr)
-{
-  /* Write your code here ... */
-}
-
-/*
-** ===================================================================
 **     Event       :  AD0_OnEnd (module Events)
 **
 **     Component   :  AD0 [ADC]
@@ -1206,6 +1184,43 @@ void System_Tick_OnInterrupt(void)
 	  timerCounterLedBoard++;
 
 	}
+}
+
+/*
+** ===================================================================
+**     Event       :  Timer_1msec_OnInterrupt (module Events)
+**
+**     Component   :  Timer_1msec [TimerInt]
+**     Description :
+**         When a timer interrupt occurs this event is called (only
+**         when the component is enabled - <Enable> and the events are
+**         enabled - <EnableEvent>). This event is enabled only if a
+**         <interrupt service/event> is enabled.
+**     Parameters  : None
+**     Returns     : Nothing
+** ===================================================================
+*/
+void Timer_1msec_OnInterrupt(void)
+{
+  /* Write your code here ... */
+}
+
+/*
+** ===================================================================
+**     Event       :  EEPROM_OnWriteEnd (module Events)
+**
+**     Component   :  EEPROM [IntFLASH]
+*/
+/*!
+**     @brief
+**         Event is called after a write operation to FLASH memory is
+**         finished (except [SetPage]). This event is available only if
+**         an [Interrupt service/event] is selected.
+*/
+/* ===================================================================*/
+void EEPROM_OnWriteEnd(void)
+{
+  /* Write your code here ... */
 }
 
 /* END Events */

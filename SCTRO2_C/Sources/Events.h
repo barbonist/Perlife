@@ -91,7 +91,6 @@
 #include "BitIoLdd1.h"
 #include "PANIC_BUTTON_OUTPUT.h"
 #include "BitIoLdd2.h"
-#include "FLASH1.h"
 #include "LAMP_HIGH.h"
 #include "BitIoLdd33.h"
 #include "LAMP_MEDIUM.h"
@@ -100,7 +99,12 @@
 #include "BitIoLdd35.h"
 #include "CAN_C_P.h"
 #include "AIR_SENSOR.h"
-#include "BitsIoLdd1.h"
+#include "BitIoLdd20.h"
+#include "Timer_1msec.h"
+#include "TimerIntLdd3.h"
+#include "TU3.h"
+#include "EEPROM.h"
+#include "IntFlashLdd1.h"
 #include "AIR_T_1.h"
 
 #include "BitIoLdd38.h"
@@ -685,25 +689,6 @@ void IR_TM_COMM_OnTransmitData(void);
 */
 void IR_TM_COMM_OnNACK(void);
 
-/*
-** ===================================================================
-**     Event       :  FLASH1_OnOperationComplete (module Events)
-**
-**     Component   :  FLASH1 [FLASH_LDD]
-*/
-/*!
-**     @brief
-**         Called at the end of the whole write / erase operation. if
-**         the event is enabled. See SetEventMask() and GetEventMask()
-**         methods.
-**     @param
-**         UserDataPtr     - Pointer to the user or
-**                           RTOS specific data. This pointer is passed
-**                           as the parameter of Init method.
-*/
-/* ===================================================================*/
-void FLASH1_OnOperationComplete(LDD_TUserData *UserDataPtr);
-
 void AD0_OnEnd(void);
 /*
 ** ===================================================================
@@ -918,6 +903,37 @@ void IR_TM_COMM_OnArbitLost(void);
 ** ===================================================================
 */
 void System_Tick_OnInterrupt(void);
+
+/*
+** ===================================================================
+**     Event       :  Timer_1msec_OnInterrupt (module Events)
+**
+**     Component   :  Timer_1msec [TimerInt]
+**     Description :
+**         When a timer interrupt occurs this event is called (only
+**         when the component is enabled - <Enable> and the events are
+**         enabled - <EnableEvent>). This event is enabled only if a
+**         <interrupt service/event> is enabled.
+**     Parameters  : None
+**     Returns     : Nothing
+** ===================================================================
+*/
+void Timer_1msec_OnInterrupt(void);
+
+/*
+** ===================================================================
+**     Event       :  EEPROM_OnWriteEnd (module Events)
+**
+**     Component   :  EEPROM [IntFLASH]
+*/
+/*!
+**     @brief
+**         Event is called after a write operation to FLASH memory is
+**         finished (except [SetPage]). This event is available only if
+**         an [Interrupt service/event] is selected.
+*/
+/* ===================================================================*/
+void EEPROM_OnWriteEnd(void);
 
 /* END Events */
 
