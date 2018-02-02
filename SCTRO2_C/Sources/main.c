@@ -349,7 +349,7 @@ int main(void)
   setPumpCurrentValue((unsigned char)5, (int)31);
   while (timerCounterCheckModBus < 1);
 
-  setPumpAccelerationValue((unsigned char)4, (int)30);    // imposto la CURRENT LEVEL a 24
+  setPumpAccelerationValue((unsigned char)4, (int)30);    // imposto accelerazione 30 rpm/sec
   while (timerCounterCheckModBus < 1);
   timerCounterCheckModBus = 0;
   setPumpAccelerationValue((unsigned char)5, (int)30);

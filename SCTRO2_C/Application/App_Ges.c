@@ -115,6 +115,9 @@ void CallInIdleState(void)
 	// inizializzo a 0 il volume accumulato durante il trattamento
 	volumePriming = 0;
 	perfusionParam.priVolPerfArt = 0;
+	perfusionParam.priVolPerfVenOxy = 0;
+	perfusionParam.treatVolPerfVenOxy = 0;
+
 	TotalTreatDuration = 0;
 	StartTreatmentTime = 0;
 	TreatDuration = 0;
@@ -378,6 +381,25 @@ struct machineParent stateParentTreatKidney1[] =
 		{}
 };
 
+struct machineParent stateParentEmptyDisp[] =
+{
+		 {STATE_NULL, PARENT_NULL,                    CHILD_NULL, ACTION_NULL,     &stateChildIdle[0],        &manageNull},                         /* 0 */
+
+		 {STATE_NULL, PARENT_EMPTY_DISPOSABLE_1_INIT, CHILD_NULL, ACTION_ON_ENTRY, &stateChildIdle[0],        &manageParentEmptyDisposInitEntry},   /* 1 */
+		 {STATE_NULL, PARENT_EMPTY_DISPOSABLE_1_INIT, CHILD_NULL, ACTION_ALWAYS,   &stateChildIdle[0],        &manageParentEmptyDisposInitAlways},  /* 2 */
+
+		 {STATE_NULL, PARENT_EMPTY_DISPOSABLE_1_RUN,  CHILD_NULL, ACTION_ON_ENTRY, &stateChildIdle[0],        &manageParentEmptyDisposRunEntry},    /* 3 */
+		 {STATE_NULL, PARENT_EMPTY_DISPOSABLE_1_RUN,  CHILD_NULL, ACTION_ALWAYS,   &stateChildIdle[0],        &manageParentEmptyDisposRunAlways},   /* 4 */
+
+		 {STATE_NULL, PARENT_EMPTY_DISPOSABLE_ALARM,  CHILD_NULL, ACTION_ON_ENTRY, &stateChildAlarmTreat1[1], &manageParentEmptyDisposAlarmEntry},  /* 5 */
+		 {STATE_NULL, PARENT_EMPTY_DISPOSABLE_ALARM,  CHILD_NULL, ACTION_ALWAYS,   &stateChildAlarmTreat1[2], &manageParentEmptyDisposAlarmAlways}, /* 6 */
+
+		 {STATE_NULL, PARENT_EMPTY_DISPOSABLE_END,    CHILD_IDLE, ACTION_ON_ENTRY, &stateChildIdle[0],        &manageParentEmptyDisposEndEntry},	/* 7 */
+		 {STATE_NULL, PARENT_EMPTY_DISPOSABLE_END,    CHILD_IDLE, ACTION_ALWAYS,   &stateChildIdle[0],        &manageParentEmptyDisposEndAlways},   /* 8 */
+		 {}
+};
+
+
 /*********************************/
 /*********SATATE LEVEL*************/
 /*********************************/
@@ -430,8 +452,8 @@ struct machineState stateState[] =
 		{STATE_TREATMENT_KIDNEY_1, PARENT_NULL, CHILD_NULL, ACTION_ON_ENTRY,                &stateParentTreatKidney1[1],        &manageStateTreatKidney1},		/* 17 */
 		{STATE_TREATMENT_KIDNEY_1, PARENT_NULL, CHILD_NULL, ACTION_ALWAYS,                  &stateParentTreatKidney1[1],        &manageStateTreatKidney1Always},/* 18 */
 
-		{STATE_EMPTY_DISPOSABLE,   PARENT_NULL, CHILD_NULL, ACTION_ON_ENTRY,                &stateParentNull[0],                &manageStateEmptyDisp},			/* 19 */
-		{STATE_EMPTY_DISPOSABLE,   PARENT_NULL, CHILD_NULL, ACTION_ALWAYS,                  &stateParentNull[0],                &manageStateEmptyDispAlways},	/* 20 */
+		{STATE_EMPTY_DISPOSABLE,   PARENT_NULL, CHILD_NULL, ACTION_ON_ENTRY,                &stateParentEmptyDisp[1],           &manageStateEmptyDisp},			/* 19 */
+		{STATE_EMPTY_DISPOSABLE,   PARENT_NULL, CHILD_NULL, ACTION_ALWAYS,                  &stateParentEmptyDisp[1],           &manageStateEmptyDispAlways},	/* 20 */
 
 		{STATE_PRIMING_WAIT,       PARENT_NULL, CHILD_NULL, ACTION_ON_ENTRY,                &stateParentNull[0],                &manageStatePrimingWait},		/* 21 */
 		{STATE_PRIMING_WAIT,       PARENT_NULL, CHILD_NULL, ACTION_ALWAYS,                  &stateParentNull[0],                &manageStatePrimingWaitAlways},	/* 22 */
@@ -897,11 +919,14 @@ void manageStateTreatKidney1Always(void)
 /* This function manages the state empty disposable activity */
 /* Entrata nello stato di svutamento del disposable          */
 /*-----------------------------------------------------------*/
-void manageStateEmptyDisp(void){
-	releaseGUIButton(BUTTON_CONFIRM);
+
+void manageStateEmptyDisp(void)
+{
 }
 
-void manageStateEmptyDispAlways(void){
+void manageStateEmptyDispAlways(void)
+{
+	ParentEmptyDispStateMach();
 }
 
 //------------------------------------------------------------------
@@ -1093,6 +1118,7 @@ void manageStateEmptyDisp1Always(void)
 {
 
 }
+
 /*-----------------------------------------------------------*/
 /* This function manages the state disposable empty 2 activity */
 /*-----------------------------------------------------------*/
@@ -1382,7 +1408,7 @@ void manageParentPrimingAlways(void){
 		// la velocita' ora posso leggerla direttamente dall'array di registry modbus
 		speed = modbusData[pumpPerist[0].pmpMySlaveAddress-2][17] / 100;
 		pumpPerist[0].actualSpeed = speed;
-		volumePriming = volumePriming + (float)(speed * CONV_RPMMIN_TO_ML_PER_INTERVAL);
+		volumePriming = volumePriming + ((float)speed * CONV_RPMMIN_TO_ML_PER_INTERVAL);
 		perfusionParam.priVolPerfArt = (int)(volumePriming);
 		pumpPerist[0].dataReady = DATA_READY_FALSE;
 	}
@@ -1390,7 +1416,9 @@ void manageParentPrimingAlways(void){
 	{
 		pumpPerist[1].actualSpeed = modbusData[pumpPerist[1].pmpMySlaveAddress-2][17] / 100;
 		// la pompa 2 e' agganciata alla 1
-		pumpPerist[2].actualSpeed = modbusData[pumpPerist[2].pmpMySlaveAddress-2][17] / 100;//pumpPerist[1].actualSpeed;
+		pumpPerist[2].actualSpeed = modbusData[pumpPerist[2].pmpMySlaveAddress-2][17] / 100; //pumpPerist[1].actualSpeed;
+		// calcolo il volume complessivo di liquido trattato dall'ossigenatore
+		perfusionParam.priVolPerfVenOxy = perfusionParam.priVolPerfVenOxy +(word)((float)pumpPerist[1].actualSpeed * CONV_RPMMIN_TO_ML_PER_INTERVAL);
 		pumpPerist[1].dataReady = DATA_READY_FALSE;
 	}
 	if(pumpPerist[3].dataReady == DATA_READY_TRUE)
@@ -1623,12 +1651,8 @@ void manageParentPrimingAlways(void){
 			if(ptrCurrentState->state != STATE_PRIMING_RICIRCOLO)
 			{
 				// nella fase di ricircolo non aggiorno piu' il volume
-				volumePriming = volumePriming + (float)(speed * CONV_RPMMIN_TO_ML_PER_INTERVAL);
+				volumePriming = volumePriming + ((float)speed * CONV_RPMMIN_TO_ML_PER_INTERVAL);
 				perfusionParam.priVolPerfArt = (int)(volumePriming);
-				if((speed * CONV_RPMMIN_TO_ML_PER_INTERVAL) > 10)
-				{
-					int j = 0;
-				}
 			}
 			pumpPerist[0].dataReady = DATA_READY_FALSE;
 		}
@@ -1637,6 +1661,8 @@ void manageParentPrimingAlways(void){
 			pumpPerist[1].actualSpeed = modbusData[pumpPerist[1].pmpMySlaveAddress-2][17] / 100;
 			// la pompa 2 e' agganciata alla 1
 			pumpPerist[2].actualSpeed = modbusData[pumpPerist[2].pmpMySlaveAddress-2][17] / 100;//pumpPerist[1].actualSpeed;
+			// calcolo il volume complessivo di liquido trattato dall'ossigenatore
+			perfusionParam.priVolPerfVenOxy = perfusionParam.priVolPerfVenOxy +(word)((float)pumpPerist[1].actualSpeed * CONV_RPMMIN_TO_ML_PER_INTERVAL);
 			pumpPerist[1].dataReady = DATA_READY_FALSE;
 		}
 		if(pumpPerist[3].dataReady == DATA_READY_TRUE)
@@ -2006,7 +2032,7 @@ void manageParentTreatAlways(void){
 			// la velocita' ora posso leggerla direttamente dall'array di registry modbus
 			speed = modbusData[pumpPerist[0].pmpMySlaveAddress-2][17] / 100;
 			pumpPerist[0].actualSpeed = speed;
-			volumeTreatArt = volumeTreatArt + (float)(speed * CONV_RPMMIN_TO_ML_PER_INTERVAL);
+			volumeTreatArt = volumeTreatArt + ((float)speed * CONV_RPMMIN_TO_ML_PER_INTERVAL);
 			perfusionParam.treatVolPerfArt = (int)(volumeTreatArt);
 			pumpPerist[0].dataReady = DATA_READY_FALSE;
 		}
@@ -2015,6 +2041,8 @@ void manageParentTreatAlways(void){
 			pumpPerist[1].actualSpeed = modbusData[pumpPerist[1].pmpMySlaveAddress-2][17] / 100;
 			// la pompa 2 e' agganciata alla 1
 			pumpPerist[2].actualSpeed = modbusData[pumpPerist[2].pmpMySlaveAddress-2][17] / 100;//pumpPerist[1].actualSpeed;
+			// calcolo il volume complessivo di liquido trattato dall'ossigenatore
+			perfusionParam.treatVolPerfVenOxy = perfusionParam.priDurPerVenOxy +(word)((float)pumpPerist[1].actualSpeed * CONV_RPMMIN_TO_ML_PER_INTERVAL);
 			pumpPerist[1].dataReady = DATA_READY_FALSE;
 		}
 		if(pumpPerist[3].dataReady == DATA_READY_TRUE)
@@ -2189,7 +2217,7 @@ void manageParentTreatAlways(void){
 				// la velocita' ora posso leggerla direttamente dall'array di registry modbus
 				speed = modbusData[pumpPerist[0].pmpMySlaveAddress-2][17];
 				pumpPerist[0].actualSpeed = speed / 100;
-				volumeTreatArt = volumeTreatArt + (float)(speed * CONV_RPMMIN_TO_ML_PER_INTERVAL);
+				volumeTreatArt = volumeTreatArt + ((float)speed * CONV_RPMMIN_TO_ML_PER_INTERVAL);
 				perfusionParam.treatVolPerfArt = (int)(volumeTreatArt);
 				pumpPerist[0].dataReady = DATA_READY_FALSE;
 			}
@@ -2198,6 +2226,8 @@ void manageParentTreatAlways(void){
 				pumpPerist[1].actualSpeed = modbusData[pumpPerist[1].pmpMySlaveAddress-2][17] / 100;
 				// la pompa 2 e' agganciata alla 1
 				pumpPerist[2].actualSpeed = modbusData[pumpPerist[2].pmpMySlaveAddress-2][17] / 100;//pumpPerist[1].actualSpeed;
+				// calcolo il volume complessivo di liquido trattato dall'ossigenatore
+				perfusionParam.treatVolPerfVenOxy = perfusionParam.priDurPerVenOxy +(word)((float)pumpPerist[1].actualSpeed * CONV_RPMMIN_TO_ML_PER_INTERVAL);
 				pumpPerist[1].dataReady = DATA_READY_FALSE;
 			}
 			if(pumpPerist[3].dataReady == DATA_READY_TRUE)
@@ -2499,7 +2529,7 @@ void alwaysPumpPressLoopVen(unsigned char pmpId, unsigned char *PidFirstTime){
 	/*il valore sottostante, indica la massima velocità delle pompe
 	 * sarà da ripristyinare quello in funzione del flusso ovvero:
 	 * (int) ( parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value / (PUMP_OXY_GAIN * 2.0));*/
-	int Max_RPM_for_Flow_Max = 120; //( parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value / (PUMP_ART_GAIN * 2.0));
+	int Max_RPM_for_Flow_Max = MAX_OXYG_RPM; //( parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value / (PUMP_ART_GAIN * 2.0));
 	int Speed_Media;
 	static int Somma_Speed = 0;
 	static int Speed_Media_old = 0xfff; /* valore irraggiungibile*/
@@ -2606,8 +2636,8 @@ void alwaysPumpPressLoopVen(unsigned char pmpId, unsigned char *PidFirstTime){
 			}
 			else
 			{
-				if(actualSpeed_Ven >= 100)
-					actualSpeed_Ven = 100;
+				if(actualSpeed_Ven >= MAX_OXYG_RPM)
+					actualSpeed_Ven = MAX_OXYG_RPM;
 				else
 					actualSpeed_Ven = actualSpeed_Ven + deltaSpeed_Ven;
 			}
@@ -2648,6 +2678,147 @@ void manageParentEntryAlways(void)
 	currentGuard[GUARD_HW_T1T_DONE].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
 	currentGuard[GUARD_COMM_ENABLED].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
 }
+
+
+// Processo di svutamento del disposable----------------------------------------------
+word VolumeDischarged = 0;
+bool EmptyDisposStartOtherPump = FALSE;
+EMPTY_DISPOSABLE_STATE EmptyDispRunAlwaysState = INIT_EMPTY_DISPOSABLE;
+
+void CalcVolumeDischarged(void)
+{
+	int speed;
+	THERAPY_TYPE TherType = GetTherapyType();
+	if((timerCounterModBus%9) == 8)
+	{
+		if(TherType == LiverTreat)
+			readPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress);
+		else
+		{
+			// nel caso del rene leggo le pompe di ossigenazione
+			readPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress);
+		}
+	}
+	if(TherType == LiverTreat)
+	{
+		if(pumpPerist[3].dataReady == DATA_READY_TRUE)
+		{
+			// la velocita' ora posso leggerla direttamente dall'array di registry modbus
+			speed = modbusData[pumpPerist[3].pmpMySlaveAddress-2][17] / 100;
+			pumpPerist[3].actualSpeed = speed;
+			VolumeDischarged = VolumeDischarged + ((float)speed * CONV_RPMMIN_TO_ML_PER_INTERVAL);
+			pumpPerist[3].dataReady = DATA_READY_FALSE;
+		}
+	}
+	else
+	{
+		if(pumpPerist[1].dataReady == DATA_READY_TRUE)
+		{
+			// la velocita' ora posso leggerla direttamente dall'array di registry modbus
+			speed = modbusData[pumpPerist[1].pmpMySlaveAddress-2][17] / 100;
+			pumpPerist[1].actualSpeed = speed;
+			// moltiplico per due perche' in questo caso sono due le pompe che lavorano contemporaneamente
+			VolumeDischarged = VolumeDischarged + ((float)speed * CONV_RPMMIN_TO_ML_PER_INTERVAL * 2);
+			pumpPerist[1].dataReady = DATA_READY_FALSE;
+		}
+	}
+}
+
+void manageParentEmptyDisposInitEntry(void)
+{
+	VolumeDischarged = 0;
+	EmptyDisposStartOtherPump = FALSE;
+	// attivazione della pompa di depurazione
+	if(GetTherapyType() == LiverTreat)
+		setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, LIVER_PPAR_SPEED);
+	else if(GetTherapyType() == KidneyTreat)
+		setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, KIDNEY_EMPTY_PPAR_SPEED);
+	EmptyDispRunAlwaysState = INIT_EMPTY_DISPOSABLE;
+}
+void manageParentEmptyDisposInitAlways(void)
+{
+	CalcVolumeDischarged();
+}
+
+void manageParentEmptyDisposRunEntry(void)
+{
+	// attivazione della pompa di depurazione se dovessi ritornare da un allarme
+	if(GetTherapyType() == LiverTreat)
+		setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, LIVER_PPAR_SPEED);
+	else if(GetTherapyType() == KidneyTreat)
+		setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, KIDNEY_EMPTY_PPAR_SPEED);
+}
+void manageParentEmptyDisposRunAlways(void)
+{
+	THERAPY_TYPE TherType = GetTherapyType();
+	CalcVolumeDischarged();
+	if(!EmptyDisposStartOtherPump && VolumeDischarged >= 1000)
+	{
+		// faccio partire le altre pompe
+		if(TherType == LiverTreat)
+		{
+			setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, LIVER_PPAR_SPEED);
+			setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, LIVER_PPAR_SPEED);
+		}
+		else if(TherType == KidneyTreat)
+			setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, KIDNEY_EMPTY_PPAR_SPEED);
+		EmptyDisposStartOtherPump = TRUE;
+	}
+//	if(
+//			(sensor_UFLOW[0].bubbleSize >= 25) ||
+//			(sensor_UFLOW[0].bubblePresence == MASK_ERROR_BUBBLE_ALARM)
+//			)
+
+//	else if(aria presente && TherType == LiverTreat)
+//	{
+//		// ho rilevato una presenza aria nel circuito di perfusione arteriosa o venosa
+//		setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
+//		setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 0);
+//	}
+//	else if(aria presente && TherType == LiverTreat)
+//	{
+//		// fho rilrvato una presenza aria nel circuito di perfusione arteriosa
+//		setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
+//	}
+
+		switch (EmptyDispRunAlwaysState)
+		{
+			case INIT_EMPTY_DISPOSABLE:
+				// attivazione della pompa di depurazione, inizializzo calcolo volume scaricato
+				EmptyDispRunAlwaysState = WAIT_FOR_1000ML;
+				break;
+			case WAIT_FOR_1000ML:
+				break;
+		}
+
+}
+
+void manageParentEmptyDisposAlarmEntry(void)
+{
+}
+void manageParentEmptyDisposAlarmAlways(void)
+{
+}
+
+void manageParentEmptyDisposEndEntry(void)
+{
+	// fine del processo di svuotamento
+	if(GetTherapyType() == LiverTreat)
+	{
+		setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
+		setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 0);
+		setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, 0);
+	}
+	else if(GetTherapyType() == KidneyTreat)
+	{
+		setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
+		setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 0);
+	}
+}
+void manageParentEmptyDisposEndAlways(void)
+{
+}
+
 
 /* CHILD LEVEL FUNCTION */
 
@@ -3203,6 +3374,104 @@ unsigned int PumpStatusVal;
 //	}
 //}
 
+// macchina a stati del processo Parent da usare nello stato STATE_EMPTY_DISPOSABLE
+void ParentEmptyDispStateMach(void)
+{
+	switch(ptrCurrentParent->parent)
+	{
+		case PARENT_EMPTY_DISPOSABLE_INIT:
+			if(VolumeDischarged >= 100)
+			{
+				/* ho gia' scaricato una certa quantita' di liquido dal reservoir,
+				 * passo nella fase run */
+				ptrFutureParent = &stateParentEmptyDisp[3];
+				ptrFutureChild = ptrFutureParent->ptrChild;
+				break;
+			}
+
+			if(ptrCurrentParent->action == ACTION_ON_ENTRY)
+			{
+				/* compute future parent */
+				/* FM entro nello stato in cui l'azione e' di tipo ACTION_ALWAYS */
+				ptrFutureParent = &stateParentEmptyDisp[2];
+				ptrFutureChild = ptrFutureParent->ptrChild;
+			}
+			else if(ptrCurrentParent->action == ACTION_ALWAYS)
+			{
+			}
+
+			if(currentGuard[GUARD_ALARM_ACTIVE].guardValue == GUARD_VALUE_TRUE)
+			{
+				/* (FM) si e' verificato un allarme, passo alla sua gestione */
+				ptrFutureParent = &stateParentEmptyDisp[5];
+				ptrFutureChild = ptrFutureParent->ptrChild;
+			}
+			break;
+
+		case PARENT_EMPTY_DISPOSABLE_RUN:
+			if(VolumeDischarged >= perfusionParam.priVolPerfArt)
+			{
+				// ho scaricato tutto, mi fermo
+				ptrFutureParent = &stateParentEmptyDisp[7];
+				ptrFutureChild = ptrFutureParent->ptrChild;
+				break;
+			}
+//			else if(livello nel reservoir inferiore ad un certo valore)
+//			{
+//				ptrFutureParent = &stateParentEmptyDisp[7];
+//				ptrFutureChild = ptrFutureParent->ptrChild;
+//				break;
+//			}
+
+			if(ptrCurrentParent->action == ACTION_ON_ENTRY)
+			{
+				/* compute future parent */
+				/* FM passo alla gestione ACTION_ALWAYS */
+				ptrFutureParent = &stateParentEmptyDisp[4];
+				ptrFutureChild = ptrFutureParent->ptrChild;
+			}
+			else if(ptrCurrentParent->action == ACTION_ALWAYS)
+			{
+			}
+
+			if(currentGuard[GUARD_ALARM_ACTIVE].guardValue == GUARD_VALUE_TRUE)
+			{
+				/* (FM) si e' verificato un allarme, passo alla sua gestione */
+				ptrFutureParent = &stateParentEmptyDisp[5];
+				ptrFutureChild = ptrFutureParent->ptrChild;
+			}
+			break;
+
+		case PARENT_EMPTY_DISPOSABLE_ALARM:
+			if(currentGuard[GUARD_ALARM_ACTIVE].guardValue == GUARD_VALUE_FALSE)
+			{
+				/* FM allarme finito posso ritornare nella fase run dello scarico */
+				ptrFutureParent = &stateParentEmptyDisp[3];
+				ptrFutureChild = ptrFutureParent->ptrChild;
+				break;
+			}
+
+			if(ptrCurrentParent->action == ACTION_ON_ENTRY)
+			{
+				/* (FM) passo alla gestione ACTION_ALWAYS dell'allarme */
+				ptrFutureParent = &stateParentTreatKidney1[6];
+				ptrFutureChild = ptrFutureParent->ptrChild;
+			}
+			else if(ptrCurrentParent->action == ACTION_ALWAYS)
+			{
+				// (FM) chiamo la funzione child che gestisce lo stato di allarme durante il trattamento
+				// Dovra fare tutte le attuazioni sulle pompe, pinch necessarie per risolvere la condizione
+				// di allarme
+				ManageStateChildAlarmTreat1();
+			}
+			break;
+
+		case PARENT_EMPTY_DISPOSABLE_END:
+			break;
+	}
+}
+
+
 // ritorna il volume complessivo di priming tenendo conto anche del volume di liquido
 // necessario per riempire il disposable
 word GetTotalPrimingVolumePerf(void)
@@ -3485,7 +3754,7 @@ void processMachineState(void)
 			if( currentGuard[GUARD_ENABLE_DISPOSABLE_EMPTY].guardValue == GUARD_VALUE_TRUE )
 			{
 				currentGuard[GUARD_ENABLE_DISPOSABLE_EMPTY].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
-				// TODO inrealta' dovrei andare nello stato 17 perche' dovrei fare lo svuotamento
+				// TODO inrealta' dovrei andare nello stato 19 perche' dovrei fare lo svuotamento
 				ptrFutureState = &stateState[3];
 				/* compute future parent */
 				ptrFutureParent = ptrFutureState->ptrParent;
@@ -3606,6 +3875,39 @@ void processMachineState(void)
 
 
 		case STATE_TREATMENT_2:
+			break;
+
+		case STATE_EMPTY_DISPOSABLE:
+			if( currentGuard[GUARD_EMPTY_DISPOSABLE_END].guardValue == GUARD_VALUE_TRUE )
+			{
+				// ho terminato lo svuotamento del reservoir vado nello stato di smontaggio del disposable
+				currentGuard[GUARD_PRIMING_END].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
+				ptrFutureState = &stateState[23];
+				/* compute future parent */
+				ptrFutureParent = ptrFutureState->ptrParent;
+				/* compute future child */
+				ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
+				DebugStringStr("STATE_RICICLO");
+			}
+//          posizione lasciata libera per un eventuale ritorno in trattamento e prolungare quello precedente
+//			else if( currentGuard[GUARD_ENABLE_PRIMING_PHASE_2].guardValue == GUARD_VALUE_TRUE )
+//			{
+//				// il volume e' stato modificato ritorno nella fase di riempimento
+//				currentGuard[GUARD_ENABLE_PRIMING_PHASE_2].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
+//
+//				ptrFutureState = &stateState[15];
+//				/* compute future parent */
+//				ptrFutureParent = ptrFutureState->ptrParent;
+//				/* compute future child */
+//				ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
+//				DebugStringStr("STATE_PRIMING_PHASE_2");
+//
+//				/*torno indietro nella macchina a stati quindi resetto la flag di entry sullo stato in cui sono*/
+//				currentGuard[GUARD_ENABLE_PRIMING_WAIT].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
+//			}
+
+			/* execute function state level */
+			manageStateEntryAndStateAlways(20);
 			break;
 
 		case STATE_EMPTY_DISPOSABLE_1:

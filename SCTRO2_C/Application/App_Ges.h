@@ -147,6 +147,17 @@ void alwaysPumpPressLoop(unsigned char pmpId, unsigned char *PidFirstTime);
 
 void manageParentEntry(void);
 void manageParentEntryAlways(void);
+
+void ParentEmptyDispStateMach(void);
+void manageParentEmptyDisposInitEntry(void);
+void manageParentEmptyDisposInitAlways(void);
+void manageParentEmptyDisposRunEntry(void);
+void manageParentEmptyDisposRunAlways(void);
+void manageParentEmptyDisposAlarmEntry(void);
+void manageParentEmptyDisposAlarmAlways(void);
+void manageParentEmptyDisposEndEntry(void);
+void manageParentEmptyDisposEndAlways(void);
+
 /**************************************************************************************/
 /******-----------------------------TREATMENT----------------------------------********/
 /**************************************************************************************/

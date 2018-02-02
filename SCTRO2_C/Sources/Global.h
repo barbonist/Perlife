@@ -392,6 +392,8 @@ enum Parent {
 	PARENT_EMPTY_DISPOSABLE_1_RUN,
 	PARENT_EMPTY_DISPOSABLE_2_INIT,
 	PARENT_EMPTY_DISPOSABLE_2_RUN,
+	PARENT_EMPTY_DISPOSABLE_INIT,
+	PARENT_EMPTY_DISPOSABLE_RUN,
 	PARENT_EMPTY_DISPOSABLE_ALARM,
 	PARENT_EMPTY_DISPOSABLE_END,
 	PARENT_EMPTY_DISPOSABLE_FATAL_ERROR,
@@ -1251,6 +1253,10 @@ Kd = Kp*Pu/8  = 0.0015
 #define LIVER_PPAR_SPEED 2000
 // velocita' con cui faccio partire, per ora, la pompa di ossigenazione e perfusione venosa nel caso di priming
 #define LIVER_PRIMING_PMP_OXYG_SPEED 2000
+// definisce il valore massimo di giri che possono raggiungere le pompe di ossigenazione
+#define MAX_OXYG_RPM  100
+// numero di giri della pompa di ossigenazione durante lo scarico e nel rene
+#define KIDNEY_EMPTY_PPAR_SPEED 2000
 
 //----------------------------------------------------------------------------------------------------------
 // i valori che seguono sono da considerare per il debug interno
@@ -1261,5 +1267,11 @@ Kd = Kp*Pu/8  = 0.0015
 #define VOLUME_DISPOSABLE  10
 //----------------------------------------------------------------------------------------------------------
 
+
+typedef enum
+{
+	INIT_EMPTY_DISPOSABLE = 0,
+	WAIT_FOR_1000ML
+}EMPTY_DISPOSABLE_STATE;
 #endif /* SOURCES_GLOBAL_H_ */
 

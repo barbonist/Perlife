@@ -279,6 +279,8 @@ void manageChildTreatAlm1StopPerfEntry(void)
 	if(pumpPerist[0].dataReady == DATA_READY_FALSE)
 	{
 		setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
+		if(getPumpPressLoop(0) == PRESS_LOOP_ON)
+			setPumpPressLoop(0, PRESS_LOOP_OFF);
 	}
 	pumpPerist[0].entry = 0;
 }
@@ -319,6 +321,8 @@ void manageChildTreatAlm1StopPurifEntry(void)
 	if(pumpPerist[1].dataReady == DATA_READY_FALSE)
 	{
 		setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 0);
+		if(getPumpPressLoop(1) == PRESS_LOOP_ON)
+			setPumpPressLoop(1, PRESS_LOOP_OFF);
 	}
 	pumpPerist[1].entry = 0;
 }
@@ -359,9 +363,17 @@ void manageChildTreatAlm1StopPurifAlways(void)
 void manageChildTreatAlm1StopAllPumpEntry(void)
 {
 	if(pumpPerist[0].dataReady == DATA_READY_FALSE)
+	{
 		setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
+		if(getPumpPressLoop(0) == PRESS_LOOP_ON)
+			setPumpPressLoop(0, PRESS_LOOP_OFF);
+	}
 	if(pumpPerist[1].dataReady == DATA_READY_FALSE)
+	{
 		setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 0);
+		if(getPumpPressLoop(1) == PRESS_LOOP_ON)
+			setPumpPressLoop(1, PRESS_LOOP_OFF);
+	}
 
 	/*setPumpSpeedValueHighLevel(pumpPerist[2].pmpMySlaveAddress, 0); viene comandata direttamente col comasndo di quella sopra*/
 
