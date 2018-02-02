@@ -8,8 +8,6 @@
 #include "PE_Types.h"
 #include "Global.h"
 #include "App_Ges.h"
-
-
 #include "ModBusCommProt.h"
 #include "Peltier_Module.h"
 
@@ -5068,6 +5066,24 @@ void GenEvntParentTreat(void)
 	}
 }
 
+/* Source --> indirizzo di partenza da ci si legge in flash (es 0xFF000)
+ * *Dest  --> indirizzo della variabile o array su cui copiamo il valore letto
+ * Count  --> numero di byte che andiamo a leggere
+ * */
+
+void EEPROM_Read(LDD_FLASH_TAddress Source, LDD_TData *Dest, LDD_FLASH_TDataSize Count)
+{
+	EEPROM_GetFlash(Source,Dest,Count);
+}
+
+/* Src   --> indirizzo della variabile o array da cui prendiamo i dati da scrivere
+ * Dst   --> indirizzo di partenza da ci si scrive in flash (es 0xFF000)
+ * Count --> numero di byte che andiamo a scrivere
+ * */
+void EEPROM_write(EEPROM_TDataAddress Src, EEPROM_TAddress Dst, word Count)
+{
+	EEPROM_SetFlash(Src,Dst,Count);
+}
 
 // viene chiamata ad intervalli di 50 msec
 // sequenza di tasti 1,2 della tastiera a bolle fino ad arrivare a STATE_PRIMING_1

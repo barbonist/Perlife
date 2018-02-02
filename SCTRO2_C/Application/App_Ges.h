@@ -201,6 +201,13 @@ void RTS_Motor_Management(unsigned char action);
 void EN_Clamp_Control (unsigned char action);
 void EN_Motor_Control(unsigned char action);
 void EN_24_M_C_Management(unsigned char action);
+void EEPROM_Read(LDD_FLASH_TAddress Source, LDD_TData *Dest, LDD_FLASH_TDataSize Count);
+
+#include "EEPROM.h"
+byte EEPROM_GetFlash(LDD_FLASH_TAddress Source, LDD_TData *Dest, LDD_FLASH_TDataSize Count);
+byte EEPROM_SetFlash(EEPROM_TDataAddress Source, EEPROM_TAddress Dest, word Count);
+void EEPROM_write(EEPROM_TDataAddress Src, EEPROM_TAddress Dst, word Count);
+void EEPROM_Read(LDD_FLASH_TAddress Source, LDD_TData *Dest, LDD_FLASH_TDataSize Count);
 /*******************/
 /* VARIABLE */
 /******************/

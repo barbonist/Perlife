@@ -1267,6 +1267,11 @@ Kd = Kp*Pu/8  = 0.0015
 #define VOLUME_DISPOSABLE  10
 //----------------------------------------------------------------------------------------------------------
 
+//start addres FLASH used as EEPROM
+#define START_ADDRESS_EEPROM		0xFF000
+//stop addres FLASH used as EEPROM
+#define STOP_ADDRESS_EEPROM			0xFFFFF
+
 
 typedef enum
 {
