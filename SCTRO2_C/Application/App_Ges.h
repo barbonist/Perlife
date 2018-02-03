@@ -23,6 +23,8 @@
 #define SET_POINT_PRESSURE_INIT				130
 #define DELTA_PRESSURE						30
 #define GAIN_PRESSURE						1
+
+#define TIMER_PANIC_BUTTON					40 //2 secondi di pressione consecutiva per il PANIC_BUTTON
 /* MACHINE STATE FUNCTION */
 void manageNull(void);
 void manageStateLevel(void);
@@ -203,6 +205,7 @@ void EN_Motor_Control(unsigned char action);
 void EN_24_M_C_Management(unsigned char action);
 void EEPROM_Read(LDD_FLASH_TAddress Source, LDD_TData *Dest, LDD_FLASH_TDataSize Count);
 void Set_Data_EEPROM_Default(void);
+void Manage_Panic_Button(void);
 
 #include "EEPROM.h"
 byte EEPROM_GetFlash(LDD_FLASH_TAddress Source, LDD_TData *Dest, LDD_FLASH_TDataSize Count);

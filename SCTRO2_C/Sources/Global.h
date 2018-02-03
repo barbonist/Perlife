@@ -1198,6 +1198,8 @@ unsigned char codeDBG;
 unsigned char subcodeDBG;
 bool Service;
 
+bool PANIC_BUTTON_ACTIVATION;
+
 // durata globale del trattamento in secondi
 unsigned long TreatDuration;
 unsigned long TotalTreatDuration;

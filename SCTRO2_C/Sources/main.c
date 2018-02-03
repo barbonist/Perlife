@@ -334,8 +334,6 @@ int main(void)
    * dovrà essere fatta in modo simile per sovrascrivere i coefficienti*/
    Set_Data_EEPROM_Default();
 
-
-
   /*attendo 5 s prima di entrare nell main loop
    * per dare il tempo ai sensori di alimentarsi e
    * ativarsi e soprattutto ai driver delle pompe e
@@ -514,6 +512,12 @@ int main(void)
 	        		 alwaysPeltierActuator();
 
 	         }
+
+	         /********************************/
+	         /*          PANIC BUTTON        */
+	         /********************************/
+			 Manage_Panic_Button();
+
 	         /********************************/
 	         /*             I2C	             */
 	         /********************************/

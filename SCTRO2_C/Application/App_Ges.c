@@ -7,6 +7,7 @@
 
 #include "PE_Types.h"
 #include "Global.h"
+#include "PANIC_BUTTON_INPUT.h"
 #include "App_Ges.h"
 #include "ModBusCommProt.h"
 #include "Peltier_Module.h"
@@ -5114,6 +5115,47 @@ void Set_Data_EEPROM_Default(void)
 		 EEPROM_write((EEPROM_TDataAddress)&config_data, START_ADDRESS_EEPROM, sizeof(config_data));
 	}
 
+}
+
+/*funzione che gestione il Panic Button
+ * se viene premuto per almeno TIMER_PANIC_BUTTON * 50 msec,
+ * impostiamo PANIC_BUTTON_ACTIVATION = TRUE. Negli allarmi
+ * gestiremo PANIC_BUTTON_ACTIVATION e sempre negli allarmi,
+ * se dovesse arrivare un reset dopo l'attivazione, metteremo
+ * PANIC_BUTTON_ACTIVATION = FALSE.
+ * PANIC_BUTTON_OUTPUT viene posto alto e PANIC_BUTTON_INPUT in pull down
+ * la pressione del bottone mette in corto i due pin quindi anche l'input sarà alto*/
+void Manage_Panic_Button(void)
+{
+	static unsigned char Status_Panic_Button = 0;
+	static unsigned long timer_button = 0;
+
+	switch (Status_Panic_Button)
+	{
+		case 0:
+			if (PANIC_BUTTON_INPUT_GetVal() )
+			{
+				timer_button = timerCounterModBus;
+				Status_Panic_Button = 1;
+			}
+
+			break;
+
+		case 1:
+			if (!PANIC_BUTTON_INPUT_GetVal())
+			{
+				Status_Panic_Button = 0;
+				PANIC_BUTTON_ACTIVATION = FALSE;
+				timer_button = timerCounterModBus;
+			}
+			else if (msTick_elapsed(timer_button) >= TIMER_PANIC_BUTTON)
+				PANIC_BUTTON_ACTIVATION = TRUE;
+			break;
+
+		default:
+			Status_Panic_Button = 0;
+			break;
+	}
 }
 
 // viene chiamata ad intervalli di 50 msec
