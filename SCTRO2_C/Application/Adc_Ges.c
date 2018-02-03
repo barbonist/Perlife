@@ -116,11 +116,11 @@ void Manange_ADC1(void)
 
 void Coversion_From_ADC_To_mmHg_Pressure_Sensor()
 {
-	PR_OXYG_mmHg 	= (PR_OXYG_ADC    - PR_OXYG_OFFSET)    * PR_OXYG_GAIN;
-	PR_LEVEL_mmHg 	= (PR_LEVEL_ADC   - PR_LEVEL_OFFSET)   * PR_LEVEL_GAIN;
-	PR_ADS_FLT_mmHg = (PR_ADS_FLT_ADC - PR_ADS_FLT_OFFSET) * PR_ADS_FLT_GAIN;
-	PR_VEN_mmHg 	= (PR_VEN_ADC     - PR_VEN_OFFSET)     * PR_VEN_GAIN;
-	PR_ART_mmHg 	= (PR_ART_ADC     - PR_ART_OFFSET)     * PR_ART_GAIN;
+	PR_OXYG_mmHg 	= (PR_OXYG_ADC    - config_data.sensor_PRx[OXYG].prSensOffset)    * config_data.sensor_PRx[OXYG].prSensGain;
+	PR_LEVEL_mmHg 	= (PR_LEVEL_ADC   - config_data.sensor_PRx[LEVEL].prSensOffset)   * config_data.sensor_PRx[LEVEL].prSensGain;
+	PR_ADS_FLT_mmHg = (PR_ADS_FLT_ADC - config_data.sensor_PRx[ADS_FLT].prSensOffset) * config_data.sensor_PRx[ADS_FLT].prSensGain;
+	PR_VEN_mmHg 	= (PR_VEN_ADC     - config_data.sensor_PRx[VEN].prSensOffset)     * config_data.sensor_PRx[VEN].prSensGain;
+	PR_ART_mmHg 	= (PR_ART_ADC     - config_data.sensor_PRx[ART].prSensOffset)     * config_data.sensor_PRx[ART].prSensGain;
 }
 
 void Pressure_sensor_Fltered ()

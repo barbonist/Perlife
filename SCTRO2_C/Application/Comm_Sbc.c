@@ -131,6 +131,32 @@ void buildPressSensReadValuesResponseMsg(char *ptrMsgSbcRx)
 	sbc_tx_data[index++] = 0x66;
 	sbc_tx_data[index++] = 0x00; //TODO stable byte
 
+	sbc_tx_data[index++] = PR_OXYG_mmHg_Filtered >> 8;
+	sbc_tx_data[index++] = PR_OXYG_mmHg_Filtered;
+	sbc_tx_data[index++] = PR_OXYG_ADC >> 8;
+	sbc_tx_data[index++] = PR_OXYG_ADC;
+
+	sbc_tx_data[index++] = PR_LEVEL_mmHg_Filtered >> 8;
+	sbc_tx_data[index++] = PR_LEVEL_mmHg_Filtered;
+	sbc_tx_data[index++] = PR_LEVEL_ADC >> 8;
+	sbc_tx_data[index++] = PR_LEVEL_ADC;
+
+	sbc_tx_data[index++] = PR_ADS_FLT_mmHg_Filtered >> 8;
+	sbc_tx_data[index++] = PR_ADS_FLT_mmHg_Filtered;
+	sbc_tx_data[index++] = PR_ADS_FLT_ADC >> 8;
+	sbc_tx_data[index++] = PR_ADS_FLT_ADC;
+
+	sbc_tx_data[index++] = PR_VEN_mmHg_Filtered >> 8;
+	sbc_tx_data[index++] = PR_VEN_mmHg_Filtered;
+	sbc_tx_data[index++] = PR_VEN_ADC >> 8;
+	sbc_tx_data[index++] = PR_VEN_ADC;
+
+	sbc_tx_data[index++] = PR_ART_mmHg_Filtered >> 8;
+	sbc_tx_data[index++] = PR_ART_mmHg_Filtered;
+	sbc_tx_data[index++] = PR_ART_ADC >> 8;
+	sbc_tx_data[index++] = PR_ART_ADC;
+
+	/*
 	for(int i = 0 ; i < 5 ; i++)
 	{
 		sbc_tx_data[index++] = ((word)sensor_PRx[i].prSensValue) >> 8;
@@ -138,7 +164,7 @@ void buildPressSensReadValuesResponseMsg(char *ptrMsgSbcRx)
 		sbc_tx_data[index++] = sensor_PRx[i].prSensAdc >> 8;
 		sbc_tx_data[index++] = sensor_PRx[i].prSensAdc;
 	}
-
+*/
 	sbc_tx_data[index++] = 0x00;
 	sbc_tx_data[index++] = 0x00;
 	sbc_tx_data[index++] = 0x5A;
@@ -169,15 +195,17 @@ void buildPressSensReadParamResponseMsg(char *ptrMsgSbcRx)
 	sbc_tx_data[index++] = ptrMsgSbcRx[6];
 	sbc_tx_data[index++] = 0x66;
 
-	for(int i = 0 ; i < 5 ; i++)
+	for(int i = OXYG ; i < TOTAL_PPRESS_SENS ; i++)
 	{
-		numFloatSensor_Gain.numFormatFloat_Gain = sensor_PRx[i].prSensGain;
+		numFloatSensor_Gain.numFormatFloat_Gain = config_data.sensor_PRx[i].prSensGain;
+
 		sbc_tx_data[index++] = numFloatSensor_Gain.ieee754NumFormat_Gain >> 24;
 		sbc_tx_data[index++] = numFloatSensor_Gain.ieee754NumFormat_Gain >> 16;
 		sbc_tx_data[index++] = numFloatSensor_Gain.ieee754NumFormat_Gain >> 8;
 		sbc_tx_data[index++] = numFloatSensor_Gain.ieee754NumFormat_Gain;
 
-		numFloatSensor_Offset.numFormatFloat_Offset = sensor_PRx[i].prSensOffset;
+		numFloatSensor_Offset.numFormatFloat_Offset = config_data.sensor_PRx[i].prSensOffset;
+
 		sbc_tx_data[index++] = numFloatSensor_Offset.ieee754NumFormat_Offset >> 24;
 		sbc_tx_data[index++] = numFloatSensor_Offset.ieee754NumFormat_Offset >> 16;
 		sbc_tx_data[index++] = numFloatSensor_Offset.ieee754NumFormat_Offset >> 8;
@@ -191,6 +219,7 @@ void buildPressSensReadParamResponseMsg(char *ptrMsgSbcRx)
 	myCommunicatorToSBC.numByteToSend = index;
 }
 
+/*
 void buildPressSensCalibResponseMsg(char *ptrMsgSbcRx)
 {
     byte index = 0;
@@ -213,7 +242,7 @@ void buildPressSensCalibResponseMsg(char *ptrMsgSbcRx)
 
 	myCommunicatorToSBC.numByteToSend = index;
 }
-
+*/
 void buildTempIRSensReadValuesResponseMsg(char *ptrMsgSbcRx)
 {
 	byte index = 0;
@@ -850,8 +879,8 @@ void buildRDMachineStateResponseMsg(char code, char subcode)
 	sbc_tx_data[index++] = (alarmCurrent.code >> 8 ) & 0xFF;
 	sbc_tx_data[index++] = (alarmCurrent.code 	    ) & 0xFF;
 	/* status parameters: alarm physic */
-	sbc_tx_data[index++] = (alarmCurrent.physic >> 8 ) & 0xFF;
-	sbc_tx_data[index++] = (alarmCurrent.physic      ) & 0xFF;
+	sbc_tx_data[index++] = (alarmCurrent.active >> 8 ) & 0xFF;
+	sbc_tx_data[index++] = (alarmCurrent.active      ) & 0xFF;
 	/* status parameters: alarm type */
 	sbc_tx_data[index++] = (alarmCurrent.type >> 8 ) & 0xFF;
 	sbc_tx_data[index++] = (alarmCurrent.type      ) & 0xFF;

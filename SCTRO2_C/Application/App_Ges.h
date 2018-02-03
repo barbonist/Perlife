@@ -202,6 +202,7 @@ void EN_Clamp_Control (unsigned char action);
 void EN_Motor_Control(unsigned char action);
 void EN_24_M_C_Management(unsigned char action);
 void EEPROM_Read(LDD_FLASH_TAddress Source, LDD_TData *Dest, LDD_FLASH_TDataSize Count);
+void Set_Data_EEPROM_Default(void);
 
 #include "EEPROM.h"
 byte EEPROM_GetFlash(LDD_FLASH_TAddress Source, LDD_TData *Dest, LDD_FLASH_TDataSize Count);

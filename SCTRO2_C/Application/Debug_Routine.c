@@ -276,7 +276,7 @@ void Service_SBC(void){
 						//TODO Store zero point for calibration
 						word snd;
 						ptrMsgSbcRx = &sbc_rx_data;
-						buildPressSensCalibResponseMsg(ptrMsgSbcRx);
+					//	buildPressSensCalibResponseMsg(ptrMsgSbcRx);
 						ptrMsgSbcTx = &sbc_tx_data[0];
 						SBC_COMM_SendBlock(ptrMsgSbcTx,myCommunicatorToSBC.numByteToSend,&snd);
 					}
@@ -288,7 +288,7 @@ void Service_SBC(void){
 						//TODO Store load point for calibration
 						word snd;
 						ptrMsgSbcRx = &sbc_rx_data;
-						buildPressSensCalibResponseMsg(ptrMsgSbcRx);
+					//	buildPressSensCalibResponseMsg(ptrMsgSbcRx);
 						ptrMsgSbcTx = &sbc_tx_data[0];
 						SBC_COMM_SendBlock(ptrMsgSbcTx,myCommunicatorToSBC.numByteToSend,&snd);
 					}

@@ -5077,12 +5077,43 @@ void EEPROM_Read(LDD_FLASH_TAddress Source, LDD_TData *Dest, LDD_FLASH_TDataSize
 }
 
 /* Src   --> indirizzo della variabile o array da cui prendiamo i dati da scrivere
- * Dst   --> indirizzo di partenza da ci si scrive in flash (es 0xFF000)
+ * Dst   --> indirizzo di partenza da cui si scrive in flash (es 0xFF000)
  * Count --> numero di byte che andiamo a scrivere
  * */
 void EEPROM_write(EEPROM_TDataAddress Src, EEPROM_TAddress Dst, word Count)
 {
 	EEPROM_SetFlash(Src,Dst,Count);
+}
+
+
+void Set_Data_EEPROM_Default(void)
+{
+
+	if ( config_data.EEPROM_Control != EEPROM_WRITTEN)
+	{
+		 config_data.sensor_PRx[OXYG].prSensGain   = PR_OXYG_GAIN;
+		 config_data.sensor_PRx[OXYG].prSensOffset = PR_OXYG_OFFSET;
+
+		 config_data.sensor_PRx[LEVEL].prSensGain   = PR_LEVEL_GAIN;
+		 config_data.sensor_PRx[LEVEL].prSensOffset = PR_LEVEL_OFFSET;
+
+		 config_data.sensor_PRx[ADS_FLT].prSensGain   = PR_ADS_FLT_GAIN;
+		 config_data.sensor_PRx[ADS_FLT].prSensOffset = PR_ADS_FLT_OFFSET;
+
+		 config_data.sensor_PRx[VEN].prSensGain   = PR_VEN_GAIN;
+		 config_data.sensor_PRx[VEN].prSensOffset = PR_VEN_OFFSET;
+
+		 config_data.sensor_PRx[ART].prSensGain   = PR_ART_GAIN;
+		 config_data.sensor_PRx[ART].prSensOffset = PR_ART_OFFSET;
+
+		 /*word di controllo che la flash usata come eeprom sia
+		  * stata scritta almeno una volta; TODO si può mettere un CRC
+		  * e non un valore fisso per renderlo ancora + sicuro*/
+		 config_data.EEPROM_Control = EEPROM_WRITTEN;
+
+		 EEPROM_write((EEPROM_TDataAddress)&config_data, START_ADDRESS_EEPROM, sizeof(config_data));
+	}
+
 }
 
 // viene chiamata ad intervalli di 50 msec
