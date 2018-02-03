@@ -790,43 +790,66 @@ unsigned char CountErrorModbusMSG[8];
 /************************************************************************/
 /* 						SENSORI 										*/
 /************************************************************************/
+
+
+enum
+{
+	OXYG = 0,
+	LEVEL,
+	ADS_FLT,
+	VEN,
+	ART,
+	TOTAL_PPRESS_SENS
+
+}Press_sens;
+
+
 /* SENSORI PRESSIONE */
 /* value = gain*(adc_val - offsetVal) + Offset */
 struct pressureSensor{
-	float prSensOffset;
-	float prSensOffsetVal;
+	word prSensOffset;
+//	float prSensOffsetVal;
 	float prSensGain;
-	float prSensValue;
-	int  prSensValueFilteredWA;
-	word  prSensAdc;
-	word * prSensAdcPtr;
-	float prSensValueOld;
-	word * (*readAdctPtr)(void);
+//	float prSensValue;
+//	int  prSensValueFilteredWA;
+//	word  prSensAdc;
+//	word * prSensAdcPtr;
+//	float prSensValueOld;
+//	word * (*readAdctPtr)(void);
 };
 
-struct pressureSensor		sensor_PRx[5];
+struct ParSaveTO_EEPROM
+{
+	struct pressureSensor sensor_PRx[5];
+	word EEPROM_Control;
+};
+
+struct ParSaveTO_EEPROM config_data;
+
+#define EEPROM_WRITTEN 	0xA5A5
 
 /*le variabili globali sottostanti usate perr la pressioner, potrebbero diventare solo 5 variabili della struttura che c'è sopra*/
 
-word PR_OXYG_ADC;			 	//variabile globale per il valore ADC del sensore di pressione ossigenatore --> PTC10
-word PR_OXYG_mmHg;			 	//variabile globale per il valore in mmHg del sensore di pressione ossigenatore
-word PR_OXYG_mmHg_Filtered;  	//variabile globale per il valore in mmHg del sensore di pressione ossigenatore filtrato
+word  PR_OXYG_ADC;			 	//variabile globale per il valore ADC del sensore di pressione ossigenatore --> PTC10
+word  PR_OXYG_mmHg;			 	//variabile globale per il valore in mmHg del sensore di pressione ossigenatore
+word  PR_OXYG_mmHg_Filtered;  	//variabile globale per il valore in mmHg del sensore di pressione ossigenatore filtrato
 
-word PR_LEVEL_ADC;			 	//variabile globale per il valore ADC del sensore di pressione di livello vaschetta --> PTC11
-word PR_LEVEL_mmHg;			 	//variabile globale per il valore in mmHg del sensore di pressione di livello vaschetta
-word PR_LEVEL_mmHg_Filtered; 	//variabile globale per il valore in mmHg del sensore di pressione di livello vaschetta filtrato
+word  PR_LEVEL_ADC;			 	//variabile globale per il valore ADC del sensore di pressione di livello vaschetta --> PTC11
+word  PR_LEVEL_mmHg;			//variabile globale per il valore in mmHg del sensore di pressione di livello vaschetta
+word  PR_LEVEL_mmHg_Filtered; 	//variabile globale per il valore in mmHg del sensore di pressione di livello vaschetta filtrato
 
-word PR_ADS_FLT_ADC;			//variabile globale per il valore ADC del sensore di pressione del filtro assorbente --> PTB11
-word PR_ADS_FLT_mmHg;			//variabile globale per il valore in mmHg del sensore di pressione del filtro assorbente
-word PR_ADS_FLT_mmHg_Filtered;	//variabile globale per il valore in mmHg del sensore di pressione del filtro assorbente filtrato
+word  PR_ADS_FLT_ADC;			//variabile globale per il valore ADC del sensore di pressione del filtro assorbente --> PTB11
+word  PR_ADS_FLT_mmHg;			//variabile globale per il valore in mmHg del sensore di pressione del filtro assorbente
+word  PR_ADS_FLT_mmHg_Filtered;	//variabile globale per il valore in mmHg del sensore di pressione del filtro assorbente filtrato
 
-word PR_VEN_ADC;				//variabile globale per il valore ADC del sensore di pressione Venoso --> PTB6
-word PR_VEN_mmHg;				//variabile globale per il valore in mmHg del sensore di pressione Venoso
-word PR_VEN_mmHg_Filtered;		//variabile globale per il valore in mmHg del sensore di pressione Venoso filtrato
+word  PR_VEN_ADC;				//variabile globale per il valore ADC del sensore di pressione Venoso --> PTB6
+word  PR_VEN_mmHg;				//variabile globale per il valore in mmHg del sensore di pressione Venoso
+word  PR_VEN_mmHg_Filtered;		//variabile globale per il valore in mmHg del sensore di pressione Venoso filtrato
 
-word PR_ART_ADC;				//variabile globale per il valore ADC del sensore di pressione arteriosa --> PTB7
-word PR_ART_mmHg;				//variabile globale per il valore in mmHg del sensore di pressione arteriosa
-word PR_ART_mmHg_Filtered;		//variabile globale per il valore in mmHg del sensore di pressione arteriosa filtrato
+word  PR_ART_ADC;				//variabile globale per il valore ADC del sensore di pressione arteriosa --> PTB7
+word  PR_ART_mmHg;				//variabile globale per il valore in mmHg del sensore di pressione arteriosa
+word  PR_ART_mmHg_Filtered;		//variabile globale per il valore in mmHg del sensore di pressione arteriosa filtrato
+
 
 /* SENSORI TEMPERATURA ANALOGICI */
 /* value = gain*(adc_val - offsetVal) + Offset */
@@ -1164,7 +1187,7 @@ unsigned char CHANGE_ADDRESS_IR_SENS;
 #define TREAT			0x00
 
 unsigned char Air_1_Status;				//variabile globale per vedere lo stato del sensore di aria SONOTEC; può assumere valire AIR opp LIQUID
-unsigned char slvAddr;					//variabile globale per l'indirizzo degli attuatori: FIRST_ACTUATOR = 0x02, LAST_ACTUATOR = 0x08
+unsigned char slvAddr;					//variabile globale per l'indirizzo degli attuatori: FIRST_ACTUATOR = 0x02, LAST_ACTUATOR = 0x09, Addr 0x06 not used (last pump 0x05, first pinch 0x07, last pinch 0x09)
 unsigned char * ptrDataTemperatureIR;
 
 unsigned char Prescaler_Tick_Timer;
@@ -1178,6 +1201,8 @@ int pollingDataToSBC;
 unsigned char codeDBG;
 unsigned char subcodeDBG;
 bool Service;
+
+bool PANIC_BUTTON_ACTIVATION;
 
 // durata globale del trattamento in secondi
 unsigned long TreatDuration;
