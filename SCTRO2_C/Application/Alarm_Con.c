@@ -123,73 +123,73 @@ void alarmEngineAlways(void)
 	{
 		case STATE_NULL:
 		{
-			/* DA DEBUGGARE
+			/* DA DEBUGGARE*/
 			manageAlarmFlowSensNotDetected();
 			manageAlarmIrTempSensNotDetected();
-			*/
+
 			break;
 		}
 
 		case STATE_ENTRY:
 		{
-			/* DA DEBUGGARE
+			/* DA DEBUGGARE*/
 			manageAlarmFlowSensNotDetected();
 			manageAlarmIrTempSensNotDetected();
-			*/
+
 			break;
 		}
 
 		case STATE_IDLE:
 		{
-			/* DA DEBUGGARE
+			/* DA DEBUGGARE*/
 			manageAlarmFlowSensNotDetected();
 			manageAlarmIrTempSensNotDetected();
-			*/
+
 			break;
 		}
 
 		case STATE_SELECT_TREAT:
 		{
-			/* DA DEBUGGARE
+			/* DA DEBUGGARE*/
 			manageAlarmFlowSensNotDetected();
 			manageAlarmIrTempSensNotDetected();
-			*/
+
 			break;
 		}
 
 		case STATE_T1_NO_DISPOSABLE:
 		{
-			/* DA DEBUGGARE
+			/* DA DEBUGGARE*/
 			manageAlarmFlowSensNotDetected();
 			manageAlarmIrTempSensNotDetected();
-			*/
+
 			break;
 		}
 
 		case STATE_MOUNTING_DISP:
 		{
-			/* DA DEBUGGARE
+			/* DA DEBUGGARE*/
 			manageAlarmFlowSensNotDetected();
 			manageAlarmIrTempSensNotDetected();
-			*/
+
 			break;
 		}
 
 		case STATE_TANK_FILL:
 		{
-			/* DA DEBUGGARE
+			/* DA DEBUGGARE*/
 			manageAlarmFlowSensNotDetected();
 			manageAlarmIrTempSensNotDetected();
-			*/
+
 			break;
 		}
 
 		case STATE_PRIMING_PH_1:
 		{
 			manageAlarmFlowSensNotDetected();
-			/* DA DEBUGGARE
+			/* DA DEBUGGARE*/
 			manageAlarmIrTempSensNotDetected();
-			*/
+
 
 			//verifica physic pressioni
 			manageAlarmPhysicPressSens();
@@ -202,9 +202,9 @@ void alarmEngineAlways(void)
 		case STATE_PRIMING_PH_2:
 		{
 			manageAlarmFlowSensNotDetected();
-			/* DA DEBUGGARE
+			/* DA DEBUGGARE*/
 			manageAlarmIrTempSensNotDetected();
-			*/
+
 			//verifica physic pressioni
 			manageAlarmPhysicPressSens();
 
@@ -234,7 +234,7 @@ void alarmEngineAlways(void)
 
 			/*DA DEBUGGARE*/
 			//verifica temperatura noin rilevata
-		//	manageAlarmIrTempSensNotDetected();
+			manageAlarmIrTempSensNotDetected();
 			break;
 		}
 
@@ -300,7 +300,7 @@ void alarmEngineAlways(void)
 
 			/*DA DEBUGGARE*/
 			//verifica temperatura noin rilevata
-		//	manageAlarmIrTempSensNotDetected();
+			manageAlarmIrTempSensNotDetected();
 			break;
 		}
 
@@ -308,18 +308,18 @@ void alarmEngineAlways(void)
 		case STATE_EMPTY_DISPOSABLE_1:
 		{
 			manageAlarmFlowSensNotDetected();
-			/* DA DEBUGGARE
+			/* DA DEBUGGARE*/
 			manageAlarmIrTempSensNotDetected();
-			*/
+
 			break;
 		}
 
 		case STATE_EMPTY_DISPOSABLE_2:
 		{
-			/* DA DEBUGGARE
+			/* DA DEBUGGARE*/
 			manageAlarmFlowSensNotDetected();
 			manageAlarmIrTempSensNotDetected();
-			*/
+
 			break;
 		}
 
@@ -331,10 +331,10 @@ void alarmEngineAlways(void)
 
 		case STATE_WASHING:
 		{
-			/* DA DEBUGGARE
+			/* DA DEBUGGARE*/
 			manageAlarmFlowSensNotDetected();
 			manageAlarmIrTempSensNotDetected();
-			*/
+
 			break;
 		}
 
@@ -580,7 +580,7 @@ void manageAlarmFlowSensNotDetected(void)
 	int i;
 	for ( i = 0; i <2; i++)
 	{
-		/*se non ricevo 10 msg consecutivi da un sensore di flusso ossia il sensore non risposnde per 5 secondi consecutivi vado in allarme*/
+		/*se non ricevo 10 msg consecutivi da un sensore di flusso ossia il sensore non risponde per 5 secondi consecutivi vado in allarme*/
 		if (sensor_UFLOW[i].RequestMsgProcessed > MAX_MSG_CONSECUTIVE_FLOW_SENS_NOT_DETECTED)
 		{
 			alarmList[FLOW_SENS_NOT_DETECTED].physic = PHYSIC_TRUE;
@@ -589,30 +589,41 @@ void manageAlarmFlowSensNotDetected(void)
 			break;
 		}
 	}
-	if(i == 2)
+
+	//se ho ciclato tutto il for senza trovare allarmi e precedentemente era stato attivato un allarme
+	if(i == 2 && alarmList[FLOW_SENS_NOT_DETECTED].physic == PHYSIC_TRUE)
 	{
 		alarmList[FLOW_SENS_NOT_DETECTED].physic = PHYSIC_FALSE;
-		sensor_UFLOW[i].RequestMsgProcessed = 0;
+
+		//sensor_UFLOW[i].RequestMsgProcessed = 0;
+		for (int j = 0; j<2; j++)
+			sensor_UFLOW[i].RequestMsgProcessed = 0;
 	}
 }
 
-
 void manageAlarmIrTempSensNotDetected(void)
 {
+	int i;
 
-	for (int i = 0; i <3; i++)
+	for (i = 0; i <3; i++)
 	{
 		/*se non ricevo 10 msg consecutivi da un sensore di temperatura ossia il sensore non risposnde per 6 secondi consecutivi vado in allarme*/
 		if (sensorIR_TM[i].ErrorMSG > MAX_MSG_CONSECUTIVE_IR_TEMP_SENS_NOT_DETECTED)
 		{
 			alarmList[IR_SENS_NOT_DETECTED].physic = PHYSIC_TRUE;
-			sensorIR_TM[i].ErrorMSG = 0;
-		}
 
-		else
-		{
-			alarmList[IR_SENS_NOT_DETECTED].physic = PHYSIC_FALSE;
+			/*in questo caso bisogna comunicarlo all'SBC che metterà a video un pop up per le possibili soluzioni*/
+			break;
 		}
+	}
+
+	//se ho ciclato tutto il for senza trovare allarmi e precedentemente era stato attivato un allarme
+	if(i == 3 && alarmList[IR_SENS_NOT_DETECTED].physic == PHYSIC_TRUE)
+	{
+		alarmList[IR_SENS_NOT_DETECTED].physic = PHYSIC_FALSE;
+
+		for (int j = 0; j<3; j++)
+			sensorIR_TM[j].ErrorMSG = 0;
 	}
 }
 
@@ -622,16 +633,23 @@ void manageAlarmActuatorModbusNotRespond(void)
 	for (int i = 0; i <8; i++)
 	{
 		/*se non ricevo 10 msg consecutivi da un sensore di temperatura ossia il sensore non risposnde per 6 secondi consecutivi vado in allarme*/
-		if (CountErrorModbusMSG[i] = 0 > MAX_MSG_CONSECUTIVE_ACTUATOR_MODBUS_NOT_RESPOND)
+		if (CountErrorModbusMSG[i] > MAX_MSG_CONSECUTIVE_ACTUATOR_MODBUS_NOT_RESPOND)
 		{
 			alarmList[MODBUS_ACTUATOR_SEND].physic = PHYSIC_TRUE;
-			CountErrorModbusMSG[i] = 0;
-		}
+			//CountErrorModbusMSG[i] = 0;
 
-		else
-		{
-			alarmList[MODBUS_ACTUATOR_SEND].physic = PHYSIC_FALSE;
+			/*in questo caso bisogna comunicarlo all'SBC che metterà a video un pop up per le possibili soluzioni*/
+			break;
 		}
+	}
+
+	//se ho ciclato tutto il for senza trovare allarmi e precedentemente era stato attivato un allarme
+	if(i == 8 && alarmList[MODBUS_ACTUATOR_SEND].physic == PHYSIC_TRUE)
+	{
+		alarmList[MODBUS_ACTUATOR_SEND].physic = PHYSIC_FALSE;
+
+		for (int j = 0; j<8; j++)
+			CountErrorModbusMSG[j] = 0;
 	}
 }
 
