@@ -459,6 +459,9 @@ void manageChildTreatAlm1StopPeltAlways(void)
 /* Manage CHILD_TREAT_ALARM_1_STOP_ALL_ACTUATOR entry state */
 void manageChildTreatAlm1StopAllActEntry(void)
 {
+	int speed = 0;
+	int timerCopy = 0;
+
 	//gestisco gli attuatori in allarme solo se ho impostato una terapia valida
 	THERAPY_TYPE TherType = GetTherapyType();
 
@@ -506,6 +509,42 @@ void manageChildTreatAlm1StopAllActEntry(void)
 		stopPeltierActuator();
 	}
 
+	if((timerCounterModBus%9) == 8)
+	{
+		if(timerCounterModBus != 0)
+			timerCopy = timerCounterModBus;
+		timerCounter = 0;
+
+		readPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress);
+		readPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress);
+		if(GetTherapyType() == LiverTreat)
+			readPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress);
+	}
+
+	if(pumpPerist[0].dataReady == DATA_READY_TRUE)
+	{
+		//speed = ((BYTES_TO_WORD_SIGN(msgToRecvFrame3[3], msgToRecvFrame3[4]))/100)*(timerCopy);
+		// la velocita' ora posso leggerla direttamente dall'array di registry modbus
+		speed = modbusData[pumpPerist[0].pmpMySlaveAddress-2][17];
+		pumpPerist[0].actualSpeed = speed;
+		pumpPerist[0].dataReady = DATA_READY_FALSE;
+	}
+
+	if(pumpPerist[1].dataReady == DATA_READY_TRUE)
+	{
+		// la velocita' ora posso leggerla direttamente dall'array di registry modbus
+		speed = modbusData[pumpPerist[1].pmpMySlaveAddress-2][17];
+		pumpPerist[1].actualSpeed = speed;
+		pumpPerist[1].dataReady = DATA_READY_FALSE;
+	}
+
+	if((GetTherapyType() == LiverTreat) && (pumpPerist[3].dataReady == DATA_READY_TRUE))
+	{
+		// la velocita' ora posso leggerla direttamente dall'array di registry modbus
+		speed = modbusData[pumpPerist[3].pmpMySlaveAddress-2][17];
+		pumpPerist[3].actualSpeed = speed;
+		pumpPerist[3].dataReady = DATA_READY_FALSE;
+	}
 	pumpPerist[0].entry = 0;
 	pumpPerist[1].entry = 0;
 	pumpPerist[2].entry = 0;

@@ -206,7 +206,7 @@ int main(void)
   Released1 = 0;
   Released2 = 0;
   Released3 = 0;
-
+  CheckAlarmFlag = 0;
 
 
  #ifdef	SERVICE_ACTIVE_TOGETHER_THERAPY

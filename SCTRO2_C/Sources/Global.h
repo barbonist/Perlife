@@ -312,6 +312,7 @@ enum State {
 	STATE_PRIMING_RICIRCOLO,
 	STATE_WAIT_TREATMENT,
 	STATE_EMPTY_DISPOSABLE,
+	STATE_UNMOUNT_DISPOSABLE,
 	/*********************/
 	/* 		STATE  		 */
 	/*********************/
@@ -324,7 +325,6 @@ enum State {
 	STATE_EMPTY_DISPOSABLE_2,
 	STATE_WASHING,
 	STATE_FATAL_ERROR,
-	STATE_3,
 	STATE_END_NUMBER,
 };
 
@@ -500,6 +500,7 @@ enum MachineStateGuardId {
 	GUARD_ABANDON_PRIMING,
 	GUARD_ENABLE_PRIMING_WAIT,
 	GUARD_ENABLE_WAIT_TREATMENT,
+	GUARD_ENABLE_UNMOUNT_END,
 	/*********************/
 	/* STATE LEVEL GUARD */
 	/*********************/
@@ -964,7 +965,10 @@ enum buttonGUIEnum{
 	BUTTON_PERF_TANK_FILL = 0xD3,
 	BUTTON_PERF_FILTER_MOUNT = 0xD4,
 
-	BUTTON_KIDNEY = 0xE0,  // TODO da togliere, messo solo per debug
+	BUTTON_OVERRIDE_ALARM = 0xE0,
+	BUTTON_RESET_ALARM = 0xE1,
+	BUTTON_SILENT_ALARM = 0xE2,
+
 
 	BUTTON_END_NUMBER = 31
 };
@@ -1247,6 +1251,8 @@ Kd = Kp*Pu/8  = 0.0015
 // volume aggiuntivo in ml da considerare in priming per tenere conto
 // del riempimento del disposable
 #define VOLUME_DISPOSABLE  200
+// quantita' di liquido scaricata prima di iniziare lo scaricamento del disposable
+#define DISCHARGE_AMOUNT_ART_PUMP  1000
 //----------------------------------------------------------------------------------------------------------
 */
 // velocita' con cui faccio partire, per ora, la pompa di depurazione
@@ -1259,12 +1265,15 @@ Kd = Kp*Pu/8  = 0.0015
 #define KIDNEY_EMPTY_PPAR_SPEED 2000
 
 //----------------------------------------------------------------------------------------------------------
-// i valori che seguono sono da considerare per il debug interno
+// i valori che seguono sono da considerare per il debug interno e quindi devono essere commentati
+// nel funzionamento normale e ripristinati quelli precedenti
 // volume in ml nel reservoir prima di far partire le pompe di ossigenazione e pompa depurazione nel fegato
 #define MIN_LIQ_IN_RES_TO_START_OXY_VEN    15
 // volume aggiuntivo in ml da considerare in priming per tenere conto
 // del riempimento del disposable
 #define VOLUME_DISPOSABLE  10
+// quantita' di liquido scaricata prima di iniziare lo scaricamento del disposable
+#define DISCHARGE_AMOUNT_ART_PUMP  20
 //----------------------------------------------------------------------------------------------------------
 
 //start addres FLASH used as EEPROM
@@ -1276,7 +1285,13 @@ Kd = Kp*Pu/8  = 0.0015
 typedef enum
 {
 	INIT_EMPTY_DISPOSABLE = 0,
-	WAIT_FOR_1000ML
+	WAIT_FOR_1000ML,
+	WAIT_FOR_AIR_ALARM,
+	WAIT_FOR_LEVEL_OR_AMOUNT
 }EMPTY_DISPOSABLE_STATE;
+
+// usata per provare in debug alcuni allarmi.
+// non serve nel funzionamento normale
+unsigned char CheckAlarmFlag;
 #endif /* SOURCES_GLOBAL_H_ */
 

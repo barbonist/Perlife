@@ -850,8 +850,8 @@ void buildRDMachineStateResponseMsg(char code, char subcode)
 	sbc_tx_data[index++] = (alarmCurrent.code >> 8 ) & 0xFF;
 	sbc_tx_data[index++] = (alarmCurrent.code 	    ) & 0xFF;
 	/* status parameters: alarm physic */
-	sbc_tx_data[index++] = (alarmCurrent.physic >> 8 ) & 0xFF;
-	sbc_tx_data[index++] = (alarmCurrent.physic      ) & 0xFF;
+	sbc_tx_data[index++] = (alarmCurrent.active >> 8 ) & 0xFF;
+	sbc_tx_data[index++] = (alarmCurrent.active      ) & 0xFF;
 	/* status parameters: alarm type */
 	sbc_tx_data[index++] = (alarmCurrent.type >> 8 ) & 0xFF;
 	sbc_tx_data[index++] = (alarmCurrent.type      ) & 0xFF;

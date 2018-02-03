@@ -98,6 +98,10 @@ void manageStatePrimingRicircoloAlways(void);
 void manageStateWaitTreatmentAlways(void);
 void manageStateWaitTreatment(void);
 
+void manageStateUnmountDisposableEntry(void);
+void manageStateUnmountDisposableAlways(void);
+
+
 /**************************************************************************************/
 /******-----------------------------TREATMENT----------------------------------********/
 /**************************************************************************************/

@@ -383,11 +383,11 @@ struct machineParent stateParentEmptyDisp[] =
 {
 		 {STATE_NULL, PARENT_NULL,                    CHILD_NULL, ACTION_NULL,     &stateChildIdle[0],        &manageNull},                         /* 0 */
 
-		 {STATE_NULL, PARENT_EMPTY_DISPOSABLE_1_INIT, CHILD_NULL, ACTION_ON_ENTRY, &stateChildIdle[0],        &manageParentEmptyDisposInitEntry},   /* 1 */
-		 {STATE_NULL, PARENT_EMPTY_DISPOSABLE_1_INIT, CHILD_NULL, ACTION_ALWAYS,   &stateChildIdle[0],        &manageParentEmptyDisposInitAlways},  /* 2 */
+		 {STATE_NULL, PARENT_EMPTY_DISPOSABLE_INIT, CHILD_NULL, ACTION_ON_ENTRY, &stateChildIdle[0],          &manageParentEmptyDisposInitEntry},   /* 1 */
+		 {STATE_NULL, PARENT_EMPTY_DISPOSABLE_INIT, CHILD_NULL, ACTION_ALWAYS,   &stateChildIdle[0],          &manageParentEmptyDisposInitAlways},  /* 2 */
 
-		 {STATE_NULL, PARENT_EMPTY_DISPOSABLE_1_RUN,  CHILD_NULL, ACTION_ON_ENTRY, &stateChildIdle[0],        &manageParentEmptyDisposRunEntry},    /* 3 */
-		 {STATE_NULL, PARENT_EMPTY_DISPOSABLE_1_RUN,  CHILD_NULL, ACTION_ALWAYS,   &stateChildIdle[0],        &manageParentEmptyDisposRunAlways},   /* 4 */
+		 {STATE_NULL, PARENT_EMPTY_DISPOSABLE_RUN,  CHILD_NULL, ACTION_ON_ENTRY, &stateChildIdle[0],          &manageParentEmptyDisposRunEntry},    /* 3 */
+		 {STATE_NULL, PARENT_EMPTY_DISPOSABLE_RUN,  CHILD_NULL, ACTION_ALWAYS,   &stateChildIdle[0],          &manageParentEmptyDisposRunAlways},   /* 4 */
 
 		 {STATE_NULL, PARENT_EMPTY_DISPOSABLE_ALARM,  CHILD_NULL, ACTION_ON_ENTRY, &stateChildAlarmTreat1[1], &manageParentEmptyDisposAlarmEntry},  /* 5 */
 		 {STATE_NULL, PARENT_EMPTY_DISPOSABLE_ALARM,  CHILD_NULL, ACTION_ALWAYS,   &stateChildAlarmTreat1[2], &manageParentEmptyDisposAlarmAlways}, /* 6 */
@@ -461,6 +461,10 @@ struct machineState stateState[] =
 
 		{STATE_WAIT_TREATMENT,     PARENT_NULL, CHILD_NULL, ACTION_ON_ENTRY,                &stateParentNull[0],                &manageStateWaitTreatment},			 /* 25 */
 		{STATE_WAIT_TREATMENT,     PARENT_NULL, CHILD_NULL, ACTION_ALWAYS,                  &stateParentNull[0],                &manageStateWaitTreatmentAlways},	 /* 26 */
+
+		{STATE_UNMOUNT_DISPOSABLE, PARENT_NULL, CHILD_NULL, ACTION_ON_ENTRY,                &stateParentNull[0],                &manageStateUnmountDisposableEntry},  /* 27 */
+		{STATE_UNMOUNT_DISPOSABLE, PARENT_NULL, CHILD_NULL, ACTION_ALWAYS,                  &stateParentNull[0],                &manageStateUnmountDisposableAlways}, /* 28 */
+
 
 		/**************************************************************************************/
 		/******-----------------------------MACHINE STATE------------------------------********/
@@ -1032,6 +1036,72 @@ void manageStateWaitTreatmentAlways(void)
 //	}
 }
 
+
+void manageStateUnmountDisposableEntry(void)
+{
+}
+void manageStateUnmountDisposableAlways(void)
+{
+	if(buttonGUITreatment[BUTTON_PINCH_2WPVF_RIGHT_OPEN].state == GUI_BUTTON_RELEASED)
+	{
+		// pinch filter (pinch in basso aperto a destra)
+		releaseGUIButton(BUTTON_PINCH_2WPVF_RIGHT_OPEN);
+		HandlePinch(BUTTON_PINCH_2WPVF_RIGHT_OPEN);
+	}
+	else if(buttonGUITreatment[BUTTON_PINCH_2WPVF_LEFT_OPEN].state == GUI_BUTTON_RELEASED)
+	{
+		// pinch filter (pinch in basso aperto a sinistra)
+		releaseGUIButton(BUTTON_PINCH_2WPVF_LEFT_OPEN);
+		HandlePinch(BUTTON_PINCH_2WPVF_LEFT_OPEN);
+	}
+	else if(buttonGUITreatment[BUTTON_PINCH_2WPVF_BOTH_CLOSED].state == GUI_BUTTON_RELEASED)
+	{
+		// pinch filter (pinch in basso entrambi chiusi)
+		releaseGUIButton(BUTTON_PINCH_2WPVF_BOTH_CLOSED);
+		HandlePinch(BUTTON_PINCH_2WPVF_BOTH_CLOSED);
+	}
+	else if(buttonGUITreatment[BUTTON_PINCH_2WPVA_RIGHT_OPEN].state == GUI_BUTTON_RELEASED)
+	{
+		// pinch arterial (pinch di sinistra - aperto a destra)
+		releaseGUIButton(BUTTON_PINCH_2WPVA_RIGHT_OPEN);
+		HandlePinch(BUTTON_PINCH_2WPVA_RIGHT_OPEN);
+	}
+	else if(buttonGUITreatment[BUTTON_PINCH_2WPVA_LEFT_OPEN].state == GUI_BUTTON_RELEASED)
+	{
+		// pinch arterial (pinch di sinistra - aperto a sinistra)
+		releaseGUIButton(BUTTON_PINCH_2WPVA_LEFT_OPEN);
+		HandlePinch(BUTTON_PINCH_2WPVA_LEFT_OPEN);
+	}
+	else if(buttonGUITreatment[BUTTON_PINCH_2WPVA_BOTH_CLOSED].state == GUI_BUTTON_RELEASED)
+	{
+		// pinch arterial (pinch di sinistra - entrambi chiusi)
+		releaseGUIButton(BUTTON_PINCH_2WPVA_BOTH_CLOSED);
+		HandlePinch(BUTTON_PINCH_2WPVA_BOTH_CLOSED);
+	}
+	else if(buttonGUITreatment[BUTTON_PINCH_2WPVV_RIGHT_OPEN].state == GUI_BUTTON_RELEASED)
+	{
+		// pinch venous (pinch di destra - aperto a destra)
+		releaseGUIButton(BUTTON_PINCH_2WPVV_RIGHT_OPEN);
+		HandlePinch(BUTTON_PINCH_2WPVV_RIGHT_OPEN);
+	}
+	else if(buttonGUITreatment[BUTTON_PINCH_2WPVV_LEFT_OPEN].state == GUI_BUTTON_RELEASED)
+	{
+		// pinch venous (pinch di destra - aperto a sinistra)
+		releaseGUIButton(BUTTON_PINCH_2WPVV_LEFT_OPEN);
+		HandlePinch(BUTTON_PINCH_2WPVV_LEFT_OPEN);
+	}
+	else if(buttonGUITreatment[BUTTON_PINCH_2WPVV_BOTH_CLOSED].state == GUI_BUTTON_RELEASED)
+	{
+		// pinch venous (pinch di destra - aperto a sinistra)
+		releaseGUIButton(BUTTON_PINCH_2WPVV_BOTH_CLOSED);
+		HandlePinch(BUTTON_PINCH_2WPVV_BOTH_CLOSED);
+	}
+
+	// quando ricevero' un comando dal computer che mi avvertira' che il comando e' terminato
+	// tornero' nello stato IDLE
+	//if(BUTTON_xxxxxx)
+	//	currentGuard[GUARD_ENABLE_UNMOUNT_END].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+}
 
 /*-----------------------------------------------------------*/
 /*---------------------FUNZIONI OLD--------------------------*/
@@ -1834,7 +1904,6 @@ void manageParentTreatEntry(void){
 		peltierCell2.readAlwaysEnable = 1;
 
 		pumpPerist[0].entry = 1;
-
 	}
 
 	if(pumpPerist[1].entry == 0)
@@ -1855,7 +1924,6 @@ void manageParentTreatEntry(void){
 		setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, 0);
 		pumpPerist[3].entry = 1;
 	}
-
 }
 
 
@@ -2750,45 +2818,48 @@ void manageParentEmptyDisposRunAlways(void)
 {
 	THERAPY_TYPE TherType = GetTherapyType();
 	CalcVolumeDischarged();
-	if(!EmptyDisposStartOtherPump && VolumeDischarged >= 1000)
+
+	switch (EmptyDispRunAlwaysState)
 	{
-		// faccio partire le altre pompe
-		if(TherType == LiverTreat)
-		{
-			setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, LIVER_PPAR_SPEED);
-			setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, LIVER_PPAR_SPEED);
-		}
-		else if(TherType == KidneyTreat)
-			setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, KIDNEY_EMPTY_PPAR_SPEED);
-		EmptyDisposStartOtherPump = TRUE;
+		case INIT_EMPTY_DISPOSABLE:
+			// attivazione della pompa di depurazione, inizializzo calcolo volume scaricato
+			EmptyDispRunAlwaysState = WAIT_FOR_1000ML;
+			break;
+		case WAIT_FOR_1000ML:
+			if(!EmptyDisposStartOtherPump && VolumeDischarged >= DISCHARGE_AMOUNT_ART_PUMP)
+			{
+				// faccio partire le altre pompe
+				if(TherType == LiverTreat)
+				{
+					setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, LIVER_PPAR_SPEED);
+					setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, LIVER_PPAR_SPEED);
+				}
+				else if(TherType == KidneyTreat)
+					setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, KIDNEY_EMPTY_PPAR_SPEED);
+				EmptyDisposStartOtherPump = TRUE;
+				EmptyDispRunAlwaysState = WAIT_FOR_AIR_ALARM;
+			}
+			break;
+		case WAIT_FOR_AIR_ALARM:
+			// verificare che ci passa
+			if((ptrAlarmCurrent->code == CODE_ALARM_AIR_PRES_ART) && TherType == LiverTreat)
+			{
+				// ho rilevato una presenza aria nel circuito di perfusione arteriosa o venosa
+				setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
+				setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 0);
+				EmptyDispRunAlwaysState = WAIT_FOR_LEVEL_OR_AMOUNT;
+			}
+			else if((ptrAlarmCurrent->code == CODE_ALARM_AIR_PRES_ART)  && TherType == KidneyTreat)
+			{
+				// fho rilrvato una presenza aria nel circuito di perfusione arteriosa
+				setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
+				EmptyDispRunAlwaysState = WAIT_FOR_LEVEL_OR_AMOUNT;
+			}
+			break;
+		case WAIT_FOR_LEVEL_OR_AMOUNT:
+			// rimango in questo stato, il controllo sul fine livello nella funzione ParentEmptyDispStateMach
+			break;
 	}
-//	if(
-//			(sensor_UFLOW[0].bubbleSize >= 25) ||
-//			(sensor_UFLOW[0].bubblePresence == MASK_ERROR_BUBBLE_ALARM)
-//			)
-
-//	else if(aria presente && TherType == LiverTreat)
-//	{
-//		// ho rilevato una presenza aria nel circuito di perfusione arteriosa o venosa
-//		setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
-//		setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 0);
-//	}
-//	else if(aria presente && TherType == LiverTreat)
-//	{
-//		// fho rilrvato una presenza aria nel circuito di perfusione arteriosa
-//		setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
-//	}
-
-		switch (EmptyDispRunAlwaysState)
-		{
-			case INIT_EMPTY_DISPOSABLE:
-				// attivazione della pompa di depurazione, inizializzo calcolo volume scaricato
-				EmptyDispRunAlwaysState = WAIT_FOR_1000ML;
-				break;
-			case WAIT_FOR_1000ML:
-				break;
-		}
-
 }
 
 void manageParentEmptyDisposAlarmEntry(void)
@@ -2890,7 +2961,6 @@ static void computeMachineStateGuardIdle(void){
 	if(parameterWordSetFromGUI[PAR_SET_THERAPY_TYPE].value == (word)KidneyTreat)
 	{
 		SetTherapyType(KidneyTreat);
-		//releaseGUIButton(BUTTON_KIDNEY);
 		if(TherapyCmdArrived)
 		{
 			UpdatePmpAddress(GetTherapyType());
@@ -3407,19 +3477,22 @@ void ParentEmptyDispStateMach(void)
 			break;
 
 		case PARENT_EMPTY_DISPOSABLE_RUN:
-			if(VolumeDischarged >= perfusionParam.priVolPerfArt)
+			if(VolumeDischarged <= (perfusionParam.priVolPerfArt + (float)10.0 * (float)perfusionParam.priVolPerfArt / 100.0))
 			{
 				// ho scaricato tutto, mi fermo
 				ptrFutureParent = &stateParentEmptyDisp[7];
 				ptrFutureChild = ptrFutureParent->ptrChild;
+				currentGuard[GUARD_EMPTY_DISPOSABLE_END].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
 				break;
 			}
-//			else if(livello nel reservoir inferiore ad un certo valore)
-//			{
-//				ptrFutureParent = &stateParentEmptyDisp[7];
-//				ptrFutureChild = ptrFutureParent->ptrChild;
-//				break;
-//			}
+			else if(PR_LEVEL_mmHg_Filtered <= (760 + (float)10.0 * 760.0 / 100.0))
+			{
+				// assumo che la vaschetta sia vuota
+				ptrFutureParent = &stateParentEmptyDisp[7];
+				ptrFutureChild = ptrFutureParent->ptrChild;
+				currentGuard[GUARD_EMPTY_DISPOSABLE_END].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+				break;
+			}
 
 			if(ptrCurrentParent->action == ACTION_ON_ENTRY)
 			{
@@ -3752,8 +3825,10 @@ void processMachineState(void)
 			if( currentGuard[GUARD_ENABLE_DISPOSABLE_EMPTY].guardValue == GUARD_VALUE_TRUE )
 			{
 				currentGuard[GUARD_ENABLE_DISPOSABLE_EMPTY].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
-				// TODO inrealta' dovrei andare nello stato 19 perche' dovrei fare lo svuotamento
-				ptrFutureState = &stateState[3];
+				// se voglio andare in idle e selezionare un nuovo trattamento
+				//ptrFutureState = &stateState[3];
+				// se voglio andare nella procedura di svuotamento
+				ptrFutureState = &stateState[19];
 				/* compute future parent */
 				ptrFutureParent = ptrFutureState->ptrParent;
 				/* compute future child */
@@ -3879,13 +3954,17 @@ void processMachineState(void)
 			if( currentGuard[GUARD_EMPTY_DISPOSABLE_END].guardValue == GUARD_VALUE_TRUE )
 			{
 				// ho terminato lo svuotamento del reservoir vado nello stato di smontaggio del disposable
-				currentGuard[GUARD_PRIMING_END].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
-				ptrFutureState = &stateState[23];
+				currentGuard[GUARD_EMPTY_DISPOSABLE_END].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
+				// se voglio andare in idle e selezionare un nuovo trattamento
+				ptrFutureState = &stateState[3];
+				// se voglio andare in STATE_UNMOUNT_DISPOSABLE e staccare il disposable
+				//ptrFutureState = &stateState[27];
 				/* compute future parent */
 				ptrFutureParent = ptrFutureState->ptrParent;
 				/* compute future child */
 				ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
-				DebugStringStr("STATE_RICICLO");
+				DebugStringStr("STATE_UNMOUNT_DISPOSABLE");
+				break;
 			}
 //          posizione lasciata libera per un eventuale ritorno in trattamento e prolungare quello precedente
 //			else if( currentGuard[GUARD_ENABLE_PRIMING_PHASE_2].guardValue == GUARD_VALUE_TRUE )
@@ -3906,6 +3985,24 @@ void processMachineState(void)
 
 			/* execute function state level */
 			manageStateEntryAndStateAlways(20);
+			break;
+
+		case STATE_UNMOUNT_DISPOSABLE:
+			if( currentGuard[GUARD_ENABLE_UNMOUNT_END].guardValue == GUARD_VALUE_TRUE )
+			{
+				// ho smontato il disposable ritorno in idle
+				currentGuard[GUARD_ENABLE_UNMOUNT_END].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
+				ptrFutureState = &stateState[3];
+				/* compute future parent */
+				ptrFutureParent = ptrFutureState->ptrParent;
+				/* compute future child */
+				ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
+				DebugStringStr("STATE_UIDLE");
+				break;
+			}
+
+			/* execute function state level */
+			manageStateEntryAndStateAlways(28);
 			break;
 
 		case STATE_EMPTY_DISPOSABLE_1:
@@ -4356,7 +4453,9 @@ void initGUIButton(void){
 	buttonGUITreatment[BUTTON_PERF_TANK_FILL].state = GUI_BUTTON_NULL;
 	buttonGUITreatment[BUTTON_PERF_FILTER_MOUNT].state = GUI_BUTTON_NULL;
 
-	buttonGUITreatment[BUTTON_KIDNEY].state = GUI_BUTTON_NULL; // TODO da togliere, messo solo per debug
+	buttonGUITreatment[BUTTON_OVERRIDE_ALARM].state = GUI_BUTTON_NULL;
+	buttonGUITreatment[BUTTON_RESET_ALARM].state = GUI_BUTTON_NULL;
+	buttonGUITreatment[BUTTON_SILENT_ALARM].state = GUI_BUTTON_NULL;
 }
 
 // forzo stato GUI_BUTTON_RELEASED sul tasto buttonId

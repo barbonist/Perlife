@@ -13,9 +13,10 @@
 #include "PE_Types.h"
 #include "ModBusCommProt.h"
 
-
 // FM questa lista devo costruirla mettendo prima i PHYSIC_TRUE e poi i PHYSIC_FALSE,
 // ognuno deve poi essere ordinato in base alla priorita' ???
+// Quando si aggiorna questa lista bisogna ricordarsi di aggiornare anche la define ALARM_ACTIVE_IN_STRUCT
+// che definisce il numero di elementi contenuti in alarmList
 struct alarm alarmList[] =
 {
 		//{CODE_ALARM0, PHYSIC_TRUE, TYPE_ALARM_CONTROL, PRIORITY_LOW, OVRD_ENABLE, SILENCE_ALLOWED},
@@ -67,6 +68,31 @@ void ShowAlarmStr(int i, char * str)
 			strcat(s, str);
 			DebugStringStr(s);
 			break;
+		case CODE_ALARM_FLOW_PERF_ART_HIGH:
+			strcpy(s, "ALARM_FLOW_PERF_ART_HIGH");
+			strcat(s, str);
+			DebugStringStr(s);
+			break;
+		case CODE_ALARM_FLOW_ART_NOT_DETECTED:
+			strcpy(s, "ALARM_FLOW_ART_NOT_DETECTED");
+			strcat(s, str);
+			DebugStringStr(s);
+			break;
+		case CODE_ALARM_PRESS_VEN_HIGH:
+			strcpy(s, "ALARM_PRESS_VEN_HIGH");
+			strcat(s, str);
+			DebugStringStr(s);
+			break;
+		case CODE_ALARM_PRESS_VEN_LOW:
+			strcpy(s, "ALARM_PRESS_VEN_LOW");
+			strcat(s, str);
+			DebugStringStr(s);
+			break;
+		case CODE_ALARM_TEMP_SENS_NOT_DETECTED:
+			strcpy(s, "ALARM_TEMP_SENS_NOT_DETECTED");
+			strcat(s, str);
+			DebugStringStr(s);
+			break;
 		case CODE_ALARM_MODBUS_ACTUATOR_SEND:
 			strcpy(s, "ALARM_MODBUS_ACTUATOR_SEND");
 			strcat(s, str);
@@ -75,7 +101,6 @@ void ShowAlarmStr(int i, char * str)
 	}
 
 }
-
 
 void alarmConInit(void){
 	ptrAlarmCurrent = &alarmList[0];
@@ -161,8 +186,8 @@ void alarmEngineAlways(void)
 
 		case STATE_PRIMING_PH_1:
 		{
-			/* DA DEBUGGARE
 			manageAlarmFlowSensNotDetected();
+			/* DA DEBUGGARE
 			manageAlarmIrTempSensNotDetected();
 			*/
 
@@ -176,8 +201,8 @@ void alarmEngineAlways(void)
 
 		case STATE_PRIMING_PH_2:
 		{
-			/* DA DEBUGGARE
 			manageAlarmFlowSensNotDetected();
+			/* DA DEBUGGARE
 			manageAlarmIrTempSensNotDetected();
 			*/
 			//verifica physic pressioni
@@ -204,9 +229,8 @@ void alarmEngineAlways(void)
 			//verifica physic flusso di perfusione arteriosa alto
 		//	manageAlarmPhysicFlowPerfArtHigh();
 
-			/*DA DEBUGGARE*/
 			//verifica  flusso  non rilevato
-		//	manageAlarmFlowSensNotDetected();
+			manageAlarmFlowSensNotDetected();
 
 			/*DA DEBUGGARE*/
 			//verifica temperatura noin rilevata
@@ -280,10 +304,11 @@ void alarmEngineAlways(void)
 			break;
 		}
 
+		case STATE_EMPTY_DISPOSABLE:
 		case STATE_EMPTY_DISPOSABLE_1:
 		{
-			/* DA DEBUGGARE
 			manageAlarmFlowSensNotDetected();
+			/* DA DEBUGGARE
 			manageAlarmIrTempSensNotDetected();
 			*/
 			break;
@@ -297,6 +322,12 @@ void alarmEngineAlways(void)
 			*/
 			break;
 		}
+
+		case STATE_UNMOUNT_DISPOSABLE:
+			// per il momento, in questo stato non sono previsti allarmi.
+			// In questo stato sono azionate solo le pinch per smontare
+			// il disposable
+			break;
 
 		case STATE_WASHING:
 		{
@@ -326,7 +357,7 @@ void alarmEngineAlways(void)
 			ptrAlarmCurrent = &alarmList[i];
 			alarmList[i].prySafetyActionFunc();
 			StartAlmArrIdx = i;
-			//IdxCurrAlarm = i;
+			IdxCurrAlarm = i;
 
 			// FM forse qui devo interrompere perche' ho trovato una condizione di allarme da attivare
 			// e devo gestirla prima di andare a vedere le altre
@@ -346,7 +377,6 @@ void alarmEngineAlways(void)
 		}
 	}
 
-	/*
 	if( !StrAlarmWritten && (StartAlmArrIdx < ALARM_ACTIVE_IN_STRUCT))
 	{
 		if(alarmList[IdxCurrAlarm].active == ACTIVE_TRUE)
@@ -367,7 +397,6 @@ void alarmEngineAlways(void)
 			StartAlmArrIdx = 0;
 		}
 	}
-	*/
 }
 
 
@@ -526,17 +555,17 @@ void manageAlarmPhysicFlowPerfArtHigh(void)
 
 }
 
+/*
 void manageAlarmFlowSensNotDetected(void)
 {
-
 	for (int i = 0; i <2; i++)
 	{
-		/*se non ricevo 10 msg consecutivi da un sensore di flusso ossia il sensore non risposnde per 5 secondi consecutivi vado in allarme*/
+		//se non ricevo 10 msg consecutivi da un sensore di flusso ossia il sensore non risposnde per 5 secondi consecutivi vado in allarme
 		if (sensor_UFLOW[i].RequestMsgProcessed > MAX_MSG_CONSECUTIVE_FLOW_SENS_NOT_DETECTED)
 		{
 			alarmList[FLOW_SENS_NOT_DETECTED].physic = PHYSIC_TRUE;
-			sensor_UFLOW[i].RequestMsgProcessed = 0;
-			/*in questo caso bisogna comunicarlo all'SBC che metterà a video un pop up per le possibili soluzioni*/
+			//sensor_UFLOW[i].RequestMsgProcessed = 0;
+			//in questo caso bisogna comunicarlo all'SBC che metterà a video un pop up per le possibili soluzioni
 		}
 		else
 		{
@@ -544,6 +573,29 @@ void manageAlarmFlowSensNotDetected(void)
 		}
 	}
 }
+*/
+
+void manageAlarmFlowSensNotDetected(void)
+{
+	int i;
+	for ( i = 0; i <2; i++)
+	{
+		/*se non ricevo 10 msg consecutivi da un sensore di flusso ossia il sensore non risposnde per 5 secondi consecutivi vado in allarme*/
+		if (sensor_UFLOW[i].RequestMsgProcessed > MAX_MSG_CONSECUTIVE_FLOW_SENS_NOT_DETECTED)
+		{
+			alarmList[FLOW_SENS_NOT_DETECTED].physic = PHYSIC_TRUE;
+			//sensor_UFLOW[i].RequestMsgProcessed = 0;
+			/*in questo caso bisogna comunicarlo all'SBC che metterà a video un pop up per le possibili soluzioni*/
+			break;
+		}
+	}
+	if(i == 2)
+	{
+		alarmList[FLOW_SENS_NOT_DETECTED].physic = PHYSIC_FALSE;
+		sensor_UFLOW[i].RequestMsgProcessed = 0;
+	}
+}
+
 
 void manageAlarmIrTempSensNotDetected(void)
 {
@@ -608,7 +660,7 @@ void alarmManageNull(void)
 		}
 
 		manageAlarmChildGuard(ptrAlarmCurrent);
-		ShowAlarmStr((int)alarmList[StartAlmArrIdx].code, " alarm");
+		//ShowAlarmStr((int)alarmList[StartAlmArrIdx].code, " alarm");
 	}
 	else if((ptrAlarmCurrent->active == ACTIVE_TRUE) && (elapsedExitTime > ptrAlarmCurrent->exitTime))
 	{
@@ -625,7 +677,7 @@ void alarmManageNull(void)
 		manageAlarmChildGuard(ptrAlarmCurrent);
 
 		// allarme terminato riparto dall'indice 0 dell'array di strutture
-		ShowAlarmStr((int)alarmList[StartAlmArrIdx].code, " terminato");
+		//ShowAlarmStr((int)alarmList[StartAlmArrIdx].code, " terminato");
 		StartAlmArrIdx = 0;
 	}
 

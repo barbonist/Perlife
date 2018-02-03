@@ -540,6 +540,11 @@ void setPumpSpeedValueHighLevel(unsigned char slaveAddr, int speedValue){
 	if (pumpPerist[StructId].newSpeedValue == modbusData[slaveAddr-2][17])
 		return;
 
+	if(speedValue == 0)
+	{
+		int i = 0;
+	}
+
 	//switch((slaveAddr - 2))
 	switch(StructId)
 	{
