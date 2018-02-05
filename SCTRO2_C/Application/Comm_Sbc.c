@@ -16,10 +16,9 @@
 #include "stdio.h"
 #include "stdlib.h"
 
-
-
 #include "SBC_COMM.h"
 #include "ASerialLdd5.h"
+#include "general_func.h"
 
 void buildModBusWriteRegActResponseMsg(char *ptrMsgSbcRx)
 {
@@ -1096,6 +1095,195 @@ void buildParamSetSBCResponseMsg(char code, char subcode, unsigned char paramId,
 
 
 
+/**/
+void initGUIButton(void){
+	buttonGUITreatment[BUTTON_PINCH_2WPVF_RIGHT_OPEN].state = GUI_BUTTON_NULL;
+	buttonGUITreatment[BUTTON_PINCH_2WPVF_LEFT_OPEN].state = GUI_BUTTON_NULL;
+	buttonGUITreatment[BUTTON_PINCH_2WPVF_BOTH_CLOSED].state = GUI_BUTTON_NULL;
+	buttonGUITreatment[BUTTON_PINCH_2WPVA_RIGHT_OPEN].state = GUI_BUTTON_NULL;
+	buttonGUITreatment[BUTTON_PINCH_2WPVA_LEFT_OPEN].state = GUI_BUTTON_NULL;
+	buttonGUITreatment[BUTTON_PINCH_2WPVA_BOTH_CLOSED].state = GUI_BUTTON_NULL;
+	buttonGUITreatment[BUTTON_PINCH_2WPVV_RIGHT_OPEN].state = GUI_BUTTON_NULL;
+	buttonGUITreatment[BUTTON_PINCH_2WPVV_LEFT_OPEN].state = GUI_BUTTON_NULL;
+	buttonGUITreatment[BUTTON_PINCH_2WPVV_BOTH_CLOSED].state = GUI_BUTTON_NULL;
+	buttonGUITreatment[BUTTON_CONFIRM].state = GUI_BUTTON_NULL;
+	buttonGUITreatment[BUTTON_RESET].state = GUI_BUTTON_NULL;
+	buttonGUITreatment[BUTTON_PRIMING_END_CONFIRM].state = GUI_BUTTON_NULL;
+	buttonGUITreatment[BUTTON_PRIMING_FILT_INS_CONFIRM].state = GUI_BUTTON_NULL;
+	buttonGUITreatment[BUTTON_PRIMING_ABANDON].state = GUI_BUTTON_NULL;
+	buttonGUITreatment[BUTTON_START_PRIMING].state = GUI_BUTTON_NULL;
+	buttonGUITreatment[BUTTON_STOP_PRIMING].state = GUI_BUTTON_NULL;
+	buttonGUITreatment[BUTTON_STOP_ALL_PUMP].state = GUI_BUTTON_NULL;
+	buttonGUITreatment[BUTTON_START_TREATMENT].state = GUI_BUTTON_NULL; // viene dato alla fine del ricircolo per far partire il trattamento
+	buttonGUITreatment[BUTTON_STOP_TREATMENT].state = GUI_BUTTON_NULL;
+	buttonGUITreatment[BUTTON_EN_PERFUSION].state = GUI_BUTTON_NULL;
+	buttonGUITreatment[BUTTON_EN_OXYGENATION].state = GUI_BUTTON_NULL;
+	buttonGUITreatment[BUTTON_EN_PURIFICATION].state = GUI_BUTTON_NULL;
+	buttonGUITreatment[BUTTON_START_PERF_PUMP].state = GUI_BUTTON_NULL;
+	buttonGUITreatment[BUTTON_STOP_PERF_PUMP].state = GUI_BUTTON_NULL;
+	buttonGUITreatment[BUTTON_START_OXYGEN_PUMP].state = GUI_BUTTON_NULL;
+	buttonGUITreatment[BUTTON_STOP_OXYGEN_PUMP].state = GUI_BUTTON_NULL;
+	buttonGUITreatment[BUTTON_START_PURIF_PUMP].state = GUI_BUTTON_NULL;
+	buttonGUITreatment[BUTTON_STOP_PURIF_PUMP].state = GUI_BUTTON_NULL;
+	buttonGUITreatment[BUTTON_PERF_DISP_MOUNTED].state = GUI_BUTTON_NULL;
+	buttonGUITreatment[BUTTON_OXYG_DISP_MOUNTED].state = GUI_BUTTON_NULL;
+	buttonGUITreatment[BUTTON_PERF_TANK_FILL].state = GUI_BUTTON_NULL;
+	buttonGUITreatment[BUTTON_PERF_FILTER_MOUNT].state = GUI_BUTTON_NULL;
+
+	buttonGUITreatment[BUTTON_OVERRIDE_ALARM].state = GUI_BUTTON_NULL;
+	buttonGUITreatment[BUTTON_RESET_ALARM].state = GUI_BUTTON_NULL;
+	buttonGUITreatment[BUTTON_SILENT_ALARM].state = GUI_BUTTON_NULL;
+}
+
+// forzo stato GUI_BUTTON_RELEASED sul tasto buttonId
+// Questo e' stato fatto perche' ora si vuol lavorare sugli eventi di release
+// e non di press.
+// Facendo questa inversione non cambio tutto il resto del codice.
+void setGUIButton(unsigned char buttonId){
+	//buttonGUITreatment[buttonId].state = GUI_BUTTON_PRESSED;
+	buttonGUITreatment[buttonId].state = GUI_BUTTON_RELEASED;
+	actionFlag = 2;
+}
+
+unsigned char getGUIButton(unsigned char buttonId)
+{
+	return buttonGUITreatment[buttonId].state;
+}
+
+// forzo stato GUI_BUTTON_PRESSED sul tasto buttonId
+void releaseGUIButton(unsigned char buttonId){
+	// FM visto che ora si lavora sugli eventi release, l'assenza di evento tasto diventa GUI_BUTTON_PRESSED !!!
+	//buttonGUITreatment[buttonId].state = GUI_BUTTON_RELEASED;
+	buttonGUITreatment[buttonId].state = GUI_BUTTON_PRESSED;
+}
+/**/
+
+
+/**/
+void initSetParamFromGUI(void){
+	parameterWordSetFromGUI[PAR_SET_PRIMING_VOL_PERFUSION].value = 0;
+	parameterWordSetFromGUI[PAR_SET_PRIMING_VOL_PURIFICATION].value = 0;
+	parameterWordSetFromGUI[PAR_SET_PRIMING_VOL_OXYGENATION].value = 0;
+	parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value = 0;
+	parameterWordSetFromGUI[PAR_SET_TEMPERATURE].value = 0;
+	parameterWordSetFromGUI[PAR_SET_PRESS_ART_TARGET].value = 0;
+	parameterWordSetFromGUI[PAR_SET_PRESS_VEN_TARGET].value = 0;
+	parameterWordSetFromGUI[PAR_SET_PURIF_FLOW_TARGET].value = 0;
+	parameterWordSetFromGUI[PAR_SET_PURIF_UF_FLOW_TARGET].value = 0;
+}
+void initSetParamInSourceCode(void)
+{
+	parameterWordSetFromGUI[PAR_SET_VENOUS_PRESS_TARGET].value = SET_POINT_PRESSURE_INIT;
+	parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value = 2000;
+}
+
+
+void setParamWordFromGUI(unsigned char parId, int value)
+{
+	if(parId == PAR_SET_PRIMING_VOL_PERFUSION)
+	{
+		// controllo range del volume di liquido caricato nel reservoir
+		if(value > MAX_VOLUME_RESERVOIR)
+			value = MAX_VOLUME_RESERVOIR;
+		if(value < MIN_VOLUME_RESERVOIR)
+			value = MIN_VOLUME_RESERVOIR;
+#ifdef DEBUG_WITH_SERVICE_SBC
+		if(!ParamRcvdInMounting[0])
+			value = 62; // usato per debug con service sbc
+		else
+			value = 93;
+#endif
+		ParamRcvdInMounting[0] = 1;
+		DebugStringStr("PAR_SET_PRIMING_VOL_PERFUSION");
+	}
+	else if(parId == PAR_SET_PRIMING_TEMPERATURE_PERFUSION)
+	{
+//#ifdef DEBUG_WITH_SERVICE_SBC
+//		value = value * 10; // usato per debug con service sbc
+//#endif
+		// controllo range del volume di liquido caricato nel reservoir
+		if(value > (MAX_TEMP_PRIMING * 10))
+			value = MAX_TEMP_PRIMING * 10;
+		if(value < (MIN_TEMP_PRIMING * 10))
+			value = MIN_TEMP_PRIMING * 10;
+		ParamRcvdInMounting[1] = 1;
+		DebugStringStr("PAR_SET_PRIMING_TEMPERATURE_PERFUSION");
+	}
+	else if(parId == PAR_SET_OXYGENATOR_ACTIVE)
+	{
+		if((PARAMETER_ACTIVE_TYPE)value == YES)
+		{
+			ParamRcvdInMounting[2] = 1;
+			DebugStringStr("PAR_SET_OXYGENATOR_ACTIVE");
+		}
+		else if((PARAMETER_ACTIVE_TYPE)value == NO)
+		{
+			ParamRcvdInMounting[2] = 1;
+			DebugStringStr("PAR_SET_OXYGENATOR_NOT_ACTIVE");
+		}
+		else
+			DebugStringStr("PAR_SET_OXYGENATOR_UNDEF");
+	}
+	else if(parId == PAR_SET_DEPURATION_ACTIVE)
+	{
+		if((PARAMETER_ACTIVE_TYPE)value == YES)
+		{
+			ParamRcvdInMounting[3] = 1;
+			DebugStringStr("PAR_SET_DEPURATION_ACTIVE");
+		}
+		else if((PARAMETER_ACTIVE_TYPE)value == NO)
+		{
+			ParamRcvdInMounting[3] = 1;
+			DebugStringStr("PAR_SET_DEPURATION_NOT_ACTIVE");
+		}
+		else
+			DebugStringStr("PAR_SET_DEPURATION_UNDEF");
+	}
+	else if (parId == PAR_SET_MAX_FLOW_PERFUSION)
+	{
+		int MaxFlow;
+		int MinFlow;
+
+		if (GetTherapyType() == KidneyTreat)
+		{
+			MaxFlow = MAX_FLOW_ART_KIDNEY;
+			MinFlow = MIN_FLOW_ART_KIDNEY;
+		}
+		else if (GetTherapyType() == LiverTreat)
+		{
+			MaxFlow = MAX_FLOW_ART_LIVER;
+			MinFlow = MIN_FLOW_ART_LIVER;
+		}
+
+		// controllo range del volume di liquido caricato nel reservoir
+		if(value >= MaxFlow)
+			value = MaxFlow;
+		if(value <= MinFlow)
+			value = MinFlow;
+	}
+	else if(parId == PAR_SET_OXYGENATOR_FLOW)
+	{
+		//CheckOxygenationSpeed(value);
+	}
+	else if(parId == PAR_SET_THERAPY_TYPE)
+	{
+		TherapyCmdArrived = 1;
+	}
+
+//#ifdef DEBUG_WITH_SERVICE_SBC
+//  parameterWordSetFromGUI[PAR_SET_DESIRED_DURATION].value = 0x0002; // 0 ore 2 minuti
+//	parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value = 183;     // valore di ml/minuto corrispondenti a 10 rpm
+//	parameterWordSetFromGUI[PAR_SET_PRESS_ART_TARGET].value = 60;
+//	parameterWordSetFromGUI[PAR_SET_MAX_FLOW_PERFUSION].value = 500;
+//#endif
+
+
+	parameterWordSetFromGUI[parId].value = value;
+}
+
+void resetParamWordFromGUI(unsigned char parId){
+	parameterWordSetFromGUI[parId].value = 0;
+}
 
 
 

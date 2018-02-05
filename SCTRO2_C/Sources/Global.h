@@ -848,6 +848,9 @@ word  PR_VEN_mmHg_Filtered;		//variabile globale per il valore in mmHg del senso
 
 word  PR_ART_ADC;				//variabile globale per il valore ADC del sensore di pressione arteriosa --> PTB7
 word  PR_ART_mmHg;				//variabile globale per il valore in mmHg del sensore di pressione arteriosa
+word  PR_ART_Diastolyc_mmHg;	//variabile globale per il valore diastolico  in mmHg del sensore di pressione ossigenatore
+word  PR_ART_Sistolyc_mmHg;	    //variabile globale per il valore sistolico  in mmHg del sensore di pressione ossigenatore
+word  PR_ART_Med_mmHg;			//variabile globale per il valore medio in mmHg del sensore di pressione ossigenatore calcolato come (2 *PR_OXYG_Sistolyc_mmHg + PR_OXYG_Diastolyc_mmHg)/3
 word  PR_ART_mmHg_Filtered;		//variabile globale per il valore in mmHg del sensore di pressione arteriosa filtrato
 
 
@@ -1318,5 +1321,25 @@ typedef enum
 // usata per provare in debug alcuni allarmi.
 // non serve nel funzionamento normale
 unsigned char CheckAlarmFlag;
+
+
+typedef enum
+{
+	SILENT  = 0,
+	LOW 	= 1,
+	MEDIUM 	= 2,
+	HIGH   	= 3,
+}BUZZER_LEVEL;
+
+BUZZER_LEVEL LevelBuzzer;
+
+// VARIABILI USATE DURANTE LA FASE DI MOUNTING
+// numero di parametri ricevuti durante la fase di mounting
+unsigned char ParamRcvdInMounting[4];
+int AllParametersReceived;
+// vale 1 se e' arrivato il comando da sbc per impostare il tipo di terapia
+char TherapyCmdArrived;
+
+
 #endif /* SOURCES_GLOBAL_H_ */
 

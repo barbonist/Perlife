@@ -134,7 +134,10 @@ void manageAlarmActuatorModbusNotRespond(void);
 void manageAlarmPhysicPressSens(void);
 void manageAlarmPhysicTempSens(void);
 void manageAlarmPhysicUFlowSens(void);
-void DebugStringStr(char *s);
-void DebugStringPID();
+//void DebugStringStr(char *s);
+//void DebugStringPID();
+
+void Buzzer_Management(BUZZER_LEVEL level);
+
 
 #endif /* APPLICATION_ALARM_CON_H_ */

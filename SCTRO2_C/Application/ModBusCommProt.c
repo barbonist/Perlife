@@ -8,7 +8,10 @@
 #include "PE_Types.h"
 #include "Global.h"
 #include "ModBusCommProt.h"
-
+#include "EN_24_M_C.h"
+#include "EN_MOTOR_CONTROL.h"
+#include "EN_CLAMP_CONTROL.h"
+#include "RTS_MOTOR.h"
 #include "MODBUS_COMM.h"
 #include "ASerialLdd1.h"
 #include "Alarm_Con.h"
@@ -1510,3 +1513,73 @@ static void FrameInitFunc17(void)
 		}
 }
 /* Private function */
+
+void RTS_Motor_Management(unsigned char action)
+{
+	switch (action)
+	{
+	case ENABLE:
+		RTS_MOTOR_SetVal();
+		break;
+
+	case DISABLE:
+		RTS_MOTOR_ClrVal();
+		break;
+
+	default:
+		break;
+	}
+
+}
+
+void EN_Clamp_Control (unsigned char action)
+{
+	switch (action)
+	{
+	case ENABLE:
+		EN_CLAMP_CONTROL_SetVal();
+		break;
+
+	case DISABLE:
+		EN_CLAMP_CONTROL_ClrVal();
+		break;
+
+	default:
+		break;
+	}
+}
+
+void EN_Motor_Control(unsigned char action)
+{
+	switch (action)
+	{
+	case ENABLE:
+		EN_MOTOR_CONTROL_SetVal();
+		break;
+
+	case DISABLE:
+		EN_MOTOR_CONTROL_ClrVal();
+		break;
+
+	default:
+		break;
+	}
+}
+
+void EN_24_M_C_Management(unsigned char action)
+{
+	switch (action)
+	{
+	case ENABLE:
+		EN_24_M_C_SetVal();
+		break;
+
+	case DISABLE:
+		EN_24_M_C_ClrVal();
+		break;
+
+	default:
+		break;
+	}
+}
+

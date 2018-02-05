@@ -47,15 +47,6 @@ void processMachineState(void);
 static void manageStateEntryAndStateAlways(unsigned short stateId);
 int get_Set_Point_Pressure(int Speed);
 
-typedef enum
-{
-	SILENT  = 0,
-	LOW 	= 1,
-	MEDIUM 	= 2,
-	HIGH   	= 3,
-}BUZZER_LEVEL;
-
-BUZZER_LEVEL LevelBuzzer;
 
 /* STATE LEVEL FUNCTION */
 /**************************************************************************************/
@@ -198,15 +189,7 @@ void resetParamWordFromGUI(unsigned char parId);
 /**************************************************************************************/
 void Display_7S_Management();
 void Cover_Sensor_GetVal();
-unsigned char Bubble_Keyboard_GetVal(unsigned char Button);
-void Buzzer_Management(BUZZER_LEVEL level);
-void Heater_ON();
-void Set_Lamp(unsigned char level);
-void Reset_Lamp(unsigned char level);
-void RTS_Motor_Management(unsigned char action);
-void EN_Clamp_Control (unsigned char action);
-void EN_Motor_Control(unsigned char action);
-void EN_24_M_C_Management(unsigned char action);
+
 void EEPROM_Read(LDD_FLASH_TAddress Source, LDD_TData *Dest, LDD_FLASH_TDataSize Count);
 void Set_Data_EEPROM_Default(void);
 void Manage_Panic_Button(void);

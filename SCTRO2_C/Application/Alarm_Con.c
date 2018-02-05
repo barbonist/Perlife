@@ -12,6 +12,11 @@
 #include "string.h"
 #include "PE_Types.h"
 #include "ModBusCommProt.h"
+#include "BUZZER_LOW_C.h"
+#include "BUZZER_MEDIUM_C.h"
+#include "BUZZER_HIGH_C.h"
+#include "general_func.h"
+
 
 // FM questa lista devo costruirla mettendo prima i PHYSIC_TRUE e poi i PHYSIC_FALSE,
 // ognuno deve poi essere ordinato in base alla priorita' ???
@@ -775,3 +780,31 @@ unsigned long msTick_elapsed( unsigned long last )
 		elapsed += (0xFFFFFFFFUL - last + 1);
 	return elapsed;
 }
+
+void Buzzer_Management(BUZZER_LEVEL level)
+{
+	switch (level)
+	{
+		case SILENT:
+			BUZZER_LOW_C_ClrVal(); 		//disattiva il buzzer low
+			BUZZER_MEDIUM_C_ClrVal();	//disattiva il buzzer Medium
+			BUZZER_HIGH_C_ClrVal();		//disattiva il buzzer HIGH
+			break;
+
+		case LOW:
+			BUZZER_LOW_C_SetVal(); 		//attiva il buzzer low
+			break;
+
+		case MEDIUM:
+			BUZZER_MEDIUM_C_SetVal();	//attiva il buzzer Medium
+			break;
+
+		case HIGH:
+			BUZZER_HIGH_C_SetVal();		//attiva il buzzer High
+			break;
+
+		default:
+			break;
+	}
+}
+

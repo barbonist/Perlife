@@ -116,11 +116,40 @@ void Manange_ADC1(void)
 
 void Coversion_From_ADC_To_mmHg_Pressure_Sensor()
 {
+	static int Number_Sample = 0;
+	static int Pr_Sist = 0, Pr_Dia = 0;
+
+
 	PR_OXYG_mmHg 	= (PR_OXYG_ADC    - config_data.sensor_PRx[OXYG].prSensOffset)    * config_data.sensor_PRx[OXYG].prSensGain;
 	PR_LEVEL_mmHg 	= (PR_LEVEL_ADC   - config_data.sensor_PRx[LEVEL].prSensOffset)   * config_data.sensor_PRx[LEVEL].prSensGain;
 	PR_ADS_FLT_mmHg = (PR_ADS_FLT_ADC - config_data.sensor_PRx[ADS_FLT].prSensOffset) * config_data.sensor_PRx[ADS_FLT].prSensGain;
 	PR_VEN_mmHg 	= (PR_VEN_ADC     - config_data.sensor_PRx[VEN].prSensOffset)     * config_data.sensor_PRx[VEN].prSensGain;
 	PR_ART_mmHg 	= (PR_ART_ADC     - config_data.sensor_PRx[ART].prSensOffset)     * config_data.sensor_PRx[ART].prSensGain;
+
+	if (Number_Sample == 0)
+	{
+		Pr_Dia = PR_ART_mmHg;
+		Pr_Sist  = PR_ART_mmHg;
+	}
+	else if (Number_Sample < 10)
+	{
+		Number_Sample ++;
+		if (PR_ART_mmHg > Pr_Sist)
+			Pr_Sist = PR_ART_mmHg;
+
+		if (PR_ART_mmHg < Pr_Dia)
+			Pr_Dia = PR_ART_mmHg;
+
+		//sono arrivato all'ultimo campioine dei 10 su cui calcolare diast sist e media
+		if (Number_Sample == 9)
+		{
+			Number_Sample = 0;
+
+			PR_ART_Diastolyc_mmHg = Pr_Dia;
+			PR_ART_Sistolyc_mmHg  = Pr_Sist;
+			PR_ART_Med_mmHg = (int) ( 2 * PR_ART_Sistolyc_mmHg + PR_ART_Diastolyc_mmHg)/3;
+		}
+	}
 }
 
 void Pressure_sensor_Fltered ()

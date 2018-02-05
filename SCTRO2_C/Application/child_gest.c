@@ -45,7 +45,7 @@
 #include "EN_MOTOR_CONTROL.h"
 #include "EN_24_M_C.h"
 #include "child_gest.h"
-
+#include "statesStructs.h"
 
 extern struct machineChild stateChildAlarmTreat1[];
 

@@ -231,4 +231,9 @@ void SetTherapyType(THERAPY_TYPE tt);
 THERAPY_TYPE GetTherapyType(void);
 void UpdatePumpSpeed(void);
 
+void EN_24_M_C_Management(unsigned char action);
+void RTS_Motor_Management(unsigned char action);
+void EN_Clamp_Control (unsigned char action);
+void EN_Motor_Control(unsigned char action);
+
 #endif /* APPLICATION_MODBUSCOMMPROT_H_ */
