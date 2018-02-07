@@ -164,7 +164,7 @@ void DebugString()
 							(int) PR_VEN_mmHg_Filtered,
 							(int) PR_ART_mmHg_Filtered,
 							TotalTreatDuration + TreatDuration,
-							(int) pumpPerist[0].actualSpeed,
+							(int) pumpPerist[1].actualSpeed,
 							(int) perfusionParam.priVolPerfArt
 				);
 				

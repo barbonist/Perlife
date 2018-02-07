@@ -114,7 +114,7 @@ void Manange_ADC1(void)
   	  }
 }
 
-#define NUMB_OF_SAMPLES_VEN  20
+#define NUMB_OF_SAMPLES_VEN  10
 word MedForVenousPid = 0;
 
 void CalcVenSistDiastPress(word Press)

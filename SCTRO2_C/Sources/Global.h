@@ -1255,6 +1255,7 @@ typedef enum{NOT_DEF = 0, NO = 1, YES = 2} PARAMETER_ACTIVE_TYPE;
 #define TIMEOUT_TEMPERATURE_RICIRC 2000L
 
 /*
+ *  * -----------------CON SPEZZONI POMPA DEL DISPOSABLE ORIGINALI
 Abbiamo fatto andare le pompe ad una velocità fissa da 100 RPM, scoprendo che
 la pressione media misurata sul sensore era di circa 130 mmHg.
 A questo punto, supponendo pressione atmosferica sull'organo, visto che iul tubo
@@ -1264,17 +1265,43 @@ Usando solo la formula proporzionale:
 deltaSpeed = K * errore
 Abbiamo trovato il minimo valore di K che mandava in oscillazione la pressione:
 Ku = 0.05.
-Il periodo dell'oscillazione Pu è stato toirvato in 0.4 sec.
+Il periodo dell'oscillazione Pu è stato trovato in 0.4 sec.
 a questo punto abbiamo trovato i tre coefficienti del PID:
 
 Kp = 0.6 * Ku = 0.03
 Ki = 2Kp/Pu   = 0.15
 Kd = Kp*Pu/8  = 0.0015
-*/
 
 #define PID_KP_VENOSA (float)0.03
 #define PID_KI_VENOSA (float)0.15
 #define PID_KD_VENOSA (float)0.0015
+*/
+
+
+/*
+ * -----------------CON SPEZZONI POMPA IMN SILICONE PER ALTI FLUSSI
+Abbiamo fatto andare le pompe ad una velocità fissa da 100 RPM, scoprendo che
+la pressione media misurata sul sensore era di circa 185 mmHg.
+A questo punto, supponendo pressione atmosferica sull'organo, visto che il tubo
+di uscita è stato lasciato in aria, abbiamo imposto il set point del pid a 70 mmHg.
+per farlo partire da un valore intermedio
+
+Usando solo la formula proporzionale:
+deltaSpeed = K * errore
+Abbiamo trovato il minimo valore di K che mandava in oscillazione la pressione:
+Ku = 0.1.
+Il periodo dell'oscillazione Pu è stato trovato in 2.5 sec.
+a questo punto abbiamo trovato i tre coefficienti del PID:
+
+Kp = 0.6 * Ku = 0.06
+Ki = 2Kp/Pu   = 0.048
+Kd = Kp*Pu/8  = 0.01875
+*/
+// valori usati con il disposable definitivo
+#define parKITC_Ven 						0.048
+#define parKP_Ven 							0.06
+#define parKD_TC_Ven 						0.01875
+
 
 /*
 //----------------------------------------------------------------------------------------------------------

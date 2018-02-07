@@ -2187,19 +2187,21 @@ float CalcolaPres(float speed)
 {
 //  float m = ((float)128.0 - (float)50.0) / ((float)100.0 );
 //  float press = m * (speed) + (float)50.0;
-	float m;
+	//float m;
 
-   m = (float) ( (50 - 45) / 10) ;
-   m = m + (float) ( (56 - 50) / 10);
-   m = m + (float) ( (65 - 56) / 10);
-   m = m + (float) ( (76 - 65) / 10);
-   m = m + (float) ( (101 - 76) / 10);
-   m = m + (float) ( (122 - 101) / 10);
-   m = m + (float) ( (131 - 122) / 10);
-   m = m + (float) ( (149 - 131) / 10);
-   m = m + (float) ( (167 - 149) / 10);
-   m = m + (float) ( (184 - 167) / 10);
-   m=m/10;
+//   m = (float) ( (50 - 45) / 10) ;
+//   m = m + (float) ( (56 - 50) / 10);
+//   m = m + (float) ( (65 - 56) / 10);
+//   m = m + (float) ( (76 - 65) / 10);
+//   m = m + (float) ( (101 - 76) / 10);
+//   m = m + (float) ( (122 - 101) / 10);
+//   m = m + (float) ( (131 - 122) / 10);
+//   m = m + (float) ( (149 - 131) / 10);
+//   m = m + (float) ( (167 - 149) / 10);
+//   m = m + (float) ( (184 - 167) / 10);
+//   m=m/10;
+	float m = ((float)184.0 - (float)45.0) / ((float)100.0 );
+
 
   float press = m * (speed) + (float)45.0;
   return press;
@@ -2210,6 +2212,8 @@ int SpeedCostante( int CurrSpeed)
 	static int SpeedCostanteState = 0;
 	static int LastspeedValue;
 	static int Cnt = 0;
+	int delta;
+	static int min, max;
 	int SpeedCostanteFlag = 0;
 
 	if(!SpeedCostanteState)
@@ -2217,13 +2221,18 @@ int SpeedCostante( int CurrSpeed)
 		LastspeedValue = CurrSpeed;
 		SpeedCostanteState = 1;
 		Cnt = 0;
+
+		delta = LastspeedValue * 5 / 100;  // prendo il 5% del valore corrente
+		if(delta < 1)
+			delta = 1;
+		min = LastspeedValue - delta;
+		if(min < 0)
+			min = 0;
+		max = LastspeedValue + delta;
 	}
 	else if(SpeedCostanteState)
 	{
-		//
-		float min = CurrSpeed - CurrSpeed * 10.0;
-		float max = CurrSpeed + CurrSpeed * 10.0;
-		if(LastspeedValue < min && LastspeedValue > max )
+		if(CurrSpeed <= min || CurrSpeed > max )
 			SpeedCostanteState = 0;
 		else
 			Cnt++;
@@ -2241,7 +2250,9 @@ void alwaysPumpPressLoopVen(unsigned char pmpId, unsigned char *PidFirstTime){
 
 
 	static float deltaSpeed_Ven = 0;
-	static int actualSpeed_Ven = 0;
+	static float actualSpeed_Ven = 0;
+	static bool StopPid = FALSE;
+	static unsigned long StartTimePidStop = 0;
 
 	float pressSample0_Ven = 0;
 
@@ -2263,11 +2274,25 @@ void alwaysPumpPressLoopVen(unsigned char pmpId, unsigned char *PidFirstTime){
      * e calcolare il K minimo e il periodo di oscillazione
      * //	deltaSpeed_Ven = parKP_Ven * errPress;*/
 
+/*************************************************************************************************/
+	// Queste righe di codice possono essere inserite se voglio bloccare il pid per
+// qualche secondo dopo che ho applicato una variazione di velocita' per effetto di SpeedCostante.
+// In questo modo do tempo alle variazioni di avere effetto.
+//	if(StopPid && StartTimePidStop)
+//	{
+//		if(msTick_elapsed(StartTimePidStop) * 50L >= 3000)
+//		{
+//			StopPid = FALSE;
+//		}
+//		else
+//			return;
+//	}
+/*************************************************************************************************/
 
     if(*PidFirstTime == PRESS_LOOP_ON)
     {
     	*PidFirstTime = PRESS_LOOP_OFF;
-    	actualSpeed_Ven = (int)pumpPerist[pmpId].actualSpeed;
+    	actualSpeed_Ven = (float)pumpPerist[pmpId].actualSpeed;
     }
 
     //pressSample0_Ven = PR_VEN_mmHg_Filtered;
@@ -2279,8 +2304,7 @@ void alwaysPumpPressLoopVen(unsigned char pmpId, unsigned char *PidFirstTime){
 		   Count ++;
 		   Somma_Speed += actualSpeed_Ven;
 
-			//if ( Count >= 5)
-			if ( Count >= 10)
+			if ( Count >= 5)
 			{
 				Speed_Media = Somma_Speed/Count;
 				Speed_Media_old = Speed_Media;
@@ -2288,7 +2312,6 @@ void alwaysPumpPressLoopVen(unsigned char pmpId, unsigned char *PidFirstTime){
 				parameterWordSetFromGUI[PAR_SET_VENOUS_PRESS_TARGET].value  = CalcolaPres(Speed_Media);
 				Count = 0;
 				Somma_Speed = 0;
-			//   TargetRaggiunto = 0;
 			}
 	   }
 	   else
@@ -2300,45 +2323,21 @@ void alwaysPumpPressLoopVen(unsigned char pmpId, unsigned char *PidFirstTime){
 
 		//la velocità del messaggio di stato resta costante per 5 secondi && velocità minore del massimo)
 	    // incrementiamo la actual speed di 5 RPM;
-	   if (SpeedCostante(actualSpeed_Ven) && (actualSpeed_Ven <= 100))
+	   if (SpeedCostante((int)actualSpeed_Ven) && (actualSpeed_Ven <= 100))
 	   {
-		   actualSpeed_Ven += 5;
+		   actualSpeed_Ven += 5.0;
 		   parameterWordSetFromGUI[PAR_SET_VENOUS_PRESS_TARGET].value  = CalcolaPres(actualSpeed_Ven);
+		   StopPid = TRUE;
+		   StartTimePidStop = timerCounterModBus;
 	   }
-
-
-//	   if(TargetRaggiunto)
-//	   {
-//			if(parameterWordSetFromGUI[PAR_SET_VENOUS_PRESS_TARGET].value < 120 /* target globale*/)
-//			{
-//				// incremento la velocita' di un piccolo step per cercare di raggiungere il valore necessario per il flusso
-//				Speed_Media_old += 10;
-//				parameterWordSetFromGUI[PAR_SET_VENOUS_PRESS_TARGET].value  = CalcolaPres(Speed_Media_old);
-//			}
-//			TargetRaggiunto = 0;
-//		    Increment = 0;
-//		    Count = 0;
-//		    Somma_Speed = 0;
-//	   }
-
-
-
-//	GlobINTEG_Ven = parKITC_Ven * errPress;
-//	GlobPROP_Ven = parKP_Ven * (pressSample0_Ven - pressSample1_Ven);
-//	GlobDER_Ven = parKD_TC_Ven * (pressSample0_Ven - 2*pressSample1_Ven + pressSample2_Ven);
 
 	deltaSpeed_Ven = ((parKITC_Ven * errPress) -
 			         (parKP_Ven * (pressSample0_Ven - pressSample1_Ven)) -
 					 (parKD_TC_Ven * (pressSample0_Ven - 2 * pressSample1_Ven + pressSample2_Ven)));
 
-//	if (errPress < 0)
-//	{
-//		int a = 0;
-//	}
-
 	// valutare se mettere il deltaSpeed = 0 nel caso deltaSpeed sia negativo in modo da non far andare actualSpeed a zero troppo in fretta
 	// in alternativa il deltaSpeed va considerato solo se è abbastanza negativo
-	if((deltaSpeed_Ven < -5.0) || (deltaSpeed_Ven > 5.0))
+	if((deltaSpeed_Ven < -0.1) || (deltaSpeed_Ven > 0.1))
 	{
 		TargetRaggiunto = 0; // target non raggiunto
 		if (deltaSpeed_Ven < 0)
@@ -2347,30 +2346,33 @@ void alwaysPumpPressLoopVen(unsigned char pmpId, unsigned char *PidFirstTime){
 		}
 		else
 		{
+			/* da ripristinare solo quando siamo sicuri del funzionamento dei flussimetri
 			if (sensor_UFLOW[1].Average_Flow_Val > ( parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value))
 
 			{
-				actualSpeed_Ven = actualSpeed_Ven; /*non aumento la velocità*/
+				actualSpeed_Ven = actualSpeed_Ven; //non aumento la velocità
 			}
-			else if ( (actualSpeed + deltaSpeed  ) > Max_RPM_for_Flow_Max )
+			else */if ( (actualSpeed + deltaSpeed  ) > Max_RPM_for_Flow_Max )
 			{
 				actualSpeed_Ven = Max_RPM_for_Flow_Max;
 			}
 			else
 			{
-				if(actualSpeed_Ven >= MAX_OXYG_RPM)
-					actualSpeed_Ven = MAX_OXYG_RPM;
+				if(actualSpeed_Ven >= (float)MAX_OXYG_RPM)
+					actualSpeed_Ven = (float)MAX_OXYG_RPM;
 				else
 					actualSpeed_Ven = actualSpeed_Ven + deltaSpeed_Ven;
 			}
 		}
 	}
-	else
-		   TargetRaggiunto = 1; // target non raggiunto
 
 
-	if(actualSpeed_Ven < 0 || PR_VEN_mmHg_Filtered > 160)
+	if(actualSpeed_Ven <= 0 || pressSample0_Ven > 190)
+	{
 		actualSpeed_Ven = 0;
+		parameterWordSetFromGUI[PAR_SET_VENOUS_PRESS_TARGET].value = SET_POINT_PRESSURE_INIT;
+	}
+
 
 	if(actualSpeed_Ven != pumpPerist[pmpId].actualSpeedOld)
 	{

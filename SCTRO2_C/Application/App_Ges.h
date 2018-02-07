@@ -16,11 +16,7 @@
 #define MASK_SECURITY_STOP_OXYG_PUMP		0x10
 #define MASK_SECURITY_STOP_PELTIER			0x20
 
-#define parKITC_Ven 						0.15
-#define parKP_Ven 							0.03
-#define parKD_TC_Ven 						0.0015
-
-#define SET_POINT_PRESSURE_INIT				185//130
+#define SET_POINT_PRESSURE_INIT				70//185//130
 #define DELTA_PRESSURE						30
 #define GAIN_PRESSURE						1
 
