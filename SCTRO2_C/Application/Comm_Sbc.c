@@ -917,24 +917,24 @@ void buildRDMachineStateResponseMsg(char code, char subcode)
 	sbc_tx_data[index++] = (PR_LEVEL_mmHg_Filtered) & 0xFF;
 
 	/* sensors parameters: pressure systolic arterial */
-	sbc_tx_data[index++] = (sensorsValues.pressSystArt >> 8) & 0xFF; //TODO
-	sbc_tx_data[index++] = (sensorsValues.pressSystArt     ) & 0xFF;
+	sbc_tx_data[index++] = (PR_ART_Sistolyc_mmHg >> 8) & 0xFF;
+	sbc_tx_data[index++] = (PR_ART_Sistolyc_mmHg     ) & 0xFF;
 	/* sensors parameters: pressure diastolic arterial */
-	sbc_tx_data[index++] = (sensorsValues.pressDiasArt >> 8) & 0xFF; //TODO
-	sbc_tx_data[index++] = (sensorsValues.pressDiasArt     ) & 0xFF;
+	sbc_tx_data[index++] = (PR_ART_Diastolyc_mmHg >> 8) & 0xFF;
+	sbc_tx_data[index++] = (PR_ART_Diastolyc_mmHg     ) & 0xFF;
 	/* sensors parameters: pressure mean arterial */
 
-	sbc_tx_data[index++] = (sensorsValues.pressMeanArt >> 8) & 0xFF; //TODO
-	sbc_tx_data[index++] = (sensorsValues.pressMeanArt     ) & 0xFF;
+	sbc_tx_data[index++] = (PR_ART_Med_mmHg >> 8) & 0xFF;
+	sbc_tx_data[index++] = (PR_ART_Med_mmHg     ) & 0xFF;
 	/* sensors parameters: pressure systolic venous */
-	sbc_tx_data[index++] = (sensorsValues.pressSystVen >> 8) & 0xFF; //TODO
-	sbc_tx_data[index++] = (sensorsValues.pressSystVen     ) & 0xFF;
+	sbc_tx_data[index++] = (PR_VEN_Sistolyc_mmHg >> 8) & 0xFF;
+	sbc_tx_data[index++] = (PR_VEN_Sistolyc_mmHg     ) & 0xFF;
 	/* sensors parameters: pressure diastolic venous */
-	sbc_tx_data[index++] = (sensorsValues.pressDiasVen >> 8) & 0xFF; //TODO
-	sbc_tx_data[index++] = (sensorsValues.pressDiasVen     ) & 0xFF;
+	sbc_tx_data[index++] = (PR_VEN_Diastolyc_mmHg >> 8) & 0xFF;
+	sbc_tx_data[index++] = (PR_VEN_Diastolyc_mmHg     ) & 0xFF;
 	/* sensors parameters: pressure mean venous */
-	sbc_tx_data[index++] = (sensorsValues.pressMeanVen >> 8) & 0xFF; //TODO
-	sbc_tx_data[index++] = (sensorsValues.pressMeanVen     ) & 0xFF;
+	sbc_tx_data[index++] = (PR_VEN_Med_mmHg >> 8) & 0xFF;
+	sbc_tx_data[index++] = (PR_VEN_Med_mmHg     ) & 0xFF;
 
 	/* sensors parameters: pressure flow arterial */
 	sbc_tx_data[index++] = (((int)sensor_UFLOW[0].Average_Flow_Val) >> 8) & 0xFF;  // sensorsValues.flowArt
@@ -1133,6 +1133,9 @@ void initGUIButton(void){
 	buttonGUITreatment[BUTTON_OVERRIDE_ALARM].state = GUI_BUTTON_NULL;
 	buttonGUITreatment[BUTTON_RESET_ALARM].state = GUI_BUTTON_NULL;
 	buttonGUITreatment[BUTTON_SILENT_ALARM].state = GUI_BUTTON_NULL;
+
+	buttonGUITreatment[BUTTON_START_EMPTY_DISPOSABLE].state = GUI_BUTTON_NULL;
+	buttonGUITreatment[BUTTON_UNMOUNT_END].state = GUI_BUTTON_NULL;
 }
 
 // forzo stato GUI_BUTTON_RELEASED sul tasto buttonId

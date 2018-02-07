@@ -147,15 +147,28 @@ void DebugString()
 //							(int) pumpPerist[0].actualSpeed
 //				);
 
+
+//	sprintf(stringPr, "\r %i; %i; %i; %i; %i; %d; %d;",
+//							(int) (sensorIR_TM[0].tempSensValue*10)/*PR_ADS_FLT_mmHg*/,
+//							(int) (sensorIR_TM[1].tempSensValue*10)/*PR_VEN_mmHg*/,
+//							(int) (sensorIR_TM[2].tempSensValue*10),
+//							PR_ART_mmHg_Filtered,
+//							TotalTreatDuration + TreatDuration,
+//							(int) pumpPerist[0].actualSpeed,
+//							(int) perfusionParam.priVolPerfArt
+//				);
+
 	sprintf(stringPr, "\r %i; %i; %i; %i; %i; %d; %d;",
-							(int) (sensorIR_TM[0].tempSensValue*10)/*PR_ADS_FLT_mmHg*/,
-							(int) (sensorIR_TM[1].tempSensValue*10)/*PR_VEN_mmHg*/,
-							(int) (sensorIR_TM[2].tempSensValue*10),
-							PR_ART_mmHg_Filtered,
+							(int) (sensorIR_TM[0].tempSensValue*10),
+							(int) sensor_UFLOW[1].Average_Flow_Val ,
+							(int) PR_VEN_mmHg_Filtered,
+							(int) PR_ART_mmHg_Filtered,
 							TotalTreatDuration + TreatDuration,
 							(int) pumpPerist[0].actualSpeed,
 							(int) perfusionParam.priVolPerfArt
 				);
+				
+				
 
 //	sprintf(stringPr, "\r %i; %i; %i; - %i; %i; %d; %d;",
 //							(int) (sensorIR_TM[0].tempSensValue*10)/*PR_ADS_FLT_mmHg*/,
@@ -227,6 +240,146 @@ void DebugStringStr(char *s)
 	}
 	PC_DEBUG_COMM_SendChar(0x0A);
 }
+
+
+// Adr 7..9
+void TestPinch(void)
+{
+	static unsigned char PinchPos = 0;
+	static unsigned char Adr = 7;   // BOTTOM_PINCH_ID = 7, LEFT_PINCH_ID = 8, RIGHT_PINCH_ID = 9
+	static int Counter = 0;
+	static unsigned char state = 0;
+	if (Bubble_Keyboard_GetVal(BUTTON_1) && PinchPos != MODBUS_PINCH_POS_CLOSED)
+	{
+		PinchPos = MODBUS_PINCH_POS_CLOSED;
+		//setPinchPosValue (Adr,MODBUS_PINCH_POS_CLOSED);
+		setPinchPositionHighLevel(Adr, (int)MODBUS_PINCH_POS_CLOSED);
+		Counter = 0;
+		state = 0;
+	}
+	else if (Bubble_Keyboard_GetVal(BUTTON_2) && PinchPos != MODBUS_PINCH_RIGHT_OPEN)
+	{
+		PinchPos = MODBUS_PINCH_RIGHT_OPEN;
+		//setPinchPosValue (Adr,MODBUS_PINCH_RIGHT_OPEN);
+		setPinchPositionHighLevel(Adr, (int)MODBUS_PINCH_RIGHT_OPEN);
+		Counter = 0;
+		state = 0;
+	}
+	else if (Bubble_Keyboard_GetVal(BUTTON_3) && PinchPos != MODBUS_PINCH_LEFT_OPEN)
+	{
+		PinchPos = MODBUS_PINCH_LEFT_OPEN;
+		//setPinchPosValue (Adr,MODBUS_PINCH_LEFT_OPEN);
+		setPinchPositionHighLevel(Adr, (int)MODBUS_PINCH_LEFT_OPEN);
+		Counter = 0;
+		state = 0;
+	}
+	else if (Bubble_Keyboard_GetVal(BUTTON_4) && (state == 0))
+	{
+		Counter++;
+		if( Counter > 100)
+		{
+			Adr++;
+			if(Adr == 10)
+				Adr = 7;
+			Counter = 0;
+			state = 1;
+		}
+	}
+	else if (!Bubble_Keyboard_GetVal(BUTTON_4) && (state == 1))
+	{
+		Counter++;
+		if( Counter > 100)
+		{
+			state = 0;
+			Counter = 0;
+		}
+	}
+	else
+	{
+		Counter = 0;
+	}
+
+}
+
+
+
+
+unsigned int PumpAverageCurrent;
+unsigned int PumpSpeedVal;
+unsigned int PumpStatusVal;
+
+// Test portata doppia pompa Davide CAPPI
+//void TestPump(unsigned char Adr)
+//{
+//	static bool MotorOn = 0;
+//
+//	if (Bubble_Keyboard_GetVal(BUTTON_1) && !MotorOn)
+//	{
+//	  /*accendo il motore*/
+//	  MotorOn = TRUE;
+//	  EN_Motor_Control(ENABLE);
+//	  setPumpSpeedValueHighLevel(Adr,7500);
+//	}
+//	else if (Bubble_Keyboard_GetVal(BUTTON_2) && !MotorOn)
+//	{
+//	  /*accendo il motore*/
+//	  MotorOn = TRUE;
+//	  EN_Motor_Control(ENABLE);
+//	  setPumpSpeedValueHighLevel(Adr,10000);
+//	}
+//	else if (Bubble_Keyboard_GetVal(BUTTON_3) && !MotorOn)
+//	{
+//	  /*accendo il motore*/
+//	  MotorOn = TRUE;
+//	  EN_Motor_Control(ENABLE);
+//	  setPumpSpeedValueHighLevel(Adr,13000);
+//	}
+//	else if (Bubble_Keyboard_GetVal(BUTTON_4) && MotorOn)
+//	{
+//	  /*spengo il motore*/
+//	  MotorOn = FALSE;
+//	  EN_Motor_Control(DISABLE);
+//	  setPumpSpeedValueHighLevel(Adr,0);
+//	}
+//	else
+//	{
+//		PumpAverageCurrent = modbusData[Adr-2][16];
+//		PumpSpeedVal = modbusData[Adr-2][17];
+//		PumpStatusVal = modbusData[Adr-2][18];
+//		//readPumpSpeedValue(pumpPerist[Adr - 2].pmpMySlaveAddress);
+//		//readPumpSpeedValue(Adr - 2);
+//	}
+//}
+
+
+// Adr 2..5
+//void TestPump(unsigned char Adr)
+//{
+//	static bool MotorOn = 0;
+//
+//	if (Bubble_Keyboard_GetVal(BUTTON_1) && !MotorOn)
+//	{
+//	  /*accendo il motore*/
+//	  MotorOn = TRUE;
+//	  EN_Motor_Control(ENABLE);
+//	  setPumpSpeedValueHighLevel(Adr,2000);
+//	}
+//	else if (Bubble_Keyboard_GetVal(BUTTON_4) && MotorOn)
+//	{
+//	  /*spengo il motore*/
+//	  MotorOn = FALSE;
+//	  EN_Motor_Control(DISABLE);
+//	  setPumpSpeedValueHighLevel(Adr,0);
+//	}
+//	else
+//	{
+//		PumpAverageCurrent = modbusData[Adr-2][16];
+//		PumpSpeedVal = modbusData[Adr-2][17];
+//		PumpStatusVal = modbusData[Adr-2][18];
+//		//readPumpSpeedValue(pumpPerist[Adr - 2].pmpMySlaveAddress);
+//		//readPumpSpeedValue(Adr - 2);
+//	}
+//}
 
 
 unsigned char ReadKey1(void)
@@ -581,11 +734,15 @@ void GenerateSBCComm(void)
 //			break;
 //	}
 
+    //  viene chiamata ogni secondo
 	if(msTick_elapsed(timerCounterGenSBCComm) >= 20)
 	{
 		timerCounterGenSBCComm = timerCounterModBus;
 		DebugString();
 	}
+
+	// viene chiamata ogni 50 msec
+	//DebugString();
 
 //	// DEBUG visualizzo alcuni dati su seriale di debug ogni secondo
 //	if(msTick_elapsed(timerCounterGenSBCComm) >= 20 &&

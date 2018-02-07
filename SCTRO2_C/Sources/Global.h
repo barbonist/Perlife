@@ -845,13 +845,17 @@ word  PR_ADS_FLT_mmHg_Filtered;	//variabile globale per il valore in mmHg del se
 word  PR_VEN_ADC;				//variabile globale per il valore ADC del sensore di pressione Venoso --> PTB6
 word  PR_VEN_mmHg;				//variabile globale per il valore in mmHg del sensore di pressione Venoso
 word  PR_VEN_mmHg_Filtered;		//variabile globale per il valore in mmHg del sensore di pressione Venoso filtrato
+word  PR_VEN_Diastolyc_mmHg;	//variabile globale per il valore diastolico  in mmHg del sensore di pressione venosa
+word  PR_VEN_Sistolyc_mmHg;	    //variabile globale per il valore sistolico  in mmHg del sensore di pressione venosa
+word  PR_VEN_Med_mmHg;			//variabile globale per il valore medio in mmHg del sensore di pressione venosa calcolato come (2 *PR_OXYG_Sistolyc_mmHg + PR_OXYG_Diastolyc_mmHg)/3
+
 
 word  PR_ART_ADC;				//variabile globale per il valore ADC del sensore di pressione arteriosa --> PTB7
 word  PR_ART_mmHg;				//variabile globale per il valore in mmHg del sensore di pressione arteriosa
-word  PR_ART_Diastolyc_mmHg;	//variabile globale per il valore diastolico  in mmHg del sensore di pressione ossigenatore
-word  PR_ART_Sistolyc_mmHg;	    //variabile globale per il valore sistolico  in mmHg del sensore di pressione ossigenatore
-word  PR_ART_Med_mmHg;			//variabile globale per il valore medio in mmHg del sensore di pressione ossigenatore calcolato come (2 *PR_OXYG_Sistolyc_mmHg + PR_OXYG_Diastolyc_mmHg)/3
 word  PR_ART_mmHg_Filtered;		//variabile globale per il valore in mmHg del sensore di pressione arteriosa filtrato
+word  PR_ART_Diastolyc_mmHg;	//variabile globale per il valore diastolico  in mmHg del sensore di pressione arteriosa
+word  PR_ART_Sistolyc_mmHg;	    //variabile globale per il valore sistolico  in mmHg del sensore di pressione arteriosa
+word  PR_ART_Med_mmHg;			//variabile globale per il valore medio in mmHg del sensore di pressione arteriosa calcolato come (2 *PR_OXYG_Sistolyc_mmHg + PR_OXYG_Diastolyc_mmHg)/3
 
 
 /* SENSORI TEMPERATURA ANALOGICI */
@@ -995,8 +999,9 @@ enum buttonGUIEnum{
 	BUTTON_RESET_ALARM = 0xE1,
 	BUTTON_SILENT_ALARM = 0xE2,
 
-
-	BUTTON_END_NUMBER = 31
+	BUTTON_START_EMPTY_DISPOSABLE = 0xF0,    // comando per inizio svuotamento
+	BUTTON_UNMOUNT_END = 0xF1,               // comando per fine smontaggio, posso tornare in idle
+	BUTTON_END_NUMBER = 37
 };
 
 struct buttonGUI{

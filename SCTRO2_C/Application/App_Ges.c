@@ -88,6 +88,8 @@ word LastOxygenationSpeed;
 // 1 = materiale scaricato asufficienza per far partire le altre pompe
 unsigned char StartOxygAndDepState = 0;
 
+bool AlarmInPrimingEntered = FALSE;
+
 
 void CallInIdleState(void)
 {
@@ -123,6 +125,7 @@ void CallInIdleState(void)
 	initSetParamInSourceCode();
 	LastOxygenationSpeed = parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value;
 	StartOxygAndDepState = 0;
+	AlarmInPrimingEntered = FALSE;
 }
 
 
@@ -724,10 +727,13 @@ void manageStateUnmountDisposableAlways(void)
 		HandlePinch(BUTTON_PINCH_2WPVV_BOTH_CLOSED);
 	}
 
-	// quando ricevero' un comando dal computer che mi avvertira' che il comando e' terminato
-	// tornero' nello stato IDLE
-	//if(BUTTON_xxxxxx)
-	//	currentGuard[GUARD_ENABLE_UNMOUNT_END].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+	// ho ricevuto un comando dal computer che mi dice che la fase di smontaggio e' terminata
+	// Posso tornare nello stato IDLE
+	if(buttonGUITreatment[BUTTON_UNMOUNT_END].state == GUI_BUTTON_RELEASED)
+	{
+		releaseGUIButton(BUTTON_UNMOUNT_END);
+		currentGuard[GUARD_ENABLE_UNMOUNT_END].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+	}
 }
 
 /*-----------------------------------------------------------*/
@@ -862,7 +868,6 @@ void manageStateFatalErrorAlways(void)
 /* PARENT LEVEL FUNCTION */
 
 void manageParentPrimingEntry(void){
-
 	if(pumpPerist[0].entry == 0)
 	{
 		setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
@@ -919,7 +924,8 @@ void manageParentPrimingEntry(void){
 	// DEL PRIMING SENZA ASPETTARE IL COMANDO DALL'OPERATORE CHE IN QUESTA NUOVA GESTIONE NON CI SARA'
 	// quando entro in questa fase, ora, ho sempre un po' di liquido da caricare. Quindi, do subito
 	// lo start alle pompe.
-	setGUIButton((unsigned char)BUTTON_START_PRIMING);
+	if(!AlarmInPrimingEntered)
+		setGUIButton((unsigned char)BUTTON_START_PRIMING);
 
 }
 
@@ -973,6 +979,8 @@ void manageParentPrimingAlways(void){
 	int speed = 0;
 	static int timerCopy = 0;
 
+	// reset dell'eventuale flag di entrata nello stato di gestione allarme.
+	AlarmInPrimingEntered = FALSE;
 
 	//manage pump
 	switch(ptrCurrentParent->parent){
@@ -1402,6 +1410,9 @@ void manageParentPrimingAlarmEntry(void)
 
 	pumpPerist[0].entry = 0;
 	*/
+
+	// entro in uno stato di allarme durante il priming
+	AlarmInPrimingEntered = TRUE;
 }
 
 void manageParentTreatAlarmEntry(void){
@@ -2174,8 +2185,23 @@ int get_Set_Point_Pressure(int Speed)
 
 float CalcolaPres(float speed)
 {
-  float m = ((float)128.0 - (float)50.0) / ((float)100.0 );
-  float press = m * (speed) + (float)50.0;
+//  float m = ((float)128.0 - (float)50.0) / ((float)100.0 );
+//  float press = m * (speed) + (float)50.0;
+	float m;
+
+   m = (float) ( (50 - 45) / 10) ;
+   m = m + (float) ( (56 - 50) / 10);
+   m = m + (float) ( (65 - 56) / 10);
+   m = m + (float) ( (76 - 65) / 10);
+   m = m + (float) ( (101 - 76) / 10);
+   m = m + (float) ( (122 - 101) / 10);
+   m = m + (float) ( (131 - 122) / 10);
+   m = m + (float) ( (149 - 131) / 10);
+   m = m + (float) ( (167 - 149) / 10);
+   m = m + (float) ( (184 - 167) / 10);
+   m=m/10;
+
+  float press = m * (speed) + (float)45.0;
   return press;
 }
 
@@ -2210,6 +2236,7 @@ int SpeedCostante( int CurrSpeed)
 	return SpeedCostanteFlag;
 }
 
+extern word MedForVenousPid;
 void alwaysPumpPressLoopVen(unsigned char pmpId, unsigned char *PidFirstTime){
 
 
@@ -2243,7 +2270,8 @@ void alwaysPumpPressLoopVen(unsigned char pmpId, unsigned char *PidFirstTime){
     	actualSpeed_Ven = (int)pumpPerist[pmpId].actualSpeed;
     }
 
-    pressSample0_Ven = PR_VEN_mmHg_Filtered;
+    //pressSample0_Ven = PR_VEN_mmHg_Filtered;
+    pressSample0_Ven = MedForVenousPid;
 	errPress = parameterWordSetFromGUI[PAR_SET_VENOUS_PRESS_TARGET].value - pressSample0_Ven;
 
 	   if (errPress > -5  && errPress < 5 )
@@ -2251,7 +2279,8 @@ void alwaysPumpPressLoopVen(unsigned char pmpId, unsigned char *PidFirstTime){
 		   Count ++;
 		   Somma_Speed += actualSpeed_Ven;
 
-			if ( Count >= 5)
+			//if ( Count >= 5)
+			if ( Count >= 10)
 			{
 				Speed_Media = Somma_Speed/Count;
 				Speed_Media_old = Speed_Media;
@@ -2309,7 +2338,7 @@ void alwaysPumpPressLoopVen(unsigned char pmpId, unsigned char *PidFirstTime){
 
 	// valutare se mettere il deltaSpeed = 0 nel caso deltaSpeed sia negativo in modo da non far andare actualSpeed a zero troppo in fretta
 	// in alternativa il deltaSpeed va considerato solo se è abbastanza negativo
-	if((deltaSpeed_Ven < -0.1) || (deltaSpeed_Ven > 0.1))
+	if((deltaSpeed_Ven < -5.0) || (deltaSpeed_Ven > 5.0))
 	{
 		TargetRaggiunto = 0; // target non raggiunto
 		if (deltaSpeed_Ven < 0)
@@ -2417,40 +2446,30 @@ void CalcVolumeDischarged(void)
 	}
 }
 
-void manageParentEmptyDisposInitEntry(void)
-{
-	VolumeDischarged = 0;
-	EmptyDisposStartOtherPump = FALSE;
-	// attivazione della pompa di depurazione
-	if(GetTherapyType() == LiverTreat)
-		setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, LIVER_PPAR_SPEED);
-	else if(GetTherapyType() == KidneyTreat)
-		setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, KIDNEY_EMPTY_PPAR_SPEED);
-	EmptyDispRunAlwaysState = INIT_EMPTY_DISPOSABLE;
-}
-void manageParentEmptyDisposInitAlways(void)
-{
-	CalcVolumeDischarged();
-}
-
-void manageParentEmptyDisposRunEntry(void)
-{
-	// attivazione della pompa di depurazione se dovessi ritornare da un allarme
-	if(GetTherapyType() == LiverTreat)
-		setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, LIVER_PPAR_SPEED);
-	else if(GetTherapyType() == KidneyTreat)
-		setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, KIDNEY_EMPTY_PPAR_SPEED);
-}
-void manageParentEmptyDisposRunAlways(void)
+void EmptyDispStateMach(void)
 {
 	THERAPY_TYPE TherType = GetTherapyType();
-	CalcVolumeDischarged();
-
 	switch (EmptyDispRunAlwaysState)
 	{
 		case INIT_EMPTY_DISPOSABLE:
-			// attivazione della pompa di depurazione, inizializzo calcolo volume scaricato
-			EmptyDispRunAlwaysState = WAIT_FOR_1000ML;
+			if(buttonGUITreatment[BUTTON_START_EMPTY_DISPOSABLE].state == GUI_BUTTON_RELEASED)
+			{
+				// attivo la pompa per iniziare ko svuotamento
+				releaseGUIButton(BUTTON_START_EMPTY_DISPOSABLE);
+
+				// attivazione della pompa di svuotamento
+				if(GetTherapyType() == LiverTreat)
+				{
+					// nel caso del fegato e' la pompa di depurazione che svuota il recevoir
+					setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, LIVER_PPAR_SPEED);
+				}
+				else if(GetTherapyType() == KidneyTreat)
+				{
+					// nel caso del rene sono le pompe di ossigenazione che svuotano il recevoir
+					setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, KIDNEY_EMPTY_PPAR_SPEED);
+				}
+				EmptyDispRunAlwaysState = WAIT_FOR_1000ML;
+			}
 			break;
 		case WAIT_FOR_1000ML:
 			if(!EmptyDisposStartOtherPump && VolumeDischarged >= DISCHARGE_AMOUNT_ART_PUMP)
@@ -2469,24 +2488,61 @@ void manageParentEmptyDisposRunAlways(void)
 			break;
 		case WAIT_FOR_AIR_ALARM:
 			// verificare che ci passa
-			if((ptrAlarmCurrent->code == CODE_ALARM_AIR_PRES_ART) && TherType == LiverTreat)
+			if((ptrAlarmCurrent->code == CODE_ALARM_AIR_PRES_ART) && (ptrAlarmCurrent->active = ACTIVE_TRUE))
 			{
-				// ho rilevato una presenza aria nel circuito di perfusione arteriosa o venosa
-				setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
-				setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 0);
-				EmptyDispRunAlwaysState = WAIT_FOR_LEVEL_OR_AMOUNT;
-			}
-			else if((ptrAlarmCurrent->code == CODE_ALARM_AIR_PRES_ART)  && TherType == KidneyTreat)
-			{
-				// fho rilrvato una presenza aria nel circuito di perfusione arteriosa
-				setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
-				EmptyDispRunAlwaysState = WAIT_FOR_LEVEL_OR_AMOUNT;
+				if(TherType == LiverTreat)
+				{
+					// ho rilevato una presenza aria nel circuito di perfusione arteriosa o venosa
+					setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
+					setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 0);
+					EmptyDispRunAlwaysState = WAIT_FOR_LEVEL_OR_AMOUNT;
+				}
+				else if(TherType == KidneyTreat)
+				{
+					// ho rilrvato una presenza aria nel circuito di perfusione arteriosa
+					setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
+					EmptyDispRunAlwaysState = WAIT_FOR_LEVEL_OR_AMOUNT;
+				}
 			}
 			break;
 		case WAIT_FOR_LEVEL_OR_AMOUNT:
 			// rimango in questo stato, il controllo sul fine livello nella funzione ParentEmptyDispStateMach
 			break;
 	}
+}
+
+
+void manageParentEmptyDisposInitEntry(void)
+{
+	//inizializzo calcolo volume scaricato
+	VolumeDischarged = 0;
+	EmptyDisposStartOtherPump = FALSE;
+	EmptyDispRunAlwaysState = INIT_EMPTY_DISPOSABLE;
+	// attivazione della pompa di depurazione
+//	if(GetTherapyType() == LiverTreat)
+//		setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, LIVER_PPAR_SPEED);
+//	else if(GetTherapyType() == KidneyTreat)
+//		setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, KIDNEY_EMPTY_PPAR_SPEED);
+}
+void manageParentEmptyDisposInitAlways(void)
+{
+	EmptyDispStateMach();
+	CalcVolumeDischarged();
+}
+
+void manageParentEmptyDisposRunEntry(void)
+{
+	// attivazione della pompa di depurazione se dovessi ritornare da un allarme
+	if(GetTherapyType() == LiverTreat)
+		setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, LIVER_PPAR_SPEED);
+	else if(GetTherapyType() == KidneyTreat)
+		setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, KIDNEY_EMPTY_PPAR_SPEED);
+}
+void manageParentEmptyDisposRunAlways(void)
+{
+	EmptyDispStateMach();
+	CalcVolumeDischarged();
+
 }
 
 void manageParentEmptyDisposAlarmEntry(void)
@@ -2930,144 +2986,6 @@ void computeMachineStateGuard(void)
 }
 
 
-// Adr 7..9
-void TestPinch(void)
-{
-	static unsigned char PinchPos = 0;
-	static unsigned char Adr = 7;   // BOTTOM_PINCH_ID = 7, LEFT_PINCH_ID = 8, RIGHT_PINCH_ID = 9
-	static int Counter = 0;
-	static unsigned char state = 0;
-	if (Bubble_Keyboard_GetVal(BUTTON_1) && PinchPos != MODBUS_PINCH_POS_CLOSED)
-	{
-		PinchPos = MODBUS_PINCH_POS_CLOSED;
-		//setPinchPosValue (Adr,MODBUS_PINCH_POS_CLOSED);
-		setPinchPositionHighLevel(Adr, (int)MODBUS_PINCH_POS_CLOSED);
-		Counter = 0;
-		state = 0;
-	}
-	else if (Bubble_Keyboard_GetVal(BUTTON_2) && PinchPos != MODBUS_PINCH_RIGHT_OPEN)
-	{
-		PinchPos = MODBUS_PINCH_RIGHT_OPEN;
-		//setPinchPosValue (Adr,MODBUS_PINCH_RIGHT_OPEN);
-		setPinchPositionHighLevel(Adr, (int)MODBUS_PINCH_RIGHT_OPEN);
-		Counter = 0;
-		state = 0;
-	}
-	else if (Bubble_Keyboard_GetVal(BUTTON_3) && PinchPos != MODBUS_PINCH_LEFT_OPEN)
-	{
-		PinchPos = MODBUS_PINCH_LEFT_OPEN;
-		//setPinchPosValue (Adr,MODBUS_PINCH_LEFT_OPEN);
-		setPinchPositionHighLevel(Adr, (int)MODBUS_PINCH_LEFT_OPEN);
-		Counter = 0;
-		state = 0;
-	}
-	else if (Bubble_Keyboard_GetVal(BUTTON_4) && (state == 0))
-	{
-		Counter++;
-		if( Counter > 100)
-		{
-			Adr++;
-			if(Adr == 10)
-				Adr = 7;
-			Counter = 0;
-			state = 1;
-		}
-	}
-	else if (!Bubble_Keyboard_GetVal(BUTTON_4) && (state == 1))
-	{
-		Counter++;
-		if( Counter > 100)
-		{
-			state = 0;
-			Counter = 0;
-		}
-	}
-	else
-	{
-		Counter = 0;
-	}
-
-}
-
-
-
-
-unsigned int PumpAverageCurrent;
-unsigned int PumpSpeedVal;
-unsigned int PumpStatusVal;
-
-// Test portata doppia pompa Davide CAPPI
-//void TestPump(unsigned char Adr)
-//{
-//	static bool MotorOn = 0;
-//
-//	if (Bubble_Keyboard_GetVal(BUTTON_1) && !MotorOn)
-//	{
-//	  /*accendo il motore*/
-//	  MotorOn = TRUE;
-//	  EN_Motor_Control(ENABLE);
-//	  setPumpSpeedValueHighLevel(Adr,7500);
-//	}
-//	else if (Bubble_Keyboard_GetVal(BUTTON_2) && !MotorOn)
-//	{
-//	  /*accendo il motore*/
-//	  MotorOn = TRUE;
-//	  EN_Motor_Control(ENABLE);
-//	  setPumpSpeedValueHighLevel(Adr,10000);
-//	}
-//	else if (Bubble_Keyboard_GetVal(BUTTON_3) && !MotorOn)
-//	{
-//	  /*accendo il motore*/
-//	  MotorOn = TRUE;
-//	  EN_Motor_Control(ENABLE);
-//	  setPumpSpeedValueHighLevel(Adr,13000);
-//	}
-//	else if (Bubble_Keyboard_GetVal(BUTTON_4) && MotorOn)
-//	{
-//	  /*spengo il motore*/
-//	  MotorOn = FALSE;
-//	  EN_Motor_Control(DISABLE);
-//	  setPumpSpeedValueHighLevel(Adr,0);
-//	}
-//	else
-//	{
-//		PumpAverageCurrent = modbusData[Adr-2][16];
-//		PumpSpeedVal = modbusData[Adr-2][17];
-//		PumpStatusVal = modbusData[Adr-2][18];
-//		//readPumpSpeedValue(pumpPerist[Adr - 2].pmpMySlaveAddress);
-//		//readPumpSpeedValue(Adr - 2);
-//	}
-//}
-
-
-// Adr 2..5
-//void TestPump(unsigned char Adr)
-//{
-//	static bool MotorOn = 0;
-//
-//	if (Bubble_Keyboard_GetVal(BUTTON_1) && !MotorOn)
-//	{
-//	  /*accendo il motore*/
-//	  MotorOn = TRUE;
-//	  EN_Motor_Control(ENABLE);
-//	  setPumpSpeedValueHighLevel(Adr,2000);
-//	}
-//	else if (Bubble_Keyboard_GetVal(BUTTON_4) && MotorOn)
-//	{
-//	  /*spengo il motore*/
-//	  MotorOn = FALSE;
-//	  EN_Motor_Control(DISABLE);
-//	  setPumpSpeedValueHighLevel(Adr,0);
-//	}
-//	else
-//	{
-//		PumpAverageCurrent = modbusData[Adr-2][16];
-//		PumpSpeedVal = modbusData[Adr-2][17];
-//		PumpStatusVal = modbusData[Adr-2][18];
-//		//readPumpSpeedValue(pumpPerist[Adr - 2].pmpMySlaveAddress);
-//		//readPumpSpeedValue(Adr - 2);
-//	}
-//}
 
 // macchina a stati del processo Parent da usare nello stato STATE_EMPTY_DISPOSABLE
 void ParentEmptyDispStateMach(void)
@@ -3104,17 +3022,10 @@ void ParentEmptyDispStateMach(void)
 			break;
 
 		case PARENT_EMPTY_DISPOSABLE_RUN:
-			if(VolumeDischarged <= (perfusionParam.priVolPerfArt + (float)10.0 * (float)perfusionParam.priVolPerfArt / 100.0))
+			if((VolumeDischarged <= (perfusionParam.priVolPerfArt + (float)10.0 * (float)perfusionParam.priVolPerfArt / 100.0)) &&
+			   (PR_LEVEL_mmHg_Filtered <= (760 + (float)10.0 * 760.0 / 100.0)))
 			{
 				// ho scaricato tutto, mi fermo
-				ptrFutureParent = &stateParentEmptyDisp[7];
-				ptrFutureChild = ptrFutureParent->ptrChild;
-				currentGuard[GUARD_EMPTY_DISPOSABLE_END].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
-				break;
-			}
-			else if(PR_LEVEL_mmHg_Filtered <= (760 + (float)10.0 * 760.0 / 100.0))
-			{
-				// assumo che la vaschetta sia vuota
 				ptrFutureParent = &stateParentEmptyDisp[7];
 				ptrFutureChild = ptrFutureParent->ptrChild;
 				currentGuard[GUARD_EMPTY_DISPOSABLE_END].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
@@ -3460,7 +3371,7 @@ void processMachineState(void)
 				ptrFutureParent = ptrFutureState->ptrParent;
 				/* compute future child */
 				ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
-				DebugStringStr("STATE_IDLE");
+				DebugStringStr("STATE_EMPTY_DISPOSABLE");
 			}
 
 			/* execute function state level */
@@ -3624,7 +3535,7 @@ void processMachineState(void)
 				ptrFutureParent = ptrFutureState->ptrParent;
 				/* compute future child */
 				ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
-				DebugStringStr("STATE_UIDLE");
+				DebugStringStr("STATE_IDLE");
 				break;
 			}
 
@@ -3681,6 +3592,10 @@ void processMachineState(void)
 			{
 				ptrFutureParent = &stateParentPrimingTreatKidney1[5];
 				ptrFutureChild = ptrFutureParent->ptrChild;
+				// guardando a questo valore posso vedere il tipo di azione di sicurezza
+				// e quindi posso decidere di andare anche in un qualche altro stato ad hoc
+				// di allarme
+				//ptrAlarmCurrent->secActType
 			}
 
 			break;
@@ -3708,6 +3623,10 @@ void processMachineState(void)
 			{
 				ptrFutureParent = &stateParentPrimingTreatKidney1[5];
 				ptrFutureChild = ptrFutureParent->ptrChild;
+				// guardando a questo valore posso vedere il tipo di azione di sicurezza
+				// e quindi posso decidere di andare anche in un qualche altro stato ad hoc
+				// di allarme
+				//ptrAlarmCurrent->secActType
 			}
 			break;
 
@@ -3767,6 +3686,10 @@ void processMachineState(void)
 				/* (FM) si e' verificato un allarme, passo alla sua gestione */
 				ptrFutureParent = &stateParentTreatKidney1[5];
 				ptrFutureChild = ptrFutureParent->ptrChild;
+				// guardando a questo valore posso vedere il tipo di azione di sicurezza
+				// e quindi posso decidere di andare anche in un qualche altro stato ad hoc
+				// di allarme
+				//ptrAlarmCurrent->secActType
 			}
 			break;
 
@@ -3790,6 +3713,10 @@ void processMachineState(void)
 				/* (FM) si e' verificato un allarme, passo alla sua gestione */
 				ptrFutureParent = &stateParentTreatKidney1[5];
 				ptrFutureChild = ptrFutureParent->ptrChild;
+				// guardando a questo valore posso vedere il tipo di azione di sicurezza
+				// e quindi posso decidere di andare anche in un qualche altro stato ad hoc
+				// di allarme
+				//ptrAlarmCurrent->secActType
 			}
 			break;
 
