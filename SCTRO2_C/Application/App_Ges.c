@@ -2264,8 +2264,6 @@ void alwaysPumpPressLoopVen(unsigned char pmpId, unsigned char *PidFirstTime){
 	int Speed_Media;
 	static int Somma_Speed = 0;
 	static int Speed_Media_old = 0xfff; /* valore irraggiungibile*/
-	static int Increment = 0;
-	static int TargetRaggiunto = 0;
 
 	static int Count = 0;
 	static int Count2 = 0;
@@ -2316,7 +2314,6 @@ void alwaysPumpPressLoopVen(unsigned char pmpId, unsigned char *PidFirstTime){
 	   }
 	   else
 	   {
-		   Increment = 0;
 		   Count = 0;
 		   Somma_Speed = 0;
 	   }
@@ -2339,7 +2336,6 @@ void alwaysPumpPressLoopVen(unsigned char pmpId, unsigned char *PidFirstTime){
 	// in alternativa il deltaSpeed va considerato solo se è abbastanza negativo
 	if((deltaSpeed_Ven < -0.1) || (deltaSpeed_Ven > 0.1))
 	{
-		TargetRaggiunto = 0; // target non raggiunto
 		if (deltaSpeed_Ven < 0)
 		{
 			actualSpeed_Ven = actualSpeed_Ven + deltaSpeed_Ven;
@@ -2472,6 +2468,14 @@ void EmptyDispStateMach(void)
 				}
 				EmptyDispRunAlwaysState = WAIT_FOR_1000ML;
 			}
+			else if(buttonGUITreatment[BUTTON_START_TREATMENT].state == GUI_BUTTON_RELEASED)
+			{
+				// mi e' arrivato un comando per ritornare in trattamento
+				// Non faccio la release perche', in questo modo, quando arriva nello stato
+				// STATE_TREATMENT_KIDNEY_1 parte subito il trattamento
+				//releaseGUIButton(BUTTON_START_TREATMENT);
+				currentGuard[GUARD_ENABLE_TREATMENT_KIDNEY_1].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+			}
 			break;
 		case WAIT_FOR_1000ML:
 			if(!EmptyDisposStartOtherPump && VolumeDischarged >= DISCHARGE_AMOUNT_ART_PUMP)
@@ -2501,7 +2505,7 @@ void EmptyDispStateMach(void)
 				}
 				else if(TherType == KidneyTreat)
 				{
-					// ho rilrvato una presenza aria nel circuito di perfusione arteriosa
+					// ho rilevato una presenza aria nel circuito di perfusione arteriosa
 					setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
 					EmptyDispRunAlwaysState = WAIT_FOR_LEVEL_OR_AMOUNT;
 				}
@@ -2552,6 +2556,7 @@ void manageParentEmptyDisposAlarmEntry(void)
 }
 void manageParentEmptyDisposAlarmAlways(void)
 {
+	EmptyDispStateMach();
 }
 
 void manageParentEmptyDisposEndEntry(void)
@@ -2571,6 +2576,7 @@ void manageParentEmptyDisposEndEntry(void)
 }
 void manageParentEmptyDisposEndAlways(void)
 {
+	EmptyDispStateMach();
 }
 
 
@@ -3024,7 +3030,7 @@ void ParentEmptyDispStateMach(void)
 			break;
 
 		case PARENT_EMPTY_DISPOSABLE_RUN:
-			if((VolumeDischarged <= (perfusionParam.priVolPerfArt + (float)10.0 * (float)perfusionParam.priVolPerfArt / 100.0)) &&
+			if((VolumeDischarged >= (perfusionParam.priVolPerfArt + (float)10.0 * (float)perfusionParam.priVolPerfArt / 100.0)) &&
 			   (PR_LEVEL_mmHg_Filtered <= (760 + (float)10.0 * 760.0 / 100.0)))
 			{
 				// ho scaricato tutto, mi fermo
@@ -3374,6 +3380,10 @@ void processMachineState(void)
 				/* compute future child */
 				ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
 				DebugStringStr("STATE_EMPTY_DISPOSABLE");
+
+				/*per poter tornare indietro dallo stato STATE_EMPTY_DISPOSABLE allo stato STATE_TREATMENT_KIDNEY_1
+				 * resetto la flag di entry sullo stato in cui sono*/
+				currentGuard[GUARD_ENABLE_TREATMENT_KIDNEY_1].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
 			}
 
 			/* execute function state level */
@@ -3506,22 +3516,24 @@ void processMachineState(void)
 				DebugStringStr("STATE_UNMOUNT_DISPOSABLE");
 				break;
 			}
-//          posizione lasciata libera per un eventuale ritorno in trattamento e prolungare quello precedente
-//			else if( currentGuard[GUARD_ENABLE_PRIMING_PHASE_2].guardValue == GUARD_VALUE_TRUE )
-//			{
-//				// il volume e' stato modificato ritorno nella fase di riempimento
-//				currentGuard[GUARD_ENABLE_PRIMING_PHASE_2].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
-//
-//				ptrFutureState = &stateState[15];
-//				/* compute future parent */
-//				ptrFutureParent = ptrFutureState->ptrParent;
-//				/* compute future child */
-//				ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
-//				DebugStringStr("STATE_PRIMING_PHASE_2");
-//
-//				/*torno indietro nella macchina a stati quindi resetto la flag di entry sullo stato in cui sono*/
-//				currentGuard[GUARD_ENABLE_PRIMING_WAIT].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
-//			}
+			else if( currentGuard[GUARD_ENABLE_TREATMENT_KIDNEY_1].guardValue == GUARD_VALUE_TRUE )
+			{
+				// ritorno direttamente in trattamento per cominciarne uno nuovo
+				currentGuard[GUARD_ENABLE_TREATMENT_KIDNEY_1].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
+
+				ptrFutureState = &stateState[17];
+				/* compute future parent */
+				ptrFutureParent = ptrFutureState->ptrParent;
+				/* compute future child */
+				ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
+				DebugStringStr("STATE_TREATMENT");
+
+				// riparte come se fosse un nuovo trattamento
+				StartTreatmentTime = 0;
+				/*torno indietro nella macchina a stati quindi resetto la flag di entry sullo stato in cui sono*/
+				currentGuard[GUARD_ENABLE_DISPOSABLE_EMPTY].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
+				break;
+			}
 
 			/* execute function state level */
 			manageStateEntryAndStateAlways(20);
