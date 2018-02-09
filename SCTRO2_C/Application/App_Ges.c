@@ -57,13 +57,19 @@
 #include "string.h"
 #include "statesStructs.h"
 #include "general_func.h"
+#include "pid.h"
 
-float pressSample1_Ven = 0;
-float pressSample2_Ven = 0;
+extern float pressSample1_Ven;
+extern float pressSample2_Ven;
+extern float pressSample1_Art;
+extern float pressSample2_Art;
+extern word MedForArteriousPid;
+extern word MedForVenousPid;
 
-float pressSample1 = 0;  // FM Questi due vanno inizializzati alla pressione corrente prima di far partire il pid
-float pressSample2 = 0;
-unsigned char PidFirstTime[4];
+
+extern float pressSample1;  // FM Questi due vanno inizializzati alla pressione corrente prima di far partire il pid
+extern float pressSample2;
+extern unsigned char PidFirstTime[];
 
 // tick di inizio del trattamento
 unsigned long StartTreatmentTime = 0;
@@ -734,6 +740,13 @@ void manageStateUnmountDisposableAlways(void)
 		releaseGUIButton(BUTTON_UNMOUNT_END);
 		currentGuard[GUARD_ENABLE_UNMOUNT_END].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
 	}
+	else if(buttonGUITreatment[BUTTON_PRIMING_ABANDON].state == GUI_BUTTON_RELEASED)
+	{
+		// mi e' stato richiesto di abbandonare la fase di smontaggio e andare direttamente in IDLE
+		releaseGUIButton(BUTTON_PRIMING_ABANDON);
+		currentGuard[GUARD_ABANDON_PRIMING].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+	}
+
 }
 
 /*-----------------------------------------------------------*/
@@ -1295,6 +1308,19 @@ void manageParentPrimingAlways(void){
 					//StartTreatmentTime = (unsigned long)timerCounterModBus;
 					currentGuard[GUARD_ENABLE_TREATMENT_KIDNEY_1].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
 				}
+				else if(buttonGUITreatment[BUTTON_PRIMING_ABANDON].state == GUI_BUTTON_RELEASED)
+				{
+					releaseGUIButton(BUTTON_PRIMING_ABANDON);
+					setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
+					setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 0);
+					if(GetTherapyType() == LiverTreat)
+					{
+						// se sono nel trattamento fegato fermo anche l'altro motore !!
+						setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, 0);
+					}
+					currentGuard[GUARD_ABANDON_PRIMING].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+				}
+
 			}
 //			Questo non serve tanto non ci passa mai perche' nello stato STATE_PRIMING_WAIT non viene impostata la ManageParentPrimingAlways
 //			else if(ptrCurrentState->state == STATE_PRIMING_WAIT &&
@@ -1639,7 +1665,7 @@ void manageParentTreatAlways(void){
 			{
 				// sono nel trattamento fegato, devo impostare la pressione di lavoro del PID sull'ossigenatore.
 				// Ci pensera' poi il pid a far partire la pompa.
-				parameterWordSetFromGUI[PAR_SET_VENOUS_PRESS_TARGET].value = SET_POINT_PRESSURE_INIT;
+			//	parameterWordSetFromGUI[PAR_SET_VENOUS_PRESS_TARGET].value = SET_POINT_PRESSURE_INIT;
 				// faccio partire la pompa di depurazione ad una velocita' prestabilita
 				setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, LIVER_PPAR_SPEED);
 			}
@@ -1650,8 +1676,11 @@ void manageParentTreatAlways(void){
 			setPumpPressLoop(0, PRESS_LOOP_ON);
 			// FM Questi due vanno inizializzati alla pressione corrente prima di far partire il pid, altrimenti il motore
 			// potrebbe partire anche se non dovrebbe.
-			pressSample1 = PR_ART_mmHg_Filtered;
-			pressSample2 = PR_ART_mmHg_Filtered;
+			// Pid originale
+			//pressSample1 = PR_ART_mmHg_Filtered;
+			//pressSample2 = PR_ART_mmHg_Filtered;
+			pressSample1_Art = MedForArteriousPid;
+			pressSample2_Art = MedForArteriousPid;
 			if(!StartTreatmentTime)
 			{
 				// prendo il tempo di start del trattamento solo se il valore vale 0, cioe' sono partito da IDLE
@@ -1675,9 +1704,12 @@ void manageParentTreatAlways(void){
 			setPumpPressLoop(0, PRESS_LOOP_ON);
 			// FM Questi due vanno inizializzati alla pressione corrente prima di far partire il pid, altrimenti il motore
 			// potrebbe partire anche se non dovrebbe.
-			pressSample1 = PR_ART_mmHg_Filtered;
-			pressSample2 = PR_ART_mmHg_Filtered;
-		}
+			// pid originale
+			//pressSample1 = PR_ART_mmHg_Filtered;
+			//pressSample2 = PR_ART_mmHg_Filtered;
+			pressSample1_Art = MedForArteriousPid;
+			pressSample2_Art = MedForArteriousPid;
+}
 		else if(buttonGUITreatment[BUTTON_START_OXYGEN_PUMP].state == GUI_BUTTON_RELEASED){
 			releaseGUIButton(BUTTON_START_OXYGEN_PUMP);
 
@@ -1693,7 +1725,7 @@ void manageParentTreatAlways(void){
 			{
 				// sono nel trattamento fegato, devo impostare la pressione di lavoro del PID sull'ossigenatore.
 				// Ci pensera' poi il pid a far partire la pompa.
-				parameterWordSetFromGUI[PAR_SET_VENOUS_PRESS_TARGET].value = SET_POINT_PRESSURE_INIT;
+			//	parameterWordSetFromGUI[PAR_SET_VENOUS_PRESS_TARGET].value = SET_POINT_PRESSURE_INIT;
 			}
 
 //			// attivo il pid sull'ossigenazione e perfusione venosa solo se sono in fegato
@@ -1705,10 +1737,16 @@ void manageParentTreatAlways(void){
 			}
 		}
 
-		if((getPumpPressLoop(0) == PRESS_LOOP_ON) && (timerCounterPID >=1))
+		//if((getPumpPressLoop(0) == PRESS_LOOP_ON) && (timerCounterPID >=1))
+		if(timerCounterPID >=1)
 		{
 			timerCounterPID = 0;
-			alwaysPumpPressLoop(0, &PidFirstTime[0]);
+			if(getPumpPressLoop(0) == PRESS_LOOP_ON)
+			{
+				// pid originale
+				//alwaysPumpPressLoop(0, &PidFirstTime[0]);
+				alwaysPumpPressLoopArt(0, &PidFirstTime[0]);
+			}
 			if(getPumpPressLoop(1) == PRESS_LOOP_ON)
 				alwaysPumpPressLoopVen(1, &PidFirstTime[1]);
 		}
@@ -1822,7 +1860,7 @@ void manageParentTreatAlways(void){
 				{
 					// sono nel trattamento fegato, devo impostare la pressione di lavoro del PID sull'ossigenatore.
 					// Ci pensera' poi il pid a far partire la pompa.
-					parameterWordSetFromGUI[PAR_SET_VENOUS_PRESS_TARGET].value = SET_POINT_PRESSURE_INIT;
+				//	parameterWordSetFromGUI[PAR_SET_VENOUS_PRESS_TARGET].value = SET_POINT_PRESSURE_INIT;
 					// faccio partire la pompa di depurazione ad una velocita' prestabilita
 					setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, LIVER_PPAR_SPEED);
 				}
@@ -1832,8 +1870,12 @@ void manageParentTreatAlways(void){
 				setPumpPressLoop(0, PRESS_LOOP_ON);
 				// FM Questi due vanno inizializzati alla pressione corrente prima di far partire il pid, altrimenti il motore
 				// potrebbe partire anche se non dovrebbe.
-				pressSample1 = PR_ART_mmHg_Filtered;
-				pressSample2 = PR_ART_mmHg_Filtered;
+				// Pid originale
+				//pressSample1 = PR_ART_mmHg_Filtered;
+				//pressSample2 = PR_ART_mmHg_Filtered;
+				pressSample1_Art = MedForArteriousPid;
+				pressSample2_Art = MedForArteriousPid;
+
 				if(!StartTreatmentTime)
 				{
 					// prendo il tempo di start del trattamento solo se il valore vale 0, cioe' sono partito da IDLE
@@ -1845,8 +1887,8 @@ void manageParentTreatAlways(void){
 				if(GetTherapyType() == LiverTreat)
 				{
 					setPumpPressLoop(1, PRESS_LOOP_ON);
-					pressSample1_Ven = PR_VEN_mmHg_Filtered;
-					pressSample2_Ven = PR_VEN_mmHg_Filtered;
+					pressSample1_Ven = MedForVenousPid;
+					pressSample2_Ven = MedForVenousPid;
 				}
 			}
 			else if(buttonGUITreatment[BUTTON_START_PERF_PUMP].state == GUI_BUTTON_RELEASED){
@@ -1857,8 +1899,11 @@ void manageParentTreatAlways(void){
 				setPumpPressLoop(0, PRESS_LOOP_ON);
 				// FM Questi due vanno inizializzati alla pressione corrente prima di far partire il pid, altrimenti il motore
 				// potrebbe partire anche se non dovrebbe.
-				pressSample1 = PR_ART_mmHg_Filtered;
-				pressSample2 = PR_ART_mmHg_Filtered;
+				// Pid originale
+				//pressSample1 = PR_ART_mmHg_Filtered;
+				//pressSample2 = PR_ART_mmHg_Filtered;
+				pressSample1_Art = MedForArteriousPid;
+				pressSample2_Art = MedForArteriousPid;
 
 			}
 			else if(buttonGUITreatment[BUTTON_START_OXYGEN_PUMP].state == GUI_BUTTON_RELEASED){
@@ -1876,22 +1921,28 @@ void manageParentTreatAlways(void){
 				{
 					// sono nel trattamento fegato, devo impostare la pressione di lavoro del PID sull'ossigenatore.
 					// Ci pensera' poi il pid a far partire la pompa.
-					parameterWordSetFromGUI[PAR_SET_VENOUS_PRESS_TARGET].value = SET_POINT_PRESSURE_INIT;
+			//		parameterWordSetFromGUI[PAR_SET_VENOUS_PRESS_TARGET].value = SET_POINT_PRESSURE_INIT;
 				}
 
 //				// attivo il pid sull'ossigenazione e perfusione venosa solo se sono in fegato
 				if(GetTherapyType() == LiverTreat)
 				{
 					setPumpPressLoop(1, PRESS_LOOP_ON);
-					pressSample1_Ven = PR_VEN_mmHg_Filtered;
-					pressSample2_Ven = PR_VEN_mmHg_Filtered;
+					pressSample1_Ven = MedForVenousPid;
+					pressSample2_Ven = MedForVenousPid;
 				}
 			}
 
-			if((getPumpPressLoop(0) == PRESS_LOOP_ON) && (timerCounterPID >=1))
+			//if((getPumpPressLoop(0) == PRESS_LOOP_ON) && (timerCounterPID >=1))
+			if(timerCounterPID >=1)
 			{
 				timerCounterPID = 0;
-				alwaysPumpPressLoop(0, &PidFirstTime[0]);
+				if(getPumpPressLoop(0) == PRESS_LOOP_ON)
+				{
+					// pid originale
+					//alwaysPumpPressLoop(0, &PidFirstTime[0]);
+					alwaysPumpPressLoopArt(0, &PidFirstTime[0]);
+				}
 				if(getPumpPressLoop(1) == PRESS_LOOP_ON)
 					alwaysPumpPressLoopVen(1, &PidFirstTime[1]);
 
@@ -1964,421 +2015,6 @@ unsigned char getPumpPressLoop(unsigned char pmpId){
 }
 
 
-float parKITC = 0.2;
-float parKP = 1;
-float parKD_TC = 0.8;
-float GlobINTEG;
-float GlobPROP;
-float GlobDER;
-int deltaSpeed = 0;
-int actualSpeed = 0;
-
-void alwaysPumpPressLoop(unsigned char pmpId, unsigned char *PidFirstTime){
-	//int deltaSpeed = 0;
-	//static int actualSpeed = 0;
-	//static int actualSpeedOld = 0;
-	//float parKITC = 0.0; //0.2;
-	//float parKP = 5.0;   //1;
-	//float parKD_TC = 0.0; //0.8;
-	float pressSample0 = 0;
-	//static float pressSample1 = 0;  // FM Questi due vanno inizializzati alla pressione corrente prima di far partire il pid
-	//static float pressSample2 = 0;
-	float errPress = 0;
-	int Max_RPM_for_Flow_Max = (int) ( parameterWordSetFromGUI[PAR_SET_MAX_FLOW_PERFUSION].value / PUMP_ART_GAIN);
-
-    if(*PidFirstTime == PRESS_LOOP_ON)
-    {
-    	*PidFirstTime = PRESS_LOOP_OFF;
-    	actualSpeed = (int)pumpPerist[pmpId].actualSpeed;
-    }
-
-	// FM sostituito con il valore in mmHg
-
-    pressSample0 = PR_ART_mmHg_Filtered;
-	errPress = parameterWordSetFromGUI[PAR_SET_PRESS_ART_TARGET].value - pressSample0;
-
-	GlobINTEG = parKITC*errPress;
-	GlobPROP = parKP*(pressSample0 - pressSample1);
-	GlobDER = parKD_TC*(pressSample0 - 2*pressSample1 + pressSample2);
-
-	deltaSpeed = (int)((parKITC*errPress) - (parKP*(pressSample0 - pressSample1)) - (parKD_TC*(pressSample0 - 2*pressSample1 + pressSample2)));
-
-	// valutare se mettere il deltaSpeed = 0 nel caso deltaSpeed sia negativo in modo da non far andare actualSpeed a zero troppo in fretta
-	// in alternativa il deltaSpeed va considerato solo se è abbastanza negativo
-	if((deltaSpeed < -2) || (deltaSpeed > 2))
-	{
-		if (deltaSpeed < 0)
-		{
-			actualSpeed = actualSpeed + deltaSpeed;
-		}
-		else
-		{
-			if (sensor_UFLOW[0].Average_Flow_Val > ( parameterWordSetFromGUI[PAR_SET_MAX_FLOW_PERFUSION].value))
-
-			{
-				actualSpeed = actualSpeed; /*non aumento la velocità*/
-			}
-			else if ( (actualSpeed + deltaSpeed  ) > Max_RPM_for_Flow_Max )
-			{
-				actualSpeed = Max_RPM_for_Flow_Max;
-			}
-			else
-			{
-				actualSpeed = actualSpeed + deltaSpeed;
-			}
-		}
-	}
-
-//	if(actualSpeed >= 50)
-//		actualSpeed = 50;
-//	else if(actualSpeed <= 0)
-//		actualSpeed = 0;
-
-	if(actualSpeed < 0)
-		actualSpeed = 0;
-
-	if(actualSpeed != pumpPerist[pmpId].actualSpeedOld){
-		//setPumpSpeedValue(pumpPerist[pmpId].pmpMySlaveAddress, (actualSpeed*100));
-		setPumpSpeedValueHighLevel(pumpPerist[pmpId].pmpMySlaveAddress, (actualSpeed*100));
-		pumpPerist[pmpId].actualSpeedOld = actualSpeed;
-	}
-
-	//se provengo da un allarme la pompa è ferma ed il controllo deve ripartire
-	/*if(pumpPerist[pmpId].actualSpeed == 0){
-		actualSpeedOld = 0;
-	}*/
-
-	pressSample2 = pressSample1;
-	pressSample1 = pressSample0;
-
-	//DebugStringPID(); // debug
-}
-
-
-
-
-//void alwaysPumpPressLoopVen_old(unsigned char pmpId, unsigned char *PidFirstTime){
-//	//int deltaSpeed = 0;
-//	//static int actualSpeed = 0;
-//	//static int actualSpeedOld = 0;
-//	//float parKITC = 0.0; //0.2;
-//	//float parKP = 5.0;   //1;
-//	//float parKD_TC = 0.0; //0.8;
-//	float pressSample0_Ven = 0;
-//	//static float pressSample1 = 0;  // FM Questi due vanno inizializzati alla pressione corrente prima di far partire il pid
-//	//static float pressSample2 = 0;
-//	float errPress = 0;
-//	int Max_RPM_for_Flow_Max = 120; //( parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value / (PUMP_ART_GAIN * 2.0));
-//	int Speed_Media;
-//
-//	static int Somma_Speed = 0;
-//
-//	static int Count = 0;
-//	static int Count2 = 0;
-//
-//    if(*PidFirstTime == PRESS_LOOP_ON)
-//    {
-//    	*PidFirstTime = PRESS_LOOP_OFF;
-//    	actualSpeed_Ven = (int)pumpPerist[pmpId].actualSpeed;
-//    }
-//
-//    pressSample0_Ven = PR_VEN_mmHg_Filtered;
-//	errPress = parameterWordSetFromGUI[PAR_SET_VENOUS_PRESS_TARGET].value - pressSample0_Ven;
-//
-//   if (errPress > -15  && errPress < 15 )
-//   {
-//	   Count ++;
-//
-//	   Somma_Speed += actualSpeed_Ven;
-//
-//		if ( Count >= 100)
-//		{
-//			Speed_Media = Somma_Speed/Count;
-//
-////			if (Speed_Media <= Speed_Media_old)
-////			{
-////				Speed_Media+=10;
-////				Speed_Media = Speed_Media_old;
-////			}
-//
-//			parameterWordSetFromGUI[PAR_SET_VENOUS_PRESS_TARGET].value  = get_Set_Point_Pressure(Speed_Media);
-//			Count = 0;
-//			Somma_Speed = 0;
-//		}
-//   }
-//   else
-//   {
-//	   Count = 0;
-//	   Somma_Speed = 0;
-//   }
-//
-//
-//
-//	GlobINTEG_Ven = parKITC_Ven * errPress;
-//	GlobPROP_Ven = parKP_Ven * (pressSample0_Ven - pressSample1_Ven);
-//	GlobDER_Ven = parKD_TC_Ven * (pressSample0_Ven - 2*pressSample1_Ven + pressSample2_Ven);
-//
-//	deltaSpeed_Ven = (int)((parKITC_Ven * errPress) -
-//			         (parKP_Ven * (pressSample0_Ven - pressSample1_Ven)) -
-//					 (parKD_TC_Ven * (pressSample0_Ven - 2 * pressSample1_Ven + pressSample2_Ven)));
-////	deltaSpeed_Ven = parKP_Ven * errPress;
-//
-//	if (errPress < 0)
-//	{
-//		int a = 0;
-//	}
-//
-//	// valutare se mettere il deltaSpeed = 0 nel caso deltaSpeed sia negativo in modo da non far andare actualSpeed a zero troppo in fretta
-//	// in alternativa il deltaSpeed va considerato solo se è abbastanza negativo
-//	if((deltaSpeed_Ven < -2) || (deltaSpeed_Ven > 2))
-//	{
-//		if (deltaSpeed_Ven < 0)
-//		{
-//			actualSpeed_Ven = actualSpeed_Ven + deltaSpeed_Ven;
-//		}
-//		else
-//		{
-//			if (sensor_UFLOW[1].Average_Flow_Val > ( parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value))
-//
-//			{
-//				actualSpeed_Ven = actualSpeed_Ven; /*non aumento la velocità*/
-//			}
-//			else if ( (actualSpeed + deltaSpeed  ) > Max_RPM_for_Flow_Max )
-//			{
-//				actualSpeed_Ven = Max_RPM_for_Flow_Max;
-//			}
-//			else
-//			{
-//				if(actualSpeed_Ven > 100)
-//					actualSpeed_Ven = 100;
-//				else
-//					actualSpeed_Ven = actualSpeed_Ven + deltaSpeed_Ven;
-//			}
-//		}
-//	}
-//
-//	if(actualSpeed_Ven < 0)
-//		actualSpeed_Ven = 0;
-//
-//	if(actualSpeed_Ven != pumpPerist[pmpId].actualSpeedOld)
-//	{
-//		setPumpSpeedValueHighLevel(pumpPerist[pmpId].pmpMySlaveAddress, (actualSpeed_Ven * 100));
-//		pumpPerist[pmpId].actualSpeedOld = actualSpeed_Ven;
-//	}
-//
-//	pressSample2_Ven = pressSample1_Ven;
-//	pressSample1_Ven = pressSample0_Ven;
-//
-//	//DebugStringPID(); // debug
-//}
-
-// Pid per perfusione venosa
-
-int get_Set_Point_Pressure(int Speed)
-{
-	int Presure_Set_Point;
-
-	Presure_Set_Point = GAIN_PRESSURE * Speed + DELTA_PRESSURE;
-
-	return (Presure_Set_Point);
-}
-
-float CalcolaPres(float speed)
-{
-//  float m = ((float)128.0 - (float)50.0) / ((float)100.0 );
-//  float press = m * (speed) + (float)50.0;
-	//float m;
-
-//   m = (float) ( (50 - 45) / 10) ;
-//   m = m + (float) ( (56 - 50) / 10);
-//   m = m + (float) ( (65 - 56) / 10);
-//   m = m + (float) ( (76 - 65) / 10);
-//   m = m + (float) ( (101 - 76) / 10);
-//   m = m + (float) ( (122 - 101) / 10);
-//   m = m + (float) ( (131 - 122) / 10);
-//   m = m + (float) ( (149 - 131) / 10);
-//   m = m + (float) ( (167 - 149) / 10);
-//   m = m + (float) ( (184 - 167) / 10);
-//   m=m/10;
-	float m = ((float)184.0 - (float)45.0) / ((float)100.0 );
-
-
-  float press = m * (speed) + (float)45.0;
-  return press;
-}
-
-int SpeedCostante( int CurrSpeed)
-{
-	static int SpeedCostanteState = 0;
-	static int LastspeedValue;
-	static int Cnt = 0;
-	int delta;
-	static int min, max;
-	int SpeedCostanteFlag = 0;
-
-	if(!SpeedCostanteState)
-	{
-		LastspeedValue = CurrSpeed;
-		SpeedCostanteState = 1;
-		Cnt = 0;
-
-		delta = LastspeedValue * 5 / 100;  // prendo il 5% del valore corrente
-		if(delta < 1)
-			delta = 1;
-		min = LastspeedValue - delta;
-		if(min < 0)
-			min = 0;
-		max = LastspeedValue + delta;
-	}
-	else if(SpeedCostanteState)
-	{
-		if(CurrSpeed <= min || CurrSpeed > max )
-			SpeedCostanteState = 0;
-		else
-			Cnt++;
-		if(Cnt >= 100)
-		{
-			SpeedCostanteFlag = 1;
-			SpeedCostanteState = 0;
-		}
-	}
-	return SpeedCostanteFlag;
-}
-
-extern word MedForVenousPid;
-void alwaysPumpPressLoopVen(unsigned char pmpId, unsigned char *PidFirstTime){
-
-
-	static float deltaSpeed_Ven = 0;
-	static float actualSpeed_Ven = 0;
-	static bool StopPid = FALSE;
-	static unsigned long StartTimePidStop = 0;
-
-	float pressSample0_Ven = 0;
-
-	float errPress = 0;
-	/*il valore sottostante, indica la massima velocità delle pompe
-	 * sarà da ripristyinare quello in funzione del flusso ovvero:
-	 * (int) ( parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value / (PUMP_OXY_GAIN * 2.0));*/
-	int Max_RPM_for_Flow_Max = MAX_OXYG_RPM; //( parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value / (PUMP_ART_GAIN * 2.0));
-	int Speed_Media;
-	static int Somma_Speed = 0;
-	static int Speed_Media_old = 0xfff; /* valore irraggiungibile*/
-
-	static int Count = 0;
-	static int Count2 = 0;
-
-    /*funzione col solo proporzionale usata per mandare in oscillazione la pressione
-     * e calcolare il K minimo e il periodo di oscillazione
-     * //	deltaSpeed_Ven = parKP_Ven * errPress;*/
-
-/*************************************************************************************************/
-	// Queste righe di codice possono essere inserite se voglio bloccare il pid per
-// qualche secondo dopo che ho applicato una variazione di velocita' per effetto di SpeedCostante.
-// In questo modo do tempo alle variazioni di avere effetto.
-//	if(StopPid && StartTimePidStop)
-//	{
-//		if(msTick_elapsed(StartTimePidStop) * 50L >= 3000)
-//		{
-//			StopPid = FALSE;
-//		}
-//		else
-//			return;
-//	}
-/*************************************************************************************************/
-
-    if(*PidFirstTime == PRESS_LOOP_ON)
-    {
-    	*PidFirstTime = PRESS_LOOP_OFF;
-    	actualSpeed_Ven = (float)pumpPerist[pmpId].actualSpeed;
-    }
-
-    //pressSample0_Ven = PR_VEN_mmHg_Filtered;
-    pressSample0_Ven = MedForVenousPid;
-	errPress = parameterWordSetFromGUI[PAR_SET_VENOUS_PRESS_TARGET].value - pressSample0_Ven;
-
-	   if (errPress > -5  && errPress < 5 )
-	   {
-		   Count ++;
-		   Somma_Speed += actualSpeed_Ven;
-
-			if ( Count >= 5)
-			{
-				Speed_Media = Somma_Speed/Count;
-				Speed_Media_old = Speed_Media;
-
-				parameterWordSetFromGUI[PAR_SET_VENOUS_PRESS_TARGET].value  = CalcolaPres(Speed_Media);
-				Count = 0;
-				Somma_Speed = 0;
-			}
-	   }
-	   else
-	   {
-		   Count = 0;
-		   Somma_Speed = 0;
-	   }
-
-		//la velocità del messaggio di stato resta costante per 5 secondi && velocità minore del massimo)
-	    // incrementiamo la actual speed di 5 RPM;
-	   if (SpeedCostante((int)actualSpeed_Ven) && (actualSpeed_Ven <= 100))
-	   {
-		   actualSpeed_Ven += 5.0;
-		   parameterWordSetFromGUI[PAR_SET_VENOUS_PRESS_TARGET].value  = CalcolaPres(actualSpeed_Ven);
-		   StopPid = TRUE;
-		   StartTimePidStop = timerCounterModBus;
-	   }
-
-	deltaSpeed_Ven = ((parKITC_Ven * errPress) -
-			         (parKP_Ven * (pressSample0_Ven - pressSample1_Ven)) -
-					 (parKD_TC_Ven * (pressSample0_Ven - 2 * pressSample1_Ven + pressSample2_Ven)));
-
-	// valutare se mettere il deltaSpeed = 0 nel caso deltaSpeed sia negativo in modo da non far andare actualSpeed a zero troppo in fretta
-	// in alternativa il deltaSpeed va considerato solo se è abbastanza negativo
-	if((deltaSpeed_Ven < -0.1) || (deltaSpeed_Ven > 0.1))
-	{
-		if (deltaSpeed_Ven < 0)
-		{
-			actualSpeed_Ven = actualSpeed_Ven + deltaSpeed_Ven;
-		}
-		else
-		{
-			/* da ripristinare solo quando siamo sicuri del funzionamento dei flussimetri
-			if (sensor_UFLOW[1].Average_Flow_Val > ( parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value))
-
-			{
-				actualSpeed_Ven = actualSpeed_Ven; //non aumento la velocità
-			}
-			else */if ( (actualSpeed + deltaSpeed  ) > Max_RPM_for_Flow_Max )
-			{
-				actualSpeed_Ven = Max_RPM_for_Flow_Max;
-			}
-			else
-			{
-				if(actualSpeed_Ven >= (float)MAX_OXYG_RPM)
-					actualSpeed_Ven = (float)MAX_OXYG_RPM;
-				else
-					actualSpeed_Ven = actualSpeed_Ven + deltaSpeed_Ven;
-			}
-		}
-	}
-
-
-	if(actualSpeed_Ven <= 0 || pressSample0_Ven > 190)
-	{
-		actualSpeed_Ven = 0;
-		parameterWordSetFromGUI[PAR_SET_VENOUS_PRESS_TARGET].value = SET_POINT_PRESSURE_INIT;
-	}
-
-
-	if(actualSpeed_Ven != pumpPerist[pmpId].actualSpeedOld)
-	{
-		setPumpSpeedValueHighLevel(pumpPerist[pmpId].pmpMySlaveAddress, ((int)(actualSpeed_Ven * 100)));
-		pumpPerist[pmpId].actualSpeedOld = actualSpeed_Ven;
-	}
-
-	pressSample2_Ven = pressSample1_Ven;
-	pressSample1_Ven = pressSample0_Ven;
-}
 
 
 void manageParentEntry(void)
@@ -2447,6 +2083,7 @@ void CalcVolumeDischarged(void)
 void EmptyDispStateMach(void)
 {
 	THERAPY_TYPE TherType = GetTherapyType();
+
 	switch (EmptyDispRunAlwaysState)
 	{
 		case INIT_EMPTY_DISPOSABLE:
@@ -2476,6 +2113,12 @@ void EmptyDispStateMach(void)
 				//releaseGUIButton(BUTTON_START_TREATMENT);
 				currentGuard[GUARD_ENABLE_TREATMENT_KIDNEY_1].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
 			}
+			else if(buttonGUITreatment[BUTTON_PRIMING_ABANDON].state == GUI_BUTTON_RELEASED)
+			{
+				// nessuna pompa e' partita ancora
+				releaseGUIButton(BUTTON_PRIMING_ABANDON);
+				currentGuard[GUARD_ABANDON_PRIMING].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+			}
 			break;
 		case WAIT_FOR_1000ML:
 			if(!EmptyDisposStartOtherPump && VolumeDischarged >= DISCHARGE_AMOUNT_ART_PUMP)
@@ -2491,6 +2134,18 @@ void EmptyDispStateMach(void)
 				EmptyDisposStartOtherPump = TRUE;
 				EmptyDispRunAlwaysState = WAIT_FOR_AIR_ALARM;
 			}
+			else if(buttonGUITreatment[BUTTON_PRIMING_ABANDON].state == GUI_BUTTON_RELEASED)
+			{
+				releaseGUIButton(BUTTON_PRIMING_ABANDON);
+				if(TherType == LiverTreat)
+				{
+					// se sono nel trattamento fegato fermo anche l'altro motore !!
+					setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, 0);
+				}
+				else if(TherType == KidneyTreat)
+					setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 0);
+				currentGuard[GUARD_ABANDON_PRIMING].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+			}
 			break;
 		case WAIT_FOR_AIR_ALARM:
 			// verificare che ci passa
@@ -2499,20 +2154,54 @@ void EmptyDispStateMach(void)
 				if(TherType == LiverTreat)
 				{
 					// ho rilevato una presenza aria nel circuito di perfusione arteriosa o venosa
-					setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
-					setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 0);
+					// non dovrebbe servire lo stop alle pompe perche' e' gia' fatto nella gestione
+					// dell'allarme
+					//setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
+					//setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 0);
 					EmptyDispRunAlwaysState = WAIT_FOR_LEVEL_OR_AMOUNT;
 				}
 				else if(TherType == KidneyTreat)
 				{
 					// ho rilevato una presenza aria nel circuito di perfusione arteriosa
-					setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
+					// non dovrebbe servire lo stop alle pompe perche' e' gia' fatto nella gestione
+					// dell'allarme
+					//setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
 					EmptyDispRunAlwaysState = WAIT_FOR_LEVEL_OR_AMOUNT;
 				}
+			}
+			else if(buttonGUITreatment[BUTTON_PRIMING_ABANDON].state == GUI_BUTTON_RELEASED)
+			{
+				releaseGUIButton(BUTTON_PRIMING_ABANDON);
+				// sono in uno stato di attesa allarme e tutte le pompe sono attive
+				// se sono nel trattamento fegato devo fermare tutti i motori prima di abbandonare
+				if(TherType == LiverTreat)
+				{
+					setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
+					setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 0);
+					setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, 0);
+				}
+				else if(TherType == KidneyTreat)
+				{
+					setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, KIDNEY_EMPTY_PPAR_SPEED);
+					setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 0);
+				}
+				currentGuard[GUARD_ABANDON_PRIMING].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
 			}
 			break;
 		case WAIT_FOR_LEVEL_OR_AMOUNT:
 			// rimango in questo stato, il controllo sul fine livello nella funzione ParentEmptyDispStateMach
+			if(buttonGUITreatment[BUTTON_PRIMING_ABANDON].state == GUI_BUTTON_RELEASED)
+			{
+				releaseGUIButton(BUTTON_PRIMING_ABANDON);
+				if(TherType == LiverTreat)
+				{
+					// se sono nel trattamento fegato fermo anche l'altro motore !!
+					setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, 0);
+				}
+				else if(TherType == KidneyTreat)
+					setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 0);
+				currentGuard[GUARD_ABANDON_PRIMING].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+			}
 			break;
 	}
 }
@@ -3031,7 +2720,7 @@ void ParentEmptyDispStateMach(void)
 
 		case PARENT_EMPTY_DISPOSABLE_RUN:
 			if((VolumeDischarged >= (perfusionParam.priVolPerfArt + (float)10.0 * (float)perfusionParam.priVolPerfArt / 100.0)) &&
-			   (PR_LEVEL_mmHg_Filtered <= (760 + (float)10.0 * 760.0 / 100.0)))
+			   (PR_LEVEL_mmHg_Filtered <= 0))
 			{
 				// ho scaricato tutto, mi fermo
 				ptrFutureParent = &stateParentEmptyDisp[7];
@@ -3445,6 +3134,17 @@ void processMachineState(void)
 					ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
 					DebugStringStr("STATE_TREATMENT");
 				}
+				else if( currentGuard[GUARD_ABANDON_PRIMING].guardValue == GUARD_VALUE_TRUE )
+				{
+					// abbandono il priming e ritorno in IDLE
+					currentGuard[GUARD_PRIMING_END].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
+					ptrFutureState = &stateState[3];
+					/* compute future parent */
+					ptrFutureParent = ptrFutureState->ptrParent;
+					/* compute future child */
+					ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
+					DebugStringStr("STATE_IDLE(ABBANDONA)");
+				}
 
 // NON VADO NELLO STATO DI ATTESA TRATTAMENTO MA VADO DIRETTAMENTE NELLO STATO STATE_TREATMENT_KIDNEY_1 DOVE DOVREI
 // CONSIDERARE ANCHE LA POSSIBILITA' DI ABBANDONA
@@ -3534,6 +3234,18 @@ void processMachineState(void)
 				currentGuard[GUARD_ENABLE_DISPOSABLE_EMPTY].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
 				break;
 			}
+			else if( currentGuard[GUARD_ABANDON_PRIMING].guardValue == GUARD_VALUE_TRUE )
+			{
+				// abbandono il priming e ritorno in IDLE
+				currentGuard[GUARD_PRIMING_END].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
+				ptrFutureState = &stateState[3];
+				/* compute future parent */
+				ptrFutureParent = ptrFutureState->ptrParent;
+				/* compute future child */
+				ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
+				DebugStringStr("STATE_IDLE(ABBANDONA)");
+				break;
+			}
 
 			/* execute function state level */
 			manageStateEntryAndStateAlways(20);
@@ -3550,6 +3262,18 @@ void processMachineState(void)
 				/* compute future child */
 				ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
 				DebugStringStr("STATE_IDLE");
+				break;
+			}
+			else if( currentGuard[GUARD_ABANDON_PRIMING].guardValue == GUARD_VALUE_TRUE )
+			{
+				// abbandono il priming e ritorno in IDLE
+				currentGuard[GUARD_PRIMING_END].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
+				ptrFutureState = &stateState[3];
+				/* compute future parent */
+				ptrFutureParent = ptrFutureState->ptrParent;
+				/* compute future child */
+				ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
+				DebugStringStr("STATE_IDLE(ABBANDONA)");
 				break;
 			}
 
@@ -4091,6 +3815,12 @@ void Set_Data_EEPROM_Default(void)
 
 		 config_data.sensor_PRx[ART].prSensGain   = PR_ART_GAIN;
 		 config_data.sensor_PRx[ART].prSensOffset = PR_ART_OFFSET;
+
+		 config_data.FlowSensor_Ven_Gain   = GAIN_FLOW_SENS_VEN;
+		 config_data.FlowSensor_Ven_Offset = OFFSET_FLOW_SENS_VEN;
+
+		 config_data.FlowSensor_Art_Gain   = GAIN_FLOW_SENS_ART;
+		 config_data.FlowSensor_Art_Offset = OFFSET_FLOW_SENS_ART;
 
 		 /*word di controllo che la flash usata come eeprom sia
 		  * stata scritta almeno una volta; TODO si può mettere un CRC

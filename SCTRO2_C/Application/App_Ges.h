@@ -41,7 +41,7 @@ static void computeMachineStateGuardPrimingPh2(void);
 static void computeMachineStateGuardTreatment(void);
 void processMachineState(void);
 static void manageStateEntryAndStateAlways(unsigned short stateId);
-int get_Set_Point_Pressure(int Speed);
+
 
 
 /* STATE LEVEL FUNCTION */
@@ -136,7 +136,6 @@ void manageParentTreatAlarmAlways(void);
 
 void setPumpPressLoop(unsigned char pmpId, unsigned char valOnOff);
 unsigned char getPumpPressLoop(unsigned char pmpId);
-void alwaysPumpPressLoop(unsigned char pmpId, unsigned char *PidFirstTime);
 
 void manageParentEntry(void);
 void manageParentEntryAlways(void);
@@ -202,6 +201,6 @@ void EEPROM_Read(LDD_FLASH_TAddress Source, LDD_TData *Dest, LDD_FLASH_TDataSize
 void CallInIdleState(void);
 word GetTotalPrimingVolumePerf(void);
 void CheckOxygenationSpeed(word value);
-void alwaysPumpPressLoopVen(unsigned char pmpId, unsigned char *PidFirstTime);;
+
 
 #endif /* APPLICATION_APP_GES_H_ */

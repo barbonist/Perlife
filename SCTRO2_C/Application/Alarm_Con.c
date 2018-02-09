@@ -197,7 +197,8 @@ void alarmEngineAlways(void)
 
 
 			//verifica physic pressioni
-			manageAlarmPhysicPressSens();
+			manageAlarmPhysicPressSensHigh();
+			//manageAlarmPhysicPressSensLow();
 
 			//verifica physic ir temp sens
 			manageAlarmPhysicTempSens();
@@ -211,7 +212,8 @@ void alarmEngineAlways(void)
 			manageAlarmIrTempSensNotDetected();
 
 			//verifica physic pressioni
-			manageAlarmPhysicPressSens();
+			manageAlarmPhysicPressSensHigh();
+			//manageAlarmPhysicPressSensLow();
 
 			//verifica physic ir temp sens
 			manageAlarmPhysicTempSens();
@@ -221,7 +223,8 @@ void alarmEngineAlways(void)
 		case STATE_TREATMENT_KIDNEY_1:
 		{
 			//verifica physic pressioni
-			manageAlarmPhysicPressSens();
+			manageAlarmPhysicPressSensHigh();
+			manageAlarmPhysicPressSensLow();
 
 			/*DA DEBUGGARE*/
 			//verifica physic flow sensor
@@ -245,7 +248,8 @@ void alarmEngineAlways(void)
 
 		case STATE_PRIMING_WAIT:
 			//verifica physic pressioni
-			manageAlarmPhysicPressSens();
+			manageAlarmPhysicPressSensHigh();
+			manageAlarmPhysicPressSensLow();
 
 			//verifica physic ir temp sens
 			manageAlarmPhysicTempSens();
@@ -253,7 +257,8 @@ void alarmEngineAlways(void)
 
 		case STATE_PRIMING_RICIRCOLO:
 			//verifica physic pressioni
-			manageAlarmPhysicPressSens();
+			manageAlarmPhysicPressSensHigh();
+			manageAlarmPhysicPressSensLow();
 
 			//verifica physic ir temp sens
 			manageAlarmPhysicTempSens();
@@ -261,7 +266,8 @@ void alarmEngineAlways(void)
 
 		case STATE_WAIT_TREATMENT:
 			//verifica physic pressioni
-			manageAlarmPhysicPressSens();
+			manageAlarmPhysicPressSensHigh();
+			manageAlarmPhysicPressSensLow();
 
 			//verifica physic ir temp sens
 			manageAlarmPhysicTempSens();
@@ -286,7 +292,8 @@ void alarmEngineAlways(void)
 		case STATE_TREATMENT_2:
 		{
 			//verifica physic pressioni
-			manageAlarmPhysicPressSens();
+			manageAlarmPhysicPressSensHigh();
+			manageAlarmPhysicPressSensLow();
 
 			/*DA DEBUGGARE*/
 			//verifica physic flow sensor
@@ -404,8 +411,28 @@ void alarmEngineAlways(void)
 	}
 }
 
+void manageAlarmPhysicPressSensLow(void)
+{
+	if(PR_ART_mmHg_Filtered <= PR_ART_LOW)
+	{
+		alarmList[PRESS_ART_LOW].physic = PHYSIC_TRUE;
+	}
+	else
+	{
+		alarmList[PRESS_ART_LOW].physic = PHYSIC_FALSE;
+	}
 
-void manageAlarmPhysicPressSens(void)
+	if(PR_VEN_mmHg_Filtered <= PR_VEN_LOW && GetTherapyType() == LiverTreat)
+	{
+		alarmList[PRESS_VEN_LOW].physic = PHYSIC_TRUE;
+	}
+	else
+	{
+		alarmList[PRESS_VEN_LOW].physic = PHYSIC_FALSE;
+	}
+}
+
+void manageAlarmPhysicPressSensHigh(void)
 {
 
 	if(PR_ART_mmHg_Filtered > PR_ART_HIGH)
@@ -416,16 +443,6 @@ void manageAlarmPhysicPressSens(void)
 	{
 		alarmList[PRESS_ART_HIGH].physic = PHYSIC_FALSE;
 	}
-
-	if(PR_ART_mmHg_Filtered <= PR_ART_LOW)
-	{
-		alarmList[PRESS_ART_LOW].physic = PHYSIC_TRUE;
-	}
-	else
-	{
-		alarmList[PRESS_ART_LOW].physic = PHYSIC_FALSE;
-	}
-
 
 	if(PR_ADS_FLT_mmHg_Filtered > PR_ADS_FILTER_HIGH)
 	{
@@ -445,18 +462,61 @@ void manageAlarmPhysicPressSens(void)
 	{
 		alarmList[PRESS_VEN_HIGH].physic = PHYSIC_FALSE;
 	}
-
-	if(PR_VEN_mmHg_Filtered <= PR_VEN_LOW && GetTherapyType() == LiverTreat)
-	{
-		alarmList[PRESS_VEN_LOW].physic = PHYSIC_TRUE;
-	}
-	else
-	{
-		alarmList[PRESS_VEN_LOW].physic = PHYSIC_FALSE;
-	}
-
-
 }
+
+//void manageAlarmPhysicPressSens(void)
+//{
+//
+//	if(PR_ART_mmHg_Filtered > PR_ART_HIGH)
+//	{
+//		alarmList[PRESS_ART_HIGH].physic = PHYSIC_TRUE;
+//	}
+//	else
+//	{
+//		alarmList[PRESS_ART_HIGH].physic = PHYSIC_FALSE;
+//	}
+//
+//	if(PR_ART_mmHg_Filtered <= PR_ART_LOW)
+//	{
+//		if((ptrCurrentState->state != STATE_PRIMING_PH_2) && (ptrCurrentState->state != STATE_PRIMING_PH_1))
+//			alarmList[PRESS_ART_LOW].physic = PHYSIC_TRUE;
+//	}
+//	else
+//	{
+//		alarmList[PRESS_ART_LOW].physic = PHYSIC_FALSE;
+//	}
+//
+//
+//	if(PR_ADS_FLT_mmHg_Filtered > PR_ADS_FILTER_HIGH)
+//	{
+//		alarmList[PRESS_ADS_FILTER_HIGH].physic = PHYSIC_TRUE;
+//	}
+//	else
+//	{
+//		alarmList[PRESS_ADS_FILTER_HIGH].physic = PHYSIC_FALSE;
+//	}
+//
+//	/*il sensore Venoso è suato solo nel trattamento Liver, il Kidney non ha la linea Venosa*/
+//	if(PR_VEN_mmHg_Filtered > PR_VEN_HIGH && GetTherapyType() == LiverTreat)
+//	{
+//		alarmList[PRESS_VEN_HIGH].physic = PHYSIC_TRUE;
+//	}
+//	else
+//	{
+//		alarmList[PRESS_VEN_HIGH].physic = PHYSIC_FALSE;
+//	}
+//
+//	if(PR_VEN_mmHg_Filtered <= PR_VEN_LOW && GetTherapyType() == LiverTreat)
+//	{
+//		if((ptrCurrentState->state != STATE_PRIMING_PH_2) && (ptrCurrentState->state != STATE_PRIMING_PH_1))
+//			alarmList[PRESS_VEN_LOW].physic = PHYSIC_TRUE;
+//	}
+//	else
+//	{
+//		alarmList[PRESS_VEN_LOW].physic = PHYSIC_FALSE;
+//	}
+//}
+
 
 void manageAlarmPhysicTempSens(void)
 {

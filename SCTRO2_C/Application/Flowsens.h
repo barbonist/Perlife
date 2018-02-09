@@ -40,6 +40,7 @@
 #define ID_ADC_ZERO				0x22 /* unsigned word LL/LH/hl/hh */
 #define ID_ADC_SIGNAL			0x23 /* unsigned word LL/LH/hl/hh */
 
+
 #define MASK_ERROR_BUBBLE_ALARM		0x01 /* maschera errore per allarme aria */
 
 

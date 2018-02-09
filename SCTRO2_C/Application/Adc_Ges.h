@@ -16,6 +16,12 @@
 //#define ADC_CHANNEL_TM1			2U /* pr1 measured on adc channel 0 */
 #define ADC_CHANNEL_TM2			3U /* pr1 measured on adc channel 0 */
 
+// numero di campioni di pressione arteriosa presi per il calcolo della media dei
+// campioni gia' mediati dopo la conversione
+#define NUMB_OF_SAMPLES_ART     10
+// numero di campioni di pressione venosa presi per il calcolo della media dei
+// campioni gia' mediati dopo la conversione
+#define NUMB_OF_SAMPLES_VEN     10
 
 
 word * ReadAdcPr1(void);
@@ -38,4 +44,8 @@ void Coversion_From_ADC_To_Voltage();
 void Pressure_sensor_Fltered ();
 void Manage_Air_Sensor_1(void);
 void Manage_Debug_led(bool Status);
+
+void CalcVenSistDiastPress(word Press);
+void CalcArtSistDiastPress(word Press);
+
 #endif /* APPLICATION_ADC_GES_H_ */

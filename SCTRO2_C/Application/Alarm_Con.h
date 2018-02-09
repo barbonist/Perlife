@@ -133,7 +133,9 @@ void manageAlarmFlowSensNotDetected(void);
 void manageAlarmIrTempSensNotDetected(void);
 void manageAlarmActuatorModbusNotRespond(void);
 
-void manageAlarmPhysicPressSens(void);
+void manageAlarmPhysicPressSensHigh(void);
+void manageAlarmPhysicPressSensLow(void);
+
 void manageAlarmPhysicTempSens(void);
 void manageAlarmPhysicUFlowSens(void);
 //void DebugStringStr(char *s);

@@ -73,7 +73,7 @@ void Manage_UFlow_Sens()
 
 	/***************SPEDIZIONE MESSAGGIO*****************/
 	/*mando il messaggio di interrogazione ogni 250 nsec*/
-	if (timerCounterUFlowSensor >= 5 )
+	if (timerCounterUFlowSensor >= 1 )
 	{
 
 		timerCounterUFlowSensor = 0;
@@ -156,6 +156,11 @@ void Manage_UFlow_Sens()
 				//sensor_UFLOW[Id_Buffer].Average_Flow_Val = Average_Flow_Value(Id_Buffer, numFloatUFlow_Val.numFormatFloat_Val);
 				sensor_UFLOW[Id_Buffer].Average_Flow_Val = Average_Flow_Value(Id_Buffer, sensor_UFLOW[Id_Buffer].Inst_Flow_Value);
 
+				if (Id_Buffer == 1)
+					sensor_UFLOW[Id_Buffer].Average_Flow_Val = sensor_UFLOW[Id_Buffer].Average_Flow_Val * config_data.FlowSensor_Ven_Gain - config_data.FlowSensor_Ven_Offset;
+				else //if (Id_Buffer == 0)
+					sensor_UFLOW[Id_Buffer].Average_Flow_Val = sensor_UFLOW[Id_Buffer].Average_Flow_Val * config_data.FlowSensor_Art_Gain - config_data.FlowSensor_Art_Offset;
+
 				/*decremento il contatore dei messaggi inviati per quel sensore*/
 				sensor_UFLOW[Id_Buffer].RequestMsgProcessed = 0;
 			}
@@ -186,6 +191,9 @@ void Manage_UFlow_Sens()
 				sensor_UFLOW[Id_Buffer].Accumulated_Volume_ul = numFloatUFlow_Val.numFormatFloat_Val;
 			}
 		}
+
+		if (sensor_UFLOW[Id_Buffer].Average_Flow_Val < 0)
+			sensor_UFLOW[Id_Buffer].Average_Flow_Val = 0;
 	}
 	/***************FINE MEMORIZZAZIONE MESSAGGIO RICEVUTO*****************/
 }

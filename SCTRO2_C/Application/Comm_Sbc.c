@@ -20,6 +20,9 @@
 #include "ASerialLdd5.h"
 #include "general_func.h"
 
+extern word MedForArteriousPid;
+extern word MedForVenousPid;
+
 void buildModBusWriteRegActResponseMsg(char *ptrMsgSbcRx)
 {
 	byte index = 0;
@@ -901,12 +904,12 @@ void buildRDMachineStateResponseMsg(char code, char subcode)
 	sbc_tx_data[index++] = (PR_ADS_FLT_mmHg_Filtered) & 0xFF;
 	/* sensors parameters: pressure arterial */
 
-	sbc_tx_data[index++] = (PR_ART_mmHg_Filtered >> 8) & 0xFF;
-	sbc_tx_data[index++] = (PR_ART_mmHg_Filtered) & 0xFF;
+	sbc_tx_data[index++] = (MedForArteriousPid >> 8) & 0xFF;
+	sbc_tx_data[index++] = (MedForArteriousPid) & 0xFF;
 	/* sensors parameters: pressure venous */
 
-	sbc_tx_data[index++] = (PR_VEN_mmHg_Filtered >> 8) & 0xFF;
-	sbc_tx_data[index++] = (PR_VEN_mmHg_Filtered) & 0xFF;
+	sbc_tx_data[index++] = (MedForVenousPid >> 8) & 0xFF;
+	sbc_tx_data[index++] = (MedForVenousPid) & 0xFF;
 	/* sensors parameters: pressure oxygenation */
 
 	sbc_tx_data[index++] = (PR_OXYG_mmHg_Filtered >> 8) & 0xFF;
@@ -1176,7 +1179,7 @@ void initSetParamFromGUI(void){
 }
 void initSetParamInSourceCode(void)
 {
-	parameterWordSetFromGUI[PAR_SET_VENOUS_PRESS_TARGET].value = SET_POINT_PRESSURE_INIT;
+	parameterWordSetFromGUI[PAR_SET_VENOUS_PRESS_TARGET].value = 0;
 	parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value = 2000;
 }
 

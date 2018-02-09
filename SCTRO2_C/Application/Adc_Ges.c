@@ -27,6 +27,10 @@ word adcValue;
 word adcValueDummy;
 word * adcValPtr;
 
+word MedForVenousPid = 0;
+word MedForArteriousPid = 0;
+
+
 void PR_Sens_ADC_Init()
 {
 	PR_ADS_FLT_ADC  = 0;		//variabile globale per il valore ADC del sensore di pressione del filtro assorbente --> PTB11
@@ -114,8 +118,6 @@ void Manange_ADC1(void)
   	  }
 }
 
-#define NUMB_OF_SAMPLES_VEN  10
-word MedForVenousPid = 0;
 
 void CalcVenSistDiastPress(word Press)
 {
@@ -164,6 +166,53 @@ void CalcVenSistDiastPress(word Press)
 	PR_VEN_Med_mmHg = (int) ( 2 * PR_VEN_Sistolyc_mmHg + PR_VEN_Diastolyc_mmHg)/3;
 }
 
+void CalcArtSistDiastPress(word Press)
+{
+  static word CircPressArr[NUMB_OF_SAMPLES_VEN];
+  static int CircPressArrIdx = 0;
+  static unsigned char BufferFull = 0;
+  word min = 0xffff;
+  word max = 0;
+
+  CircPressArr[CircPressArrIdx] = Press;
+  CircPressArrIdx++;
+
+  if(CircPressArrIdx == NUMB_OF_SAMPLES_ART)
+  {
+	  CircPressArrIdx = 0;
+	  BufferFull = 1;
+  }
+  if(BufferFull)
+  {
+	  MedForArteriousPid = 0;
+	  for(int i = 0; i < NUMB_OF_SAMPLES_ART; i++)
+	  {
+		  MedForArteriousPid += CircPressArr[i];
+		  if(CircPressArr[i] < min)
+			  min = CircPressArr[i];
+		  if(CircPressArr[i] > max)
+			  max = CircPressArr[i];
+	  }
+	  MedForArteriousPid = MedForArteriousPid / NUMB_OF_SAMPLES_ART;
+  }
+  else
+  {
+	  MedForArteriousPid = 0;
+	  for(int i = 0; i < CircPressArrIdx; i++)
+	  {
+		  MedForArteriousPid += CircPressArr[i];
+		  if(CircPressArr[i] < min)
+			  min = CircPressArr[i];
+		  if(CircPressArr[i] > max)
+			  max = CircPressArr[i];
+	  }
+	  MedForArteriousPid = MedForArteriousPid / CircPressArrIdx;
+  }
+	PR_ART_Diastolyc_mmHg = min;
+	PR_ART_Sistolyc_mmHg  = max;
+	PR_ART_Med_mmHg = (int) ( 2 * PR_ART_Sistolyc_mmHg + PR_ART_Diastolyc_mmHg)/3;
+}
+
 
 void Coversion_From_ADC_To_mmHg_Pressure_Sensor()
 {
@@ -178,47 +227,8 @@ void Coversion_From_ADC_To_mmHg_Pressure_Sensor()
 	PR_ART_mmHg 	= (PR_ART_ADC     - config_data.sensor_PRx[ART].prSensOffset)     * config_data.sensor_PRx[ART].prSensGain;
 
 	CalcVenSistDiastPress(PR_VEN_mmHg_Filtered);
+	CalcArtSistDiastPress(PR_ART_mmHg_Filtered);
 
-// metodo iniziale di calcolo della diastolica, sistolica
-//	if (Number_Sample == 0)
-//	{
-//		Number_Sample ++;
-//
-//		Pr_Dia_art = PR_ART_mmHg;
-//		Pr_Sist_art  = PR_ART_mmHg;
-//
-//		Pr_Dia_ven = PR_VEN_mmHg;
-//		Pr_Sist_ven  = PR_VEN_mmHg;
-//	}
-//	else if (Number_Sample < 10)
-//	{
-//		Number_Sample ++;
-//		if (PR_ART_mmHg_Filtered > Pr_Sist_art)
-//			Pr_Sist_art = PR_ART_mmHg;
-//
-//		if (PR_ART_mmHg < Pr_Dia_art)
-//			Pr_Dia_art = PR_ART_mmHg;
-//
-//		if (PR_VEN_mmHg > Pr_Sist_ven)
-//			Pr_Sist_ven = PR_VEN_mmHg;
-//
-//		if (PR_VEN_mmHg < Pr_Dia_ven)
-//			Pr_Dia_ven = PR_VEN_mmHg;
-//
-//		//sono arrivato all'ultimo campioine dei 10 su cui calcolare diast sist e media
-//		if (Number_Sample == 9)
-//		{
-//			Number_Sample = 0;
-//
-//			PR_ART_Diastolyc_mmHg = Pr_Dia_art;
-//			PR_ART_Sistolyc_mmHg  = Pr_Sist_art;
-//			PR_ART_Med_mmHg = (int) ( 2 * PR_ART_Sistolyc_mmHg + PR_ART_Diastolyc_mmHg)/3;
-//
-//			PR_VEN_Diastolyc_mmHg = Pr_Dia_ven;
-//			PR_VEN_Sistolyc_mmHg  = Pr_Sist_ven;
-//			PR_VEN_Med_mmHg = (int) ( 2 * PR_VEN_Sistolyc_mmHg + PR_VEN_Diastolyc_mmHg)/3;
-//		}
-//	}
 }
 
 void Pressure_sensor_Fltered ()

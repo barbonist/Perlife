@@ -821,6 +821,10 @@ struct pressureSensor{
 struct ParSaveTO_EEPROM
 {
 	struct pressureSensor sensor_PRx[5];
+	float  FlowSensor_Ven_Gain;
+	float  FlowSensor_Ven_Offset;
+	float  FlowSensor_Art_Gain;
+	float  FlowSensor_Art_Offset;
 	word EEPROM_Control;
 };
 
@@ -935,7 +939,8 @@ struct ultrsndFlowSens{
 #define MASK_Error_In_Temp_Meas				0x40
 #define MASK_Device_Fault					0x80
 
-#define SAMPLE 								16			//numero di campioni su cui mediare il flusso istantaneo letto
+#define SAMPLE 								64          // se uso un campinamento di 50 msec
+//#define SAMPLE 							16 		    //numero di campioni su cui mediare il flusso istantaneo letto
 #define TOT_UF_SENSOR 						2
 #define BYTE_COUNT_GET_VAL_CODE 			0x17 		//numero di byte che mi aspetto in ricezione col comando di GET_VAL_CODE customizzato con 3 byte di richesta 0x82 -- 0x88 -- 0x8B
 float buffer_flow_value [TOT_UF_SENSOR][SAMPLE];
@@ -1190,6 +1195,12 @@ unsigned char CHANGE_ADDRESS_IR_SENS;
 #define PR_ART_GAIN 		0.018691
 #define PR_ART_OFFSET		19672
 
+/*valore di gain e offset del sensore di flusso venoso calcolati sperimentalmente con prove di flusso con la bilancia*/
+#define GAIN_FLOW_SENS_VEN		0.7722f
+#define OFFSET_FLOW_SENS_VEN		25
+#define GAIN_FLOW_SENS_ART      0.93846f
+#define OFFSET_FLOW_SENS_ART		40
+
 #define FREQ_DEBUG_LED 	10
 #define SERVICE 		0x01
 #define TREAT			0x00
@@ -1303,6 +1314,13 @@ Kd = Kp*Pu/8  = 0.01875
 #define parKD_TC_Ven 						0.01875
 
 
+// parametri per il nuovo pid slla arteriosa
+#define parKITC_Art 						0.048
+#define parKP_Art 							0.06
+#define parKD_TC_Art 						0.01875
+
+
+
 /*
 //----------------------------------------------------------------------------------------------------------
 // i valori che seguono sono da considerare nel funzionamento normale
@@ -1315,14 +1333,6 @@ Kd = Kp*Pu/8  = 0.01875
 #define DISCHARGE_AMOUNT_ART_PUMP  1000
 //----------------------------------------------------------------------------------------------------------
 */
-// velocita' con cui faccio partire, per ora, la pompa di depurazione
-#define LIVER_PPAR_SPEED 2000
-// velocita' con cui faccio partire, per ora, la pompa di ossigenazione e perfusione venosa nel caso di priming
-#define LIVER_PRIMING_PMP_OXYG_SPEED 2000
-// definisce il valore massimo di giri che possono raggiungere le pompe di ossigenazione
-#define MAX_OXYG_RPM  100
-// numero di giri della pompa di ossigenazione durante lo scarico e nel rene
-#define KIDNEY_EMPTY_PPAR_SPEED 2000
 
 //----------------------------------------------------------------------------------------------------------
 // i valori che seguono sono da considerare per il debug interno e quindi devono essere commentati
@@ -1335,6 +1345,17 @@ Kd = Kp*Pu/8  = 0.01875
 // quantita' di liquido scaricata prima di iniziare lo scaricamento del disposable
 #define DISCHARGE_AMOUNT_ART_PUMP  20
 //----------------------------------------------------------------------------------------------------------
+
+// velocita' con cui faccio partire, per ora, la pompa di depurazione
+#define LIVER_PPAR_SPEED 2000
+// velocita' con cui faccio partire, per ora, la pompa di ossigenazione e perfusione venosa nel caso di priming
+#define LIVER_PRIMING_PMP_OXYG_SPEED 2000
+// definisce il valore massimo di giri che possono raggiungere le pompe di ossigenazione
+#define MAX_OXYG_RPM  110
+// numero di giri della pompa di ossigenazione durante lo scarico e nel rene
+#define KIDNEY_EMPTY_PPAR_SPEED 2000
+// definisce il valore massimo di giri che puo raggiungere la pompa arteriosa
+#define MAX_ART_RPM  60
 
 //start addres FLASH used as EEPROM
 #define START_ADDRESS_EEPROM		0xFF000
