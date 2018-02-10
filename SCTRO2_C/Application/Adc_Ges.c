@@ -21,6 +21,8 @@
 #include "string.h"
 #include "stdio.h"
 #include "stdlib.h"
+#include "EEPROM.h"
+#include "App_Ges.h"
 
 byte adcRes = 0xFF;
 word adcValue;
@@ -252,6 +254,112 @@ void Coversion_From_ADC_To_Voltage()
  * */
 void Pressure_Sensor_Calibration(Press_sens ID_sens, int value, unsigned char point)
 {
+
+	static int ADCFirstPoint, ADCSecondPoint, FirstValue, SecondValue;
+	static bool FIRST_POINT = FALSE;
+
+	/*primo punto di calibrazione*/
+	if (point = 0)
+	{
+		//copy first value sent by SBC
+		FirstValue = value;
+
+		switch (ID_sens)
+		{
+			case OXYG:
+				//copy First Point ADC
+				ADCFirstPoint = PR_OXYG_ADC;
+				FIRST_POINT = TRUE;
+				break;
+
+			case LEVEL:
+				//copy First Point ADC
+				 ADCFirstPoint = PR_LEVEL_ADC;
+				 FIRST_POINT = TRUE;
+				break;
+
+			case ADS_FLT:
+				//copy First Point ADC
+				ADCFirstPoint = PR_ADS_FLT_ADC;
+				FIRST_POINT = TRUE;
+				break;
+
+			case VEN:
+				//copy First Point ADC
+				ADCFirstPoint = PR_VEN_ADC;
+				FIRST_POINT = TRUE;
+				break;
+
+			case ART:
+				//copy First Point ADC
+				ADCFirstPoint = PR_ART_ADC;
+				FIRST_POINT = TRUE;
+				break;
+
+			default:
+				ADCFirstPoint = 0;
+				break;
+		}
+	}
+
+	/*secondo punto di calibrazione*/
+	else if (point = 1 && FIRST_POINT == TRUE)
+	{
+		//copy Second value sent by SBC
+		SecondValue =  value;
+		FIRST_POINT = FALSE;
+
+		switch (ID_sens)
+		{
+			case OXYG:
+				//copy Second Point ADC
+				ADCSecondPoint = PR_OXYG_ADC;
+				config_data.sensor_PRx[OXYG].prSensGain 	= (SecondValue - FirstValue) / (ADCSecondPoint - ADCFirstPoint);
+				config_data.sensor_PRx[OXYG].prSensOffset 	= SecondValue - (ADCSecondPoint * config_data.sensor_PRx[OXYG].prSensGain);
+				/*finita la calibrazione di un sensore la vado subito a salvare in EEPROM*/
+				EEPROM_write((EEPROM_TDataAddress)&config_data, START_ADDRESS_EEPROM, sizeof(config_data));
+				break;
+
+			case LEVEL:
+				//copy Second Point ADC
+				ADCSecondPoint = PR_LEVEL_ADC;
+				config_data.sensor_PRx[LEVEL].prSensGain 	= (SecondValue - FirstValue) / (ADCSecondPoint - ADCFirstPoint);
+				config_data.sensor_PRx[LEVEL].prSensOffset 	= SecondValue - (ADCSecondPoint * config_data.sensor_PRx[LEVEL].prSensGain);
+				/*finita la calibrazione di un sensore la vado subito a salvare in EEPROM*/
+				EEPROM_write((EEPROM_TDataAddress)&config_data, START_ADDRESS_EEPROM, sizeof(config_data));
+				break;
+
+			case ADS_FLT:
+				//copy Second Point ADC
+				ADCSecondPoint = PR_ADS_FLT_ADC;
+				config_data.sensor_PRx[ADS_FLT].prSensGain 	= (SecondValue - FirstValue) / (ADCSecondPoint - ADCFirstPoint);
+				config_data.sensor_PRx[ADS_FLT].prSensOffset 	= SecondValue - (ADCSecondPoint * config_data.sensor_PRx[ADS_FLT].prSensGain);
+				/*finita la calibrazione di un sensore la vado subito a salvare in EEPROM*/
+				EEPROM_write((EEPROM_TDataAddress)&config_data, START_ADDRESS_EEPROM, sizeof(config_data));
+				break;
+
+			case VEN:
+				//copy Second Point ADC
+				ADCSecondPoint = PR_VEN_ADC;
+				config_data.sensor_PRx[VEN].prSensGain 	= (SecondValue - FirstValue) / (ADCSecondPoint - ADCFirstPoint);
+				config_data.sensor_PRx[VEN].prSensOffset 	= SecondValue - (ADCSecondPoint * config_data.sensor_PRx[VEN].prSensGain);
+				/*finita la calibrazione di un sensore la vado subito a salvare in EEPROM*/
+				EEPROM_write((EEPROM_TDataAddress)&config_data, START_ADDRESS_EEPROM, sizeof(config_data));
+				break;
+
+			case ART:
+				//copy Second Point ADC
+				ADCSecondPoint = PR_ART_ADC;
+				config_data.sensor_PRx[ART].prSensGain 	= (SecondValue - FirstValue) / (ADCSecondPoint - ADCFirstPoint);
+				config_data.sensor_PRx[ART].prSensOffset 	= SecondValue - (ADCSecondPoint * config_data.sensor_PRx[ART].prSensGain);
+				/*finita la calibrazione di un sensore la vado subito a salvare in EEPROM*/
+				EEPROM_write((EEPROM_TDataAddress)&config_data, START_ADDRESS_EEPROM, sizeof(config_data));
+				break;
+
+			default:
+				break;
+		}
+	}
 
 }
 
