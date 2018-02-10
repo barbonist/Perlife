@@ -172,26 +172,6 @@ void Manage_UFlow_Sens()
 			 * se in questo byte ho un numero > 23 && != FF (is an error)*/
 			sensor_UFLOW[Id_Buffer].bubbleSize = sensor_UFLOW[Id_Buffer].bufferReceived[13];
 
-			if (Id_Buffer == 0)
-			{
-				if(sensor_UFLOW[Id_Buffer].bubbleSize  == 0)
-				{
-					int a = 0;
-				}
-				else if(sensor_UFLOW[Id_Buffer].bubbleSize  <= 20)
-				{
-					int a = 0;
-				}
-				else if(sensor_UFLOW[Id_Buffer].bubbleSize  <= 30)
-				{
-					int a = 0;
-				}
-				else
-				{
-					int a = 0;
-				}
-			}
-
 			numFloatUFlow_Val.ieee754NumFormat_Val = (sensor_UFLOW[Id_Buffer].bufferReceived[21] << 24) |
 													 (sensor_UFLOW[Id_Buffer].bufferReceived[20] << 16) |
 													 (sensor_UFLOW[Id_Buffer].bufferReceived[19] << 8) |
