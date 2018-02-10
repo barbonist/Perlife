@@ -591,7 +591,8 @@ struct alarm {
 	unsigned char	physic;			/* alarm physic condition */
 	unsigned char	active;			/* alarm active condition */
 	unsigned char	type;			/* alarm type: control, protection */
-	unsigned char	secActType;		/* alarm security action: type of secuirty action required */
+	unsigned short	secActType;		/* alarm security action: type of secuirty action required
+	                                   (FM modificato da char ad unsigned short perche' ho bisogno di piu' bit per distinguere i vari allarmi*/
 	unsigned char	priority;		/* alarm priority: low, medium, right */
 	unsigned short	entryTime;		/* entry time in ms */
 	unsigned short	exitTime;		/* exit time in ms */
@@ -1362,6 +1363,12 @@ Kd = Kp*Pu/8  = 0.01875
 //stop addres FLASH used as EEPROM
 #define STOP_ADDRESS_EEPROM			0xFFFFF
 
+// indice dell'array sensor_UFLOW corrispondente al sensore d'aria arterioso
+#define ARTERIOUS_AIR_SENSOR 0
+// indice dell'array sensor_UFLOW corrispondente al sensore d'aria venoso
+#define VENOUS_AIR_SENSOR 1
+
+
 
 typedef enum
 {
@@ -1392,6 +1399,8 @@ unsigned char ParamRcvdInMounting[4];
 int AllParametersReceived;
 // vale 1 se e' arrivato il comando da sbc per impostare il tipo di terapia
 char TherapyCmdArrived;
+
+
 
 
 #endif /* SOURCES_GLOBAL_H_ */

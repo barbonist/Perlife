@@ -226,9 +226,8 @@ void alarmEngineAlways(void)
 			manageAlarmPhysicPressSensHigh();
 			manageAlarmPhysicPressSensLow();
 
-			/*DA DEBUGGARE*/
-			//verifica physic flow sensor
-		//	manageAlarmPhysicUFlowSens();
+			//verifica physic flow sensor (presenza aria)
+			//manageAlarmPhysicUFlowSens();
 
 			//verifica physic ir temp sens
 			manageAlarmPhysicTempSens();
@@ -532,8 +531,8 @@ void manageAlarmPhysicTempSens(void)
 
 void manageAlarmPhysicUFlowSens(void){
 	if(
-		(sensor_UFLOW[0].bubbleSize >= 25) ||
-		(sensor_UFLOW[0].bubblePresence == MASK_ERROR_BUBBLE_ALARM)
+		(sensor_UFLOW[ARTERIOUS_AIR_SENSOR].bubbleSize >= 25) ||
+		(sensor_UFLOW[ARTERIOUS_AIR_SENSOR].bubblePresence == MASK_ERROR_BUBBLE_ALARM)
 		)
 	{
 		alarmList[AIR_PRES_ART].physic = PHYSIC_TRUE;

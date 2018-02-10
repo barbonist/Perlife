@@ -17,6 +17,7 @@
 #include "Alarm_Con.h"
 
 
+extern int MyArrayIdx;
 
 THERAPY_TYPE TherapyType = KidneyTreat;
 bool WriteActive = FALSE;
@@ -1203,6 +1204,7 @@ void Check_Actuator_Status (char slaveAddr,
 	_funcRetVal.slvresRetNumByte = _funcRetValPtr->slvresRetNumByte;
 
 
+	MyArrayIdx = 0;
 	MODBUS_COMM_SendBlock(_funcRetVal.ptr_msg,
 						  _funcRetVal.mstreqRetStructNumByte,
 						  &snd);
@@ -1232,6 +1234,7 @@ void Manage_and_Storage_ModBus_Actuator_Data(void)
  	/*chiamo la funzione ogni 50 msec*/
  	if (timerCounterCheckModBus >= 1)
     {
+        ReadActive = TRUE;
      	if (iFlag_actuatorCheck != IFLAG_COMMAND_RECEIVED )
      	{
      		//TODO aggiungere controllo mancata risposta
@@ -1262,7 +1265,6 @@ void Manage_and_Storage_ModBus_Actuator_Data(void)
 
         if (slvAddr > LAST_ACTUATOR)
 			slvAddr = FIRST_ACTUATOR;
-        ReadActive = TRUE;
     }
 }
 

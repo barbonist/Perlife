@@ -28,6 +28,7 @@
 #include "stdio.h"
 #include "stdlib.h"
 
+extern int MyArrayIdx;
 
 void Service_SBC(void){
 
@@ -85,6 +86,8 @@ void Service_SBC(void){
 	unsigned char err;
 	unsigned char stateSensTempIR;
 	word ret;
+	word snd;
+
 	for(char i=0; i<20;i++)
 	{
 		rcvData[i] = 0;
@@ -148,14 +151,13 @@ void Service_SBC(void){
 								_funcRetVal.mstreqRetStructNumByte = _funcRetValPtr->mstreqRetStructNumByte;
 								_funcRetVal.slvresRetPtr = _funcRetValPtr->slvresRetPtr;
 								_funcRetVal.slvresRetNumByte = _funcRetValPtr->slvresRetNumByte;
+
+								MyArrayIdx = 0;
+								MODBUS_COMM_SendBlock(_funcRetVal.ptr_msg,
+													  _funcRetVal.mstreqRetStructNumByte,
+													  &snd);
+
 							}
-
-
-							word snd;
-							MODBUS_COMM_SendBlock(_funcRetVal.ptr_msg,
-												  _funcRetVal.mstreqRetStructNumByte,
-												  &snd);
-
 							//send answer to sbc
 							ptrMsgSbcRx = &sbc_rx_data;
 							buildModBusWriteRegActResponseMsg(ptrMsgSbcRx);

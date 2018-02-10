@@ -859,9 +859,14 @@ void MODBUS_COMM_OnRxChar(void)
 **     Returns     : Nothing
 ** ===================================================================
 */
+int SentCounter = 0;
+unsigned char MyArray[100];
+int MyArrayIdx = 0;
 void MODBUS_COMM_OnTxChar(void)
 {
   /* Write your code here ... */
+	SentCounter++;
+	MyArray[MyArrayIdx++] = *(_funcRetVal.ptr_msg + MyArrayIdx);
 }
 
 /*
