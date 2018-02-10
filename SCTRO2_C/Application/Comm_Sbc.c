@@ -221,10 +221,11 @@ void buildPressSensReadParamResponseMsg(char *ptrMsgSbcRx)
 	myCommunicatorToSBC.numByteToSend = index;
 }
 
-/*
+
 void buildPressSensCalibResponseMsg(char *ptrMsgSbcRx)
 {
     byte index = 0;
+
 
 	sbc_tx_data[index++] = 0xA5;
 	sbc_tx_data[index++] = 0xAA;
@@ -236,15 +237,49 @@ void buildPressSensCalibResponseMsg(char *ptrMsgSbcRx)
 	sbc_tx_data[index++] = 0x66;
 	sbc_tx_data[index++] = ptrMsgSbcRx[7];
 	sbc_tx_data[index++] = ptrMsgSbcRx[8];
-	sbc_tx_data[index++] = sensor_PRx[ptrMsgSbcRx[7]].prSensAdc >> 8;
-	sbc_tx_data[index++] = sensor_PRx[ptrMsgSbcRx[7]].prSensAdc;
+
+	/*nel byte 7 dell'array di ricezione ho il numero del sensore di riferimento*/
+	switch (ptrMsgSbcRx[7])
+	{
+		case 1:
+			sbc_tx_data[index++] = PR_OXYG_ADC >> 8;
+			sbc_tx_data[index++] = PR_OXYG_ADC;
+			break;
+
+		case 2:
+			sbc_tx_data[index++] = PR_LEVEL_ADC >> 8;
+			sbc_tx_data[index++] = PR_LEVEL_ADC;
+			break;
+
+		case 3:
+			sbc_tx_data[index++] = PR_ADS_FLT_ADC >> 8;
+			sbc_tx_data[index++] = PR_ADS_FLT_ADC;
+			break;
+
+		case 4:
+			sbc_tx_data[index++] = PR_VEN_ADC >> 8;
+			sbc_tx_data[index++] = PR_VEN_ADC;
+			break;
+
+		case 5:
+			sbc_tx_data[index++] = PR_ART_ADC >> 8;
+			sbc_tx_data[index++] = PR_ART_ADC;
+			break;
+
+		default:
+			sbc_tx_data[index++] = 0;
+			sbc_tx_data[index++] = 0;
+			break;
+	}
+
+
 	sbc_tx_data[index++] = 0x00;
 	sbc_tx_data[index++] = 0x00;
 	sbc_tx_data[index++] = 0x5A;
 
 	myCommunicatorToSBC.numByteToSend = index;
 }
-*/
+
 void buildTempIRSensReadValuesResponseMsg(char *ptrMsgSbcRx)
 {
 	byte index = 0;

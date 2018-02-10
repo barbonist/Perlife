@@ -246,6 +246,15 @@ void Coversion_From_ADC_To_Voltage()
 	V24_P2_CHK_VOLT	= (V24_P2_CHK_ADC * V24_P2_CHK_GAIN + V24_P2_CHK_OFFSET);
 }
 
+/*---FUNZIONE DI CALIBRAZIONE DEI SENSORI DI PRESSIONE
+ * NAME: Pressure_Sensor_Calibration
+ * INPUT: ID_sens (quale sensore), value (valore in mmHg passato dal PC, point (se è il primo o il secondo punto du calibrazione)
+ * */
+void Pressure_Sensor_Calibration(Press_sens ID_sens, int value, unsigned char point)
+{
+
+}
+
 void ADC0_Calibration(void)
 {
 	int i;
@@ -275,68 +284,6 @@ void ADC1_Calibration(void)
 }
 
 
-word * ReadAdcPr1(void)
-{
-	adcRes = AD1_MeasureChan(1, ADC_CHANNEL_PR1);
-
-	if(adcRes == ERR_OK)
-		adcRes = AD1_GetChanValue16(ADC_CHANNEL_PR1, &adcValue);
-
-	if(adcRes == ERR_OK)
-		adcValPtr = &adcValue;
-
-	adcValueDummy = adcValue;
-	/* valuatre se introdurre un buffer circolare per mediare i campioni */
-	return adcValPtr;
-}
-
-word * ReadAdcPr2(void)
-{
-	adcRes = AD1_MeasureChan(1, ADC_CHANNEL_PR2);
-
-	if(adcRes == ERR_OK)
-		adcRes = AD1_GetChanValue16(ADC_CHANNEL_PR2, &adcValue);
-
-	adcValPtr = &adcValue;
-	/* valuatre se introdurre un buffer circolare per mediare i campioni */
-	return adcValPtr;
-}
-
-word * ReadAdcPr3(void)
-{
-	adcRes = AD1_MeasureChan(1, ADC_CHANNEL_PR3);
-
-	if(adcRes == ERR_OK)
-		adcRes = AD1_GetChanValue16(ADC_CHANNEL_PR3, &adcValue);
-
-	adcValPtr = &adcValue;
-	/* valuatre se introdurre un buffer circolare per mediare i campioni */
-	return adcValPtr;
-}
-
-/*word * ReadAdcTm1(void)
-{
-	adcRes = AD1_MeasureChan(1, ADC_CHANNEL_TM1);
-
-	if(adcRes == ERR_OK)
-		adcRes = AD1_GetChanValue16(ADC_CHANNEL_TM1, &adcValue);
-
-	adcValPtr = &adcValue;
-
-	return adcValPtr;
-}*/
-
-word * ReadAdcTm2(void)
-{
-	adcRes = AD1_MeasureChan(1, ADC_CHANNEL_TM2);
-
-	if(adcRes == ERR_OK)
-		adcRes = AD1_GetChanValue16(ADC_CHANNEL_TM2, &adcValue);
-
-	adcValPtr = &adcValue;
-	/* valuatre se introdurre un buffer circolare per mediare i campioni */
-	return adcValPtr;
-}
 
 
 int meanWA(unsigned char dimNum, int newSensVal, char IdSens)

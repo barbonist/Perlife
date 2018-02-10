@@ -793,7 +793,7 @@ unsigned char CountErrorModbusMSG[8];
 /************************************************************************/
 
 
-enum
+typedef enum
 {
 	OXYG = 0,
 	LEVEL,

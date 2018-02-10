@@ -278,7 +278,14 @@ void Service_SBC(void){
 						//TODO Store zero point for calibration
 						word snd;
 						ptrMsgSbcRx = &sbc_rx_data;
-					//	buildPressSensCalibResponseMsg(ptrMsgSbcRx);
+
+						Press_sens IdSens 	= sbc_rx_data[7];
+						int value 			= sbc_rx_data[8];
+						unsigned char point = 0;
+
+						Pressure_Sensor_Calibration(IdSens,value,point);
+
+						buildPressSensCalibResponseMsg(ptrMsgSbcRx);
 						ptrMsgSbcTx = &sbc_tx_data[0];
 						SBC_COMM_SendBlock(ptrMsgSbcTx,myCommunicatorToSBC.numByteToSend,&snd);
 					}
@@ -290,7 +297,14 @@ void Service_SBC(void){
 						//TODO Store load point for calibration
 						word snd;
 						ptrMsgSbcRx = &sbc_rx_data;
-					//	buildPressSensCalibResponseMsg(ptrMsgSbcRx);
+
+						Press_sens IdSens 	= sbc_rx_data[7];
+						int value 			= sbc_rx_data[8];
+						unsigned char point = 1;
+
+						Pressure_Sensor_Calibration(IdSens,value,point);
+
+						buildPressSensCalibResponseMsg(ptrMsgSbcRx);
 						ptrMsgSbcTx = &sbc_tx_data[0];
 						SBC_COMM_SendBlock(ptrMsgSbcTx,myCommunicatorToSBC.numByteToSend,&snd);
 					}
