@@ -218,7 +218,7 @@ static void ComputeWriteByteCount(void);
 static void FrameInitFunc3(void);
 static void FrameInitFunc10(void);
 static void FrameInitFunc17(void);
-static unsigned int ComputeChecksum(unsigned char * data, int size);
+unsigned int ComputeChecksum(unsigned char * data, int size);
 unsigned long msTick_elapsed( unsigned long last );
 void SetNonPhysicalAlm( int AlarmCode);
 void ClearNonPhysicalAlm( int AlarmCode);

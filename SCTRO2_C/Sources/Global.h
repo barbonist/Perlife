@@ -826,12 +826,13 @@ struct ParSaveTO_EEPROM
 	float  FlowSensor_Ven_Offset;
 	float  FlowSensor_Art_Gain;
 	float  FlowSensor_Art_Offset;
-	word EEPROM_Control;
+	unsigned char Revision;
+	word EEPROM_CRC;
 };
 
 struct ParSaveTO_EEPROM config_data;
 
-#define EEPROM_WRITTEN 	0xA5A5
+#define EEPROM_REVISION 0x01
 
 /*le variabili globali sottostanti usate perr la pressioner, potrebbero diventare solo 5 variabili della struttura che c'è sopra*/
 

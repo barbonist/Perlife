@@ -8,8 +8,8 @@
 #include "PE_Types.h"
 #include "Global.h"
 #include "PANIC_BUTTON_INPUT.h"
-#include "App_Ges.h"
 #include "ModBusCommProt.h"
+#include "App_Ges.h"
 #include "Peltier_Module.h"
 
 #include "Pins1.h"
@@ -3799,33 +3799,43 @@ void EEPROM_write(EEPROM_TDataAddress Src, EEPROM_TAddress Dst, word Count)
 void Set_Data_EEPROM_Default(void)
 {
 
-	if ( config_data.EEPROM_Control != EEPROM_WRITTEN)
-	{
-		 config_data.sensor_PRx[OXYG].prSensGain   = PR_OXYG_GAIN;
-		 config_data.sensor_PRx[OXYG].prSensOffset = PR_OXYG_OFFSET;
+	unsigned char *ptr_EEPROM = (EEPROM_TDataAddress)&config_data;
 
-		 config_data.sensor_PRx[LEVEL].prSensGain   = PR_LEVEL_GAIN;
-		 config_data.sensor_PRx[LEVEL].prSensOffset = PR_LEVEL_OFFSET;
+	/*Calcolo il CRC sui dati letti dalla EEPROM
+	 * * IL CRC lo clacolo su tutta la struttura meno i due byte ndel CRC stesso*/
+	unsigned int Calc_CRC_EEPROM = ComputeChecksum(ptr_EEPROM, sizeof(config_data)-2);
+
+	/*Se il CRC cxalcolato non è uguale a quello letto o la revsione non è uguale a quella attesa
+	 * scrivo i parametri di default*/
+	if ( config_data.EEPROM_CRC != Calc_CRC_EEPROM || config_data.Revision != EEPROM_REVISION)
+	{
+		 config_data.sensor_PRx[OXYG].prSensGain      = PR_OXYG_GAIN;
+		 config_data.sensor_PRx[OXYG].prSensOffset    = PR_OXYG_OFFSET;
+
+		 config_data.sensor_PRx[LEVEL].prSensGain     = PR_LEVEL_GAIN;
+		 config_data.sensor_PRx[LEVEL].prSensOffset   = PR_LEVEL_OFFSET;
 
 		 config_data.sensor_PRx[ADS_FLT].prSensGain   = PR_ADS_FLT_GAIN;
 		 config_data.sensor_PRx[ADS_FLT].prSensOffset = PR_ADS_FLT_OFFSET;
 
-		 config_data.sensor_PRx[VEN].prSensGain   = PR_VEN_GAIN;
-		 config_data.sensor_PRx[VEN].prSensOffset = PR_VEN_OFFSET;
+		 config_data.sensor_PRx[VEN].prSensGain       = PR_VEN_GAIN;
+		 config_data.sensor_PRx[VEN].prSensOffset     = PR_VEN_OFFSET;
 
-		 config_data.sensor_PRx[ART].prSensGain   = PR_ART_GAIN;
-		 config_data.sensor_PRx[ART].prSensOffset = PR_ART_OFFSET;
+		 config_data.sensor_PRx[ART].prSensGain       = PR_ART_GAIN;
+		 config_data.sensor_PRx[ART].prSensOffset     = PR_ART_OFFSET;
 
-		 config_data.FlowSensor_Ven_Gain   = GAIN_FLOW_SENS_VEN;
-		 config_data.FlowSensor_Ven_Offset = OFFSET_FLOW_SENS_VEN;
+		 config_data.FlowSensor_Ven_Gain              = GAIN_FLOW_SENS_VEN;
+		 config_data.FlowSensor_Ven_Offset            = OFFSET_FLOW_SENS_VEN;
 
-		 config_data.FlowSensor_Art_Gain   = GAIN_FLOW_SENS_ART;
-		 config_data.FlowSensor_Art_Offset = OFFSET_FLOW_SENS_ART;
+		 config_data.FlowSensor_Art_Gain              = GAIN_FLOW_SENS_ART;
+		 config_data.FlowSensor_Art_Offset            = OFFSET_FLOW_SENS_ART;
 
-		 /*word di controllo che la flash usata come eeprom sia
-		  * stata scritta almeno una volta; TODO si può mettere un CRC
-		  * e non un valore fisso per renderlo ancora + sicuro*/
-		 config_data.EEPROM_Control = EEPROM_WRITTEN;
+		 //revsione della EEPROM
+		 config_data.Revision 						  = EEPROM_REVISION;
+
+		 /*carico il CRC della EEPROM (usata la stessa funzione di CRC del MOD_BUS
+		  * IL CRC lo clacolo su tutta la struttura meno i due byte ndel CRC stesso*/
+		 config_data.EEPROM_CRC = ComputeChecksum(ptr_EEPROM, sizeof(config_data)-2);
 
 		 EEPROM_write((EEPROM_TDataAddress)&config_data, START_ADDRESS_EEPROM, sizeof(config_data));
 	}

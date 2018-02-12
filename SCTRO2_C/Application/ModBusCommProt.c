@@ -15,6 +15,7 @@
 #include "MODBUS_COMM.h"
 #include "ASerialLdd1.h"
 #include "Alarm_Con.h"
+#include "EEPROM.h"
 
 
 extern int MyArrayIdx;
@@ -1462,10 +1463,9 @@ unsigned char CheckCoverPump()
 
 	return(4);
 }
-/* Public function */
 
-/* Private function */
-static unsigned int ComputeChecksum(unsigned char * data, int size)
+/*funzione del CheckSum usata anche per la EEPROM e per il protocollo con SBC*/
+unsigned int ComputeChecksum(unsigned char * data, int size)
 {
 	unsigned int CRC16 = 0xFFFF;
 	unsigned int CRCLsb = 0x0000;
@@ -1490,6 +1490,10 @@ static unsigned int ComputeChecksum(unsigned char * data, int size)
 
 	return CRC16;
 }
+/* Public function */
+
+/* Private function */
+
 
 static void FrameInitFunc3(void)
 {
