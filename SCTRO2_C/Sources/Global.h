@@ -826,7 +826,7 @@ struct ParSaveTO_EEPROM
 	float  FlowSensor_Ven_Offset;
 	float  FlowSensor_Art_Gain;
 	float  FlowSensor_Art_Offset;
-	unsigned char Revision;
+	unsigned char EEPROM_Revision;
 	word EEPROM_CRC;
 };
 
@@ -839,18 +839,22 @@ struct ParSaveTO_EEPROM config_data;
 word  PR_OXYG_ADC;			 	//variabile globale per il valore ADC del sensore di pressione ossigenatore --> PTC10
 word  PR_OXYG_mmHg;			 	//variabile globale per il valore in mmHg del sensore di pressione ossigenatore
 word  PR_OXYG_mmHg_Filtered;  	//variabile globale per il valore in mmHg del sensore di pressione ossigenatore filtrato
+word  PR_OXYG_ADC_Filtered;  	//variabile globale per il valore ADC del sensore di pressione ossigenatore filtrato
 
 word  PR_LEVEL_ADC;			 	//variabile globale per il valore ADC del sensore di pressione di livello vaschetta --> PTC11
 word  PR_LEVEL_mmHg;			//variabile globale per il valore in mmHg del sensore di pressione di livello vaschetta
 word  PR_LEVEL_mmHg_Filtered; 	//variabile globale per il valore in mmHg del sensore di pressione di livello vaschetta filtrato
+word  PR_LEVEL_ADC_Filtered;  	//variabile globale per il valore ADC del sensore di pressione di livello filtrato
 
 word  PR_ADS_FLT_ADC;			//variabile globale per il valore ADC del sensore di pressione del filtro assorbente --> PTB11
 word  PR_ADS_FLT_mmHg;			//variabile globale per il valore in mmHg del sensore di pressione del filtro assorbente
 word  PR_ADS_FLT_mmHg_Filtered;	//variabile globale per il valore in mmHg del sensore di pressione del filtro assorbente filtrato
+word  PR_ADS_FLT_ADC_Filtered;  	//variabile globale per il valore ADC del sensore di pressione del filtro assorbente filtrato
 
 word  PR_VEN_ADC;				//variabile globale per il valore ADC del sensore di pressione Venoso --> PTB6
 word  PR_VEN_mmHg;				//variabile globale per il valore in mmHg del sensore di pressione Venoso
 word  PR_VEN_mmHg_Filtered;		//variabile globale per il valore in mmHg del sensore di pressione Venoso filtrato
+word  PR_VEN_ADC_Filtered;  	//variabile globale per il valore ADC del sensore di pressione Venoso filtrato
 word  PR_VEN_Diastolyc_mmHg;	//variabile globale per il valore diastolico  in mmHg del sensore di pressione venosa
 word  PR_VEN_Sistolyc_mmHg;	    //variabile globale per il valore sistolico  in mmHg del sensore di pressione venosa
 word  PR_VEN_Med_mmHg;			//variabile globale per il valore medio in mmHg del sensore di pressione venosa calcolato come (2 *PR_OXYG_Sistolyc_mmHg + PR_OXYG_Diastolyc_mmHg)/3
@@ -859,6 +863,7 @@ word  PR_VEN_Med_mmHg;			//variabile globale per il valore medio in mmHg del sen
 word  PR_ART_ADC;				//variabile globale per il valore ADC del sensore di pressione arteriosa --> PTB7
 word  PR_ART_mmHg;				//variabile globale per il valore in mmHg del sensore di pressione arteriosa
 word  PR_ART_mmHg_Filtered;		//variabile globale per il valore in mmHg del sensore di pressione arteriosa filtrato
+word  PR_ART_ADC_Filtered;  	//variabile globale per il valore ADC del sensore di pressione Arterioso filtrato
 word  PR_ART_Diastolyc_mmHg;	//variabile globale per il valore diastolico  in mmHg del sensore di pressione arteriosa
 word  PR_ART_Sistolyc_mmHg;	    //variabile globale per il valore sistolico  in mmHg del sensore di pressione arteriosa
 word  PR_ART_Med_mmHg;			//variabile globale per il valore medio in mmHg del sensore di pressione arteriosa calcolato come (2 *PR_OXYG_Sistolyc_mmHg + PR_OXYG_Diastolyc_mmHg)/3

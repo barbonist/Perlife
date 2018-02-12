@@ -279,7 +279,8 @@ void Service_SBC(void){
 						word snd;
 						ptrMsgSbcRx = &sbc_rx_data;
 
-						Press_sens IdSens 	= sbc_rx_data[7];
+						/*gli ID dei sensori delle GUI partono da 1, mentre i miei partono da 0 quindi sottraggo 1*/
+						Press_sens IdSens 	= sbc_rx_data[7]-1;
 						int value 			= sbc_rx_data[8];
 						unsigned char point = 0;
 
@@ -298,7 +299,8 @@ void Service_SBC(void){
 						word snd;
 						ptrMsgSbcRx = &sbc_rx_data;
 
-						Press_sens IdSens 	= sbc_rx_data[7];
+						/*gli ID dei sensori delle GUI partono da 1, mentre i miei partono da 0 quindi sottraggo 1*/
+						Press_sens IdSens 	= sbc_rx_data[7]-1;
 						int value 			= sbc_rx_data[8];
 						unsigned char point = 1;
 

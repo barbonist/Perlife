@@ -135,28 +135,28 @@ void buildPressSensReadValuesResponseMsg(char *ptrMsgSbcRx)
 
 	sbc_tx_data[index++] = PR_OXYG_mmHg_Filtered >> 8;
 	sbc_tx_data[index++] = PR_OXYG_mmHg_Filtered;
-	sbc_tx_data[index++] = PR_OXYG_ADC >> 8;
-	sbc_tx_data[index++] = PR_OXYG_ADC;
+	sbc_tx_data[index++] = PR_OXYG_ADC_Filtered >> 8;
+	sbc_tx_data[index++] = PR_OXYG_ADC_Filtered;
 
 	sbc_tx_data[index++] = PR_LEVEL_mmHg_Filtered >> 8;
 	sbc_tx_data[index++] = PR_LEVEL_mmHg_Filtered;
-	sbc_tx_data[index++] = PR_LEVEL_ADC >> 8;
-	sbc_tx_data[index++] = PR_LEVEL_ADC;
+	sbc_tx_data[index++] = PR_LEVEL_ADC_Filtered >> 8;
+	sbc_tx_data[index++] = PR_LEVEL_ADC_Filtered;
 
 	sbc_tx_data[index++] = PR_ADS_FLT_mmHg_Filtered >> 8;
 	sbc_tx_data[index++] = PR_ADS_FLT_mmHg_Filtered;
-	sbc_tx_data[index++] = PR_ADS_FLT_ADC >> 8;
-	sbc_tx_data[index++] = PR_ADS_FLT_ADC;
+	sbc_tx_data[index++] = PR_ADS_FLT_ADC_Filtered >> 8;
+	sbc_tx_data[index++] = PR_ADS_FLT_ADC_Filtered;
 
 	sbc_tx_data[index++] = PR_VEN_mmHg_Filtered >> 8;
 	sbc_tx_data[index++] = PR_VEN_mmHg_Filtered;
-	sbc_tx_data[index++] = PR_VEN_ADC >> 8;
-	sbc_tx_data[index++] = PR_VEN_ADC;
+	sbc_tx_data[index++] = PR_VEN_ADC_Filtered >> 8;
+	sbc_tx_data[index++] = PR_VEN_ADC_Filtered;
 
 	sbc_tx_data[index++] = PR_ART_mmHg_Filtered >> 8;
 	sbc_tx_data[index++] = PR_ART_mmHg_Filtered;
-	sbc_tx_data[index++] = PR_ART_ADC >> 8;
-	sbc_tx_data[index++] = PR_ART_ADC;
+	sbc_tx_data[index++] = PR_ART_ADC_Filtered >> 8;
+	sbc_tx_data[index++] = PR_ART_ADC_Filtered;
 
 	/*
 	for(int i = 0 ; i < 5 ; i++)
