@@ -821,7 +821,7 @@ typedef enum
 /* SENSORI PRESSIONE */
 /* value = gain*(adc_val - offsetVal) + Offset */
 struct pressureSensor{
-	word prSensOffset;
+	float prSensOffset;
 //	float prSensOffsetVal;
 	float prSensGain;
 //	float prSensValue;
@@ -839,7 +839,7 @@ struct ParSaveTO_EEPROM
 	float  FlowSensor_Ven_Offset;
 	float  FlowSensor_Art_Gain;
 	float  FlowSensor_Art_Offset;
-	unsigned char Revision;
+	unsigned char EEPROM_Revision;
 	word EEPROM_CRC;
 };
 
@@ -852,18 +852,22 @@ struct ParSaveTO_EEPROM config_data;
 word  PR_OXYG_ADC;			 	//variabile globale per il valore ADC del sensore di pressione ossigenatore --> PTC10
 word  PR_OXYG_mmHg;			 	//variabile globale per il valore in mmHg del sensore di pressione ossigenatore
 word  PR_OXYG_mmHg_Filtered;  	//variabile globale per il valore in mmHg del sensore di pressione ossigenatore filtrato
+word  PR_OXYG_ADC_Filtered;  	//variabile globale per il valore ADC del sensore di pressione ossigenatore filtrato
 
 word  PR_LEVEL_ADC;			 	//variabile globale per il valore ADC del sensore di pressione di livello vaschetta --> PTC11
 word  PR_LEVEL_mmHg;			//variabile globale per il valore in mmHg del sensore di pressione di livello vaschetta
 word  PR_LEVEL_mmHg_Filtered; 	//variabile globale per il valore in mmHg del sensore di pressione di livello vaschetta filtrato
+word  PR_LEVEL_ADC_Filtered;  	//variabile globale per il valore ADC del sensore di pressione di livello filtrato
 
 word  PR_ADS_FLT_ADC;			//variabile globale per il valore ADC del sensore di pressione del filtro assorbente --> PTB11
 word  PR_ADS_FLT_mmHg;			//variabile globale per il valore in mmHg del sensore di pressione del filtro assorbente
 word  PR_ADS_FLT_mmHg_Filtered;	//variabile globale per il valore in mmHg del sensore di pressione del filtro assorbente filtrato
+word  PR_ADS_FLT_ADC_Filtered;  	//variabile globale per il valore ADC del sensore di pressione del filtro assorbente filtrato
 
 word  PR_VEN_ADC;				//variabile globale per il valore ADC del sensore di pressione Venoso --> PTB6
 word  PR_VEN_mmHg;				//variabile globale per il valore in mmHg del sensore di pressione Venoso
 word  PR_VEN_mmHg_Filtered;		//variabile globale per il valore in mmHg del sensore di pressione Venoso filtrato
+word  PR_VEN_ADC_Filtered;  	//variabile globale per il valore ADC del sensore di pressione Venoso filtrato
 word  PR_VEN_Diastolyc_mmHg;	//variabile globale per il valore diastolico  in mmHg del sensore di pressione venosa
 word  PR_VEN_Sistolyc_mmHg;	    //variabile globale per il valore sistolico  in mmHg del sensore di pressione venosa
 word  PR_VEN_Med_mmHg;			//variabile globale per il valore medio in mmHg del sensore di pressione venosa calcolato come (2 *PR_OXYG_Sistolyc_mmHg + PR_OXYG_Diastolyc_mmHg)/3
@@ -872,6 +876,7 @@ word  PR_VEN_Med_mmHg;			//variabile globale per il valore medio in mmHg del sen
 word  PR_ART_ADC;				//variabile globale per il valore ADC del sensore di pressione arteriosa --> PTB7
 word  PR_ART_mmHg;				//variabile globale per il valore in mmHg del sensore di pressione arteriosa
 word  PR_ART_mmHg_Filtered;		//variabile globale per il valore in mmHg del sensore di pressione arteriosa filtrato
+word  PR_ART_ADC_Filtered;  	//variabile globale per il valore ADC del sensore di pressione Arterioso filtrato
 word  PR_ART_Diastolyc_mmHg;	//variabile globale per il valore diastolico  in mmHg del sensore di pressione arteriosa
 word  PR_ART_Sistolyc_mmHg;	    //variabile globale per il valore sistolico  in mmHg del sensore di pressione arteriosa
 word  PR_ART_Med_mmHg;			//variabile globale per il valore medio in mmHg del sensore di pressione arteriosa calcolato come (2 *PR_OXYG_Sistolyc_mmHg + PR_OXYG_Diastolyc_mmHg)/3
@@ -1189,26 +1194,20 @@ unsigned char CHANGE_ADDRESS_IR_SENS;
 #define BUTTON_3 0x03
 #define BUTTON_4 0x04
 
+#define PR_OXYG_GAIN_DEFAULT 		0.0277778
+#define PR_OXYG_OFFSET_DEFAULT		-549.583
 
-/*PR_OXYG Sensor calibration:	 to 0 mmHg --> 19687 ADC count; to 50 mmHg 21439 ADC count*/
-#define PR_OXYG_GAIN 		0.028539
-#define PR_OXYG_OFFSET		19687
+#define PR_LEVEL_GAIN_DEFAULT 		0.000535045
+#define PR_LEVEL_OFFSET_DEFAULT		-10.2772
 
-/*PR_LEVEL Sensor calibration:	 to 0 mmHg --> 18694 ADC count; to 20 mmHg 26650 ADC count*/
-#define PR_LEVEL_GAIN 		0.00251383
-#define PR_LEVEL_OFFSET		18694
+#define PR_ADS_FLT_GAIN_DEFAULT		0.0272547
+#define PR_ADS_FLT_OFFSET_DEFAULT	-537.517
 
-/*PR_ADS_FLT Sensor calibration: to 0 mmHg --> 19785 ADC count; to 50 mmHg 21561 ADC count*/
-#define PR_ADS_FLT_GAIN		0.028153
-#define PR_ADS_FLT_OFFSET	19785
+#define PR_VEN_GAIN_DEFAULT 		0.00658244
+#define PR_VEN_OFFSET_DEFAULT		-128.147
 
-/*PR_VEN Sensor calibration:	 to 0 mmHg --> 19624 ADC count; to 50 mmHg 22231 ADC count*/
-#define PR_VEN_GAIN 		0.019179
-#define PR_VEN_OFFSET		19624
-
-/*PR_ART Sensor calibration: 	 to 0 mmHg --> 19672 ADC count; to 50 mmHg 22347 ADC count*/
-#define PR_ART_GAIN 		0.018691
-#define PR_ART_OFFSET		19672
+#define PR_ART_GAIN_DEFAULT 		0.00657
+#define PR_ART_OFFSET_DEFAULT		-127.287
 
 /*valore di gain e offset del sensore di flusso venoso calcolati sperimentalmente con prove di flusso con la bilancia*/
 #define GAIN_FLOW_SENS_VEN		0.7722f

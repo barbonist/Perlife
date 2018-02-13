@@ -279,8 +279,11 @@ void Service_SBC(void){
 						word snd;
 						ptrMsgSbcRx = &sbc_rx_data;
 
+						/*gli ID dei sensori delle GUI partono da 1, mentre i miei partono da 0 quindi sottraggo 1*/
 						Press_sens IdSens 	= sbc_rx_data[7];
-						int value 			= sbc_rx_data[8];
+						//il valore mi arriva su due byte moltiplicato per dieci
+						float value 			= BYTES_TO_WORD(sbc_rx_data[8], sbc_rx_data[9]);
+						value = value /10;
 						unsigned char point = 0;
 
 						Pressure_Sensor_Calibration(IdSens,value,point);
@@ -298,8 +301,11 @@ void Service_SBC(void){
 						word snd;
 						ptrMsgSbcRx = &sbc_rx_data;
 
+						/*gli ID dei sensori delle GUI partono da 1, mentre i miei partono da 0 quindi sottraggo 1*/
 						Press_sens IdSens 	= sbc_rx_data[7];
-						int value 			= sbc_rx_data[8];
+						//il valore mi arriva su due byte moltiplicato per dieci
+						float value 			= BYTES_TO_WORD(sbc_rx_data[8], sbc_rx_data[9]);
+						value = value /10;
 						unsigned char point = 1;
 
 						Pressure_Sensor_Calibration(IdSens,value,point);

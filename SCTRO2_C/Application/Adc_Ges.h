@@ -44,7 +44,7 @@ void Coversion_From_ADC_To_Voltage();
 void Pressure_sensor_Fltered ();
 void Manage_Air_Sensor_1(void);
 void Manage_Debug_led(bool Status);
-void Pressure_Sensor_Calibration(Press_sens ID_sens, int value, unsigned char point);
+void Pressure_Sensor_Calibration(Press_sens ID_sens, float value, unsigned char point);
 
 void CalcVenSistDiastPress(word Press);
 void CalcArtSistDiastPress(word Press);
