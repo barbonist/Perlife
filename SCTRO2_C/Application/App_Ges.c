@@ -3809,20 +3809,20 @@ void Set_Data_EEPROM_Default(void)
 	 * scrivo i parametri di default*/
 	if ( config_data.EEPROM_CRC != Calc_CRC_EEPROM || config_data.EEPROM_Revision != EEPROM_REVISION)
 	{
-		 config_data.sensor_PRx[OXYG].prSensGain      = PR_OXYG_GAIN;
-		 config_data.sensor_PRx[OXYG].prSensOffset    = PR_OXYG_OFFSET;
+		 config_data.sensor_PRx[OXYG].prSensGain      = PR_OXYG_GAIN_DEFAULT;
+		 config_data.sensor_PRx[OXYG].prSensOffset    = PR_OXYG_OFFSET_DEFAULT;
 
-		 config_data.sensor_PRx[LEVEL].prSensGain     = PR_LEVEL_GAIN;
-		 config_data.sensor_PRx[LEVEL].prSensOffset   = PR_LEVEL_OFFSET;
+		 config_data.sensor_PRx[LEVEL].prSensGain     = PR_LEVEL_GAIN_DEFAULT;
+		 config_data.sensor_PRx[LEVEL].prSensOffset   = PR_LEVEL_OFFSET_DEFAULT;
 
-		 config_data.sensor_PRx[ADS_FLT].prSensGain   = PR_ADS_FLT_GAIN;
-		 config_data.sensor_PRx[ADS_FLT].prSensOffset = PR_ADS_FLT_OFFSET;
+		 config_data.sensor_PRx[ADS_FLT].prSensGain   = PR_ADS_FLT_GAIN_DEFAULT;
+		 config_data.sensor_PRx[ADS_FLT].prSensOffset = PR_ADS_FLT_OFFSET_DEFAULT;
 
-		 config_data.sensor_PRx[VEN].prSensGain       = PR_VEN_GAIN;
-		 config_data.sensor_PRx[VEN].prSensOffset     = PR_VEN_OFFSET;
+		 config_data.sensor_PRx[VEN].prSensGain       = PR_VEN_GAIN_DEFAULT;
+		 config_data.sensor_PRx[VEN].prSensOffset     = PR_VEN_OFFSET_DEFAULT;
 
-		 config_data.sensor_PRx[ART].prSensGain       = PR_ART_GAIN;
-		 config_data.sensor_PRx[ART].prSensOffset     = PR_ART_OFFSET;
+		 config_data.sensor_PRx[ART].prSensGain       = PR_ART_GAIN_DEFAULT;
+		 config_data.sensor_PRx[ART].prSensOffset     = PR_ART_OFFSET_DEFAULT;
 
 		 config_data.FlowSensor_Ven_Gain              = GAIN_FLOW_SENS_VEN;
 		 config_data.FlowSensor_Ven_Offset            = OFFSET_FLOW_SENS_VEN;

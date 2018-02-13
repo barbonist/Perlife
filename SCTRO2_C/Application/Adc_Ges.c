@@ -222,18 +222,12 @@ void Coversion_From_ADC_To_mmHg_Pressure_Sensor()
 	static int Number_Sample = 0;
 	static int Pr_Sist_art = 0, Pr_Dia_art = 0, Pr_Sist_ven = 0, Pr_Dia_ven = 0;
 
-	/* TODO deve essere modificata secondo l'equazione y=mx+q; una volta modificata i sensori vanno tutti ricalibraticome segue
+	/* TODO deve essere modificata secondo l'equazione y=mx+q; una volta modificata i sensori vanno tutti ricalibraticome segue*/
 	PR_OXYG_mmHg 	= config_data.sensor_PRx[OXYG].prSensGain    * PR_OXYG_ADC    + config_data.sensor_PRx[OXYG].prSensOffset;
 	PR_LEVEL_mmHg 	= config_data.sensor_PRx[LEVEL].prSensGain   * PR_LEVEL_ADC   + config_data.sensor_PRx[LEVEL].prSensOffset;
 	PR_ADS_FLT_mmHg = config_data.sensor_PRx[ADS_FLT].prSensGain * PR_ADS_FLT_ADC + config_data.sensor_PRx[ADS_FLT].prSensOffset;
 	PR_VEN_mmHg 	= config_data.sensor_PRx[VEN].prSensGain     * PR_VEN_ADC     + config_data.sensor_PRx[VEN].prSensOffset;
-	PR_ART_mmHg 	= config_data.sensor_PRx[ART].prSensGain     * PR_ART_ADC     + config_data.sensor_PRx[ART].prSensOffset; */
-
-	PR_OXYG_mmHg 	= (PR_OXYG_ADC    - config_data.sensor_PRx[OXYG].prSensOffset)    * config_data.sensor_PRx[OXYG].prSensGain;
-	PR_LEVEL_mmHg 	= (PR_LEVEL_ADC   - config_data.sensor_PRx[LEVEL].prSensOffset)   * config_data.sensor_PRx[LEVEL].prSensGain;
-	PR_ADS_FLT_mmHg = (PR_ADS_FLT_ADC - config_data.sensor_PRx[ADS_FLT].prSensOffset) * config_data.sensor_PRx[ADS_FLT].prSensGain;
-	PR_VEN_mmHg 	= (PR_VEN_ADC     - config_data.sensor_PRx[VEN].prSensOffset)     * config_data.sensor_PRx[VEN].prSensGain;
-	PR_ART_mmHg 	= (PR_ART_ADC     - config_data.sensor_PRx[ART].prSensOffset)     * config_data.sensor_PRx[ART].prSensGain;
+	PR_ART_mmHg 	= config_data.sensor_PRx[ART].prSensGain     * PR_ART_ADC     + config_data.sensor_PRx[ART].prSensOffset;
 
 	CalcVenSistDiastPress(PR_VEN_mmHg_Filtered);
 	CalcArtSistDiastPress(PR_ART_mmHg_Filtered);
@@ -242,9 +236,12 @@ void Coversion_From_ADC_To_mmHg_Pressure_Sensor()
 
 void Pressure_sensor_Fltered ()
 {
-	PR_OXYG_mmHg_Filtered		= meanWA(8,PR_OXYG_mmHg,0);
-	PR_LEVEL_mmHg_Filtered		= meanWA(8,PR_LEVEL_mmHg,1);
-	PR_ADS_FLT_mmHg_Filtered	= meanWA(8,PR_ADS_FLT_mmHg,2);
+	PR_OXYG_mmHg_Filtered		= meanWA(60,PR_OXYG_mmHg,0);
+	PR_LEVEL_mmHg_Filtered		= meanWA(60,PR_LEVEL_mmHg,1);
+	PR_ADS_FLT_mmHg_Filtered	= meanWA(60,PR_ADS_FLT_mmHg,2);
+	/*sul venoso e arterioso, che sono usati per i PID, faccio
+	 * un filtro a media mobile solo su 8 campioni, tanto poi
+	 * farò una media dei campioni filtrati*/
 	PR_VEN_mmHg_Filtered		= meanWA(8,PR_VEN_mmHg,3);
 	PR_ART_mmHg_Filtered		= meanWA(8,PR_ART_mmHg,4);
 
@@ -330,9 +327,9 @@ void Pressure_Sensor_Calibration(Press_sens ID_sens, int value, unsigned char po
 				ADCSecondPoint = PR_OXYG_ADC_Filtered;
 
 				config_data.sensor_PRx[OXYG].prSensGain 	= ((float) SecondValue - FirstValue) / ((float) ADCSecondPoint - ADCFirstPoint);
-				/* TODO deve essere ripristinata questa e poi modificata la funzione  Coversion_From_ADC_To_mmHg_Pressure_Sensor
-				 * config_data.sensor_PRx[OXYG].prSensOffset 	= (float) SecondValue - (ADCSecondPoint * config_data.sensor_PRx[OXYG].prSensGain);*/
-				config_data.sensor_PRx[OXYG].prSensOffset 	= ADCFirstPoint;
+				/* TODO deve essere ripristinata questa e poi modificata la funzione  Coversion_From_ADC_To_mmHg_Pressure_Sensor*/
+				config_data.sensor_PRx[OXYG].prSensOffset 	= (float) SecondValue - (ADCSecondPoint * config_data.sensor_PRx[OXYG].prSensGain);
+				//config_data.sensor_PRx[OXYG].prSensOffset 	= ADCFirstPoint;
 
 				/*carico il CRC della EEPROM (usata la stessa funzione di CRC del MOD_BUS
 				 * IL CRC lo clacolo su tutta la struttura meno i due byte ndel CRC stesso*/
@@ -347,9 +344,9 @@ void Pressure_Sensor_Calibration(Press_sens ID_sens, int value, unsigned char po
 				ADCSecondPoint = PR_LEVEL_ADC_Filtered;
 
 				config_data.sensor_PRx[LEVEL].prSensGain 	= ((float)SecondValue - FirstValue) / ((float)ADCSecondPoint - ADCFirstPoint);
-				/* TODO deve essere ripristinata questa e poi modificata la funzione  Coversion_From_ADC_To_mmHg_Pressure_Sensor
-				config_data.sensor_PRx[LEVEL].prSensOffset 	= (float) SecondValue - (ADCSecondPoint * config_data.sensor_PRx[LEVEL].prSensGain);*/
-				config_data.sensor_PRx[LEVEL].prSensOffset 	= ADCFirstPoint;
+				/* TODO deve essere ripristinata questa e poi modificata la funzione  Coversion_From_ADC_To_mmHg_Pressure_Sensor*/
+				config_data.sensor_PRx[LEVEL].prSensOffset 	= (float) SecondValue - (ADCSecondPoint * config_data.sensor_PRx[LEVEL].prSensGain);
+				//config_data.sensor_PRx[LEVEL].prSensOffset 	= ADCFirstPoint;
 
 				/*carico il CRC della EEPROM (usata la stessa funzione di CRC del MOD_BUS
 				 * IL CRC lo clacolo su tutta la struttura meno i due byte ndel CRC stesso*/
@@ -364,9 +361,9 @@ void Pressure_Sensor_Calibration(Press_sens ID_sens, int value, unsigned char po
 				ADCSecondPoint = PR_ADS_FLT_ADC_Filtered;
 
 				config_data.sensor_PRx[ADS_FLT].prSensGain 		= ((float)SecondValue - FirstValue) / ((float)ADCSecondPoint - ADCFirstPoint);
-				/* TODO deve essere ripristinata questa e poi modificata la funzione  Coversion_From_ADC_To_mmHg_Pressure_Sensor
-				config_data.sensor_PRx[ADS_FLT].prSensOffset 	= (float) SecondValue - (ADCSecondPoint * config_data.sensor_PRx[ADS_FLT].prSensGain);*/
-				config_data.sensor_PRx[ADS_FLT].prSensOffset 	= ADCFirstPoint;
+				/* TODO deve essere ripristinata questa e poi modificata la funzione  Coversion_From_ADC_To_mmHg_Pressure_Sensor*/
+				config_data.sensor_PRx[ADS_FLT].prSensOffset 	= (float) SecondValue - (ADCSecondPoint * config_data.sensor_PRx[ADS_FLT].prSensGain);
+			//	config_data.sensor_PRx[ADS_FLT].prSensOffset 	= ADCFirstPoint;
 
 				/*carico il CRC della EEPROM (usata la stessa funzione di CRC del MOD_BUS
 				 * IL CRC lo clacolo su tutta la struttura meno i due byte ndel CRC stesso*/
@@ -381,9 +378,9 @@ void Pressure_Sensor_Calibration(Press_sens ID_sens, int value, unsigned char po
 				ADCSecondPoint = PR_VEN_ADC_Filtered;
 
 				config_data.sensor_PRx[VEN].prSensGain 		= ((float)(SecondValue - FirstValue) ) / ((float)ADCSecondPoint - ADCFirstPoint);
-				/* TODO deve essere ripristinata questa e poi modificata la funzione  Coversion_From_ADC_To_mmHg_Pressure_Sensor
-				config_data.sensor_PRx[VEN].prSensOffset 	= (float) SecondValue - (ADCSecondPoint * config_data.sensor_PRx[VEN].prSensGain);*/
-				config_data.sensor_PRx[VEN].prSensOffset 	= ADCFirstPoint;
+				/* TODO deve essere ripristinata questa e poi modificata la funzione  Coversion_From_ADC_To_mmHg_Pressure_Sensor*/
+				config_data.sensor_PRx[VEN].prSensOffset 	= (float) SecondValue - (ADCSecondPoint * config_data.sensor_PRx[VEN].prSensGain);
+				//config_data.sensor_PRx[VEN].prSensOffset 	= ADCFirstPoint;
 
 				/*carico il CRC della EEPROM (usata la stessa funzione di CRC del MOD_BUS
 				 * IL CRC lo clacolo su tutta la struttura meno i due byte ndel CRC stesso*/
@@ -398,9 +395,9 @@ void Pressure_Sensor_Calibration(Press_sens ID_sens, int value, unsigned char po
 				ADCSecondPoint = PR_ART_ADC_Filtered;
 
 				config_data.sensor_PRx[ART].prSensGain 		= ((float)SecondValue - FirstValue) / ((float)ADCSecondPoint - ADCFirstPoint);
-				/* TODO deve essere ripristinata questa e poi modificata la funzione  Coversion_From_ADC_To_mmHg_Pressure_Sensor
-				config_data.sensor_PRx[ART].prSensOffset 	= (float) SecondValue - (ADCSecondPoint * config_data.sensor_PRx[ART].prSensGain);*/
-				config_data.sensor_PRx[ART].prSensOffset 	= ADCFirstPoint;
+				/* TODO deve essere ripristinata questa e poi modificata la funzione  Coversion_From_ADC_To_mmHg_Pressure_Sensor*/
+				config_data.sensor_PRx[ART].prSensOffset 	= (float) SecondValue - (ADCSecondPoint * config_data.sensor_PRx[ART].prSensGain);
+				//config_data.sensor_PRx[ART].prSensOffset 	= ADCFirstPoint;
 
 				/*carico il CRC della EEPROM (usata la stessa funzione di CRC del MOD_BUS
 				 * IL CRC lo clacolo su tutta la struttura meno i due byte ndel CRC stesso*/
