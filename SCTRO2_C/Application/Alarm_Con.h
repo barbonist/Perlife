@@ -81,6 +81,9 @@
 #define SECURITY_STOP_OXYG_PUMP			0x10
 #define SECURITY_STOP_PELTIER			0x20
 #define SECURITY_WAIT_CONFIRM           0x40
+#define SECURITY_SAF_AIR_FILTER         0x80
+#define SECURITY_SFV_AIR_DET           0x100
+#define SECURITY_SFA_AIR_DET           0x200
 
 #define OVRD_ENABLE				0xA5
 #define OVRD_NOT_ENABLED		0x5A
@@ -114,6 +117,8 @@ enum ALARM
 	 PRESS_ART_HIGH = 0,
 	 PRESS_ART_LOW,
 	 AIR_PRES_ART,
+	 AIR_PRES_VEN,
+	 SAF_AIR_SENSOR,
 	 TEMP_ART_HIGH,
 	 PRESS_ADS_FILTER_HIGH,
 	 FLOW_PERF_ART_HIGH,
@@ -138,6 +143,8 @@ void manageAlarmPhysicPressSensLow(void);
 
 void manageAlarmPhysicTempSens(void);
 void manageAlarmPhysicUFlowSens(void);
+void manageAlarmSAFAirSens(void);
+void manageAlarmPhysicUFlowSensVen(void);
 //void DebugStringStr(char *s);
 //void DebugStringPID();
 

@@ -341,6 +341,10 @@ enum Parent {
 	PARENT_TREAT_KIDNEY_1_INIT,
 	PARENT_TREAT_KIDNEY_1_PUMP_ON,
 	PARENT_TREAT_KIDNEY_1_ALARM,
+	PARENT_TREAT_KIDNEY_1_AIR_FILT,
+	PARENT_TREAT_KIDNEY_1_SFV,
+	PARENT_TREAT_KIDNEY_1_SFA,
+	PARENT_TREAT_KIDNEY_1_AIR_REC,
 	PARENT_TREAT_KIDNEY_1_END,
 	/*********************/
 	/* 		PARENT 		 */
@@ -434,6 +438,9 @@ enum Child {
 	CHILD_TREAT_ALARM_1_STOP_ALL_PUMP,
 	CHILD_TREAT_ALARM_1_STOP_PELTIER,
 	CHILD_TREAT_ALARM_1_STOP_ALL_ACTUATOR,
+	CHILD_TREAT_ALARM_1_SAF_AIR_FILT,
+	CHILD_TREAT_ALARM_1_SFV_AIR,
+	CHILD_TREAT_ALARM_1_SFA_AIR,
 	CHILD_TREAT_ALARM_1_END,
 	CHILD_TREAT_ALARM_2_INIT,
 	CHILD_TREAT_ALARM_2_STOP_PERFUSION,
@@ -509,6 +516,9 @@ enum MachineStateGuardId {
 	/* PARENT LEVEL GUARD */
 	/*********************/
 	GUARD_ALARM_ACTIVE,
+	GUARD_ALARM_AIR_FILT_RECOVERY,
+	GUARD_ALARM_AIR_SFV_RECOVERY,
+	GUARD_ALARM_AIR_SFA_RECOVERY,
 
 	/*valutare se gestire le azioni di sicurezza con le guard: tutti gli allarmi possono essere ricondotti a 6 tipologie di azioni di sicurezza:
 	 ALARM_STOP_ALL_ACTUATOR: tutti gli attuatori devono essere fermati
@@ -530,6 +540,9 @@ enum MachineStateGuardId {
 	GUARD_ALARM_STOP_ALL,
 	GUARD_ALARM_STOP_PELTIER,
 	GUARD_ALARM_STOP_ALL_ACTUATOR,
+	GUARD_ALARM_SAF_AIR_FILT,
+	GUARD_ALARM_SFV_AIR,
+	GUARD_ALARM_SFA_AIR,
 	/*********************/
 	/* CHILD LEVEL GUARD */
 	/*********************/
@@ -1359,6 +1372,12 @@ Kd = Kp*Pu/8  = 0.01875
 // definisce il valore massimo di giri che puo raggiungere la pompa arteriosa
 #define MAX_ART_RPM  60
 
+
+// velocita' con cui faccio partire, per ora, la pompa per l'espulsione dell'aria
+#define AIR_REJECT_SPEED 2000
+// tempo in msec necessario per espellere l'aria rilevata in msec
+#define TIME_TO_REJECT_AIR 30000L
+
 //start addres FLASH used as EEPROM
 #define START_ADDRESS_EEPROM		0xFF000
 //stop addres FLASH used as EEPROM
@@ -1403,6 +1422,24 @@ char TherapyCmdArrived;
 
 
 
+// GESTIONE DEGLI STATI PER L'ELIMINAZIONE DELL'ALLARME ARIA-----------------------------------
+typedef enum
+{
+	INIT_AIR_ALARM_RECOVERY = 0,
+	START_AIR_PUMP,
+	STOP_AIR_PUMP,
+	AIR_REJECTED
+}AIR_ALARM_RECOVERY_STATE;
+
+AIR_ALARM_RECOVERY_STATE AirAlarmRecoveryState;
+
+// memorizza lo stato ptrCurrentParent->parent nel momento in cui comincio a cercare
+// di uscire dallo stato di allarme aria
+unsigned short AirParentState;
+
+// Questa flag viene usata per disabilitare gli allarmi aria durante la fase di recupero da
+// un allarme aria precedente
+bool DisableAllAirAlarm;
 
 #endif /* SOURCES_GLOBAL_H_ */
 

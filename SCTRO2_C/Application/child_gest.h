@@ -45,6 +45,18 @@ void manageChildTreatAlm1StopPeltAlways(void);
 void manageChildTreatAlm1StopAllActEntry(void);
 void manageChildTreatAlm1StopAllActAlways(void);
 
+void manageChildTreatAlm1SafAirFiltEntry(void);
+void manageChildTreatAlm1SafAirFiltAlways(void);
+
+void manageChildTreatAlm1SFVEntry(void);
+void manageChildTreatAlm1SFVAlways(void);
+
+void manageChildTreatAlm1SFAEntry(void);
+void manageChildTreatAlm1SFAAlways(void);
+
+
 void ManageStateChildAlarmTreat1(void);
+
+bool IsSecurityStateActive(void);
 
 #endif /* APPLICATION_CHILD_GEST_H_ */

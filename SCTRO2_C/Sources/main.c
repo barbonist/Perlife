@@ -222,6 +222,8 @@ void Manage_Debug_led(bool Status)
 int main(void)
 /*lint -restore Enable MISRA rule (6.3) checking. */
 {
+	AirAlarmRecoveryState = INIT_AIR_ALARM_RECOVERY;
+	DisableAllAirAlarm = FALSE;
 
   /* Write your local variable definition here */
   bool MOTORE_ACCESO = FALSE;

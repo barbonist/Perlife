@@ -615,6 +615,126 @@ void manageChildTreatAlm1StopAllActAlways(void)
 }
 
 
+
+/* Manage CHILD_TREAT_ALARM_1_SAF_AIR_FILT entry state */
+/* (FM) risolvo la situazione di allarme
+ * rene:   attivando il bypass del filtro cioe'
+ *         spostando wpwf a sinistra e wpva a destra
+ * fegato: attivando il bypass del filtro cioe'
+ *         spostando wpwf a sinistra */
+void manageChildTreatAlm1SafAirFiltEntry(void)
+{
+	/*
+	THERAPY_TYPE TherType = GetTherapyType();
+	if(TherType == KidneyTreat)
+	{
+		HandlePinch(BUTTON_PINCH_2WPVF_LEFT_OPEN);
+		HandlePinch(BUTTON_PINCH_2WPVA_RIGHT_OPEN);
+	}
+	else if(TherType == LiverTreat)
+	{
+		HandlePinch(BUTTON_PINCH_2WPVF_LEFT_OPEN);
+	} */
+
+	// fermo le pompe e metto le pinch in sicurezza
+	manageChildTreatAlm1StopAllActEntry();
+}
+
+/* Manage CHILD_TREAT_ALARM_1_SAF_AIR_FILT always state */
+void manageChildTreatAlm1SafAirFiltAlways(void)
+{
+	// apetto che tutte le pompe si siano fermate
+	manageChildTreatAlm1StopAllActAlways();
+	if((buttonGUITreatment[BUTTON_RESET_ALARM].state == GUI_BUTTON_RELEASED) && IsSecurityStateActive())
+	{
+		DisableAllAirAlarm = TRUE; // forzo la chiusura dell'allarme aria
+		// setto la guard per fare in modo che quando l'allarme risultera' non attivo
+		// la macchina a stati parent vada nello stato di espulsione bolla aria
+		currentGuard[GUARD_ALARM_AIR_FILT_RECOVERY].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+		// ho raggiunto la condizione di sicurezza ed ho ricevuto un comando reset alarm
+		releaseGUIButton(BUTTON_RESET_ALARM);
+	}
+}
+
+
+/* Manage CHILD_TREAT_ALARM_1_SFV_AIR entry state */
+/* (FM) risolvo la situazione di allarme
+ * rene:   non faccio niente
+ * fegato: sposto wpvv a destra in modo da staccare l'organo
+ *         e scaricare sul reservoir */
+void manageChildTreatAlm1SFVEntry(void)
+{
+	/*
+	THERAPY_TYPE TherType = GetTherapyType();
+	if(TherType == KidneyTreat)
+	{
+	}
+	else if(TherType == LiverTreat)
+	{
+		HandlePinch(BUTTON_PINCH_2WPVV_RIGHT_OPEN);
+	}
+	*/
+	// fermo le pompe e metto le pinch in sicurezza
+	manageChildTreatAlm1StopAllActEntry();
+}
+
+/* Manage CHILD_TREAT_ALARM_1_SFV_AIR always state */
+void manageChildTreatAlm1SFVAlways(void)
+{
+	// apetto che tutte le pompe si siano fermate
+	manageChildTreatAlm1StopAllActAlways();
+	if((buttonGUITreatment[BUTTON_RESET_ALARM].state == GUI_BUTTON_RELEASED) && IsSecurityStateActive())
+	{
+		DisableAllAirAlarm = TRUE; // forzo la chiusura dell'allarme aria
+		// setto la guard per fare in modo che quando l'allarme risultera' non attivo
+		// la macchina a stati parent vada nello stato di espulsione bolla aria
+		currentGuard[GUARD_ALARM_AIR_SFV_RECOVERY].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+		// ho raggiunto la condizione di sicurezza ed ho ricevuto un comando reset alarm
+		releaseGUIButton(BUTTON_RESET_ALARM);
+	}
+}
+
+
+/* Manage CHILD_TREAT_ALARM_1_SFA_AIR entry state */
+/* (FM) risolvo la situazione di allarme
+ * rene:   sposto wpwa a destra in modo da staccare l'organo
+ *         e scaricare sul reservoir
+ * fegato: sposto wpwa a destra in modo da staccare l'organo
+ *         e scaricare sul reservoir */
+
+void manageChildTreatAlm1SFAEntry(void)
+{
+	/*
+	THERAPY_TYPE TherType = GetTherapyType();
+	if(TherType == KidneyTreat)
+	{
+		HandlePinch(BUTTON_PINCH_2WPVA_RIGHT_OPEN);
+	}
+	else if(TherType == LiverTreat)
+	{
+		HandlePinch(BUTTON_PINCH_2WPVA_RIGHT_OPEN);
+	}
+	*/
+	// fermo le pompe e metto le pinch in sicurezza
+	manageChildTreatAlm1StopAllActEntry();
+	if((buttonGUITreatment[BUTTON_RESET_ALARM].state == GUI_BUTTON_RELEASED) && IsSecurityStateActive())
+	{
+		DisableAllAirAlarm = TRUE; // forzo la chiusura dell'allarme aria
+		// setto la guard per fare in modo che quando l'allarme risultera' non attivo
+		// la macchina a stati parent vada nello stato di espulsione bolla aria
+		currentGuard[GUARD_ALARM_AIR_SFA_RECOVERY].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+		// ho raggiunto la condizione di sicurezza ed ho ricevuto un comando reset alarm
+		releaseGUIButton(BUTTON_RESET_ALARM);
+	}
+}
+
+/* Manage CHILD_TREAT_ALARM_1_SFA_AIR always state */
+void manageChildTreatAlm1SFAAlways(void)
+{
+	// apetto che tutte le pompe si siano fermate
+	manageChildTreatAlm1StopAllActAlways();
+}
+
 // funzione che gestisce gli stati child (allarmi) nel caso di trattamento1 o kidney
 // deve essere chiamata dalla gestione del parent nello stato PARENT_TREAT_KIDNEY_1_ALARM
 void ManageStateChildAlarmTreat1(void)
@@ -667,6 +787,33 @@ void ManageStateChildAlarmTreat1(void)
             	/* (FM) risolvo la situazione di allarme andando ad agire sulla cella di peltier */
                 ptrFutureChild = &stateChildAlarmTreat1[9];
             }
+
+            else if(currentGuard[GUARD_ALARM_SAF_AIR_FILT].guardValue == GUARD_VALUE_TRUE)
+            {
+            	/* (FM) risolvo la situazione di allarme
+            	 * rene:   attivando il bypass del filtro cioe'
+            	 *         spostando wpwf a sinistra e wpva a destra
+            	 * fegato: attivando il bypass del filtro cioe'
+            	 *         spostando wpwf a sinistra */
+                ptrFutureChild = &stateChildAlarmTreat1[13];
+            }
+            else if(currentGuard[GUARD_ALARM_SFV_AIR].guardValue == GUARD_VALUE_TRUE)
+            {
+            	/* (FM) risolvo la situazione di allarme
+            	 * rene:   non faccio niente
+            	 * fegato: sposto wpwv a destra in modo da staccare l'organo
+            	 *         e scaricare sul reservoir */
+                ptrFutureChild = &stateChildAlarmTreat1[15];
+            }
+            else if(currentGuard[GUARD_ALARM_SFA_AIR].guardValue == GUARD_VALUE_TRUE)
+            {
+            	/* (FM) risolvo la situazione di allarme
+            	 * rene:   sposto wpwa a destra in modo da staccare l'organo
+            	 *         e scaricare sul reservoir
+            	 * fegato: sposto wpwa a destra in modo da staccare l'organo
+            	 *         e scaricare sul reservoir */
+                ptrFutureChild = &stateChildAlarmTreat1[17];
+            }
 			break;
 
 		case CHILD_TREAT_ALARM_1_STOP_PERFUSION:
@@ -677,7 +824,7 @@ void ManageStateChildAlarmTreat1(void)
 				ptrFutureChild = &stateChildAlarmTreat1[4];
 			}
             else if(currentGuard[GUARD_ALARM_STOP_PERF_PUMP].guardValue == GUARD_VALUE_FALSE )
-                ptrFutureChild = &stateChildAlarmTreat1[13]; /* (FM) allarme chiuso */
+                ptrFutureChild = &stateChildAlarmTreat1[19]; /* (FM) allarme chiuso */
 			else if(ptrCurrentChild->action == ACTION_ALWAYS){
 				// non serve qui verra' chiamata nella ManageStateChildAlarmTreat1 dello stato principale stateState
 				//ptrCurrentChild->callBackFunct();
@@ -693,7 +840,7 @@ void ManageStateChildAlarmTreat1(void)
 			}
             else if((currentGuard[GUARD_ALARM_STOP_PURIF_PUMP].guardValue == GUARD_VALUE_FALSE) ||
                      (currentGuard[GUARD_ALARM_STOP_OXYG_PUMP].guardValue == GUARD_VALUE_FALSE) )
-                ptrFutureChild = &stateChildAlarmTreat1[13]; /* (FM) allarme chiuso */
+                ptrFutureChild = &stateChildAlarmTreat1[19]; /* (FM) allarme chiuso */
 			else if(ptrCurrentChild->action == ACTION_ALWAYS){
 				// non serve qui verra' chiamata nella ManageStateChildAlarmTreat1 dello stato principale stateState
 				// ptrCurrentChild->callBackFunct();
@@ -708,7 +855,7 @@ void ManageStateChildAlarmTreat1(void)
 				ptrFutureChild = &stateChildAlarmTreat1[8];
 			}
             else if(currentGuard[GUARD_ALARM_STOP_ALL].guardValue == GUARD_VALUE_FALSE )
-                ptrFutureChild = &stateChildAlarmTreat1[13]; /* FM allarme chiuso */
+                ptrFutureChild = &stateChildAlarmTreat1[19]; /* FM allarme chiuso */
 			else if(ptrCurrentChild->action == ACTION_ALWAYS){
 				// non serve qui verra' chiamata nella ManageStateChildAlarmTreat1 dello stato principale stateState
 				// ptrCurrentChild->callBackFunct();
@@ -723,7 +870,7 @@ void ManageStateChildAlarmTreat1(void)
 				ptrFutureChild = &stateChildAlarmTreat1[10];
 			}
             else if(currentGuard[GUARD_ALARM_STOP_PELTIER].guardValue == GUARD_VALUE_FALSE )
-                ptrFutureChild = &stateChildAlarmTreat1[13]; /* FM allarme chiuso */
+                ptrFutureChild = &stateChildAlarmTreat1[19]; /* FM allarme chiuso */
 			else if(ptrCurrentChild->action == ACTION_ALWAYS){
 				// non serve qui verra' chiamata nella ManageStateChildAlarmTreat1 dello stato principale stateState
 				// ptrCurrentChild->callBackFunct();
@@ -738,19 +885,56 @@ void ManageStateChildAlarmTreat1(void)
 				ptrFutureChild = &stateChildAlarmTreat1[12];
 			}
             else if( currentGuard[GUARD_ALARM_STOP_ALL_ACTUATOR].guardValue == GUARD_VALUE_FALSE )
-                ptrFutureChild = &stateChildAlarmTreat1[13]; /* FM allarme chiuso */
+                ptrFutureChild = &stateChildAlarmTreat1[19]; /* FM allarme chiuso */
 			else if(ptrCurrentChild->action == ACTION_ALWAYS){
 				// non serve qui verra' chiamata nella ManageStateChildAlarmTreat1 dello stato principale stateState
 				// ptrCurrentChild->callBackFunct();
 			}
 			break;
 
+
+		case CHILD_TREAT_ALARM_1_SAF_AIR_FILT:
+			if(ptrCurrentChild->action == ACTION_ON_ENTRY)
+			{
+				ptrFutureChild = &stateChildAlarmTreat1[14];
+			}
+            else if( currentGuard[GUARD_ALARM_SAF_AIR_FILT].guardValue == GUARD_VALUE_FALSE )
+                ptrFutureChild = &stateChildAlarmTreat1[19]; /* FM allarme chiuso */
+			else if(ptrCurrentChild->action == ACTION_ALWAYS)
+			{
+			}
+			break;
+		case CHILD_TREAT_ALARM_1_SFV_AIR:
+			if(ptrCurrentChild->action == ACTION_ON_ENTRY)
+			{
+				ptrFutureChild = &stateChildAlarmTreat1[16];
+			}
+            else if( currentGuard[GUARD_ALARM_SFV_AIR].guardValue == GUARD_VALUE_FALSE )
+                ptrFutureChild = &stateChildAlarmTreat1[19]; /* FM allarme chiuso */
+			else if(ptrCurrentChild->action == ACTION_ALWAYS)
+			{
+			}
+			break;
+		case CHILD_TREAT_ALARM_1_SFA_AIR:
+			if(ptrCurrentChild->action == ACTION_ON_ENTRY)
+			{
+				ptrFutureChild = &stateChildAlarmTreat1[18];
+			}
+            else if( currentGuard[GUARD_ALARM_SFA_AIR].guardValue == GUARD_VALUE_FALSE )
+                ptrFutureChild = &stateChildAlarmTreat1[19]; /* FM allarme chiuso */
+			else if(ptrCurrentChild->action == ACTION_ALWAYS)
+			{
+			}
+			break;
+
+
+
 		case CHILD_TREAT_ALARM_1_END:
 			if(ptrCurrentChild->action == ACTION_ON_ENTRY)
 			{
 				// non serve qui verra' chiamata nella ManageStateChildAlarmTreat1 dello stato principale stateState
 				//ptrCurrentChild->callBackFunct();
-				ptrFutureChild = &stateChildAlarmTreat1[14];
+				ptrFutureChild = &stateChildAlarmTreat1[20];
 			}
 			else if(ptrCurrentChild->action == ACTION_ALWAYS){
                 /* (FM) RIMANGO FERMO QUI FINO AL PROSSIMO ALLARME. NON E' NECESSARIO USCIRE DA QUESTO STATO DOPO IL TERMINE
@@ -763,4 +947,30 @@ void ManageStateChildAlarmTreat1(void)
 		default:
 			break;
 	}
+}
+
+// ritorna TRUE se ho raggiunto la condizione di sicurezza
+bool IsSecurityStateActive(void)
+{
+	THERAPY_TYPE TherType = GetTherapyType();
+
+	bool AllMotStopped = FALSE;
+	bool PinchOk = TRUE;
+	if(pumpPerist[0].actualSpeed == 0 &&
+	   pumpPerist[1].actualSpeed == 0 &&
+	   pumpPerist[2].actualSpeed == 0 &&
+	   pumpPerist[3].actualSpeed == 0)
+		AllMotStopped = TRUE;
+
+	if ((PinchOk != FALSE) && (modbusData[PINCH_2WPVF-3][17] != MODBUS_PINCH_LEFT_OPEN))
+		PinchOk = FALSE;
+	if (((PinchOk != FALSE) && (modbusData[PINCH_2WPVA-3][17] != MODBUS_PINCH_RIGHT_OPEN)))
+		PinchOk = FALSE;
+	if ((PinchOk != FALSE) && (modbusData[PINCH_2WPVV-3][17] != MODBUS_PINCH_RIGHT_OPEN) && (TherType == LiverTreat))
+		PinchOk = FALSE;
+
+	if(AllMotStopped && PinchOk)
+		return TRUE;
+	else
+		return FALSE;
 }

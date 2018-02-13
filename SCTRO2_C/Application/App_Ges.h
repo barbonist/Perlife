@@ -150,6 +150,19 @@ void manageParentEmptyDisposAlarmAlways(void);
 void manageParentEmptyDisposEndEntry(void);
 void manageParentEmptyDisposEndAlways(void);
 
+void manageParentTreatAirFiltEntry(void);
+void manageParentTreatAirFiltAlways(void);
+
+void manageParentTreatSFVEntry(void);
+void manageParentTreatSFVAlways(void);
+
+void manageParentTreatSFAEntry(void);
+void manageParentTreatSFAAlways(void);
+
+void manageParentTreatAirRecEntry(void);
+void manageParentTreatAirRecAlways(void);
+
+
 /**************************************************************************************/
 /******-----------------------------TREATMENT----------------------------------********/
 /**************************************************************************************/
@@ -201,6 +214,8 @@ void EEPROM_Read(LDD_FLASH_TAddress Source, LDD_TData *Dest, LDD_FLASH_TDataSize
 void CallInIdleState(void);
 word GetTotalPrimingVolumePerf(void);
 void CheckOxygenationSpeed(word value);
+void GoToRecoveryParentState(int MachineParentState);
 
+void HandlePinch( int cmd);
 
 #endif /* APPLICATION_APP_GES_H_ */

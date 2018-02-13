@@ -2268,6 +2268,126 @@ void manageParentEmptyDisposEndAlways(void)
 	EmptyDispStateMach();
 }
 
+// GESTIONE DEGLI STATI PER L'ELIMINAZIONE DELL'ALLARME ARIA-----------------------------------
+
+void AirAlarmRecoveryStateMach(void)
+{
+	static unsigned long StarTimeToRejAir = 0;
+	THERAPY_TYPE TherType = GetTherapyType();
+	switch (AirAlarmRecoveryState)
+	{
+		case INIT_AIR_ALARM_RECOVERY:
+			AirAlarmRecoveryState = START_AIR_PUMP;
+			break;
+		case START_AIR_PUMP:
+			if(AirParentState == PARENT_TREAT_KIDNEY_1_AIR_FILT)
+			{
+				if(TherType == KidneyTreat)
+					setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, AIR_REJECT_SPEED);
+				else if(TherType == LiverTreat)
+					setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, AIR_REJECT_SPEED);
+				StarTimeToRejAir = timerCounterModBus;
+				AirAlarmRecoveryState = STOP_AIR_PUMP;
+			}
+			else if(AirParentState == PARENT_TREAT_KIDNEY_1_SFV)
+			{
+				// faccio partire la coppia di pompe per la venosa nel fegato e per l'ossigenazione nel rene
+				setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, AIR_REJECT_SPEED);
+				StarTimeToRejAir = timerCounterModBus;
+				AirAlarmRecoveryState = STOP_AIR_PUMP;
+			}
+			else if(AirParentState == PARENT_TREAT_KIDNEY_1_SFA)
+			{
+				// parte la sempre la pompa a cui si riferisce la struttura pumpPerist 0
+				setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, AIR_REJECT_SPEED);
+				StarTimeToRejAir = timerCounterModBus;
+				AirAlarmRecoveryState = STOP_AIR_PUMP;
+			}
+			break;
+		case STOP_AIR_PUMP:
+			if(StarTimeToRejAir && (msTick_elapsed(StarTimeToRejAir) * 50L >= TIME_TO_REJECT_AIR))
+			{
+				// la pompa per l'espulsione dell'aria ha fatto 10 giri, che ritengo sufficienti per
+				// buttare fuori l'aria
+				if(AirParentState == PARENT_TREAT_KIDNEY_1_AIR_FILT)
+				{
+					if(TherType == KidneyTreat)
+						setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
+					else if(TherType == LiverTreat)
+						setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, 0);
+					AirAlarmRecoveryState = AIR_REJECTED;
+				}
+				else if(AirParentState == PARENT_TREAT_KIDNEY_1_SFV)
+				{
+					// faccio partire la coppia di pompe per la venosa nel fegato e per l'ossigenazione nel rene
+					setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 0);
+					AirAlarmRecoveryState = AIR_REJECTED;
+				}
+				else if(AirParentState == PARENT_TREAT_KIDNEY_1_SFA)
+				{
+					// parte la sempre la pompa a cui si riferisce la struttura pumpPerist 0
+					setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
+					AirAlarmRecoveryState = AIR_REJECTED;
+				}
+			}
+			break;
+		case AIR_REJECTED:
+			break;
+	}
+}
+// gestione dello stato PARENT_TREAT_KIDNEY_1_AIR_FILT
+// faccio fare un cero numero di giri alla pompa 2 fino a quando
+// l'aria on arriva al reservoir
+void manageParentTreatAirFiltEntry(void)
+{
+	AirAlarmRecoveryState = INIT_AIR_ALARM_RECOVERY;
+}
+void manageParentTreatAirFiltAlways(void)
+{
+	AirAlarmRecoveryStateMach();
+}
+
+
+// gestione dello stato PARENT_TREAT_KIDNEY_1_SFV
+// faccio fare un cero numero di giri alle pompe 4 e 5 fino a quando
+// l'aria on arriva al reservoir
+void manageParentTreatSFVEntry(void)
+{
+	AirAlarmRecoveryState = INIT_AIR_ALARM_RECOVERY;
+}
+void manageParentTreatSFVAlways(void)
+{
+	AirAlarmRecoveryStateMach();
+}
+
+
+// gestione dello stato PARENT_TREAT_KIDNEY_1_SFA
+// faccio fare un cero numero di giri alla pompa 3 fino a quando
+// l'aria on arriva al reservoir
+// Questa e' usata solo nel fegato
+void manageParentTreatSFAEntry(void)
+{
+	AirAlarmRecoveryState = INIT_AIR_ALARM_RECOVERY;
+}
+void manageParentTreatSFAAlways(void)
+{
+	AirAlarmRecoveryStateMach();
+}
+
+
+// procedura di allarme durante una fase di recupero da un allarme aria
+void manageParentTreatAirRecEntry(void)
+{
+	// TODO
+}
+// procedura di allarme durante una fase di recupero da un allarme aria
+void manageParentTreatAirRecAlways(void)
+{
+
+}
+// ------------FINE STATI ELIMINAZIONE ALLARME ARIA---------------------------------
+
+
 
 /* CHILD LEVEL FUNCTION */
 
@@ -2777,6 +2897,32 @@ void ParentEmptyDispStateMach(void)
 	}
 }
 
+// gestisce il passaggio dallo stato di allarme ad un nuovo stato parent dove si
+// cerchera' di eliminare la condizione di allarme.
+void GoToRecoveryParentState(int MachineParentState)
+{
+	switch(MachineParentState)
+	{
+		case PARENT_TREAT_KIDNEY_1_SFA:
+			AirParentState = PARENT_TREAT_KIDNEY_1_SFA;
+			/* (FM) passo nello stato per la risoluzione dell'allarme aria nella linea arteriosa*/
+			ptrFutureParent = &stateParentTreatKidney1[11];
+			ptrFutureChild = ptrFutureParent->ptrChild;
+			break;
+		case PARENT_TREAT_KIDNEY_1_SFV:
+			AirParentState = PARENT_TREAT_KIDNEY_1_SFV;
+			/* (FM) passo nello stato per la risoluzione dell'allarme aria nella linea venosa*/
+			ptrFutureParent = &stateParentTreatKidney1[9];
+			ptrFutureChild = ptrFutureParent->ptrChild;
+			break;
+		case PARENT_TREAT_KIDNEY_1_AIR_FILT:
+			AirParentState = PARENT_TREAT_KIDNEY_1_AIR_FILT;
+			/* (FM) passo nello stato per la risoluzione dell'allarme aria nella linea del filtro*/
+			ptrFutureParent = &stateParentTreatKidney1[7];
+			ptrFutureChild = ptrFutureParent->ptrChild;
+			break;
+	}
+}
 
 // ritorna il volume complessivo di priming tenendo conto anche del volume di liquido
 // necessario per riempire il disposable
@@ -3461,9 +3607,33 @@ void processMachineState(void)
 		case PARENT_TREAT_KIDNEY_1_ALARM:
 			if(currentGuard[GUARD_ALARM_ACTIVE].guardValue == GUARD_VALUE_FALSE)
 			{
-				/* FM allarme finito posso ritornare nella fase iniziale del trattamento */
-				ptrFutureParent = &stateParentTreatKidney1[1];
-				ptrFutureChild = ptrFutureParent->ptrChild;
+				if(currentGuard[GUARD_ALARM_AIR_FILT_RECOVERY].guardValue == GUARD_VALUE_TRUE)
+				{
+					// vado nello stato parent dove posso cercare di recuperare la condizione di allarme
+					currentGuard[GUARD_ALARM_AIR_FILT_RECOVERY].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
+					currentGuard[GUARD_ALARM_AIR_FILT_RECOVERY].guardValue == GUARD_VALUE_FALSE;
+					GoToRecoveryParentState(PARENT_TREAT_KIDNEY_1_AIR_FILT);
+				}
+				else if(currentGuard[GUARD_ALARM_AIR_SFV_RECOVERY].guardValue == GUARD_VALUE_TRUE)
+				{
+					// vado nello stato parent dove posso cercare di recuperare la condizione di allarme
+					currentGuard[GUARD_ALARM_AIR_SFV_RECOVERY].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
+					currentGuard[GUARD_ALARM_AIR_SFV_RECOVERY].guardValue == GUARD_VALUE_FALSE;
+					GoToRecoveryParentState(PARENT_TREAT_KIDNEY_1_SFV);
+				}
+				else if(currentGuard[GUARD_ALARM_AIR_SFA_RECOVERY].guardValue == GUARD_VALUE_TRUE)
+				{
+					// vado nello stato parent dove posso cercare di recuperare la condizione di allarme
+					currentGuard[GUARD_ALARM_AIR_SFA_RECOVERY].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
+					currentGuard[GUARD_ALARM_AIR_SFA_RECOVERY].guardValue == GUARD_VALUE_FALSE;
+					GoToRecoveryParentState(PARENT_TREAT_KIDNEY_1_SFA);
+				}
+				else
+				{
+					/* FM allarme finito posso ritornare nella fase iniziale del trattamento */
+					ptrFutureParent = &stateParentTreatKidney1[1];
+					ptrFutureChild = ptrFutureParent->ptrChild;
+				}
 			}
 
 			if(ptrCurrentParent->action == ACTION_ON_ENTRY)
@@ -3489,6 +3659,104 @@ void processMachineState(void)
 				ManageStateChildAlarmTreat1();
 			}
 			break;
+
+		// STATI PER LA GESTIONE DELLA PROCEDURA DI RIMOZIONE DELL'ARIA DAL CIRCUITO -----------------------
+		case PARENT_TREAT_KIDNEY_1_AIR_FILT:
+			if(ptrCurrentParent->action == ACTION_ON_ENTRY)
+			{
+				/* compute future parent */
+				/* FM passo alla gestione ACTION_ALWAYS */
+				ptrFutureParent = &stateParentTreatKidney1[8];
+				ptrFutureChild = ptrFutureParent->ptrChild;
+			}
+			else if(ptrCurrentParent->action == ACTION_ALWAYS)
+			{
+			}
+
+			if(currentGuard[GUARD_ALARM_ACTIVE].guardValue == GUARD_VALUE_TRUE)
+			{
+				/* (FM) si e' verificato un allarme, durante la procedura di recupero dell'allarme aria.
+				 * Per la sua gestione uso un nuovo stato 13  */
+				ptrFutureParent = &stateParentTreatKidney1[13];
+				ptrFutureChild = ptrFutureParent->ptrChild;
+				// guardando a questo valore posso vedere il tipo di azione di sicurezza
+				// e quindi posso decidere di andare anche in un qualche altro stato ad hoc
+				// di allarme
+				//ptrAlarmCurrent->secActType
+			}
+			break;
+		case PARENT_TREAT_KIDNEY_1_SFV:
+			if(ptrCurrentParent->action == ACTION_ON_ENTRY)
+			{
+				/* compute future parent */
+				/* FM passo alla gestione ACTION_ALWAYS */
+				ptrFutureParent = &stateParentTreatKidney1[10];
+				ptrFutureChild = ptrFutureParent->ptrChild;
+			}
+			else if(ptrCurrentParent->action == ACTION_ALWAYS)
+			{
+			}
+
+			if(currentGuard[GUARD_ALARM_ACTIVE].guardValue == GUARD_VALUE_TRUE)
+			{
+				/* (FM) si e' verificato un allarme, durante la procedura di recupero dell'allarme aria.
+				 * Per la sua gestione uso un nuovo stato 13  */
+				ptrFutureParent = &stateParentTreatKidney1[13];
+				ptrFutureChild = ptrFutureParent->ptrChild;
+				// guardando a questo valore posso vedere il tipo di azione di sicurezza
+				// e quindi posso decidere di andare anche in un qualche altro stato ad hoc
+				// di allarme
+				//ptrAlarmCurrent->secActType
+			}
+			break;
+		case PARENT_TREAT_KIDNEY_1_SFA:
+			if(ptrCurrentParent->action == ACTION_ON_ENTRY)
+			{
+				/* compute future parent */
+				/* FM passo alla gestione ACTION_ALWAYS */
+				ptrFutureParent = &stateParentTreatKidney1[12];
+				ptrFutureChild = ptrFutureParent->ptrChild;
+			}
+			else if(ptrCurrentParent->action == ACTION_ALWAYS)
+			{
+			}
+
+			if(currentGuard[GUARD_ALARM_ACTIVE].guardValue == GUARD_VALUE_TRUE)
+			{
+				/* (FM) si e' verificato un allarme, durante la procedura di recupero dell'allarme aria.
+				 * Per la sua gestione uso un nuovo stato 13  */
+				ptrFutureParent = &stateParentTreatKidney1[13];
+				ptrFutureChild = ptrFutureParent->ptrChild;
+				// guardando a questo valore posso vedere il tipo di azione di sicurezza
+				// e quindi posso decidere di andare anche in un qualche altro stato ad hoc
+				// di allarme
+				//ptrAlarmCurrent->secActType
+			}
+			break;
+
+		case PARENT_TREAT_KIDNEY_1_AIR_REC:
+			if(currentGuard[GUARD_ALARM_ACTIVE].guardValue == GUARD_VALUE_FALSE)
+			{
+				/* FM allarme finito posso ritornare nella fase iniziale del trattamento */
+				ptrFutureParent = &stateParentTreatKidney1[1];
+				ptrFutureChild = ptrFutureParent->ptrChild;
+			}
+
+			if(ptrCurrentParent->action == ACTION_ON_ENTRY)
+			{
+				/* compute future parent */
+				/* (FM) passo alla gestione ACTION_ALWAYS dell'allarme */
+				ptrFutureParent = &stateParentTreatKidney1[6];
+				ptrFutureChild = ptrFutureParent->ptrChild;
+			}
+			else if(ptrCurrentParent->action == ACTION_ALWAYS)
+			{
+				// (FM) chiamo la funzione child che gestisce lo stato di allarme
+				ManageStateChildAlarmTreat1();
+			}
+			break;
+		//---------------------------------------------------------------------------------------------
+
 
 		case PARENT_TREAT_KIDNEY_1_END:
             /* (FM) fine del trattamento  devo rimanere fermo qui, fino a quando non ricevo un nuovo
