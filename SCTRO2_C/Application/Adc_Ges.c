@@ -262,10 +262,11 @@ void Coversion_From_ADC_To_Voltage()
  * NAME: Pressure_Sensor_Calibration
  * INPUT: ID_sens (quale sensore), value (valore in mmHg passato dal PC, point (se è il primo o il secondo punto du calibrazione)
  * */
-void Pressure_Sensor_Calibration(Press_sens ID_sens, int value, unsigned char point)
+void Pressure_Sensor_Calibration(Press_sens ID_sens, float value, unsigned char point)
 {
 
-	static int ADCFirstPoint, ADCSecondPoint, FirstValue, SecondValue;
+	static int ADCFirstPoint, ADCSecondPoint;
+	static float FirstValue, SecondValue;
 	static bool FIRST_POINT = FALSE;
 	unsigned char *ptr_EEPROM = (EEPROM_TDataAddress)&config_data;
 

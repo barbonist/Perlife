@@ -236,7 +236,9 @@ void buildPressSensCalibResponseMsg(char *ptrMsgSbcRx)
 	sbc_tx_data[index++] = ptrMsgSbcRx[6];
 	sbc_tx_data[index++] = 0x66;
 	sbc_tx_data[index++] = ptrMsgSbcRx[7];
+	sbc_tx_data[index++] = ptrMsgSbcRx[8] >> 8;
 	sbc_tx_data[index++] = ptrMsgSbcRx[8];
+
 
 	/*nel byte 7 dell'array di ricezione ho il numero del sensore di riferimento*/
 	switch (ptrMsgSbcRx[7])
