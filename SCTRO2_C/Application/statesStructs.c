@@ -120,30 +120,30 @@ struct machineChild stateChildAlarmTreat1[] =
 			{STATE_NULL, PARENT_NULL, CHILD_TREAT_ALARM_1_STOP_PERFUSION,    ACTION_ON_ENTRY, &stateNull[0], &manageChildTreatAlm1StopPerfEntry},        /* 3 */
 			{STATE_NULL, PARENT_NULL, CHILD_TREAT_ALARM_1_STOP_PERFUSION,    ACTION_ALWAYS,   &stateNull[0], &manageChildTreatAlm1StopPerfAlways},       /* 4 */
 			//alarm stop purification
-			{STATE_NULL, PARENT_NULL, CHILD_TREAT_ALARM_1_STOP_PURIFICATION, ACTION_NULL,     &stateNull[0], &manageChildTreatAlm1StopPurifEntry},       /* 5 */
+			{STATE_NULL, PARENT_NULL, CHILD_TREAT_ALARM_1_STOP_PURIFICATION, ACTION_ON_ENTRY, &stateNull[0], &manageChildTreatAlm1StopPurifEntry},       /* 5 */
 			{STATE_NULL, PARENT_NULL, CHILD_TREAT_ALARM_1_STOP_PURIFICATION, ACTION_ALWAYS,   &stateNull[0], &manageChildTreatAlm1StopPurifAlways},      /* 6 */
 			//alarm stop all pump
-			{STATE_NULL, PARENT_NULL, CHILD_TREAT_ALARM_1_STOP_ALL_PUMP,     ACTION_NULL,     &stateNull[0], &manageChildTreatAlm1StopAllPumpEntry},     /* 7 */
+			{STATE_NULL, PARENT_NULL, CHILD_TREAT_ALARM_1_STOP_ALL_PUMP,     ACTION_ON_ENTRY, &stateNull[0], &manageChildTreatAlm1StopAllPumpEntry},     /* 7 */
 			{STATE_NULL, PARENT_NULL, CHILD_TREAT_ALARM_1_STOP_ALL_PUMP,     ACTION_ALWAYS,   &stateNull[0], &manageChildTreatAlm1StopAllPumpAlways},    /* 8 */
 			//alarm stop peltier
-			{STATE_NULL, PARENT_NULL, CHILD_TREAT_ALARM_1_STOP_PELTIER,      ACTION_NULL,     &stateNull[0], &manageChildTreatAlm1StopPeltEntry},        /* 9 */
+			{STATE_NULL, PARENT_NULL, CHILD_TREAT_ALARM_1_STOP_PELTIER,      ACTION_ON_ENTRY, &stateNull[0], &manageChildTreatAlm1StopPeltEntry},        /* 9 */
 			{STATE_NULL, PARENT_NULL, CHILD_TREAT_ALARM_1_STOP_PELTIER,      ACTION_ALWAYS,   &stateNull[0], &manageChildTreatAlm1StopPeltAlways},       /* 10 */
 			//alarm stop all actuator
-			{STATE_NULL, PARENT_NULL, CHILD_TREAT_ALARM_1_STOP_ALL_ACTUATOR, ACTION_NULL,     &stateNull[0], &manageChildTreatAlm1StopAllActEntry},      /* 11 */
+			{STATE_NULL, PARENT_NULL, CHILD_TREAT_ALARM_1_STOP_ALL_ACTUATOR, ACTION_ON_ENTRY, &stateNull[0], &manageChildTreatAlm1StopAllActEntry},      /* 11 */
 			{STATE_NULL, PARENT_NULL, CHILD_TREAT_ALARM_1_STOP_ALL_ACTUATOR, ACTION_ALWAYS,   &stateNull[0], &manageChildTreatAlm1StopAllActAlways},     /* 12 */
 
 			//allarme di aria nel filtro di depurazione
-			{STATE_NULL, PARENT_NULL, CHILD_TREAT_ALARM_1_SAF_AIR_FILT,      ACTION_NULL,     &stateNull[0], &manageChildTreatAlm1SafAirFiltEntry},      /* 13 */
+			{STATE_NULL, PARENT_NULL, CHILD_TREAT_ALARM_1_SAF_AIR_FILT,      ACTION_ON_ENTRY, &stateNull[0], &manageChildTreatAlm1SafAirFiltEntry},      /* 13 */
 			{STATE_NULL, PARENT_NULL, CHILD_TREAT_ALARM_1_SAF_AIR_FILT,      ACTION_ALWAYS,   &stateNull[0], &manageChildTreatAlm1SafAirFiltAlways},     /* 14 */
 			//allarme di aria nel circuito venoso
-			{STATE_NULL, PARENT_NULL, CHILD_TREAT_ALARM_1_SFV_AIR,           ACTION_NULL,     &stateNull[0], &manageChildTreatAlm1SFVEntry},             /* 15 */
+			{STATE_NULL, PARENT_NULL, CHILD_TREAT_ALARM_1_SFV_AIR,           ACTION_ON_ENTRY, &stateNull[0], &manageChildTreatAlm1SFVEntry},             /* 15 */
 			{STATE_NULL, PARENT_NULL, CHILD_TREAT_ALARM_1_SFV_AIR,           ACTION_ALWAYS,   &stateNull[0], &manageChildTreatAlm1SFVAlways},            /* 16 */
 			//allarme di aria nel circuito arterioso
-			{STATE_NULL, PARENT_NULL, CHILD_TREAT_ALARM_1_SFA_AIR,           ACTION_NULL,     &stateNull[0], &manageChildTreatAlm1SFAEntry},             /* 17 */
+			{STATE_NULL, PARENT_NULL, CHILD_TREAT_ALARM_1_SFA_AIR,           ACTION_ON_ENTRY, &stateNull[0], &manageChildTreatAlm1SFAEntry},             /* 17 */
 			{STATE_NULL, PARENT_NULL, CHILD_TREAT_ALARM_1_SFA_AIR,           ACTION_ALWAYS,   &stateNull[0], &manageChildTreatAlm1SFAAlways},            /* 18 */
 
 			//alarm priming end
-			{STATE_NULL, PARENT_NULL, CHILD_TREAT_ALARM_1_END,               ACTION_NULL,     &stateNull[0], &manageNull},                               /* 19 */
+			{STATE_NULL, PARENT_NULL, CHILD_TREAT_ALARM_1_END,               ACTION_ON_ENTRY, &stateNull[0], &manageNull},                               /* 19 */
 			{STATE_NULL, PARENT_NULL, CHILD_TREAT_ALARM_1_END,               ACTION_ALWAYS,   &stateNull[0], &manageNull},                               /* 20 */
 			{}
 		  };
@@ -300,34 +300,34 @@ struct machineParent stateParentPrimingTreatKidney1[] =
 
 struct machineParent stateParentTreatKidney1[] =
 {
-		{STATE_NULL, PARENT_NULL,                   CHILD_NULL, ACTION_NULL,     &stateChildIdle[0],        &manageNull},						/* 0 */
+		{STATE_NULL, PARENT_NULL,                        CHILD_NULL, ACTION_NULL,     &stateChildIdle[0],        &manageNull},						 /* 0 */
 		/* treatment init */
-		{STATE_NULL, PARENT_TREAT_KIDNEY_1_INIT,    CHILD_IDLE, ACTION_ON_ENTRY, &stateChildIdle[0],        &manageParentTreatEntry},			/* 1 */
-		{STATE_NULL, PARENT_TREAT_KIDNEY_1_INIT,    CHILD_IDLE, ACTION_ALWAYS,   &stateChildIdle[0],        &manageParentTreatAlways},			/* 2 */
+		{STATE_NULL, PARENT_TREAT_KIDNEY_1_INIT,         CHILD_IDLE, ACTION_ON_ENTRY, &stateChildIdle[0],        &manageParentTreatEntry},			 /* 1 */
+		{STATE_NULL, PARENT_TREAT_KIDNEY_1_INIT,         CHILD_IDLE, ACTION_ALWAYS,   &stateChildIdle[0],        &manageParentTreatAlways},			 /* 2 */
 		/* treatment run */
-		{STATE_NULL, PARENT_TREAT_KIDNEY_1_PUMP_ON, CHILD_IDLE, ACTION_ON_ENTRY, &stateChildIdle[0],        &manageParentTreatEntry},			/* 3 */
-		{STATE_NULL, PARENT_TREAT_KIDNEY_1_PUMP_ON, CHILD_IDLE, ACTION_ALWAYS,   &stateChildIdle[0],        &manageParentTreatAlways},			/* 4 */
+		{STATE_NULL, PARENT_TREAT_KIDNEY_1_PUMP_ON,      CHILD_IDLE, ACTION_ON_ENTRY, &stateChildIdle[0],        &manageParentTreatEntry},			 /* 3 */
+		{STATE_NULL, PARENT_TREAT_KIDNEY_1_PUMP_ON,      CHILD_IDLE, ACTION_ALWAYS,   &stateChildIdle[0],        &manageParentTreatAlways},			 /* 4 */
 		/* treatment alarm */
-		{STATE_NULL, PARENT_TREAT_KIDNEY_1_ALARM,   CHILD_IDLE, ACTION_ON_ENTRY, &stateChildAlarmTreat1[1], &manageParentTreatAlarmEntry},		/* 5 */
-		{STATE_NULL, PARENT_TREAT_KIDNEY_1_ALARM,   CHILD_IDLE, ACTION_ALWAYS,   &stateChildAlarmTreat1[1], &manageParentTreatAlarmAlways},	    /* 6 */
+		{STATE_NULL, PARENT_TREAT_KIDNEY_1_ALARM,        CHILD_IDLE, ACTION_ON_ENTRY, &stateChildAlarmTreat1[1], &manageParentTreatAlarmEntry},		 /* 5 */
+		{STATE_NULL, PARENT_TREAT_KIDNEY_1_ALARM,        CHILD_IDLE, ACTION_ALWAYS,   &stateChildAlarmTreat1[1], &manageParentTreatAlarmAlways},	 /* 6 */
 
 
 		/* treatment aria rilevata dal sensore digitale, cerco di svuotare */
-		{STATE_NULL, PARENT_TREAT_KIDNEY_1_AIR_FILT, CHILD_IDLE, ACTION_ON_ENTRY, &stateChildIdle[0],        &manageParentTreatAirFiltEntry},	/* 7 */
-		{STATE_NULL, PARENT_TREAT_KIDNEY_1_AIR_FILT, CHILD_IDLE, ACTION_ALWAYS,   &stateChildIdle[0],        &manageParentTreatAirFiltAlways},	/* 8 */
+		{STATE_NULL, PARENT_TREAT_KIDNEY_1_AIR_FILT,     CHILD_IDLE, ACTION_ON_ENTRY, &stateChildIdle[0],        &manageParentTreatAirFiltEntry},	 /* 7 */
+		{STATE_NULL, PARENT_TREAT_KIDNEY_1_AIR_FILT,     CHILD_IDLE, ACTION_ALWAYS,   &stateChildIdle[0],        &manageParentTreatAirFiltAlways},	 /* 8 */
 		/* treatment aria rilevata dal sensore venos, cerco di svuotareo */
-		{STATE_NULL, PARENT_TREAT_KIDNEY_1_SFV,      CHILD_IDLE, ACTION_ON_ENTRY, &stateChildIdle[0],        &manageParentTreatSFVEntry},		/* 9 */
-		{STATE_NULL, PARENT_TREAT_KIDNEY_1_SFV,      CHILD_IDLE, ACTION_ALWAYS,   &stateChildIdle[0],        &manageParentTreatSFVAlways},		/* 10 */
+		{STATE_NULL, PARENT_TREAT_KIDNEY_1_SFV,          CHILD_IDLE, ACTION_ON_ENTRY, &stateChildIdle[0],        &manageParentTreatSFVEntry},		 /* 9 */
+		{STATE_NULL, PARENT_TREAT_KIDNEY_1_SFV,          CHILD_IDLE, ACTION_ALWAYS,   &stateChildIdle[0],        &manageParentTreatSFVAlways},		 /* 10 */
 		/* treatment aria rilevata dal sensore arterioso, cerco di svuotare */
-		{STATE_NULL, PARENT_TREAT_KIDNEY_1_SFA,      CHILD_IDLE, ACTION_ON_ENTRY, &stateChildIdle[0],        &manageParentTreatSFAEntry},		/* 11 */
-		{STATE_NULL, PARENT_TREAT_KIDNEY_1_SFA,      CHILD_IDLE, ACTION_ALWAYS,   &stateChildIdle[0],        &manageParentTreatSFAAlways},		/* 12 */
+		{STATE_NULL, PARENT_TREAT_KIDNEY_1_SFA,          CHILD_IDLE, ACTION_ON_ENTRY, &stateChildIdle[0],        &manageParentTreatSFAEntry},		 /* 11 */
+		{STATE_NULL, PARENT_TREAT_KIDNEY_1_SFA,          CHILD_IDLE, ACTION_ALWAYS,   &stateChildIdle[0],        &manageParentTreatSFAAlways},		 /* 12 */
 		/* treatment allarme durante la procedura di recupero da un allarme aria */
-		{STATE_NULL, PARENT_TREAT_KIDNEY_1_AIR_REC,  CHILD_IDLE, ACTION_ON_ENTRY, &stateChildIdle[0],        &manageParentTreatAirRecEntry},	/* 13 */
-		{STATE_NULL, PARENT_TREAT_KIDNEY_1_AIR_REC,  CHILD_IDLE, ACTION_ALWAYS,   &stateChildIdle[0],        &manageParentTreatAirRecAlways},	/* 14 */
+		{STATE_NULL, PARENT_TREAT_KIDNEY_1_ALM_AIR_REC,  CHILD_IDLE, ACTION_ON_ENTRY, &stateChildAlarmTreat1[1], &manageParentTreatAirAlmRecEntry},	 /* 13 */
+		{STATE_NULL, PARENT_TREAT_KIDNEY_1_ALM_AIR_REC,  CHILD_IDLE, ACTION_ALWAYS,   &stateChildAlarmTreat1[1], &manageParentTreatAirAlmRecAlways}, /* 14 */
 
 		/* treatment end */
-		{STATE_NULL, PARENT_TREAT_KIDNEY_1_END,     CHILD_IDLE, ACTION_ON_ENTRY, &stateChildIdle[0],         &manageParentTreatEntry},			/* 15 */
-		{STATE_NULL, PARENT_TREAT_KIDNEY_1_END,     CHILD_IDLE, ACTION_ALWAYS,   &stateChildIdle[0],         &manageParentTreatAlways},		    /* 16 */
+		{STATE_NULL, PARENT_TREAT_KIDNEY_1_END,          CHILD_IDLE, ACTION_ON_ENTRY, &stateChildIdle[0],        &manageParentTreatEntry},			/* 15 */
+		{STATE_NULL, PARENT_TREAT_KIDNEY_1_END,          CHILD_IDLE, ACTION_ALWAYS,   &stateChildIdle[0],        &manageParentTreatAlways},		    /* 16 */
 
 		{}
 };

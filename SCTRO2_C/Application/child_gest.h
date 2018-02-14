@@ -57,6 +57,7 @@ void manageChildTreatAlm1SFAAlways(void);
 
 void ManageStateChildAlarmTreat1(void);
 
+bool PinchWriteTerminated(int idx);
 bool IsSecurityStateActive(void);
 
 #endif /* APPLICATION_CHILD_GEST_H_ */

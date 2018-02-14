@@ -159,8 +159,8 @@ void manageParentTreatSFVAlways(void);
 void manageParentTreatSFAEntry(void);
 void manageParentTreatSFAAlways(void);
 
-void manageParentTreatAirRecEntry(void);
-void manageParentTreatAirRecAlways(void);
+void manageParentTreatAirAlmRecEntry(void);
+void manageParentTreatAirAlmRecAlways(void);
 
 
 /**************************************************************************************/

@@ -717,6 +717,13 @@ void manageChildTreatAlm1SFAEntry(void)
 	*/
 	// fermo le pompe e metto le pinch in sicurezza
 	manageChildTreatAlm1StopAllActEntry();
+}
+
+/* Manage CHILD_TREAT_ALARM_1_SFA_AIR always state */
+void manageChildTreatAlm1SFAAlways(void)
+{
+	// apetto che tutte le pompe si siano fermate
+	manageChildTreatAlm1StopAllActAlways();
 	if((buttonGUITreatment[BUTTON_RESET_ALARM].state == GUI_BUTTON_RELEASED) && IsSecurityStateActive())
 	{
 		DisableAllAirAlarm = TRUE; // forzo la chiusura dell'allarme aria
@@ -726,13 +733,6 @@ void manageChildTreatAlm1SFAEntry(void)
 		// ho raggiunto la condizione di sicurezza ed ho ricevuto un comando reset alarm
 		releaseGUIButton(BUTTON_RESET_ALARM);
 	}
-}
-
-/* Manage CHILD_TREAT_ALARM_1_SFA_AIR always state */
-void manageChildTreatAlm1SFAAlways(void)
-{
-	// apetto che tutte le pompe si siano fermate
-	manageChildTreatAlm1StopAllActAlways();
 }
 
 // funzione che gestisce gli stati child (allarmi) nel caso di trattamento1 o kidney
@@ -949,6 +949,26 @@ void ManageStateChildAlarmTreat1(void)
 	}
 }
 
+// idx indice della struttura nell'array pinchActuator
+//     0  PINCH_2WPVF
+//     1  PINCH_2WPVA
+//     2  PINCH_2WPVV
+bool PinchWriteTerminated(int idx)
+{
+	bool WriteTerminated = FALSE;
+	if((pinchActuator[idx].reqState == REQ_STATE_ON) && (pinchActuator[1].reqType == REQ_TYPE_WRITE))
+	{
+		// scrittura in corso
+	}
+	else if((pinchActuator[idx].reqState == REQ_STATE_OFF) && (pinchActuator[1].reqType == REQ_TYPE_IDLE))
+	{
+		// scrittura terminata
+		WriteTerminated = TRUE;
+	}
+	return WriteTerminated;
+}
+
+
 // ritorna TRUE se ho raggiunto la condizione di sicurezza
 bool IsSecurityStateActive(void)
 {
@@ -962,11 +982,12 @@ bool IsSecurityStateActive(void)
 	   pumpPerist[3].actualSpeed == 0)
 		AllMotStopped = TRUE;
 
-	if ((PinchOk != FALSE) && (modbusData[PINCH_2WPVF-3][17] != MODBUS_PINCH_LEFT_OPEN))
+
+	if ((PinchOk == TRUE) && PinchWriteTerminated(0) && (modbusData[PINCH_2WPVF-3][17] != 0xaa))
 		PinchOk = FALSE;
-	if (((PinchOk != FALSE) && (modbusData[PINCH_2WPVA-3][17] != MODBUS_PINCH_RIGHT_OPEN)))
+	if ((PinchOk == TRUE) && PinchWriteTerminated(1) && (modbusData[PINCH_2WPVA-3][17] != 0xaa))
 		PinchOk = FALSE;
-	if ((PinchOk != FALSE) && (modbusData[PINCH_2WPVV-3][17] != MODBUS_PINCH_RIGHT_OPEN) && (TherType == LiverTreat))
+	if ((PinchOk == TRUE) && PinchWriteTerminated(2) && (modbusData[PINCH_2WPVV-3][17] != 0xaa) && (TherType == LiverTreat))
 		PinchOk = FALSE;
 
 	if(AllMotStopped && PinchOk)

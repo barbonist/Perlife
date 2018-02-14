@@ -344,7 +344,7 @@ enum Parent {
 	PARENT_TREAT_KIDNEY_1_AIR_FILT,
 	PARENT_TREAT_KIDNEY_1_SFV,
 	PARENT_TREAT_KIDNEY_1_SFA,
-	PARENT_TREAT_KIDNEY_1_AIR_REC,
+	PARENT_TREAT_KIDNEY_1_ALM_AIR_REC,
 	PARENT_TREAT_KIDNEY_1_END,
 	/*********************/
 	/* 		PARENT 		 */
@@ -472,10 +472,10 @@ struct machineStateGuard {
 	unsigned char	guardEntryValue;
 };
 
-struct machineStateGuard currentGuard[50]; /* equal to GUARD_END_NUMBER + 1 */
+struct machineStateGuard currentGuard[60]; /* equal to GUARD_END_NUMBER + 1 */
 
 struct machineStateGuard * ptrPreviousGuard;
-struct machineStateGuard * ptrCurrentGuard[50]; /* equal to GUARD_END_NUMBER + 1 */
+struct machineStateGuard * ptrCurrentGuard[60]; /* equal to GUARD_END_NUMBER + 1 */
 struct machineStateGuard * ptrFutureGuard;
 
 /* Machine state guard structure */
@@ -519,6 +519,8 @@ enum MachineStateGuardId {
 	GUARD_ALARM_AIR_FILT_RECOVERY,
 	GUARD_ALARM_AIR_SFV_RECOVERY,
 	GUARD_ALARM_AIR_SFA_RECOVERY,
+	GUARD_AIR_RECOVERY_END,
+
 
 	/*valutare se gestire le azioni di sicurezza con le guard: tutti gli allarmi possono essere ricondotti a 6 tipologie di azioni di sicurezza:
 	 ALARM_STOP_ALL_ACTUATOR: tutti gli attuatori devono essere fermati
@@ -1439,6 +1441,11 @@ unsigned short AirParentState;
 // Questa flag viene usata per disabilitare gli allarmi aria durante la fase di recupero da
 // un allarme aria precedente
 bool DisableAllAirAlarm;
+
+unsigned long StarTimeToRejAir;
+// serve per misurare il tempo per l'eliminazione della bolla d'aria
+unsigned long TotalTimeToRejAir;
+
 
 #endif /* SOURCES_GLOBAL_H_ */
 

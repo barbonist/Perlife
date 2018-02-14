@@ -222,6 +222,8 @@ void Manage_Debug_led(bool Status)
 int main(void)
 /*lint -restore Enable MISRA rule (6.3) checking. */
 {
+	StarTimeToRejAir = 0;
+	TotalTimeToRejAir = 0;
 	AirAlarmRecoveryState = INIT_AIR_ALARM_RECOVERY;
 	DisableAllAirAlarm = FALSE;
 
