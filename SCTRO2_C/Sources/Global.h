@@ -857,7 +857,7 @@ word  PR_OXYG_mmHg_Filtered;  	//variabile globale per il valore in mmHg del sen
 word  PR_OXYG_ADC_Filtered;  	//variabile globale per il valore ADC del sensore di pressione ossigenatore filtrato
 
 word  PR_LEVEL_ADC;			 	//variabile globale per il valore ADC del sensore di pressione di livello vaschetta --> PTC11
-word  PR_LEVEL_mmHg;			//variabile globale per il valore in mmHg del sensore di pressione di livello vaschetta
+word PR_LEVEL_mmHg;			//variabile globale per il valore in mmHg del sensore di pressione di livello vaschetta
 word  PR_LEVEL_mmHg_Filtered; 	//variabile globale per il valore in mmHg del sensore di pressione di livello vaschetta filtrato
 word  PR_LEVEL_ADC_Filtered;  	//variabile globale per il valore ADC del sensore di pressione di livello filtrato
 
@@ -1446,6 +1446,8 @@ unsigned long StarTimeToRejAir;
 // serve per misurare il tempo per l'eliminazione della bolla d'aria
 unsigned long TotalTimeToRejAir;
 
+// quantita' del liquido in ml
+word LiquidAmount;
 
 #endif /* SOURCES_GLOBAL_H_ */
 

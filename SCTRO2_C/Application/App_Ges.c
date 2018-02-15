@@ -1631,6 +1631,7 @@ void manageParentTreatAlways(void){
 				setPumpPressLoop(1, PRESS_LOOP_OFF); // pid venoso off
 			TotalTreatDuration += TreatDuration;
 			TreatDuration = 0;
+			StartTreatmentTime = 0;
 		}
 		else if(buttonGUITreatment[BUTTON_STOP_PERF_PUMP].state == GUI_BUTTON_RELEASED)
 		{
@@ -1823,6 +1824,7 @@ void manageParentTreatAlways(void){
 				setPumpPressLoop(0, PRESS_LOOP_OFF);
 				TotalTreatDuration += TreatDuration;
 				TreatDuration = 0;
+				StartTreatmentTime = 0;
 			}
 			else if(buttonGUITreatment[BUTTON_STOP_PERF_PUMP].state == GUI_BUTTON_RELEASED)
 			{
@@ -3222,6 +3224,7 @@ void processMachineState(void)
 				/*per poter tornare indietro dallo stato STATE_EMPTY_DISPOSABLE allo stato STATE_TREATMENT_KIDNEY_1
 				 * resetto la flag di entry sullo stato in cui sono*/
 				currentGuard[GUARD_ENABLE_TREATMENT_KIDNEY_1].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
+				currentGuard[GUARD_ENABLE_TREATMENT_KIDNEY_1].guardValue = GUARD_VALUE_FALSE;
 			}
 
 			/* execute function state level */
@@ -3379,8 +3382,11 @@ void processMachineState(void)
 
 				// riparte come se fosse un nuovo trattamento
 				StartTreatmentTime = 0;
+				TotalTreatDuration = 0;
+				TreatDuration = 0;
 				/*torno indietro nella macchina a stati quindi resetto la flag di entry sullo stato in cui sono*/
 				currentGuard[GUARD_ENABLE_DISPOSABLE_EMPTY].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
+				currentGuard[GUARD_EMPTY_DISPOSABLE_END].guardValue = GUARD_VALUE_FALSE;
 				break;
 			}
 			else if( currentGuard[GUARD_ABANDON_PRIMING].guardValue == GUARD_VALUE_TRUE )

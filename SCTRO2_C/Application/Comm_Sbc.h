@@ -47,6 +47,12 @@ void buildRDMachineStateResponseMsg(char code, char subcode);
 void buildButtonSBCResponseMsg(char code, char subcode, unsigned char buttonId);
 void buildParamSetSBCResponseMsg(char code, char subcode, unsigned char paramId, unsigned char param_h, unsigned char param_l);
 
+void initSetParamFromGUI(void);
+void initSetParamInSourceCode(void);
+void setParamWordFromGUI(unsigned char parId, int value);
+void resetParamWordFromGUI(unsigned char parId);
+word ConvertMMHgToMl( word mmhg);
+
 /*******************/
 /******* TREATMENT - SBC COMM. FUNCTION *********/
 /********************/

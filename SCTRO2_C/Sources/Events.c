@@ -119,7 +119,13 @@ void SBC_COMM_OnRxChar(void)
 		if (sbc_rx_data[5] == 0xCC)
 			Service = TRUE;
 		else
+		{
+			if (sbc_rx_data[5] == COMMAND_ID_BUT_SBC)
+			{
+				sbc_rx_data[7] = sbc_rx_data[7];
+			}
 			Service = FALSE;
+		}
 
 		ptrSbcCountRx = 0;
 		//ptrMsgSbcRx = &msg_sbc_rx[0];

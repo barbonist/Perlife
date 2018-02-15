@@ -49,67 +49,67 @@ void ShowAlarmStr(int i, char * str)
 	switch (i)
 	{
 		case CODE_ALARM_PRESS_ART_HIGH:
-			strcpy(s, "ALARM_PRESS_ART_HIGH");
+			strcpy(s, "AL_PRESS_ART_HIGH");
 			strcat(s, str);
 			DebugStringStr(s);
 			break;
 		case CODE_ALARM_PRESS_ART_LOW:
-			strcpy(s, "ALARM_PRESS_ART_LOW");
+			strcpy(s, "AL_PRESS_ART_LOW");
 			strcat(s, str);
 			DebugStringStr(s);
 			break;
 		case CODE_ALARM_AIR_PRES_ART:
-			strcpy(s, "ALARM_AIR_PRES_ART");
+			strcpy(s, "AL_AIR_PRES_ART");
 			strcat(s, str);
 			DebugStringStr(s);
 			break;
 		case CODE_ALARM_AIR_PRES_VEN:
-			strcpy(s, "ALARM_AIR_PRES_VEN");
+			strcpy(s, "AL_AIR_PRES_VEN");
 			strcat(s, str);
 			DebugStringStr(s);
 			break;
 		case CODE_ALARM_AIR_PRES_ADSRB_FILTER:
-			strcpy(s, "ALARM_AIR_PRES_ADSRB_FILTER");
+			strcpy(s, "AL_AIR_PRES_ADSRB_FILT");
 			strcat(s, str);
 			DebugStringStr(s);
 			break;
 		case CODE_ALARM_TEMP_ART_HIGH:
-			strcpy(s, "ALARM_TEMP_ART_HIGH");
+			strcpy(s, "AL_TEMP_ART_HIGH");
 			strcat(s, str);
 			DebugStringStr(s);
 			break;
 		case CODE_ALARM_PRESS_ADS_FILTER_HIGH:
-			strcpy(s, "ALARM_PRESS_ADS_FILTER_HIGH");
+			strcpy(s, "AL_PRESS_ADS_FILT_HIGH");
 			strcat(s, str);
 			DebugStringStr(s);
 			break;
 		case CODE_ALARM_FLOW_PERF_ART_HIGH:
-			strcpy(s, "ALARM_FLOW_PERF_ART_HIGH");
+			strcpy(s, "AL_FLOW_PERF_ART_HIGH");
 			strcat(s, str);
 			DebugStringStr(s);
 			break;
 		case CODE_ALARM_FLOW_ART_NOT_DETECTED:
-			strcpy(s, "ALARM_FLOW_ART_NOT_DETECTED");
+			strcpy(s, "AL_FLOW_ART_NOT_DETEC");
 			strcat(s, str);
 			DebugStringStr(s);
 			break;
 		case CODE_ALARM_PRESS_VEN_HIGH:
-			strcpy(s, "ALARM_PRESS_VEN_HIGH");
+			strcpy(s, "AL_PRESS_VEN_HIGH");
 			strcat(s, str);
 			DebugStringStr(s);
 			break;
 		case CODE_ALARM_PRESS_VEN_LOW:
-			strcpy(s, "ALARM_PRESS_VEN_LOW");
+			strcpy(s, "AL_PRESS_VEN_LOW");
 			strcat(s, str);
 			DebugStringStr(s);
 			break;
 		case CODE_ALARM_TEMP_SENS_NOT_DETECTED:
-			strcpy(s, "ALARM_TEMP_SENS_NOT_DETECTED");
+			strcpy(s, "AL_TEMP_SENS_NOT_DETEC");
 			strcat(s, str);
 			DebugStringStr(s);
 			break;
 		case CODE_ALARM_MODBUS_ACTUATOR_SEND:
-			strcpy(s, "ALARM_MODBUS_ACTUATOR_SEND");
+			strcpy(s, "AL_MODBUS_ACTUAT_SEND");
 			strcat(s, str);
 			DebugStringStr(s);
 			break;
@@ -202,13 +202,11 @@ void alarmEngineAlways(void)
 		case STATE_PRIMING_PH_1:
 		{
 			manageAlarmFlowSensNotDetected();
-			/* DA DEBUGGARE*/
 			manageAlarmIrTempSensNotDetected();
-
 
 			//verifica physic pressioni
 			manageAlarmPhysicPressSensHigh();
-			//manageAlarmPhysicPressSensLow();
+			//manageAlarmPhysicPressSensLow(); non serve questo allarme in priming
 
 			//verifica physic ir temp sens
 			manageAlarmPhysicTempSens();
@@ -218,12 +216,11 @@ void alarmEngineAlways(void)
 		case STATE_PRIMING_PH_2:
 		{
 			manageAlarmFlowSensNotDetected();
-			/* DA DEBUGGARE*/
 			manageAlarmIrTempSensNotDetected();
 
 			//verifica physic pressioni
 			manageAlarmPhysicPressSensHigh();
-			//manageAlarmPhysicPressSensLow();
+			//manageAlarmPhysicPressSensLow(); non serve questo allarme in priming
 
 			//verifica physic ir temp sens
 			manageAlarmPhysicTempSens();
@@ -252,7 +249,6 @@ void alarmEngineAlways(void)
 			//verifica  flusso  non rilevato
 			manageAlarmFlowSensNotDetected();
 
-			/*DA DEBUGGARE*/
 			//verifica temperatura noin rilevata
 			manageAlarmIrTempSensNotDetected();
 			break;
@@ -408,7 +404,7 @@ void alarmEngineAlways(void)
 	}
 	else if(StrAlarmWritten == 1)
 	{
-		ShowAlarmStr((int)alarmList[IdxCurrAlarm].code, " alarm");
+		ShowAlarmStr((int)alarmList[IdxCurrAlarm].code, " on");
 		StrAlarmWritten = 2;
 	}
 	else if(StrAlarmWritten == 2)
@@ -417,7 +413,7 @@ void alarmEngineAlways(void)
 		{
 			// allarme terminato
 			StrAlarmWritten = 0;
-			ShowAlarmStr((int)alarmList[IdxCurrAlarm].code, " terminato");
+			ShowAlarmStr((int)alarmList[IdxCurrAlarm].code, " off");
 			StartAlmArrIdx = 0;
 		}
 	}
@@ -681,25 +677,6 @@ void manageAlarmPhysicFlowPerfArtHigh(void)
 
 }
 
-/*
-void manageAlarmFlowSensNotDetected(void)
-{
-	for (int i = 0; i <2; i++)
-	{
-		//se non ricevo 10 msg consecutivi da un sensore di flusso ossia il sensore non risposnde per 5 secondi consecutivi vado in allarme
-		if (sensor_UFLOW[i].RequestMsgProcessed > MAX_MSG_CONSECUTIVE_FLOW_SENS_NOT_DETECTED)
-		{
-			alarmList[FLOW_SENS_NOT_DETECTED].physic = PHYSIC_TRUE;
-			//sensor_UFLOW[i].RequestMsgProcessed = 0;
-			//in questo caso bisogna comunicarlo all'SBC che metterà a video un pop up per le possibili soluzioni
-		}
-		else
-		{
-			alarmList[FLOW_SENS_NOT_DETECTED].physic = PHYSIC_FALSE;
-		}
-	}
-}
-*/
 
 void manageAlarmFlowSensNotDetected(void)
 {

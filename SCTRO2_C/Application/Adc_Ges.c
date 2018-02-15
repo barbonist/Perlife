@@ -224,7 +224,7 @@ void Coversion_From_ADC_To_mmHg_Pressure_Sensor()
 
 	/* TODO deve essere modificata secondo l'equazione y=mx+q; una volta modificata i sensori vanno tutti ricalibraticome segue*/
 	PR_OXYG_mmHg 	= config_data.sensor_PRx[OXYG].prSensGain    * PR_OXYG_ADC    + config_data.sensor_PRx[OXYG].prSensOffset;
-	PR_LEVEL_mmHg 	= config_data.sensor_PRx[LEVEL].prSensGain   * PR_LEVEL_ADC   + config_data.sensor_PRx[LEVEL].prSensOffset;
+	PR_LEVEL_mmHg 	= (word)((config_data.sensor_PRx[LEVEL].prSensGain   * PR_LEVEL_ADC   + config_data.sensor_PRx[LEVEL].prSensOffset) * 100.0 + 0.5);
 	PR_ADS_FLT_mmHg = config_data.sensor_PRx[ADS_FLT].prSensGain * PR_ADS_FLT_ADC + config_data.sensor_PRx[ADS_FLT].prSensOffset;
 	PR_VEN_mmHg 	= config_data.sensor_PRx[VEN].prSensGain     * PR_VEN_ADC     + config_data.sensor_PRx[VEN].prSensOffset;
 	PR_ART_mmHg 	= config_data.sensor_PRx[ART].prSensGain     * PR_ART_ADC     + config_data.sensor_PRx[ART].prSensOffset;
@@ -237,7 +237,10 @@ void Coversion_From_ADC_To_mmHg_Pressure_Sensor()
 void Pressure_sensor_Fltered ()
 {
 	PR_OXYG_mmHg_Filtered		= meanWA(60,PR_OXYG_mmHg,0);
+
 	PR_LEVEL_mmHg_Filtered		= meanWA(60,PR_LEVEL_mmHg,1);
+	LiquidAmount = ConvertMMHgToMl(PR_LEVEL_mmHg_Filtered);
+
 	PR_ADS_FLT_mmHg_Filtered	= meanWA(60,PR_ADS_FLT_mmHg,2);
 	/*sul venoso e arterioso, che sono usati per i PID, faccio
 	 * un filtro a media mobile solo su 8 campioni, tanto poi

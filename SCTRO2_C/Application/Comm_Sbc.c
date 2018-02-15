@@ -133,30 +133,30 @@ void buildPressSensReadValuesResponseMsg(char *ptrMsgSbcRx)
 	sbc_tx_data[index++] = 0x66;
 	sbc_tx_data[index++] = 0x00; //TODO stable byte
 
-	sbc_tx_data[index++] = PR_OXYG_mmHg_Filtered >> 8;
-	sbc_tx_data[index++] = PR_OXYG_mmHg_Filtered;
-	sbc_tx_data[index++] = PR_OXYG_ADC_Filtered >> 8;
-	sbc_tx_data[index++] = PR_OXYG_ADC_Filtered;
+	sbc_tx_data[index++] = (PR_OXYG_mmHg_Filtered >> 8)  & 0xFF;
+	sbc_tx_data[index++] = PR_OXYG_mmHg_Filtered  & 0xFF;
+	sbc_tx_data[index++] = (PR_OXYG_ADC_Filtered >> 8)  & 0xFF;
+	sbc_tx_data[index++] = PR_OXYG_ADC_Filtered  & 0xFF;
 
-	sbc_tx_data[index++] = PR_LEVEL_mmHg_Filtered >> 8;
-	sbc_tx_data[index++] = PR_LEVEL_mmHg_Filtered;
-	sbc_tx_data[index++] = PR_LEVEL_ADC_Filtered >> 8;
-	sbc_tx_data[index++] = PR_LEVEL_ADC_Filtered;
+	sbc_tx_data[index++] = (PR_LEVEL_mmHg_Filtered >> 8)  & 0xFF;
+	sbc_tx_data[index++] = PR_LEVEL_mmHg_Filtered & 0xFF;
+	sbc_tx_data[index++] = (PR_LEVEL_ADC_Filtered >> 8)  & 0xFF;
+	sbc_tx_data[index++] = PR_LEVEL_ADC_Filtered  & 0xFF;
 
-	sbc_tx_data[index++] = PR_ADS_FLT_mmHg_Filtered >> 8;
-	sbc_tx_data[index++] = PR_ADS_FLT_mmHg_Filtered;
-	sbc_tx_data[index++] = PR_ADS_FLT_ADC_Filtered >> 8;
-	sbc_tx_data[index++] = PR_ADS_FLT_ADC_Filtered;
+	sbc_tx_data[index++] = (PR_ADS_FLT_mmHg_Filtered >> 8)  & 0xFF;
+	sbc_tx_data[index++] = (PR_ADS_FLT_mmHg_Filtered)  & 0xFF;
+	sbc_tx_data[index++] = (PR_ADS_FLT_ADC_Filtered >> 8)  & 0xFF;
+	sbc_tx_data[index++] = PR_ADS_FLT_ADC_Filtered  & 0xFF;
 
-	sbc_tx_data[index++] = MedForVenousPid >> 8;
-	sbc_tx_data[index++] = MedForVenousPid;
-	sbc_tx_data[index++] = PR_VEN_ADC_Filtered >> 8;
-	sbc_tx_data[index++] = PR_VEN_ADC_Filtered;
+	sbc_tx_data[index++] = (MedForVenousPid >> 8)  & 0xFF;
+	sbc_tx_data[index++] = (MedForVenousPid)  & 0xFF;
+	sbc_tx_data[index++] = (PR_VEN_ADC_Filtered >> 8)  & 0xFF;
+	sbc_tx_data[index++] = PR_VEN_ADC_Filtered  & 0xFF;
 
-	sbc_tx_data[index++] = MedForArteriousPid >> 8;
-	sbc_tx_data[index++] = MedForArteriousPid;
-	sbc_tx_data[index++] = PR_ART_ADC_Filtered >> 8;
-	sbc_tx_data[index++] = PR_ART_ADC_Filtered;
+	sbc_tx_data[index++] = (MedForArteriousPid >> 8)  & 0xFF;
+	sbc_tx_data[index++] = MedForArteriousPid  & 0xFF;
+	sbc_tx_data[index++] = (PR_ART_ADC_Filtered >> 8)  & 0xFF;
+	sbc_tx_data[index++] = PR_ART_ADC_Filtered  & 0xFF;
 
 	/*
 	for(int i = 0 ; i < 5 ; i++)
@@ -244,28 +244,28 @@ void buildPressSensCalibResponseMsg(char *ptrMsgSbcRx)
 	switch (ptrMsgSbcRx[7])
 	{
 		case 1:
-			sbc_tx_data[index++] = PR_OXYG_ADC >> 8;
-			sbc_tx_data[index++] = PR_OXYG_ADC;
+			sbc_tx_data[index++] = (PR_OXYG_ADC >> 8)  & 0xFF;
+			sbc_tx_data[index++] = PR_OXYG_ADC  & 0xFF;
 			break;
 
 		case 2:
-			sbc_tx_data[index++] = PR_LEVEL_ADC >> 8;
-			sbc_tx_data[index++] = PR_LEVEL_ADC;
+			sbc_tx_data[index++] = (PR_LEVEL_ADC >> 8)  & 0xFF;
+			sbc_tx_data[index++] = (PR_LEVEL_ADC)  & 0xFF;
 			break;
 
 		case 3:
-			sbc_tx_data[index++] = PR_ADS_FLT_ADC >> 8;
-			sbc_tx_data[index++] = PR_ADS_FLT_ADC;
+			sbc_tx_data[index++] = (PR_ADS_FLT_ADC >> 8)  & 0xFF;
+			sbc_tx_data[index++] = (PR_ADS_FLT_ADC)  & 0xFF;
 			break;
 
 		case 4:
-			sbc_tx_data[index++] = PR_VEN_ADC >> 8;
-			sbc_tx_data[index++] = PR_VEN_ADC;
+			sbc_tx_data[index++] = (PR_VEN_ADC >> 8)  & 0xFF;
+			sbc_tx_data[index++] = PR_VEN_ADC  & 0xFF;
 			break;
 
 		case 5:
-			sbc_tx_data[index++] = PR_ART_ADC >> 8;
-			sbc_tx_data[index++] = PR_ART_ADC;
+			sbc_tx_data[index++] = (PR_ART_ADC >> 8)  & 0xFF;
+			sbc_tx_data[index++] = PR_ART_ADC  & 0xFF;
 			break;
 
 		default:
@@ -953,8 +953,8 @@ void buildRDMachineStateResponseMsg(char code, char subcode)
 	sbc_tx_data[index++] = (PR_OXYG_mmHg_Filtered) & 0xFF;
 	/* sensors parameters: pressure level */
 
-	sbc_tx_data[index++] = (PR_LEVEL_mmHg_Filtered >> 8) & 0xFF;
-	sbc_tx_data[index++] = (PR_LEVEL_mmHg_Filtered) & 0xFF;
+	sbc_tx_data[index++] = (LiquidAmount >> 8) & 0xFF; // PR_LEVEL_mmHg_Filtered
+	sbc_tx_data[index++] = (LiquidAmount) & 0xFF;      // PR_LEVEL_mmHg_Filtered
 
 	/* sensors parameters: pressure systolic arterial */
 	sbc_tx_data[index++] = (PR_ART_Sistolyc_mmHg >> 8) & 0xFF;
@@ -1237,7 +1237,7 @@ void setParamWordFromGUI(unsigned char parId, int value)
 			value = 93;
 #endif
 		ParamRcvdInMounting[0] = 1;
-		DebugStringStr("PAR_SET_PRIMING_VOL_PERFUSION");
+		DebugStringStr("PAR_SET_PRIMING_VOL_PERF");
 	}
 	else if(parId == PAR_SET_PRIMING_TEMPERATURE_PERFUSION)
 	{
@@ -1250,37 +1250,37 @@ void setParamWordFromGUI(unsigned char parId, int value)
 		if(value < (MIN_TEMP_PRIMING * 10))
 			value = MIN_TEMP_PRIMING * 10;
 		ParamRcvdInMounting[1] = 1;
-		DebugStringStr("PAR_SET_PRIMING_TEMPERATURE_PERFUSION");
+		DebugStringStr("PAR_SET_PRIMING_TEMP_PERF");
 	}
 	else if(parId == PAR_SET_OXYGENATOR_ACTIVE)
 	{
 		if((PARAMETER_ACTIVE_TYPE)value == YES)
 		{
 			ParamRcvdInMounting[2] = 1;
-			DebugStringStr("PAR_SET_OXYGENATOR_ACTIVE");
+			DebugStringStr("PAR_SET_OXYGEN_ACTIVE");
 		}
 		else if((PARAMETER_ACTIVE_TYPE)value == NO)
 		{
 			ParamRcvdInMounting[2] = 1;
-			DebugStringStr("PAR_SET_OXYGENATOR_NOT_ACTIVE");
+			DebugStringStr("PAR_SET_OXYGEN_NOT_ACTIVE");
 		}
 		else
-			DebugStringStr("PAR_SET_OXYGENATOR_UNDEF");
+			DebugStringStr("PAR_SET_OXYGEN_UNDEF");
 	}
 	else if(parId == PAR_SET_DEPURATION_ACTIVE)
 	{
 		if((PARAMETER_ACTIVE_TYPE)value == YES)
 		{
 			ParamRcvdInMounting[3] = 1;
-			DebugStringStr("PAR_SET_DEPURATION_ACTIVE");
+			DebugStringStr("PAR_SET_DEPUR_ACTIVE");
 		}
 		else if((PARAMETER_ACTIVE_TYPE)value == NO)
 		{
 			ParamRcvdInMounting[3] = 1;
-			DebugStringStr("PAR_SET_DEPURATION_NOT_ACTIVE");
+			DebugStringStr("PAR_SET_DEPUR_NOT_ACTIVE");
 		}
 		else
-			DebugStringStr("PAR_SET_DEPURATION_UNDEF");
+			DebugStringStr("PAR_SET_DEPUR_UNDEF");
 	}
 	else if (parId == PAR_SET_MAX_FLOW_PERFUSION)
 	{
@@ -1330,6 +1330,76 @@ void resetParamWordFromGUI(unsigned char parId){
 
 
 
+
+
+const word LiquidLevelTable[39][2] =
+{
+		// valore letto dal sensore di pressione mmHg, ml presenti nel recipiente
+		66, 100,
+		81,	150,
+		90,	200,
+		95,	250,
+		105, 300,
+		113, 350,
+		123, 400,
+		134, 450,
+		143, 500,
+		149, 550,
+		155, 600,
+		161, 650,
+		171, 700,
+		175, 750,
+		180, 800,
+		185, 850,
+		191, 900,
+		196, 950,
+		199, 1000,
+		208, 1100,
+		218, 1200,
+		226, 1300,
+		233, 1400,
+		242, 1500,
+		248, 1600,
+		256, 1700,
+		265, 1800,
+		271, 1900,
+		279, 2000,
+		287, 2100,
+		292, 2200,
+		298, 2300,
+		309, 2400,
+		314, 2500,
+		320, 2600,
+		329, 2700,
+		336, 2800,
+		343, 2900,
+		346, 3000
+};
+
+
+// converte il valore mmhg moltiplicato per 10 in ml di contenuto nella baccinella
+word ConvertMMHgToMl( word mmhg)
+{
+	word wd = 0;
+	int i;
+	for(i = 0; i < 39; i++)
+	{
+		if(LiquidLevelTable[i][0] > mmhg)
+		{
+			if(i)
+			{
+				wd = LiquidLevelTable[i - 1][1];
+			}
+			else
+				wd = 0;
+			break;
+		}
+
+	}
+	if(i == 39)
+		wd = 3000;
+	return wd;
+}
 
 
 

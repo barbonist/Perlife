@@ -578,22 +578,33 @@ void manageChildTreatAlm1StopAllActAlways(void)
 			setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, 0);
 		}
 
-		if (modbusData[PINCH_2WPVF-3][17] != MODBUS_PINCH_LEFT_OPEN)
+		//if (modbusData[PINCH_2WPVF-3][17] != MODBUS_PINCH_LEFT_OPEN)
+		if (PinchWriteTerminated(0) && (modbusData[PINCH_2WPVF-3][17] != 0xaa))
 		{
 			// metto in bypass il filtro per sicurezza
 			setPinchPositionHighLevel(PINCH_2WPVF, MODBUS_PINCH_LEFT_OPEN);
 		}
 
-		if (modbusData[PINCH_2WPVA-3][17] != MODBUS_PINCH_RIGHT_OPEN)
+		//if (modbusData[PINCH_2WPVA-3][17] != MODBUS_PINCH_RIGHT_OPEN)
+		if (PinchWriteTerminated(1) && (modbusData[PINCH_2WPVA-3][17] != 0xaa))
 		{
 			setPinchPositionHighLevel(PINCH_2WPVA, MODBUS_PINCH_RIGHT_OPEN);
 		}
-
+		/*
 		if ( modbusData[PINCH_2WPVV-3][17] != MODBUS_PINCH_RIGHT_OPEN && TherType == LiverTreat)
 		{
 			setPinchPositionHighLevel(PINCH_2WPVV, MODBUS_PINCH_RIGHT_OPEN);
 		}
 		else if (modbusData[PINCH_2WPVV-3][17] != MODBUS_PINCH_LEFT_OPEN && TherType == KidneyTreat)
+		{
+			//in TherapyType == KidneyTreat non è usata quindi preferisco non muoverla
+		}
+		*/
+		if (PinchWriteTerminated(2) && (modbusData[PINCH_2WPVV-3][17] != 0xaa) && (TherType == LiverTreat))
+		{
+			setPinchPositionHighLevel(PINCH_2WPVV, MODBUS_PINCH_RIGHT_OPEN);
+		}
+		else if (PinchWriteTerminated(2) && (modbusData[PINCH_2WPVV-3][17] != 0xaa) && (TherType == KidneyTreat))
 		{
 			//in TherapyType == KidneyTreat non è usata quindi preferisco non muoverla
 		}
