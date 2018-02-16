@@ -1428,8 +1428,10 @@ typedef enum
 {
 	INIT_AIR_ALARM_RECOVERY = 0,
 	START_AIR_PUMP,
+	AIR_CHANGE_START_TIME,
 	STOP_AIR_PUMP,
-	AIR_REJECTED
+	AIR_REJECTED,
+	AIR_REJECTED1
 }AIR_ALARM_RECOVERY_STATE;
 
 AIR_ALARM_RECOVERY_STATE AirAlarmRecoveryState;
@@ -1448,6 +1450,14 @@ unsigned long TotalTimeToRejAir;
 
 // quantita' del liquido in ml
 word LiquidAmount;
+
+// allarme aria su filtro scattato, ma non ho ancora ricevuto il butto_reset per eliminarlo
+bool TreatAlm1SafAirFiltActive;
+// allarme aria venoso scattato, ma non ho ancora ricevuto il butto_reset per eliminarlo
+bool TreatAlm1SFAActive;
+// allarme aria arterioso scattato, ma non ho ancora ricevuto il butto_reset per eliminarlo
+bool TreatAlm1SFVActive;
+
 
 #endif /* SOURCES_GLOBAL_H_ */
 

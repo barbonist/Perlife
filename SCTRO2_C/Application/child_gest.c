@@ -649,6 +649,7 @@ void manageChildTreatAlm1SafAirFiltEntry(void)
 
 	// fermo le pompe e metto le pinch in sicurezza
 	manageChildTreatAlm1StopAllActEntry();
+	TreatAlm1SafAirFiltActive = TRUE;
 }
 
 /* Manage CHILD_TREAT_ALARM_1_SAF_AIR_FILT always state */
@@ -687,6 +688,7 @@ void manageChildTreatAlm1SFVEntry(void)
 	*/
 	// fermo le pompe e metto le pinch in sicurezza
 	manageChildTreatAlm1StopAllActEntry();
+	TreatAlm1SFVActive = TRUE;
 }
 
 /* Manage CHILD_TREAT_ALARM_1_SFV_AIR always state */
@@ -728,6 +730,7 @@ void manageChildTreatAlm1SFAEntry(void)
 	*/
 	// fermo le pompe e metto le pinch in sicurezza
 	manageChildTreatAlm1StopAllActEntry();
+	TreatAlm1SFAActive = TRUE;
 }
 
 /* Manage CHILD_TREAT_ALARM_1_SFA_AIR always state */

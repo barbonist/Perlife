@@ -58,6 +58,7 @@
 #include "statesStructs.h"
 #include "general_func.h"
 #include "pid.h"
+#include "Comm_Sbc.h"
 
 extern float pressSample1_Ven;
 extern float pressSample2_Ven;
@@ -2274,6 +2275,7 @@ void manageParentEmptyDisposEndAlways(void)
 
 void AirAlarmRecoveryStateMach(void)
 {
+	static unsigned long StarDelay = 0;
 	THERAPY_TYPE TherType = GetTherapyType();
 	switch (AirAlarmRecoveryState)
 	{
@@ -2287,18 +2289,38 @@ void AirAlarmRecoveryStateMach(void)
 					setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, AIR_REJECT_SPEED);
 				else if(TherType == LiverTreat)
 					setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, AIR_REJECT_SPEED);
-				AirAlarmRecoveryState = STOP_AIR_PUMP;
+				AirAlarmRecoveryState = AIR_CHANGE_START_TIME;
 			}
 			else if(AirParentState == PARENT_TREAT_KIDNEY_1_SFV)
 			{
 				// faccio partire la coppia di pompe per la venosa nel fegato e per l'ossigenazione nel rene
 				setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, AIR_REJECT_SPEED);
-				AirAlarmRecoveryState = STOP_AIR_PUMP;
+				AirAlarmRecoveryState = AIR_CHANGE_START_TIME;
 			}
 			else if(AirParentState == PARENT_TREAT_KIDNEY_1_SFA)
 			{
 				// parte la sempre la pompa a cui si riferisce la struttura pumpPerist 0
 				setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, AIR_REJECT_SPEED);
+				AirAlarmRecoveryState = AIR_CHANGE_START_TIME;
+			}
+			break;
+		case AIR_CHANGE_START_TIME:
+			if((AirParentState == PARENT_TREAT_KIDNEY_1_AIR_FILT) && (Air_1_Status == LIQUID))
+			{
+				//  la bolla se ne e' andata faccio; ripartire il timer per misurare il tempo a partire da ora
+				StarTimeToRejAir = timerCounterModBus;
+				AirAlarmRecoveryState = STOP_AIR_PUMP;
+			}
+			else if((AirParentState == PARENT_TREAT_KIDNEY_1_SFV) && (sensor_UFLOW[VENOUS_AIR_SENSOR].bubbleSize < 25))
+			{
+				//  la bolla se ne e' andata faccio; ripartire il timer per misurare il tempo a partire da ora
+				StarTimeToRejAir = timerCounterModBus;
+				AirAlarmRecoveryState = STOP_AIR_PUMP;
+			}
+			else if((AirParentState == PARENT_TREAT_KIDNEY_1_SFA) && (sensor_UFLOW[ARTERIOUS_AIR_SENSOR].bubbleSize < 25))
+			{
+				//  la bolla se ne e' andata faccio; ripartire il timer per misurare il tempo a partire da ora
+				StarTimeToRejAir = timerCounterModBus;
 				AirAlarmRecoveryState = STOP_AIR_PUMP;
 			}
 			break;
@@ -2314,25 +2336,35 @@ void AirAlarmRecoveryStateMach(void)
 					else if(TherType == LiverTreat)
 						setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, 0);
 					AirAlarmRecoveryState = AIR_REJECTED;
-					currentGuard[GUARD_AIR_RECOVERY_END].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+					//currentGuard[GUARD_AIR_RECOVERY_END].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+					StarDelay = timerCounterModBus;
 				}
 				else if(AirParentState == PARENT_TREAT_KIDNEY_1_SFV)
 				{
-					// faccio partire la coppia di pompe per la venosa nel fegato e per l'ossigenazione nel rene
+					// fermo la coppia di pompe per la venosa nel fegato e per l'ossigenazione nel rene
 					setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 0);
 					AirAlarmRecoveryState = AIR_REJECTED;
-					currentGuard[GUARD_AIR_RECOVERY_END].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+					//currentGuard[GUARD_AIR_RECOVERY_END].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+					StarDelay = timerCounterModBus;
 				}
 				else if(AirParentState == PARENT_TREAT_KIDNEY_1_SFA)
 				{
-					// parte la sempre la pompa a cui si riferisce la struttura pumpPerist 0
+					// fermo la pompa a cui si riferisce la struttura pumpPerist 0
 					setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
 					AirAlarmRecoveryState = AIR_REJECTED;
-					currentGuard[GUARD_AIR_RECOVERY_END].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+					//currentGuard[GUARD_AIR_RECOVERY_END].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+					StarDelay = timerCounterModBus;
 				}
 			}
 			break;
 		case AIR_REJECTED:
+			if(StarDelay && ((msTick_elapsed(StarDelay) * 50L) >= 2000))
+			{
+				AirAlarmRecoveryState = AIR_REJECTED1;
+				currentGuard[GUARD_AIR_RECOVERY_END].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+			}
+			break;
+		case AIR_REJECTED1:
 			break;
 	}
 }
@@ -3618,32 +3650,52 @@ void processMachineState(void)
 		case PARENT_TREAT_KIDNEY_1_ALARM:
 			if(currentGuard[GUARD_ALARM_ACTIVE].guardValue == GUARD_VALUE_FALSE)
 			{
-				if(currentGuard[GUARD_ALARM_AIR_FILT_RECOVERY].guardValue == GUARD_VALUE_TRUE)
+				bool ButtonResetRcvd = FALSE;
+				if(buttonGUITreatment[BUTTON_RESET_ALARM].state == GUI_BUTTON_RELEASED)
 				{
+					releaseGUIButton(BUTTON_RESET_ALARM);
+					ButtonResetRcvd = TRUE;
+				}
+
+				if((currentGuard[GUARD_ALARM_AIR_FILT_RECOVERY].guardValue == GUARD_VALUE_TRUE) || (ButtonResetRcvd && TreatAlm1SafAirFiltActive))
+				{
+					// ho ricevuto un BUTTON_RESET_ALARM e l'allarme era ancora attivo oppure
+					// ho ricevuto un BUTTON_RESET_ALARM dopo che l'allarme e' stato cancellato perche' la condizione
+					// fisica di allarme e' venuta meno
+					TreatAlm1SafAirFiltActive = FALSE;
 					// vado nello stato parent dove posso cercare di recuperare la condizione di allarme
 					currentGuard[GUARD_ALARM_AIR_FILT_RECOVERY].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
-					currentGuard[GUARD_ALARM_AIR_FILT_RECOVERY].guardValue == GUARD_VALUE_FALSE;
+					currentGuard[GUARD_ALARM_AIR_FILT_RECOVERY].guardValue = GUARD_VALUE_FALSE;
 					GoToRecoveryParentState(PARENT_TREAT_KIDNEY_1_AIR_FILT);
 				}
-				else if(currentGuard[GUARD_ALARM_AIR_SFV_RECOVERY].guardValue == GUARD_VALUE_TRUE)
+				else if((currentGuard[GUARD_ALARM_AIR_SFV_RECOVERY].guardValue == GUARD_VALUE_TRUE) || (ButtonResetRcvd && TreatAlm1SFVActive))
 				{
+					TreatAlm1SFVActive = FALSE;
 					// vado nello stato parent dove posso cercare di recuperare la condizione di allarme
 					currentGuard[GUARD_ALARM_AIR_SFV_RECOVERY].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
-					currentGuard[GUARD_ALARM_AIR_SFV_RECOVERY].guardValue == GUARD_VALUE_FALSE;
+					currentGuard[GUARD_ALARM_AIR_SFV_RECOVERY].guardValue = GUARD_VALUE_FALSE;
 					GoToRecoveryParentState(PARENT_TREAT_KIDNEY_1_SFV);
 				}
-				else if(currentGuard[GUARD_ALARM_AIR_SFA_RECOVERY].guardValue == GUARD_VALUE_TRUE)
+				else if((currentGuard[GUARD_ALARM_AIR_SFA_RECOVERY].guardValue == GUARD_VALUE_TRUE) || (ButtonResetRcvd && TreatAlm1SFAActive))
 				{
+					TreatAlm1SFAActive = FALSE;
 					// vado nello stato parent dove posso cercare di recuperare la condizione di allarme
 					currentGuard[GUARD_ALARM_AIR_SFA_RECOVERY].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
-					currentGuard[GUARD_ALARM_AIR_SFA_RECOVERY].guardValue == GUARD_VALUE_FALSE;
+					currentGuard[GUARD_ALARM_AIR_SFA_RECOVERY].guardValue = GUARD_VALUE_FALSE;
 					GoToRecoveryParentState(PARENT_TREAT_KIDNEY_1_SFA);
 				}
 				else
 				{
-					/* FM allarme finito posso ritornare nella fase iniziale del trattamento */
-					ptrFutureParent = &stateParentTreatKidney1[1];
-					ptrFutureChild = ptrFutureParent->ptrChild;
+					if(ButtonResetRcvd)
+					{
+						ButtonResetRcvd = FALSE;
+						// FM allarme finito posso ritornare nella fase iniziale del trattamento
+						ptrFutureParent = &stateParentTreatKidney1[1];
+						ptrFutureChild = ptrFutureParent->ptrChild;
+						// forzo anche una pressione del tasto TREATMENT START per fare in modo che
+						// il trattamento riprenda automaticamente
+						setGUIButton(BUTTON_START_TREATMENT);
+					}
 				}
 			}
 
@@ -3683,6 +3735,10 @@ void processMachineState(void)
 				DisableAllAirAlarm = FALSE;
 				ptrFutureParent = &stateParentTreatKidney1[1];
 				ptrFutureChild = ptrFutureParent->ptrChild;
+
+				// forzo anche una pressione del tasto TREATMENT START per fare in modo che
+				// il trattamento riprenda automaticamente
+				setGUIButton(BUTTON_START_TREATMENT);
 				break;
 			}
 
@@ -3721,6 +3777,10 @@ void processMachineState(void)
 				DisableAllAirAlarm = FALSE;
 				ptrFutureParent = &stateParentTreatKidney1[1];
 				ptrFutureChild = ptrFutureParent->ptrChild;
+
+				// forzo anche una pressione del tasto TREATMENT START per fare in modo che
+				// il trattamento riprenda automaticamente
+				setGUIButton(BUTTON_START_TREATMENT);
 				break;
 			}
 
@@ -3759,6 +3819,10 @@ void processMachineState(void)
 				DisableAllAirAlarm = FALSE;
 				ptrFutureParent = &stateParentTreatKidney1[1];
 				ptrFutureChild = ptrFutureParent->ptrChild;
+
+				// forzo anche una pressione del tasto TREATMENT START per fare in modo che
+				// il trattamento riprenda automaticamente
+				setGUIButton(BUTTON_START_TREATMENT);
 				break;
 			}
 

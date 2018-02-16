@@ -150,6 +150,10 @@ void alwaysPumpPressLoopArt(unsigned char pmpId, unsigned char *PidFirstTime)
 	static int Count = 0;
 	static int Target_PID = 0;
 
+	int MAX_ART_RPM_Val;
+	MAX_ART_RPM_Val = parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value / 9.3;
+
+
     /*funzione col solo proporzionale usata per mandare in oscillazione la pressione
      * e calcolare il K minimo e il periodo di oscillazione
      * //	deltaSpeed_Art = parKP_Art * errPress;*/
@@ -203,7 +207,7 @@ void alwaysPumpPressLoopArt(unsigned char pmpId, unsigned char *PidFirstTime)
 
 		//la velocità del messaggio di stato resta costante per 5 secondi && velocità minore del massimo)
 	    // incrementiamo la actual speed di 5 RPM;
-	   if (SpeedCostanteArt((int)actualSpeed_Art) && (actualSpeed_Art <= MAX_ART_RPM))
+	   if (SpeedCostanteArt((int)actualSpeed_Art) && (actualSpeed_Art <= MAX_ART_RPM_Val))
 	   {
 		   actualSpeed_Art += 5.0;
 		   Target_PID = parameterWordSetFromGUI[PAR_SET_PRESS_ART_TARGET].value  + CalcolaPresArt(actualSpeed_Art);
@@ -238,8 +242,8 @@ void alwaysPumpPressLoopArt(unsigned char pmpId, unsigned char *PidFirstTime)
 			}
 			else
 			{
-				if(actualSpeed_Art >= (float)MAX_ART_RPM)
-					actualSpeed_Art = (float)MAX_ART_RPM;
+				if(actualSpeed_Art >= (float)MAX_ART_RPM_Val)
+					actualSpeed_Art = (float)MAX_ART_RPM_Val;
 				else
 					actualSpeed_Art = actualSpeed_Art + deltaSpeed_Art;
 			}
@@ -573,6 +577,11 @@ void alwaysPumpPressLoopVen(unsigned char pmpId, unsigned char *PidFirstTime){
 	static int Count2 = 0;
 	static int Target_PID_VEN = 0;
 
+	int MAX_OXYG_RPM_Val;
+
+	MAX_OXYG_RPM_Val = parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value / 20.0;
+
+
     /*funzione col solo proporzionale usata per mandare in oscillazione la pressione
      * e calcolare il K minimo e il periodo di oscillazione
      * //	deltaSpeed_Ven = parKP_Ven * errPress;*/
@@ -613,7 +622,13 @@ void alwaysPumpPressLoopVen(unsigned char pmpId, unsigned char *PidFirstTime){
 				Speed_Media = Somma_Speed/Count;
 				Speed_Media_old = Speed_Media;
 
-				Target_PID_VEN = parameterWordSetFromGUI[PAR_SET_VENOUS_PRESS_TARGET].value + CalcolaPresVen(Speed_Media);
+//				if ((sensor_UFLOW[1].Average_Flow_Val != 0.0) &&
+//					(sensor_UFLOW[1].Average_Flow_Val > ( parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value)))
+//				{
+//				}
+//				else
+					Target_PID_VEN = parameterWordSetFromGUI[PAR_SET_VENOUS_PRESS_TARGET].value + CalcolaPresVen(Speed_Media);
+
 				Count = 0;
 				Somma_Speed = 0;
 			}
@@ -626,12 +641,19 @@ void alwaysPumpPressLoopVen(unsigned char pmpId, unsigned char *PidFirstTime){
 
 		//la velocità del messaggio di stato resta costante per 5 secondi && velocità minore del massimo)
 	    // incrementiamo la actual speed di 5 RPM;
-	   if (SpeedCostanteVen((int)actualSpeed_Ven) && (actualSpeed_Ven <= MAX_OXYG_RPM))
+	   if (SpeedCostanteVen((int)actualSpeed_Ven) && (actualSpeed_Ven <= MAX_OXYG_RPM_Val))
 	   {
-		   actualSpeed_Ven += 5.0;
-		   Target_PID_VEN = parameterWordSetFromGUI[PAR_SET_VENOUS_PRESS_TARGET].value + CalcolaPresVen(actualSpeed_Ven);
-		   StopPid = TRUE;
-		   StartTimePidStop = timerCounterModBus;
+//			if ((sensor_UFLOW[1].Average_Flow_Val != 0.0) &&
+//				(sensor_UFLOW[1].Average_Flow_Val > ( parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value)))
+//			{
+//			}
+//			else
+//			{
+			    actualSpeed_Ven += 5.0;
+				Target_PID_VEN = parameterWordSetFromGUI[PAR_SET_VENOUS_PRESS_TARGET].value + CalcolaPresVen(actualSpeed_Ven);
+				StopPid = TRUE;
+				StartTimePidStop = timerCounterModBus;
+//			}
 	   }
 
 	deltaSpeed_Ven = ((parKITC_Ven * errPress) -
@@ -661,8 +683,8 @@ void alwaysPumpPressLoopVen(unsigned char pmpId, unsigned char *PidFirstTime){
 			}
 			else
 			{
-				if(actualSpeed_Ven >= (float)MAX_OXYG_RPM)
-					actualSpeed_Ven = (float)MAX_OXYG_RPM;
+				if(actualSpeed_Ven >= (float)MAX_OXYG_RPM_Val)
+					actualSpeed_Ven = (float)MAX_OXYG_RPM_Val;
 				else
 					actualSpeed_Ven = actualSpeed_Ven + deltaSpeed_Ven;
 			}

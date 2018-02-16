@@ -222,6 +222,10 @@ void Manage_Debug_led(bool Status)
 int main(void)
 /*lint -restore Enable MISRA rule (6.3) checking. */
 {
+	TreatAlm1SafAirFiltActive = FALSE;
+	TreatAlm1SFAActive = FALSE;
+	TreatAlm1SFVActive = FALSE;
+
 	LiquidAmount = 0;
 	StarTimeToRejAir = 0;
 	TotalTimeToRejAir = 0;

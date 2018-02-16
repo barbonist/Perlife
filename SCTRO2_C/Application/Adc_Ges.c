@@ -24,6 +24,7 @@
 #include "EEPROM.h"
 #include "App_Ges.h"
 #include "ModBusCommProt.h"
+#include "Comm_Sbc.h"
 
 byte adcRes = 0xFF;
 word adcValue;
