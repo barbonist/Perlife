@@ -1329,10 +1329,10 @@ void resetParamWordFromGUI(unsigned char parId){
 }
 
 
+/*
+#define NUM_LQUID_LEV_VALUES 39
 
-
-
-const word LiquidLevelTable[39][2] =
+const word LiquidLevelTable[NUM_LQUID_LEV_VALUES][2] =
 {
 		// valore letto dal sensore di pressione mmHg, ml presenti nel recipiente
 		66, 100,
@@ -1375,6 +1375,34 @@ const word LiquidLevelTable[39][2] =
 		343, 2900,
 		346, 3000
 };
+*/
+
+#define NUM_LQUID_LEV_VALUES 20
+
+const word LiquidLevelTable[NUM_LQUID_LEV_VALUES][2] =
+{
+		// valore letto dal sensore di pressione mmHg, ml presenti nel recipiente
+		105, 100,  // 108
+		136, 200,  // 139
+		153, 300,  // 156
+		174, 400,  // 177
+		188, 500,  // 191
+		200, 600,  // 203
+		206, 700,  // 209
+		219, 800,  // 221
+		223, 900,  // 226
+		234, 1000,  // 237
+		245, 1200,  // 248
+		262, 1400,  // 265
+		268, 1600,  // 271
+		305, 1800,  // 308
+		316, 2000,  // 319
+		330, 2200,  // 333
+		353, 2400,  // 356
+		363, 2600,  // 366
+		376, 2800,  // 379
+		391, 3000   // 394
+};
 
 
 // converte il valore mmhg moltiplicato per 10 in ml di contenuto nella baccinella
@@ -1382,7 +1410,7 @@ word ConvertMMHgToMl( word mmhg)
 {
 	word wd = 0;
 	int i;
-	for(i = 0; i < 39; i++)
+	for(i = 0; i < NUM_LQUID_LEV_VALUES; i++)
 	{
 		if(LiquidLevelTable[i][0] > mmhg)
 		{
@@ -1396,7 +1424,7 @@ word ConvertMMHgToMl( word mmhg)
 		}
 
 	}
-	if(i == 39)
+	if(i == NUM_LQUID_LEV_VALUES)
 		wd = 3000;
 	return wd;
 }

@@ -10,7 +10,7 @@
 
 // TODO commentare questo define nella versione definitiva perche' deve essere usato solo per il
 // debug con il software di service fatto da Luca.
-#define DEBUG_WITH_SERVICE_SBC 0
+//#define DEBUG_WITH_SERVICE_SBC 0
 
 
 
@@ -1275,6 +1275,8 @@ typedef enum{NOT_DEF = 0, NO = 1, YES = 2} PARAMETER_ACTIVE_TYPE;
 // Quantita' di liquido pompata nell'intervallo di 450 msec.
 // 1 / 60 * 0.450 * 9.3
 #define CONV_RPMMIN_TO_ML_PER_INTERVAL  (float)0.06975
+// 1 / 60 * 0.450 * 10.0
+#define CONV_RPMMIN_TO_ML_PER_INT_OXYG  (float)0.075
 // valore originale del codice
 //#define CONV_RPMMIN_TO_ML_PER_INTERVAL  (float)0.00775
 // intervallo di tempo in msec per cui devo vedere la temperatura di ricircolo raggiunta prima di chiudere lo stato
@@ -1337,7 +1339,7 @@ Kd = Kp*Pu/8  = 0.01875
 
 
 
-/*
+
 //----------------------------------------------------------------------------------------------------------
 // i valori che seguono sono da considerare nel funzionamento normale
 // volume in ml nel reservoir prima di far partire le pompe di ossigenazione e pompa depurazione nel fegato
@@ -1348,8 +1350,9 @@ Kd = Kp*Pu/8  = 0.01875
 // quantita' di liquido scaricata prima di iniziare lo scaricamento del disposable
 #define DISCHARGE_AMOUNT_ART_PUMP  1000
 //----------------------------------------------------------------------------------------------------------
-*/
 
+
+/*
 //----------------------------------------------------------------------------------------------------------
 // i valori che seguono sono da considerare per il debug interno e quindi devono essere commentati
 // nel funzionamento normale e ripristinati quelli precedenti
@@ -1361,6 +1364,10 @@ Kd = Kp*Pu/8  = 0.01875
 // quantita' di liquido scaricata prima di iniziare lo scaricamento del disposable
 #define DISCHARGE_AMOUNT_ART_PUMP  20
 //----------------------------------------------------------------------------------------------------------
+*/
+
+// volume massimo caricabile in vaschetta in ml
+#define MAX_LIQUID_AMOUNT 2500
 
 // velocita' con cui faccio partire, per ora, la pompa di depurazione
 #define LIVER_PPAR_SPEED 2000
@@ -1375,7 +1382,7 @@ Kd = Kp*Pu/8  = 0.01875
 
 
 // velocita' con cui faccio partire, per ora, la pompa per l'espulsione dell'aria
-#define AIR_REJECT_SPEED 2000
+#define AIR_REJECT_SPEED 4000
 // tempo in msec necessario per espellere l'aria rilevata in msec
 #define TIME_TO_REJECT_AIR 30000L
 

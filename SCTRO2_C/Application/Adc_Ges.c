@@ -240,7 +240,9 @@ void Pressure_sensor_Fltered ()
 	PR_OXYG_mmHg_Filtered		= meanWA(60,PR_OXYG_mmHg,0);
 
 	PR_LEVEL_mmHg_Filtered		= meanWA(60,PR_LEVEL_mmHg,1);
-	LiquidAmount = ConvertMMHgToMl(PR_LEVEL_mmHg_Filtered);
+
+	// calcolo il volume del liquido in vaschetta come percentuale rispetto al suo valore massimo
+	LiquidAmount = (word)((float)ConvertMMHgToMl(PR_LEVEL_mmHg_Filtered) / (float)MAX_LIQUID_AMOUNT * 100.0);
 
 	PR_ADS_FLT_mmHg_Filtered	= meanWA(60,PR_ADS_FLT_mmHg,2);
 	/*sul venoso e arterioso, che sono usati per i PID, faccio

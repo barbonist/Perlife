@@ -151,7 +151,7 @@ void alwaysPumpPressLoopArt(unsigned char pmpId, unsigned char *PidFirstTime)
 	static int Target_PID = 0;
 
 	int MAX_ART_RPM_Val;
-	MAX_ART_RPM_Val = parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value / 9.3;
+	MAX_ART_RPM_Val = parameterWordSetFromGUI[PAR_SET_MAX_FLOW_PERFUSION].value / 9.3;
 
 
     /*funzione col solo proporzionale usata per mandare in oscillazione la pressione

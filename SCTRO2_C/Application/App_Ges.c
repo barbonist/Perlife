@@ -1131,11 +1131,20 @@ void manageParentPrimingAlways(void){
 	}
 	if(pumpPerist[1].dataReady == DATA_READY_TRUE)
 	{
+		float fl;
 		pumpPerist[1].actualSpeed = modbusData[pumpPerist[1].pmpMySlaveAddress-2][17] / 100;
 		// la pompa 2 e' agganciata alla 1
 		pumpPerist[2].actualSpeed = modbusData[pumpPerist[2].pmpMySlaveAddress-2][17] / 100; //pumpPerist[1].actualSpeed;
 		// calcolo il volume complessivo di liquido trattato dall'ossigenatore
-		perfusionParam.priVolPerfVenOxy = perfusionParam.priVolPerfVenOxy +(word)((float)pumpPerist[1].actualSpeed * CONV_RPMMIN_TO_ML_PER_INTERVAL);
+		fl = ((float)pumpPerist[1].actualSpeed * CONV_RPMMIN_TO_ML_PER_INT_OXYG * 2.0);
+		perfusionParam.priVolPerfVenOxy = perfusionParam.priVolPerfVenOxy + (word)fl;
+		if((GetTherapyType() == LiverTreat) && (StartOxygAndDepState == 1))
+		{
+			// faccio l'aggiornamento solo nel fegato e se lo start alle pompe di
+			// ossigenazione e' stato dato (questo secondo test sarebbe ridondante)
+			volumePriming = volumePriming + fl;
+			perfusionParam.priVolPerfArt = (int)(volumePriming);
+		}
 		pumpPerist[1].dataReady = DATA_READY_FALSE;
 	}
 	if(pumpPerist[3].dataReady == DATA_READY_TRUE)
@@ -1388,11 +1397,20 @@ void manageParentPrimingAlways(void){
 		}
 		if(pumpPerist[1].dataReady == DATA_READY_TRUE)
 		{
+			float fl;
 			pumpPerist[1].actualSpeed = modbusData[pumpPerist[1].pmpMySlaveAddress-2][17] / 100;
 			// la pompa 2 e' agganciata alla 1
 			pumpPerist[2].actualSpeed = modbusData[pumpPerist[2].pmpMySlaveAddress-2][17] / 100;//pumpPerist[1].actualSpeed;
 			// calcolo il volume complessivo di liquido trattato dall'ossigenatore
-			perfusionParam.priVolPerfVenOxy = perfusionParam.priVolPerfVenOxy +(word)((float)pumpPerist[1].actualSpeed * CONV_RPMMIN_TO_ML_PER_INTERVAL);
+			fl = ((float)pumpPerist[1].actualSpeed * CONV_RPMMIN_TO_ML_PER_INT_OXYG * 2.0);
+			perfusionParam.priVolPerfVenOxy = perfusionParam.priVolPerfVenOxy + (word)fl;
+			if((GetTherapyType() == LiverTreat) && (StartOxygAndDepState == 1))
+			{
+				// faccio l'aggiornamento solo nel fegato e se lo start alle pompe di
+				// ossigenazione e' stato dato (questo secondo test sarebbe ridondante)
+				volumePriming = volumePriming + fl;
+				perfusionParam.priVolPerfArt = (int)(volumePriming);
+			}
 			pumpPerist[1].dataReady = DATA_READY_FALSE;
 		}
 		if(pumpPerist[3].dataReady == DATA_READY_TRUE)
@@ -2632,19 +2650,6 @@ static void computeMachineStateGuardPrimingPh1(void){
 /*  Controllo quando iniziare il trattamento
 /*--------------------------------------------------------------------*/
 static void computeMachineStateGuardPrimingPh2(void){
-/* vecchia gestione
-	if(
-		(perfusionParam.priVolPerfArt >= GetTotalPrimingVolumePerf()) &&
-		(buttonGUITreatment[BUTTON_CONFIRM].state == GUI_BUTTON_RELEASED) / *&&
-		(iflag_pmp1_rx == IFLAG_PMP1_RX)* /
-		)
-	{
-		StartTreatmentTime = timerCounterModBus;
-		currentGuard[GUARD_ENABLE_TREATMENT_KIDNEY_1].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
-		releaseGUIButton(BUTTON_CONFIRM);
-		//setPumpSpeedValue(pumpPerist[0].pmpMySlaveAddress, 0);
-	}
-*/
 	if(buttonGUITreatment[BUTTON_PRIMING_ABANDON].state == GUI_BUTTON_RELEASED)
 	{
 		releaseGUIButton(BUTTON_PRIMING_ABANDON);
@@ -2961,14 +2966,62 @@ void GoToRecoveryParentState(int MachineParentState)
 	}
 }
 
-// ritorna il volume complessivo di priming tenendo conto anche del volume di liquido
-// necessario per riempire il disposable
+
 word GetTotalPrimingVolumePerf(void)
 {
 	word TotVolume;
 	TotVolume = parameterWordSetFromGUI[PAR_SET_PRIMING_VOL_PERFUSION].value + VOLUME_DISPOSABLE;
 	return TotVolume;
 }
+
+
+typedef enum
+{
+	INIT_TOT_PRIM_VOL_STATE,
+	NEW_TOT_PRIM_VOL_STATE
+}TOTAL_PRIMING_VOL_STATE;
+
+typedef enum
+{
+	NO_CMD_TOT_PRIM_VOL,
+	NEW_PRIM_CMD_TOT_PRIM_VOL,
+	RESET_CMD_TOT_PRIM_VOL
+}TOTAL_PRIMING_VOL_CMD;
+
+// ritorna il volume complessivo di priming tenendo conto anche del volume di liquido
+// necessario per riempire il disposable
+word GetTotalPrimingVolumePerf_(int cmd)
+{
+	static TOTAL_PRIMING_VOL_STATE TotalPrimingVolState = INIT_TOT_PRIM_VOL_STATE;
+	static word TotalPrimingVolume = 0;
+	word TotVolume = 0;
+	// original code
+	//TotVolume = parameterWordSetFromGUI[PAR_SET_PRIMING_VOL_PERFUSION].value + VOLUME_DISPOSABLE;
+
+	switch (TotalPrimingVolState)
+	{
+		case INIT_TOT_PRIM_VOL_STATE:
+			TotVolume = parameterWordSetFromGUI[PAR_SET_PRIMING_VOL_PERFUSION].value + VOLUME_DISPOSABLE;
+			if(cmd = NEW_PRIM_CMD_TOT_PRIM_VOL)
+			{
+				TotalPrimingVolume = perfusionParam.priVolPerfArt;
+				TotalPrimingVolState = NEW_TOT_PRIM_VOL_STATE;
+			}
+			break;
+		case NEW_TOT_PRIM_VOL_STATE:
+			TotVolume = TotalPrimingVolume + parameterWordSetFromGUI[PAR_SET_PRIMING_VOL_PERFUSION].value;
+			if(cmd = NEW_PRIM_CMD_TOT_PRIM_VOL)
+				TotalPrimingVolume = perfusionParam.priVolPerfArt;
+			else if(cmd = RESET_CMD_TOT_PRIM_VOL)
+			{
+				TotalPrimingVolume = 0;
+				TotalPrimingVolState = INIT_TOT_PRIM_VOL_STATE;
+			}
+			break;
+	}
+	return TotVolume;
+}
+
 
 /*----------------------------------------------------------------------------*/
 /* This function compute the machine state transition based on guard - state level         */
@@ -3526,10 +3579,6 @@ void processMachineState(void)
 			break;
 
 		case PARENT_PRIMING_TREAT_KIDNEY_1_RUN:
-//			if((float)perfusionParam.priVolPerfArt >= ((float)GetTotalPrimingVolumePerf() * PERC_OF_PRIM_FOR_FILTER / 100.0))
-//			{
-//				// posso usarlo per un eventuale cambio di stato nel parent ed entrare in una fase di caricamento del filtro
-//			}
 			if(ptrCurrentParent->action == ACTION_ON_ENTRY)
 			{
 				/* execute parent callback function */
@@ -3558,12 +3607,21 @@ void processMachineState(void)
 		case PARENT_PRIMING_TREAT_KIDNEY_1_ALARM:
 			if(currentGuard[GUARD_ALARM_ACTIVE].guardValue == GUARD_VALUE_FALSE)
 			{
-				/* (FM) finita la situazione di allarme posso ritornare in PARENT_PRIMING_TREAT_KIDNEY_1_INIT*/
-				// nella nuova gestione il priming viene fatto partendo direttamente dallo stato PARENT_PRIMING_TREAT_KIDNEY_1_RUN
-				// e non da PARENT_PRIMING_TREAT_KIDNEY_1_INIT
-				//ptrFutureParent = &stateParentPrimingTreatKidney1[1];
-				ptrFutureParent = &stateParentPrimingTreatKidney1[3];
-				ptrFutureChild = ptrFutureParent->ptrChild;
+				if(buttonGUITreatment[BUTTON_RESET_ALARM].state == GUI_BUTTON_RELEASED)
+				{
+					// Il ritorno al priming viene fatto solo dopo la pressione del tasto BUTTON_RESET_ALARM
+					releaseGUIButton(BUTTON_RESET_ALARM);
+					// forzo anche una pressione del tasto BUTTON_START_PRIMING START per fare in modo che
+					// il priming riprenda automaticamente
+					setGUIButton(BUTTON_START_PRIMING);
+
+					/* (FM) finita la situazione di allarme posso ritornare in PARENT_PRIMING_TREAT_KIDNEY_1_INIT*/
+					// nella nuova gestione il priming viene fatto partendo direttamente dallo stato PARENT_PRIMING_TREAT_KIDNEY_1_RUN
+					// e non da PARENT_PRIMING_TREAT_KIDNEY_1_INIT
+					//ptrFutureParent = &stateParentPrimingTreatKidney1[1];
+					ptrFutureParent = &stateParentPrimingTreatKidney1[3];
+					ptrFutureChild = ptrFutureParent->ptrChild;
+				}
 			}
 
 			if(ptrCurrentParent->action == ACTION_ON_ENTRY)
