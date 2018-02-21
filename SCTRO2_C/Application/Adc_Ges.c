@@ -251,6 +251,19 @@ void Pressure_sensor_Fltered ()
 	PR_VEN_mmHg_Filtered		= meanWA(8,PR_VEN_mmHg,3);
 	PR_ART_mmHg_Filtered		= meanWA(8,PR_ART_mmHg,4);
 
+	/*
+	if(GetTherapyType() == KidneyTreat)
+	{
+		// calcolo la pressione arteriosa sull'organo
+		CalcolaPresArt(actualSpeed_Art);
+	}
+	else if(GetTherapyType() == LiverTreat)
+	{
+		CalcolaPresArt(actualSpeed_Art);
+	}
+	*/
+
+
 	PR_OXYG_ADC_Filtered		= meanWA(60,PR_OXYG_ADC,5);
 	PR_LEVEL_ADC_Filtered		= meanWA(60,PR_LEVEL_ADC,6);
 	PR_ADS_FLT_ADC_Filtered		= meanWA(60,PR_ADS_FLT_ADC,7);

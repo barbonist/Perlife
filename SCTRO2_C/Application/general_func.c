@@ -51,7 +51,7 @@
 #include "string.h"
 #include "general_func.h"
 
-
+extern struct alarm alarmList[];
 
 void Heater_ON()
 {
@@ -158,15 +158,44 @@ void DebugString()
 //							(int) perfusionParam.priVolPerfArt
 //				);
 
-	sprintf(stringPr, "\r %i; %i; %i; %i; %i; %d; %d;",
-							(int) (sensorIR_TM[0].tempSensValue*10),
-							(int) sensor_UFLOW[1].Average_Flow_Val ,
-							(int) PR_LEVEL_mmHg_Filtered,      //PR_VEN_mmHg_Filtered,
-							(int) PR_ART_mmHg_Filtered,
-							TotalTreatDuration + TreatDuration,
-							(int) pumpPerist[1].actualSpeed,
-							(int) perfusionParam.priVolPerfArt
-				);
+	if((ptrCurrentState->state == STATE_PRIMING_RICIRCOLO) ||
+	   (ptrCurrentState->state == STATE_PRIMING_PH_1) ||
+	   (ptrCurrentState->state == STATE_PRIMING_PH_2))
+	{
+		sprintf(stringPr, "\r %i; %i; %i; %x; %x; %d; %d;",
+								(int) (sensorIR_TM[0].tempSensValue*10),
+								(int) sensor_UFLOW[VENOUS_AIR_SENSOR].bubbleSize,
+								(int) sensor_UFLOW[ARTERIOUS_AIR_SENSOR].bubbleSize,
+								alarmList[AIR_PRES_VEN].physic,
+								alarmList[AIR_PRES_ART].physic,
+								(int) pumpPerist[0].actualSpeed,
+								(int) perfusionParam.priVolPerfArt
+					);
+	}
+//	else if((ptrCurrentState->state == STATE_PRIMING_RICIRCOLO))
+//	{
+//		sprintf(stringPr, "\r %i; %i; %i; %i; %i; %d; %d;",
+//								(int) (sensorIR_TM[0].tempSensValue*10),
+//								(int) sensor_UFLOW[VENOUS_AIR_SENSOR].bubbleSize,
+//								(int) sensor_UFLOW[ARTERIOUS_AIR_SENSOR].bubbleSize,
+//								(int) pumpPerist[0].actualSpeed,
+//								(int) pumpPerist[1].actualSpeed,
+//								(int) pumpPerist[2].actualSpeed,
+//								(int) perfusionParam.priVolPerfArt
+//					);
+//	}
+	else
+	{
+		sprintf(stringPr, "\r %i; %i; %i; %i; %i; %d; %d;",
+								(int) (sensorIR_TM[0].tempSensValue*10),
+								(int) sensor_UFLOW[1].Average_Flow_Val ,
+								(int) PR_LEVEL_mmHg_Filtered,      //PR_VEN_mmHg_Filtered,
+								(int) PR_ART_mmHg_Filtered,
+								TotalTreatDuration + TreatDuration,
+								(int) pumpPerist[1].actualSpeed,
+								(int) perfusionParam.priVolPerfArt
+					);
+	}
 				
 				
 

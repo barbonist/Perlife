@@ -435,7 +435,7 @@ void manageAlarmPhysicPressSensLow(void)
 	{
 		alarmList[PRESS_ART_LOW].physic = PHYSIC_FALSE;
 	}
-
+/*
 	if(PR_VEN_mmHg_Filtered <= PR_VEN_LOW && GetTherapyType() == LiverTreat)
 	{
 		alarmList[PRESS_VEN_LOW].physic = PHYSIC_TRUE;
@@ -444,6 +444,7 @@ void manageAlarmPhysicPressSensLow(void)
 	{
 		alarmList[PRESS_VEN_LOW].physic = PHYSIC_FALSE;
 	}
+	*/
 }
 
 void manageAlarmPhysicPressSensHigh(void)
@@ -573,8 +574,9 @@ void manageAlarmPhysicUFlowSensVen(void)
 	{
 //		if((sensor_UFLOW[VENOUS_AIR_SENSOR].bubbleSize >= 25) ||
 //			(sensor_UFLOW[VENOUS_AIR_SENSOR].bubblePresence == MASK_ERROR_BUBBLE_ALARM))
-		if((sensor_UFLOW[VENOUS_AIR_SENSOR].bubbleSize >= 50) ||
-			(sensor_UFLOW[VENOUS_AIR_SENSOR].bubblePresence == MASK_ERROR_BUBBLE_ALARM))
+		if(((sensor_UFLOW[VENOUS_AIR_SENSOR].bubbleSize >= 50) ||
+			(sensor_UFLOW[VENOUS_AIR_SENSOR].bubblePresence == MASK_ERROR_BUBBLE_ALARM)) &&
+			(sensor_UFLOW[VENOUS_AIR_SENSOR].bubbleSize != 255))
 		{
 			alarmList[AIR_PRES_VEN].physic = PHYSIC_TRUE;
 		}
@@ -599,8 +601,9 @@ void manageAlarmPhysicUFlowSens(void){
 //			(sensor_UFLOW[ARTERIOUS_AIR_SENSOR].bubblePresence == MASK_ERROR_BUBBLE_ALARM)
 //			)
 		if(
-			(sensor_UFLOW[ARTERIOUS_AIR_SENSOR].bubbleSize >= 50) ||
-			(sensor_UFLOW[ARTERIOUS_AIR_SENSOR].bubblePresence == MASK_ERROR_BUBBLE_ALARM)
+			((sensor_UFLOW[ARTERIOUS_AIR_SENSOR].bubbleSize >= 50) ||
+			(sensor_UFLOW[ARTERIOUS_AIR_SENSOR].bubblePresence == MASK_ERROR_BUBBLE_ALARM)) &&
+			(sensor_UFLOW[ARTERIOUS_AIR_SENSOR].bubbleSize != 255)
 			)
 		{
 			alarmList[AIR_PRES_ART].physic = PHYSIC_TRUE;

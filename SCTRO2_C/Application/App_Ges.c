@@ -97,6 +97,10 @@ unsigned char StartOxygAndDepState = 0;
 
 bool AlarmInPrimingEntered = FALSE;
 
+// quando e' true indica che si e' verificato un allarme durante la fase di ricircolo per cui mi
+// sono dovuto fermare. Alla ripartenza devo decidere se ripartire in alta velocita' o no.
+bool AlarmOrStopInRecircFlag = FALSE;
+
 
 void CallInIdleState(void)
 {
@@ -133,6 +137,7 @@ void CallInIdleState(void)
 	LastOxygenationSpeed = parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value;
 	StartOxygAndDepState = 0;
 	AlarmInPrimingEntered = FALSE;
+	AlarmOrStopInRecircFlag = FALSE;
 }
 
 
@@ -943,7 +948,8 @@ void manageParentPrimingEntry(void){
 
 }
 
-unsigned char TemperatureStateMach(void)
+
+unsigned char TemperatureStateMach_orig(void)
 {
 	static unsigned long RicircTimeout;
 	static unsigned char TempStateMach = 0;
@@ -985,6 +991,130 @@ unsigned char TemperatureStateMach(void)
 	}
 	return TempReached;
 }
+
+
+typedef enum
+{
+	START_RECIRC_HIGH_SPEED,   // inizio fase di ricircolo ad alta velocita'
+	STOP_RECIRC_HIGH_SPEED,    // fine fase di ricircolo ad alta velocita'
+	TEMP_START_CHECK_STATE,    // inizio intervallo di controllo temperatura in range
+	TEMP_CHECK_DURATION_STATE  // controllo durata della temperatura in range
+}TEMPERATURE_STATE;
+
+typedef enum
+{
+	NO_TEMP_STATE_CMD ,
+	RESTART_CMD,               // restart check sequence  o high speed fase
+}TEMPERATURE_CMD;
+
+
+#define HIGH_PUMP_SPEED_DURATION 30000L
+
+// velocita' delle pompe per la fase del ricircolo ad alta velocita'
+#define RECIRC_PUMP_HIGH_SPEED 4000
+
+// cmd comando per eventuare riposizionamento della macchina a stati
+unsigned char TemperatureStateMach(int cmd)
+{
+	static unsigned long RicircTimeout;
+	static unsigned char TempStateMach = START_RECIRC_HIGH_SPEED;
+	unsigned char TempReached = 0;
+
+	float tmpr;
+	word tmpr_trgt;
+	// temperatura raggiunta dal reservoir
+	tmpr = ((int)(sensorIR_TM[0].tempSensValue*10));
+	// temperatura da raggiungere moltiplicata per 10
+	tmpr_trgt = parameterWordSetFromGUI[PAR_SET_PRIMING_TEMPERATURE_PERFUSION].value;
+
+	if(cmd == RESTART_CMD)
+	{
+		if(TempStateMach == STOP_RECIRC_HIGH_SPEED)
+		{
+			// faccio ripartire i motori ad alta velocita'
+			TempStateMach = START_RECIRC_HIGH_SPEED;
+		}
+		else if(TempStateMach == TEMP_CHECK_DURATION_STATE)
+		{
+			// faccio ripartire il controllo della temperatura
+			TempStateMach = TEMP_START_CHECK_STATE;
+		}
+	}
+
+	switch (TempStateMach)
+	{
+		case START_RECIRC_HIGH_SPEED:
+			RicircTimeout = timerCounterModBus;
+			setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, RECIRC_PUMP_HIGH_SPEED);
+			if((GetTherapyType() == KidneyTreat) &&
+			   (((PARAMETER_ACTIVE_TYPE)parameterWordSetFromGUI[PAR_SET_OXYGENATOR_ACTIVE].value) == YES))
+			{
+				// sono nel ricircolo rene con ossigenatore abilitato
+				setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, (int)RECIRC_PUMP_HIGH_SPEED);
+			}
+			else if((GetTherapyType() == LiverTreat))
+			{
+				// sono nel priming fegato
+				setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, (int)RECIRC_PUMP_HIGH_SPEED);
+				setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, RECIRC_PUMP_HIGH_SPEED);
+			}
+			TempStateMach = STOP_RECIRC_HIGH_SPEED;
+			break;
+		case STOP_RECIRC_HIGH_SPEED:
+			if(msTick_elapsed(RicircTimeout) * 50L >= HIGH_PUMP_SPEED_DURATION)
+			{
+				// ho raggiunto il tempo di ricircolo ad alta velocita' per eliminare l'aria eventuale
+				// proseguo con il controllo della temperatura
+				TempStateMach = TEMP_START_CHECK_STATE;
+
+				// ripristino le velocita' di priming normali
+				setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 2000);
+				if((GetTherapyType() == KidneyTreat) &&
+				   (((PARAMETER_ACTIVE_TYPE)parameterWordSetFromGUI[PAR_SET_OXYGENATOR_ACTIVE].value) == YES))
+				{
+					// sono nel ricircolo rene con ossigenatore abilitato
+					setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress,
+							                  (int)((float)parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value / OXYG_FLOW_TO_RPM_CONV * 100.0));
+				}
+				else if(GetTherapyType() == LiverTreat)
+				{
+					// sono nel priming fegato ed ho superato una quantita' minima nel reservoir, quindi, la pompa venosa
+					// per il riempimento del disposable di ossigenazione e la pompa di depurazione PPAR
+					setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, (int)LIVER_PRIMING_PMP_OXYG_SPEED);
+					setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, LIVER_PPAR_SPEED);
+				}
+			}
+			break;
+
+		case TEMP_START_CHECK_STATE:
+			if((tmpr >= (float)(tmpr_trgt - 10)) && (tmpr <= (float)(tmpr_trgt + 10)))
+			{
+				// ho raggiunto la temperatura target
+				TempStateMach = TEMP_CHECK_DURATION_STATE;
+				RicircTimeout = timerCounterModBus;
+			}
+			break;
+		case TEMP_CHECK_DURATION_STATE:
+			if((tmpr >= (float)(tmpr_trgt - 10)) && (tmpr <= (float)(tmpr_trgt + 10)))
+			{
+				// ho raggiunto la temperatura target
+				if(msTick_elapsed(RicircTimeout) * 50L >= TIMEOUT_TEMPERATURE_RICIRC)
+				{
+					// per almeno 2 secondi la temperatura si e' mantenuta nell'intorno del target,
+					// posso uscire dalla fase di ricircolo
+					TempReached = 1;
+					TempStateMach = START_RECIRC_HIGH_SPEED;
+				}
+			}
+			else
+			{
+				TempStateMach = TEMP_START_CHECK_STATE;
+			}
+			break;
+	}
+	return TempReached;
+}
+
 
 void manageParentPrimingAlways(void){
 
@@ -1157,22 +1287,32 @@ void manageParentPrimingAlways(void){
 	case PARENT_PRIMING_TREAT_KIDNEY_1_RUN:
 			if(buttonGUITreatment[BUTTON_START_PRIMING].state == GUI_BUTTON_RELEASED)
 			{
-				setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 2000);
-				//if(((PARAMETER_ACTIVE_TYPE)parameterWordSetFromGUI[PAR_SET_OXYGENATOR_ACTIVE].value) == YES)
-				//	setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, (int)((float)parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value / OXYG_FLOW_TO_RPM_CONV * 100.0));
-				if((GetTherapyType() == KidneyTreat) && (((PARAMETER_ACTIVE_TYPE)parameterWordSetFromGUI[PAR_SET_OXYGENATOR_ACTIVE].value) == YES) &&
-					(perfusionParam.priVolPerfArt > MIN_LIQ_IN_RES_TO_START_OXY_VEN))
+				if((ptrCurrentState->state == STATE_PRIMING_RICIRCOLO) && AlarmOrStopInRecircFlag)
 				{
-					// sono nel priming rene con ossigenatore abilitato ed ho superato una quantita' minima nel reservoir
-					setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress,
-							                  (int)((float)parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value / OXYG_FLOW_TO_RPM_CONV * 100.0));
+					// sono nella fase di ricircolo e si e' verificato un allarme oppure l'utente ha
+					// fermato il processo con stop priming e poi e' ripartito
+					TemperatureStateMach(RESTART_CMD);
+					AlarmOrStopInRecircFlag = FALSE;
 				}
-				else if((GetTherapyType() == LiverTreat) && (perfusionParam.priVolPerfArt > MIN_LIQ_IN_RES_TO_START_OXY_VEN))
+				else
 				{
-					// sono nel priming fegato ed ho superato una quantita' minima nel reservoir, quindi, la pompa venosa
-					// per il riempimento del disposable di ossigenazione e la pompa di depurazione PPAR
-					setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, (int)LIVER_PRIMING_PMP_OXYG_SPEED);
-					setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, LIVER_PPAR_SPEED);
+					setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 2000);
+					//if(((PARAMETER_ACTIVE_TYPE)parameterWordSetFromGUI[PAR_SET_OXYGENATOR_ACTIVE].value) == YES)
+					//	setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, (int)((float)parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value / OXYG_FLOW_TO_RPM_CONV * 100.0));
+					if((GetTherapyType() == KidneyTreat) && (((PARAMETER_ACTIVE_TYPE)parameterWordSetFromGUI[PAR_SET_OXYGENATOR_ACTIVE].value) == YES) &&
+						(perfusionParam.priVolPerfArt > MIN_LIQ_IN_RES_TO_START_OXY_VEN))
+					{
+						// sono nel priming rene con ossigenatore abilitato ed ho superato una quantita' minima nel reservoir
+						setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress,
+												  (int)((float)parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value / OXYG_FLOW_TO_RPM_CONV * 100.0));
+					}
+					else if((GetTherapyType() == LiverTreat) && (perfusionParam.priVolPerfArt > MIN_LIQ_IN_RES_TO_START_OXY_VEN))
+					{
+						// sono nel priming fegato ed ho superato una quantita' minima nel reservoir, quindi, la pompa venosa
+						// per il riempimento del disposable di ossigenazione e la pompa di depurazione PPAR
+						setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, (int)LIVER_PRIMING_PMP_OXYG_SPEED);
+						setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, LIVER_PPAR_SPEED);
+					}
 				}
 
 				if(!FilterSelected)
@@ -1294,15 +1434,7 @@ void manageParentPrimingAlways(void){
 			}
 			else if(ptrCurrentState->state == STATE_PRIMING_RICIRCOLO)
 			{
-//				float tmpr;
-//				word tmpr_trgt;
-//				// temperatura raggiunta dal reservoir
-//				tmpr = ((int)(sensorIR_TM[0].tempSensValue*10));
-//				// temperatura da raggiungere moltiplicata per 10
-//				tmpr_trgt = parameterWordSetFromGUI[PAR_SET_PRIMING_TEMPERATURE_PERFUSION].value;
-
-				//if((tmpr >= (float)(tmpr_trgt - 10)) && (tmpr <= (float)(tmpr_trgt + 10)))
-				if(TemperatureStateMach())
+				if(TemperatureStateMach(0))
 				{
 					// ho raggiunto la temperatura ( + o - un grado)richiesta posso passare nello stato di
 					// attesa ricezione comando di start trattamento
@@ -1458,6 +1590,9 @@ void manageParentPrimingAlarmEntry(void)
 
 	// entro in uno stato di allarme durante il priming
 	AlarmInPrimingEntered = TRUE;
+
+	if(ptrCurrentState->state == STATE_PRIMING_RICIRCOLO)
+		AlarmOrStopInRecircFlag = TRUE;
 }
 
 void manageParentTreatAlarmEntry(void){
@@ -2631,7 +2766,7 @@ static void computeMachineStateGuardPrimingPh1(void){
 		}
 		else if((GetTherapyType() == LiverTreat) && (perfusionParam.priVolPerfArt > MIN_LIQ_IN_RES_TO_START_OXY_VEN) && (StartOxygAndDepState == 0))
 		{
-			// sono nel priming fegato ed ho superato una quantita' minima nel reservoir, quindi, la pompa venosa
+			// sono nel priming fegato ed ho superato una quantita' minima nel reservoir, quindi, faccio partire la pompa venosa
 			// per il riempimento del disposable di ossigenazione e la pompa di depurazione PPAR
 			if(!pumpPerist[1].actualSpeed)
 				setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, (int)LIVER_PRIMING_PMP_OXYG_SPEED);

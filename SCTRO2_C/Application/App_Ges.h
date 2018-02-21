@@ -213,5 +213,6 @@ void CheckOxygenationSpeed(word value);
 void GoToRecoveryParentState(int MachineParentState);
 
 void HandlePinch( int cmd);
+unsigned char TemperatureStateMach(int cmd);
 
 #endif /* APPLICATION_APP_GES_H_ */
