@@ -2883,8 +2883,12 @@ static void computeMachineStateGuardTreatment(void)
 	}
 	else
 	{
-		// controllo se e' cambiata la velocita' della pompa di ossigenazione e la aggiorno
-		CheckOxygenationSpeed(LastOxygenationSpeed);
+		//QUESTO NON LO DEVO FARE PERCHE' IL FLUSSO E' CONTROLLATO DAL PID DURANTE IL TRATTAMENTO !!!!!!!
+		if(GetTherapyType() == KidneyTreat)
+		{
+			// controllo se e' cambiata la velocita' della pompa di ossigenazione e la aggiorno
+			CheckOxygenationSpeed(LastOxygenationSpeed);
+		}
 	}
 
 /*aggiunta gestione con timer per cambio stato --> da testare*/

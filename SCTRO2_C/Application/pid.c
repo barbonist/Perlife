@@ -116,7 +116,7 @@ int SpeedCostanteArt( int CurrSpeed)
 	}
 	else if(SpeedCostanteState)
 	{
-		if(CurrSpeed <= min || CurrSpeed > max )
+		if(CurrSpeed < min || CurrSpeed > max )
 			SpeedCostanteState = 0;
 		else
 			Cnt++;
@@ -221,6 +221,14 @@ void alwaysPumpPressLoopArt(unsigned char pmpId, unsigned char *PidFirstTime)
 
 	// valutare se mettere il deltaSpeed = 0 nel caso deltaSpeed sia negativo in modo da non far andare actualSpeed a zero troppo in fretta
 	// in alternativa il deltaSpeed va considerato solo se è abbastanza negativo
+	if ((sensor_UFLOW[0].Average_Flow_Val != 0.0) &&
+			(sensor_UFLOW[0].Average_Flow_Val > ( parameterWordSetFromGUI[PAR_SET_MAX_FLOW_PERFUSION].value)) &&
+			(actualSpeed_Art != 0.0))
+	{
+		float pmp_gain = sensor_UFLOW[0].Average_Flow_Val / pumpPerist[0].actualSpeed;
+		actualSpeed_Art = (float) parameterWordSetFromGUI[PAR_SET_MAX_FLOW_PERFUSION].value / pmp_gain;
+	}
+
 	if((deltaSpeed_Art < -0.1) || (deltaSpeed_Art > 0.1))
 	{
 		if (deltaSpeed_Art < 0)
@@ -230,19 +238,20 @@ void alwaysPumpPressLoopArt(unsigned char pmpId, unsigned char *PidFirstTime)
 		else
 		{
 			// da ripristinare solo quando siamo sicuri del funzionamento dei flussimetri
-			if ((sensor_UFLOW[0].Average_Flow_Val != 0.0) &&
-				(sensor_UFLOW[0].Average_Flow_Val > ( parameterWordSetFromGUI[PAR_SET_MAX_FLOW_PERFUSION].value)))
-
-			{
-				actualSpeed_Art = actualSpeed_Art; //non aumento la velocità
-			}
-			else if ( (actualSpeed_Art + deltaSpeed_Art  ) > Max_RPM_for_Flow_Max )
+//			if ((sensor_UFLOW[0].Average_Flow_Val != 0.0) &&
+//				(sensor_UFLOW[0].Average_Flow_Val > ( parameterWordSetFromGUI[PAR_SET_MAX_FLOW_PERFUSION].value)))
+//
+//			{
+//				actualSpeed_Art = actualSpeed_Art; //non aumento la velocità
+//			}
+//			else
+			if ( (actualSpeed_Art + deltaSpeed_Art  ) > Max_RPM_for_Flow_Max )
 			{
 				actualSpeed_Art = Max_RPM_for_Flow_Max;
 			}
 			else
 			{
-				if(actualSpeed_Art >= (float)MAX_ART_RPM_Val)
+				if(actualSpeed_Art > (float)MAX_ART_RPM_Val)
 					actualSpeed_Art = (float)MAX_ART_RPM_Val;
 				else
 					actualSpeed_Art = actualSpeed_Art + deltaSpeed_Art;
@@ -541,7 +550,7 @@ int SpeedCostanteVen( int CurrSpeed)
 	}
 	else if(SpeedCostanteState)
 	{
-		if(CurrSpeed <= min || CurrSpeed > max )
+		if(CurrSpeed < min || CurrSpeed > max )
 			SpeedCostanteState = 0;
 		else
 			Cnt++;
@@ -671,20 +680,28 @@ void alwaysPumpPressLoopVen(unsigned char pmpId, unsigned char *PidFirstTime){
 		else
 		{
 			// da ripristinare solo quando siamo sicuri del funzionamento dei flussimetri
-			if ((sensor_UFLOW[1].Average_Flow_Val != 0.0) &&
-				(sensor_UFLOW[1].Average_Flow_Val > ( parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value)))
-
-			{
-				actualSpeed_Ven = actualSpeed_Ven; //non aumento la velocità
-			}
-			else if ( (actualSpeed_Ven + deltaSpeed_Ven  ) > Max_RPM_for_Flow_Max )
+//			if ((sensor_UFLOW[1].Average_Flow_Val != 0.0) &&
+//				(sensor_UFLOW[1].Average_Flow_Val > ( parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value)))
+//
+//			{
+//				actualSpeed_Ven = actualSpeed_Ven; //non aumento la velocità
+//			}
+//			else
+				if ( (actualSpeed_Ven + deltaSpeed_Ven  ) > Max_RPM_for_Flow_Max )
 			{
 				actualSpeed_Ven = Max_RPM_for_Flow_Max;
 			}
 			else
 			{
-				if(actualSpeed_Ven >= (float)MAX_OXYG_RPM_Val)
+				if(actualSpeed_Ven > (float)MAX_OXYG_RPM_Val)
 					actualSpeed_Ven = (float)MAX_OXYG_RPM_Val;
+				else if ((sensor_UFLOW[1].Average_Flow_Val != 0.0) &&
+						(sensor_UFLOW[1].Average_Flow_Val > ( parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value)) &&
+						(actualSpeed_Ven != 0.0))
+				{
+					float pmp_gain = sensor_UFLOW[1].Average_Flow_Val / actualSpeed_Ven;
+					actualSpeed_Ven = (float) parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value / pmp_gain;
+				}
 				else
 					actualSpeed_Ven = actualSpeed_Ven + deltaSpeed_Ven;
 			}

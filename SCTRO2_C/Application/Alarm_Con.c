@@ -395,6 +395,15 @@ void alarmEngineAlways(void)
 			// e devo gestirla prima di andare a vedere le altre
 			break;
 		}
+		else
+		{
+			if(StrAlarmWritten)
+			{
+				// allarme ancora in corso, sono in attesa di ACTIVE_FALSE
+				// quindi, per ora, non posso prendere in considerazione altri allarmi
+				break;
+			}
+		}
 	}
 
 	if( !StrAlarmWritten && (StartAlmArrIdx < ALARM_ACTIVE_IN_STRUCT))
