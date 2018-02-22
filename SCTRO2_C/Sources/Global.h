@@ -10,7 +10,7 @@
 
 // TODO commentare questo define nella versione definitiva perche' deve essere usato solo per il
 // debug con il software di service fatto da Luca.
-#define DEBUG_WITH_SERVICE_SBC 0
+//#define DEBUG_WITH_SERVICE_SBC 0
 
 
 
