@@ -31,8 +31,8 @@ word adcValue;
 word adcValueDummy;
 word * adcValPtr;
 
-word MedForVenousPid = 0;
-word MedForArteriousPid = 0;
+unsigned int MedForVenousPid	 = 0;
+unsigned int MedForArteriousPid	 = 0;
 
 
 void PR_Sens_ADC_Init()
@@ -122,6 +122,43 @@ void Manange_ADC1(void)
   	  }
 }
 
+void Coversion_From_ADC_To_mmHg_Pressure_Sensor()
+{
+
+	PR_OXYG_mmHg 	= config_data.sensor_PRx[OXYG].prSensGain    * PR_OXYG_ADC    + config_data.sensor_PRx[OXYG].prSensOffset;
+	PR_LEVEL_mmHg 	= (word)((config_data.sensor_PRx[LEVEL].prSensGain   * PR_LEVEL_ADC   + config_data.sensor_PRx[LEVEL].prSensOffset) * 100.0 + 0.5);
+	PR_ADS_FLT_mmHg = config_data.sensor_PRx[ADS_FLT].prSensGain * PR_ADS_FLT_ADC + config_data.sensor_PRx[ADS_FLT].prSensOffset;
+	PR_VEN_mmHg 	= config_data.sensor_PRx[VEN].prSensGain     * PR_VEN_ADC     + config_data.sensor_PRx[VEN].prSensOffset;
+	PR_ART_mmHg 	= config_data.sensor_PRx[ART].prSensGain     * PR_ART_ADC     + config_data.sensor_PRx[ART].prSensOffset;
+}
+
+void Pressure_sensor_Fltered ()
+{
+	PR_OXYG_mmHg_Filtered		= meanWA(50,PR_OXYG_mmHg,0);
+
+	PR_LEVEL_mmHg_Filtered		= meanWA(255,PR_LEVEL_mmHg,1);
+
+	// calcolo il volume del liquido in vaschetta come percentuale rispetto al suo valore massimo
+	LiquidAmount = (word)((float)ConvertMMHgToMl(PR_LEVEL_mmHg_Filtered) / (float)MAX_LIQUID_AMOUNT * 100.0);
+
+	PR_ADS_FLT_mmHg_Filtered	= meanWA(50,PR_ADS_FLT_mmHg,2);
+	/*sul venoso e arterioso, che sono usati per i PID, faccio
+	 * un filtro a media mobile solo su 8 campioni, tanto poi
+	 * farò una media dei campioni filtrati*/
+	PR_VEN_mmHg_Filtered		= meanWA(40,PR_VEN_mmHg,3);
+	PR_ART_mmHg_Filtered		= meanWA(40,PR_ART_mmHg,4);
+
+
+	CalcVenSistDiastPress(PR_VEN_mmHg_Filtered);
+	CalcArtSistDiastPress(PR_ART_mmHg_Filtered);
+
+	PR_OXYG_ADC_Filtered		= meanWA(255,PR_OXYG_ADC,5);
+	PR_LEVEL_ADC_Filtered		= meanWA(255,PR_LEVEL_ADC,6);
+	PR_ADS_FLT_ADC_Filtered		= meanWA(255,PR_ADS_FLT_ADC,7);
+	PR_VEN_ADC_Filtered			= meanWA(255,PR_VEN_ADC,8);
+	PR_ART_ADC_Filtered			= meanWA(255,PR_ART_ADC,9);
+}
+
 
 void CalcVenSistDiastPress(word Press)
 {
@@ -130,6 +167,83 @@ void CalcVenSistDiastPress(word Press)
   static unsigned char BufferFull = 0;
   word min = 0xffff;
   word max = 0;
+  int MAX_SAMPLE_FOR_SPEED = NUMB_OF_SAMPLES_VEN;
+
+  if ( pumpPerist[1].actualSpeed != 0)
+	  MAX_SAMPLE_FOR_SPEED = NUMB_OF_SAMPLES_VEN / pumpPerist[1].actualSpeed;
+
+  if (MAX_SAMPLE_FOR_SPEED > NUMB_OF_SAMPLES_VEN )
+	  MAX_SAMPLE_FOR_SPEED = NUMB_OF_SAMPLES_VEN;
+
+  CircPressArr[CircPressArrIdx] = Press;
+  CircPressArrIdx++;
+  if(CircPressArrIdx == NUMB_OF_SAMPLES_VEN)
+  {
+	  CircPressArrIdx = 0;
+	  BufferFull = 1;
+  }
+
+  if(BufferFull)
+  {
+	  int i;
+	  if(CircPressArrIdx == 0)
+		i = NUMB_OF_SAMPLES_VEN - 1;
+	  else
+		i = CircPressArrIdx - 1;
+
+	  MedForVenousPid = 0;
+	  for(int j = 0; j < MAX_SAMPLE_FOR_SPEED; j++)
+	  {
+		  MedForVenousPid += CircPressArr[i];
+		  if(CircPressArr[i] < min)
+			  min = CircPressArr[i];
+		  if(CircPressArr[i] > max)
+			  max = CircPressArr[i];
+		  i--;
+		  if (i == 0)
+			  i = MAX_SAMPLE_FOR_SPEED - 1;
+	  }
+	  MedForVenousPid = MedForVenousPid / MAX_SAMPLE_FOR_SPEED;
+  }
+  else
+  {
+	  int LastIndex;
+	  MedForVenousPid = 0;
+	  if(CircPressArrIdx > MAX_SAMPLE_FOR_SPEED)
+		  LastIndex = CircPressArrIdx - MAX_SAMPLE_FOR_SPEED;
+	  else
+		  LastIndex = 0;
+	  for(int i = CircPressArrIdx - 1; i >= LastIndex; i--)
+	  {
+		  MedForVenousPid += CircPressArr[i];
+		  if(CircPressArr[i] < min)
+			  min = CircPressArr[i];
+		  if(CircPressArr[i] > max)
+			  max = CircPressArr[i];
+	  }
+	  MedForVenousPid = MedForVenousPid / CircPressArrIdx;
+  }
+	PR_VEN_Diastolyc_mmHg = min;
+	PR_VEN_Sistolyc_mmHg  = max;
+	PR_VEN_Med_mmHg = (int) ( 2 * PR_VEN_Sistolyc_mmHg + PR_VEN_Diastolyc_mmHg)/3;
+}
+
+
+/*
+void CalcVenSistDiastPress(word Press)
+{
+  static word CircPressArr[NUMB_OF_SAMPLES_VEN];
+  static int CircPressArrIdx = 0;
+  static unsigned char BufferFull = 0;
+  word min = 0xffff;
+  word max = 0;
+  int MAX_SAMPLE_FOR_SPEED = NUMB_OF_SAMPLES_VEN;
+
+  if ( pumpPerist[1].actualSpeed != 0)
+	  MAX_SAMPLE_FOR_SPEED = NUMB_OF_SAMPLES_VEN / pumpPerist[1].actualSpeed;
+
+  if (MAX_SAMPLE_FOR_SPEED > NUMB_OF_SAMPLES_VEN )
+	  MAX_SAMPLE_FOR_SPEED = NUMB_OF_SAMPLES_VEN;
 
   CircPressArr[CircPressArrIdx] = Press;
   CircPressArrIdx++;
@@ -142,7 +256,7 @@ void CalcVenSistDiastPress(word Press)
   if(BufferFull)
   {
 	  MedForVenousPid = 0;
-	  for(int i = 0; i < NUMB_OF_SAMPLES_VEN; i++)
+	  for(int i = 0; i < MAX_SAMPLE_FOR_SPEED; i++)
 	  {
 		  MedForVenousPid += CircPressArr[i];
 		  if(CircPressArr[i] < min)
@@ -150,7 +264,7 @@ void CalcVenSistDiastPress(word Press)
 		  if(CircPressArr[i] > max)
 			  max = CircPressArr[i];
 	  }
-	  MedForVenousPid = MedForVenousPid / NUMB_OF_SAMPLES_VEN;
+	  MedForVenousPid = MedForVenousPid / MAX_SAMPLE_FOR_SPEED;
   }
   else
   {
@@ -169,40 +283,62 @@ void CalcVenSistDiastPress(word Press)
 	PR_VEN_Sistolyc_mmHg  = max;
 	PR_VEN_Med_mmHg = (int) ( 2 * PR_VEN_Sistolyc_mmHg + PR_VEN_Diastolyc_mmHg)/3;
 }
+*/
 
 void CalcArtSistDiastPress(word Press)
 {
-  static word CircPressArr[NUMB_OF_SAMPLES_VEN];
+  static word CircPressArr[NUMB_OF_SAMPLES_ART];
   static int CircPressArrIdx = 0;
   static unsigned char BufferFull = 0;
   word min = 0xffff;
   word max = 0;
+  int MAX_SAMPLE_FOR_SPEED = NUMB_OF_SAMPLES_ART;
+
+  if ( pumpPerist[0].actualSpeed != 0)
+	  MAX_SAMPLE_FOR_SPEED = NUMB_OF_SAMPLES_ART / pumpPerist[0].actualSpeed;
+
+  if (MAX_SAMPLE_FOR_SPEED > NUMB_OF_SAMPLES_ART )
+	  MAX_SAMPLE_FOR_SPEED = NUMB_OF_SAMPLES_ART;
 
   CircPressArr[CircPressArrIdx] = Press;
   CircPressArrIdx++;
-
   if(CircPressArrIdx == NUMB_OF_SAMPLES_ART)
   {
 	  CircPressArrIdx = 0;
 	  BufferFull = 1;
   }
+
   if(BufferFull)
   {
+	  int i;
+	  if(CircPressArrIdx == 0)
+		i = NUMB_OF_SAMPLES_ART - 1;
+	  else
+		i = CircPressArrIdx - 1;
+
 	  MedForArteriousPid = 0;
-	  for(int i = 0; i < NUMB_OF_SAMPLES_ART; i++)
+	  for(int j = 0; j < MAX_SAMPLE_FOR_SPEED; j++)
 	  {
 		  MedForArteriousPid += CircPressArr[i];
 		  if(CircPressArr[i] < min)
 			  min = CircPressArr[i];
 		  if(CircPressArr[i] > max)
 			  max = CircPressArr[i];
+		  i--;
+		  if (i == 0)
+			  i = MAX_SAMPLE_FOR_SPEED - 1;
 	  }
-	  MedForArteriousPid = MedForArteriousPid / NUMB_OF_SAMPLES_ART;
+	  MedForArteriousPid = MedForArteriousPid / MAX_SAMPLE_FOR_SPEED;
   }
   else
   {
+	  int LastIndex;
 	  MedForArteriousPid = 0;
-	  for(int i = 0; i < CircPressArrIdx; i++)
+	  if(CircPressArrIdx > MAX_SAMPLE_FOR_SPEED)
+		  LastIndex = CircPressArrIdx - MAX_SAMPLE_FOR_SPEED;
+	  else
+		  LastIndex = 0;
+	  for(int i = CircPressArrIdx - 1; i >= LastIndex; i--)
 	  {
 		  MedForArteriousPid += CircPressArr[i];
 		  if(CircPressArr[i] < min)
@@ -215,60 +351,6 @@ void CalcArtSistDiastPress(word Press)
 	PR_ART_Diastolyc_mmHg = min;
 	PR_ART_Sistolyc_mmHg  = max;
 	PR_ART_Med_mmHg = (int) ( 2 * PR_ART_Sistolyc_mmHg + PR_ART_Diastolyc_mmHg)/3;
-}
-
-
-void Coversion_From_ADC_To_mmHg_Pressure_Sensor()
-{
-	static int Number_Sample = 0;
-	static int Pr_Sist_art = 0, Pr_Dia_art = 0, Pr_Sist_ven = 0, Pr_Dia_ven = 0;
-
-	/* TODO deve essere modificata secondo l'equazione y=mx+q; una volta modificata i sensori vanno tutti ricalibraticome segue*/
-	PR_OXYG_mmHg 	= config_data.sensor_PRx[OXYG].prSensGain    * PR_OXYG_ADC    + config_data.sensor_PRx[OXYG].prSensOffset;
-	PR_LEVEL_mmHg 	= (word)((config_data.sensor_PRx[LEVEL].prSensGain   * PR_LEVEL_ADC   + config_data.sensor_PRx[LEVEL].prSensOffset) * 100.0 + 0.5);
-	PR_ADS_FLT_mmHg = config_data.sensor_PRx[ADS_FLT].prSensGain * PR_ADS_FLT_ADC + config_data.sensor_PRx[ADS_FLT].prSensOffset;
-	PR_VEN_mmHg 	= config_data.sensor_PRx[VEN].prSensGain     * PR_VEN_ADC     + config_data.sensor_PRx[VEN].prSensOffset;
-	PR_ART_mmHg 	= config_data.sensor_PRx[ART].prSensGain     * PR_ART_ADC     + config_data.sensor_PRx[ART].prSensOffset;
-
-	CalcVenSistDiastPress(PR_VEN_mmHg_Filtered);
-	CalcArtSistDiastPress(PR_ART_mmHg_Filtered);
-
-}
-
-void Pressure_sensor_Fltered ()
-{
-	PR_OXYG_mmHg_Filtered		= meanWA(60,PR_OXYG_mmHg,0);
-
-	PR_LEVEL_mmHg_Filtered		= meanWA(60,PR_LEVEL_mmHg,1);
-
-	// calcolo il volume del liquido in vaschetta come percentuale rispetto al suo valore massimo
-	LiquidAmount = (word)((float)ConvertMMHgToMl(PR_LEVEL_mmHg_Filtered) / (float)MAX_LIQUID_AMOUNT * 100.0);
-
-	PR_ADS_FLT_mmHg_Filtered	= meanWA(60,PR_ADS_FLT_mmHg,2);
-	/*sul venoso e arterioso, che sono usati per i PID, faccio
-	 * un filtro a media mobile solo su 8 campioni, tanto poi
-	 * farò una media dei campioni filtrati*/
-	PR_VEN_mmHg_Filtered		= meanWA(8,PR_VEN_mmHg,3);
-	PR_ART_mmHg_Filtered		= meanWA(8,PR_ART_mmHg,4);
-
-	/*
-	if(GetTherapyType() == KidneyTreat)
-	{
-		// calcolo la pressione arteriosa sull'organo
-		CalcolaPresArt(actualSpeed_Art);
-	}
-	else if(GetTherapyType() == LiverTreat)
-	{
-		CalcolaPresArt(actualSpeed_Art);
-	}
-	*/
-
-
-	PR_OXYG_ADC_Filtered		= meanWA(60,PR_OXYG_ADC,5);
-	PR_LEVEL_ADC_Filtered		= meanWA(60,PR_LEVEL_ADC,6);
-	PR_ADS_FLT_ADC_Filtered		= meanWA(60,PR_ADS_FLT_ADC,7);
-	PR_VEN_ADC_Filtered			= meanWA(60,PR_VEN_ADC,8);
-	PR_ART_ADC_Filtered			= meanWA(60,PR_ART_ADC,9);
 }
 
 void Coversion_From_ADC_To_Voltage()
@@ -347,9 +429,7 @@ void Pressure_Sensor_Calibration(Press_sens ID_sens, float value, unsigned char 
 				ADCSecondPoint = PR_OXYG_ADC_Filtered;
 
 				config_data.sensor_PRx[OXYG].prSensGain 	= ((float) SecondValue - FirstValue) / ((float) ADCSecondPoint - ADCFirstPoint);
-				/* TODO deve essere ripristinata questa e poi modificata la funzione  Coversion_From_ADC_To_mmHg_Pressure_Sensor*/
 				config_data.sensor_PRx[OXYG].prSensOffset 	= (float) SecondValue - (ADCSecondPoint * config_data.sensor_PRx[OXYG].prSensGain);
-				//config_data.sensor_PRx[OXYG].prSensOffset 	= ADCFirstPoint;
 
 				/*carico il CRC della EEPROM (usata la stessa funzione di CRC del MOD_BUS
 				 * IL CRC lo clacolo su tutta la struttura meno i due byte ndel CRC stesso*/
@@ -364,9 +444,7 @@ void Pressure_Sensor_Calibration(Press_sens ID_sens, float value, unsigned char 
 				ADCSecondPoint = PR_LEVEL_ADC_Filtered;
 
 				config_data.sensor_PRx[LEVEL].prSensGain 	= ((float)SecondValue - FirstValue) / ((float)ADCSecondPoint - ADCFirstPoint);
-				/* TODO deve essere ripristinata questa e poi modificata la funzione  Coversion_From_ADC_To_mmHg_Pressure_Sensor*/
 				config_data.sensor_PRx[LEVEL].prSensOffset 	= (float) SecondValue - (ADCSecondPoint * config_data.sensor_PRx[LEVEL].prSensGain);
-				//config_data.sensor_PRx[LEVEL].prSensOffset 	= ADCFirstPoint;
 
 				/*carico il CRC della EEPROM (usata la stessa funzione di CRC del MOD_BUS
 				 * IL CRC lo clacolo su tutta la struttura meno i due byte ndel CRC stesso*/
@@ -381,9 +459,7 @@ void Pressure_Sensor_Calibration(Press_sens ID_sens, float value, unsigned char 
 				ADCSecondPoint = PR_ADS_FLT_ADC_Filtered;
 
 				config_data.sensor_PRx[ADS_FLT].prSensGain 		= ((float)SecondValue - FirstValue) / ((float)ADCSecondPoint - ADCFirstPoint);
-				/* TODO deve essere ripristinata questa e poi modificata la funzione  Coversion_From_ADC_To_mmHg_Pressure_Sensor*/
 				config_data.sensor_PRx[ADS_FLT].prSensOffset 	= (float) SecondValue - (ADCSecondPoint * config_data.sensor_PRx[ADS_FLT].prSensGain);
-			//	config_data.sensor_PRx[ADS_FLT].prSensOffset 	= ADCFirstPoint;
 
 				/*carico il CRC della EEPROM (usata la stessa funzione di CRC del MOD_BUS
 				 * IL CRC lo clacolo su tutta la struttura meno i due byte ndel CRC stesso*/
@@ -398,9 +474,7 @@ void Pressure_Sensor_Calibration(Press_sens ID_sens, float value, unsigned char 
 				ADCSecondPoint = PR_VEN_ADC_Filtered;
 
 				config_data.sensor_PRx[VEN].prSensGain 		= ((float)(SecondValue - FirstValue) ) / ((float)ADCSecondPoint - ADCFirstPoint);
-				/* TODO deve essere ripristinata questa e poi modificata la funzione  Coversion_From_ADC_To_mmHg_Pressure_Sensor*/
 				config_data.sensor_PRx[VEN].prSensOffset 	= (float) SecondValue - (ADCSecondPoint * config_data.sensor_PRx[VEN].prSensGain);
-				//config_data.sensor_PRx[VEN].prSensOffset 	= ADCFirstPoint;
 
 				/*carico il CRC della EEPROM (usata la stessa funzione di CRC del MOD_BUS
 				 * IL CRC lo clacolo su tutta la struttura meno i due byte ndel CRC stesso*/
@@ -415,9 +489,7 @@ void Pressure_Sensor_Calibration(Press_sens ID_sens, float value, unsigned char 
 				ADCSecondPoint = PR_ART_ADC_Filtered;
 
 				config_data.sensor_PRx[ART].prSensGain 		= ((float)SecondValue - FirstValue) / ((float)ADCSecondPoint - ADCFirstPoint);
-				/* TODO deve essere ripristinata questa e poi modificata la funzione  Coversion_From_ADC_To_mmHg_Pressure_Sensor*/
 				config_data.sensor_PRx[ART].prSensOffset 	= (float) SecondValue - (ADCSecondPoint * config_data.sensor_PRx[ART].prSensGain);
-				//config_data.sensor_PRx[ART].prSensOffset 	= ADCFirstPoint;
 
 				/*carico il CRC della EEPROM (usata la stessa funzione di CRC del MOD_BUS
 				 * IL CRC lo clacolo su tutta la struttura meno i due byte ndel CRC stesso*/
@@ -467,13 +539,13 @@ void ADC1_Calibration(void)
 
 int meanWA(unsigned char dimNum, int newSensVal, char IdSens)
 {
-	static int circularBuffer[10] [64]; //uso una matrice di 10 array, due per ogni sensore così filtro mmHg e ADC
-	static int circBuffAdd[10] [64];    //uso una matrice di 10 array, due per ogni sensore così filtro mmHg e ADC
+	static int circularBuffer[10] [255]; //uso una matrice di 10 array, due per ogni sensore così filtro mmHg e ADC
+	static int circBuffAdd[10] [255];    //uso una matrice di 10 array, due per ogni sensore così filtro mmHg e ADC
 	int numSumValue = 0;
 	int denValue=0;
 	int numTotal=0;
 
-	if(dimNum <= 64){
+	if(dimNum <= 255){
 	for(int i=(dimNum-1); i>0; i--)
 	{
 		denValue = denValue + i;

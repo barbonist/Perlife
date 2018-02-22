@@ -312,6 +312,9 @@ void alwaysPumpPressLoop(unsigned char pmpId, unsigned char *PidFirstTime)
 	// FM sostituito con il valore in mmHg
 
     pressSample0 = PR_ART_mmHg_Filtered;
+//    /*cambio il parametro in ingresso al PID dal valore filtrato al valore sistolico di pressione*/
+//    pressSample0 = PR_ART_Sistolyc_mmHg;
+
 	errPress = parameterWordSetFromGUI[PAR_SET_PRESS_ART_TARGET].value - pressSample0;
 
 	//GlobINTEG = parKITC*errPress;
@@ -619,6 +622,9 @@ void alwaysPumpPressLoopVen(unsigned char pmpId, unsigned char *PidFirstTime){
 
     //pressSample0_Ven = PR_VEN_mmHg_Filtered;
     pressSample0_Ven = MedForVenousPid;
+//    /*cambio il parametro in ingresso al PID dal valore filtrato al valore sistolico di pressione*/
+//    pressSample0 = PR_VEN_Sistolyc_mmHg;
+
 	errPress = Target_PID_VEN - pressSample0_Ven;
 
 	   if (errPress > -5  && errPress < 5 )

@@ -993,26 +993,6 @@ unsigned char TemperatureStateMach_orig(void)
 }
 
 
-typedef enum
-{
-	START_RECIRC_HIGH_SPEED,   // inizio fase di ricircolo ad alta velocita'
-	STOP_RECIRC_HIGH_SPEED,    // fine fase di ricircolo ad alta velocita'
-	TEMP_START_CHECK_STATE,    // inizio intervallo di controllo temperatura in range
-	TEMP_CHECK_DURATION_STATE  // controllo durata della temperatura in range
-}TEMPERATURE_STATE;
-
-typedef enum
-{
-	NO_TEMP_STATE_CMD ,
-	RESTART_CMD,               // restart check sequence  o high speed fase
-}TEMPERATURE_CMD;
-
-
-#define HIGH_PUMP_SPEED_DURATION 30000L
-
-// velocita' delle pompe per la fase del ricircolo ad alta velocita'
-#define RECIRC_PUMP_HIGH_SPEED 4000
-
 // cmd comando per eventuare riposizionamento della macchina a stati
 unsigned char TemperatureStateMach(int cmd)
 {
@@ -3113,19 +3093,6 @@ word GetTotalPrimingVolumePerf(void)
 	return TotVolume;
 }
 
-
-typedef enum
-{
-	INIT_TOT_PRIM_VOL_STATE,
-	NEW_TOT_PRIM_VOL_STATE
-}TOTAL_PRIMING_VOL_STATE;
-
-typedef enum
-{
-	NO_CMD_TOT_PRIM_VOL,
-	NEW_PRIM_CMD_TOT_PRIM_VOL,
-	RESET_CMD_TOT_PRIM_VOL
-}TOTAL_PRIMING_VOL_CMD;
 
 // ritorna il volume complessivo di priming tenendo conto anche del volume di liquido
 // necessario per riempire il disposable

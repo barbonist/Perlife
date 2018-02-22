@@ -1133,7 +1133,8 @@ struct volumeTreatmentKidney{
 struct volumeTreatmentKidney myVolumeTreatmentKidney;
 
 int timerCounter;
-unsigned int timerCounterADC;
+unsigned int timerCounterADC0;
+unsigned int timerCounterADC1;
 int timerCounterPID;
 int timerCounterMState;
 int FreeRunCnt10msec;
@@ -1464,6 +1465,43 @@ bool TreatAlm1SafAirFiltActive;
 bool TreatAlm1SFAActive;
 // allarme aria arterioso scattato, ma non ho ancora ricevuto il butto_reset per eliminarlo
 bool TreatAlm1SFVActive;
+
+
+// GESTIONE RICIRCOLO VELOCE
+typedef enum
+{
+	START_RECIRC_HIGH_SPEED,   // inizio fase di ricircolo ad alta velocita'
+	STOP_RECIRC_HIGH_SPEED,    // fine fase di ricircolo ad alta velocita'
+	TEMP_START_CHECK_STATE,    // inizio intervallo di controllo temperatura in range
+	TEMP_CHECK_DURATION_STATE  // controllo durata della temperatura in range
+}TEMPERATURE_STATE;
+
+typedef enum
+{
+	NO_TEMP_STATE_CMD ,
+	RESTART_CMD,               // restart check sequence  o high speed fase
+}TEMPERATURE_CMD;
+
+// un minuto di ricircolo veloce per essere sicuro di eliminare tutta l'eventuale aria presente nei tubi
+#define HIGH_PUMP_SPEED_DURATION 60000L
+
+// velocita' delle pompe per la fase del ricircolo ad alta velocita'
+#define RECIRC_PUMP_HIGH_SPEED 4000
+
+
+// GESTIONE PRIMING AGGIUNTIVO DA DEBUGGARE
+typedef enum
+{
+	INIT_TOT_PRIM_VOL_STATE,
+	NEW_TOT_PRIM_VOL_STATE
+}TOTAL_PRIMING_VOL_STATE;
+
+typedef enum
+{
+	NO_CMD_TOT_PRIM_VOL,
+	NEW_PRIM_CMD_TOT_PRIM_VOL,
+	RESET_CMD_TOT_PRIM_VOL
+}TOTAL_PRIMING_VOL_CMD;
 
 
 #endif /* SOURCES_GLOBAL_H_ */

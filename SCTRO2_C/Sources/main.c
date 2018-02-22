@@ -222,16 +222,6 @@ void Manage_Debug_led(bool Status)
 int main(void)
 /*lint -restore Enable MISRA rule (6.3) checking. */
 {
-	TreatAlm1SafAirFiltActive = FALSE;
-	TreatAlm1SFAActive = FALSE;
-	TreatAlm1SFVActive = FALSE;
-
-	LiquidAmount = 0;
-	StarTimeToRejAir = 0;
-	TotalTimeToRejAir = 0;
-	AirAlarmRecoveryState = INIT_AIR_ALARM_RECOVERY;
-	DisableAllAirAlarm = FALSE;
-
   /* Write your local variable definition here */
   bool MOTORE_ACCESO = FALSE;
   bool MOTORE_ACCESO_2 = FALSE;
@@ -271,6 +261,16 @@ int main(void)
   PR_Sens_ADC_Init();
 
   /* Write your code here */
+
+  TreatAlm1SafAirFiltActive = FALSE;
+  TreatAlm1SFAActive = FALSE;
+  TreatAlm1SFVActive = FALSE;
+
+  LiquidAmount = 0;
+  StarTimeToRejAir = 0;
+  TotalTimeToRejAir = 0;
+  AirAlarmRecoveryState = INIT_AIR_ALARM_RECOVERY;
+  DisableAllAirAlarm = FALSE;
 
   LevelBuzzer = SILENT;
   initAllGuard();
@@ -447,7 +447,8 @@ int main(void)
 
   timerCounterCheckModBus = 0; 	//resetto il timer di check sul modbus
   slvAddr = FIRST_ACTUATOR;		//rimetto come indirizzo da leggere il primo
-  timerCounterADC = 0;
+  timerCounterADC0 = 0;
+  timerCounterADC1 = 0;
 
 
   // al reset metto tutti irami delle pich chiusi
@@ -593,11 +594,17 @@ int main(void)
 			 /*END funzioni per leggere i canali AD*/
 
 
-		     /*faccio lo start della cionversione sui canali AD ogni 50 msec*/
-			 if (timerCounterADC >=1)
+		     /*faccio lo start della conversione sul canale AD0 ogni 50 msec*/
+			 if (timerCounterADC0 >=1)
 			 {
-				timerCounterADC = 0;
+				timerCounterADC0 = 0;
 				AD0_Start();
+			 }
+			 /*faccio lo start della conversione sul canale AD1 ogni 10 msec
+			  * per avere le pressioni a 100 HZ (timerCounterADC1 si incremente ogni msec*/
+			 if (timerCounterADC1 >=10)
+			 {
+				timerCounterADC1 = 0;
 				AD1_Start();
 			 }
 

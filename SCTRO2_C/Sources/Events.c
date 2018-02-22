@@ -1168,7 +1168,6 @@ void System_Tick_OnInterrupt(void)
 	Prescaler_Tick_Timer++;
 	Prescaler_Tick_TEST++;
 
-
 	if (Prescaler_Tick_Timer >=5)
 	{
 	  Prescaler_Tick_Timer = 0;
@@ -1176,7 +1175,7 @@ void System_Tick_OnInterrupt(void)
 	  /*interrupt usato per i timer che scatta ogni 50 ms*/
 	  timerCounter = timerCounter + 1;
 
-	  timerCounterADC = timerCounterADC + 1;
+	  timerCounterADC0 = timerCounterADC0 + 1;
 
 	  timerCounterPID = timerCounterPID + 1;
 
@@ -1214,6 +1213,7 @@ void System_Tick_OnInterrupt(void)
 void Timer_1msec_OnInterrupt(void)
 {
   /* Write your code here ... */
+	timerCounterADC1++;
 }
 
 /*
