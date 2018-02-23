@@ -122,7 +122,7 @@ void alarmConInit(void){
 }
 
 int StartAlmArrIdx = 0;
-int i;
+int i_al;
 
 void alarmEngineAlways(void)
 {
@@ -370,26 +370,26 @@ void alarmEngineAlways(void)
 	}
 
 
-	for(i=StartAlmArrIdx; i<ALARM_ACTIVE_IN_STRUCT; i++)
+	for(i_al=StartAlmArrIdx; i_al<ALARM_ACTIVE_IN_STRUCT; i_al++)
 	{
-		if((alarmList[i].physic == PHYSIC_TRUE) && (alarmList[i].active != ACTIVE_TRUE))
+		if((alarmList[i_al].physic == PHYSIC_TRUE) && (alarmList[i_al].active != ACTIVE_TRUE))
 		{
-			ptrAlarmCurrent = &alarmList[i];
-			alarmList[i].prySafetyActionFunc();
-			StartAlmArrIdx = i;
-			IdxCurrAlarm = i;
+			ptrAlarmCurrent = &alarmList[i_al];
+			alarmList[i_al].prySafetyActionFunc();
+			StartAlmArrIdx = i_al;
+			IdxCurrAlarm = i_al;
 
 			// FM forse qui devo interrompere perche' ho trovato una condizione di allarme da attivare
 			// e devo gestirla prima di andare a vedere le altre
 			break;
 		}
-		else if((alarmList[i].active == ACTIVE_TRUE) && (alarmList[i].physic == PHYSIC_FALSE))
+		else if((alarmList[i_al].active == ACTIVE_TRUE) && (alarmList[i_al].physic == PHYSIC_FALSE))
 		{
-			ptrAlarmCurrent = &alarmList[i];
-			alarmList[i].prySafetyActionFunc();
+			ptrAlarmCurrent = &alarmList[i_al];
+			alarmList[i_al].prySafetyActionFunc();
 
-			//StartAlmArrIdx = i;  // allarme finito riparto dall'inizio della struttura
-			//IdxCurrAlarm = i;
+			//StartAlmArrIdx = i_al;  // allarme finito riparto dall'inizio della struttura
+			//IdxCurrAlarm = i_al;
 
 			// FM forse qui devo interrompere perche' ho trovato una condizione di allarme da disattivare
 			// e devo gestirla prima di andare a vedere le altre
@@ -756,8 +756,8 @@ void manageAlarmIrTempSensNotDetected(void)
 
 void manageAlarmActuatorModbusNotRespond(void)
 {
-
-	for (int i = 0; i <8; i++)
+	int i;
+	for (i = 0; i <8; i++)
 	{
 		/*se non ricevo 10 msg consecutivi da un sensore di temperatura ossia il sensore non risposnde per 6 secondi consecutivi vado in allarme*/
 		if (CountErrorModbusMSG[i] > MAX_MSG_CONSECUTIVE_ACTUATOR_MODBUS_NOT_RESPOND)
