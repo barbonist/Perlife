@@ -1193,6 +1193,8 @@ void System_Tick_OnInterrupt(void)
 
 	  timerCounterLedBoard++;
 
+	  timerCounterUpdateTargetPressurePid++;
+
 	}
 }
 

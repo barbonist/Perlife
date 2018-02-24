@@ -1064,7 +1064,7 @@ enum paramWordSetFromSBC{
 	/*da qui in poi parametri non passati dal PC ma
 	 * define sul source code definiti con 0xFX*/
 	PAR_SET_VENOUS_PRESS_TARGET = 0xF1,
-	PAR_SET_WORD_END_NUMBER = PAR_SET_VENOUS_PRESS_TARGET
+	PAR_SET_WORD_END_NUMBER = PAR_SET_VENOUS_PRESS_TARGET +1
 };
 
 struct parWordSetFromGUI{
@@ -1144,6 +1144,7 @@ int timerCounterPeltier;
 int timerCounterCheckModBus;
 int timerCounterCheckTempIRSens;
 int timerCounterLedBoard;
+int timerCounterUpdateTargetPressurePid;
 
 /************************************************************************/
 /* 					STRUTTURA VOLUMI TRATTAMENTO 						*/

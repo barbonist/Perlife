@@ -296,6 +296,7 @@ int main(void)
   timerCounterCheckModBus = 0;
   timerCounterCheckTempIRSens = 0;
   timerCounterLedBoard = 0;
+  timerCounterUpdateTargetPressurePid = 0;
   Prescaler_Tick_Timer = 0;
   Prescaler_Tick_TEST=0;
   FreeRunCnt10msec = 0;
