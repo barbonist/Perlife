@@ -657,9 +657,9 @@ void manageChildTreatAlm1SafAirFiltAlways(void)
 {
 	// apetto che tutte le pompe si siano fermate
 	manageChildTreatAlm1StopAllActAlways();
+	DisableAllAirAlarm = TRUE; // forzo la chiusura dell'allarme aria
 	if((buttonGUITreatment[BUTTON_RESET_ALARM].state == GUI_BUTTON_RELEASED) && IsSecurityStateActive())
 	{
-		DisableAllAirAlarm = TRUE; // forzo la chiusura dell'allarme aria
 		// setto la guard per fare in modo che quando l'allarme risultera' non attivo
 		// la macchina a stati parent vada nello stato di espulsione bolla aria
 		currentGuard[GUARD_ALARM_AIR_FILT_RECOVERY].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
@@ -696,9 +696,9 @@ void manageChildTreatAlm1SFVAlways(void)
 {
 	// apetto che tutte le pompe si siano fermate
 	manageChildTreatAlm1StopAllActAlways();
+	DisableAllAirAlarm = TRUE; // forzo la chiusura dell'allarme aria
 	if((buttonGUITreatment[BUTTON_RESET_ALARM].state == GUI_BUTTON_RELEASED) && IsSecurityStateActive())
 	{
-		DisableAllAirAlarm = TRUE; // forzo la chiusura dell'allarme aria
 		// setto la guard per fare in modo che quando l'allarme risultera' non attivo
 		// la macchina a stati parent vada nello stato di espulsione bolla aria
 		currentGuard[GUARD_ALARM_AIR_SFV_RECOVERY].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
@@ -738,9 +738,9 @@ void manageChildTreatAlm1SFAAlways(void)
 {
 	// apetto che tutte le pompe si siano fermate
 	manageChildTreatAlm1StopAllActAlways();
+	DisableAllAirAlarm = TRUE; // forzo la chiusura dell'allarme aria
 	if((buttonGUITreatment[BUTTON_RESET_ALARM].state == GUI_BUTTON_RELEASED) && IsSecurityStateActive())
 	{
-		DisableAllAirAlarm = TRUE; // forzo la chiusura dell'allarme aria
 		// setto la guard per fare in modo che quando l'allarme risultera' non attivo
 		// la macchina a stati parent vada nello stato di espulsione bolla aria
 		currentGuard[GUARD_ALARM_AIR_SFA_RECOVERY].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;

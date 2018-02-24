@@ -138,6 +138,10 @@ void CallInIdleState(void)
 	StartOxygAndDepState = 0;
 	AlarmInPrimingEntered = FALSE;
 	AlarmOrStopInRecircFlag = FALSE;
+
+	// reset del totale del volume accumulato
+	GetTotalPrimingVolumePerf((int)RESET_CMD_TOT_PRIM_VOL);
+
 }
 
 
@@ -599,7 +603,7 @@ void manageStatePrimingWaitAlways(void){
 		}
 		currentGuard[GUARD_ABANDON_PRIMING].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
 	}
-	else if(GetTotalPrimingVolumePerf() > perfusionParam.priVolPerfArt) // parameterWordSetFromGUI[PAR_SET_PRIMING_VOL_PERFUSION].value
+	else if(GetTotalPrimingVolumePerf(0) > perfusionParam.priVolPerfArt) // parameterWordSetFromGUI[PAR_SET_PRIMING_VOL_PERFUSION].value
 	{
 		// dopo che era finito il priming precedente mi e' stato inviato un nuovo volume
 		// quindi, devo ritornare nello stato di priming_ph2 perche' devo aggiungere altro liquido
@@ -1381,11 +1385,11 @@ void manageParentPrimingAlways(void){
 			}
 #ifdef DEBUG_WITH_SERVICE_SBC
 			else if((ptrCurrentState->state == STATE_PRIMING_PH_1) &&
-					((float)perfusionParam.priVolPerfArt >= ((float)GetTotalPrimingVolumePerf() * 50 / 100.0)))  // parameterWordSetFromGUI[PAR_SET_PRIMING_VOL_PERFUSION].value
+					((float)perfusionParam.priVolPerfArt >= ((float)GetTotalPrimingVolumePerf(0) * 50 / 100.0)))  // parameterWordSetFromGUI[PAR_SET_PRIMING_VOL_PERFUSION].value
 #else
 			// nel caso di debug considero il 50%
 			else if((ptrCurrentState->state == STATE_PRIMING_PH_1) &&
-					((float)perfusionParam.priVolPerfArt >= ((float)GetTotalPrimingVolumePerf() * PERC_OF_PRIM_FOR_FILTER / 100.0)))  // parameterWordSetFromGUI[PAR_SET_PRIMING_VOL_PERFUSION].value
+					((float)perfusionParam.priVolPerfArt >= ((float)GetTotalPrimingVolumePerf(0) * PERC_OF_PRIM_FOR_FILTER / 100.0)))  // parameterWordSetFromGUI[PAR_SET_PRIMING_VOL_PERFUSION].value
 #endif
 			{
 				// ho raggiunto il 95% del volume, fermo le pompe ed aspetto il caricamento del filtro
@@ -1398,8 +1402,11 @@ void manageParentPrimingAlways(void){
 				}
 			}
 			else if((ptrCurrentState->state == STATE_PRIMING_PH_2) &&
-					(perfusionParam.priVolPerfArt >= GetTotalPrimingVolumePerf())) // parameterWordSetFromGUI[PAR_SET_PRIMING_VOL_PERFUSION].value
+					(perfusionParam.priVolPerfArt >= GetTotalPrimingVolumePerf(0))) // parameterWordSetFromGUI[PAR_SET_PRIMING_VOL_PERFUSION].value
 			{
+				// aggiorno il totale del volume accumulato per gli eventuali priming successivi
+				GetTotalPrimingVolumePerf((int)NEW_PRIM_CMD_TOT_PRIM_VOL);
+
 				// ho raggiunto il volume complessivo, fermo le pompe ed aspetto
 				setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
 				setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 0);
@@ -2804,7 +2811,7 @@ static void computeMachineStateGuardPrimingPh2(void){
 }
 
 
-
+int computeMachineStateGuardTreatmentState = 0;
 /*--------------------------------------------------------------------*/
 /*  This function compute the guard value in treatment kidney 1 state   */
 /*  Controllo la fine del trattamento
@@ -2841,14 +2848,32 @@ static void computeMachineStateGuardTreatment(void)
 
 	if((TotalTreatDuration + TreatDuration) >= isec)
 	{
-		// esaurita la durata massima del trattamento
-		// forzo lo stop alle pompe passo allo svuotamento del circuito
-		setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, newSpeedPmp_0);
-		setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, newSpeedPmp1_2);
-		if(GetTherapyType() == LiverTreat)
+		if(!computeMachineStateGuardTreatmentState)
 		{
-			// se sono nel trattamento fegato fermo anche l'altro motore !!
-			setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, newSpeedPmp_3);
+			setPumpPressLoop(0, PRESS_LOOP_OFF);
+			// esaurita la durata massima del trattamento
+			// forzo lo stop alle pompe passo allo svuotamento del circuito
+			setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, newSpeedPmp_0);
+			setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, newSpeedPmp1_2);
+			if(GetTherapyType() == LiverTreat)
+			{
+				// se sono nel trattamento fegato fermo anche l'altro motore !!
+				setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, newSpeedPmp_3);
+				setPumpPressLoop(1, PRESS_LOOP_OFF);
+			}
+			computeMachineStateGuardTreatmentState++;
+		}
+		else if(computeMachineStateGuardTreatmentState && ((TotalTreatDuration + TreatDuration) >= (isec + computeMachineStateGuardTreatmentState)))
+		{
+			// ci riprovo fino a 5 volte
+			setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, newSpeedPmp_0);
+			setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, newSpeedPmp1_2);
+			if(GetTherapyType() == LiverTreat)
+			{
+				// se sono nel trattamento fegato fermo anche l'altro motore !!
+				setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, newSpeedPmp_3);
+			}
+			computeMachineStateGuardTreatmentState++;
 		}
 
 		if ( CommandModBusPMPExecute(newSpeedPmp_0,newSpeedPmp1_2,newSpeedPmp_3) )
@@ -2858,11 +2883,19 @@ static void computeMachineStateGuardTreatment(void)
 		}
 		else
 		{
-			// controllo il tempo trascorso per un eventuale timeout di errore
+			// controllo il tempo trascorso per un eventuale timeout di erroreù
+			if((TotalTreatDuration + TreatDuration) >= (isec + 5))
+			{
+				// se sono trascorsi 5 secondi dalla fine del trattamento e non sono ancora uscito.
+				// la forzo io
+				currentGuard[GUARD_ENABLE_DISPOSABLE_EMPTY].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+				DebugStringStr("TREATMENT END");
+			}
 		}
 	}
 	else
 	{
+		computeMachineStateGuardTreatmentState = 0;
 		//QUESTO NON LO DEVO FARE PERCHE' IL FLUSSO E' CONTROLLATO DAL PID DURANTE IL TRATTAMENTO !!!!!!!
 		if(GetTherapyType() == KidneyTreat)
 		{
@@ -3086,7 +3119,7 @@ void GoToRecoveryParentState(int MachineParentState)
 }
 
 
-word GetTotalPrimingVolumePerf(void)
+word GetTotalPrimingVolumePerf(int cmd)
 {
 	word TotVolume;
 	TotVolume = parameterWordSetFromGUI[PAR_SET_PRIMING_VOL_PERFUSION].value + VOLUME_DISPOSABLE;
@@ -3094,9 +3127,10 @@ word GetTotalPrimingVolumePerf(void)
 }
 
 
+
 // ritorna il volume complessivo di priming tenendo conto anche del volume di liquido
 // necessario per riempire il disposable
-word GetTotalPrimingVolumePerf_(int cmd)
+word GetTotalPrimingVolumePerf_new(int cmd)
 {
 	static TOTAL_PRIMING_VOL_STATE TotalPrimingVolState = INIT_TOT_PRIM_VOL_STATE;
 	static word TotalPrimingVolume = 0;
@@ -3107,14 +3141,20 @@ word GetTotalPrimingVolumePerf_(int cmd)
 	switch (TotalPrimingVolState)
 	{
 		case INIT_TOT_PRIM_VOL_STATE:
+			// ritorna il volume da caricare nel primo priming
 			TotVolume = parameterWordSetFromGUI[PAR_SET_PRIMING_VOL_PERFUSION].value + VOLUME_DISPOSABLE;
 			if(cmd = NEW_PRIM_CMD_TOT_PRIM_VOL)
 			{
 				TotalPrimingVolume = perfusionParam.priVolPerfArt;
 				TotalPrimingVolState = NEW_TOT_PRIM_VOL_STATE;
 			}
+			else if(cmd = RESET_CMD_TOT_PRIM_VOL)
+			{
+				TotalPrimingVolume = 0;
+			}
 			break;
 		case NEW_TOT_PRIM_VOL_STATE:
+			// ritorna il volume totale nei priming successivi
 			TotVolume = TotalPrimingVolume + parameterWordSetFromGUI[PAR_SET_PRIMING_VOL_PERFUSION].value;
 			if(cmd = NEW_PRIM_CMD_TOT_PRIM_VOL)
 				TotalPrimingVolume = perfusionParam.priVolPerfArt;

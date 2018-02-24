@@ -170,7 +170,7 @@ void CalcVenSistDiastPress(word Press)
   int MAX_SAMPLE_FOR_SPEED = NUMB_OF_SAMPLES_VEN;
 
   if ( pumpPerist[1].actualSpeed != 0)
-	  MAX_SAMPLE_FOR_SPEED = NUMB_OF_SAMPLES_VEN / pumpPerist[1].actualSpeed;
+	  MAX_SAMPLE_FOR_SPEED = (int)((float)NUMB_OF_SAMPLES_VEN / (float)pumpPerist[1].actualSpeed * 12.0);
 
   if (MAX_SAMPLE_FOR_SPEED > NUMB_OF_SAMPLES_VEN )
 	  MAX_SAMPLE_FOR_SPEED = NUMB_OF_SAMPLES_VEN;
@@ -200,7 +200,7 @@ void CalcVenSistDiastPress(word Press)
 		  if(CircPressArr[i] > max)
 			  max = CircPressArr[i];
 		  i--;
-		  if (i == 0)
+		  if (i < 0)
 			  i = MAX_SAMPLE_FOR_SPEED - 1;
 	  }
 	  MedForVenousPid = MedForVenousPid / MAX_SAMPLE_FOR_SPEED;
@@ -295,7 +295,7 @@ void CalcArtSistDiastPress(word Press)
   int MAX_SAMPLE_FOR_SPEED = NUMB_OF_SAMPLES_ART;
 
   if ( pumpPerist[0].actualSpeed != 0)
-	  MAX_SAMPLE_FOR_SPEED = NUMB_OF_SAMPLES_ART / pumpPerist[0].actualSpeed;
+      MAX_SAMPLE_FOR_SPEED = (int)((float)NUMB_OF_SAMPLES_ART / (float)pumpPerist[0].actualSpeed * 12.0);
 
   if (MAX_SAMPLE_FOR_SPEED > NUMB_OF_SAMPLES_ART )
 	  MAX_SAMPLE_FOR_SPEED = NUMB_OF_SAMPLES_ART;
@@ -325,7 +325,7 @@ void CalcArtSistDiastPress(word Press)
 		  if(CircPressArr[i] > max)
 			  max = CircPressArr[i];
 		  i--;
-		  if (i == 0)
+		  if (i < 0)
 			  i = MAX_SAMPLE_FOR_SPEED - 1;
 	  }
 	  MedForArteriousPid = MedForArteriousPid / MAX_SAMPLE_FOR_SPEED;

@@ -538,7 +538,7 @@ void GenEvntParentPrim(void)
 					// evito che all'entry del parent mi fermi le pompe
 					pumpPerist[0].entry = 1;
 
-					if(perfusionParam.priVolPerfArt < GetTotalPrimingVolumePerf())
+					if(perfusionParam.priVolPerfArt < GetTotalPrimingVolumePerf(0))
 					{
 						setGUIButton((unsigned char)BUTTON_CONFIRM);
 					}
