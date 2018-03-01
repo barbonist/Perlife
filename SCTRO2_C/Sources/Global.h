@@ -472,12 +472,6 @@ struct machineStateGuard {
 	unsigned char	guardEntryValue;
 };
 
-struct machineStateGuard currentGuard[60]; /* equal to GUARD_END_NUMBER + 1 */
-
-struct machineStateGuard * ptrPreviousGuard;
-struct machineStateGuard * ptrCurrentGuard[60]; /* equal to GUARD_END_NUMBER + 1 */
-struct machineStateGuard * ptrFutureGuard;
-
 /* Machine state guard structure */
 
 /* Machine state guard */
@@ -576,6 +570,13 @@ enum MachineStateGuardId {
 	GUARD_FATAL_ERROR,
 	GUARD_END_NUMBER
 };
+
+struct machineStateGuard currentGuard[GUARD_END_NUMBER + 1]; /* equal to GUARD_END_NUMBER + 1 */
+
+struct machineStateGuard * ptrPreviousGuard;
+struct machineStateGuard * ptrCurrentGuard[GUARD_END_NUMBER + 1]; /* equal to GUARD_END_NUMBER + 1 */
+struct machineStateGuard * ptrFutureGuard;
+
 
 enum MachineStateGuardValue
 {
@@ -1036,7 +1037,8 @@ struct buttonGUI{
 	unsigned char state;
 };
 
-struct buttonGUI buttonGUITreatment[214];
+// sono 256 strutture perche' il numero di massimo di bottoni che posso gestire e' 0..255
+struct buttonGUI buttonGUITreatment[256];
 /************************************************************************/
 /* 						PULSANTI GUI 									*/
 /************************************************************************/
@@ -1067,11 +1069,14 @@ enum paramWordSetFromSBC{
 	PAR_SET_WORD_END_NUMBER = PAR_SET_VENOUS_PRESS_TARGET +1
 };
 
+
 struct parWordSetFromGUI{
 	char id;
 	word value;
 };
-struct parWordSetFromGUI parameterWordSetFromGUI[PAR_SET_WORD_END_NUMBER];
+
+// sono 256 strutture perche' il numero di massimo di parametri che posso gestire e' 0..255
+struct parWordSetFromGUI parameterWordSetFromGUI[256];
 
 
 /*struct parFloatSetFromGUI{
@@ -1145,6 +1150,7 @@ int timerCounterCheckModBus;
 int timerCounterCheckTempIRSens;
 int timerCounterLedBoard;
 int timerCounterUpdateTargetPressurePid;
+int timerCounterUpdateTargetPressPidArt;
 
 /************************************************************************/
 /* 					STRUTTURA VOLUMI TRATTAMENTO 						*/
@@ -1471,16 +1477,21 @@ bool TreatAlm1SFVActive;
 // GESTIONE RICIRCOLO VELOCE
 typedef enum
 {
-	START_RECIRC_HIGH_SPEED,   // inizio fase di ricircolo ad alta velocita'
-	STOP_RECIRC_HIGH_SPEED,    // fine fase di ricircolo ad alta velocita'
-	TEMP_START_CHECK_STATE,    // inizio intervallo di controllo temperatura in range
-	TEMP_CHECK_DURATION_STATE  // controllo durata della temperatura in range
+	START_RECIRC_IDLE,
+	START_RECIRC_HIGH_SPEED,    // inizio fase di ricircolo ad alta velocita'
+	STOP_RECIRC_HIGH_SPEED,     // fine fase di ricircolo ad alta velocita'
+	TEMP_START_CHECK_STATE,     // inizio intervallo di controllo temperatura in range
+	TEMP_CHECK_DURATION_STATE,  // controllo durata della temperatura in range
+	TEMP_ABANDONE_STATE         // ho ricevuto il comando di abbandonare e tornare in idle
 }TEMPERATURE_STATE;
 
 typedef enum
 {
 	NO_TEMP_STATE_CMD ,
 	RESTART_CMD,               // restart check sequence  o high speed fase
+	TEMP_STATE_RESET,          // riporto la macchina a stati della temperatura nello stato iniziale
+	TEMP_ABANDONE_CMD,         // e' stato premuto il tasto abbandona
+	TEMP_START_RICIRCOLO
 }TEMPERATURE_CMD;
 
 // un minuto di ricircolo veloce per essere sicuro di eliminare tutta l'eventuale aria presente nei tubi
@@ -1504,6 +1515,11 @@ typedef enum
 	RESET_CMD_TOT_PRIM_VOL
 }TOTAL_PRIMING_VOL_CMD;
 
+// pump gain calcolato in base ai sensori della macchina
+float ArteriousPumpGainForPid;
+float VenousPumpGainForPid;
+#define DEFAULT_ART_PUMP_GAIN 9.3
+#define DEFAULT_VEN_PUMP_GAIN 22.0
 
 #endif /* SOURCES_GLOBAL_H_ */
 

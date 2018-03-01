@@ -141,7 +141,7 @@ void CallInIdleState(void)
 
 	// reset del totale del volume accumulato
 	GetTotalPrimingVolumePerf((int)RESET_CMD_TOT_PRIM_VOL);
-
+	TemperatureStateMach(TEMP_STATE_RESET);
 }
 
 
@@ -590,6 +590,7 @@ void manageStatePrimingWaitAlways(void){
 		// vado nello stato di ricircolo
 		releaseGUIButton(BUTTON_PRIMING_END_CONFIRM);
 		currentGuard[GUARD_PRIMING_END].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+		TemperatureStateMach(TEMP_START_RICIRCOLO);
 	}
 	else if(buttonGUITreatment[BUTTON_PRIMING_ABANDON].state == GUI_BUTTON_RELEASED)
 	{
@@ -996,6 +997,116 @@ unsigned char TemperatureStateMach_orig(void)
 	return TempReached;
 }
 
+//#define NUM_OF_FLOW_SAMPLES  5
+//typedef enum
+//{
+//	RESET_PUMP_GAIN_ARRAY_CMD,
+//	CALC_PUMP_GAIN_CMD
+//}CALC_PUMP_GAIN_CMD;
+//
+//// calcolo il guadagno della pompa arteriosa
+//char CalcArtPumpGain(float flow, float pump_speed, int cmd, float *pmp_gain)
+//{
+//  char OK = 0;
+//  static word PumpGainArrArt[NUM_OF_FLOW_SAMPLES];
+//  static int  PumpGainArrArtIdx = 0;
+//  static unsigned char BufferFull = 0;
+//  float Pump_Gain = 0.0
+//  float Tot_Pump_Gain;
+//
+//  if(cmd == RESET_PUMP_GAIN_ARRAY_CMD)
+//  {
+//	  for(int i = 0; i < NUM_OF_FLOW_SAMPLES; i++)
+//		  PumpGainArrArt[i] = 0.0;
+//  }
+//  else if(cmd == CALC_PUMP_GAIN_CMD)
+//  {
+//	  if((pump_speed > 0.0) && (flow != 0))
+//	  {
+//		  Pump_Gain = flow / pump_speed;
+//		  PumpGainArrArt[PumpGainArrArtIdx] = Pump_Gain;
+//		  PumpGainArrArtIdx++;
+//		  if(PumpGainArrArtIdx >= NUM_OF_FLOW_SAMPLES)
+//		  {
+//			  Tot_Pump_Gain = 0.0;
+//			  for(int i = 0; i < NUM_OF_FLOW_SAMPLES; i++)
+//				  Tot_Pump_Gain += PumpGainArrArt[i];
+//			  Pump_Gain = Tot_Pump_Gain / NUM_OF_FLOW_SAMPLES;
+//			  OK = 1;
+//			  *pmp_gain = Pump_Gain;
+//		  }
+//	  }
+//  }
+//  return OK;
+//}
+//
+//
+//char CalcVenPumpGain(float flow, float pump_speed, int cmd, float *pmp_gain)
+//{
+//  char OK = 0;
+//  static word PumpGainArrVen[NUM_OF_FLOW_SAMPLES];
+//  static int  PumpGainArrVenIdx = 0;
+//  static unsigned char BufferFull = 0;
+//  float Pump_Gain = 0.0
+//  float Tot_Pump_Gain;
+//
+//  if(cmd == RESET_PUMP_GAIN_ARRAY_CMD)
+//  {
+//	  for(int i = 0; i < NUM_OF_FLOW_SAMPLES; i++)
+//		  PumpGainArrVen[i] = 0.0;
+//  }
+//  else if(cmd == CALC_PUMP_GAIN_CMD)
+//  {
+//	  if((pump_speed > 0.0) && (flow != 0))
+//	  {
+//		  Pump_Gain = flow / pump_speed;
+//		  PumpGainArrVen[PumpGainArrVenIdx] = Pump_Gain;
+//		  PumpGainArrVenIdx++;
+//		  if(PumpGainArrVenIdx >= NUM_OF_FLOW_SAMPLES)
+//		  {
+//			  Tot_Pump_Gain = 0.0;
+//			  for(int i = 0; i < NUM_OF_FLOW_SAMPLES; i++)
+//				  Tot_Pump_Gain += PumpGainArrVen[i];
+//			  Pump_Gain = Tot_Pump_Gain / NUM_OF_FLOW_SAMPLES;
+//			  OK = 1;
+//			  *pmp_gain = Pump_Gain;
+//		  }
+//	  }
+//  }
+//  return OK;
+//}
+
+float CalcArtPumpGain(float flow)
+{
+	float Pump_Gain;
+	if(flow != 0)
+	{
+		Pump_Gain = flow / (float)RECIRC_PUMP_HIGH_SPEED;
+		if(Pump_Gain > ((float)DEFAULT_ART_PUMP_GAIN + DEFAULT_ART_PUMP_GAIN * 30.0 / 100.0))
+			Pump_Gain = DEFAULT_ART_PUMP_GAIN;
+		else if(Pump_Gain < ((float)DEFAULT_ART_PUMP_GAIN - DEFAULT_ART_PUMP_GAIN * 30.0 / 100.0))
+			Pump_Gain = DEFAULT_ART_PUMP_GAIN;
+	}
+	else
+		Pump_Gain = DEFAULT_ART_PUMP_GAIN;
+	return Pump_Gain;
+}
+
+float CalcVenPumpGain(float flow)
+{
+	float Pump_Gain;
+	if(flow != 0)
+	{
+		Pump_Gain = flow / (float)RECIRC_PUMP_HIGH_SPEED;
+		if(Pump_Gain > ((float)DEFAULT_VEN_PUMP_GAIN + DEFAULT_VEN_PUMP_GAIN * 30.0 / 100.0))
+			Pump_Gain = DEFAULT_VEN_PUMP_GAIN;
+		else if(Pump_Gain < ((float)DEFAULT_VEN_PUMP_GAIN - DEFAULT_VEN_PUMP_GAIN * 30.0 / 100.0))
+			Pump_Gain = DEFAULT_VEN_PUMP_GAIN;
+	}
+	else
+		Pump_Gain = DEFAULT_VEN_PUMP_GAIN;
+	return Pump_Gain;
+}
 
 // cmd comando per eventuare riposizionamento della macchina a stati
 unsigned char TemperatureStateMach(int cmd)
@@ -1024,9 +1135,28 @@ unsigned char TemperatureStateMach(int cmd)
 			TempStateMach = TEMP_START_CHECK_STATE;
 		}
 	}
+	else if(cmd == TEMP_STATE_RESET)
+	{
+		TempStateMach = START_RECIRC_IDLE;
+	}
+	else if(cmd == TEMP_ABANDONE_CMD)
+	{
+		// ho ricevuto un comando di abbandonare e ritornare in idle
+		TempStateMach = TEMP_ABANDONE_STATE;
+	}
+	else if(cmd == TEMP_START_RICIRCOLO)
+	{
+		// ho ricevuto un comando di prepararmi a far partire il ricircolo
+		TempStateMach = START_RECIRC_HIGH_SPEED;
+	}
+
 
 	switch (TempStateMach)
 	{
+		case START_RECIRC_IDLE:
+			// in questo stato ci va all'inizio del priming ed in attesa di iniziare la fase di ricircolo
+			break;
+
 		case START_RECIRC_HIGH_SPEED:
 			RicircTimeout = timerCounterModBus;
 			setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, RECIRC_PUMP_HIGH_SPEED);
@@ -1043,9 +1173,11 @@ unsigned char TemperatureStateMach(int cmd)
 				setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, RECIRC_PUMP_HIGH_SPEED);
 			}
 			TempStateMach = STOP_RECIRC_HIGH_SPEED;
+			ArteriousPumpGainForPid = DEFAULT_ART_PUMP_GAIN;
+			VenousPumpGainForPid = DEFAULT_VEN_PUMP_GAIN;
 			break;
 		case STOP_RECIRC_HIGH_SPEED:
-			if(msTick_elapsed(RicircTimeout) * 50L >= HIGH_PUMP_SPEED_DURATION)
+			if((msTick_elapsed(RicircTimeout) * 50L) >= HIGH_PUMP_SPEED_DURATION)
 			{
 				// ho raggiunto il tempo di ricircolo ad alta velocita' per eliminare l'aria eventuale
 				// proseguo con il controllo della temperatura
@@ -1067,6 +1199,12 @@ unsigned char TemperatureStateMach(int cmd)
 					setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, (int)LIVER_PRIMING_PMP_OXYG_SPEED);
 					setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, LIVER_PPAR_SPEED);
 				}
+			}
+			else if((msTick_elapsed(RicircTimeout) * 50L) >= (HIGH_PUMP_SPEED_DURATION - 3000))
+			{
+				// 3 secondi prima della fine del ricircolo calcolo il guadagno delle pompe e le memorizzo
+				ArteriousPumpGainForPid = CalcArtPumpGain(sensor_UFLOW[0].Average_Flow_Val);
+				VenousPumpGainForPid = CalcVenPumpGain(sensor_UFLOW[1].Average_Flow_Val);
 			}
 			break;
 
@@ -1094,6 +1232,9 @@ unsigned char TemperatureStateMach(int cmd)
 			{
 				TempStateMach = TEMP_START_CHECK_STATE;
 			}
+			break;
+		case TEMP_ABANDONE_STATE:
+			// ho ricevuto il comando di abbandonare e tornare in idle
 			break;
 	}
 	return TempReached;
@@ -1239,8 +1380,11 @@ void manageParentPrimingAlways(void){
 		// la velocita' ora posso leggerla direttamente dall'array di registry modbus
 		speed = modbusData[pumpPerist[0].pmpMySlaveAddress-2][17] / 100;
 		pumpPerist[0].actualSpeed = speed;
-		volumePriming = volumePriming + ((float)speed * CONV_RPMMIN_TO_ML_PER_INTERVAL);
-		perfusionParam.priVolPerfArt = (int)(volumePriming);
+		if((ptrCurrentState->state == STATE_PRIMING_PH_1) || (ptrCurrentState->state == STATE_PRIMING_PH_2))
+		{
+			volumePriming = volumePriming + ((float)speed * CONV_RPMMIN_TO_ML_PER_INTERVAL);
+			perfusionParam.priVolPerfArt = (int)(volumePriming);
+		}
 		pumpPerist[0].dataReady = DATA_READY_FALSE;
 	}
 	if(pumpPerist[1].dataReady == DATA_READY_TRUE)
@@ -1252,7 +1396,8 @@ void manageParentPrimingAlways(void){
 		// calcolo il volume complessivo di liquido trattato dall'ossigenatore
 		fl = ((float)pumpPerist[1].actualSpeed * CONV_RPMMIN_TO_ML_PER_INT_OXYG * 2.0);
 		perfusionParam.priVolPerfVenOxy = perfusionParam.priVolPerfVenOxy + (word)fl;
-		if((GetTherapyType() == LiverTreat) && (StartOxygAndDepState == 1))
+		if((GetTherapyType() == LiverTreat) && (StartOxygAndDepState == 1) &&
+		   ((ptrCurrentState->state == STATE_PRIMING_PH_1) || (ptrCurrentState->state == STATE_PRIMING_PH_2)))
 		{
 			// faccio l'aggiornamento solo nel fegato e se lo start alle pompe di
 			// ossigenazione e' stato dato (questo secondo test sarebbe ridondante)
@@ -1448,6 +1593,8 @@ void manageParentPrimingAlways(void){
 						setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, 0);
 					}
 					currentGuard[GUARD_ABANDON_PRIMING].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+					// sposto la macchina a stati in TEMP_ABANDONE_CMD per evitare problemi
+					TemperatureStateMach(TEMP_ABANDONE_CMD);
 				}
 
 			}
@@ -1506,7 +1653,7 @@ void manageParentPrimingAlways(void){
 			// la velocita' ora posso leggerla direttamente dall'array di registry modbus
 			speed = modbusData[pumpPerist[0].pmpMySlaveAddress-2][17] / 100;
 			pumpPerist[0].actualSpeed = speed;
-			if(ptrCurrentState->state != STATE_PRIMING_RICIRCOLO)
+			if((ptrCurrentState->state == STATE_PRIMING_PH_1) || (ptrCurrentState->state == STATE_PRIMING_PH_2))
 			{
 				// nella fase di ricircolo non aggiorno piu' il volume
 				volumePriming = volumePriming + ((float)speed * CONV_RPMMIN_TO_ML_PER_INTERVAL);
@@ -1523,7 +1670,8 @@ void manageParentPrimingAlways(void){
 			// calcolo il volume complessivo di liquido trattato dall'ossigenatore
 			fl = ((float)pumpPerist[1].actualSpeed * CONV_RPMMIN_TO_ML_PER_INT_OXYG * 2.0);
 			perfusionParam.priVolPerfVenOxy = perfusionParam.priVolPerfVenOxy + (word)fl;
-			if((GetTherapyType() == LiverTreat) && (StartOxygAndDepState == 1))
+			if((GetTherapyType() == LiverTreat) && (StartOxygAndDepState == 1) &&
+			   ((ptrCurrentState->state == STATE_PRIMING_PH_1) || (ptrCurrentState->state == STATE_PRIMING_PH_2)))
 			{
 				// faccio l'aggiornamento solo nel fegato e se lo start alle pompe di
 				// ossigenazione e' stato dato (questo secondo test sarebbe ridondante)

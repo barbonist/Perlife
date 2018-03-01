@@ -222,6 +222,9 @@ void Manage_Debug_led(bool Status)
 int main(void)
 /*lint -restore Enable MISRA rule (6.3) checking. */
 {
+	ArteriousPumpGainForPid = DEFAULT_ART_PUMP_GAIN;
+	VenousPumpGainForPid = DEFAULT_VEN_PUMP_GAIN;
+
   /* Write your local variable definition here */
   bool MOTORE_ACCESO = FALSE;
   bool MOTORE_ACCESO_2 = FALSE;
@@ -297,6 +300,7 @@ int main(void)
   timerCounterCheckTempIRSens = 0;
   timerCounterLedBoard = 0;
   timerCounterUpdateTargetPressurePid = 0;
+  timerCounterUpdateTargetPressPidArt = 0;
   Prescaler_Tick_Timer = 0;
   Prescaler_Tick_TEST=0;
   FreeRunCnt10msec = 0;
@@ -605,7 +609,9 @@ int main(void)
 			  * per avere le pressioni a 100 HZ (timerCounterADC1 si incremente ogni msec*/
 			 if (timerCounterADC1 >=10)
 			 {
+				EnterCritical();
 				timerCounterADC1 = 0;
+				ExitCritical();
 				AD1_Start();
 			 }
 

@@ -105,10 +105,10 @@
 #define MAX_MSG_CONSECUTIVE_IR_TEMP_SENS_NOT_DETECTED 		10
 #define PR_ART_HIGH											250  //100
 #define PR_ART_LOW											1
-#define PR_VEN_HIGH											250  //10
+#define PR_VEN_HIGH											290  //10
 //#define PR_VEN_LOW											40
 // modificato altrimenti viene sempre fuori allarme di pressione bassa
-#define PR_VEN_LOW											1   //25
+#define PR_VEN_LOW											25
 #define PR_ADS_FILTER_HIGH									250
 #define MAX_MSG_CONSECUTIVE_ACTUATOR_MODBUS_NOT_RESPOND 	10
 

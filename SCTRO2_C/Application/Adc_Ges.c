@@ -170,7 +170,11 @@ void CalcVenSistDiastPress(word Press)
   int MAX_SAMPLE_FOR_SPEED = NUMB_OF_SAMPLES_VEN;
 
   if ( pumpPerist[1].actualSpeed != 0)
-	  MAX_SAMPLE_FOR_SPEED = (int)((float)NUMB_OF_SAMPLES_VEN / (float)pumpPerist[1].actualSpeed * 12.0);
+  {
+	  //MAX_SAMPLE_FOR_SPEED = (int)((float)NUMB_OF_SAMPLES_VEN / (float)pumpPerist[1].actualSpeed * 12.0);
+	  // e' la stessa formula
+  	  MAX_SAMPLE_FOR_SPEED = (int)((float)NUMB_OF_SAMPLES_VEN / ( (float)pumpPerist[1].actualSpeed / 12.0 ));
+  }
 
   if (MAX_SAMPLE_FOR_SPEED > NUMB_OF_SAMPLES_VEN )
 	  MAX_SAMPLE_FOR_SPEED = NUMB_OF_SAMPLES_VEN;

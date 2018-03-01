@@ -444,7 +444,7 @@ void manageAlarmPhysicPressSensLow(void)
 	{
 		alarmList[PRESS_ART_LOW].physic = PHYSIC_FALSE;
 	}
-/*
+
 	if(PR_VEN_mmHg_Filtered <= PR_VEN_LOW && GetTherapyType() == LiverTreat)
 	{
 		alarmList[PRESS_VEN_LOW].physic = PHYSIC_TRUE;
@@ -453,7 +453,7 @@ void manageAlarmPhysicPressSensLow(void)
 	{
 		alarmList[PRESS_VEN_LOW].physic = PHYSIC_FALSE;
 	}
-	*/
+
 }
 
 void manageAlarmPhysicPressSensHigh(void)
@@ -478,7 +478,7 @@ void manageAlarmPhysicPressSensHigh(void)
 	}
 
 	/*il sensore Venoso è suato solo nel trattamento Liver, il Kidney non ha la linea Venosa*/
-	if(PR_VEN_mmHg_Filtered > PR_VEN_HIGH && GetTherapyType() == LiverTreat)
+	if((PR_VEN_Sistolyc_mmHg /*PR_VEN_mmHg_Filtered*/ > PR_VEN_HIGH) && (GetTherapyType() == LiverTreat))
 	{
 		alarmList[PRESS_VEN_HIGH].physic = PHYSIC_TRUE;
 	}
@@ -487,59 +487,6 @@ void manageAlarmPhysicPressSensHigh(void)
 		alarmList[PRESS_VEN_HIGH].physic = PHYSIC_FALSE;
 	}
 }
-
-//void manageAlarmPhysicPressSens(void)
-//{
-//
-//	if(PR_ART_mmHg_Filtered > PR_ART_HIGH)
-//	{
-//		alarmList[PRESS_ART_HIGH].physic = PHYSIC_TRUE;
-//	}
-//	else
-//	{
-//		alarmList[PRESS_ART_HIGH].physic = PHYSIC_FALSE;
-//	}
-//
-//	if(PR_ART_mmHg_Filtered <= PR_ART_LOW)
-//	{
-//		if((ptrCurrentState->state != STATE_PRIMING_PH_2) && (ptrCurrentState->state != STATE_PRIMING_PH_1))
-//			alarmList[PRESS_ART_LOW].physic = PHYSIC_TRUE;
-//	}
-//	else
-//	{
-//		alarmList[PRESS_ART_LOW].physic = PHYSIC_FALSE;
-//	}
-//
-//
-//	if(PR_ADS_FLT_mmHg_Filtered > PR_ADS_FILTER_HIGH)
-//	{
-//		alarmList[PRESS_ADS_FILTER_HIGH].physic = PHYSIC_TRUE;
-//	}
-//	else
-//	{
-//		alarmList[PRESS_ADS_FILTER_HIGH].physic = PHYSIC_FALSE;
-//	}
-//
-//	/*il sensore Venoso è suato solo nel trattamento Liver, il Kidney non ha la linea Venosa*/
-//	if(PR_VEN_mmHg_Filtered > PR_VEN_HIGH && GetTherapyType() == LiverTreat)
-//	{
-//		alarmList[PRESS_VEN_HIGH].physic = PHYSIC_TRUE;
-//	}
-//	else
-//	{
-//		alarmList[PRESS_VEN_HIGH].physic = PHYSIC_FALSE;
-//	}
-//
-//	if(PR_VEN_mmHg_Filtered <= PR_VEN_LOW && GetTherapyType() == LiverTreat)
-//	{
-//		if((ptrCurrentState->state != STATE_PRIMING_PH_2) && (ptrCurrentState->state != STATE_PRIMING_PH_1))
-//			alarmList[PRESS_VEN_LOW].physic = PHYSIC_TRUE;
-//	}
-//	else
-//	{
-//		alarmList[PRESS_VEN_LOW].physic = PHYSIC_FALSE;
-//	}
-//}
 
 
 void manageAlarmPhysicTempSens(void)
