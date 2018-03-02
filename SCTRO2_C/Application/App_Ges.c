@@ -1081,7 +1081,7 @@ float CalcArtPumpGain(float flow)
 	float Pump_Gain;
 	if(flow != 0)
 	{
-		Pump_Gain = flow / (float)RECIRC_PUMP_HIGH_SPEED;
+		Pump_Gain = flow / ((float)RECIRC_PUMP_HIGH_SPEED / 100.0);
 		if(Pump_Gain > ((float)DEFAULT_ART_PUMP_GAIN + DEFAULT_ART_PUMP_GAIN * 30.0 / 100.0))
 			Pump_Gain = DEFAULT_ART_PUMP_GAIN;
 		else if(Pump_Gain < ((float)DEFAULT_ART_PUMP_GAIN - DEFAULT_ART_PUMP_GAIN * 30.0 / 100.0))
@@ -1097,7 +1097,7 @@ float CalcVenPumpGain(float flow)
 	float Pump_Gain;
 	if(flow != 0)
 	{
-		Pump_Gain = flow / (float)RECIRC_PUMP_HIGH_SPEED;
+		Pump_Gain = flow / ((float)RECIRC_PUMP_HIGH_SPEED / 100.0);
 		if(Pump_Gain > ((float)DEFAULT_VEN_PUMP_GAIN + DEFAULT_VEN_PUMP_GAIN * 30.0 / 100.0))
 			Pump_Gain = DEFAULT_VEN_PUMP_GAIN;
 		else if(Pump_Gain < ((float)DEFAULT_VEN_PUMP_GAIN - DEFAULT_VEN_PUMP_GAIN * 30.0 / 100.0))
@@ -1113,6 +1113,7 @@ unsigned char TemperatureStateMach(int cmd)
 {
 	static unsigned long RicircTimeout;
 	static unsigned char TempStateMach = START_RECIRC_HIGH_SPEED;
+	static int Delay = 0;
 	unsigned char TempReached = 0;
 
 	float tmpr;
@@ -1137,7 +1138,8 @@ unsigned char TemperatureStateMach(int cmd)
 	}
 	else if(cmd == TEMP_STATE_RESET)
 	{
-		TempStateMach = START_RECIRC_IDLE;
+		TempStateMach = TEMP_ABANDONE_STATE;
+		Delay = 0;
 	}
 	else if(cmd == TEMP_ABANDONE_CMD)
 	{
@@ -1147,7 +1149,7 @@ unsigned char TemperatureStateMach(int cmd)
 	else if(cmd == TEMP_START_RICIRCOLO)
 	{
 		// ho ricevuto un comando di prepararmi a far partire il ricircolo
-		TempStateMach = START_RECIRC_HIGH_SPEED;
+		TempStateMach = START_RECIRC_IDLE;
 	}
 
 
@@ -1155,6 +1157,14 @@ unsigned char TemperatureStateMach(int cmd)
 	{
 		case START_RECIRC_IDLE:
 			// in questo stato ci va all'inizio del priming ed in attesa di iniziare la fase di ricircolo
+			Delay++;
+			if(Delay > 40)
+			{
+				// aspetto un paio di secondi poi faccio partire le pompe ad alta velocita'
+				// per cercare di eliminare l'aria
+				TempStateMach = START_RECIRC_HIGH_SPEED;
+				Delay = 0;
+			}
 			break;
 
 		case START_RECIRC_HIGH_SPEED:
@@ -1172,9 +1182,18 @@ unsigned char TemperatureStateMach(int cmd)
 				setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, (int)RECIRC_PUMP_HIGH_SPEED);
 				setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, RECIRC_PUMP_HIGH_SPEED);
 			}
-			TempStateMach = STOP_RECIRC_HIGH_SPEED;
+			TempStateMach = CALC_PUMPS_GAIN;
 			ArteriousPumpGainForPid = DEFAULT_ART_PUMP_GAIN;
 			VenousPumpGainForPid = DEFAULT_VEN_PUMP_GAIN;
+			break;
+		case CALC_PUMPS_GAIN:
+			if((msTick_elapsed(RicircTimeout) * 50L) >= (HIGH_PUMP_SPEED_DURATION - 3000))
+			{
+				// 3 secondi prima della fine del ricircolo calcolo il guadagno delle pompe e le memorizzo
+				ArteriousPumpGainForPid = CalcArtPumpGain(sensor_UFLOW[0].Average_Flow_Val);
+				VenousPumpGainForPid = CalcVenPumpGain(sensor_UFLOW[1].Average_Flow_Val);
+				TempStateMach = STOP_RECIRC_HIGH_SPEED;
+			}
 			break;
 		case STOP_RECIRC_HIGH_SPEED:
 			if((msTick_elapsed(RicircTimeout) * 50L) >= HIGH_PUMP_SPEED_DURATION)
@@ -1184,7 +1203,7 @@ unsigned char TemperatureStateMach(int cmd)
 				TempStateMach = TEMP_START_CHECK_STATE;
 
 				// ripristino le velocita' di priming normali
-				setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 2000);
+				setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, RPM_IN_PRIMING_PHASES);
 				if((GetTherapyType() == KidneyTreat) &&
 				   (((PARAMETER_ACTIVE_TYPE)parameterWordSetFromGUI[PAR_SET_OXYGENATOR_ACTIVE].value) == YES))
 				{
@@ -1199,12 +1218,6 @@ unsigned char TemperatureStateMach(int cmd)
 					setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, (int)LIVER_PRIMING_PMP_OXYG_SPEED);
 					setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, LIVER_PPAR_SPEED);
 				}
-			}
-			else if((msTick_elapsed(RicircTimeout) * 50L) >= (HIGH_PUMP_SPEED_DURATION - 3000))
-			{
-				// 3 secondi prima della fine del ricircolo calcolo il guadagno delle pompe e le memorizzo
-				ArteriousPumpGainForPid = CalcArtPumpGain(sensor_UFLOW[0].Average_Flow_Val);
-				VenousPumpGainForPid = CalcVenPumpGain(sensor_UFLOW[1].Average_Flow_Val);
 			}
 			break;
 
@@ -1225,7 +1238,7 @@ unsigned char TemperatureStateMach(int cmd)
 					// per almeno 2 secondi la temperatura si e' mantenuta nell'intorno del target,
 					// posso uscire dalla fase di ricircolo
 					TempReached = 1;
-					TempStateMach = START_RECIRC_HIGH_SPEED;
+					TempStateMach = TEMP_ABANDONE_STATE;
 				}
 			}
 			else
@@ -1256,7 +1269,7 @@ void manageParentPrimingAlways(void){
 	case PARENT_PRIMING_TREAT_KIDNEY_1_INIT:
 	if(buttonGUITreatment[BUTTON_START_PRIMING].state == GUI_BUTTON_RELEASED)
 	{
-		setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 2000);
+		setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, RPM_IN_PRIMING_PHASES);
 		if((GetTherapyType() == KidneyTreat) && (((PARAMETER_ACTIVE_TYPE)parameterWordSetFromGUI[PAR_SET_OXYGENATOR_ACTIVE].value) == YES) &&
 			(perfusionParam.priVolPerfArt > MIN_LIQ_IN_RES_TO_START_OXY_VEN))
 		{
@@ -1289,7 +1302,7 @@ void manageParentPrimingAlways(void){
 	{
 		releaseGUIButton(BUTTON_START_PERF_PUMP);
 
-		setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 2000);
+		setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, RPM_IN_PRIMING_PHASES);
 		if(!FilterSelected)
 			setPinchPositionHighLevel(PINCH_2WPVF, MODBUS_PINCH_LEFT_OPEN);
 		else
@@ -1425,7 +1438,7 @@ void manageParentPrimingAlways(void){
 				}
 				else
 				{
-					setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 2000);
+					setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, RPM_IN_PRIMING_PHASES);
 					//if(((PARAMETER_ACTIVE_TYPE)parameterWordSetFromGUI[PAR_SET_OXYGENATOR_ACTIVE].value) == YES)
 					//	setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, (int)((float)parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value / OXYG_FLOW_TO_RPM_CONV * 100.0));
 					if((GetTherapyType() == KidneyTreat) && (((PARAMETER_ACTIVE_TYPE)parameterWordSetFromGUI[PAR_SET_OXYGENATOR_ACTIVE].value) == YES) &&
@@ -1461,7 +1474,7 @@ void manageParentPrimingAlways(void){
 			{
 				releaseGUIButton(BUTTON_START_PERF_PUMP);
 
-				setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 2000);
+				setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, RPM_IN_PRIMING_PHASES);
 				if(!FilterSelected)
 					setPinchPositionHighLevel(PINCH_2WPVF, MODBUS_PINCH_LEFT_OPEN);
 				else
@@ -2028,7 +2041,9 @@ void manageParentTreatAlways(void){
 		}
 
 		//if((getPumpPressLoop(0) == PRESS_LOOP_ON) && (timerCounterPID >=1))
-		if(timerCounterPID >=1)
+		// per calcolare il pid ogni 450 msec (sarebbe meglio usare questo per dare il tempo alle attuazioni di avere effetto)
+		//if((timerCounterModBus%9) == 7)
+		if(timerCounterPID >=1) //codice originale
 		{
 			timerCounterPID = 0;
 			if(getPumpPressLoop(0) == PRESS_LOOP_ON)
@@ -2225,6 +2240,8 @@ void manageParentTreatAlways(void){
 			}
 
 			//if((getPumpPressLoop(0) == PRESS_LOOP_ON) && (timerCounterPID >=1))
+			// per calcolare il pid ogni 450 msec (sarebbe meglio usare questo per dare il tempo alle attuazioni di avere effetto)
+			//if((timerCounterModBus%9) == 7)
 			if(timerCounterPID >=1)
 			{
 				timerCounterPID = 0;

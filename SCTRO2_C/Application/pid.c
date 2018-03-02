@@ -611,7 +611,71 @@ int get_Set_Point_Pressure(int Speed)
 	return (Presure_Set_Point);
 }
 
-float CalcolaPresVen(float speed)
+float CalcolaPresVen_with_Flow()
+{
+	float Gain,Offset, Target_Flow = (float)parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value;
+
+	if (Target_Flow <= 190)
+	{
+		Gain = (float) ( (55 - 43) / 190);
+		Offset = 55 - Gain * 190;
+	}
+	else if (Target_Flow > 190 && Target_Flow<= 425)
+	{
+		Gain = (float) ( (67 - 55) / 235);
+		Offset = 67 - Gain * 425;
+	}
+	else if (Target_Flow > 425 && Target_Flow<= 660)
+	{
+		Gain = (float) ( (89 - 67) / 235);
+		Offset = 89 - Gain * 660;
+	}
+	else if (Target_Flow > 660 && Target_Flow<= 900)
+	{
+		Gain = (float) ( (111 - 89) / 240);
+		Offset = 111 - Gain * 900;
+	}
+	else if (Target_Flow > 900 && Target_Flow<= 1130)
+	{
+		Gain = (float) ( (133 - 111) / 230);
+		Offset = 133 - Gain * 1130;
+	}
+	else if (Target_Flow > 1130 && Target_Flow<= 1380)
+	{
+		Gain = (float) ( (156 - 133) / 250);
+		Offset = 156 - Gain * 1380;
+	}
+	else if (Target_Flow > 1380 && Target_Flow<= 1680)
+	{
+		Gain = (float) ( (196 - 156) / 300);
+		Offset = 196 - Gain * 1680;
+	}
+	else if (Target_Flow > 1680 && Target_Flow<= 1930)
+	{
+		Gain = (float) ( (227 - 196) / 250);
+		Offset = 227 - Gain * 1930;
+	}
+	else if (Target_Flow > 1930 && Target_Flow<= 2150)
+	{
+		Gain = (float) ( (255 - 227) / 220);
+		Offset = 255 - Gain * 2150;
+	}
+	else if (Target_Flow > 2150 && Target_Flow<= 2350)
+	{
+		Gain = (float) ( (273 - 255) / 200);
+		Offset = 273 - Gain * 2350;
+	}
+	else if (Target_Flow > 2350)
+	{
+		Gain = (float) ( (281 - 273) / 190);
+		Offset = 281 - Gain * 2540;
+	}
+
+	float press = Gain * (Target_Flow) + Offset;
+
+    return press;
+}
+float CalcolaPresVen_with_Speed(float speed)
 {
 //  float m = ((float)128.0 - (float)50.0) / ((float)100.0 );
 //  float press = m * (speed) + (float)50.0;
@@ -707,7 +771,7 @@ int SpeedCostanteVen( int CurrSpeed)
 			SpeedCostanteState = 0;
 		else
 			Cnt++;
-		if(Cnt >= 50)
+		if(Cnt >= 100)
 		{
 			SpeedCostanteFlag = 1;
 			SpeedCostanteState = 0;
@@ -782,11 +846,13 @@ void alwaysPumpPressLoopVen(unsigned char pmpId, unsigned char *PidFirstTime){
 		actualSpeed_Ven = actualSpeed_Ven + deltaSpeed_Ven;
 	}
 
-	/*se misuro un flusso e ho una velocità >0 e sto misurando uin flusso superiore al limite impostato
+	/*se misuro un flusso e ho una velocità > 0 e sto misurando un flusso superiore al limite impostato
+	 * e il delta di velocità del pid non mi fa diminuire la velocità (deltaSpeed_Ven>0)
 	 * aggiorno la velocità al massimo flusso impostato */
 	if ((sensor_UFLOW[1].Average_Flow_Val > 0.0) &&
 			(sensor_UFLOW[1].Average_Flow_Val > ( parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value)) &&
-			(actualSpeed_Ven > 0.0))
+			(actualSpeed_Ven > 0.0) && deltaSpeed_Ven > 0 )
+
 	{
 		//float pmp_gain = sensor_UFLOW[1].Average_Flow_Val / actualSpeed_Ven;
 		actualSpeed_Ven = (float) parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value / Pump_Gain;
@@ -810,14 +876,14 @@ void alwaysPumpPressLoopVen(unsigned char pmpId, unsigned char *PidFirstTime){
 		 * altrimenti lo aggiorno subito, altrimenti il pid va troppo veloce per il target*/
 		if (deltaSpeed_Ven > 0)
 		{
-			Target_PID_VEN = parameterWordSetFromGUI[PAR_SET_VENOUS_PRESS_TARGET].value + CalcolaPresVen(actualSpeed_Ven);
+			Target_PID_VEN = parameterWordSetFromGUI[PAR_SET_VENOUS_PRESS_TARGET].value + CalcolaPresVen_with_Flow();
 			timerCounterUpdateTargetPressurePid = 0;
 		}
 
 		else if (timerCounterUpdateTargetPressurePid > 60)
 		{
 			timerCounterUpdateTargetPressurePid = 0;
-			Target_PID_VEN = parameterWordSetFromGUI[PAR_SET_VENOUS_PRESS_TARGET].value + CalcolaPresVen(actualSpeed_Ven);
+			Target_PID_VEN = parameterWordSetFromGUI[PAR_SET_VENOUS_PRESS_TARGET].value + CalcolaPresVen_with_Flow();
 		}
 
 		setPumpSpeedValueHighLevel(pumpPerist[pmpId].pmpMySlaveAddress, ((int)(actualSpeed_Ven * 100)));

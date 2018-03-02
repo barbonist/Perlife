@@ -444,7 +444,7 @@ void manageAlarmPhysicPressSensLow(void)
 	{
 		alarmList[PRESS_ART_LOW].physic = PHYSIC_FALSE;
 	}
-
+/*
 	if(PR_VEN_mmHg_Filtered <= PR_VEN_LOW && GetTherapyType() == LiverTreat)
 	{
 		alarmList[PRESS_VEN_LOW].physic = PHYSIC_TRUE;
@@ -453,7 +453,7 @@ void manageAlarmPhysicPressSensLow(void)
 	{
 		alarmList[PRESS_VEN_LOW].physic = PHYSIC_FALSE;
 	}
-
+*/
 }
 
 void manageAlarmPhysicPressSensHigh(void)

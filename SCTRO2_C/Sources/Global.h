@@ -1276,15 +1276,16 @@ typedef enum{NOT_DEF = 0, NO = 1, YES = 2} PARAMETER_ACTIVE_TYPE;
 #define PERC_OF_PRIM_FOR_FILTER    95
 
 // fattore di conversione del flusso in giri al minuto per le pompe dell'ossigenatore
-#define OXYG_FLOW_TO_RPM_CONV 18.3
+//#define OXYG_FLOW_TO_RPM_CONV 18.3
+#define OXYG_FLOW_TO_RPM_CONV 22.0
 
 // definisco il fattore di conversione tra velocita' in rpm/min in ml/interval dove
 // interval e' il periodo su cui calcolo la quantita' di liquido pompata.
 // Quantita' di liquido pompata nell'intervallo di 450 msec.
 // 1 / 60 * 0.450 * 9.3
 #define CONV_RPMMIN_TO_ML_PER_INTERVAL  (float)0.06975
-// 1 / 60 * 0.450 * 10.0
-#define CONV_RPMMIN_TO_ML_PER_INT_OXYG  (float)0.075
+// 1 / 60 * 0.450 * 11.0
+#define CONV_RPMMIN_TO_ML_PER_INT_OXYG  (float)0.0825
 // valore originale del codice
 //#define CONV_RPMMIN_TO_ML_PER_INTERVAL  (float)0.00775
 // intervallo di tempo in msec per cui devo vedere la temperatura di ricircolo raggiunta prima di chiudere lo stato
@@ -1480,6 +1481,7 @@ typedef enum
 	START_RECIRC_IDLE,
 	START_RECIRC_HIGH_SPEED,    // inizio fase di ricircolo ad alta velocita'
 	STOP_RECIRC_HIGH_SPEED,     // fine fase di ricircolo ad alta velocita'
+	CALC_PUMPS_GAIN,
 	TEMP_START_CHECK_STATE,     // inizio intervallo di controllo temperatura in range
 	TEMP_CHECK_DURATION_STATE,  // controllo durata della temperatura in range
 	TEMP_ABANDONE_STATE         // ho ricevuto il comando di abbandonare e tornare in idle
@@ -1518,8 +1520,11 @@ typedef enum
 // pump gain calcolato in base ai sensori della macchina
 float ArteriousPumpGainForPid;
 float VenousPumpGainForPid;
+
 #define DEFAULT_ART_PUMP_GAIN 9.3
 #define DEFAULT_VEN_PUMP_GAIN 22.0
+
+#define RPM_IN_PRIMING_PHASES  2000
 
 #endif /* SOURCES_GLOBAL_H_ */
 
