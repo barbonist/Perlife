@@ -556,8 +556,8 @@ void PELTIER2_COMM_OnRxChar(void)
   		iflag_peltier2_rx = IFLAG_PELTIER_RX;
 		iflagPeltier2Msg = IFLAG_IDLE;
 		ptrMsgPeltier2Rx = &peltier2Debug_rx_data[0];
-		ptrMsgData2ieee754start = &peltier2Debug_rx_data[ptrPeltierCountRx-12];
-		ptrMsgDataPeltier2Int = &peltier2Debug_rx_data[ptrPeltierCountRx-5];
+		ptrMsgData2ieee754start = &peltier2Debug_rx_data[ptrPeltier2CountRx-12];
+		ptrMsgDataPeltier2Int = &peltier2Debug_rx_data[ptrPeltier2CountRx-5];
 		ptrPeltier2CountRx = 0;
 	}
 }

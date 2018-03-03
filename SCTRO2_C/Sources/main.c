@@ -340,6 +340,10 @@ int main(void)
 
   ptrPeltierCountRx = 0;
 
+  ptrMsgPeltier2Rx = &peltier2Debug_rx_data[0];
+
+  ptrPeltier2CountRx = 0;
+
   uint8_t InpData[4];
   uint8_t OutData[4] = "0123";
   LDD_TDeviceData *MySPIPtr;
@@ -553,6 +557,8 @@ int main(void)
 	        	 if(peltierCell.readAlwaysEnable == 0)
 	        		 alwaysPeltierActuator();
 
+	        	 if(peltierCell2.readAlwaysEnable == 0)
+	        		 alwaysPeltier2Actuator();
 	         }
 
 	         /********************************/

@@ -794,15 +794,6 @@ void alwaysPumpPressLoopVen(unsigned char pmpId, unsigned char *PidFirstTime){
 	float Pump_Gain = 0;
 	int MAX_OXYG_RPM_Val;
 
-/* SERVE A FARE IL CALCOLO DEL PUMP_GAIN E NON STIMARLO
- * MA QUESTO CALCOLO ANDREBBE FATTO SOLO QUANDO IL FLUSSO E' GROSSOMODO STABILE
- * PERCHE' IL FLUSSO SI ALLINEA CON UN CERTO RITARDO RISPETTO ALLA PRESSIONE E AL PID
- * SI POTREBBE AFRLO ANCHE OGNI 5 SEC
-	if ( (sensor_UFLOW[1].Average_Flow_Val > 0.0) && (actualSpeed_Ven > 0.0) )
-		Pump_Gain = sensor_UFLOW[1].Average_Flow_Val / actualSpeed_Ven;
-
-	if(Pump_Gain == 0 || Pump_Gain > 17)
-		Pump_Gain = 17; */
 	Pump_Gain = VenousPumpGainForPid;
 
 

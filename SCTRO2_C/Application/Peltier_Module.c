@@ -33,9 +33,9 @@ void peltierAssInit(void){
 	peltierCell.commandRegId = REG_IDLE;
 
 	peltierCell.myFanModeSel = 1;
-	peltierCell.myNTCSteinCoeff_A = 0.0013;
-	peltierCell.myNTCSteinCoeff_B = 0.000235;
-	peltierCell.myNTCSteinCoeff_C = 0.00000008;
+	peltierCell.myNTCSteinCoeff_A = 0.00128175; //0.0013;
+	peltierCell.myNTCSteinCoeff_B = 0.00023669; //0.000235;
+	peltierCell.myNTCSteinCoeff_C = 0.00000009; //0.00000008;
 	peltierCell.myOnOffDeadBand = 0.5;
 	peltierCell.myOnOffHyster = 0.5;
 	peltierCell.myRegMode = 2;
@@ -51,9 +51,9 @@ void peltierAssInit(void){
 	peltierCell2.commandRegId = REG_IDLE;
 
 	peltierCell2.myFanModeSel = 1;
-	peltierCell2.myNTCSteinCoeff_A = 0.0013;
-	peltierCell2.myNTCSteinCoeff_B = 0.000235;
-	peltierCell2.myNTCSteinCoeff_C = 0.00000008;
+	peltierCell2.myNTCSteinCoeff_A = 0.00128175; //0.0013;
+	peltierCell2.myNTCSteinCoeff_B = 0.00023669; //0.000235;
+	peltierCell2.myNTCSteinCoeff_C = 0.00000009; //0.00000008;
 	peltierCell2.myOnOffDeadBand = 0.5;
 	peltierCell2.myOnOffHyster = 0.5;
 	peltierCell2.myRegMode = 2;
