@@ -343,7 +343,7 @@ struct machineParent stateParentEmptyDisp[] =
 		 {STATE_NULL, PARENT_EMPTY_DISPOSABLE_RUN,   CHILD_NULL, ACTION_ALWAYS,   &stateChildIdle[0],       &manageParentEmptyDisposRunAlways},   /* 4 */
 
 		 {STATE_NULL, PARENT_EMPTY_DISPOSABLE_ALARM, CHILD_NULL, ACTION_ON_ENTRY, &stateChildAlarmTreat1[1], &manageParentEmptyDisposAlarmEntry},  /* 5 */
-		 {STATE_NULL, PARENT_EMPTY_DISPOSABLE_ALARM, CHILD_NULL, ACTION_ALWAYS,   &stateChildAlarmTreat1[2], &manageParentEmptyDisposAlarmAlways}, /* 6 */
+		 {STATE_NULL, PARENT_EMPTY_DISPOSABLE_ALARM, CHILD_NULL, ACTION_ALWAYS,   &stateChildAlarmTreat1[1], &manageParentEmptyDisposAlarmAlways}, /* 6 */
 
 		 {STATE_NULL, PARENT_EMPTY_DISPOSABLE_END,   CHILD_IDLE, ACTION_ON_ENTRY, &stateChildIdle[0],        &manageParentEmptyDisposEndEntry},	   /* 7 */
 		 {STATE_NULL, PARENT_EMPTY_DISPOSABLE_END,   CHILD_IDLE, ACTION_ALWAYS,   &stateChildIdle[0],        &manageParentEmptyDisposEndAlways},   /* 8 */

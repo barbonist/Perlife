@@ -37,11 +37,42 @@ struct alarm alarmList[] =
 		{CODE_ALARM_PRESS_VEN_HIGH, 	   PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR, PRIORITY_HIGH, 2000, 2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull}, 		/* 9 */
 		{CODE_ALARM_PRESS_VEN_LOW, 		   PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR, PRIORITY_HIGH, 2000, 2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull}, 		/* 10 */
 		{CODE_ALARM_TEMP_SENS_NOT_DETECTED,PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR, PRIORITY_HIGH, 2000, 2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull}, 		/* 11 */
-		{CODE_ALARM_MODBUS_ACTUATOR_SEND,  PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_WAIT_CONFIRM,      PRIORITY_LOW,     0,    0, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull},	    /* 12 */
-		{}
 
+		// allarmi di cover aperte
+		{CODE_ALARM_PUMP_PERF_COVER_OPEN,  PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR, PRIORITY_HIGH,     0,    0, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull},	    /* 12 */
+		{CODE_ALARM_PUMP_PURIF_COVER_OPEN, PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR, PRIORITY_HIGH,     0,    0, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull},	    /* 13 */
+		{CODE_ALARM_PUMP_OXYG_COVER_OPEN,  PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR, PRIORITY_HIGH,     0,    0, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull},	    /* 14 */
+		// allarme di livello liquido troppo basso
+		{CODE_ALARM_TANK_LEVEL_LOW,        PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR, PRIORITY_HIGH,    500, 500, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull},	    /* 15 */
+		// allarme livello del liquido troppo alto
+		{CODE_ALARM_TANK_LEVEL_HIGH,       PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR, PRIORITY_HIGH,    500, 500, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull},	    /* 16 */
+
+		// allarme differenza tra flusso venoso misurato e flusso calcolato in base al guadagno pompa troppo alto
+		{CODE_ALARM_DELTA_FLOW_ART,       PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR, PRIORITY_HIGH,     500, 500, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull},	    /* 17 */
+		// allarme differenza tra flusso arterioso misurato e flusso calcolato in base al guadagno pompa troppo alto
+		{CODE_ALARM_DELTA_FLOW_VEN,       PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR, PRIORITY_HIGH,     500, 500, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull},	    /* 18 */
+		// allarme differenza tra temperatura vaschetta e temperatura fluido arterioso troppo alta
+		{CODE_ALARM_DELTA_TEMP_REC_ART,   PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR, PRIORITY_HIGH,     500, 500, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull},	    /* 19 */
+		// allarme differenza tra temperatura vaschetta e temperatura fluido venoso troppo alta
+		{CODE_ALARM_DELTA_TEMP_REC_VEN,   PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR, PRIORITY_HIGH,     500, 500, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull},	    /* 20 */
+
+		{CODE_ALARM_MODBUS_ACTUATOR_SEND,  PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_WAIT_CONFIRM,      PRIORITY_LOW,       0,   0, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull},	    /* 21 */
+		{}
 };
 
+void SetAllAlarmEnableFlags(void)
+{
+	GlobalFlags.FlagsDef.EnableLevHighAlarm = 1;          // Abilito allarme di livello alto (troppo pieno)
+	GlobalFlags.FlagsDef.EnableLevLowAlarm = 1;           // Abilito allarme di livello troppo basso
+	GlobalFlags.FlagsDef.EnableCoversAlarm = 1;           // Abilito allarme di cover
+	GlobalFlags.FlagsDef.EnablePressSensLowAlm = 1;       // abilito allarme pressione bassa
+	GlobalFlags.FlagsDef.EnablePressSensHighAlm = 1;      // abilito allarme pressione alta
+	GlobalFlags.FlagsDef.EnableTempArtHighAlm = 1;        // abilito allarme temperatura alta
+	GlobalFlags.FlagsDef.EnableDeltaFlowArtAlarm = 1;     // abilito allarme delta flusso arterioso troppo alto
+	GlobalFlags.FlagsDef.EnableDeltaFlowVenAlarm = 1;     // abilito allarme delta flusso venoso troppo alto
+	GlobalFlags.FlagsDef.EnableDeltaTempRecVenAlarm = 1;  // abilito allarme delta temperatura recipiente e line venosa troppo alta
+	GlobalFlags.FlagsDef.EnableDeltaTempRecArtAlarm = 1;  // abilito allarme delta temperatura recipiente e line arteriosa troppo alta
+}
 
 void ShowAlarmStr(int i, char * str)
 {
@@ -108,13 +139,57 @@ void ShowAlarmStr(int i, char * str)
 			strcat(s, str);
 			DebugStringStr(s);
 			break;
+		case CODE_ALARM_PUMP_PERF_COVER_OPEN:
+			strcpy(s, "PUMP_COVER_OPEN");
+			strcat(s, str);
+			DebugStringStr(s);
+			break;
+		case CODE_ALARM_PUMP_PURIF_COVER_OPEN:
+			strcpy(s, "PURIF_COVER_OPEN");
+			strcat(s, str);
+			DebugStringStr(s);
+			break;
+		case CODE_ALARM_PUMP_OXYG_COVER_OPEN:
+			strcpy(s, "OXYG_COVER_OPEN");
+			strcat(s, str);
+			DebugStringStr(s);
+			break;
+		case CODE_ALARM_TANK_LEVEL_HIGH:
+			strcpy(s, "TANK_LEVEL_HIGH");
+			strcat(s, str);
+			DebugStringStr(s);
+			break;
 		case CODE_ALARM_MODBUS_ACTUATOR_SEND:
 			strcpy(s, "AL_MODBUS_ACTUAT_SEND");
 			strcat(s, str);
 			DebugStringStr(s);
 			break;
+		case CODE_ALARM_TANK_LEVEL_LOW:
+			strcpy(s, "AL_TANK_LEVEL_LOW");
+			strcat(s, str);
+			DebugStringStr(s);
+			break;
+		case CODE_ALARM_DELTA_FLOW_ART:
+			strcpy(s, "AL_DELTA_FLOW_ART");
+			strcat(s, str);
+			DebugStringStr(s);
+			break;
+		case CODE_ALARM_DELTA_FLOW_VEN:
+			strcpy(s, "AL_DELTA_FLOW_VEN");
+			strcat(s, str);
+			DebugStringStr(s);
+			break;
+		case CODE_ALARM_DELTA_TEMP_REC_ART:
+			strcpy(s, "AL_DELTA_TEMP_REC_ART");
+			strcat(s, str);
+			DebugStringStr(s);
+			break;
+		case CODE_ALARM_DELTA_TEMP_REC_VEN:
+			strcpy(s, "AL_DELTA_TEMP_REC_VEN");
+			strcat(s, str);
+			DebugStringStr(s);
+			break;
 	}
-
 }
 
 void alarmConInit(void){
@@ -134,238 +209,267 @@ void alarmEngineAlways(void)
 /*Faccio uno switch su tutta la macchina a stati in modo
  * gestire ogni allarme in funzioine dello stato in cui sono*/
 
-	switch(ptrCurrentState->state)
+	if(GlobalFlags.FlagsDef.EnableAllAlarms)
 	{
-		case STATE_NULL:
+		switch(ptrCurrentState->state)
 		{
-			/* DA DEBUGGARE*/
-			manageAlarmFlowSensNotDetected();
-			manageAlarmIrTempSensNotDetected();
+			case STATE_NULL:
+			{
+				/* DA DEBUGGARE*/
+				manageAlarmFlowSensNotDetected();
+				manageAlarmIrTempSensNotDetected();
 
-			break;
-		}
+				break;
+			}
 
-		case STATE_ENTRY:
-		{
-			/* DA DEBUGGARE*/
-			manageAlarmFlowSensNotDetected();
-			manageAlarmIrTempSensNotDetected();
+			case STATE_ENTRY:
+			{
+				/* DA DEBUGGARE*/
+				manageAlarmFlowSensNotDetected();
+				manageAlarmIrTempSensNotDetected();
 
-			break;
-		}
+				break;
+			}
 
-		case STATE_IDLE:
-		{
-			/* DA DEBUGGARE*/
-			manageAlarmFlowSensNotDetected();
-			manageAlarmIrTempSensNotDetected();
+			case STATE_IDLE:
+			{
+				/* DA DEBUGGARE*/
+				manageAlarmFlowSensNotDetected();
+				manageAlarmIrTempSensNotDetected();
 
-			break;
-		}
+				break;
+			}
 
-		case STATE_SELECT_TREAT:
-		{
-			/* DA DEBUGGARE*/
-			manageAlarmFlowSensNotDetected();
-			manageAlarmIrTempSensNotDetected();
+			case STATE_SELECT_TREAT:
+			{
+				/* DA DEBUGGARE*/
+				manageAlarmFlowSensNotDetected();
+				manageAlarmIrTempSensNotDetected();
 
-			break;
-		}
+				break;
+			}
 
-		case STATE_T1_NO_DISPOSABLE:
-		{
-			/* DA DEBUGGARE*/
-			manageAlarmFlowSensNotDetected();
-			manageAlarmIrTempSensNotDetected();
+			case STATE_T1_NO_DISPOSABLE:
+			{
+				/* DA DEBUGGARE*/
+				manageAlarmFlowSensNotDetected();
+				manageAlarmIrTempSensNotDetected();
 
-			break;
-		}
+				break;
+			}
 
-		case STATE_MOUNTING_DISP:
-		{
-			/* DA DEBUGGARE*/
-			manageAlarmFlowSensNotDetected();
-			manageAlarmIrTempSensNotDetected();
+			case STATE_MOUNTING_DISP:
+			{
+				/* DA DEBUGGARE*/
+				manageAlarmFlowSensNotDetected();
+				manageAlarmIrTempSensNotDetected();
 
-			break;
-		}
+				break;
+			}
 
-		case STATE_TANK_FILL:
-		{
-			/* DA DEBUGGARE*/
-			manageAlarmFlowSensNotDetected();
-			manageAlarmIrTempSensNotDetected();
+			case STATE_TANK_FILL:
+			{
+				/* DA DEBUGGARE*/
+				manageAlarmFlowSensNotDetected();
+				manageAlarmIrTempSensNotDetected();
 
-			break;
-		}
+				break;
+			}
 
-		case STATE_PRIMING_PH_1:
-		{
-			manageAlarmFlowSensNotDetected();
-			manageAlarmIrTempSensNotDetected();
+			case STATE_PRIMING_PH_1:
+			{
+				manageAlarmFlowSensNotDetected();
+				manageAlarmIrTempSensNotDetected();
 
-			//verifica physic pressioni
-			manageAlarmPhysicPressSensHigh();
-			//manageAlarmPhysicPressSensLow(); non serve questo allarme in priming
+				//verifica physic pressioni
+				manageAlarmPhysicPressSensHigh();
+				//manageAlarmPhysicPressSensLow(); non serve questo allarme in priming
 
-			//verifica physic ir temp sens
-			manageAlarmPhysicTempSens();
-			break;
-		}
+				//verifica physic ir temp sens
+				manageAlarmPhysicTempSens();
 
-		case STATE_PRIMING_PH_2:
-		{
-			manageAlarmFlowSensNotDetected();
-			manageAlarmIrTempSensNotDetected();
+				manageAlarmLiquidLevelHigh();
+				if(GetTherapyType() == LiverTreat)
+					manageAlarmCoversPumpLiver();
+				else if(GetTherapyType() == KidneyTreat)
+					manageAlarmCoversPumpKidney();
+				break;
+			}
 
-			//verifica physic pressioni
-			manageAlarmPhysicPressSensHigh();
-			//manageAlarmPhysicPressSensLow(); non serve questo allarme in priming
+			case STATE_PRIMING_PH_2:
+			{
+				manageAlarmFlowSensNotDetected();
+				manageAlarmIrTempSensNotDetected();
 
-			//verifica physic ir temp sens
-			manageAlarmPhysicTempSens();
-			break;
-		}
+				//verifica physic pressioni
+				manageAlarmPhysicPressSensHigh();
+				//manageAlarmPhysicPressSensLow(); non serve questo allarme in priming
 
-		case STATE_TREATMENT_KIDNEY_1:
-		{
-			//verifica physic pressioni
-			manageAlarmPhysicPressSensHigh();
-			manageAlarmPhysicPressSensLow();
+				//verifica physic ir temp sens
+				manageAlarmPhysicTempSens();
 
-			//verifica physic flow sensor (presenza aria)
-			manageAlarmPhysicUFlowSens();
-			manageAlarmSAFAirSens();
-			manageAlarmPhysicUFlowSensVen();
+				manageAlarmLiquidLevelHigh();
+				if(GetTherapyType() == LiverTreat)
+					manageAlarmCoversPumpLiver();
+				else if(GetTherapyType() == KidneyTreat)
+					manageAlarmCoversPumpKidney();
+				break;
+			}
 
+			case STATE_TREATMENT_KIDNEY_1:
+			{
+				//verifica physic pressioni
+				manageAlarmPhysicPressSensHigh();
+				manageAlarmPhysicPressSensLow();
 
-			//verifica physic ir temp sens
-			manageAlarmPhysicTempSens();
-
-			/*DA DEBUGGARE*/
-			//verifica physic flusso di perfusione arteriosa alto
-		    //manageAlarmPhysicFlowPerfArtHigh();
-
-			//verifica  flusso  non rilevato
-			manageAlarmFlowSensNotDetected();
-
-			//verifica temperatura noin rilevata
-			manageAlarmIrTempSensNotDetected();
-			break;
-		}
-
-		case STATE_PRIMING_WAIT:
-			//verifica physic pressioni
-			manageAlarmPhysicPressSensHigh();
-			manageAlarmPhysicPressSensLow();
-
-			//verifica physic ir temp sens
-			manageAlarmPhysicTempSens();
-			break;
-
-		case STATE_PRIMING_RICIRCOLO:
-			//verifica physic pressioni
-			manageAlarmPhysicPressSensHigh();
-			manageAlarmPhysicPressSensLow();
-
-			//verifica physic ir temp sens
-			manageAlarmPhysicTempSens();
-			break;
-
-		case STATE_WAIT_TREATMENT:
-			//verifica physic pressioni
-			manageAlarmPhysicPressSensHigh();
-			manageAlarmPhysicPressSensLow();
-
-			//verifica physic ir temp sens
-			manageAlarmPhysicTempSens();
-			break;
-
-		/*case STATE_T1_WITH_DISPOSABLE:
-		{
-			break;
-		}
-
-		case STATE_PRIMING_TREAT_1:
-		{
-			break;
-		}
-
-		case STATE_PRIMING_TREAT_2:
-		{
-			break;
-		}*/
+				//verifica physic flow sensor (presenza aria)
+				manageAlarmPhysicUFlowSens();
+				manageAlarmSAFAirSens();
+				manageAlarmPhysicUFlowSensVen();
 
 
-		case STATE_TREATMENT_2:
-		{
-			//verifica physic pressioni
-			manageAlarmPhysicPressSensHigh();
-			manageAlarmPhysicPressSensLow();
+				//verifica physic ir temp sens
+				manageAlarmPhysicTempSens();
 
-			/*DA DEBUGGARE*/
-			//verifica physic flow sensor
-		//	manageAlarmPhysicUFlowSens();
+				//verifica physic flusso di perfusione arteriosa alto
+				manageAlarmPhysicFlowPerfArtHigh();
 
-			//verifica physic ir temp sens
-			manageAlarmPhysicTempSens();
+				//verifica  flusso  non rilevato
+				manageAlarmFlowSensNotDetected();
 
-			/*DA DEBUGGARE*/
-			//verifica physic flusso di perfusione arteriosa alto
-		//	manageAlarmPhysicFlowPerfArtHigh();
+				//verifica temperatura noin rilevata
+				manageAlarmIrTempSensNotDetected();
 
-			/*DA DEBUGGARE*/
-			//verifica  flusso  non rilevato
-		//	manageAlarmFlowSensNotDetected();
+				if(GetTherapyType() == LiverTreat)
+					manageAlarmCoversPumpLiver();
+				else if(GetTherapyType() == KidneyTreat)
+					manageAlarmCoversPumpKidney();
 
-			/*DA DEBUGGARE*/
-			//verifica temperatura noin rilevata
-			manageAlarmIrTempSensNotDetected();
-			break;
-		}
+				manageAlarmLiquidLevelLow();
+				manageAlarmDeltaFlowArt();
+				manageAlarmDeltaFlowVen();
+				manageAlarmDeltaTempRecArt();
+				manageAlarmDeltaTempRecVen();
+				break;
+			}
 
-		case STATE_EMPTY_DISPOSABLE:
-		case STATE_EMPTY_DISPOSABLE_1:
-		{
-			manageAlarmFlowSensNotDetected();
-			/* DA DEBUGGARE*/
-			manageAlarmIrTempSensNotDetected();
+			case STATE_PRIMING_WAIT:
+				//verifica physic pressioni
+				manageAlarmPhysicPressSensHigh();
+				manageAlarmPhysicPressSensLow();
 
-			break;
-		}
+				//verifica physic ir temp sens
+				manageAlarmPhysicTempSens();
+				break;
 
-		case STATE_EMPTY_DISPOSABLE_2:
-		{
-			/* DA DEBUGGARE*/
-			manageAlarmFlowSensNotDetected();
-			manageAlarmIrTempSensNotDetected();
+			case STATE_PRIMING_RICIRCOLO:
+				//verifica physic pressioni
+				manageAlarmPhysicPressSensHigh();
+				manageAlarmPhysicPressSensLow();
 
-			break;
-		}
+				//verifica physic ir temp sens
+				manageAlarmPhysicTempSens();
+				if(GetTherapyType() == LiverTreat)
+					manageAlarmCoversPumpLiver();
+				else if(GetTherapyType() == KidneyTreat)
+					manageAlarmCoversPumpKidney();
+				break;
 
-		case STATE_UNMOUNT_DISPOSABLE:
-			// per il momento, in questo stato non sono previsti allarmi.
-			// In questo stato sono azionate solo le pinch per smontare
-			// il disposable
-			break;
+			case STATE_WAIT_TREATMENT:
+				//verifica physic pressioni
+				manageAlarmPhysicPressSensHigh();
+				manageAlarmPhysicPressSensLow();
 
-		case STATE_WASHING:
-		{
-			/* DA DEBUGGARE*/
-			manageAlarmFlowSensNotDetected();
-			manageAlarmIrTempSensNotDetected();
+				//verifica physic ir temp sens
+				manageAlarmPhysicTempSens();
+				break;
 
-			break;
-		}
+			/*case STATE_T1_WITH_DISPOSABLE:
+			{
+				break;
+			}
 
-		case STATE_FATAL_ERROR:
-		{
-			break;
-		}
+			case STATE_PRIMING_TREAT_1:
+			{
+				break;
+			}
 
-		default:
-		{
-			break;
+			case STATE_PRIMING_TREAT_2:
+			{
+				break;
+			}*/
+
+
+			case STATE_TREATMENT_2:
+			{
+				//verifica physic pressioni
+				manageAlarmPhysicPressSensHigh();
+				manageAlarmPhysicPressSensLow();
+
+				/*DA DEBUGGARE*/
+				//verifica physic flow sensor
+			//	manageAlarmPhysicUFlowSens();
+
+				//verifica physic ir temp sens
+				manageAlarmPhysicTempSens();
+
+				/*DA DEBUGGARE*/
+				//verifica physic flusso di perfusione arteriosa alto
+			//	manageAlarmPhysicFlowPerfArtHigh();
+
+				/*DA DEBUGGARE*/
+				//verifica  flusso  non rilevato
+			//	manageAlarmFlowSensNotDetected();
+
+				/*DA DEBUGGARE*/
+				//verifica temperatura noin rilevata
+				manageAlarmIrTempSensNotDetected();
+				break;
+			}
+
+			case STATE_EMPTY_DISPOSABLE:
+			case STATE_EMPTY_DISPOSABLE_1:
+			{
+				manageAlarmFlowSensNotDetected();
+				/* DA DEBUGGARE*/
+				manageAlarmIrTempSensNotDetected();
+
+				break;
+			}
+
+			case STATE_EMPTY_DISPOSABLE_2:
+			{
+				/* DA DEBUGGARE*/
+				manageAlarmFlowSensNotDetected();
+				manageAlarmIrTempSensNotDetected();
+
+				break;
+			}
+
+			case STATE_UNMOUNT_DISPOSABLE:
+				// per il momento, in questo stato non sono previsti allarmi.
+				// In questo stato sono azionate solo le pinch per smontare
+				// il disposable
+				break;
+
+			case STATE_WASHING:
+			{
+				/* DA DEBUGGARE*/
+				manageAlarmFlowSensNotDetected();
+				manageAlarmIrTempSensNotDetected();
+
+				break;
+			}
+
+			case STATE_FATAL_ERROR:
+			{
+				break;
+			}
+
+			default:
+			{
+				break;
+			}
 		}
 	}
 
@@ -434,56 +538,262 @@ void alarmEngineAlways(void)
 	}
 }
 
+
+// controllo se il delta di flusso tra quello misurato e quello calcolato in base al guadagno pompa e'
+// troppo elevato
+void manageAlarmDeltaFlowArt(void)
+{
+	if(GlobalFlags.FlagsDef.EnableDeltaFlowArtAlarm)
+	{
+		if(sensor_UFLOW[ARTERIOUS_AIR_SENSOR].Average_Flow_Val > 0.0)
+		{
+			float Pump_Gain = DEFAULT_ART_PUMP_GAIN;
+			float flow = Pump_Gain * pumpPerist[0].actualSpeedOld;
+			float delta = flow - sensor_UFLOW[ARTERIOUS_AIR_SENSOR].Average_Flow_Val;
+			float max = (float)MAX_ART_FLOW_DIFF_FROM_CALC_AND_MIS;
+			float min = -(float)MAX_ART_FLOW_DIFF_FROM_CALC_AND_MIS;
+			if((delta > max) || (delta < min))
+			{
+				alarmList[DELTA_FLOW_ART].physic = PHYSIC_TRUE;
+			}
+			else
+			{
+				alarmList[DELTA_FLOW_ART].physic = PHYSIC_FALSE;
+			}
+		}
+	}
+	else
+		alarmList[DELTA_FLOW_ART].physic = PHYSIC_FALSE;
+}
+
+// controllo se il delta di flusso venoso tra quello misurato e quello calcolato in base al guadagno pompa e'
+// troppo elevato
+void manageAlarmDeltaFlowVen(void)
+{
+	if(GlobalFlags.FlagsDef.EnableDeltaFlowVenAlarm)
+	{
+		if(sensor_UFLOW[VENOUS_AIR_SENSOR].Average_Flow_Val > 0.0)
+		{
+			float Pump_Gain = DEFAULT_VEN_PUMP_GAIN;
+			float flow = Pump_Gain * pumpPerist[1].actualSpeedOld;
+			float delta = flow - sensor_UFLOW[VENOUS_AIR_SENSOR].Average_Flow_Val;
+			float max = (float)MAX_VEN_FLOW_DIFF_FROM_CALC_AND_MIS;
+			float min = -(float)MAX_VEN_FLOW_DIFF_FROM_CALC_AND_MIS;
+			if((delta > max) || (delta < min))
+			{
+				alarmList[DELTA_FLOW_VEN].physic = PHYSIC_TRUE;
+			}
+			else
+			{
+				alarmList[DELTA_FLOW_VEN].physic = PHYSIC_FALSE;
+			}
+		}
+	}
+	else
+		alarmList[DELTA_FLOW_VEN].physic = PHYSIC_FALSE;
+}
+
+// controllo se il deta di temperatura tra recipiente e liquido arterioso e' troppo alta
+void manageAlarmDeltaTempRecArt(void)
+{
+	if(GlobalFlags.FlagsDef.EnableDeltaTempRecArtAlarm)
+	{
+		float tart = sensorIR_TM[0].tempSensValue;
+		float trec = sensorIR_TM[1].tempSensValue;
+		float delta = tart - trec;
+		if((delta > MAX_DELTA_TEMP_ART_AND_REC) || (delta < (-MAX_DELTA_TEMP_ART_AND_REC)) )
+		{
+			alarmList[DELTA_TEMP_REC_ART].physic = PHYSIC_TRUE;
+		}
+		else
+		{
+			alarmList[DELTA_TEMP_REC_ART].physic = PHYSIC_FALSE;
+		}
+	}
+	else
+		alarmList[DELTA_TEMP_REC_ART].physic = PHYSIC_FALSE;
+}
+
+// controllo se il deta di temperatura tra recipiente e liquido venoso e' troppo alta
+void manageAlarmDeltaTempRecVen(void)
+{
+	if(GlobalFlags.FlagsDef.EnableDeltaTempRecVenAlarm)
+	{
+		float tven = sensorIR_TM[2].tempSensValue;
+		float trec = sensorIR_TM[1].tempSensValue;
+		float delta = tven - trec;
+		if((delta > MAX_DELTA_TEMP_VEN_AND_REC) || (delta < (-MAX_DELTA_TEMP_VEN_AND_REC)) )
+		{
+			alarmList[DELTA_TEMP_REC_VEN].physic = PHYSIC_TRUE;
+		}
+		else
+		{
+			alarmList[DELTA_TEMP_REC_VEN].physic = PHYSIC_FALSE;
+		}
+	}
+	else
+		alarmList[DELTA_TEMP_REC_VEN].physic = PHYSIC_FALSE;
+}
+
+
+// controlla se sono al di sotto del livello minimo
+void manageAlarmLiquidLevelLow(void)
+{
+	if(GlobalFlags.FlagsDef.EnableLevLowAlarm)
+	{
+		if(LiquidAmount <= MIN_LIQUID_LEV_IN_PERC)
+		{
+			alarmList[LIQUID_LEVEL_LOW].physic = PHYSIC_TRUE;
+		}
+		else
+		{
+			alarmList[LIQUID_LEVEL_LOW].physic = PHYSIC_FALSE;
+		}
+	}
+	else
+		alarmList[LIQUID_LEVEL_LOW].physic = PHYSIC_FALSE;
+}
+
+
+// controlla se supera il livello massimo
+void manageAlarmLiquidLevelHigh(void)
+{
+	if(GlobalFlags.FlagsDef.EnableLevHighAlarm)
+	{
+		if(LiquidAmount >= MAX_LIQUID_LEV_IN_PERC)
+		{
+			alarmList[LIQUID_LEVEL_HIGH].physic = PHYSIC_TRUE;
+		}
+		else
+		{
+			alarmList[LIQUID_LEVEL_HIGH].physic = PHYSIC_FALSE;
+		}
+	}
+	else
+		alarmList[LIQUID_LEVEL_HIGH].physic = PHYSIC_FALSE;
+}
+
+
+// cover della pompa di depurazione nel caso di fegato o della
+// pompa arteriosa in kidney
+void manageAlarmCoversPumpLiver(void)
+{
+	if(GlobalFlags.FlagsDef.EnableCoversAlarm)
+	{
+		if(CoversState == 0)
+			alarmList[PURIF_COVER_OPEN].physic = PHYSIC_TRUE;
+		else
+			alarmList[PURIF_COVER_OPEN].physic = PHYSIC_FALSE;
+
+		if(CoversState == 1)
+			alarmList[PERF_COVER_OPEN].physic = PHYSIC_TRUE;
+		else
+			alarmList[PERF_COVER_OPEN].physic = PHYSIC_FALSE;
+
+		if((CoversState == 2) || (CoversState == 3))
+			alarmList[OXYG_COVER_OPEN].physic = PHYSIC_TRUE;
+		else
+			alarmList[OXYG_COVER_OPEN].physic = PHYSIC_FALSE;
+	}
+	else
+	{
+		alarmList[PURIF_COVER_OPEN].physic = PHYSIC_FALSE;
+		alarmList[PERF_COVER_OPEN].physic = PHYSIC_FALSE;
+		alarmList[OXYG_COVER_OPEN].physic = PHYSIC_FALSE;
+	}
+}
+
+// cover della pompa arteriosa  nel fegato (non usata in kidney)
+void manageAlarmCoversPumpKidney(void)
+{
+	if(GlobalFlags.FlagsDef.EnableCoversAlarm)
+	{
+		if(CoversState == 0)
+			alarmList[PERF_COVER_OPEN].physic = PHYSIC_TRUE;
+		else
+			alarmList[PERF_COVER_OPEN].physic = PHYSIC_FALSE;
+
+		if((CoversState == 2) || (CoversState == 3))
+			alarmList[OXYG_COVER_OPEN].physic = PHYSIC_TRUE;
+		else
+			alarmList[OXYG_COVER_OPEN].physic = PHYSIC_FALSE;
+	}
+	else
+	{
+		alarmList[PERF_COVER_OPEN].physic = PHYSIC_FALSE;
+		alarmList[OXYG_COVER_OPEN].physic = PHYSIC_FALSE;
+	}
+}
+
+
+
 void manageAlarmPhysicPressSensLow(void)
 {
-	if(PR_ART_mmHg_Filtered <= PR_ART_LOW)
+	if(GlobalFlags.FlagsDef.EnablePressSensLowAlm)
 	{
-		alarmList[PRESS_ART_LOW].physic = PHYSIC_TRUE;
+		if(PR_ART_mmHg_Filtered <= PR_ART_LOW)
+		{
+			alarmList[PRESS_ART_LOW].physic = PHYSIC_TRUE;
+		}
+		else
+		{
+			alarmList[PRESS_ART_LOW].physic = PHYSIC_FALSE;
+		}
+	/*
+		if(PR_VEN_mmHg_Filtered <= PR_VEN_LOW && GetTherapyType() == LiverTreat)
+		{
+			alarmList[PRESS_VEN_LOW].physic = PHYSIC_TRUE;
+		}
+		else
+		{
+			alarmList[PRESS_VEN_LOW].physic = PHYSIC_FALSE;
+		}
+	*/
 	}
 	else
 	{
 		alarmList[PRESS_ART_LOW].physic = PHYSIC_FALSE;
-	}
-/*
-	if(PR_VEN_mmHg_Filtered <= PR_VEN_LOW && GetTherapyType() == LiverTreat)
-	{
-		alarmList[PRESS_VEN_LOW].physic = PHYSIC_TRUE;
-	}
-	else
-	{
 		alarmList[PRESS_VEN_LOW].physic = PHYSIC_FALSE;
 	}
-*/
 }
 
 void manageAlarmPhysicPressSensHigh(void)
 {
 
-	if(PR_ART_mmHg_Filtered > PR_ART_HIGH)
+	if(GlobalFlags.FlagsDef.EnablePressSensHighAlm)
 	{
-		alarmList[PRESS_ART_HIGH].physic = PHYSIC_TRUE;
+		if(PR_ART_mmHg_Filtered > PR_ART_HIGH)
+		{
+			alarmList[PRESS_ART_HIGH].physic = PHYSIC_TRUE;
+		}
+		else
+		{
+			alarmList[PRESS_ART_HIGH].physic = PHYSIC_FALSE;
+		}
+
+		if(PR_ADS_FLT_mmHg_Filtered > PR_ADS_FILTER_HIGH)
+		{
+			alarmList[PRESS_ADS_FILTER_HIGH].physic = PHYSIC_TRUE;
+		}
+		else
+		{
+			alarmList[PRESS_ADS_FILTER_HIGH].physic = PHYSIC_FALSE;
+		}
+
+		/*il sensore Venoso è suato solo nel trattamento Liver, il Kidney non ha la linea Venosa*/
+		if((PR_VEN_Sistolyc_mmHg /*PR_VEN_mmHg_Filtered*/ > PR_VEN_HIGH) && (GetTherapyType() == LiverTreat))
+		{
+			alarmList[PRESS_VEN_HIGH].physic = PHYSIC_TRUE;
+		}
+		else
+		{
+			alarmList[PRESS_VEN_HIGH].physic = PHYSIC_FALSE;
+		}
 	}
 	else
 	{
 		alarmList[PRESS_ART_HIGH].physic = PHYSIC_FALSE;
-	}
-
-	if(PR_ADS_FLT_mmHg_Filtered > PR_ADS_FILTER_HIGH)
-	{
-		alarmList[PRESS_ADS_FILTER_HIGH].physic = PHYSIC_TRUE;
-	}
-	else
-	{
 		alarmList[PRESS_ADS_FILTER_HIGH].physic = PHYSIC_FALSE;
-	}
-
-	/*il sensore Venoso è suato solo nel trattamento Liver, il Kidney non ha la linea Venosa*/
-	if((PR_VEN_Sistolyc_mmHg /*PR_VEN_mmHg_Filtered*/ > PR_VEN_HIGH) && (GetTherapyType() == LiverTreat))
-	{
-		alarmList[PRESS_VEN_HIGH].physic = PHYSIC_TRUE;
-	}
-	else
-	{
 		alarmList[PRESS_VEN_HIGH].physic = PHYSIC_FALSE;
 	}
 }
@@ -491,14 +801,19 @@ void manageAlarmPhysicPressSensHigh(void)
 
 void manageAlarmPhysicTempSens(void)
 {
-	if((sensorIR_TM[0].tempSensValue > 40.0))
+	if(GlobalFlags.FlagsDef.EnableTempArtHighAlm)
 	{
-		alarmList[TEMP_ART_HIGH].physic = PHYSIC_TRUE;
+		if((sensorIR_TM[0].tempSensValue > 40.0))
+		{
+			alarmList[TEMP_ART_HIGH].physic = PHYSIC_TRUE;
+		}
+		else
+		{
+			alarmList[TEMP_ART_HIGH].physic = PHYSIC_FALSE;
+		}
 	}
 	else
-	{
 		alarmList[TEMP_ART_HIGH].physic = PHYSIC_FALSE;
-	}
 }
 
 

@@ -1209,6 +1209,7 @@ void initSetParamFromGUI(void){
 	parameterWordSetFromGUI[PAR_SET_PRIMING_VOL_OXYGENATION].value = 0;
 	parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value = 0;
 	parameterWordSetFromGUI[PAR_SET_TEMPERATURE].value = 0;
+	parameterWordSetFromGUI[PAR_SET_PRIMING_TEMPERATURE_PERFUSION].value = 0;
 	parameterWordSetFromGUI[PAR_SET_PRESS_ART_TARGET].value = 0;
 	parameterWordSetFromGUI[PAR_SET_PRESS_VEN_TARGET].value = 0;
 	parameterWordSetFromGUI[PAR_SET_PURIF_FLOW_TARGET].value = 0;
@@ -1312,14 +1313,6 @@ void setParamWordFromGUI(unsigned char parId, int value)
 	{
 		TherapyCmdArrived = 1;
 	}
-
-//#ifdef DEBUG_WITH_SERVICE_SBC
-//  parameterWordSetFromGUI[PAR_SET_DESIRED_DURATION].value = 0x0002; // 0 ore 2 minuti
-//	parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value = 183;     // valore di ml/minuto corrispondenti a 10 rpm
-//	parameterWordSetFromGUI[PAR_SET_PRESS_ART_TARGET].value = 60;
-//	parameterWordSetFromGUI[PAR_SET_MAX_FLOW_PERFUSION].value = 500;
-//#endif
-
 
 	parameterWordSetFromGUI[parId].value = value;
 }

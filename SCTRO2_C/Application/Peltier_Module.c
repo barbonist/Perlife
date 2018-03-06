@@ -27,7 +27,6 @@ void peltierAssInit(void){
 	iflag_peltier_rx = IFLAG_IDLE;
 	iflagPeltierMsg = IFLAG_IDLE;
 
-
 	peltierCell.commandDataFloatToWrite = 0;
 	peltierCell.commandDataIntToWrite = 0;
 	peltierCell.commandRegId = REG_IDLE;

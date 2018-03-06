@@ -222,8 +222,15 @@ void Manage_Debug_led(bool Status)
 int main(void)
 /*lint -restore Enable MISRA rule (6.3) checking. */
 {
-	ArteriousPumpGainForPid = DEFAULT_ART_PUMP_GAIN;
-	VenousPumpGainForPid = DEFAULT_VEN_PUMP_GAIN;
+
+  GlobalFlags.FlagsVal = 0;
+  // abilito tutti gli allarmi previsti
+  GlobalFlags.FlagsDef.EnableAllAlarms = 1;
+  SetAllAlarmEnableFlags();
+
+  CoversState = 4; // all covers chiusi
+  ArteriousPumpGainForPid = DEFAULT_ART_PUMP_GAIN;
+  VenousPumpGainForPid = DEFAULT_VEN_PUMP_GAIN;
 
   /* Write your local variable definition here */
   bool MOTORE_ACCESO = FALSE;
@@ -593,7 +600,7 @@ int main(void)
 	          * i coperchi saranno chiusi (la funzione restituisce 4)
 	          * tolgo la condizione di allarme, SBC metterà a video il retry
 	          * e solo allora potrò far ripartire le pompe e riprendere con la macchina a stati*/
-	         CheckCoverPump();
+	         CoversState = CheckCoverPump();
 
 	         /********************************/
 	         /*             ADC	             */

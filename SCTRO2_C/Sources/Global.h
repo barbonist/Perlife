@@ -768,7 +768,7 @@ struct Peristaltic_Pump {
 	int						value;
 	unsigned char			dataReady;
 	unsigned char			actualSpeed;
-	int						actualSpeedOld;
+	float					actualSpeedOld;
 	int                     newSpeedValue; // nuovo valore di velocita' arrivato prima della conclusione della scrittura precedente
 	unsigned char           ReadRequestPending;  // e' arrivata una richiesta di lettura della velocita' della pompa
 };
@@ -1464,7 +1464,7 @@ unsigned long StarTimeToRejAir;
 // serve per misurare il tempo per l'eliminazione della bolla d'aria
 unsigned long TotalTimeToRejAir;
 
-// quantita' del liquido in ml
+//volume del liquido in vaschetta come percentuale rispetto al suo valore massimo
 word LiquidAmount;
 
 // allarme aria su filtro scattato, ma non ho ancora ricevuto il butto_reset per eliminarlo
@@ -1525,6 +1525,62 @@ float VenousPumpGainForPid;
 #define DEFAULT_VEN_PUMP_GAIN 22.0
 
 #define RPM_IN_PRIMING_PHASES  2000
+
+
+typedef struct
+{
+	unsigned int EnableAllAlarms            : 1;    // Abilito tutti gli allarmi
+	unsigned int EnableLevHighAlarm         : 1;    // Abilito allarme di livello alto (troppo pieno)
+	unsigned int EnableLevLowAlarm          : 1;    // Abilito allarme di livello basso
+	unsigned int EnableCoversAlarm          : 1;    // Abilito allarme di cover
+	unsigned int EnablePressSensLowAlm      : 1;    // abilito allarme pressione bassa
+	unsigned int EnablePressSensHighAlm     : 1;    // abilito allarme pressione alta
+	unsigned int EnableTempArtHighAlm       : 1;    // abilito allarme temperatura alta
+	unsigned int EnableDeltaFlowArtAlarm    : 1;    // abilito allarme delta flusso arterioso troppo alto
+	unsigned int EnableDeltaFlowVenAlarm    : 1;    // abilito allarme delta flusso venoso troppo alto
+	unsigned int EnableDeltaTempRecVenAlarm : 1;    // abilito allarme delta temperatura recipiente e line venosa troppo alta
+	unsigned int EnableDeltaTempRecArtAlarm : 1;    // abilito allarme delta temperatura recipiente e line arteriosa troppo alta
+
+	unsigned int TankLevelHigh              : 1;    // livello del liquido supera il massimo
+}FLAGS_DEF;
+
+typedef union
+{
+    FLAGS_DEF FlagsDef;
+	unsigned int FlagsVal;
+}GLOBAL_FLAGS;
+
+GLOBAL_FLAGS GlobalFlags;
+
+// 0 cover della pompa 0 aperto
+// 1 cover della pompa 1 aperto
+// 2 cover della pompa 2 aperto
+// 3 cover della pompa 3 aperto
+// 4 cover di tutte le pompe chiuse
+unsigned char CoversState;
+
+// quantita' massima di liquido in vaschetta espressa in valore percentuale rispetto al
+// massimo di 2500 ml (MAX_LIQUID_AMOUNT)
+#define MAX_LIQUID_LEV_IN_PERC   120
+
+// quantita' minim di liquido in vaschetta espressa in valore percentuale rispetto al
+// massimo di 2500 ml (MAX_LIQUID_AMOUNT)
+#define MIN_LIQUID_LEV_IN_PERC   25
+
+// massima differenza tra flusso arterioso teorico e flusso misurato al di
+// sopra del quale do l'allarme
+#define MAX_ART_FLOW_DIFF_FROM_CALC_AND_MIS 300.0
+
+
+// massima differenza tra flusso venoso teorico e flusso misurato al di
+// sopra del quale do l'allarme
+#define MAX_VEN_FLOW_DIFF_FROM_CALC_AND_MIS 300.0
+
+// massima differenza di temperatura tra recevoir e liquido arterioso
+#define MAX_DELTA_TEMP_ART_AND_REC  10.0
+
+// massima differenza di temperatura tra recevoir e liquido venoso
+#define MAX_DELTA_TEMP_VEN_AND_REC  10.0
 
 #endif /* SOURCES_GLOBAL_H_ */
 

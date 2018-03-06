@@ -142,6 +142,12 @@ void CallInIdleState(void)
 	// reset del totale del volume accumulato
 	GetTotalPrimingVolumePerf((int)RESET_CMD_TOT_PRIM_VOL);
 	TemperatureStateMach(TEMP_STATE_RESET);
+
+	GlobalFlags.FlagsDef.TankLevelHigh = 0;
+
+	// abilito tutti gli allarmi previsti
+	GlobalFlags.FlagsDef.EnableAllAlarms = 1;
+	SetAllAlarmEnableFlags();
 }
 
 
@@ -453,25 +459,25 @@ void managePrimingPh1Always(void)
 	//-------------------------------------------------------------------
 	// Questo codice era nello stato ..TANK_FILL, lo ho spostato qui perche' non passo
 	// piu' per quello stato
-	static float myTempValue = 200;
+	static float myTempValue = 20;
 
-	if(myTempValue != parameterWordSetFromGUI[PAR_SET_TEMPERATURE].value){
-		myTempValue = parameterWordSetFromGUI[PAR_SET_TEMPERATURE].value;
+	if(myTempValue != parameterWordSetFromGUI[PAR_SET_PRIMING_TEMPERATURE_PERFUSION].value){
+		myTempValue = parameterWordSetFromGUI[PAR_SET_PRIMING_TEMPERATURE_PERFUSION].value;
 
 		if(myTempValue == 40)
 		{
-			peltierCell.mySet  = myTempValue - 80;
-			peltierCell2.mySet = myTempValue - 80;
+			peltierCell.mySet  = (float) myTempValue/10 - 8;
+			peltierCell2.mySet = (float) myTempValue/10 - 8;
 		}
 		else if(myTempValue == 360)
 		{
-			peltierCell.mySet  = myTempValue + 60;
-			peltierCell2.mySet = myTempValue + 60;
+			peltierCell.mySet  = (float) myTempValue/10 + 6;
+			peltierCell2.mySet = (float) myTempValue/10 + 6;
 		}
 		else
 		{
-			peltierCell.mySet  = 200;
-			peltierCell2.mySet = 200;
+			peltierCell.mySet  = 20;
+			peltierCell2.mySet = 20;
 		}
 	}
 	//-----------------------------------------------------------------------
@@ -500,36 +506,34 @@ void managePrimingPh2(void)
 
 void managePrimingPh2Always(void)
 {
-	static char iflag_perf = 0;
-	static char iflag_oxyg = 0;
-
 	computeMachineStateGuardPrimingPh2();
 
-	/*if(
-		(buttonGUITreatment[BUTTON_START_PRIMING].state == GUI_BUTTON_PRESSED) ||
-		(buttonGUITreatment[BUTTON_START_PERF_PUMP].state == GUI_BUTTON_PRESSED)
-		)
-	{
-		releaseGUIButton(BUTTON_START_PRIMING);
-		releaseGUIButton(BUTTON_START_PERF_PUMP);
+	//-------------------------------------------------------------------
+	// Questo codice era nello stato ..TANK_FILL, lo ho spostato qui perche' non passo
+	// piu' per quello stato
+	static float myTempValue = 200;
 
-		if(iflag_perf == 0)
+	if(myTempValue != parameterWordSetFromGUI[PAR_SET_PRIMING_TEMPERATURE_PERFUSION].value){
+		myTempValue = parameterWordSetFromGUI[PAR_SET_PRIMING_TEMPERATURE_PERFUSION].value;
+
+		if(myTempValue == 40)
 		{
-			setPumpSpeedValue(pumpPerist[0].pmpMySlaveAddress, 2000);
-			iflag_perf = 1;
+			peltierCell.mySet  = (float) myTempValue/10 - 8;
+			peltierCell2.mySet = (float) myTempValue/10 - 8;
+		}
+		else if(myTempValue == 360)
+		{
+			peltierCell.mySet  = (float) myTempValue/10 + 6;
+			peltierCell2.mySet = (float) myTempValue/10 + 6;
+		}
+		else
+		{
+			peltierCell.mySet  = 20;
+			peltierCell2.mySet = 20;
 		}
 	}
-	else if(
-			(buttonGUITreatment[BUTTON_STOP_ALL_PUMP].state == GUI_BUTTON_PRESSED) ||
-			(buttonGUITreatment[BUTTON_STOP_PERF_PUMP].state == GUI_BUTTON_PRESSED)
-			)
-	{
-		releaseGUIButton(BUTTON_STOP_ALL_PUMP);
-		releaseGUIButton(BUTTON_STOP_PERF_PUMP);
+	//-----------------------------------------------------------------------
 
-		setPumpSpeedValue(pumpPerist[0].pmpMySlaveAddress, 0);
-		iflag_perf = 0;
-	}*/
 
 }
 
@@ -911,8 +915,8 @@ void manageParentPrimingEntry(void){
 		}
 
 		startPeltierActuator();
-		peltierCell.readAlwaysEnable = 1;
-		peltierCell2.readAlwaysEnable = 1;
+//		peltierCell.readAlwaysEnable = 1;
+//		peltierCell2.readAlwaysEnable = 1;
 
 		pumpPerist[0].entry = 1;
 	}
@@ -1125,7 +1129,7 @@ unsigned char TemperatureStateMach(int cmd)
 
 	if(cmd == RESTART_CMD)
 	{
-		if(TempStateMach == STOP_RECIRC_HIGH_SPEED)
+		if((TempStateMach == STOP_RECIRC_HIGH_SPEED) || (TempStateMach == CALC_PUMPS_GAIN))
 		{
 			// faccio ripartire i motori ad alta velocita'
 			TempStateMach = START_RECIRC_HIGH_SPEED;
@@ -1934,6 +1938,7 @@ void manageParentTreatAlways(void){
 			TotalTreatDuration += TreatDuration;
 			TreatDuration = 0;
 			StartTreatmentTime = 0;
+			GlobalFlags.FlagsDef.EnableAllAlarms = 0;
 		}
 		else if(buttonGUITreatment[BUTTON_STOP_PERF_PUMP].state == GUI_BUTTON_RELEASED)
 		{
@@ -1998,6 +2003,9 @@ void manageParentTreatAlways(void){
 				pressSample1_Ven = PR_VEN_mmHg_Filtered;
 				pressSample2_Ven = PR_VEN_mmHg_Filtered;
 			}
+			GlobalFlags.FlagsDef.EnableAllAlarms = 1;
+			// disabilito allarme di livello alto in trattamento (per ora)
+			GlobalFlags.FlagsDef.TankLevelHigh = 0;
 		}
 		else if(buttonGUITreatment[BUTTON_START_PERF_PUMP].state == GUI_BUTTON_RELEASED){
 			releaseGUIButton(BUTTON_START_PERF_PUMP);
@@ -2012,7 +2020,7 @@ void manageParentTreatAlways(void){
 			//pressSample2 = PR_ART_mmHg_Filtered;
 			pressSample1_Art = MedForArteriousPid;
 			pressSample2_Art = MedForArteriousPid;
-}
+        }
 		else if(buttonGUITreatment[BUTTON_START_OXYGEN_PUMP].state == GUI_BUTTON_RELEASED){
 			releaseGUIButton(BUTTON_START_OXYGEN_PUMP);
 
@@ -2129,6 +2137,7 @@ void manageParentTreatAlways(void){
 				TotalTreatDuration += TreatDuration;
 				TreatDuration = 0;
 				StartTreatmentTime = 0;
+				GlobalFlags.FlagsDef.EnableAllAlarms = 0;
 			}
 			else if(buttonGUITreatment[BUTTON_STOP_PERF_PUMP].state == GUI_BUTTON_RELEASED)
 			{
@@ -2196,6 +2205,9 @@ void manageParentTreatAlways(void){
 					pressSample1_Ven = MedForVenousPid;
 					pressSample2_Ven = MedForVenousPid;
 				}
+				GlobalFlags.FlagsDef.EnableAllAlarms = 1;
+				// disabilito allarme di livello alto in trattamento (per ora)
+				GlobalFlags.FlagsDef.TankLevelHigh = 0;
 			}
 			else if(buttonGUITreatment[BUTTON_START_PERF_PUMP].state == GUI_BUTTON_RELEASED){
 				releaseGUIButton(BUTTON_START_PERF_PUMP);
@@ -2431,7 +2443,7 @@ void EmptyDispStateMach(void)
 		case WAIT_FOR_1000ML:
 			if(!EmptyDisposStartOtherPump && VolumeDischarged >= DISCHARGE_AMOUNT_ART_PUMP)
 			{
-				// faccio partire le altre pompe
+				// faccio partire le altre pompe per svuotare i tubi
 				if(TherType == LiverTreat)
 				{
 					setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, LIVER_PPAR_SPEED);
@@ -3885,6 +3897,12 @@ void processMachineState(void)
 				// e quindi posso decidere di andare anche in un qualche altro stato ad hoc
 				// di allarme
 				//ptrAlarmCurrent->secActType
+				if(ptrAlarmCurrent->code == CODE_ALARM_TANK_LEVEL_HIGH)
+				{
+					// si e' verificato un allarme di troppo pieno, fermo tutto ed al successivo
+					// reset termino la procedura di priming e passo direttamente al ricircolo
+					GlobalFlags.FlagsDef.TankLevelHigh = 1;
+				}
 			}
 
 			break;
@@ -3912,6 +3930,12 @@ void processMachineState(void)
 				// e quindi posso decidere di andare anche in un qualche altro stato ad hoc
 				// di allarme
 				//ptrAlarmCurrent->secActType
+				if(ptrAlarmCurrent->code == CODE_ALARM_TANK_LEVEL_HIGH)
+				{
+					// si e' verificato un allarme di troppo pieno, fermo tutto ed al successivo
+					// reset termino la procedura di priming e passo direttamente al ricircolo
+					GlobalFlags.FlagsDef.TankLevelHigh = 1;
+				}
 			}
 			break;
 
@@ -3922,9 +3946,18 @@ void processMachineState(void)
 				{
 					// Il ritorno al priming viene fatto solo dopo la pressione del tasto BUTTON_RESET_ALARM
 					releaseGUIButton(BUTTON_RESET_ALARM);
-					// forzo anche una pressione del tasto BUTTON_START_PRIMING START per fare in modo che
-					// il priming riprenda automaticamente
-					setGUIButton(BUTTON_START_PRIMING);
+					if(GlobalFlags.FlagsDef.TankLevelHigh)
+					{
+						// era un allarme di troppo pieno, forzo uscita dal priming
+						setGUIButton(BUTTON_PRIMING_END_CONFIRM);
+						GlobalFlags.FlagsDef.TankLevelHigh = 0;
+					}
+					else
+					{
+						// forzo anche una pressione del tasto BUTTON_START_PRIMING START per fare in modo che
+						// il priming riprenda automaticamente
+						setGUIButton(BUTTON_START_PRIMING);
+					}
 
 					/* (FM) finita la situazione di allarme posso ritornare in PARENT_PRIMING_TREAT_KIDNEY_1_INIT*/
 					// nella nuova gestione il priming viene fatto partendo direttamente dallo stato PARENT_PRIMING_TREAT_KIDNEY_1_RUN
@@ -3985,6 +4018,12 @@ void processMachineState(void)
 				// e quindi posso decidere di andare anche in un qualche altro stato ad hoc
 				// di allarme
 				//ptrAlarmCurrent->secActType
+//				if(ptrAlarmCurrent->code == CODE_ALARM_TANK_LEVEL_HIGH)
+//				{
+//					// si e' verificato un allarme di troppo pieno, fermo tutto ed al successivo
+//					// reset termino la procedura di priming e passo direttamente al ricircolo
+//					GlobalFlags.FlagsDef.TankLevelHigh = 1;
+//				}
 			}
 			break;
 
@@ -4013,6 +4052,12 @@ void processMachineState(void)
 				// e quindi posso decidere di andare anche in un qualche altro stato ad hoc
 				// di allarme
 				//ptrAlarmCurrent->secActType
+//				if(ptrAlarmCurrent->code == CODE_ALARM_TANK_LEVEL_HIGH)
+//				{
+//					// si e' verificato un allarme di troppo pieno, fermo tutto ed al successivo
+//					// reset abortisco il trattamento
+//					GlobalFlags.FlagsDef.TankLevelHigh = 1;
+//				}
 			}
 			break;
 
@@ -4058,12 +4103,24 @@ void processMachineState(void)
 					if(ButtonResetRcvd)
 					{
 						ButtonResetRcvd = FALSE;
-						// FM allarme finito posso ritornare nella fase iniziale del trattamento
-						ptrFutureParent = &stateParentTreatKidney1[1];
-						ptrFutureChild = ptrFutureParent->ptrChild;
-						// forzo anche una pressione del tasto TREATMENT START per fare in modo che
-						// il trattamento riprenda automaticamente
-						setGUIButton(BUTTON_START_TREATMENT);
+//						if(GlobalFlags.FlagsDef.TankLevelHigh)
+//						{
+//							// era un allarme di troppo pieno, riprendo il trattamento
+//							// TODO DA VEDERE MEGLIO COME TRATTARLO, ABORTIRE IL TRATTAMENTO  O NO?
+//							GlobalFlags.FlagsDef.TankLevelHigh = 0;
+//							ptrFutureParent = &stateParentTreatKidney1[1];
+//							ptrFutureChild = ptrFutureParent->ptrChild;
+//							setGUIButton(BUTTON_START_TREATMENT);
+//						}
+//						else
+//						{
+							// FM allarme finito posso ritornare nella fase iniziale del trattamento
+							ptrFutureParent = &stateParentTreatKidney1[1];
+							ptrFutureChild = ptrFutureParent->ptrChild;
+							// forzo anche una pressione del tasto TREATMENT START per fare in modo che
+							// il trattamento riprenda automaticamente
+							setGUIButton(BUTTON_START_TREATMENT);
+//						}
 					}
 				}
 			}

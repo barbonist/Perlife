@@ -13,7 +13,7 @@
 //#define CODE_ALARM0		0x00
 //#define CODE_ALARM1		0x01
 //#define CODE_ALARM2		0x02
-#define ALARM_ACTIVE_IN_STRUCT					13
+#define ALARM_ACTIVE_IN_STRUCT					22
 #define CODE_ALARM_PRESS_ART_HIGH				0X01
 #define CODE_ALARM_PRESS_ART_LOW				0X02
 #define CODE_ALARM_PRESS_VEN_HIGH				0X03
@@ -30,14 +30,20 @@
 #define CODE_ALARM_TEMP_NTC_HIGH				0x14
 #define CODE_ALARM_TEMP_NTC_LOW					0x15
 #define CODE_ALARM_TEMP_SENS_NOT_DETECTED		0x16
+#define CODE_ALARM_DELTA_TEMP_REC_ART		    0x17
+#define CODE_ALARM_DELTA_TEMP_REC_VEN		    0x18
 
 #define CODE_ALARM_FLOW_PERF_ART_HIGH			0x20
 #define CODE_ALARM_FLOW_PERF_ART_LOW			0x21
 #define CODE_ALARM_FLOW_VEN_HIGH				0x22
 #define CODE_ALARM_FLOW_VEN_LOW					0x23
 #define CODE_ALARM_FLOW_ART_NOT_DETECTED		0x24
+#define CODE_ALARM_DELTA_FLOW_ART       		0x25
+#define CODE_ALARM_DELTA_FLOW_VEN       		0x26
+
 
 #define CODE_ALARM_TANK_LEVEL_LOW				0x30
+#define CODE_ALARM_TANK_LEVEL_HIGH				0x31
 
 #define CODE_ALARM_AIR_PRES_ART					0x50
 #define CODE_ALARM_AIR_PRES_VEN					0x51
@@ -98,8 +104,8 @@
 #define MEMO_NOT_ALLOWED		0x5A
 
 
-#define FLOW_LIVER_MAX   400
-#define FLOW_KIDNEY_MAX  500
+#define FLOW_LIVER_MAX   2500
+#define FLOW_KIDNEY_MAX  2500
 
 #define MAX_MSG_CONSECUTIVE_FLOW_SENS_NOT_DETECTED 			10
 #define MAX_MSG_CONSECUTIVE_IR_TEMP_SENS_NOT_DETECTED 		10
@@ -126,6 +132,15 @@ enum ALARM
 	 PRESS_VEN_HIGH,
 	 PRESS_VEN_LOW,
 	 IR_SENS_NOT_DETECTED,
+	 PERF_COVER_OPEN,
+	 PURIF_COVER_OPEN,
+	 OXYG_COVER_OPEN,
+	 LIQUID_LEVEL_LOW,
+	 LIQUID_LEVEL_HIGH,
+	 DELTA_FLOW_ART,
+	 DELTA_FLOW_VEN,
+	 DELTA_TEMP_REC_ART,
+	 DELTA_TEMP_REC_VEN,
 	 MODBUS_ACTUATOR_SEND
 };
 
@@ -149,6 +164,16 @@ void manageAlarmPhysicUFlowSensVen(void);
 //void DebugStringPID();
 
 void Buzzer_Management(BUZZER_LEVEL level);
+void manageAlarmCoversPumpLiver(void);
+void manageAlarmCoversPumpKidney(void);
+void manageAlarmLiquidLevelHigh(void);
+void manageAlarmLiquidLevelLow(void);
+void manageAlarmDeltaFlowArt(void);
+void manageAlarmDeltaFlowVen(void);
+void manageAlarmDeltaTempRecArt(void);
+void manageAlarmDeltaTempRecVen(void);
+
+void SetAllAlarmEnableFlags(void);
 
 
 #endif /* APPLICATION_ALARM_CON_H_ */
