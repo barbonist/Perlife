@@ -445,10 +445,12 @@ void Service_SBC(void){
 					// Peltier start
 					case 0x20:
 					{
-						startPeltierActuator();
-						peltierCell.readAlwaysEnable = 1;
-						peltierCell2.readAlwaysEnable = 1;
+						peltierCell.mySet  = 36;
+						peltierCell.readAlwaysEnable = 0;
+						peltierCell2.mySet = 36;
+						peltierCell2.readAlwaysEnable = 0;
 
+						startPeltierActuator();
 						word snd;
 						ptrMsgSbcRx = &sbc_rx_data;
 						buildPeltierStartResponseMsg(ptrMsgSbcRx);
@@ -460,8 +462,6 @@ void Service_SBC(void){
 					case 0x21:
 					{
 						stopPeltierActuator();
-						peltierCell.readAlwaysEnable = 0;
-						peltierCell2.readAlwaysEnable = 0;
 
 						word snd;
 						ptrMsgSbcRx = &sbc_rx_data;

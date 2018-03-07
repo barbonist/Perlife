@@ -1123,12 +1123,11 @@ void NewSetTempPeltierActuator()
 					if(myStringFloat[i] == 0x20)
 						myStringFloat[i] = 0x30;
 				}
-				PeltierAssSendCommand(WRITE_FLOAT_REG_XX, REG_0_SET_POINT, 0, myStringFloat,2);
-				myStatePos = 0;
+				PeltierAssSendCommand(WRITE_FLOAT_REG_XX, REG_0_SET_POINT, 0, myStringFloat,1);
 			}
 			else
 			{
-				peltierCell.readAlwaysEnable == 1;
+				peltierCell.readAlwaysEnable = 1;
 				myStatePos = 0;
 			}
 			break;
@@ -1190,7 +1189,7 @@ void NewSetTempPeltier2Actuator()
 
 	//if(timerCounterPeltier >= 2){
 		//timerCounterPeltier = 0;
-	if(iflag_peltier_rx == IFLAG_IDLE)
+	if(iflag_peltier2_rx == IFLAG_IDLE)
 	{
 		//iflag_peltier_rx = IFLAG_BUSY;
 		switch(myStatePos2)
@@ -1217,11 +1216,10 @@ void NewSetTempPeltier2Actuator()
 						myStringFloat[i] = 0x30;
 				}
 				PeltierAssSendCommand(WRITE_FLOAT_REG_XX, REG_0_SET_POINT, 0, myStringFloat,2);
-				myStatePos2 = 0;
 			}
 			else
 			{
-				peltierCell2.readAlwaysEnable == 1;
+				peltierCell2.readAlwaysEnable = 1;
 				myStatePos2 = 0;
 			}
 			break;
@@ -1260,8 +1258,6 @@ void NewSetTempPeltier2Actuator()
 					break;
 			}
 		}
-
-
 }
 
 void startPeltierActuator(void){
