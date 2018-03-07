@@ -214,5 +214,6 @@ void GoToRecoveryParentState(int MachineParentState);
 
 void HandlePinch( int cmd);
 unsigned char TemperatureStateMach(int cmd);
+void CheckTemperatureSet(void);
 
 #endif /* APPLICATION_APP_GES_H_ */

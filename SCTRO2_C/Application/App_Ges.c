@@ -438,6 +438,43 @@ void manageStateTankFillAlways(void)
 /*--------------------------------------------------------------*/
 /* This function manages the state priming phase 1 activity     */
 /*--------------------------------------------------------------*/
+
+void CheckTemperatureSet(void)
+{
+	//-------------------------------------------------------------------
+	// Questo codice era nello stato ..TANK_FILL, lo ho spostato qui perche' non passo
+	// piu' per quello stato
+	static float myTempValue = 20;
+
+	if(myTempValue != parameterWordSetFromGUI[PAR_SET_PRIMING_TEMPERATURE_PERFUSION].value)
+	{
+	   myTempValue = parameterWordSetFromGUI[PAR_SET_PRIMING_TEMPERATURE_PERFUSION].value;
+
+		if(myTempValue == 40)
+		{
+			peltierCell.mySet  = (float) myTempValue/10 - 8;
+			peltierCell2.mySet = (float) myTempValue/10 - 8;
+			peltierCell.readAlwaysEnable = 0;
+			peltierCell2.readAlwaysEnable = 0;
+		}
+		else if(myTempValue == 360)
+		{
+			peltierCell.mySet  = (float) myTempValue/10 + 6;
+			peltierCell2.mySet = (float) myTempValue/10 + 6;
+			peltierCell.readAlwaysEnable = 0;
+			peltierCell2.readAlwaysEnable = 0;
+		}
+		else
+		{
+			peltierCell.mySet  = 20;
+			peltierCell2.mySet = 20;
+			peltierCell.readAlwaysEnable = 0;
+			peltierCell2.readAlwaysEnable = 0;
+		}
+	}
+	//-----------------------------------------------------------------------
+}
+
 void managePrimingPh1(void)
 {
 	releaseGUIButton(BUTTON_CONFIRM);
@@ -448,41 +485,13 @@ void managePrimingPh1(void)
 	pumpPerist[1].entry = 0;
 	pumpPerist[2].entry = 0;
 	pumpPerist[3].entry = 0;
-
-	//-------------------------------------------------------------------
-	// Questo codice era nello stato ..TANK_FILL, lo ho spostato qui perche' non passo
-	// piu' per quello stato
-	static float myTempValue = 20;
-
-	if(myTempValue != parameterWordSetFromGUI[PAR_SET_PRIMING_TEMPERATURE_PERFUSION].value){
-		myTempValue = parameterWordSetFromGUI[PAR_SET_PRIMING_TEMPERATURE_PERFUSION].value;
-
-		if(myTempValue == 40)
-		{
-			peltierCell.mySet  = (float) myTempValue/10 - 8;
-			peltierCell2.mySet = (float) myTempValue/10 - 8;
-		}
-		else if(myTempValue == 360)
-		{
-			//peltierCell.mySet  = (float) myTempValue/10 + 6;
-			//peltierCell2.mySet = (float) myTempValue/10 + 6;
-			peltierCell.mySet  = (float) 100;
-			peltierCell2.mySet = (float) 100;
-		}
-		else
-		{
-			peltierCell.mySet  = 20;
-			peltierCell2.mySet = 20;
-		}
-	}
-	//-----------------------------------------------------------------------
-
 }
 
 void managePrimingPh1Always(void)
 {
 	//guard macchina a stati (controllo quando arriva il segnale per i passaggio alla fase 2)
 	computeMachineStateGuardPrimingPh1();
+	CheckTemperatureSet();
 }
 
 /*--------------------------------------------------------------*/
@@ -490,43 +499,16 @@ void managePrimingPh1Always(void)
 /*--------------------------------------------------------------*/
 void managePrimingPh2(void)
 {
-
 	pumpPerist[0].entry = 0;
 	pumpPerist[1].entry = 0;
 	pumpPerist[2].entry = 0;
 	pumpPerist[3].entry = 0;
-
-	//-------------------------------------------------------------------
-	// Questo codice era nello stato ..TANK_FILL, lo ho spostato qui perche' non passo
-	// piu' per quello stato
-	static float myTempValue = 200;
-
-	if(myTempValue != parameterWordSetFromGUI[PAR_SET_PRIMING_TEMPERATURE_PERFUSION].value){
-		myTempValue = parameterWordSetFromGUI[PAR_SET_PRIMING_TEMPERATURE_PERFUSION].value;
-
-		if(myTempValue == 40)
-		{
-			peltierCell.mySet  = (float) myTempValue/10 - 8;
-			peltierCell2.mySet = (float) myTempValue/10 - 8;
-		}
-		else if(myTempValue == 360)
-		{
-			peltierCell.mySet  = (float) myTempValue/10 + 6;
-			peltierCell2.mySet = (float) myTempValue/10 + 6;
-		}
-		else
-		{
-			peltierCell.mySet  = 20;
-			peltierCell2.mySet = 20;
-		}
-	}
-	//-----------------------------------------------------------------------
-
 }
 
 void managePrimingPh2Always(void)
 {
 	computeMachineStateGuardPrimingPh2();
+	CheckTemperatureSet();
 }
 
 /*-----------------------------------------------------------*/
@@ -556,7 +538,7 @@ void manageStateTreatKidney1(void)
 void manageStateTreatKidney1Always(void)
 {
 	computeMachineStateGuardTreatment();
-
+	CheckTemperatureSet();
 }
 
 /*-----------------------------------------------------------*/
@@ -907,8 +889,8 @@ void manageParentPrimingEntry(void){
 		}
 
 		startPeltierActuator();
-		peltierCell.readAlwaysEnable = 1;
-		peltierCell2.readAlwaysEnable = 1;
+		//peltierCell.readAlwaysEnable = 1;
+		//peltierCell2.readAlwaysEnable = 1;
 
 		pumpPerist[0].entry = 1;
 	}
@@ -1860,8 +1842,8 @@ void manageParentTreatEntry(void){
 		setPumpPressLoop(0, PRESS_LOOP_OFF);
 
 		startPeltierActuator();
-		peltierCell.readAlwaysEnable = 1;
-		peltierCell2.readAlwaysEnable = 1;
+		//peltierCell.readAlwaysEnable = 1;
+		//peltierCell2.readAlwaysEnable = 1;
 
 		pumpPerist[0].entry = 1;
 	}

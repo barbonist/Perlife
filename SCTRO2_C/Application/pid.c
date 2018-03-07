@@ -681,60 +681,60 @@ float CalcolaPresVen_with_Speed(float speed)
 //  float press = m * (speed) + (float)50.0;
 	float Gain,Offset;
 
-	if (speed <= 10)
+	if (speed <= 10.0)
 	{
-		Gain = (float) ( (59 - 50) / 10);
-		Offset = 59 - Gain * 10;
+		Gain =  ( ((float)59.0 - 50.0) / (float)10.0);
+		Offset = (float)59.0 - Gain * 10.0;
 	}
-	else if (speed > 10 && speed<= 20)
+	else if (speed > 10.0 && speed<= 20.0)
 	{
-		Gain = (float) ( (76 - 59) / 10);
-		Offset = 76 - Gain * 20;
+		Gain =  ( ((float)76.0 - 59.0) / (float)10.0);
+		Offset = (float)76.0 - Gain * 20.0;
 	}
-	else if (speed > 20 && speed<= 30)
+	else if (speed > 20.0 && speed<= 30.0)
 	{
-		Gain = (float) ( (95 - 76) / 10);
-		Offset = 95 - Gain * 30;
+		Gain =  ( ((float)95.0 - 76.0) / (float)10.0);
+		Offset = (float)95.0 - Gain * 30.0;
 	}
-	else if (speed > 30 && speed<= 40)
+	else if (speed > 30.0 && speed<= 40.0)
 	{
-		Gain = (float) ( (114 - 95) / 10);
-		Offset = 114 - Gain * 40;
+		Gain =  ( ((float)114.0 - 95.0) / (float)10.0);
+		Offset = (float)114.0 - Gain * 40.0;
 	}
-	else if (speed > 40 && speed<= 50)
+	else if (speed > 40.0 && speed<= 50.0)
 	{
-		Gain = (float) ( (127 - 114) / 10);
-		Offset = 127 - Gain * 50;
+		Gain =  ( ((float)127.0 - 114.0) / (float)10.0);
+		Offset = (float)127.0 - Gain * 50.0;
 	}
-	else if (speed > 50 && speed<= 60)
+	else if (speed > 50.0 && speed<= 60.0)
 	{
-		Gain = (float) ( (170 - 127) / 10);
-		Offset = 170 - Gain * 60;
+		Gain =  ( ((float)170.0 - 127.0) / (float)10.0);
+		Offset = (float)170.0 - Gain * 60.0;
 	}
-	else if (speed > 60 && speed<= 70)
+	else if (speed > 60.0 && speed<= 70.0)
 	{
-		Gain = (float) ( (196 - 170) / 10);
-		Offset = 196 - Gain * 70;
+		Gain =  ( ((float)196.0 - 170.0) / (float)10.0);
+		Offset = (float)196.0 - Gain * 70.0;
 	}
 	else if (speed > 70 && speed<= 80)
 	{
-		Gain = (float) ( (222 - 196) / 10);
-		Offset = 222 - Gain * 80;
+		Gain =  ( ((float)222.0 - 196.0) / 10.0);
+		Offset = (float)222.0 - Gain * 80.0;
 	}
-	else if (speed > 80 && speed<= 90)
+	else if (speed > 80.0 && speed<= 90.0)
 	{
-		Gain = (float) ( (247 - 222) / 10);
-		Offset = 247 - Gain * 90;
+		Gain =  ( ((float)247.0 - 222.0) / 10.0);
+		Offset = (float)247.0 - Gain * 90.0;
 	}
-	else if (speed > 90 && speed<= 100)
+	else if (speed > 90.0 && speed<= 100.0)
 	{
-		Gain = (float) ( (266 - 247) / 10);
-		Offset = 266 - Gain * 100;
+		Gain =  ( ((float)266.0 - 247.0) / 10.0);
+		Offset = (float)266.0 - Gain * 100.0;
 	}
-	else if (speed > 100 && speed<= 110)
+	else if (speed > 100.0 && speed<= 110.0)
 	{
-		Gain = (float) ( (276 - 266) / 10);
-		Offset = 276 - Gain * 110;
+		Gain =  ( ((float)276.0 - 266.0) / 10.0);
+		Offset = (float)276.0 - Gain * 110.0;
 	}
 
   float press = Gain * (speed) + Offset;
