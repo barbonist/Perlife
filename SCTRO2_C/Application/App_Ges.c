@@ -449,13 +449,6 @@ void managePrimingPh1(void)
 	pumpPerist[2].entry = 0;
 	pumpPerist[3].entry = 0;
 
-}
-
-void managePrimingPh1Always(void)
-{
-	static char iflag_perf = 0;
-	static char iflag_oxyg = 0;
-
 	//-------------------------------------------------------------------
 	// Questo codice era nello stato ..TANK_FILL, lo ho spostato qui perche' non passo
 	// piu' per quello stato
@@ -471,8 +464,10 @@ void managePrimingPh1Always(void)
 		}
 		else if(myTempValue == 360)
 		{
-			peltierCell.mySet  = (float) myTempValue/10 + 6;
-			peltierCell2.mySet = (float) myTempValue/10 + 6;
+			//peltierCell.mySet  = (float) myTempValue/10 + 6;
+			//peltierCell2.mySet = (float) myTempValue/10 + 6;
+			peltierCell.mySet  = (float) 100;
+			peltierCell2.mySet = (float) 100;
 		}
 		else
 		{
@@ -482,7 +477,10 @@ void managePrimingPh1Always(void)
 	}
 	//-----------------------------------------------------------------------
 
+}
 
+void managePrimingPh1Always(void)
+{
 	//guard macchina a stati (controllo quando arriva il segnale per i passaggio alla fase 2)
 	computeMachineStateGuardPrimingPh1();
 }
@@ -492,21 +490,11 @@ void managePrimingPh1Always(void)
 /*--------------------------------------------------------------*/
 void managePrimingPh2(void)
 {
-	//releaseGUIButton(BUTTON_CONFIRM);
 
 	pumpPerist[0].entry = 0;
 	pumpPerist[1].entry = 0;
 	pumpPerist[2].entry = 0;
 	pumpPerist[3].entry = 0;
-
-	//currentGuard[GUARD_ENABLE_PRIMING_WAIT].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
-	//currentGuard[GUARD_ENABLE_PRIMING_WAIT].guardValue = GUARD_VALUE_FALSE;
-
-}
-
-void managePrimingPh2Always(void)
-{
-	computeMachineStateGuardPrimingPh2();
 
 	//-------------------------------------------------------------------
 	// Questo codice era nello stato ..TANK_FILL, lo ho spostato qui perche' non passo
@@ -525,6 +513,8 @@ void managePrimingPh2Always(void)
 		{
 			peltierCell.mySet  = (float) myTempValue/10 + 6;
 			peltierCell2.mySet = (float) myTempValue/10 + 6;
+			peltierCell.mySet  = (float) 420;
+			peltierCell2.mySet = (float) 420;
 		}
 		else
 		{
@@ -534,7 +524,11 @@ void managePrimingPh2Always(void)
 	}
 	//-----------------------------------------------------------------------
 
+}
 
+void managePrimingPh2Always(void)
+{
+	computeMachineStateGuardPrimingPh2();
 }
 
 /*-----------------------------------------------------------*/

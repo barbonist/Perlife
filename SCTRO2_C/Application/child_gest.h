@@ -54,6 +54,8 @@ void manageChildTreatAlm1SFVAlways(void);
 void manageChildTreatAlm1SFAEntry(void);
 void manageChildTreatAlm1SFAAlways(void);
 
+void manageChildAlmAndWaitCmdEntry(void);
+void manageChildAlmAndWaitCmdAlways(void);
 
 void ManageStateChildAlarmTreat1(void);
 

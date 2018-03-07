@@ -145,6 +145,11 @@ struct machineChild stateChildAlarmTreat1[] =
 			//alarm priming end
 			{STATE_NULL, PARENT_NULL, CHILD_TREAT_ALARM_1_END,               ACTION_ON_ENTRY, &stateNull[0], &manageNull},                               /* 19 */
 			{STATE_NULL, PARENT_NULL, CHILD_TREAT_ALARM_1_END,               ACTION_ALWAYS,   &stateNull[0], &manageNull},                               /* 20 */
+
+			//gestisce una tipologia di allarmi in trattamento dove vengono fermati tutti gli attuatori poi l'utente
+			// premendo BUTTON_RESET forza l'uscita dalla condizione di allarme senza fare nessun'altra operazione
+			{STATE_NULL, PARENT_NULL, CHILD_TREAT_ALARM_1_WAIT_CMD,          ACTION_ON_ENTRY, &stateNull[0], &manageChildAlmAndWaitCmdEntry},            /* 21 */
+			{STATE_NULL, PARENT_NULL, CHILD_TREAT_ALARM_1_WAIT_CMD,          ACTION_ALWAYS,   &stateNull[0], &manageChildAlmAndWaitCmdAlways},          /* 22 */
 			{}
 		  };
 

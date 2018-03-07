@@ -46,6 +46,7 @@
 #include "EN_24_M_C.h"
 #include "child_gest.h"
 #include "statesStructs.h"
+#include "Alarm_Con.h"
 
 extern struct machineChild stateChildAlarmTreat1[];
 
@@ -749,6 +750,41 @@ void manageChildTreatAlm1SFAAlways(void)
 	}
 }
 
+
+//--------------------------------------------------------------------------------------------------
+
+/* Manage CHILD_TREAT_ALARM_1_SFA_AIR entry state */
+/* (FM) risolvo la situazione di allarme
+ * rene:   sposto wpwa a destra in modo da staccare l'organo
+ *         e scaricare sul reservoir
+ * fegato: sposto wpwa a destra in modo da staccare l'organo
+ *         e scaricare sul reservoir */
+void manageChildAlmAndWaitCmdEntry(void)
+{
+	// fermo le pompe e metto le pinch in sicurezza
+	manageChildTreatAlm1StopAllActEntry();
+	GlobalFlags.FlagsDef.ChildAlmAndWaitCmdActive = 1;
+}
+
+/* Manage CHILD_TREAT_ALARM_1_SFA_AIR always state */
+void manageChildAlmAndWaitCmdAlways(void)
+{
+	// apetto che tutte le pompe si siano fermate
+	manageChildTreatAlm1StopAllActAlways();
+	DisableAllAirAlarm = TRUE; // forzo la chiusura dell'allarme aria
+	ForceCurrentAlarmOff();
+	if((buttonGUITreatment[BUTTON_RESET_ALARM].state == GUI_BUTTON_RELEASED) && IsSecurityStateActive())
+	{
+		// setto la guard per fare in modo che quando l'allarme risultera' non attivo
+		// la macchina a stati parent vada nello stato di espulsione bolla aria
+		currentGuard[GUARD_ALARM_AIR_SFA_RECOVERY].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+		// ho raggiunto la condizione di sicurezza ed ho ricevuto un comando reset alarm
+		releaseGUIButton(BUTTON_RESET_ALARM);
+	}
+}
+//--------------------------------------------------------------------------------------------------
+
+
 // funzione che gestisce gli stati child (allarmi) nel caso di trattamento1 o kidney
 // deve essere chiamata dalla gestione del parent nello stato PARENT_TREAT_KIDNEY_1_ALARM
 void ManageStateChildAlarmTreat1(void)
@@ -827,6 +863,15 @@ void ManageStateChildAlarmTreat1(void)
             	 * fegato: sposto wpwa a destra in modo da staccare l'organo
             	 *         e scaricare sul reservoir */
                 ptrFutureChild = &stateChildAlarmTreat1[17];
+            }
+            else if(currentGuard[GUARD_ALARM_STOP_ALL_ACT_WAIT_CMD].guardValue == GUARD_VALUE_TRUE)
+            {
+            	/* (FM) risolvo la situazione di allarme
+            	 * rene:   sposto wpwa a destra in modo da staccare l'organo
+            	 *         e scaricare sul reservoir
+            	 * fegato: sposto wpwa a destra in modo da staccare l'organo
+            	 *         e scaricare sul reservoir */
+                ptrFutureChild = &stateChildAlarmTreat1[21]; // DA AGGIUNGERE
             }
 			break;
 
@@ -941,6 +986,17 @@ void ManageStateChildAlarmTreat1(void)
 			}
 			break;
 
+		case CHILD_TREAT_ALARM_1_WAIT_CMD:
+			if(ptrCurrentChild->action == ACTION_ON_ENTRY)
+			{
+				ptrFutureChild = &stateChildAlarmTreat1[21];
+			}
+            else if( currentGuard[GUARD_ALARM_STOP_ALL_ACT_WAIT_CMD].guardValue == GUARD_VALUE_FALSE )
+                ptrFutureChild = &stateChildAlarmTreat1[19]; /* FM allarme chiuso */
+			else if(ptrCurrentChild->action == ACTION_ALWAYS)
+			{
+			}
+			break;
 
 
 		case CHILD_TREAT_ALARM_1_END:

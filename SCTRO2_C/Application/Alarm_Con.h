@@ -90,6 +90,7 @@
 #define SECURITY_SAF_AIR_FILTER         0x80
 #define SECURITY_SFV_AIR_DET           0x100
 #define SECURITY_SFA_AIR_DET           0x200
+#define SECURITY_STOP_ALL_ACT_WAIT_CMD 0x400
 
 #define OVRD_ENABLE				0xA5
 #define OVRD_NOT_ENABLED		0x5A
@@ -175,5 +176,7 @@ void manageAlarmDeltaTempRecVen(void);
 
 void SetAllAlarmEnableFlags(void);
 
+void ForceAlarmOff(char code);
+void ForceCurrentAlarmOff(void);
 
 #endif /* APPLICATION_ALARM_CON_H_ */

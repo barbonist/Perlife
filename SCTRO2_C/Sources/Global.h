@@ -441,6 +441,7 @@ enum Child {
 	CHILD_TREAT_ALARM_1_SAF_AIR_FILT,
 	CHILD_TREAT_ALARM_1_SFV_AIR,
 	CHILD_TREAT_ALARM_1_SFA_AIR,
+	CHILD_TREAT_ALARM_1_WAIT_CMD,
 	CHILD_TREAT_ALARM_1_END,
 	CHILD_TREAT_ALARM_2_INIT,
 	CHILD_TREAT_ALARM_2_STOP_PERFUSION,
@@ -539,6 +540,7 @@ enum MachineStateGuardId {
 	GUARD_ALARM_SAF_AIR_FILT,
 	GUARD_ALARM_SFV_AIR,
 	GUARD_ALARM_SFA_AIR,
+	GUARD_ALARM_STOP_ALL_ACT_WAIT_CMD,
 	/*********************/
 	/* CHILD LEVEL GUARD */
 	/*********************/
@@ -1542,6 +1544,7 @@ typedef struct
 	unsigned int EnableDeltaTempRecArtAlarm : 1;    // abilito allarme delta temperatura recipiente e line arteriosa troppo alta
 
 	unsigned int TankLevelHigh              : 1;    // livello del liquido supera il massimo
+	unsigned int ChildAlmAndWaitCmdActive   : 1;
 }FLAGS_DEF;
 
 typedef union
