@@ -417,6 +417,7 @@ void Service_SBC(void){
 					{
 						sprintf(regId, "%u", sbc_rx_data[7]);
 						sprintf(valueIeee, "%2X%2X%2X%2X", sbc_rx_data[8], sbc_rx_data[9], sbc_rx_data[10], sbc_rx_data[11]);
+						PeltierAssSendCommand(WRITE_FLOAT_REG_XX,regId,0,valueIeee,1);
 						PeltierAssSendCommand(WRITE_FLOAT_REG_XX,regId,0,valueIeee,2);
 
 						word snd;
@@ -431,6 +432,7 @@ void Service_SBC(void){
 					{
 						sprintf(regId, "%u", sbc_rx_data[7]);
 						valueInt = sbc_rx_data[8];
+						PeltierAssSendCommand(WRITE_DATA_REGISTER_XX,regId,valueInt,"0",1);
 						PeltierAssSendCommand(WRITE_DATA_REGISTER_XX,regId,valueInt,"0",2);
 
 						word snd;
@@ -443,7 +445,9 @@ void Service_SBC(void){
 					// Peltier start
 					case 0x20:
 					{
-						PeltierAssSendCommand(START_FLAG,"0",0,"0",2);
+						startPeltierActuator();
+						peltierCell.readAlwaysEnable = 1;
+						peltierCell2.readAlwaysEnable = 1;
 
 						word snd;
 						ptrMsgSbcRx = &sbc_rx_data;
@@ -455,7 +459,9 @@ void Service_SBC(void){
 					// Peltier stop
 					case 0x21:
 					{
-						PeltierAssSendCommand(STOP_FLAG,"0",0,"0",2);
+						stopPeltierActuator();
+						peltierCell.readAlwaysEnable = 0;
+						peltierCell2.readAlwaysEnable = 0;
 
 						word snd;
 						ptrMsgSbcRx = &sbc_rx_data;

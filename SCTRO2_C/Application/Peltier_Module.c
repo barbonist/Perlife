@@ -1072,6 +1072,197 @@ void alwaysPeltier2Actuator(void){
 	}
 
 }
+
+/*per modificare il set di temperatura sul driver delle peltier devo:
+ * impostare --> peltierCell.readAlwaysEnable = 0
+ * impostare --> peltierCell1.mySet = NEW TARGET*/
+void NewSetTempPeltierActuator()
+{
+	static unsigned char  myStatePos = 0;
+
+	static char myDataIntPeltier[8];
+
+
+	static char myDataIeee754[8];
+	static unsigned long myUnsignedLongActual;
+	static char myStringFloat[8];
+
+
+	static union NumFloatUnion{
+				uint32 ieee754NUmFormat;
+				float numFormatFloat;
+			} myNumFloatActual;
+
+
+	//if(timerCounterPeltier >= 2){
+		//timerCounterPeltier = 0;
+	if(iflag_peltier_rx == IFLAG_IDLE)
+	{
+		//iflag_peltier_rx = IFLAG_BUSY;
+		switch(myStatePos)
+		{
+
+			// SET TEMP - READ
+		case 0:
+			PeltierAssSendCommand(READ_FLOAT_FROM_REG_XX,REG_0_SET_POINT,0,"0",1);
+			ptrMsgPeltierRx = &peltierDebug_rx_data[0];
+			ptrPeltierCountRx = 0;
+			break;
+		//SET TEMP - WRITE
+		case 1:
+			if(myNumFloatActual.numFormatFloat != peltierCell.mySet)
+			{
+				myNumFloatActual.numFormatFloat = peltierCell.mySet;
+				sprintf(myStringFloat, "%2X%2X%2X%2X", 	(unsigned char)(myNumFloatActual.ieee754NUmFormat>>24),
+														(unsigned char)(myNumFloatActual.ieee754NUmFormat>>16),
+														(unsigned char)(myNumFloatActual.ieee754NUmFormat>>8),
+														(unsigned char)(myNumFloatActual.ieee754NUmFormat));
+				for(char i=0; i<8; i++)
+				{
+					if(myStringFloat[i] == 0x20)
+						myStringFloat[i] = 0x30;
+				}
+				PeltierAssSendCommand(WRITE_FLOAT_REG_XX, REG_0_SET_POINT, 0, myStringFloat,2);
+				myStatePos = 0;
+			}
+			else
+			{
+				peltierCell.readAlwaysEnable == 1;
+				myStatePos = 0;
+			}
+			break;
+
+		default:
+			break;
+		}
+	}
+		if(iflag_peltier_rx == IFLAG_PELTIER_RX)
+		{
+			iflag_peltier_rx = IFLAG_IDLE;
+
+			for(int i=0; i<8; i++)
+			{
+				myDataIntPeltier[i] = 0;
+				myDataIeee754[i] = 0;
+			}
+
+			switch(myStatePos)
+			{
+				case 0:
+					myDataIeee754[0] = *ptrMsgDataieee754start;
+					myDataIeee754[1] = *(ptrMsgDataieee754start+1);
+					myDataIeee754[2] = *(ptrMsgDataieee754start+2);
+					myDataIeee754[3] = *(ptrMsgDataieee754start+3);
+					myDataIeee754[4] = *(ptrMsgDataieee754start+4);
+					myDataIeee754[5] = *(ptrMsgDataieee754start+5);
+					myDataIeee754[6] = *(ptrMsgDataieee754start+6);
+					myDataIeee754[7] = *(ptrMsgDataieee754start+7);
+					myUnsignedLongActual = strtoul(myDataIeee754,NULL,16);
+					myNumFloatActual.ieee754NUmFormat = myUnsignedLongActual;
+					myStatePos = myStatePos + 1;
+					break;
+
+				default:
+					break;
+			}
+		}
+}
+
+void NewSetTempPeltier2Actuator()
+{
+	static unsigned char  myStatePos2 = 0;
+
+	static char myDataIntPeltier2[8];
+
+	static unsigned long myUnsignedLongActual;
+	static char myDataIeee754[8];
+
+	static char myStringFloat[8];
+
+
+
+	static union NumFloatUnion{
+				uint32 ieee754NUmFormat;
+				float numFormatFloat;
+			} myNumFloatActual;
+
+
+	//if(timerCounterPeltier >= 2){
+		//timerCounterPeltier = 0;
+	if(iflag_peltier_rx == IFLAG_IDLE)
+	{
+		//iflag_peltier_rx = IFLAG_BUSY;
+		switch(myStatePos2)
+		{
+
+			// SET TEMP - READ
+		case 0:
+			PeltierAssSendCommand(READ_FLOAT_FROM_REG_XX,REG_0_SET_POINT,0,"0",2);
+			ptrMsgPeltier2Rx = &peltier2Debug_rx_data[0];
+			ptrPeltier2CountRx = 0;
+			break;
+		//SET TEMP - WRITE
+		case 1:
+			if(myNumFloatActual.numFormatFloat != peltierCell2.mySet)
+			{
+				myNumFloatActual.numFormatFloat = peltierCell2.mySet;
+				sprintf(myStringFloat, "%2X%2X%2X%2X", 	(unsigned char)(myNumFloatActual.ieee754NUmFormat>>24),
+														(unsigned char)(myNumFloatActual.ieee754NUmFormat>>16),
+														(unsigned char)(myNumFloatActual.ieee754NUmFormat>>8),
+														(unsigned char)(myNumFloatActual.ieee754NUmFormat));
+				for(char i=0; i<8; i++)
+				{
+					if(myStringFloat[i] == 0x20)
+						myStringFloat[i] = 0x30;
+				}
+				PeltierAssSendCommand(WRITE_FLOAT_REG_XX, REG_0_SET_POINT, 0, myStringFloat,2);
+				myStatePos2 = 0;
+			}
+			else
+			{
+				peltierCell2.readAlwaysEnable == 1;
+				myStatePos2 = 0;
+			}
+			break;
+
+		default:
+			break;
+		}
+	}
+		if(iflag_peltier2_rx == IFLAG_PELTIER_RX)
+		{
+			iflag_peltier2_rx = IFLAG_IDLE;
+
+			for(int i=0; i<8; i++)
+			{
+				myDataIntPeltier2[i] = 0;
+				myDataIeee754[i] = 0;
+			}
+
+			switch(myStatePos2)
+			{
+				case 0:
+					myDataIeee754[0] = *ptrMsgData2ieee754start;
+					myDataIeee754[1] = *(ptrMsgData2ieee754start+1);
+					myDataIeee754[2] = *(ptrMsgData2ieee754start+2);
+					myDataIeee754[3] = *(ptrMsgData2ieee754start+3);
+					myDataIeee754[4] = *(ptrMsgData2ieee754start+4);
+					myDataIeee754[5] = *(ptrMsgData2ieee754start+5);
+					myDataIeee754[6] = *(ptrMsgData2ieee754start+6);
+					myDataIeee754[7] = *(ptrMsgData2ieee754start+7);
+					myUnsignedLongActual = strtoul(myDataIeee754,NULL,16);
+					myNumFloatActual.ieee754NUmFormat = myUnsignedLongActual;
+					myStatePos2 = myStatePos2 + 1;
+					break;
+
+				default:
+					break;
+			}
+		}
+
+
+}
+
 void startPeltierActuator(void){
 	PeltierAssSendCommand(START_FLAG,"0",0,"0",1);
 	PeltierAssSendCommand(START_FLAG,"0",0,"0",2);

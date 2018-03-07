@@ -562,10 +562,26 @@ int main(void)
 	        	 timerCounterPeltier = 0;
 
 	        	 if(peltierCell.readAlwaysEnable == 0)
-	        		 alwaysPeltierActuator();
+	        	 {
+	        		/*fuinzione che gestisce tutta la comunicazione, serve solo una volta
+	        		 * per impostare i parametri sui driver delle peltier*/
+	        		 //alwaysPeltierActuator();
+
+	        		 /*funzione che serve a mpostare un nuovo valore di temp
+	        		  * sulla cella di peltier*/
+	        		 NewSetTempPeltierActuator();
+	        	 }
 
 	        	 if(peltierCell2.readAlwaysEnable == 0)
-	        		 alwaysPeltier2Actuator();
+	        	 {
+					/*fuinzione che gestisce tutta la comunicazione, serve solo una volta
+					 * per impostare i parametri sui driver delle peltier*/
+	        		// alwaysPeltier2Actuator();
+
+	        		 /*funzione che serve a mpostare un nuovo valore di temp
+	        		  * sulla cella di peltier*/
+	        		 NewSetTempPeltier2Actuator();
+	        	 }
 	         }
 
 	         /********************************/

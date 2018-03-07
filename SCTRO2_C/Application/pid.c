@@ -615,60 +615,60 @@ float CalcolaPresVen_with_Flow()
 {
 	float Gain,Offset, Target_Flow = (float)parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value;
 
-	if (Target_Flow <= 190)
+	if (Target_Flow <= 190.0)
 	{
-		Gain = (float) ( (55 - 43) / 190);
-		Offset = 55 - Gain * 190;
+		Gain =  ( ((float) 55.0 - 43.0) / 190);
+		Offset = (float) 55.0 - Gain * 190.0;
 	}
-	else if (Target_Flow > 190 && Target_Flow<= 425)
+	else if (Target_Flow > 190.0 && Target_Flow<= 425.0)
 	{
-		Gain = (float) ( (67 - 55) / 235);
-		Offset = 67 - Gain * 425;
+		Gain =  ( ((float) 67.0 - 55.0) / 235.0);
+		Offset = (float) 67.0 - Gain * 425.0;
 	}
-	else if (Target_Flow > 425 && Target_Flow<= 660)
+	else if (Target_Flow > 425.0 && Target_Flow<= 660.0)
 	{
-		Gain = (float) ( (89 - 67) / 235);
-		Offset = 89 - Gain * 660;
+		Gain =  ( ((float) 89.0 - 67.0) / 235.0);
+		Offset = (float) 89.0 - Gain * 660.0;
 	}
-	else if (Target_Flow > 660 && Target_Flow<= 900)
+	else if (Target_Flow > 660.0 && Target_Flow<= 900.0)
 	{
-		Gain = (float) ( (111 - 89) / 240);
-		Offset = 111 - Gain * 900;
+		Gain = ( ((float) 111.0 - 89.0) / 240.0);
+		Offset = (float) 111.0 - Gain * 900.0;
 	}
-	else if (Target_Flow > 900 && Target_Flow<= 1130)
+	else if (Target_Flow > 900.0 && Target_Flow<= 1130.0)
 	{
-		Gain = (float) ( (133 - 111) / 230);
-		Offset = 133 - Gain * 1130;
+		Gain = ( ((float) 133.0 - 111.0) / 230.0);
+		Offset = (float) 133.0 - Gain * 1130.0;
 	}
-	else if (Target_Flow > 1130 && Target_Flow<= 1380)
+	else if (Target_Flow > 1130.0 && Target_Flow<= 1380.0)
 	{
-		Gain = (float) ( (156 - 133) / 250);
-		Offset = 156 - Gain * 1380;
+		Gain = ( ((float) 156.0 - 133.0) / 250.0);
+		Offset = (float) 156.0 - Gain * 1380.0;
 	}
-	else if (Target_Flow > 1380 && Target_Flow<= 1680)
+	else if (Target_Flow > 1380.0 && Target_Flow<= 1680.0)
 	{
-		Gain = (float) ( (196 - 156) / 300);
-		Offset = 196 - Gain * 1680;
+		Gain = ( ( (float) 196.0 - 156.0) / 300.0);
+		Offset = (float) 196.0 - Gain * 1680.0;
 	}
-	else if (Target_Flow > 1680 && Target_Flow<= 1930)
+	else if (Target_Flow > 1680.0 && Target_Flow<= 1930.0)
 	{
-		Gain = (float) ( (227 - 196) / 250);
-		Offset = 227 - Gain * 1930;
+		Gain = ( ((float) 227.0 - 196.0) / 250.0);
+		Offset = (float) 227.0 - Gain * 1930.0;
 	}
-	else if (Target_Flow > 1930 && Target_Flow<= 2150)
+	else if (Target_Flow > 1930.0 && Target_Flow<= 2150.0)
 	{
-		Gain = (float) ( (255 - 227) / 220);
-		Offset = 255 - Gain * 2150;
+		Gain = ( ((float) 255.0 - 227.0) / 220.0);
+		Offset = (float) 255.0 - Gain * 2150.0;
 	}
-	else if (Target_Flow > 2150 && Target_Flow<= 2350)
+	else if (Target_Flow > 2150.0 && Target_Flow<= 2350.0)
 	{
-		Gain = (float) ( (273 - 255) / 200);
-		Offset = 273 - Gain * 2350;
+		Gain = ( ((float) 273.0 - 255.0) / 200.0);
+		Offset = (float) 273.0 - Gain * 2350.0;
 	}
-	else if (Target_Flow > 2350)
+	else if (Target_Flow > 2350.0)
 	{
-		Gain = (float) ( (281 - 273) / 190);
-		Offset = 281 - Gain * 2540;
+		Gain = ( ((float) 281.0 - 273.0) / 190.0);
+		Offset = (float) 281.0 - Gain * 2540.0;
 	}
 
 	float press = Gain * (Target_Flow) + Offset;
@@ -860,23 +860,23 @@ void alwaysPumpPressLoopVen(unsigned char pmpId, unsigned char *PidFirstTime){
 	if(actualSpeed_Ven > (float)MAX_OXYG_RPM_Val)
 		actualSpeed_Ven = (float)MAX_OXYG_RPM_Val;
 
+	/*aggiorno il target ogni 3 secondi se sto decrementando la velocità
+	 * altrimenti lo aggiorno subito, altrimenti il pid va troppo veloce per il target*/
+	if (deltaSpeed_Ven > 0)
+	{
+		Target_PID_VEN = parameterWordSetFromGUI[PAR_SET_VENOUS_PRESS_TARGET].value + CalcolaPresVen_with_Flow();
+		timerCounterUpdateTargetPressurePid = 0;
+	}
+
+	else if (timerCounterUpdateTargetPressurePid > 60)
+	{
+		timerCounterUpdateTargetPressurePid = 0;
+		Target_PID_VEN = parameterWordSetFromGUI[PAR_SET_VENOUS_PRESS_TARGET].value + CalcolaPresVen_with_Flow();
+	}
+
 	/*aggiorno la velocità se è doiversa dalla precedente*/
 	if(actualSpeed_Ven != pumpPerist[pmpId].actualSpeedOld)
 	{
-		/*aggiorno il target ogni 3 secondi se sto decrementando la velocità
-		 * altrimenti lo aggiorno subito, altrimenti il pid va troppo veloce per il target*/
-		if (deltaSpeed_Ven > 0)
-		{
-			Target_PID_VEN = parameterWordSetFromGUI[PAR_SET_VENOUS_PRESS_TARGET].value + CalcolaPresVen_with_Flow();
-			timerCounterUpdateTargetPressurePid = 0;
-		}
-
-		else if (timerCounterUpdateTargetPressurePid > 60)
-		{
-			timerCounterUpdateTargetPressurePid = 0;
-			Target_PID_VEN = parameterWordSetFromGUI[PAR_SET_VENOUS_PRESS_TARGET].value + CalcolaPresVen_with_Flow();
-		}
-
 		setPumpSpeedValueHighLevel(pumpPerist[pmpId].pmpMySlaveAddress, ((int)(actualSpeed_Ven * 100)));
 		pumpPerist[pmpId].actualSpeedOld = actualSpeed_Ven;
 	}
