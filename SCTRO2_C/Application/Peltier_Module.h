@@ -195,6 +195,8 @@ void alwaysPeltierActuator(void);
 void alwaysPeltier2Actuator(void);
 void startPeltierActuator(void);
 void stopPeltierActuator(void);
+void NewSetTempPeltierActuator();
+void NewSetTempPeltier2Actuator();
 
 
 #endif /* APPLICATION_PELTIER_MODULE_H_ */

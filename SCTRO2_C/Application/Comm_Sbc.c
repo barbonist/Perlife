@@ -1329,8 +1329,10 @@ void resetParamWordFromGUI(unsigned char parId){
 }
 
 
-/*
+
 #define NUM_LQUID_LEV_VALUES 39
+
+// tabella relativa al tubo piccolo della cassetta
 
 const word LiquidLevelTable[NUM_LQUID_LEV_VALUES][2] =
 {
@@ -1375,7 +1377,7 @@ const word LiquidLevelTable[NUM_LQUID_LEV_VALUES][2] =
 		343, 2900,
 		346, 3000
 };
-*/
+
 
 /*
 #define NUM_LQUID_LEV_VALUES 20
@@ -1425,7 +1427,7 @@ const word LiquidLevelTable[NUM_LQUID_LEV_VALUES][2] =
 		657,3000,
 };
 */
-
+/*
 #define NUM_LQUID_LEV_VALUES 56
 
 const word LiquidLevelTable[NUM_LQUID_LEV_VALUES][2] =
@@ -1488,7 +1490,7 @@ const word LiquidLevelTable[NUM_LQUID_LEV_VALUES][2] =
 		657,3000,
 };
 
-
+*/
 
 // converte il valore mmhg moltiplicato per 10 in ml di contenuto nella baccinella
 word ConvertMMHgToMl( word mmhg)
