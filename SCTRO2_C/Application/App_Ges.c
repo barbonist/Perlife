@@ -513,8 +513,6 @@ void managePrimingPh2(void)
 		{
 			peltierCell.mySet  = (float) myTempValue/10 + 6;
 			peltierCell2.mySet = (float) myTempValue/10 + 6;
-			peltierCell.mySet  = (float) 420;
-			peltierCell2.mySet = (float) 420;
 		}
 		else
 		{
@@ -909,8 +907,8 @@ void manageParentPrimingEntry(void){
 		}
 
 		startPeltierActuator();
-//		peltierCell.readAlwaysEnable = 1;
-//		peltierCell2.readAlwaysEnable = 1;
+		peltierCell.readAlwaysEnable = 1;
+		peltierCell2.readAlwaysEnable = 1;
 
 		pumpPerist[0].entry = 1;
 	}
