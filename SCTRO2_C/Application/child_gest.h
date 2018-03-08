@@ -23,6 +23,9 @@ void manageChildPrimAlarmStopPeltAlways(void);
 void manageChildPrimAlarmStopAllActEntry(void);
 void manageChildPrimAlarmStopAllActAlways(void);
 
+void manageChildPrimAlmAndWaitCmdEntry(void);
+void manageChildPrimAlmAndWaitCmdAlways(void);
+
 
 /* --------------------------------------------------------------------------------------------
    CHILD LEVEL FUNCTION FOR TREATMENT_1 (KIDNEY)

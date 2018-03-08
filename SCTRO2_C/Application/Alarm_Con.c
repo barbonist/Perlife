@@ -110,10 +110,10 @@ void ForceAlarmOff(char code)
 			GlobalFlags.FlagsDef.EnableDeltaFlowVenAlarm = 0;     // forzo allarme delta flusso venoso troppo alto off
 			break;
 		case CODE_ALARM_DELTA_TEMP_REC_VEN:
-			GlobalFlags.FlagsDef.EnableDeltaTempRecVenAlarm = 1;  // forzo allarme delta temperatura recipiente e line venosa troppo alta off
+			GlobalFlags.FlagsDef.EnableDeltaTempRecVenAlarm = 0;  // forzo allarme delta temperatura recipiente e line venosa troppo alta off
 			break;
 		case CODE_ALARM_DELTA_TEMP_REC_ART:
-			GlobalFlags.FlagsDef.EnableDeltaTempRecArtAlarm = 1;  // forzo allarme delta temperatura recipiente e line arteriosa troppo alta off
+			GlobalFlags.FlagsDef.EnableDeltaTempRecArtAlarm = 0;  // forzo allarme delta temperatura recipiente e line arteriosa troppo alta off
 			break;
 	}
 }

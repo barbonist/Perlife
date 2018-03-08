@@ -206,12 +206,14 @@ void manageChildPrimAlarmStopAllPumpAlways(void)
 void manageChildPrimAlarmStopPeltEntry(void)
 {
 	stopPeltierActuator();
+	stopPeltier2Actuator();
 }
 
 /* Manage CHILD_PRIMING_ALARM_STOP_PELTIER always state */
 void manageChildPrimAlarmStopPeltAlways(void)
 {
 	stopPeltierActuator();
+	stopPeltier2Actuator();
 }
 
 /* Manage CHILD_PRIMING_ALARM_STOP_ALL_ACTUATOR entry state */
@@ -448,12 +450,14 @@ void manageChildTreatAlm1StopAllPumpAlways(void)
 void manageChildTreatAlm1StopPeltEntry(void)
 {
 	stopPeltierActuator();
+	stopPeltier2Actuator();
 }
 
 /* Manage CHILD_TREAT_ALARM_1_STOP_PELTIER always state */
 void manageChildTreatAlm1StopPeltAlways(void)
 {
 	stopPeltierActuator();
+	stopPeltier2Actuator();
 }
 
 
@@ -508,6 +512,7 @@ void manageChildTreatAlm1StopAllActEntry(void)
 		}
 
 		stopPeltierActuator();
+		stopPeltier2Actuator();
 	}
 
 	if((timerCounterModBus%9) == 8)
@@ -610,6 +615,7 @@ void manageChildTreatAlm1StopAllActAlways(void)
 			//in TherapyType == KidneyTreat non è usata quindi preferisco non muoverla
 		}
 		stopPeltierActuator();
+		stopPeltier2Actuator();
 	}
 
 //	if((timerCounterModBus%9) == 8)
@@ -753,7 +759,7 @@ void manageChildTreatAlm1SFAAlways(void)
 
 //--------------------------------------------------------------------------------------------------
 
-/* Manage CHILD_TREAT_ALARM_1_SFA_AIR entry state */
+/* Manage CHILD_TREAT_ALARM_1_WAIT_CMD entry state */
 /* (FM) risolvo la situazione di allarme
  * rene:   sposto wpwa a destra in modo da staccare l'organo
  *         e scaricare sul reservoir
@@ -766,18 +772,52 @@ void manageChildAlmAndWaitCmdEntry(void)
 	GlobalFlags.FlagsDef.ChildAlmAndWaitCmdActive = 1;
 }
 
-/* Manage CHILD_TREAT_ALARM_1_SFA_AIR always state */
+/* Manage CHILD_TREAT_ALARM_1_WAIT_CMD always state */
 void manageChildAlmAndWaitCmdAlways(void)
 {
 	// apetto che tutte le pompe si siano fermate
 	manageChildTreatAlm1StopAllActAlways();
-	DisableAllAirAlarm = TRUE; // forzo la chiusura dell'allarme aria
+	// Questa tipologia di allarmi deve essere forzata in off dal software prima di poter riprendere il lavoro
 	ForceCurrentAlarmOff();
 	if((buttonGUITreatment[BUTTON_RESET_ALARM].state == GUI_BUTTON_RELEASED) && IsSecurityStateActive())
 	{
 		// setto la guard per fare in modo che quando l'allarme risultera' non attivo
 		// la macchina a stati parent vada nello stato di espulsione bolla aria
-		currentGuard[GUARD_ALARM_AIR_SFA_RECOVERY].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+		currentGuard[GUARD_ALARM_WAIT_CMD_TO_EXIT].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+		// ho raggiunto la condizione di sicurezza ed ho ricevuto un comando reset alarm
+		releaseGUIButton(BUTTON_RESET_ALARM);
+	}
+}
+//--------------------------------------------------------------------------------------------------
+
+
+
+//--------------------------------------------------------------------------------------------------
+/* Manage CHILD_TREAT_ALARM_1_WAIT_CMD entry state in priming*/
+/* (FM) risolvo la situazione di allarme
+ * rene:   sposto wpwa a destra in modo da staccare l'organo
+ *         e scaricare sul reservoir
+ * fegato: sposto wpwa a destra in modo da staccare l'organo
+ *         e scaricare sul reservoir */
+void manageChildPrimAlmAndWaitCmdEntry(void)
+{
+	// fermo le pompe e metto le pinch in sicurezza
+	manageChildTreatAlm1StopAllActEntry();
+	GlobalFlags.FlagsDef.ChildAlmAndWaitCmdActive = 1;
+}
+
+/* Manage CHILD_TREAT_ALARM_1_WAIT_CMD always state in priming */
+void manageChildPrimAlmAndWaitCmdAlways(void)
+{
+	// apetto che tutte le pompe si siano fermate
+	manageChildTreatAlm1StopAllActAlways();
+	// Questa tipologia di allarmi deve essere forzata in off dal software prima di poter riprendere il lavoro
+	ForceCurrentAlarmOff();
+	if((buttonGUITreatment[BUTTON_RESET_ALARM].state == GUI_BUTTON_RELEASED) && IsSecurityStateActive())
+	{
+		// setto la guard per fare in modo che quando l'allarme risultera' non attivo
+		// la macchina a stati parent vada nello stato di espulsione bolla aria
+		currentGuard[GUARD_ALARM_WAIT_CMD_TO_EXIT].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
 		// ho raggiunto la condizione di sicurezza ed ho ricevuto un comando reset alarm
 		releaseGUIButton(BUTTON_RESET_ALARM);
 	}
@@ -989,7 +1029,7 @@ void ManageStateChildAlarmTreat1(void)
 		case CHILD_TREAT_ALARM_1_WAIT_CMD:
 			if(ptrCurrentChild->action == ACTION_ON_ENTRY)
 			{
-				ptrFutureChild = &stateChildAlarmTreat1[21];
+				ptrFutureChild = &stateChildAlarmTreat1[22];
 			}
             else if( currentGuard[GUARD_ALARM_STOP_ALL_ACT_WAIT_CMD].guardValue == GUARD_VALUE_FALSE )
                 ptrFutureChild = &stateChildAlarmTreat1[19]; /* FM allarme chiuso */

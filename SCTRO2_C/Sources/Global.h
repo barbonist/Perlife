@@ -424,6 +424,7 @@ enum Child {
 	CHILD_PRIMING_ALARM_STOP_ALL_PUMP,
 	CHILD_PRIMING_ALARM_STOP_PELTIER,
 	CHILD_PRIMING_ALARM_STOP_ALL_ACTUATOR,
+	CHILD_PRIM_ALARM_1_WAIT_CMD,
 	CHILD_PRIMING_ALARM_END,
 	/*********************/
 	/* 		CHILD		 */
@@ -515,6 +516,7 @@ enum MachineStateGuardId {
 	GUARD_ALARM_AIR_SFV_RECOVERY,
 	GUARD_ALARM_AIR_SFA_RECOVERY,
 	GUARD_AIR_RECOVERY_END,
+	GUARD_ALARM_WAIT_CMD_TO_EXIT,
 
 
 	/*valutare se gestire le azioni di sicurezza con le guard: tutti gli allarmi possono essere ricondotti a 6 tipologie di azioni di sicurezza:
@@ -1584,6 +1586,13 @@ unsigned char CoversState;
 
 // massima differenza di temperatura tra recevoir e liquido venoso
 #define MAX_DELTA_TEMP_VEN_AND_REC  10.0
+
+// Quando e' true vuol dire che lo start e' stato inviato
+bool Peltier2On;
+// Quando e' true vuol dire che lo start e' stato inviato
+bool PeltierOn;
+
+unsigned long PeltierDelay;
 
 #endif /* SOURCES_GLOBAL_H_ */
 

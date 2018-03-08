@@ -149,7 +149,7 @@ struct machineChild stateChildAlarmTreat1[] =
 			//gestisce una tipologia di allarmi in trattamento dove vengono fermati tutti gli attuatori poi l'utente
 			// premendo BUTTON_RESET forza l'uscita dalla condizione di allarme senza fare nessun'altra operazione
 			{STATE_NULL, PARENT_NULL, CHILD_TREAT_ALARM_1_WAIT_CMD,          ACTION_ON_ENTRY, &stateNull[0], &manageChildAlmAndWaitCmdEntry},            /* 21 */
-			{STATE_NULL, PARENT_NULL, CHILD_TREAT_ALARM_1_WAIT_CMD,          ACTION_ALWAYS,   &stateNull[0], &manageChildAlmAndWaitCmdAlways},          /* 22 */
+			{STATE_NULL, PARENT_NULL, CHILD_TREAT_ALARM_1_WAIT_CMD,          ACTION_ALWAYS,   &stateNull[0], &manageChildAlmAndWaitCmdAlways},           /* 22 */
 			{}
 		  };
 
@@ -192,6 +192,11 @@ struct machineChild stateChildAlarmPriming[] ={
 		//alarm priming end
 		{STATE_NULL, PARENT_NULL, CHILD_PRIMING_ALARM_END, 					ACTION_ON_ENTRY, 	&stateNull[0], &manageChildNull},	                    /* 13 */
 		{STATE_NULL, PARENT_NULL, CHILD_PRIMING_ALARM_END, 					ACTION_ALWAYS, 		&stateNull[0], &manageChildNull},	                    /* 14 */
+
+		//gestisce una tipologia di allarmi in trattamento dove vengono fermati tutti gli attuatori poi l'utente
+		// premendo BUTTON_RESET forza l'uscita dalla condizione di allarme senza fare nessun'altra operazione
+		{STATE_NULL, PARENT_NULL, CHILD_PRIM_ALARM_1_WAIT_CMD,             ACTION_ON_ENTRY,    &stateNull[0], &manageChildPrimAlmAndWaitCmdEntry},     /* 15 */
+		{STATE_NULL, PARENT_NULL, CHILD_PRIM_ALARM_1_WAIT_CMD,             ACTION_ALWAYS,      &stateNull[0], &manageChildPrimAlmAndWaitCmdAlways},    /* 16 */
 
 		{}
 };

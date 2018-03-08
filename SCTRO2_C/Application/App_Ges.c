@@ -439,6 +439,9 @@ void manageStateTankFillAlways(void)
 /* This function manages the state priming phase 1 activity     */
 /*--------------------------------------------------------------*/
 
+// Per ora il controllo sulla temperatura viene fatto solo in base al valore impostato dall'utente.
+// Nella versione finale il controllo dovra' essere piu' articolato perche' perche' dovra' tenere conto
+// degli allarmi e della temperatura effettivamente raggiunta dal liquido
 void CheckTemperatureSet(void)
 {
 	//-------------------------------------------------------------------
@@ -491,7 +494,7 @@ void managePrimingPh1Always(void)
 {
 	//guard macchina a stati (controllo quando arriva il segnale per i passaggio alla fase 2)
 	computeMachineStateGuardPrimingPh1();
-	CheckTemperatureSet();
+	//CheckTemperatureSet();
 }
 
 /*--------------------------------------------------------------*/
@@ -508,7 +511,7 @@ void managePrimingPh2(void)
 void managePrimingPh2Always(void)
 {
 	computeMachineStateGuardPrimingPh2();
-	CheckTemperatureSet();
+	//CheckTemperatureSet();
 }
 
 /*-----------------------------------------------------------*/
@@ -538,7 +541,7 @@ void manageStateTreatKidney1(void)
 void manageStateTreatKidney1Always(void)
 {
 	computeMachineStateGuardTreatment();
-	CheckTemperatureSet();
+	//CheckTemperatureSet();
 }
 
 /*-----------------------------------------------------------*/
@@ -888,7 +891,9 @@ void manageParentPrimingEntry(void){
 			setPinchPositionHighLevel(PINCH_2WPVV, MODBUS_PINCH_RIGHT_OPEN);
 		}
 
-		startPeltierActuator();
+		// lo start viene fatto automaticamente nelle funzioni NewSetTempPeltierActuator..
+		//startPeltierActuator();
+		//startPeltier2Actuator();
 		//peltierCell.readAlwaysEnable = 1;
 		//peltierCell2.readAlwaysEnable = 1;
 
@@ -1841,7 +1846,9 @@ void manageParentTreatEntry(void){
 		}
 		setPumpPressLoop(0, PRESS_LOOP_OFF);
 
-		startPeltierActuator();
+		// lo start viene fatto automaticamente nelle funzioni NewSetTempPeltierActuator..
+		//startPeltierActuator();
+		//startPeltier2Actuator();
 		//peltierCell.readAlwaysEnable = 1;
 		//peltierCell2.readAlwaysEnable = 1;
 
@@ -3916,7 +3923,24 @@ void processMachineState(void)
 		case PARENT_PRIMING_TREAT_KIDNEY_1_ALARM:
 			if(currentGuard[GUARD_ALARM_ACTIVE].guardValue == GUARD_VALUE_FALSE)
 			{
-				if(buttonGUITreatment[BUTTON_RESET_ALARM].state == GUI_BUTTON_RELEASED)
+				if(currentGuard[GUARD_ALARM_WAIT_CMD_TO_EXIT].guardValue == GUARD_VALUE_TRUE)
+				{
+					// vado nello stato parent dove posso cercare di recuperare la condizione di allarme
+					currentGuard[GUARD_ALARM_WAIT_CMD_TO_EXIT].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
+					currentGuard[GUARD_ALARM_WAIT_CMD_TO_EXIT].guardValue = GUARD_VALUE_FALSE;
+
+					/* (FM) finita la situazione di allarme posso ritornare in PARENT_PRIMING_TREAT_KIDNEY_1_INIT*/
+					// nella nuova gestione il priming viene fatto partendo direttamente dallo stato PARENT_PRIMING_TREAT_KIDNEY_1_RUN
+					// e non da PARENT_PRIMING_TREAT_KIDNEY_1_INIT
+					//ptrFutureParent = &stateParentPrimingTreatKidney1[1];
+					ptrFutureParent = &stateParentPrimingTreatKidney1[3];
+					ptrFutureChild = ptrFutureParent->ptrChild;
+
+					// forzo anche una pressione del tasto BUTTON_PRIMING_END_CONFIRM per fare in modo che
+					// il riempimento termini subito e si vada alla fase di riciclo
+					setGUIButton(BUTTON_PRIMING_END_CONFIRM);
+				}
+				else if(buttonGUITreatment[BUTTON_RESET_ALARM].state == GUI_BUTTON_RELEASED)
 				{
 					// Il ritorno al priming viene fatto solo dopo la pressione del tasto BUTTON_RESET_ALARM
 					releaseGUIButton(BUTTON_RESET_ALARM);
@@ -4071,6 +4095,19 @@ void processMachineState(void)
 					currentGuard[GUARD_ALARM_AIR_SFA_RECOVERY].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
 					currentGuard[GUARD_ALARM_AIR_SFA_RECOVERY].guardValue = GUARD_VALUE_FALSE;
 					GoToRecoveryParentState(PARENT_TREAT_KIDNEY_1_SFA);
+				}
+				else if(currentGuard[GUARD_ALARM_WAIT_CMD_TO_EXIT].guardValue == GUARD_VALUE_TRUE)
+				{
+					// vado nello stato parent dove posso cercare di recuperare la condizione di allarme
+					currentGuard[GUARD_ALARM_WAIT_CMD_TO_EXIT].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
+					currentGuard[GUARD_ALARM_WAIT_CMD_TO_EXIT].guardValue = GUARD_VALUE_FALSE;
+
+					// FM allarme resettato posso ritornare nella fase iniziale del trattamento
+					ptrFutureParent = &stateParentTreatKidney1[1];
+					ptrFutureChild = ptrFutureParent->ptrChild;
+					// forzo anche una pressione del tasto TREATMENT START per fare in modo che
+					// il trattamento riprenda automaticamente
+					setGUIButton(BUTTON_START_TREATMENT);
 				}
 				else
 				{
@@ -4457,6 +4494,18 @@ void processMachineState(void)
                 /* (FM) RIMANGO FERMO QUI FINO AL PROSSIMO ALLARME. NON E' NECESSARIO USCIRE DA QUESTO STATO DOPO IL TERMINE
                    DELLA CONDIZIONE DI ALLARME. LA CONDIZIONE DI ALLARME SUCCESSIVA MI FARA' RIPARTIRE DA CHILD_PRIMING_ALARM_INIT */
 				ptrCurrentChild->callBackFunct();
+			}
+			break;
+
+		case CHILD_PRIM_ALARM_1_WAIT_CMD:
+			if(ptrCurrentChild->action == ACTION_ON_ENTRY)
+			{
+				ptrFutureChild = &stateChildAlarmPriming[16];
+			}
+            else if( currentGuard[GUARD_ALARM_STOP_ALL_ACT_WAIT_CMD].guardValue == GUARD_VALUE_FALSE )
+                ptrFutureChild = &stateChildAlarmPriming[13]; /* FM allarme chiuso */
+			else if(ptrCurrentChild->action == ACTION_ALWAYS)
+			{
 			}
 			break;
 

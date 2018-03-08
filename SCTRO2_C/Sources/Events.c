@@ -395,7 +395,7 @@ void PELTIER_COMM_OnRxChar(void)
 	iflagPeltierMsg |= ((*ptrMsgPeltierRxDummy) == 0x3E) ? 0x10 : 0x00;
 	iflagPeltierMsg |= ((*ptrMsgPeltierRxDummy) == 0x20) ? 0x40 : 0x00;*/
 
-	ptrPeltierCountRx = ptrPeltierCountRx + 1;
+	//ptrPeltierCountRx = ptrPeltierCountRx + 1;
 	ptrMsgPeltierRx = ptrMsgPeltierRx + 1;
 
 	if(
@@ -406,14 +406,22 @@ void PELTIER_COMM_OnRxChar(void)
 		)
 	//if(iflagPeltierMsg == IFLAG_PELTIER_MSG_END)
 	{
+		ptrPeltierCountRx = 0;
+		while  ( peltierDebug_rx_data[ptrPeltierCountRx] != 0x0A &&
+				peltierDebug_rx_data[ptrPeltierCountRx-1] != 0x0D   )
+		{
+			ptrPeltierCountRx++;
+		}
+
   		iflag_peltier_rx = IFLAG_PELTIER_RX;
 		iflagPeltierMsg = IFLAG_IDLE;
 		ptrMsgPeltierRx = &peltierDebug_rx_data[0];
-		ptrMsgDataieee754start = &peltierDebug_rx_data[ptrPeltierCountRx-12];
-		ptrMsgDataPeltierInt = &peltierDebug_rx_data[ptrPeltierCountRx-5];
-		ptrPeltierCountRx = 0;
+	//	ptrMsgDataieee754start = &peltierDebug_rx_data[ptrPeltierCountRx-12];
+	//	ptrMsgDataPeltierInt = &peltierDebug_rx_data[ptrPeltierCountRx-5];
+		ptrMsgDataieee754start = &peltierDebug_rx_data[ptrPeltierCountRx+1];
+		ptrMsgDataPeltierInt = &peltierDebug_rx_data[ptrPeltierCountRx+1];
+//		ptrPeltierCountRx = 0;
 	}
-
 }
 
 /*
@@ -542,7 +550,7 @@ void PELTIER2_COMM_OnRxChar(void)
 	iflagPeltierMsg |= ((*ptrMsgPeltierRxDummy) == 0x3E) ? 0x10 : 0x00;
 	iflagPeltierMsg |= ((*ptrMsgPeltierRxDummy) == 0x20) ? 0x40 : 0x00;*/
 
-	ptrPeltier2CountRx = ptrPeltier2CountRx + 1;
+	//ptrPeltier2CountRx = ptrPeltier2CountRx + 1;
 	ptrMsgPeltier2Rx = ptrMsgPeltier2Rx + 1;
 
 	if(
@@ -553,12 +561,21 @@ void PELTIER2_COMM_OnRxChar(void)
 		)
 	//if(iflagPeltierMsg == IFLAG_PELTIER_MSG_END)
 	{
+		ptrPeltier2CountRx = 0;
+		while  ( peltier2Debug_rx_data[ptrPeltier2CountRx] != 0x0A &&
+				peltier2Debug_rx_data[ptrPeltier2CountRx-1] != 0x0D   )
+		{
+			ptrPeltier2CountRx++;
+		}
+
   		iflag_peltier2_rx = IFLAG_PELTIER_RX;
 		iflagPeltier2Msg = IFLAG_IDLE;
 		ptrMsgPeltier2Rx = &peltier2Debug_rx_data[0];
-		ptrMsgData2ieee754start = &peltier2Debug_rx_data[ptrPeltier2CountRx-12];
-		ptrMsgDataPeltier2Int = &peltier2Debug_rx_data[ptrPeltier2CountRx-5];
-		ptrPeltier2CountRx = 0;
+		//ptrMsgData2ieee754start = &peltier2Debug_rx_data[ptrPeltier2CountRx-12];
+		//ptrMsgDataPeltier2Int = &peltier2Debug_rx_data[ptrPeltier2CountRx-5];
+		ptrMsgData2ieee754start = &peltier2Debug_rx_data[ptrPeltier2CountRx+1];
+		ptrMsgDataPeltier2Int = &peltier2Debug_rx_data[ptrPeltier2CountRx+1];
+	//	ptrPeltier2CountRx = 0;
 	}
 }
 

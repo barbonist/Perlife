@@ -180,7 +180,17 @@
 #define REG_153_AN11_FAN1_CURRENT		"153"		/* an11 fan 1 current; (float); R */
 #define REG_154_AN4_FAN2_CURRENT		154		/* an4 fan 2 current; (float); R */
 
-
+enum{
+	REQ_FAN_MODE = 0,
+	WAIT_FAN_RESPONS,
+	CHECK_FAN_MODE,
+	REQ_TEMP,
+	WAIT_TEMP_RESPONS,
+	CHECK_TEMP,
+	REQ_START,
+	WAIT_RESPONS_START,
+	SET_START_OK
+};
 
 
 
@@ -195,8 +205,10 @@ void alwaysPeltierActuator(void);
 void alwaysPeltier2Actuator(void);
 void startPeltierActuator(void);
 void stopPeltierActuator(void);
-void NewSetTempPeltierActuator();
-void NewSetTempPeltier2Actuator();
+void startPeltier2Actuator(void);
+void stopPeltier2Actuator(void);
+void ManagePeltierActuator(void);
+void ManagePeltier2Actuator(void);
 
 
 #endif /* APPLICATION_PELTIER_MODULE_H_ */

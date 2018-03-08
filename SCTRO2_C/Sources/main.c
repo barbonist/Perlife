@@ -222,21 +222,12 @@ void Manage_Debug_led(bool Status)
 int main(void)
 /*lint -restore Enable MISRA rule (6.3) checking. */
 {
-
-  GlobalFlags.FlagsVal = 0;
-  // abilito tutti gli allarmi previsti
-  GlobalFlags.FlagsDef.EnableAllAlarms = 1;
-  SetAllAlarmEnableFlags();
-
-  CoversState = 4; // all covers chiusi
-  ArteriousPumpGainForPid = DEFAULT_ART_PUMP_GAIN;
-  VenousPumpGainForPid = DEFAULT_VEN_PUMP_GAIN;
-
   /* Write your local variable definition here */
   bool MOTORE_ACCESO = FALSE;
   bool MOTORE_ACCESO_2 = FALSE;
   bool Status_Board;
   THERAPY_TYPE TreatType = KidneyTreat;
+
   pollingDataFromSBC = 0;
   pollingDataToSBC = 0;
   codeDBG = 0;
@@ -245,7 +236,15 @@ int main(void)
   Released2 = 0;
   Released3 = 0;
   CheckAlarmFlag = 0;
+  Peltier2On = FALSE;
+  PeltierOn = FALSE;
+  GlobalFlags.FlagsVal = 0;
+  // abilito tutti gli allarmi previsti
+  GlobalFlags.FlagsDef.EnableAllAlarms = 1;
 
+  CoversState = 4; // all covers chiusi
+  ArteriousPumpGainForPid = DEFAULT_ART_PUMP_GAIN;
+  VenousPumpGainForPid = DEFAULT_VEN_PUMP_GAIN;
 
  #ifdef	SERVICE_ACTIVE_TOGETHER_THERAPY
   Status_Board = SERVICE;
@@ -491,6 +490,8 @@ int main(void)
 //	FreeRunCnt10msecOld = 0;
 //#endif
 
+   SetAllAlarmEnableFlags();
+
 
   /**********MAIN LOOP START************/
   for(;;) {
@@ -561,27 +562,31 @@ int main(void)
 			{
 	        	 timerCounterPeltier = 0;
 
-	        	 if(peltierCell.readAlwaysEnable == 0)
-	        	 {
-	        		/*fuinzione che gestisce tutta la comunicazione, serve solo una volta
-	        		 * per impostare i parametri sui driver delle peltier*/
-	        		 //alwaysPeltierActuator();
+				CheckTemperatureSet();
 
-	        		 /*funzione che serve a mpostare un nuovo valore di temp
-	        		  * sulla cella di peltier*/
-	        		 NewSetTempPeltierActuator();
-	        	 }
-
-	        	 if(peltierCell2.readAlwaysEnable == 0)
-	        	 {
-					/*fuinzione che gestisce tutta la comunicazione, serve solo una volta
+				 if(peltierCell.readAlwaysEnable == 0)
+				 {
+					/*funzione che gestisce tutta la comunicazione, serve solo una volta
 					 * per impostare i parametri sui driver delle peltier*/
-	        		// alwaysPeltier2Actuator();
+					 //	 alwaysPeltierActuator();
 
-	        		 /*funzione che serve a mpostare un nuovo valore di temp
-	        		  * sulla cella di peltier*/
-	        		 NewSetTempPeltier2Actuator();
-	        	 }
+					 /*funzione che serve a impostare un nuovo valore di temp, e gestire
+					  * lo start se non è stato fattio e l'abilitazione delle ventole
+					  * sulla cella di peltier*/
+					 ManagePeltierActuator();
+				 }
+
+				 if(peltierCell2.readAlwaysEnable == 0)
+				 {
+					/*funzione che gestisce tutta la comunicazione, serve solo una volta
+					 * per impostare i parametri sui driver delle peltier*/
+				//	 alwaysPeltier2Actuator();
+
+					 /*funzione che serve a impostare un nuovo valore di temp, e gestire
+					  * lo start se non è stato fattio e l'abilitazione delle ventole
+					  * sulla cella di peltier*/
+					 ManagePeltier2Actuator();
+				 }
 	         }
 
 	         /********************************/
