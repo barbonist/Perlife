@@ -611,9 +611,88 @@ int get_Set_Point_Pressure(int Speed)
 	return (Presure_Set_Point);
 }
 
-float CalcolaPresVen_with_Flow()
+float CalcolaPresVen_with_Flow(unsigned char type_flow)
 {
-	float Gain,Offset, Target_Flow = (float)parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value;
+	float Gain,Offset, Target_Flow;
+
+	if (type_flow == 0)
+		Target_Flow = (float)parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value;
+	else //if (type_flow == 1)
+		Target_Flow = (float)sensor_UFLOW[1].Average_Flow_Val;
+
+	if (Target_Flow <= 158.0)
+	{
+		 Gain =  ( ((float) 61.0 - 53.0) / 158);
+		 Offset = (float) 61.0 - Gain * 158.0;
+	}
+	else if (Target_Flow > 158.0 && Target_Flow<= 356.0)
+	{
+		 Gain =  ( ((float) 71.0 - 61.0) / (356.0 - 158.0));
+		 Offset = (float) 71.0 - Gain * 356.0;
+	}
+	else if (Target_Flow > 356.0 && Target_Flow<= 562.0)
+	{
+		 Gain =  ( ((float) 87.0 - 71.0) / (562.0 - 356.0));
+		 Offset = (float) 87.0 - Gain * 562.0;
+	}
+	else if (Target_Flow > 562.0 && Target_Flow<= 790.0)
+	{
+		 Gain = ( ((float) 104.0 - 87.0) / (790.0 - 562.0));
+		 Offset = (float) 104.0 - Gain * 790.0;
+	}
+	else if (Target_Flow > 790.0 && Target_Flow<= 1025.0)
+	{
+		 Gain = ( ((float) 124.0 - 104.0) / (1025.0 - 790.0));
+		 Offset = (float) 124.0 - Gain * 1025.0;
+	}
+	else if (Target_Flow > 1025.0 && Target_Flow<= 1230.0)
+	{
+		 Gain = ( ((float) 147.0 - 124.0) / (1230.0 - 1025.0) );
+		 Offset = (float) 147.0 - Gain * 1230.0;
+	}
+	else if (Target_Flow > 1230.0 && Target_Flow<= 1422.0)
+	{
+		 Gain = ( ( (float) 173.0 - 147.0) / (1422.0 - 1230.0));
+		 Offset = (float) 173.0 - Gain * 1422.0;
+	}
+	else if (Target_Flow > 1422.0 && Target_Flow<= 1614.0)
+	{
+		 Gain = ( ((float) 200.0 - 173.0) / (1614.0 - 1422.0));
+		 Offset = (float) 200.0 - Gain * 1614.0;
+	}
+	else if (Target_Flow > 1614.0 && Target_Flow<= 1826.0)
+	{
+		 Gain = ( ((float) 235.0 - 200.0) / (1826.0 - 1614.0));
+		 Offset = (float) 235.0 - Gain * 1826.0;
+	}
+	else if (Target_Flow > 1826.0 && Target_Flow<= 2022.0)
+	{
+		 Gain = ( ((float) 264.0 - 235.0) / (2022.0 - 1826.0));
+		 Offset = (float) 264.0 - Gain * 2022.0;
+	}
+	else if (Target_Flow > 2022.0)
+	{
+		 Gain = ( ((float) 279.0 - 264.0) / (2214.0 - 2022));
+		 Offset = (float) 279.0 - Gain * 2214.0;
+	}
+
+	float press = Gain * (Target_Flow) + Offset;
+
+    return press;
+
+}
+
+/* OLD in data 09-03-2018
+float CalcolaPresVen_with_Flow(unsigned char type_flow)
+{
+	float Gain,Offset, Target_Flow;
+
+	if (type_flow == 0)
+		Target_Flow = (float)parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value;
+	else //if (type_flow == 1)
+		Target_Flow = (float)sensor_UFLOW[1].Average_Flow_Val;
+
+
 
 	if (Target_Flow <= 158.0)
 	{
@@ -743,6 +822,10 @@ float CalcolaPresVen_with_Flow_old()
 
     return press;
 }
+<<<<<<< HEAD
+=======
+*/
+>>>>>>> Dev_Therapy_VP_1
 
 float CalcolaPresVen_with_Speed(float speed)
 {
@@ -933,14 +1016,14 @@ void alwaysPumpPressLoopVen(unsigned char pmpId, unsigned char *PidFirstTime){
 	 * altrimenti lo aggiorno subito, altrimenti il pid va troppo veloce per il target*/
 	if (deltaSpeed_Ven > 0)
 	{
-		Target_PID_VEN = parameterWordSetFromGUI[PAR_SET_VENOUS_PRESS_TARGET].value + CalcolaPresVen_with_Flow();
+		Target_PID_VEN = parameterWordSetFromGUI[PAR_SET_VENOUS_PRESS_TARGET].value + CalcolaPresVen_with_Flow(0);
 		timerCounterUpdateTargetPressurePid = 0;
 	}
 
 	else if (timerCounterUpdateTargetPressurePid > 60)
 	{
 		timerCounterUpdateTargetPressurePid = 0;
-		Target_PID_VEN = parameterWordSetFromGUI[PAR_SET_VENOUS_PRESS_TARGET].value + CalcolaPresVen_with_Flow();
+		Target_PID_VEN = parameterWordSetFromGUI[PAR_SET_VENOUS_PRESS_TARGET].value + CalcolaPresVen_with_Flow(0);
 	}
 
 	/*aggiorno la velocità se è doiversa dalla precedente*/

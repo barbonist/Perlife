@@ -732,6 +732,7 @@ struct peltier{
 
 	/* varie */
 	char readAlwaysEnable;
+	char StopEnable;
 
 };
 
@@ -881,6 +882,10 @@ word  PR_VEN_ADC_Filtered;  	//variabile globale per il valore ADC del sensore d
 word  PR_VEN_Diastolyc_mmHg;	//variabile globale per il valore diastolico  in mmHg del sensore di pressione venosa
 word  PR_VEN_Sistolyc_mmHg;	    //variabile globale per il valore sistolico  in mmHg del sensore di pressione venosa
 word  PR_VEN_Med_mmHg;			//variabile globale per il valore medio in mmHg del sensore di pressione venosa calcolato come (2 *PR_OXYG_Sistolyc_mmHg + PR_OXYG_Diastolyc_mmHg)/3
+int  PR_VEN_Diastolyc_mmHg_ORG;	//variabile globale per il valore diastolico  in mmHg del sensore di pressione venosa stimato sull'organo
+int  PR_VEN_Sistolyc_mmHg_ORG;	    //variabile globale per il valore sistolico  in mmHg del sensore di pressione venosa stimato sull'organo
+int  PR_VEN_Med_mmHg_ORG;			//variabile globale per il valore medio in mmHg del sensore di pressione venosa calcolato come (2 *PR_OXYG_Sistolyc_mmHg + PR_OXYG_Diastolyc_mmHg)/3 stimato sull'organo
+
 
 
 word  PR_ART_ADC;				//variabile globale per il valore ADC del sensore di pressione arteriosa --> PTB7

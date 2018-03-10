@@ -44,6 +44,7 @@ void peltierAssInit(void){
 	peltierCell.myThrsldMainCurrHigh = 30;
 
 	peltierCell.readAlwaysEnable = 0;
+	peltierCell.StopEnable = 0;
 
 	peltierCell2.commandDataFloatToWrite = 0;
 	peltierCell2.commandDataIntToWrite = 0;
@@ -62,6 +63,7 @@ void peltierAssInit(void){
 	peltierCell2.myThrsldMainCurrHigh = 30;
 
 	peltierCell2.readAlwaysEnable = 0;
+	peltierCell2.StopEnable = 0;
 
 	timerCounterPeltier = 0;
 
@@ -1350,24 +1352,104 @@ void ManagePeltier2Actuator()
 		}
 }
 
-void startPeltierActuator(void){
+void startPeltierActuator(void)
+{
 	PeltierAssSendCommand(START_FLAG,"0",0,"0",1);
 }
 
-void startPeltier2Actuator(void){
+void startPeltier2Actuator(void)
+{
 	PeltierAssSendCommand(START_FLAG,"0",0,"0",2);
 }
 
-void stopPeltierActuator(void){
-	PeltierAssSendCommand(STOP_FLAG,"0",0,"0",1);
-	// in teoria dovrebbe diventare false solo dopo che e' stata verificata la risposta al comando di stop
-	PeltierOn = FALSE;
+void stopPeltierActuator(void)
+{
+	static unsigned char state = REQ_STOP;
+
+	if (PeltierOn)
+	{
+		if(iflag_peltier_rx == IFLAG_IDLE)
+		{
+			switch (state)
+			{
+				case  REQ_STOP:
+					PeltierAssSendCommand(STOP_FLAG,"0",0,"0",1);
+					state = WAIT_STOP_RESPONS;
+					break;
+
+				default:
+					break;
+			}
+		}
+		if(iflag_peltier2_rx == IFLAG_PELTIER_RX)
+		{
+			switch (state)
+			{
+				case  WAIT_STOP_RESPONS:
+					if ( (*ptrMsgDataieee754start     == 'S') &&
+						 (*(ptrMsgDataieee754start+1) == 't') &&
+						 (*(ptrMsgDataieee754start+2) == 'o') &&
+						 (*(ptrMsgDataieee754start+3) == 'p')
+						)
+					{
+						PeltierOn =  FALSE;
+						peltierCell.StopEnable = 0;
+					}
+
+					state = REQ_STOP;
+					break;
+
+				default:
+					break;
+			}
+		}
+	}
 }
 
-void stopPeltier2Actuator(void){
-	PeltierAssSendCommand(STOP_FLAG,"0",0,"0",2);
-	// in teoria dovrebbe diventare false solo dopo che e' stata verificata la risposta al comando di stop
-	Peltier2On = FALSE;
+void stopPeltier2Actuator(void)
+{
+	static unsigned char state = REQ_STOP;
+
+	if (Peltier2On)
+	{
+		if(iflag_peltier2_rx == IFLAG_IDLE)
+		{
+			switch (state)
+			{
+				case  REQ_STOP:
+					PeltierAssSendCommand(STOP_FLAG,"0",0,"0",2);
+					state = WAIT_STOP_RESPONS;
+					break;
+
+				default:
+					break;
+			}
+
+		}
+		if(iflag_peltier2_rx == IFLAG_PELTIER_RX)
+		{
+			switch (state)
+			{
+				case  WAIT_STOP_RESPONS:
+					if ( (*ptrMsgData2ieee754start     == 'S') &&
+						 (*(ptrMsgData2ieee754start+1) == 't') &&
+						 (*(ptrMsgData2ieee754start+2) == 'o') &&
+						 (*(ptrMsgData2ieee754start+3) == 'p')
+						)
+					{
+						Peltier2On =  FALSE;
+						peltierCell2.StopEnable = 0;
+					}
+
+					state = REQ_STOP;
+					break;
+
+				default:
+					break;
+			}
+
+		}
+	}
 }
 
 /*funzione cher invia il comando sulla seriale

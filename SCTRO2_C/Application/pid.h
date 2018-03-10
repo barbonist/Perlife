@@ -17,7 +17,7 @@ void alwaysPumpPressLoopArt(unsigned char pmpId, unsigned char *PidFirstTime);
 void alwaysPumpPressLoop(unsigned char pmpId, unsigned char *PidFirstTime);
 int get_Set_Point_Pressure(int Speed);
 float CalcolaPresVen_with_Speed(float speed);
-float CalcolaPresVen_with_Flow();
+float CalcolaPresVen_with_Flow(unsigned char type_flow);
 float CalcolaPresArt(float speed);
 int SpeedCostanteVen( int CurrSpeed);
 void alwaysPumpPressLoopVen(unsigned char pmpId, unsigned char *PidFirstTime);

@@ -25,6 +25,7 @@
 #include "App_Ges.h"
 #include "ModBusCommProt.h"
 #include "Comm_Sbc.h"
+#include "pid.h"
 
 byte adcRes = 0xFF;
 word adcValue;
@@ -168,6 +169,7 @@ void CalcVenSistDiastPress(word Press)
   word min = 0xffff;
   word max = 0;
   int MAX_SAMPLE_FOR_SPEED = NUMB_OF_SAMPLES_VEN;
+  float Press_flow_extimated = 0;
 
   if ( pumpPerist[1].actualSpeed != 0)
   {
@@ -230,6 +232,20 @@ void CalcVenSistDiastPress(word Press)
 	PR_VEN_Diastolyc_mmHg = min;
 	PR_VEN_Sistolyc_mmHg  = max;
 	PR_VEN_Med_mmHg = (int) ( 2 * PR_VEN_Sistolyc_mmHg + PR_VEN_Diastolyc_mmHg)/3;
+
+	Press_flow_extimated = CalcolaPresVen_with_Flow(1);
+
+	PR_VEN_Diastolyc_mmHg_ORG = PR_VEN_Diastolyc_mmHg - Press_flow_extimated;
+	PR_VEN_Sistolyc_mmHg_ORG  = PR_VEN_Sistolyc_mmHg - Press_flow_extimated;
+	PR_VEN_Med_mmHg_ORG		  = PR_VEN_Med_mmHg - Press_flow_extimated;
+
+	if (PR_VEN_Diastolyc_mmHg_ORG < 0)
+		PR_VEN_Diastolyc_mmHg_ORG = 0;
+	if (PR_VEN_Sistolyc_mmHg_ORG < 0)
+		PR_VEN_Sistolyc_mmHg_ORG = 0;
+	if (PR_VEN_Med_mmHg_ORG < 0)
+		PR_VEN_Med_mmHg_ORG = 0;
+
 }
 
 

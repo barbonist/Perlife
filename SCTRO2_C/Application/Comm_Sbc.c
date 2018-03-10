@@ -967,14 +967,14 @@ void buildRDMachineStateResponseMsg(char code, char subcode)
 	sbc_tx_data[index++] = (PR_ART_Med_mmHg >> 8) & 0xFF;
 	sbc_tx_data[index++] = (PR_ART_Med_mmHg     ) & 0xFF;
 	/* sensors parameters: pressure systolic venous */
-	sbc_tx_data[index++] = (PR_VEN_Sistolyc_mmHg >> 8) & 0xFF;
-	sbc_tx_data[index++] = (PR_VEN_Sistolyc_mmHg     ) & 0xFF;
+	sbc_tx_data[index++] = (PR_VEN_Sistolyc_mmHg_ORG >> 8) & 0xFF;
+	sbc_tx_data[index++] = (PR_VEN_Sistolyc_mmHg_ORG     ) & 0xFF;
 	/* sensors parameters: pressure diastolic venous */
-	sbc_tx_data[index++] = (PR_VEN_Diastolyc_mmHg >> 8) & 0xFF;
-	sbc_tx_data[index++] = (PR_VEN_Diastolyc_mmHg     ) & 0xFF;
+	sbc_tx_data[index++] = (PR_VEN_Diastolyc_mmHg_ORG >> 8) & 0xFF;
+	sbc_tx_data[index++] = (PR_VEN_Diastolyc_mmHg_ORG     ) & 0xFF;
 	/* sensors parameters: pressure mean venous */
-	sbc_tx_data[index++] = (PR_VEN_Med_mmHg >> 8) & 0xFF;
-	sbc_tx_data[index++] = (PR_VEN_Med_mmHg     ) & 0xFF;
+	sbc_tx_data[index++] = (PR_VEN_Med_mmHg_ORG >> 8) & 0xFF;
+	sbc_tx_data[index++] = (PR_VEN_Med_mmHg_ORG     ) & 0xFF;
 
 	/* sensors parameters: pressure flow arterial */
 	sbc_tx_data[index++] = (((int)sensor_UFLOW[0].Average_Flow_Val) >> 8) & 0xFF;  // sensorsValues.flowArt
