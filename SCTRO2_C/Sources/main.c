@@ -587,6 +587,15 @@ int main(void)
 					  * sulla cella di peltier*/
 					 ManagePeltier2Actuator();
 				 }
+
+				 /*funzione cher gestiscer lo stop della cella di peltier 1*/
+				 if (peltierCell.StopEnable == 1)
+					 stopPeltierActuator();
+
+				 /*funzione cher gestiscer lo stop della cella di peltier 1*/
+				 if (peltierCell2.StopEnable == 1)
+					 stopPeltier2Actuator();
+
 	         }
 
 	         /********************************/

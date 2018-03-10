@@ -482,8 +482,8 @@ void Service_SBC(void){
 					// Peltier stop
 					case 0x21:
 					{
-						stopPeltierActuator();
-						stopPeltier2Actuator();
+						peltierCell.StopEnable  = 1;
+						peltierCell2.StopEnable = 1;
 
 						word snd;
 						ptrMsgSbcRx = &sbc_rx_data;
