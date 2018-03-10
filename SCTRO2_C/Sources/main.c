@@ -564,11 +564,15 @@ int main(void)
 
 	        	 CheckTemperatureSet();
 
+	        	 /*********************DISATTIVAZIONE PELTIER SE NON RISPONDONO **************************/
+	        	 /*messo qui soloper debug, dopo sarà da gestire con un allarme specifco
+	        	  * Nel Test, se mando 50 msg senza avere una loro risposta corretta (quindi 5 secondi), disabilitp la 24 Volt e le spengo*/
 	        	 if (peltierCell.countMsgSent > 50)
 	        		  EN_P_1_C_ClrVal();
 
 	        	 if (peltierCell2.countMsgSent > 50)
 	        		  EN_P_2_C_ClrVal();
+	        	 /*********************DISATTIVAZIONE PELTIER SE NON RISPONDONO END **************************/
 
 				 if(peltierCell.readAlwaysEnable == 0)
 				 {
