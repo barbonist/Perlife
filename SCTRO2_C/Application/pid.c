@@ -822,10 +822,7 @@ float CalcolaPresVen_with_Flow_old()
 
     return press;
 }
-<<<<<<< HEAD
-=======
 */
->>>>>>> Dev_Therapy_VP_1
 
 float CalcolaPresVen_with_Speed(float speed)
 {
