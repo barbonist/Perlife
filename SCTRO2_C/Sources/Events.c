@@ -864,8 +864,8 @@ void MODBUS_COMM_OnRxChar(void)
 	{
 		iflag_pmp1_rx = IFLAG_IDLE;
 		iflag_pmp1_rx |= IFLAG_PMP1_RX;
-		_funcRetVal.slvresRetPtr = _funcRetVal.slvresRetPtr - byte_received;	//riporto il puntatore dei valori all'inizio
-		byte_received=0;														//resetto byte_received così ad una prossima ricezione
+		//_funcRetVal.slvresRetPtr = _funcRetVal.slvresRetPtr - byte_received;	//riporto il puntatore dei valori all'inizio
+		//byte_received=0;														//resetto byte_received così ad una prossima ricezione
 		iFlag_actuatorCheck = IFLAG_COMMAND_RECEIVED;
 		iFlag_modbusDataStorage = FALSE;
 	}

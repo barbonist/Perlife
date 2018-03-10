@@ -1273,22 +1273,32 @@ void Manage_and_Storage_ModBus_Actuator_Data(void)
  *  alla Check_Actuator_Status nella matrice modbusData*/
 void StorageModbusData(void)
 {
-	unsigned char dataTemp[MAX_DATA_MODBUS_RECEIVED],i,Address,funCode;
+	unsigned char dataTemp[TOT_DATA_MODBUS_RECEIVED_PUMP],i,Address = msgToRecvFrame3[0],funCode = msgToRecvFrame3[1];
 	unsigned int  Pump_Average_Current	= 0,
 				  Pump_Speed_Status		= 0,
 				  Pump_Status			= 0,
 				  Pinch_Average_Current = 0,
 				  Pinch_Status			= 0;
 
+	int Tot_ModBus_Data_RX = 0;
+
+	if (Address >= FIRST_ACTUATOR && Address <= LAST_PUMP)
+		Tot_ModBus_Data_RX = TOT_DATA_MODBUS_RECEIVED_PUMP;
+	else if (Address >= FIRST_PINCH && Address <= LAST_ACTUATOR)
+		Tot_ModBus_Data_RX = TOT_DATA_MODBUS_RECEIVED_PINCH;
+
 	/*copio nell'array temporaneo i dati ricevuti*/
-	for (i=0; i<MAX_DATA_MODBUS_RECEIVED; i++)
+	for (i=0; i<Tot_ModBus_Data_RX; i++)
 	{
 		/*sposto il puntatore nella posizione che devo leggere*/
 		//_funcRetVal.slvresRetPtr = _funcRetVal.slvresRetPtr + i;
 
 		/*copio il dato*/
-		dataTemp[i] = * (_funcRetVal.slvresRetPtr+i); //così sposto non sposto il puntatore, ma leggo direttamente quello che mi serve senza spostarlo
+		//dataTemp[i] = * (_funcRetVal.slvresRetPtr+i); //così sposto non sposto il puntatore, ma leggo direttamente quello che mi serve senza spostarlo
+		dataTemp[Tot_ModBus_Data_RX - 1 - i] = * (_funcRetVal.slvresRetPtr - i - 1); //così sposto non sposto il puntatore, ma leggo direttamente quello che mi serve senza spostarlo
 	}
+
+
 	/*riporto il puntatore nella posizione iniziale*/
 	//_funcRetVal.slvresRetPtr = _funcRetVal.slvresRetPtr - MAX_DATA_MODBUS_RECEIVED;
 

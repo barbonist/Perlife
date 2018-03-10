@@ -111,7 +111,8 @@ char    iFlag_modbusDataStorage;
 #define FIRST_PINCH					0x06
 #define TOTAL_ACTUATOR				7
 #define TOTAL_MODBUS_DATA			32
-#define MAX_DATA_MODBUS_RECEIVED	11
+#define TOT_DATA_MODBUS_RECEIVED_PUMP	11
+#define TOT_DATA_MODBUS_RECEIVED_PINCH	9
 #define MAX_DATA_MODBUS_RX 		    67 //64byte di dati + 3 byte iniziali con slv Addr, fun code and byte Read Count
 #define AIR							0x00
 #define LIQUID						0x01
