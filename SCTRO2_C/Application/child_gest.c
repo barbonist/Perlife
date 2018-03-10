@@ -273,6 +273,11 @@ void manageChildTreatAlm1InitAlways(void)
 		/* (FM) risolvo la situazione di allarme andando ad agire sulla cella di peltier */
 		ptrFutureChild = &stateChildAlarmTreat1[9];
 	}
+    else if(currentGuard[GUARD_ALARM_STOP_ALL_ACT_WAIT_CMD].guardValue == GUARD_VALUE_TRUE)
+    {
+    	/* (FM) risolvo la situazione di allarme andando  a spegnere tutti gli attuatori */
+        ptrFutureChild = &stateChildAlarmTreat1[21];
+    }
 }
 
 
@@ -793,7 +798,7 @@ void manageChildAlmAndWaitCmdAlways(void)
 
 
 //--------------------------------------------------------------------------------------------------
-/* Manage CHILD_TREAT_ALARM_1_WAIT_CMD entry state in priming*/
+/* Manage CHILD_PRIM_ALARM_1_WAIT_CMD entry state in priming*/
 /* (FM) risolvo la situazione di allarme
  * rene:   sposto wpwa a destra in modo da staccare l'organo
  *         e scaricare sul reservoir
@@ -806,15 +811,15 @@ void manageChildPrimAlmAndWaitCmdEntry(void)
 	GlobalFlags.FlagsDef.ChildAlmAndWaitCmdActive = 1;
 }
 
-/* Manage CHILD_TREAT_ALARM_1_WAIT_CMD always state in priming */
+/* Manage CHILD_PRIM_ALARM_1_WAIT_CMD always state in priming */
 void manageChildPrimAlmAndWaitCmdAlways(void)
 {
 	// apetto che tutte le pompe si siano fermate
 	manageChildTreatAlm1StopAllActAlways();
-	// Questa tipologia di allarmi deve essere forzata in off dal software prima di poter riprendere il lavoro
-	ForceCurrentAlarmOff();
 	if((buttonGUITreatment[BUTTON_RESET_ALARM].state == GUI_BUTTON_RELEASED) && IsSecurityStateActive())
 	{
+		// Questa tipologia di allarmi deve essere forzata in off dal software prima di poter riprendere il lavoro
+		ForceCurrentAlarmOff();
 		// setto la guard per fare in modo che quando l'allarme risultera' non attivo
 		// la macchina a stati parent vada nello stato di espulsione bolla aria
 		currentGuard[GUARD_ALARM_WAIT_CMD_TO_EXIT].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;

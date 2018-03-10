@@ -862,6 +862,30 @@ void manageStateFatalErrorAlways(void)
 {
 
 }
+
+/*-----------------------------------------------------------*/
+/* This function manages the state Priming_1_Wait activity */
+/*-----------------------------------------------------------*/
+void computeMachineStateGuardPriming_1_Wait(void)
+{
+	if( buttonGUITreatment[BUTTON_PRIMING_FILT_INS_CONFIRM].state == GUI_BUTTON_RELEASED)
+	{
+		FilterSelected = TRUE;
+		currentGuard[GUARD_FILTER_INSTALLED].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+		releaseGUIButton(BUTTON_PRIMING_FILT_INS_CONFIRM);
+		// forzo anche uno start priming per il nuovo stato per far partire subito le pompe
+		setGUIButton(BUTTON_START_PRIMING);	}
+}
+
+void manageStatePriming_1_WaitEntry(void)
+{
+}
+
+void manageStatePriming_1_WaitAlways(void)
+{
+	computeMachineStateGuardPriming_1_Wait();
+}
+
 /*-----------------------------------------------------------*/
 /*------------------FUNZIONI OLD-----------------------------*/
 /*-----------------------------------------------------------*/
@@ -1533,14 +1557,18 @@ void manageParentPrimingAlways(void){
 					((float)perfusionParam.priVolPerfArt >= ((float)GetTotalPrimingVolumePerf(0) * PERC_OF_PRIM_FOR_FILTER / 100.0)))  // parameterWordSetFromGUI[PAR_SET_PRIMING_VOL_PERFUSION].value
 #endif
 			{
-				// ho raggiunto il 95% del volume, fermo le pompe ed aspetto il caricamento del filtro
-				setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
-				setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 0);
-				if(GetTherapyType() == LiverTreat)
+				if(currentGuard[GUARD_ENABLE_STATE_PRIMING_PH_1_WAIT].guardEntryValue != GUARD_ENTRY_VALUE_TRUE)
 				{
-					// se sono nel trattamento fegato fermo anche l'altro motore !!
-					setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, 0);
+					// ho raggiunto il 95% del volume, fermo le pompe ed aspetto il caricamento del filtro
+					setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
+					setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 0);
+					if(GetTherapyType() == LiverTreat)
+					{
+						// se sono nel trattamento fegato fermo anche l'altro motore !!
+						setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, 0);
+					}
 				}
+				currentGuard[GUARD_ENABLE_STATE_PRIMING_PH_1_WAIT].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
 			}
 			else if((ptrCurrentState->state == STATE_PRIMING_PH_2) &&
 					(perfusionParam.priVolPerfArt >= GetTotalPrimingVolumePerf(0))) // parameterWordSetFromGUI[PAR_SET_PRIMING_VOL_PERFUSION].value
@@ -2868,25 +2896,15 @@ static void computeMachineStateGuardTankFill(void){
 /*  This function compute the guard value in priming phase 1 state   */
 /*--------------------------------------------------------------------*/
 static void computeMachineStateGuardPrimingPh1(void){
-/*	CODICE ORIGINALE
-	if(
-		(buttonGUITreatment[BUTTON_PERF_FILTER_MOUNT].state == GUI_BUTTON_RELEASED) &&
-		(buttonGUITreatment[BUTTON_CONFIRM].state == GUI_BUTTON_RELEASED)
-			)
-	{
-		currentGuard[GUARD_ENABLE_PRIMING_PHASE_2].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
-		releaseGUIButton(BUTTON_PERF_FILTER_MOUNT);
-		releaseGUIButton(BUTTON_CONFIRM);
-		//setPumpSpeedValue(pumpPerist[0].pmpMySlaveAddress, 0);
-	}
-	*/
-	if( buttonGUITreatment[BUTTON_PRIMING_FILT_INS_CONFIRM].state == GUI_BUTTON_RELEASED)
-	{
-		FilterSelected = TRUE;
-		currentGuard[GUARD_ENABLE_PRIMING_PHASE_2].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
-		releaseGUIButton(BUTTON_PRIMING_FILT_INS_CONFIRM);
-	}
-	else if(buttonGUITreatment[BUTTON_PRIMING_ABANDON].state == GUI_BUTTON_RELEASED)
+
+//	if( buttonGUITreatment[BUTTON_PRIMING_FILT_INS_CONFIRM].state == GUI_BUTTON_RELEASED)
+//	{
+//		FilterSelected = TRUE;
+//		currentGuard[GUARD_ENABLE_PRIMING_PHASE_2].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+//		releaseGUIButton(BUTTON_PRIMING_FILT_INS_CONFIRM);
+//	}
+//	else
+	if(buttonGUITreatment[BUTTON_PRIMING_ABANDON].state == GUI_BUTTON_RELEASED)
 	{
 		releaseGUIButton(BUTTON_PRIMING_ABANDON);
 		setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
@@ -3469,6 +3487,7 @@ void processMachineState(void)
 				ptrFutureParent = ptrFutureState->ptrParent;
 				/* compute future child */
 				ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
+				DebugStringStr("STATE_MOUNTING_DISP");
 			}
 
 			/* execute function state level */
@@ -3492,6 +3511,7 @@ void processMachineState(void)
 				ptrFutureParent = ptrFutureState->ptrParent;
 				/* compute future child */
 				ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
+				DebugStringStr("STATE_TANK_FILL");
 			}
 
 			/* execute function state level */
@@ -3530,11 +3550,56 @@ void processMachineState(void)
 			break;
 
 		case STATE_PRIMING_PH_1:
-			if(
-				(currentGuard[GUARD_ENABLE_PRIMING_PHASE_2].guardValue == GUARD_VALUE_TRUE)
-				)
+//			if(
+//				(currentGuard[GUARD_ENABLE_PRIMING_PHASE_2].guardValue == GUARD_VALUE_TRUE)
+//				)
+//			{
+//				currentGuard[GUARD_ENABLE_PRIMING_PHASE_2].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
+//				/* (FM) FINITA LA FASE 1 DEL PRIMING POSSO PASSARE ALLA FASE 2 */
+//				/* compute future state */
+//				ptrFutureState = &stateState[15];
+//				/* compute future parent */
+//				ptrFutureParent = ptrFutureState->ptrParent;
+//				/* compute future child */
+//				ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
+//				DebugStringStr("STATE_PRIMING_PH_2");
+//			}
+			if(currentGuard[GUARD_ENABLE_STATE_PRIMING_PH_1_WAIT].guardValue == GUARD_VALUE_TRUE)
 			{
-				currentGuard[GUARD_ENABLE_PRIMING_PHASE_2].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
+				// nello stato priming 1 aspetto che mi arrivi il comando di caricamento del filtro
+				// quando mi arriva passo subito a priming 2 per completare il 5% di priming che mi rimane
+				// le pompe sono ferme e vado nello stato di attesa che l'utente monti il filtro
+				currentGuard[GUARD_ENABLE_STATE_PRIMING_PH_1_WAIT].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
+				/* compute future state */
+				ptrFutureState = &stateState[39];
+				/* compute future parent */
+				ptrFutureParent = ptrFutureState->ptrParent;
+				/* compute future child */
+				ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
+				DebugStringStr("PRIMING_PH_1_WAIT");
+				break;
+			}
+			else if(currentGuard[GUARD_ABANDON_PRIMING].guardValue == GUARD_VALUE_TRUE)
+			{
+				currentGuard[GUARD_ABANDON_PRIMING].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
+				/* (FM) HO DECISO DI ABBANDONARE IL PRIMING, RITORNO IN IDLE */
+				/* compute future state */
+				ptrFutureState = &stateState[3];
+				/* compute future parent */
+				ptrFutureParent = ptrFutureState->ptrParent;
+				/* compute future child */
+				ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
+				DebugStringStr("STATE_IDLE(ABBANDONA)");
+			}
+			/* execute function state level */
+			manageStateEntryAndStateAlways(14);
+			break;
+
+		case STATE_PRIMING_PH_1_WAIT:
+			if( (currentGuard[GUARD_FILTER_INSTALLED].guardValue == GUARD_VALUE_TRUE) )
+			{
+				// il filtro e' stato montato passo alla seconda fase di priming
+				currentGuard[GUARD_FILTER_INSTALLED].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
 				/* (FM) FINITA LA FASE 1 DEL PRIMING POSSO PASSARE ALLA FASE 2 */
 				/* compute future state */
 				ptrFutureState = &stateState[15];
@@ -3557,7 +3622,7 @@ void processMachineState(void)
 				DebugStringStr("STATE_IDLE(ABBANDONA)");
 			}
 			/* execute function state level */
-			manageStateEntryAndStateAlways(14);
+			manageStateEntryAndStateAlways(40);
 			break;
 
 		case STATE_PRIMING_PH_2:
@@ -3942,20 +4007,20 @@ void processMachineState(void)
 				}
 				else if(buttonGUITreatment[BUTTON_RESET_ALARM].state == GUI_BUTTON_RELEASED)
 				{
-					// Il ritorno al priming viene fatto solo dopo la pressione del tasto BUTTON_RESET_ALARM
-					releaseGUIButton(BUTTON_RESET_ALARM);
-					if(GlobalFlags.FlagsDef.TankLevelHigh)
-					{
-						// era un allarme di troppo pieno, forzo uscita dal priming
-						setGUIButton(BUTTON_PRIMING_END_CONFIRM);
-						GlobalFlags.FlagsDef.TankLevelHigh = 0;
-					}
-					else
-					{
+//					// Il ritorno al priming viene fatto solo dopo la pressione del tasto BUTTON_RESET_ALARM
+//					releaseGUIButton(BUTTON_RESET_ALARM);
+//					if(GlobalFlags.FlagsDef.TankLevelHigh)
+//					{
+//						// era un allarme di troppo pieno, forzo uscita dal priming
+//						setGUIButton(BUTTON_PRIMING_END_CONFIRM);
+//						GlobalFlags.FlagsDef.TankLevelHigh = 0;
+//					}
+//					else
+//					{
 						// forzo anche una pressione del tasto BUTTON_START_PRIMING START per fare in modo che
 						// il priming riprenda automaticamente
 						setGUIButton(BUTTON_START_PRIMING);
-					}
+//					}
 
 					/* (FM) finita la situazione di allarme posso ritornare in PARENT_PRIMING_TREAT_KIDNEY_1_INIT*/
 					// nella nuova gestione il priming viene fatto partendo direttamente dallo stato PARENT_PRIMING_TREAT_KIDNEY_1_RUN
@@ -4411,6 +4476,11 @@ void processMachineState(void)
             {
             	/* (FM) risolvo la situazione di allarme andando ad agire sulla cella di peltier */
                 ptrFutureChild = &stateChildAlarmPriming[9];
+            }
+            else if(currentGuard[GUARD_ALARM_STOP_ALL_ACT_WAIT_CMD].guardValue == GUARD_VALUE_TRUE)
+            {
+            	/* (FM) risolvo la situazione di allarme andando  a spegnere tutti gli attuatori */
+                ptrFutureChild = &stateChildAlarmPriming[15];
             }
 			break;
 

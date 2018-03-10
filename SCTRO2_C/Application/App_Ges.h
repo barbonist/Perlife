@@ -120,6 +120,11 @@ void manageStateWashingAlways(void);
 void manageStateFatalError(void);
 void manageStateFatalErrorAlways(void);
 
+void computeMachineStateGuardPriming_1_Wait(void);
+void manageStatePriming_1_WaitEntry(void);
+void manageStatePriming_1_WaitAlways(void);
+
+
 /* PARENT LEVEL FUNCTION */
 /**************************************************************************************/
 /******-----------------------------TREATMENT----------------------------------********/

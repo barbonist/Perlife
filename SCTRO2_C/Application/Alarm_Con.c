@@ -407,9 +407,14 @@ void alarmEngineAlways(void)
 				else if(GetTherapyType() == KidneyTreat)
 					manageAlarmCoversPumpKidney();
 
-				manageAlarmLiquidLevelLow();
-				manageAlarmDeltaFlowArt();
-				manageAlarmDeltaFlowVen();
+				// Questo allarme lo commento per ora, perche' bisogna avere un sensore di livello
+				// che funziona bene e si e' sicuri del suo funzionamento
+				//manageAlarmLiquidLevelLow();
+				// i due allarmi che seguono devo essere gestiti attentamente perche' potrei avere delle
+				// segnalazioni di allarme anche durante la fase di accelerazione e decelerazione del pid
+				// Per ora li commento.
+				//manageAlarmDeltaFlowArt();
+				//manageAlarmDeltaFlowVen();
 				manageAlarmDeltaTempRecArt();
 				manageAlarmDeltaTempRecVen();
 				break;
@@ -655,7 +660,7 @@ void manageAlarmDeltaFlowVen(void)
 		alarmList[DELTA_FLOW_VEN].physic = PHYSIC_FALSE;
 }
 
-// controllo se il deta di temperatura tra recipiente e liquido arterioso e' troppo alta
+// controllo se il delta di temperatura tra recipiente e liquido arterioso e' troppo alta
 void manageAlarmDeltaTempRecArt(void)
 {
 	if(GlobalFlags.FlagsDef.EnableDeltaTempRecArtAlarm)
@@ -676,7 +681,7 @@ void manageAlarmDeltaTempRecArt(void)
 		alarmList[DELTA_TEMP_REC_ART].physic = PHYSIC_FALSE;
 }
 
-// controllo se il deta di temperatura tra recipiente e liquido venoso e' troppo alta
+// controllo se il delta di temperatura tra recipiente e liquido venoso e' troppo alta
 void manageAlarmDeltaTempRecVen(void)
 {
 	if(GlobalFlags.FlagsDef.EnableDeltaTempRecVenAlarm)
