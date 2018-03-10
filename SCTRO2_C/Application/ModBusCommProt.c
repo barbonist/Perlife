@@ -1273,6 +1273,8 @@ void Manage_and_Storage_ModBus_Actuator_Data(void)
  *  alla Check_Actuator_Status nella matrice modbusData*/
 void StorageModbusData(void)
 {
+	/*in questa funzione suppongo di usare sempre il msgToRecvFrame3 in quanto usata solo per messaggi di stao e non di impostazione
+	 * ecco perchè posso fare Address = msgToRecvFrame3[0] e funCode = msgToRecvFrame3[1]*/
 	unsigned char dataTemp[TOT_DATA_MODBUS_RECEIVED_PUMP],i,Address = msgToRecvFrame3[0],funCode = msgToRecvFrame3[1];
 	unsigned int  Pump_Average_Current	= 0,
 				  Pump_Speed_Status		= 0,
@@ -1293,17 +1295,15 @@ void StorageModbusData(void)
 		/*sposto il puntatore nella posizione che devo leggere*/
 		//_funcRetVal.slvresRetPtr = _funcRetVal.slvresRetPtr + i;
 
-		/*copio il dato*/
-		//dataTemp[i] = * (_funcRetVal.slvresRetPtr+i); //così sposto non sposto il puntatore, ma leggo direttamente quello che mi serve senza spostarlo
-		dataTemp[Tot_ModBus_Data_RX - 1 - i] = * (_funcRetVal.slvresRetPtr - i - 1); //così sposto non sposto il puntatore, ma leggo direttamente quello che mi serve senza spostarlo
+		/*copio il dato partrendo dall'ultimo byte fino al primo tornando indietro di Tot_ModBus_Data_RX
+		 * che può essere 11 nel caso di una pompa oppure 9 nel caso di una pinch */
+		dataTemp[Tot_ModBus_Data_RX - 1 - i] = * (_funcRetVal.slvresRetPtr - i - 1); //così non sposto il puntatore, ma leggo direttamente quello che mi serve senza spostarlo
 	}
 
-
-	/*riporto il puntatore nella posizione iniziale*/
-	//_funcRetVal.slvresRetPtr = _funcRetVal.slvresRetPtr - MAX_DATA_MODBUS_RECEIVED;
-
-	Address = dataTemp[0];
-	funCode = dataTemp[1];
+	/*Address e funCode sono valorizzati all'inizializzazione
+	 * della variabile usando msgToRecvFrame3[0] e msgToRecvFrame3[1]*/
+//	Address = dataTemp[0];
+//	funCode = dataTemp[1];
 
 	/*se ho l'indirizzo di una pompa*/
 	if (Address >= FIRST_ACTUATOR && Address <= LAST_PUMP)

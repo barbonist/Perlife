@@ -21,7 +21,9 @@
 #include "ASerialLdd2.h"
 #include "SBC_COMM.h"
 
-void peltierAssInit(void){
+void peltierAssInit(void)
+{
+	/**************DRIVER 1**********************/
 	iflagPeltierBusy = IFLAG_PELTIER_FREE;
 	iflag_peltier_tx = IFLAG_IDLE;
 	iflag_peltier_rx = IFLAG_IDLE;
@@ -45,6 +47,13 @@ void peltierAssInit(void){
 
 	peltierCell.readAlwaysEnable = 0;
 	peltierCell.StopEnable = 0;
+	peltierCell.countMsgSent=0;
+
+/**************DRIVER 2**********************/
+	iflagPeltier2Busy = IFLAG_PELTIER_FREE;
+	iflag_peltier2_tx = IFLAG_IDLE;
+	iflag_peltier2_rx = IFLAG_IDLE;
+	iflagPeltier2Msg = IFLAG_IDLE;
 
 	peltierCell2.commandDataFloatToWrite = 0;
 	peltierCell2.commandDataIntToWrite = 0;
@@ -64,6 +73,7 @@ void peltierAssInit(void){
 
 	peltierCell2.readAlwaysEnable = 0;
 	peltierCell2.StopEnable = 0;
+	peltierCell2.countMsgSent=0;
 
 	timerCounterPeltier = 0;
 
@@ -1090,70 +1100,85 @@ void ManagePeltierActuator()
 		{
 			//FAN 1 MODE - READ
 			case REQ_FAN_MODE:
+			case WAIT_FAN_RESPONS: // se dopo 100 msec sono ancora in attesa di risposta torno a chiedere
 				PeltierAssSendCommand(READ_DATA_REGISTER_XX,REG_16_FAN1_MOD_SEL,0,"0",1);
+				/*incremento il contatore dei messaggi inviati al driver 1*/
+				peltierCell.countMsgSent++;
 				ptrMsgPeltierRx = &peltierDebug_rx_data[0];
 				myStatePos = WAIT_FAN_RESPONS;
 				break;
 			//FAN 1 MODE - WRITE
 			case CHECK_FAN_MODE:
+			case WAIT_FAN_SET_RESPONS: // se dopo 100 msec sono ancora in attesa di risposta torno a chiedere
 				if(myDataIntActual != peltierCell.myFanModeSel)
 				{
 					PeltierAssSendCommand(WRITE_DATA_REGISTER_XX, REG_16_FAN1_MOD_SEL, peltierCell.myFanModeSel, 0,1);
-					myStatePos = REQ_FAN_MODE;
+					/*incremento il contatore dei messaggi inviati al driver 1*/
+					peltierCell.countMsgSent++;
+					myStatePos = WAIT_FAN_SET_RESPONS;
 				}
 				else
 					myStatePos = REQ_TEMP;
 				break;
 
-			// SET TEMP - READ
-		case REQ_TEMP:
-			ptrMsgPeltierRx = &peltierDebug_rx_data[0];
-			PeltierAssSendCommand(READ_FLOAT_FROM_REG_XX,REG_0_SET_POINT,0,"0",1);
-			myStatePos = WAIT_TEMP_RESPONS;
-			break;
-		//SET TEMP - WRITE
-		case CHECK_TEMP:
-			if(myNumFloatActual.numFormatFloat != peltierCell.mySet)
-			{
-				myNumFloatActual.numFormatFloat = peltierCell.mySet;
-				sprintf(myStringFloat, "%2X%2X%2X%2X", 	(unsigned char)(myNumFloatActual.ieee754NUmFormat>>24),
-														(unsigned char)(myNumFloatActual.ieee754NUmFormat>>16),
-														(unsigned char)(myNumFloatActual.ieee754NUmFormat>>8),
-														(unsigned char)(myNumFloatActual.ieee754NUmFormat));
-				for(char i=0; i<8; i++)
+				// SET TEMP - READ
+			case REQ_TEMP:
+			case WAIT_TEMP_RESPONS: // se dopo 100 msec sono ancora in attesa di risposta torno a chiedere
+				ptrMsgPeltierRx = &peltierDebug_rx_data[0];
+				PeltierAssSendCommand(READ_FLOAT_FROM_REG_XX,REG_0_SET_POINT,0,"0",1);
+				/*incremento il contatore dei messaggi inviati al driver 1*/
+				peltierCell.countMsgSent++;
+				myStatePos = WAIT_TEMP_RESPONS;
+				break;
+			//SET TEMP - WRITE
+			case CHECK_TEMP:
+			case WAIT_TEMP_SET_RESPONS: // se dopo 100 msec sono ancora in attesa di risposta torno a chiedere
+				if(myNumFloatActual.numFormatFloat != peltierCell.mySet)
 				{
-					if(myStringFloat[i] == 0x20)
-						myStringFloat[i] = 0x30;
+					myNumFloatActual.numFormatFloat = peltierCell.mySet;
+					sprintf(myStringFloat, "%2X%2X%2X%2X", 	(unsigned char)(myNumFloatActual.ieee754NUmFormat>>24),
+															(unsigned char)(myNumFloatActual.ieee754NUmFormat>>16),
+															(unsigned char)(myNumFloatActual.ieee754NUmFormat>>8),
+															(unsigned char)(myNumFloatActual.ieee754NUmFormat));
+					for(char i=0; i<8; i++)
+					{
+						if(myStringFloat[i] == 0x20)
+							myStringFloat[i] = 0x30;
+					}
+					PeltierAssSendCommand(WRITE_FLOAT_REG_XX, REG_0_SET_POINT, 0, myStringFloat,1);
+					/*incremento il contatore dei messaggi inviati al driver 1*/
+					peltierCell.countMsgSent++;
+					myStatePos = WAIT_TEMP_SET_RESPONS;
 				}
-				PeltierAssSendCommand(WRITE_FLOAT_REG_XX, REG_0_SET_POINT, 0, myStringFloat,1);
-				myStatePos = REQ_TEMP;
-			}
-			else
-			{
-				if(!PeltierOn)
-					myStatePos = REQ_START;
 				else
 				{
-					peltierCell.readAlwaysEnable = 1;
-					myStatePos = REQ_FAN_MODE;
+					if(!PeltierOn)
+						myStatePos = REQ_START;
+					else
+					{
+						peltierCell.readAlwaysEnable = 1;
+						myStatePos = REQ_FAN_MODE;
+					}
 				}
-			}
-			break;
+				break;
 
-		case REQ_START:
-			 startPeltierActuator();
-			 myStatePos = WAIT_RESPONS_START;
-			 break;
+			case REQ_START:
+			case WAIT_RESPONS_START: // se dopo 100 msec sono ancora in attesa di risposta torno a chiedere
+				 startPeltierActuator();
+				 /*incremento il contatore dei messaggi inviati al driver 1*/
+				 peltierCell.countMsgSent++;
+				 myStatePos = WAIT_RESPONS_START;
+				 break;
 
-		case SET_START_OK:
-			// controllo che lo start viene preso
-			PeltierOn = TRUE;
-			peltierCell.readAlwaysEnable = 1;
-			myStatePos = REQ_FAN_MODE;
-			break;
+			case SET_START_OK:
+				// controllo che lo start viene preso
+				PeltierOn = TRUE;
+				peltierCell.readAlwaysEnable = 1;
+				myStatePos = REQ_FAN_MODE;
+				break;
 
-		default:
-			break;
+			default:
+				break;
 		}
 	}
 		if(iflag_peltier_rx == IFLAG_PELTIER_RX)
@@ -1169,12 +1194,20 @@ void ManagePeltierActuator()
 			switch(myStatePos)
 			{
 				case WAIT_FAN_RESPONS:
+				case WAIT_FAN_SET_RESPONS:
+					/*ho ricevuto la risposta sullo stato del FUN
+					 * resetto il contatore dei messaggi inviati al driver 1*/
+					peltierCell.countMsgSent = 0;
 					myDataIntPeltier[0] = *ptrMsgDataPeltierInt;
 					myDataIntActual = strtol(myDataIntPeltier,NULL,16);
 					myStatePos = CHECK_FAN_MODE;
 					break;
 
 				case WAIT_TEMP_RESPONS:
+				case WAIT_TEMP_SET_RESPONS:
+					/*ho ricevuto la risposta sullo TEMP impostata
+					 * resetto il contatore dei messaggi inviati al driver 1*/
+					peltierCell.countMsgSent = 0;
 					myDataIeee754[0] = *ptrMsgDataieee754start;
 					myDataIeee754[1] = *(ptrMsgDataieee754start+1);
 					myDataIeee754[2] = *(ptrMsgDataieee754start+2);
@@ -1194,6 +1227,9 @@ void ManagePeltierActuator()
 						 (*(ptrMsgDataieee754start+2) == 'n')
 						)
 					{
+						/*ho ricevuto la risposta corretta al comando di START
+						 * resetto il contatore dei messaggi inviati al driver 1*/
+						peltierCell.countMsgSent = 0;
 						myStatePos =  SET_START_OK;
 					}
 					else
@@ -1236,70 +1272,85 @@ void ManagePeltier2Actuator()
 		{
 			//FAN 1 MODE - READ
 			case REQ_FAN_MODE:
+			case WAIT_FAN_RESPONS: // se dopo 100 msec sono ancora in attesa di risposta torno a chiedere
 				PeltierAssSendCommand(READ_DATA_REGISTER_XX,REG_16_FAN1_MOD_SEL,0,"0",2);
+				/*incremento il contatore dei messaggi inviati al driver 1*/
+				peltierCell2.countMsgSent++;
 				ptrMsgPeltier2Rx = &peltier2Debug_rx_data[0];
 				myStatePos2 = WAIT_FAN_RESPONS;
 				break;
 			//FAN 1 MODE - WRITE
 			case CHECK_FAN_MODE:
+			case WAIT_FAN_SET_RESPONS: // se dopo 100 msec sono ancora in attesa di risposta torno a chiedere
 				if(myData2IntActual != peltierCell2.myFanModeSel)
 				{
 					PeltierAssSendCommand(WRITE_DATA_REGISTER_XX, REG_16_FAN1_MOD_SEL, peltierCell2.myFanModeSel, 0,2);
-					myStatePos2 = REQ_FAN_MODE;
+					/*incremento il contatore dei messaggi inviati al driver 1*/
+					peltierCell2.countMsgSent++;
+					myStatePos2 = WAIT_FAN_SET_RESPONS;
 				}
 				else
 					myStatePos2 = REQ_TEMP;
 				break;
 
 			// SET TEMP - READ
-		case REQ_TEMP:
-			ptrMsgPeltier2Rx = &peltier2Debug_rx_data[0];
-			PeltierAssSendCommand(READ_FLOAT_FROM_REG_XX,REG_0_SET_POINT,0,"0",2);
-			myStatePos2 = WAIT_TEMP_RESPONS;
-			break;
-		//SET TEMP - WRITE
-		case CHECK_TEMP:
-			if(myNumFloatActual2.numFormatFloat != peltierCell2.mySet)
-			{
-				myNumFloatActual2.numFormatFloat = peltierCell2.mySet;
-				sprintf(myStringFloat2, "%2X%2X%2X%2X", 	(unsigned char)(myNumFloatActual2.ieee754NUmFormat>>24),
-														(unsigned char)(myNumFloatActual2.ieee754NUmFormat>>16),
-														(unsigned char)(myNumFloatActual2.ieee754NUmFormat>>8),
-														(unsigned char)(myNumFloatActual2.ieee754NUmFormat));
-				for(char i=0; i<8; i++)
+			case REQ_TEMP:
+			case WAIT_TEMP_RESPONS: // se dopo 100 msec sono ancora in attesa di risposta torno a chiedere
+				ptrMsgPeltier2Rx = &peltier2Debug_rx_data[0];
+				PeltierAssSendCommand(READ_FLOAT_FROM_REG_XX,REG_0_SET_POINT,0,"0",2);
+				/*incremento il contatore dei messaggi inviati al driver 1*/
+				peltierCell2.countMsgSent++;
+				myStatePos2 = WAIT_TEMP_RESPONS;
+				break;
+			//SET TEMP - WRITE
+			case CHECK_TEMP:
+			case WAIT_TEMP_SET_RESPONS: // se dopo 100 msec sono ancora in attesa di risposta torno a chiedere
+				if(myNumFloatActual2.numFormatFloat != peltierCell2.mySet)
 				{
-					if(myStringFloat2[i] == 0x20)
-						myStringFloat2[i] = 0x30;
+					myNumFloatActual2.numFormatFloat = peltierCell2.mySet;
+					sprintf(myStringFloat2, "%2X%2X%2X%2X", 	(unsigned char)(myNumFloatActual2.ieee754NUmFormat>>24),
+															(unsigned char)(myNumFloatActual2.ieee754NUmFormat>>16),
+															(unsigned char)(myNumFloatActual2.ieee754NUmFormat>>8),
+															(unsigned char)(myNumFloatActual2.ieee754NUmFormat));
+					for(char i=0; i<8; i++)
+					{
+						if(myStringFloat2[i] == 0x20)
+							myStringFloat2[i] = 0x30;
+					}
+					PeltierAssSendCommand(WRITE_FLOAT_REG_XX, REG_0_SET_POINT, 0, myStringFloat2,2);
+					/*incremento il contatore dei messaggi inviati al driver 1*/
+					peltierCell2.countMsgSent++;
+					myStatePos2 = WAIT_TEMP_SET_RESPONS;
 				}
-				PeltierAssSendCommand(WRITE_FLOAT_REG_XX, REG_0_SET_POINT, 0, myStringFloat2,2);
-				myStatePos2 = REQ_TEMP;
-			}
-			else
-			{
-				if(!Peltier2On)
-					myStatePos2 = REQ_START;
 				else
 				{
-					peltierCell2.readAlwaysEnable = 1;
-					myStatePos2 = REQ_FAN_MODE;
+					if(!Peltier2On)
+						myStatePos2 = REQ_START;
+					else
+					{
+						peltierCell2.readAlwaysEnable = 1;
+						myStatePos2 = REQ_FAN_MODE;
+					}
 				}
-			}
-			break;
+				break;
 
-		case REQ_START:
-			 startPeltier2Actuator();
-			 myStatePos2 = WAIT_RESPONS_START;
-			 break;
+			case REQ_START:
+			case WAIT_RESPONS_START: // se dopo 100 msec sono ancora in attesa di risposta torno a chiedere
+				 startPeltier2Actuator();
+				 /*incremento il contatore dei messaggi inviati al driver 1*/
+				 peltierCell2.countMsgSent++;
+				 myStatePos2 = WAIT_RESPONS_START;
+				 break;
 
-		case SET_START_OK:
-			// controllo che lo start viene preso
-			Peltier2On = TRUE;
-			peltierCell2.readAlwaysEnable = 1;
-			myStatePos2 = REQ_FAN_MODE;
-			break;
+			case SET_START_OK:
+				// controllo che lo start venga preso
+				Peltier2On = TRUE;
+				peltierCell2.readAlwaysEnable = 1;
+				myStatePos2 = REQ_FAN_MODE;
+				break;
 
-		default:
-			break;
+			default:
+				break;
 		}
 	}
 		if(iflag_peltier2_rx == IFLAG_PELTIER_RX)
@@ -1315,12 +1366,20 @@ void ManagePeltier2Actuator()
 			switch(myStatePos2)
 			{
 				case WAIT_FAN_RESPONS:
+				case WAIT_FAN_SET_RESPONS:
+					/*ho ricevuto la risposta sullo stato del FUN
+					 * resetto il contatore dei messaggi inviati al driver 1*/
+					peltierCell2.countMsgSent = 0;
 					myDataIntPeltier2[0] = *ptrMsgDataPeltier2Int;
 					myData2IntActual = strtol(myDataIntPeltier2,NULL,16);
 					myStatePos2 = CHECK_FAN_MODE;
 					break;
 
 				case WAIT_TEMP_RESPONS:
+				case WAIT_TEMP_SET_RESPONS:
+					/*ho ricevuto la risposta sullo TEMP impostata
+					 * resetto il contatore dei messaggi inviati al driver 1*/
+					peltierCell2.countMsgSent = 0;
 					myData2Ieee754[0] = *ptrMsgData2ieee754start;
 					myData2Ieee754[1] = *(ptrMsgData2ieee754start+1);
 					myData2Ieee754[2] = *(ptrMsgData2ieee754start+2);
@@ -1341,6 +1400,9 @@ void ManagePeltier2Actuator()
 						)
 					{
 						myStatePos2 =  SET_START_OK;
+						/*ho ricevuto la risposta corretta al comando di START
+						 * resetto il contatore dei messaggi inviati al driver 1*/
+						peltierCell2.countMsgSent = 0;
 					}
 					else
 						myStatePos2 =  REQ_START;
@@ -1373,7 +1435,10 @@ void stopPeltierActuator(void)
 			switch (state)
 			{
 				case  REQ_STOP:
+				case WAIT_STOP_RESPONS: //se dopo 100 msec sono ancora in attesa di risposta torno a chiedere
 					PeltierAssSendCommand(STOP_FLAG,"0",0,"0",1);
+					 /*incremento il contatore dei messaggi inviati al driver 1*/
+					 peltierCell.countMsgSent++;
 					state = WAIT_STOP_RESPONS;
 					break;
 
@@ -1383,6 +1448,8 @@ void stopPeltierActuator(void)
 		}
 		if(iflag_peltier2_rx == IFLAG_PELTIER_RX)
 		{
+			iflag_peltier2_rx = IFLAG_IDLE;
+
 			switch (state)
 			{
 				case  WAIT_STOP_RESPONS:
@@ -1394,6 +1461,9 @@ void stopPeltierActuator(void)
 					{
 						PeltierOn =  FALSE;
 						peltierCell.StopEnable = 0;
+						/*ho ricevuto la risposta corretta al comando di STOP
+						 * resetto il contatore dei messaggi inviati al driver 1*/
+						peltierCell.countMsgSent = 0;
 					}
 
 					state = REQ_STOP;
@@ -1417,7 +1487,10 @@ void stopPeltier2Actuator(void)
 			switch (state)
 			{
 				case  REQ_STOP:
+				case WAIT_STOP_RESPONS: //se dopo 100 msec sono ancora in attesa di risposta torno a chiedere
 					PeltierAssSendCommand(STOP_FLAG,"0",0,"0",2);
+					 /*incremento il contatore dei messaggi inviati al driver 1*/
+					 peltierCell2.countMsgSent++;
 					state = WAIT_STOP_RESPONS;
 					break;
 
@@ -1428,6 +1501,7 @@ void stopPeltier2Actuator(void)
 		}
 		if(iflag_peltier2_rx == IFLAG_PELTIER_RX)
 		{
+			iflag_peltier2_rx = IFLAG_IDLE;
 			switch (state)
 			{
 				case  WAIT_STOP_RESPONS:
@@ -1437,6 +1511,9 @@ void stopPeltier2Actuator(void)
 						 (*(ptrMsgData2ieee754start+3) == 'p')
 						)
 					{
+						/*ho ricevuto la risposta corretta al comando di STOP
+						 * resetto il contatore dei messaggi inviati al driver 1*/
+						peltierCell2.countMsgSent = 0;
 						Peltier2On =  FALSE;
 						peltierCell2.StopEnable = 0;
 					}

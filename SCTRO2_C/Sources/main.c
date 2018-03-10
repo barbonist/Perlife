@@ -562,7 +562,13 @@ int main(void)
 			{
 	        	 timerCounterPeltier = 0;
 
-				CheckTemperatureSet();
+	        	 CheckTemperatureSet();
+
+	        	 if (peltierCell.countMsgSent > 50)
+	        		  EN_P_1_C_ClrVal();
+
+	        	 if (peltierCell2.countMsgSent > 50)
+	        		  EN_P_2_C_ClrVal();
 
 				 if(peltierCell.readAlwaysEnable == 0)
 				 {
@@ -595,8 +601,7 @@ int main(void)
 				 /*funzione cher gestiscer lo stop della cella di peltier 1*/
 				 if (peltierCell2.StopEnable == 1)
 					 stopPeltier2Actuator();
-
-	         }
+				}
 
 	         /********************************/
 	         /*          PANIC BUTTON        */

@@ -734,6 +734,7 @@ struct peltier{
 	/* varie */
 	char readAlwaysEnable;
 	char StopEnable;
+	char countMsgSent;
 
 };
 
