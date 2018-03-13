@@ -27,6 +27,7 @@ void Heater_ON();
 void Set_Lamp(unsigned char level);
 void Reset_Lamp(unsigned char level);
 
-
+void ShowButtonStr(struct buttonGUI *ButtonGuiArray, unsigned char id);
+void ShowParameterStr(struct parWordSetFromGUI *ParamGuiArray, unsigned char id);
 
 #endif /* APPLICATION_GENERAL_FUNC_H_ */

@@ -492,6 +492,9 @@ int main(void)
 
    SetAllAlarmEnableFlags();
 
+   // non faccio partire le peltier subito
+   peltierCell.readAlwaysEnable = 1;
+   peltierCell2.readAlwaysEnable = 1;
 
   /**********MAIN LOOP START************/
   for(;;) {

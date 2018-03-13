@@ -457,22 +457,22 @@ void CheckTemperatureSet(void)
 		{
 			peltierCell.mySet  = (float) myTempValue/10 - 8;
 			peltierCell2.mySet = (float) myTempValue/10 - 8;
-			peltierCell.readAlwaysEnable = 0;
-			peltierCell2.readAlwaysEnable = 0;
+//			peltierCell.readAlwaysEnable = 0;
+//			peltierCell2.readAlwaysEnable = 0;
 		}
 		else if(myTempValue == 360)
 		{
 			peltierCell.mySet  = (float) myTempValue/10 + 6;
 			peltierCell2.mySet = (float) myTempValue/10 + 6;
-			peltierCell.readAlwaysEnable = 0;
-			peltierCell2.readAlwaysEnable = 0;
+//			peltierCell.readAlwaysEnable = 0;
+//			peltierCell2.readAlwaysEnable = 0;
 		}
 		else
 		{
 			peltierCell.mySet  = 20;
 			peltierCell2.mySet = 20;
-			peltierCell.readAlwaysEnable = 0;
-			peltierCell2.readAlwaysEnable = 0;
+//			peltierCell.readAlwaysEnable = 0;
+//			peltierCell2.readAlwaysEnable = 0;
 		}
 	}
 	//-----------------------------------------------------------------------

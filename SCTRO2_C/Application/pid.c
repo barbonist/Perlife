@@ -614,6 +614,7 @@ int get_Set_Point_Pressure(int Speed)
 float CalcolaPresVen_with_Flow(unsigned char type_flow)
 {
 	float Gain,Offset, Target_Flow;
+	return 0.0;
 
 	if (type_flow == 0)
 		Target_Flow = (float)parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value;
@@ -929,8 +930,115 @@ int SpeedCostanteVen( int CurrSpeed)
 	return SpeedCostanteFlag;
 }
 
-void alwaysPumpPressLoopVen(unsigned char pmpId, unsigned char *PidFirstTime){
+// 12_03_2018 ultima versione del pid prima dello spostamento del controllo subito prima dell'organo
+//void alwaysPumpPressLoopVen(unsigned char pmpId, unsigned char *PidFirstTime){
+//
+//
+//	static float deltaSpeed_Ven = 0;
+//	static float actualSpeed_Ven = 0;
+//
+//	float pressSample0_Ven = 0;
+//
+//	float errPress = 0;
+//
+//	static int Target_PID_VEN = 0;
+//	float Pump_Gain = 0;
+//	int MAX_OXYG_RPM_Val;
+//
+//	Pump_Gain = VenousPumpGainForPid;
+//
+//
+//	/*calcolo il massimo numnero di giri in funzione del flusso massimo che mi è stato impostato*/
+//	MAX_OXYG_RPM_Val = (int)((float)parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value / Pump_Gain);
+//
+//	/*blocco al massimo totale ammissibile per non perdere il passo il numero di giri*/
+//	if (MAX_OXYG_RPM_Val > MAX_OXYG_RPM)
+//		MAX_OXYG_RPM_Val = MAX_OXYG_RPM;
+//
+//    if(*PidFirstTime == PRESS_LOOP_ON)
+//    {
+//    	*PidFirstTime = PRESS_LOOP_OFF;
+//    	actualSpeed_Ven = (float)pumpPerist[pmpId].actualSpeed;
+//    	Target_PID_VEN = parameterWordSetFromGUI[PAR_SET_VENOUS_PRESS_TARGET].value + SET_POINT_PRESSURE_INIT;
+//    }
+//
+//    //pressSample0_Ven = PR_VEN_mmHg_Filtered;
+////    pressSample0_Ven = MedForVenousPid;
+////    /*cambio il parametro in ingresso al PID dal valore filtrato al valore sistolico di pressione*/
+//    pressSample0_Ven = PR_VEN_Sistolyc_mmHg;
+//
+//	errPress = Target_PID_VEN - pressSample0_Ven;
+//
+//
+//	/*se la veilocità resta costante ed inferiore alla masisma, sono in equilibrio, provo ad aumentarla per
+//	 * vedere se trovo un equilibrio andando + forte e avvicindandomi al massimo flusso impostato*/
+//   if (SpeedCostanteVen((int)actualSpeed_Ven) && (actualSpeed_Ven <= MAX_OXYG_RPM_Val))
+//   {
+//		actualSpeed_Ven += 2.0;
+//   }
+//
+//	deltaSpeed_Ven = ((parKITC_Ven * errPress) -
+//			         (parKP_Ven * (pressSample0_Ven - pressSample1_Ven)) -
+//					 (parKD_TC_Ven * (pressSample0_Ven - 2 * pressSample1_Ven + pressSample2_Ven)));
+//
+//	// valutare se mettere il deltaSpeed = 0 nel caso deltaSpeed sia negativo in modo da non far andare actualSpeed a zero troppo in fretta
+//	// in alternativa il deltaSpeed va considerato solo se è abbastanza negativo
+//	if((deltaSpeed_Ven < -0.1) || (deltaSpeed_Ven > 0.1))
+//	{
+//		actualSpeed_Ven = actualSpeed_Ven + deltaSpeed_Ven;
+//	}
+//
+//	/*se misuro un flusso e ho una velocità > 0 e sto misurando un flusso superiore al limite impostato
+//	 * e il delta di velocità del pid non mi fa diminuire la velocità (deltaSpeed_Ven>0)
+//	 * aggiorno la velocità al massimo flusso impostato */
+//	if ((sensor_UFLOW[1].Average_Flow_Val > 0.0) &&
+//			(sensor_UFLOW[1].Average_Flow_Val > ( parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value)) &&
+//			(actualSpeed_Ven > 0.0) && deltaSpeed_Ven > 0 )
+//
+//	{
+//		//float pmp_gain = sensor_UFLOW[1].Average_Flow_Val / actualSpeed_Ven;
+//		actualSpeed_Ven = (float) parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value / Pump_Gain;
+//	}
+//
+//	/*se ho velocità negativa o pressione oltre soglia massima, fermo le pompe*/
+//	if(actualSpeed_Ven <= 0 || pressSample0_Ven > 290)
+//	{
+//		actualSpeed_Ven = 0;
+//		//Target_PID_VEN = parameterWordSetFromGUI[PAR_SET_VENOUS_PRESS_TARGET].value + SET_POINT_PRESSURE_INIT;
+//	}
+//
+//	/*vincolo la velocità massima impostata dal pid al massimo valore che non mi fa perdere il passo*/
+//	if(actualSpeed_Ven > (float)MAX_OXYG_RPM_Val)
+//		actualSpeed_Ven = (float)MAX_OXYG_RPM_Val;
+//
+//	/*aggiorno il target ogni 3 secondi se sto decrementando la velocità
+//	 * altrimenti lo aggiorno subito, altrimenti il pid va troppo veloce per il target*/
+//	if (deltaSpeed_Ven > 0)
+//	{
+//		//Target_PID_VEN = parameterWordSetFromGUI[PAR_SET_VENOUS_PRESS_TARGET].value + CalcolaPresVen_with_Flow(0);
+//		timerCounterUpdateTargetPressurePid = 0;
+//	}
+//
+//	else if (timerCounterUpdateTargetPressurePid > 60)
+//	{
+//		timerCounterUpdateTargetPressurePid = 0;
+//		Target_PID_VEN = parameterWordSetFromGUI[PAR_SET_VENOUS_PRESS_TARGET].value + CalcolaPresVen_with_Flow(0);
+//	}
+//
+//	/*aggiorno la velocità se è doiversa dalla precedente*/
+//	if(actualSpeed_Ven != pumpPerist[pmpId].actualSpeedOld)
+//	{
+//		setPumpSpeedValueHighLevel(pumpPerist[pmpId].pmpMySlaveAddress, ((int)(actualSpeed_Ven * 100)));
+//		pumpPerist[pmpId].actualSpeedOld = actualSpeed_Ven;
+//	}
+//
+//	pressSample2_Ven = pressSample1_Ven;
+//	pressSample1_Ven = pressSample0_Ven;
+//}
 
+
+
+void alwaysPumpPressLoopVen(unsigned char pmpId, unsigned char *PidFirstTime){
 
 	static float deltaSpeed_Ven = 0;
 	static float actualSpeed_Ven = 0;
@@ -938,6 +1046,7 @@ void alwaysPumpPressLoopVen(unsigned char pmpId, unsigned char *PidFirstTime){
 	float pressSample0_Ven = 0;
 
 	float errPress = 0;
+	float fl;
 
 	static int Target_PID_VEN = 0;
 	float Pump_Gain = 0;
@@ -979,49 +1088,46 @@ void alwaysPumpPressLoopVen(unsigned char pmpId, unsigned char *PidFirstTime){
 			         (parKP_Ven * (pressSample0_Ven - pressSample1_Ven)) -
 					 (parKD_TC_Ven * (pressSample0_Ven - 2 * pressSample1_Ven + pressSample2_Ven)));
 
+	/*se misuro un flusso e ho una velocità > 0 e sto misurando un flusso superiore al limite impostato
+	 * e il delta di velocità del pid non mi fa diminuire la velocità (deltaSpeed_Ven>0)
+	 * aggiorno la velocità al massimo flusso impostato */
+	fl = (float) parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value;
+	if ((sensor_UFLOW[1].Average_Flow_Val > 0.0) &&
+		(sensor_UFLOW[1].Average_Flow_Val > (fl - fl * 10.0 / 100.0)) &&
+		(actualSpeed_Ven > 0.0) && (deltaSpeed_Ven > 0))
+	{
+		deltaSpeed_Ven = 0.0;
+	}
+	else if((sensor_UFLOW[1].Average_Flow_Val == 0.0) && (pressSample0_Ven < 10.0))
+	{
+		// se il flusso e' 0 e la pressione e' al di sotto di 10 mmhg
+		// forzo una velocita' delle pompe != 0. Altrimenti si ferma in equilibrio a flusso 0;
+		deltaSpeed_Ven = 1.0;
+	}
+//	else if((pressSample0_Ven > 10.0) && (deltaSpeed_Ven > 0))
+//	{
+//		// se la pressione supera i 10 mmHg e sto accelerando annullo la variazione di velocita
+//		deltaSpeed_Ven = 0.0;
+//	}
+
 	// valutare se mettere il deltaSpeed = 0 nel caso deltaSpeed sia negativo in modo da non far andare actualSpeed a zero troppo in fretta
 	// in alternativa il deltaSpeed va considerato solo se è abbastanza negativo
-	if((deltaSpeed_Ven < -0.1) || (deltaSpeed_Ven > 0.1))
+	if((deltaSpeed_Ven < -0.01) || (deltaSpeed_Ven > 0.01))
 	{
 		actualSpeed_Ven = actualSpeed_Ven + deltaSpeed_Ven;
 	}
 
-	/*se misuro un flusso e ho una velocità > 0 e sto misurando un flusso superiore al limite impostato
-	 * e il delta di velocità del pid non mi fa diminuire la velocità (deltaSpeed_Ven>0)
-	 * aggiorno la velocità al massimo flusso impostato */
-	if ((sensor_UFLOW[1].Average_Flow_Val > 0.0) &&
-			(sensor_UFLOW[1].Average_Flow_Val > ( parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value)) &&
-			(actualSpeed_Ven > 0.0) && deltaSpeed_Ven > 0 )
-
-	{
-		//float pmp_gain = sensor_UFLOW[1].Average_Flow_Val / actualSpeed_Ven;
-		actualSpeed_Ven = (float) parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value / Pump_Gain;
-	}
 
 	/*se ho velocità negativa o pressione oltre soglia massima, fermo le pompe*/
-	if(actualSpeed_Ven <= 0 || pressSample0_Ven > 290)
+	if((actualSpeed_Ven <= 0) || (pressSample0_Ven > 10.0))
 	{
 		actualSpeed_Ven = 0;
-		Target_PID_VEN = parameterWordSetFromGUI[PAR_SET_VENOUS_PRESS_TARGET].value + SET_POINT_PRESSURE_INIT;
 	}
 
 	/*vincolo la velocità massima impostata dal pid al massimo valore che non mi fa perdere il passo*/
 	if(actualSpeed_Ven > (float)MAX_OXYG_RPM_Val)
 		actualSpeed_Ven = (float)MAX_OXYG_RPM_Val;
 
-	/*aggiorno il target ogni 3 secondi se sto decrementando la velocità
-	 * altrimenti lo aggiorno subito, altrimenti il pid va troppo veloce per il target*/
-	if (deltaSpeed_Ven > 0)
-	{
-		Target_PID_VEN = parameterWordSetFromGUI[PAR_SET_VENOUS_PRESS_TARGET].value + CalcolaPresVen_with_Flow(0);
-		timerCounterUpdateTargetPressurePid = 0;
-	}
-
-	else if (timerCounterUpdateTargetPressurePid > 60)
-	{
-		timerCounterUpdateTargetPressurePid = 0;
-		Target_PID_VEN = parameterWordSetFromGUI[PAR_SET_VENOUS_PRESS_TARGET].value + CalcolaPresVen_with_Flow(0);
-	}
 
 	/*aggiorno la velocità se è doiversa dalla precedente*/
 	if(actualSpeed_Ven != pumpPerist[pmpId].actualSpeedOld)
@@ -1033,6 +1139,3 @@ void alwaysPumpPressLoopVen(unsigned char pmpId, unsigned char *PidFirstTime){
 	pressSample2_Ven = pressSample1_Ven;
 	pressSample1_Ven = pressSample0_Ven;
 }
-
-
-

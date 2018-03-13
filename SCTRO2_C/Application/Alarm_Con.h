@@ -13,7 +13,7 @@
 //#define CODE_ALARM0		0x00
 //#define CODE_ALARM1		0x01
 //#define CODE_ALARM2		0x02
-#define ALARM_ACTIVE_IN_STRUCT					22
+#define ALARM_ACTIVE_IN_STRUCT					23
 #define CODE_ALARM_PRESS_ART_HIGH				0X01
 #define CODE_ALARM_PRESS_ART_LOW				0X02
 #define CODE_ALARM_PRESS_VEN_HIGH				0X03
@@ -112,7 +112,9 @@
 #define MAX_MSG_CONSECUTIVE_IR_TEMP_SENS_NOT_DETECTED 		10
 #define PR_ART_HIGH											250  //100
 #define PR_ART_LOW											1
-#define PR_VEN_HIGH											290  //10
+#define PR_VEN_HIGH											10  //290
+//TODO da definire esattamente
+#define PR_OXYG_HIGH                                        800
 //#define PR_VEN_LOW											40
 // modificato altrimenti viene sempre fuori allarme di pressione bassa
 #define PR_VEN_LOW											25
@@ -132,6 +134,7 @@ enum ALARM
 	 FLOW_SENS_NOT_DETECTED,
 	 PRESS_VEN_HIGH,
 	 PRESS_VEN_LOW,
+	 PRESS_OXYG_HIGH,
 	 IR_SENS_NOT_DETECTED,
 	 PERF_COVER_OPEN,
 	 PURIF_COVER_OPEN,

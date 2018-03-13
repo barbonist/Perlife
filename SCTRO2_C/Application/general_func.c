@@ -850,6 +850,105 @@ void GenerateSBCComm(void)
 
 
 
+//parameterWordSetFromGUI[parId].value = value;
+//buttonGUITreatment[sbc_rx_data[7]]
+void ShowButtonStr(struct buttonGUI *ButtonGuiArray, unsigned char id)
+{
+	switch (id)
+	{
+		case BUTTON_PINCH_2WPVF_RIGHT_OPEN:   DebugStringStr("2WPVF_RIGHT_OPEN");  break;
+		case BUTTON_PINCH_2WPVF_LEFT_OPEN:    DebugStringStr("2WPVF_LEFT_OPEN");   break;
+		case BUTTON_PINCH_2WPVF_BOTH_CLOSED:  DebugStringStr("2WPVF_BOTH_CLOSED"); break;
+		case BUTTON_PINCH_2WPVA_RIGHT_OPEN:   DebugStringStr("2WPVA_RIGHT_OPEN");  break;
+		case BUTTON_PINCH_2WPVA_LEFT_OPEN:    DebugStringStr("2WPVA_LEFT_OPEN");   break;
+		case BUTTON_PINCH_2WPVA_BOTH_CLOSED:  DebugStringStr("2WPVA_BOTH_CLOSED"); break;
+		case BUTTON_PINCH_2WPVV_RIGHT_OPEN:   DebugStringStr("2WPVV_RIGHT_OPEN");  break;
+		case BUTTON_PINCH_2WPVV_LEFT_OPEN:    DebugStringStr("2WPVV_LEFT_OPEN");   break;
+		case BUTTON_PINCH_2WPVV_BOTH_CLOSED:  DebugStringStr("2WPVV_BOTH_CLOSED"); break;
+		case BUTTON_CONFIRM:                  DebugStringStr("BUT_CONFIRM");                  break;
+		case BUTTON_RESET:                    DebugStringStr("BUT_RESET");                    break;
+		case BUTTON_PRIMING_FILT_INS_CONFIRM: DebugStringStr("BUT_PRIMING_FILT_INS_CONFIRM"); break;
+		case BUTTON_PRIMING_ABANDON:          DebugStringStr("BUT_PRIMING_ABANDON");          break;
+		case BUTTON_START_PRIMING:            DebugStringStr("BUT_START_PRIMING");            break;
+		case BUTTON_STOP_PRIMING:             DebugStringStr("BUT_STOP_PRIMING");              break;
+		case BUTTON_STOP_ALL_PUMP:            DebugStringStr("BUT_STOP_ALL_PUMP");             break;
+		case BUTTON_START_TREATMENT:          DebugStringStr("BUT_START_TREATMENT");           break;
+		case BUTTON_STOP_TREATMENT:           DebugStringStr("BUT_STOP_TREATMENT");            break;
+		case BUTTON_EN_PERFUSION:             DebugStringStr("BUT_EN_PERFUSION");              break;
+		case BUTTON_EN_OXYGENATION:           DebugStringStr("BUT_EN_OXYGENATION");            break;
+		case BUTTON_EN_PURIFICATION:         DebugStringStr("BUT_EN_PURIFICATION");            break;
+		case BUTTON_START_PERF_PUMP:         DebugStringStr("BUT_START_PERF_PUMP");            break;
+		case BUTTON_STOP_PERF_PUMP:          DebugStringStr("BUT_STOP_PERF_PUMP");             break;
+		case BUTTON_START_OXYGEN_PUMP:       DebugStringStr("BUT_START_OXYGEN_PUMP");          break;
+		case BUTTON_STOP_OXYGEN_PUMP:        DebugStringStr("BUT_STOP_OXYGEN_PUMP");           break;
+		case BUTTON_START_PURIF_PUMP:        DebugStringStr("BUT_START_PURIF_PUMP");           break;
+		case BUTTON_STOP_PURIF_PUMP:         DebugStringStr("BUT_STOP_PURIF_PUMP");            break;
+		case BUTTON_PERF_DISP_MOUNTED:       DebugStringStr("BUT_PERF_DISP_MOUNTED");          break;
+		case BUTTON_OXYG_DISP_MOUNTED:       DebugStringStr("BUT_OXYG_DISP_MOUNTED");          break;
+		case BUTTON_PERF_TANK_FILL:          DebugStringStr("BUT_PERF_TANK_FILL");             break;
+		case BUTTON_PERF_FILTER_MOUNT:       DebugStringStr("BUT_PERF_FILTER_MOUNT");          break;
+		case BUTTON_OVERRIDE_ALARM:          DebugStringStr("BUT_OVERRIDE_ALARM");             break;
+		case BUTTON_RESET_ALARM:             DebugStringStr("BUT_RESET_ALARM");                break;
+		case BUTTON_SILENT_ALARM:            DebugStringStr("BUT_SILENT_ALARM");               break;
+		case BUTTON_START_EMPTY_DISPOSABLE:  DebugStringStr("BUT_START_EMPTY_DISPOSABLE");     break;
+		case BUTTON_UNMOUNT_END:             DebugStringStr("BUT_UNMOUNT_END");                break;
+	}
+}
 
-/**/
+
+void ShowParameterStr(struct parWordSetFromGUI *ParamGuiArray, unsigned char id)
+{
+	char stringPr[STR_DBG_LENGHT];
+
+	switch (id)
+	{
+//		case PAR_SET_PRIMING_VOL_PERFUSION = 0x10:
+//			break;
+		case PAR_SET_THERAPY_TYPE:
+			sprintf(stringPr, "\rTherapy=%d", ParamGuiArray[id].value );
+			break;
+		case PAR_SET_PRIMING_VOL_PURIFICATION:
+			sprintf(stringPr, "\rPrimVolPur=%d", ParamGuiArray[id].value );
+			break;
+//		case PAR_SET_PRIMING_TEMPERATURE_PERFUSION:
+//			break;
+		case PAR_SET_PRIMING_VOL_OXYGENATION:
+			sprintf(stringPr, "\rPrimVolOxyg=%d", ParamGuiArray[id].value );
+			break;
+//		case PAR_SET_OXYGENATOR_ACTIVE:
+//				break;
+		case PAR_SET_OXYGENATOR_FLOW:
+			sprintf(stringPr, "\rOxygFlow=%d", ParamGuiArray[id].value );
+			break;
+//		case PAR_SET_DEPURATION_ACTIVE:
+//				break;
+		case PAR_SET_TEMPERATURE:
+			sprintf(stringPr, "\rTemp=%d", ParamGuiArray[id].value );
+			break;
+		case PAR_SET_PRESS_ART_TARGET:
+			sprintf(stringPr, "\rPressArtTrgt=%d", ParamGuiArray[id].value );
+			break;
+		case PAR_SET_DESIRED_DURATION:
+			sprintf(stringPr, "\rDuration=%d", ParamGuiArray[id].value );
+			break;
+		case PAR_SET_MAX_FLOW_PERFUSION:
+			sprintf(stringPr, "\rMaxFlowPerf=%d", ParamGuiArray[id].value );
+			break;
+		case PAR_SET_PRESS_VEN_TARGET:
+			sprintf(stringPr, "\rPressVenTrgt=%d", ParamGuiArray[id].value );
+			break;
+		case PAR_SET_PURIF_FLOW_TARGET:
+			sprintf(stringPr, "\rPurFlowTrgt=%d", ParamGuiArray[id].value );
+			break;
+	}
+
+	for(int i=0; i<STR_DBG_LENGHT; i++)
+	{
+		if(stringPr[i])
+			PC_DEBUG_COMM_SendChar(stringPr[i]);
+		else
+			break;
+	}
+	PC_DEBUG_COMM_SendChar(0x0A);
+}
 

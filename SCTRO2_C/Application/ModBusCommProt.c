@@ -1213,6 +1213,7 @@ void Check_Actuator_Status (char slaveAddr,
 
 void Manage_and_Storage_ModBus_Actuator_Data(void)
 {
+	  static unsigned char LastActuatslvAddr = 0;  // indirizzo dell'ultima pompa o pinch  che ho usato in Check_Actuator_Status
 	  word 			readAddrStart		 		= 0x0010;
 	  unsigned char numberOfAddressCheckPump	= 0x03;
 	  unsigned char numberOfAddressCheckPinch	= 0x02;
@@ -1227,7 +1228,7 @@ void Manage_and_Storage_ModBus_Actuator_Data(void)
  	/*se ho ricevuto un dato me lo vado a memorizzare nella mia struttura globale: 'modbusData'*/
  	if (iFlag_actuatorCheck == IFLAG_COMMAND_RECEIVED && iFlag_modbusDataStorage == FALSE)
  	{
- 		StorageModbusData();
+ 		StorageModbusData(LastActuatslvAddr);
  		iFlag_modbusDataStorage = TRUE;
  		ReadActive = FALSE;
  		iflag_pmp1_rx = IFLAG_IDLE; //libero la flafg di ricezione per la alwaysModBusActuator
@@ -1253,11 +1254,17 @@ void Manage_and_Storage_ModBus_Actuator_Data(void)
 
         /*chiamo la funzione col corretto number of address dipendentemente dall'attuatore (pump/pinch)*/
 		if (slvAddr <= LAST_PUMP)
+		{
 			/*funzione che mi legge lo stato delle pompe*/
 			Check_Actuator_Status (slvAddr,funcCode,readAddrStart,numberOfAddressCheckPump);
+			LastActuatslvAddr = slvAddr;
+		}
 		else
+		{
 			/*funzione che mi legge lo stato delle pinch*/
 			Check_Actuator_Status (slvAddr,funcCode,readAddrStart,numberOfAddressCheckPinch);
+			LastActuatslvAddr = slvAddr;
+		}
 
 	   /* se supero l'uiltimo attuatore, rifaccio il giro da capo*/
         /*incremento l'indirizzo per interrogare tutti gli attuatori*/
@@ -1271,7 +1278,7 @@ void Manage_and_Storage_ModBus_Actuator_Data(void)
 
 /*In questa funzione memorizzo i dati ricevuti in seguito
  *  alla Check_Actuator_Status nella matrice modbusData*/
-void StorageModbusData(void)
+void StorageModbusData(unsigned char LastActuatslvAddr)
 {
 	/*in questa funzione suppongo di usare sempre il msgToRecvFrame3 in quanto usata solo per messaggi di stao e non di impostazione
 	 * ecco perchè posso fare Address = msgToRecvFrame3[0] e funCode = msgToRecvFrame3[1]*/
@@ -1283,6 +1290,17 @@ void StorageModbusData(void)
 				  Pinch_Status			= 0;
 
 	int Tot_ModBus_Data_RX = 0;
+
+	if(!((LastActuatslvAddr == Address) && (funCode == 3)))
+	{
+		Address = msgToRecvFrame3[1];
+		funCode = msgToRecvFrame3[2];
+		if(!((LastActuatslvAddr == Address) && (funCode == 3)))
+		{
+			// non e' il messaggio di risposta che mi aspettavo
+			return;
+		}
+	}
 
 	if (Address >= FIRST_ACTUATOR && Address <= LAST_PUMP)
 		Tot_ModBus_Data_RX = TOT_DATA_MODBUS_RECEIVED_PUMP;

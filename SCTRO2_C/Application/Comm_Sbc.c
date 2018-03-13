@@ -755,6 +755,7 @@ void initCommSBC(void){
 }
 
 
+
 void pollingSBCCommTreat(void){
 
 	word valueWord = 0;
@@ -787,6 +788,7 @@ void pollingSBCCommTreat(void){
 			{
 				valueWord = (sbc_rx_data[8] << 8) + sbc_rx_data[9];
 				setParamWordFromGUI(sbc_rx_data[7],valueWord);
+				ShowParameterStr(parameterWordSetFromGUI, sbc_rx_data[7]);
 
 				myCommunicatorToSBC.dataParamSetSBCReadyFlag = DATA_COMM_READY_TO_BE_SEND;
 			}
@@ -806,6 +808,7 @@ void pollingSBCCommTreat(void){
 					// FM scambiati eventi
 					// releaseGUIButton(sbc_rx_data[7]);
 					setGUIButton(sbc_rx_data[7]);
+					ShowButtonStr(buttonGUITreatment, sbc_rx_data[7]);
 				}
 				myCommunicatorToSBC.dataButtonSBCReadyFlag = DATA_COMM_READY_TO_BE_SEND;
 			}
