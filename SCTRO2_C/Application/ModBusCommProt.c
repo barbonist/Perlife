@@ -613,6 +613,7 @@ void setPumpCurrentValue(unsigned char slaveAddr, int currValue){
 	_funcRetVal.slvresRetPtr = _funcRetValPtr->slvresRetPtr;
 	_funcRetVal.slvresRetNumByte = _funcRetValPtr->slvresRetNumByte;
 
+	MODBUS_COMM_ClearRxBuf();
 	for(char k = 0; k < _funcRetVal.mstreqRetStructNumByte; k++)
 	{
 		MODBUS_COMM_SendChar(*(_funcRetVal.ptr_msg+k));
@@ -643,6 +644,7 @@ void setPumpAccelerationValue(unsigned char slaveAddr, int acc)
 	_funcRetVal.slvresRetPtr = _funcRetValPtr->slvresRetPtr;
 	_funcRetVal.slvresRetNumByte = _funcRetValPtr->slvresRetNumByte;
 
+	MODBUS_COMM_ClearRxBuf();
 	for(char k = 0; k < _funcRetVal.mstreqRetStructNumByte; k++)
 	{
 		MODBUS_COMM_SendChar(*(_funcRetVal.ptr_msg+k));
@@ -681,6 +683,7 @@ void setPumpSpeedValue(unsigned char slaveAddr, int speedValue){
 	_funcRetVal.slvresRetPtr = _funcRetValPtr->slvresRetPtr;
 	_funcRetVal.slvresRetNumByte = _funcRetValPtr->slvresRetNumByte;
 
+	MODBUS_COMM_ClearRxBuf();
 	for(char k = 0; k < _funcRetVal.mstreqRetStructNumByte; k++)
 	{
 		MODBUS_COMM_SendChar(*(_funcRetVal.ptr_msg+k));
@@ -706,6 +709,7 @@ void readPumpSpeedValue(unsigned char slaveAddr){
 	_funcRetVal.slvresRetPtr = _funcRetValPtr->slvresRetPtr;
 	_funcRetVal.slvresRetNumByte = _funcRetValPtr->slvresRetNumByte;
 
+	MODBUS_COMM_ClearRxBuf();
 	for(char k = 0; k < _funcRetVal.mstreqRetStructNumByte; k++)
 	{
 		MODBUS_COMM_SendChar(*(_funcRetVal.ptr_msg+k));
@@ -828,6 +832,7 @@ void setPinchPosValue(unsigned char slaveAddr, int posValue){
 		_funcRetVal.slvresRetPtr = _funcRetValPtr->slvresRetPtr;
 		_funcRetVal.slvresRetNumByte = _funcRetValPtr->slvresRetNumByte;
 
+		MODBUS_COMM_ClearRxBuf();
 		for(char k = 0; k < _funcRetVal.mstreqRetStructNumByte; k++)
 		{
 			MODBUS_COMM_SendChar(*(_funcRetVal.ptr_msg+k));
@@ -1205,6 +1210,7 @@ void Check_Actuator_Status (char slaveAddr,
 	_funcRetVal.slvresRetNumByte = _funcRetValPtr->slvresRetNumByte;
 
 
+	MODBUS_COMM_ClearRxBuf();
 	MyArrayIdx = 0;
 	MODBUS_COMM_SendBlock(_funcRetVal.ptr_msg,
 						  _funcRetVal.mstreqRetStructNumByte,

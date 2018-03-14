@@ -276,7 +276,6 @@ void alarmEngineAlways(void)
 	static int StrAlarmWritten = 0;
 	static int IdxCurrAlarm = 0xff;
 
-
 /*Faccio uno switch su tutta la macchina a stati in modo
  * gestire ogni allarme in funzioine dello stato in cui sono*/
 
@@ -835,10 +834,19 @@ void manageAlarmPhysicPressSensLow(void)
 
 void manageAlarmPhysicPressSensHigh(void)
 {
+	word MaxPressArt;
+
+	MaxPressArt = PR_ART_HIGH;
+	if((ptrCurrentState->state == STATE_PRIMING_PH_1) || (ptrCurrentState->state == STATE_PRIMING_PH_2) ||
+	   (ptrCurrentState->state == STATE_PRIMING_RICIRCOLO))
+	{
+		// nel caso di priming considero una pressione arteriosa piu' alta
+		MaxPressArt = PR_ART_HIGH + 50;
+	}
 
 	if(GlobalFlags.FlagsDef.EnablePressSensHighAlm)
 	{
-		if(PR_ART_mmHg_Filtered > PR_ART_HIGH)
+		if(PR_ART_Sistolyc_mmHg > MaxPressArt)
 		{
 			alarmList[PRESS_ART_HIGH].physic = PHYSIC_TRUE;
 		}

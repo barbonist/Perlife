@@ -1176,7 +1176,7 @@ unsigned char TemperatureStateMach(int cmd)
 
 		case START_RECIRC_HIGH_SPEED:
 			RicircTimeout = timerCounterModBus;
-			setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, RECIRC_PUMP_HIGH_SPEED);
+			setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, (int)RECIRC_PUMP_HIGH_SPEED);
 			if((GetTherapyType() == KidneyTreat) &&
 			   (((PARAMETER_ACTIVE_TYPE)parameterWordSetFromGUI[PAR_SET_OXYGENATOR_ACTIVE].value) == YES))
 			{
@@ -1186,8 +1186,8 @@ unsigned char TemperatureStateMach(int cmd)
 			else if((GetTherapyType() == LiverTreat))
 			{
 				// sono nel priming fegato
-				setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, (int)RECIRC_PUMP_HIGH_SPEED);
-				setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, RECIRC_PUMP_HIGH_SPEED);
+				setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, (int)RECIRC_PUMP_HIGH_SPEED_ART);
+				setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, (int)RECIRC_PUMP_HIGH_SPEED);
 			}
 			TempStateMach = CALC_PUMPS_GAIN;
 			ArteriousPumpGainForPid = DEFAULT_ART_PUMP_GAIN;
@@ -1996,8 +1996,10 @@ void manageParentTreatAlways(void){
 			// Pid originale
 			//pressSample1 = PR_ART_mmHg_Filtered;
 			//pressSample2 = PR_ART_mmHg_Filtered;
-			pressSample1_Art = MedForArteriousPid;
-			pressSample2_Art = MedForArteriousPid;
+			//pressSample1_Art = MedForArteriousPid;
+			//pressSample2_Art = MedForArteriousPid;
+			pressSample1_Art = PR_ART_Sistolyc_mmHg_ORG;
+			pressSample2_Art = PR_ART_Sistolyc_mmHg_ORG;
 			if(!StartTreatmentTime)
 			{
 				// prendo il tempo di start del trattamento solo se il valore vale 0, cioe' sono partito da IDLE
@@ -2029,6 +2031,8 @@ void manageParentTreatAlways(void){
 			//pressSample2 = PR_ART_mmHg_Filtered;
 			pressSample1_Art = MedForArteriousPid;
 			pressSample2_Art = MedForArteriousPid;
+			pressSample1_Art = PR_ART_Sistolyc_mmHg_ORG;
+			pressSample2_Art = PR_ART_Sistolyc_mmHg_ORG;
         }
 		else if(buttonGUITreatment[BUTTON_START_OXYGEN_PUMP].state == GUI_BUTTON_RELEASED){
 			releaseGUIButton(BUTTON_START_OXYGEN_PUMP);
@@ -2199,6 +2203,8 @@ void manageParentTreatAlways(void){
 				//pressSample2 = PR_ART_mmHg_Filtered;
 				pressSample1_Art = MedForArteriousPid;
 				pressSample2_Art = MedForArteriousPid;
+				pressSample1_Art = PR_ART_Sistolyc_mmHg_ORG;
+				pressSample2_Art = PR_ART_Sistolyc_mmHg_ORG;
 
 				if(!StartTreatmentTime)
 				{
@@ -2213,6 +2219,8 @@ void manageParentTreatAlways(void){
 					setPumpPressLoop(1, PRESS_LOOP_ON);
 					pressSample1_Ven = MedForVenousPid;
 					pressSample2_Ven = MedForVenousPid;
+					pressSample1_Ven = PR_VEN_Sistolyc_mmHg;
+					pressSample2_Ven = PR_VEN_Sistolyc_mmHg;
 				}
 				GlobalFlags.FlagsDef.EnableAllAlarms = 1;
 				// disabilito allarme di livello alto in trattamento (per ora)
@@ -2231,6 +2239,8 @@ void manageParentTreatAlways(void){
 				//pressSample2 = PR_ART_mmHg_Filtered;
 				pressSample1_Art = MedForArteriousPid;
 				pressSample2_Art = MedForArteriousPid;
+				pressSample1_Art = PR_ART_Sistolyc_mmHg_ORG;
+				pressSample2_Art = PR_ART_Sistolyc_mmHg_ORG;
 
 			}
 			else if(buttonGUITreatment[BUTTON_START_OXYGEN_PUMP].state == GUI_BUTTON_RELEASED){
@@ -2257,6 +2267,8 @@ void manageParentTreatAlways(void){
 					setPumpPressLoop(1, PRESS_LOOP_ON);
 					pressSample1_Ven = MedForVenousPid;
 					pressSample2_Ven = MedForVenousPid;
+					pressSample1_Ven = PR_VEN_Sistolyc_mmHg;
+					pressSample2_Ven = PR_VEN_Sistolyc_mmHg;
 				}
 			}
 
@@ -4007,8 +4019,8 @@ void processMachineState(void)
 				}
 				else if(buttonGUITreatment[BUTTON_RESET_ALARM].state == GUI_BUTTON_RELEASED)
 				{
-//					// Il ritorno al priming viene fatto solo dopo la pressione del tasto BUTTON_RESET_ALARM
-//					releaseGUIButton(BUTTON_RESET_ALARM);
+					// Il ritorno al priming viene fatto solo dopo la pressione del tasto BUTTON_RESET_ALARM
+					releaseGUIButton(BUTTON_RESET_ALARM);
 //					if(GlobalFlags.FlagsDef.TankLevelHigh)
 //					{
 //						// era un allarme di troppo pieno, forzo uscita dal priming

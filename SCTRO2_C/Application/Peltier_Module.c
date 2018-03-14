@@ -1779,7 +1779,13 @@ void PeltierAssSendCommand(char command[],
 		#endif
 
 		if(i == (msgLenght-1))
-			iflag_peltier_tx = IFLAG_PELTIER_TX;
+		{
+			if (channel == 1)
+				iflag_peltier_tx = IFLAG_PELTIER_TX;
+			else //if (channel == 2)
+				iflag_peltier2_tx = IFLAG_PELTIER_TX;
+
+		}
 		//else
 			//iflag_peltier_tx = IFLAG_IDLE;
 	}

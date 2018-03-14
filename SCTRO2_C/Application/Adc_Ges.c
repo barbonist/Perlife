@@ -313,6 +313,7 @@ void CalcArtSistDiastPress(word Press)
   word min = 0xffff;
   word max = 0;
   int MAX_SAMPLE_FOR_SPEED = NUMB_OF_SAMPLES_ART;
+  float Press_flow_extimated = 0.0;
 
   if ( pumpPerist[0].actualSpeed != 0)
       MAX_SAMPLE_FOR_SPEED = (int)((float)NUMB_OF_SAMPLES_ART / (float)pumpPerist[0].actualSpeed * 12.0);
@@ -371,6 +372,19 @@ void CalcArtSistDiastPress(word Press)
 	PR_ART_Diastolyc_mmHg = min;
 	PR_ART_Sistolyc_mmHg  = max;
 	PR_ART_Med_mmHg = (int) ( 2 * PR_ART_Sistolyc_mmHg + PR_ART_Diastolyc_mmHg)/3;
+
+	Press_flow_extimated = CalcolaPresArt_with_Flow(1);
+
+	PR_ART_Diastolyc_mmHg_ORG = PR_ART_Diastolyc_mmHg - Press_flow_extimated;
+	PR_ART_Sistolyc_mmHg_ORG  = PR_ART_Sistolyc_mmHg - Press_flow_extimated;
+	PR_ART_Med_mmHg_ORG		  = PR_ART_Med_mmHg - Press_flow_extimated;
+
+	if (PR_ART_Diastolyc_mmHg_ORG < 0)
+		PR_ART_Diastolyc_mmHg_ORG = 0;
+	if (PR_ART_Sistolyc_mmHg_ORG < 0)
+		PR_ART_Sistolyc_mmHg_ORG = 0;
+	if (PR_ART_Med_mmHg_ORG < 0)
+		PR_ART_Med_mmHg_ORG = 0;
 }
 
 void Coversion_From_ADC_To_Voltage()

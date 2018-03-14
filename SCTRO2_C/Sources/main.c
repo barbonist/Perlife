@@ -495,6 +495,9 @@ int main(void)
    // non faccio partire le peltier subito
    peltierCell.readAlwaysEnable = 1;
    peltierCell2.readAlwaysEnable = 1;
+   ArteriousPumpGainForPid = DEFAULT_ART_PUMP_GAIN;
+   VenousPumpGainForPid = DEFAULT_VEN_PUMP_GAIN;
+
 
   /**********MAIN LOOP START************/
   for(;;) {

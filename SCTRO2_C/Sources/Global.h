@@ -868,7 +868,7 @@ word  PR_OXYG_mmHg_Filtered;  	//variabile globale per il valore in mmHg del sen
 word  PR_OXYG_ADC_Filtered;  	//variabile globale per il valore ADC del sensore di pressione ossigenatore filtrato
 
 word  PR_LEVEL_ADC;			 	//variabile globale per il valore ADC del sensore di pressione di livello vaschetta --> PTC11
-word PR_LEVEL_mmHg;			//variabile globale per il valore in mmHg del sensore di pressione di livello vaschetta
+word  PR_LEVEL_mmHg;			//variabile globale per il valore in mmHg del sensore di pressione di livello vaschetta
 word  PR_LEVEL_mmHg_Filtered; 	//variabile globale per il valore in mmHg del sensore di pressione di livello vaschetta filtrato
 word  PR_LEVEL_ADC_Filtered;  	//variabile globale per il valore ADC del sensore di pressione di livello filtrato
 
@@ -897,6 +897,9 @@ word  PR_ART_ADC_Filtered;  	//variabile globale per il valore ADC del sensore d
 word  PR_ART_Diastolyc_mmHg;	//variabile globale per il valore diastolico  in mmHg del sensore di pressione arteriosa
 word  PR_ART_Sistolyc_mmHg;	    //variabile globale per il valore sistolico  in mmHg del sensore di pressione arteriosa
 word  PR_ART_Med_mmHg;			//variabile globale per il valore medio in mmHg del sensore di pressione arteriosa calcolato come (2 *PR_OXYG_Sistolyc_mmHg + PR_OXYG_Diastolyc_mmHg)/3
+int   PR_ART_Diastolyc_mmHg_ORG; //variabile globale per il valore diastolico  in mmHg del sensore di pressione arteriosa
+int   PR_ART_Sistolyc_mmHg_ORG;	 //variabile globale per il valore sistolico  in mmHg del sensore di pressione arteriosa
+int   PR_ART_Med_mmHg_ORG;		 //variabile globale per il valore medio in mmHg del sensore di pressione arteriosa calcolato come (2 *PR_OXYG_Sistolyc_mmHg + PR_OXYG_Diastolyc_mmHg)/3
 
 
 /* SENSORI TEMPERATURA ANALOGICI */
@@ -1236,8 +1239,8 @@ unsigned char CHANGE_ADDRESS_IR_SENS;
 /*valore di gain e offset del sensore di flusso venoso calcolati sperimentalmente con prove di flusso con la bilancia*/
 #define GAIN_FLOW_SENS_VEN		0.7722f
 #define OFFSET_FLOW_SENS_VEN		25
-#define GAIN_FLOW_SENS_ART      0.93846f
-#define OFFSET_FLOW_SENS_ART		40
+#define GAIN_FLOW_SENS_ART      0.7678f
+#define OFFSET_FLOW_SENS_ART		56
 
 #define FREQ_DEBUG_LED 	10
 #define SERVICE 		0x01
@@ -1355,13 +1358,16 @@ Kd = Kp*Pu/8  = 0.01875
 #define parKD_TC_Ven 						0.01875
 
 
-// parametri per il nuovo pid slla arteriosa
-#define parKITC_Art 						0.048
-#define parKP_Art 							0.06
-#define parKD_TC_Art 						0.01875
+// parametri per il nuovo pid sulla arteriosa
+// ku = 0.05, Pu = 10 sec
+#define parKITC_Art 						0.006
+#define parKP_Art 							0.03
+#define parKD_TC_Art 						0.0375
 
-
-
+// Coefficienti del pid iniziale (calcolati da Davide)
+//#define parKP_Art 							1.0
+//#define parKITC_Art 						0.2
+//#define parKD_TC_Art 						0.8
 
 //----------------------------------------------------------------------------------------------------------
 // i valori che seguono sono da considerare nel funzionamento normale
@@ -1515,6 +1521,7 @@ typedef enum
 
 // velocita' delle pompe per la fase del ricircolo ad alta velocita'
 #define RECIRC_PUMP_HIGH_SPEED 4000
+#define RECIRC_PUMP_HIGH_SPEED_ART 2000
 
 
 // GESTIONE PRIMING AGGIUNTIVO DA DEBUGGARE

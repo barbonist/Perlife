@@ -960,15 +960,15 @@ void buildRDMachineStateResponseMsg(char code, char subcode)
 	sbc_tx_data[index++] = (LiquidAmount) & 0xFF;      // PR_LEVEL_mmHg_Filtered
 
 	/* sensors parameters: pressure systolic arterial */
-	sbc_tx_data[index++] = (PR_ART_Sistolyc_mmHg >> 8) & 0xFF;
-	sbc_tx_data[index++] = (PR_ART_Sistolyc_mmHg     ) & 0xFF;
+	sbc_tx_data[index++] = (PR_ART_Sistolyc_mmHg_ORG >> 8) & 0xFF;
+	sbc_tx_data[index++] = (PR_ART_Sistolyc_mmHg_ORG     ) & 0xFF;
 	/* sensors parameters: pressure diastolic arterial */
-	sbc_tx_data[index++] = (PR_ART_Diastolyc_mmHg >> 8) & 0xFF;
-	sbc_tx_data[index++] = (PR_ART_Diastolyc_mmHg     ) & 0xFF;
+	sbc_tx_data[index++] = (PR_ART_Diastolyc_mmHg_ORG >> 8) & 0xFF;
+	sbc_tx_data[index++] = (PR_ART_Diastolyc_mmHg_ORG     ) & 0xFF;
 	/* sensors parameters: pressure mean arterial */
 
-	sbc_tx_data[index++] = (PR_ART_Med_mmHg >> 8) & 0xFF;
-	sbc_tx_data[index++] = (PR_ART_Med_mmHg     ) & 0xFF;
+	sbc_tx_data[index++] = (PR_ART_Med_mmHg_ORG >> 8) & 0xFF;
+	sbc_tx_data[index++] = (PR_ART_Med_mmHg_ORG     ) & 0xFF;
 	/* sensors parameters: pressure systolic venous */
 	sbc_tx_data[index++] = (PR_VEN_Sistolyc_mmHg_ORG >> 8) & 0xFF;
 	sbc_tx_data[index++] = (PR_VEN_Sistolyc_mmHg_ORG     ) & 0xFF;

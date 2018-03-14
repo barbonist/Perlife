@@ -22,5 +22,6 @@ float CalcolaPresArt(float speed);
 int SpeedCostanteVen( int CurrSpeed);
 void alwaysPumpPressLoopVen(unsigned char pmpId, unsigned char *PidFirstTime);
 
+float CalcolaPresArt_with_Flow(unsigned char type_flow);
 
 #endif /* PID_H_ */
