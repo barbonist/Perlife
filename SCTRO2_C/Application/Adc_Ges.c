@@ -315,8 +315,8 @@ void CalcArtSistDiastPress(word Press)
   int MAX_SAMPLE_FOR_SPEED = NUMB_OF_SAMPLES_ART;
   float Press_flow_extimated = 0.0;
 
-  if ( pumpPerist[0].actualSpeed != 0)
-      MAX_SAMPLE_FOR_SPEED = (int)((float)NUMB_OF_SAMPLES_ART / (float)pumpPerist[0].actualSpeed * 12.0);
+//  if ( pumpPerist[0].actualSpeed != 0)
+//      MAX_SAMPLE_FOR_SPEED = (int)((float)NUMB_OF_SAMPLES_ART / (float)pumpPerist[0].actualSpeed * 12.0);
 
   if (MAX_SAMPLE_FOR_SPEED > NUMB_OF_SAMPLES_ART )
 	  MAX_SAMPLE_FOR_SPEED = NUMB_OF_SAMPLES_ART;
@@ -378,6 +378,8 @@ void CalcArtSistDiastPress(word Press)
 	PR_ART_Diastolyc_mmHg_ORG = PR_ART_Diastolyc_mmHg - Press_flow_extimated;
 	PR_ART_Sistolyc_mmHg_ORG  = PR_ART_Sistolyc_mmHg - Press_flow_extimated;
 	PR_ART_Med_mmHg_ORG		  = PR_ART_Med_mmHg - Press_flow_extimated;
+
+	perfusionParam.renalResistance = (word)((float)PR_ART_Med_mmHg_ORG /sensor_UFLOW[0].Average_Flow_Val * 100.0);
 
 	if (PR_ART_Diastolyc_mmHg_ORG < 0)
 		PR_ART_Diastolyc_mmHg_ORG = 0;

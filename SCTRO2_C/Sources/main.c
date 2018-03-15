@@ -568,7 +568,12 @@ int main(void)
 			{
 	        	 timerCounterPeltier = 0;
 
-	        	 CheckTemperatureSet();
+	        	 if(PeltierOn && (peltierCell.readAlwaysEnable == 1) && (peltierCell2.readAlwaysEnable == 1))
+	        	 {
+	        		 // il controllo della temperatura lo faccio solo se le peltier sono accese ed un eventuale comando
+	        		 // precedente e' terminato
+	        		 CheckTemperatureSet();
+	        	 }
 
 	        	 /*********************DISATTIVAZIONE PELTIER SE NON RISPONDONO **************************/
 	        	 /*messo qui soloper debug, dopo sarà da gestire con un allarme specifco
@@ -611,6 +616,8 @@ int main(void)
 				 /*funzione cher gestiscer lo stop della cella di peltier 1*/
 				 if (peltierCell2.StopEnable == 1)
 					 stopPeltier2Actuator();
+
+				 perfusionParam.pulsatility = (word)pumpPerist[0].actualSpeed * 2;
 				}
 
 	         /********************************/

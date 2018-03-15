@@ -944,8 +944,8 @@ void buildRDMachineStateResponseMsg(char code, char subcode)
 	sbc_tx_data[index++] = (PR_ADS_FLT_mmHg_Filtered) & 0xFF;
 	/* sensors parameters: pressure arterial */
 
-	sbc_tx_data[index++] = (MedForArteriousPid >> 8) & 0xFF;
-	sbc_tx_data[index++] = (MedForArteriousPid) & 0xFF;
+	sbc_tx_data[index++] = (PR_ART_Sistolyc_mmHg >> 8) & 0xFF;
+	sbc_tx_data[index++] = (PR_ART_Sistolyc_mmHg) & 0xFF;
 	/* sensors parameters: pressure venous */
 
 	sbc_tx_data[index++] = (MedForVenousPid >> 8) & 0xFF;
@@ -1330,6 +1330,7 @@ void resetParamWordFromGUI(unsigned char parId){
 
 // tabella relativa al tubo piccolo della cassetta
 
+/*
 const word LiquidLevelTable[NUM_LQUID_LEV_VALUES][2] =
 {
 		// valore letto dal sensore di pressione mmHg, ml presenti nel recipiente
@@ -1373,9 +1374,9 @@ const word LiquidLevelTable[NUM_LQUID_LEV_VALUES][2] =
 		343, 2900,
 		346, 3000
 };
+*/
 
 
-/*
 #define NUM_LQUID_LEV_VALUES 20
 
 const word LiquidLevelTable[NUM_LQUID_LEV_VALUES][2] =
@@ -1402,7 +1403,7 @@ const word LiquidLevelTable[NUM_LQUID_LEV_VALUES][2] =
 		376, 2800,  // 379
 		391, 3000   // 394
 };
-*/
+
 
 /*
 #define NUM_LQUID_LEV_VALUES 12

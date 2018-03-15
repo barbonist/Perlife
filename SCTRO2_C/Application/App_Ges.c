@@ -148,6 +148,14 @@ void CallInIdleState(void)
 	// abilito tutti gli allarmi previsti
 	GlobalFlags.FlagsDef.EnableAllAlarms = 1;
 	SetAllAlarmEnableFlags();
+
+	if (PeltierOn && (peltierCell.StopEnable == 0))
+	{
+		// se erano accese le spengo
+		peltierCell.StopEnable = 1;
+		peltierCell2.StopEnable = 1;
+	}
+	LevelBuzzer = 0;
 }
 
 
@@ -362,6 +370,12 @@ void manageStateMountDispAlways(void)
 		// passo alla fase di riempimento fino al 95%
 		currentGuard[GUARD_ENABLE_PRIMING_PHASE_1].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
 
+		if (!PeltierOn && (peltierCell.readAlwaysEnable == 1))
+		{
+			// do il comando di start alle peltier
+			peltierCell.readAlwaysEnable = 0;
+			peltierCell2.readAlwaysEnable = 0;
+		}
 	}
 
 	// se in questa fase ricevo un nuovo valore di flusso nella linea di ossigenazione lo prendo
@@ -457,22 +471,22 @@ void CheckTemperatureSet(void)
 		{
 			peltierCell.mySet  = (float) myTempValue/10 - 8;
 			peltierCell2.mySet = (float) myTempValue/10 - 8;
-//			peltierCell.readAlwaysEnable = 0;
-//			peltierCell2.readAlwaysEnable = 0;
+			peltierCell.readAlwaysEnable = 0;
+			peltierCell2.readAlwaysEnable = 0;
 		}
 		else if(myTempValue == 360)
 		{
-			peltierCell.mySet  = (float) myTempValue/10 + 6;
-			peltierCell2.mySet = (float) myTempValue/10 + 6;
-//			peltierCell.readAlwaysEnable = 0;
-//			peltierCell2.readAlwaysEnable = 0;
+			peltierCell.mySet  = (float) myTempValue/10 + 19;
+			peltierCell2.mySet = (float) myTempValue/10 + 19;
+			peltierCell.readAlwaysEnable = 0;
+			peltierCell2.readAlwaysEnable = 0;
 		}
 		else
 		{
 			peltierCell.mySet  = 20;
 			peltierCell2.mySet = 20;
-//			peltierCell.readAlwaysEnable = 0;
-//			peltierCell2.readAlwaysEnable = 0;
+			peltierCell.readAlwaysEnable = 0;
+			peltierCell2.readAlwaysEnable = 0;
 		}
 	}
 	//-----------------------------------------------------------------------
@@ -494,7 +508,6 @@ void managePrimingPh1Always(void)
 {
 	//guard macchina a stati (controllo quando arriva il segnale per i passaggio alla fase 2)
 	computeMachineStateGuardPrimingPh1();
-	//CheckTemperatureSet();
 }
 
 /*--------------------------------------------------------------*/
@@ -511,7 +524,6 @@ void managePrimingPh2(void)
 void managePrimingPh2Always(void)
 {
 	computeMachineStateGuardPrimingPh2();
-	//CheckTemperatureSet();
 }
 
 /*-----------------------------------------------------------*/
@@ -541,7 +553,6 @@ void manageStateTreatKidney1(void)
 void manageStateTreatKidney1Always(void)
 {
 	computeMachineStateGuardTreatment();
-	//CheckTemperatureSet();
 }
 
 /*-----------------------------------------------------------*/
@@ -3067,16 +3078,28 @@ static void computeMachineStateGuardTreatment(void)
 		if ( CommandModBusPMPExecute(newSpeedPmp_0,newSpeedPmp1_2,newSpeedPmp_3) )
 		{
 			currentGuard[GUARD_ENABLE_DISPOSABLE_EMPTY].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+			if (PeltierOn && (peltierCell.StopEnable == 0))
+			{
+				// se erano accese le spengo
+				peltierCell.StopEnable = 1;
+				peltierCell2.StopEnable = 1;
+			}
 			DebugStringStr("TREATMENT END");
 		}
 		else
 		{
-			// controllo il tempo trascorso per un eventuale timeout di erroreù
+			// controllo il tempo trascorso per un eventuale timeout di errore
 			if((TotalTreatDuration + TreatDuration) >= (isec + 5))
 			{
 				// se sono trascorsi 5 secondi dalla fine del trattamento e non sono ancora uscito.
 				// la forzo io
 				currentGuard[GUARD_ENABLE_DISPOSABLE_EMPTY].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+				if (PeltierOn && (peltierCell.StopEnable == 0))
+				{
+					// se erano accese le spengo
+					peltierCell.StopEnable = 1;
+					peltierCell2.StopEnable = 1;
+				}
 				DebugStringStr("TREATMENT END");
 			}
 		}
@@ -3961,6 +3984,7 @@ void processMachineState(void)
 					// reset termino la procedura di priming e passo direttamente al ricircolo
 					GlobalFlags.FlagsDef.TankLevelHigh = 1;
 				}
+				LevelBuzzer = 2;
 			}
 
 			break;
@@ -3994,6 +4018,7 @@ void processMachineState(void)
 					// reset termino la procedura di priming e passo direttamente al ricircolo
 					GlobalFlags.FlagsDef.TankLevelHigh = 1;
 				}
+				LevelBuzzer = 2;
 			}
 			break;
 
@@ -4040,6 +4065,8 @@ void processMachineState(void)
 					//ptrFutureParent = &stateParentPrimingTreatKidney1[1];
 					ptrFutureParent = &stateParentPrimingTreatKidney1[3];
 					ptrFutureChild = ptrFutureParent->ptrChild;
+
+					LevelBuzzer = 0;
 				}
 			}
 
@@ -4089,6 +4116,7 @@ void processMachineState(void)
 				ptrFutureParent = &stateParentTreatKidney1[5];
 				ptrFutureChild = ptrFutureParent->ptrChild;
 				DisableAllAirAlarm = FALSE;
+				LevelBuzzer = 2;
 				// guardando a questo valore posso vedere il tipo di azione di sicurezza
 				// e quindi posso decidere di andare anche in un qualche altro stato ad hoc
 				// di allarme
@@ -4123,6 +4151,7 @@ void processMachineState(void)
 				ptrFutureParent = &stateParentTreatKidney1[5];
 				ptrFutureChild = ptrFutureParent->ptrChild;
 				DisableAllAirAlarm = FALSE;
+				LevelBuzzer = 2;
 				// guardando a questo valore posso vedere il tipo di azione di sicurezza
 				// e quindi posso decidere di andare anche in un qualche altro stato ad hoc
 				// di allarme
@@ -4144,6 +4173,7 @@ void processMachineState(void)
 				{
 					releaseGUIButton(BUTTON_RESET_ALARM);
 					ButtonResetRcvd = TRUE;
+					LevelBuzzer = 0;
 				}
 
 				if((currentGuard[GUARD_ALARM_AIR_FILT_RECOVERY].guardValue == GUARD_VALUE_TRUE) || (ButtonResetRcvd && TreatAlm1SafAirFiltActive))

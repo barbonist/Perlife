@@ -1150,8 +1150,8 @@ void ManagePeltierActuator()
 					peltierCell.countMsgSent++;
 					myStatePos = WAIT_TEMP_SET_RESPONS;
 				}
-				else
-				{
+//				else
+//				{
 					if(!PeltierOn)
 						myStatePos = REQ_START;
 					else
@@ -1159,7 +1159,7 @@ void ManagePeltierActuator()
 						peltierCell.readAlwaysEnable = 1;
 						myStatePos = REQ_FAN_MODE;
 					}
-				}
+//				}
 				break;
 
 			case REQ_START:
@@ -1322,8 +1322,8 @@ void ManagePeltier2Actuator()
 					peltierCell2.countMsgSent++;
 					myStatePos2 = WAIT_TEMP_SET_RESPONS;
 				}
-				else
-				{
+//				else
+//				{
 					if(!Peltier2On)
 						myStatePos2 = REQ_START;
 					else
@@ -1331,7 +1331,7 @@ void ManagePeltier2Actuator()
 						peltierCell2.readAlwaysEnable = 1;
 						myStatePos2 = REQ_FAN_MODE;
 					}
-				}
+//				}
 				break;
 
 			case REQ_START:
@@ -1446,9 +1446,9 @@ void stopPeltierActuator(void)
 					break;
 			}
 		}
-		if(iflag_peltier2_rx == IFLAG_PELTIER_RX)
+		if(iflag_peltier_rx == IFLAG_PELTIER_RX)
 		{
-			iflag_peltier2_rx = IFLAG_IDLE;
+			iflag_peltier_rx = IFLAG_IDLE;
 
 			switch (state)
 			{

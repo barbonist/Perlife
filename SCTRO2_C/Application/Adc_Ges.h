@@ -18,7 +18,7 @@
 
 // numero di campioni di pressione arteriosa presi per il calcolo della media dei
 // campioni gia' mediati dopo la conversione
-#define NUMB_OF_SAMPLES_ART     500
+#define NUMB_OF_SAMPLES_ART     500 * 2
 // numero di campioni di pressione venosa presi per il calcolo della media dei
 // campioni gia' mediati dopo la conversione
 #define NUMB_OF_SAMPLES_VEN     500

@@ -195,6 +195,8 @@ void DebugString()
 								(int) pumpPerist[0].actualSpeedOld * 100, //pumpPerist[1].actualSpeed,
 								(int) perfusionParam.priVolPerfArt
 					);
+
+		perfusionParam.treatDurPerfArt = (word)((TotalTreatDuration + TreatDuration) / 60);
 	}
 				
 				

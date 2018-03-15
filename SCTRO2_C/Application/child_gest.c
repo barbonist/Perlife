@@ -677,6 +677,7 @@ void manageChildTreatAlm1SafAirFiltAlways(void)
 		currentGuard[GUARD_ALARM_AIR_FILT_RECOVERY].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
 		// ho raggiunto la condizione di sicurezza ed ho ricevuto un comando reset alarm
 		releaseGUIButton(BUTTON_RESET_ALARM);
+		LevelBuzzer = 0;
 	}
 }
 
@@ -716,6 +717,7 @@ void manageChildTreatAlm1SFVAlways(void)
 		currentGuard[GUARD_ALARM_AIR_SFV_RECOVERY].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
 		// ho raggiunto la condizione di sicurezza ed ho ricevuto un comando reset alarm
 		releaseGUIButton(BUTTON_RESET_ALARM);
+		LevelBuzzer = 0;
 	}
 }
 
@@ -758,6 +760,7 @@ void manageChildTreatAlm1SFAAlways(void)
 		currentGuard[GUARD_ALARM_AIR_SFA_RECOVERY].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
 		// ho raggiunto la condizione di sicurezza ed ho ricevuto un comando reset alarm
 		releaseGUIButton(BUTTON_RESET_ALARM);
+		LevelBuzzer = 0;
 	}
 }
 
@@ -791,6 +794,7 @@ void manageChildAlmAndWaitCmdAlways(void)
 		currentGuard[GUARD_ALARM_WAIT_CMD_TO_EXIT].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
 		// ho raggiunto la condizione di sicurezza ed ho ricevuto un comando reset alarm
 		releaseGUIButton(BUTTON_RESET_ALARM);
+		LevelBuzzer = 0;
 	}
 }
 //--------------------------------------------------------------------------------------------------
@@ -825,6 +829,7 @@ void manageChildPrimAlmAndWaitCmdAlways(void)
 		currentGuard[GUARD_ALARM_WAIT_CMD_TO_EXIT].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
 		// ho raggiunto la condizione di sicurezza ed ho ricevuto un comando reset alarm
 		releaseGUIButton(BUTTON_RESET_ALARM);
+		LevelBuzzer = 0;
 	}
 }
 //--------------------------------------------------------------------------------------------------

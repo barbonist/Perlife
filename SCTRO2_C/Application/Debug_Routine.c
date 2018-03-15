@@ -455,23 +455,36 @@ void Service_SBC(void){
 
 						peltierCell.readAlwaysEnable = 0;
 
-						if(incr && (peltierCell.mySet < 40.0))
+//						if(incr && (peltierCell.mySet < 40.0))
+//						{
+//							peltierCell.mySet += 1.0;
+//							peltierCell2.mySet += 1.0;
+//						}
+//						else
+//						{
+//							incr = 0;
+//						}
+//
+//						if(!incr && (peltierCell.mySet > 0.0))
+//						{
+//							peltierCell.mySet -= 1.0;
+//							peltierCell2.mySet -= 1.0;
+//						}
+//						else
+//						{
+//							incr = 1;
+//						}
+
+						if(incr)
 						{
-							peltierCell.mySet += 1.0;
-							peltierCell2.mySet += 1.0;
-						}
-						else
-						{
+							peltierCell.mySet = 55.0;
+							peltierCell2.mySet = 55.0;
 							incr = 0;
 						}
-
-						if(!incr && (peltierCell.mySet > 0.0))
-						{
-							peltierCell.mySet -= 1.0;
-							peltierCell2.mySet -= 1.0;
-						}
 						else
 						{
+							peltierCell.mySet = -4.0;
+							peltierCell2.mySet = -4.0;
 							incr = 1;
 						}
 
