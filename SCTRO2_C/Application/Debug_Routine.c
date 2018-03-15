@@ -152,10 +152,14 @@ void Service_SBC(void){
 								_funcRetVal.slvresRetPtr = _funcRetValPtr->slvresRetPtr;
 								_funcRetVal.slvresRetNumByte = _funcRetValPtr->slvresRetNumByte;
 
-								MyArrayIdx = 0;
-								MODBUS_COMM_SendBlock(_funcRetVal.ptr_msg,
-													  _funcRetVal.mstreqRetStructNumByte,
-													  &snd);
+//								MODBUS_COMM_SendBlock(_funcRetVal.ptr_msg,
+//													  _funcRetVal.mstreqRetStructNumByte,
+//													  &snd);
+								for(char k = 0; k < _funcRetVal.mstreqRetStructNumByte; k++)
+								{
+									MODBUS_COMM_SendChar(*(_funcRetVal.ptr_msg+k));
+								}
+
 
 							}
 							//send answer to sbc

@@ -239,7 +239,7 @@ void alwaysPumpPressLoopArt(unsigned char pmpId, unsigned char *PidFirstTime){
 
 	// valutare se mettere il deltaSpeed = 0 nel caso deltaSpeed sia negativo in modo da non far andare actualSpeed a zero troppo in fretta
 	// in alternativa il deltaSpeed va considerato solo se è abbastanza negativo
-	if((deltaSpeed_Art < -0.1) || (deltaSpeed_Art > 0.1))
+	if((deltaSpeed_Art < -0.01) || (deltaSpeed_Art > 0.01))
 	{
 		actualSpeed_Art = actualSpeed_Art + deltaSpeed_Art;
 	}

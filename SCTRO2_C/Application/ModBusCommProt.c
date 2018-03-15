@@ -1211,10 +1211,16 @@ void Check_Actuator_Status (char slaveAddr,
 
 
 	MODBUS_COMM_ClearRxBuf();
-	MyArrayIdx = 0;
-	MODBUS_COMM_SendBlock(_funcRetVal.ptr_msg,
-						  _funcRetVal.mstreqRetStructNumByte,
-						  &snd);
+	MODBUS_COMM_Disable();
+	MODBUS_COMM_Enable();
+//	MODBUS_COMM_SendBlock(_funcRetVal.ptr_msg,
+//						  _funcRetVal.mstreqRetStructNumByte,
+//						  &snd);
+	for(char k = 0; k < _funcRetVal.mstreqRetStructNumByte; k++)
+	{
+		MODBUS_COMM_SendChar(*(_funcRetVal.ptr_msg+k));
+	}
+
 }
 
 void Manage_and_Storage_ModBus_Actuator_Data(void)

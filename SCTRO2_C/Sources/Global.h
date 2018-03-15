@@ -1359,10 +1359,10 @@ Kd = Kp*Pu/8  = 0.01875
 
 
 // parametri per il nuovo pid sulla arteriosa
-// ku = 0.05, Pu = 10 sec
-#define parKITC_Art 						0.006
+// ku = 0.05, Pu = 8 sec
+#define parKITC_Art 						0.008
 #define parKP_Art 							0.03
-#define parKD_TC_Art 						0.0375
+#define parKD_TC_Art 						0.03
 
 // Coefficienti del pid iniziale (calcolati da Davide)
 //#define parKP_Art 							1.0
