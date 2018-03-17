@@ -1349,7 +1349,7 @@ void StorageModbusData(unsigned char LastActuatslvAddr)
 		return;
 	}
 
-	ptr_msg =&msgToRecvFrame3;
+	ptr_msg =&msgToRecvFrame3[0];
 
 	/*controllo i dati ricevuti e calcolo il relativo CRC cofrontandolo con quello ricevuto*/
 	if (Address >= FIRST_ACTUATOR && Address <= LAST_PUMP)
