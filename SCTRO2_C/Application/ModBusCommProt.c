@@ -613,6 +613,7 @@ void setPumpCurrentValue(unsigned char slaveAddr, int currValue){
 	_funcRetVal.slvresRetPtr = _funcRetValPtr->slvresRetPtr;
 	_funcRetVal.slvresRetNumByte = _funcRetValPtr->slvresRetNumByte;
 
+	MODBUS_COMM_ClearRxBuf();
 	/*prima di ogni spedizione abilito la seriale del modbus perchè
 	 * potrebbe essere stata disabilita da una non corretta ricezione
 	 * per resettare la perifericare e riallinearla; all'interno della
@@ -649,6 +650,7 @@ void setPumpAccelerationValue(unsigned char slaveAddr, int acc)
 	_funcRetVal.slvresRetPtr = _funcRetValPtr->slvresRetPtr;
 	_funcRetVal.slvresRetNumByte = _funcRetValPtr->slvresRetNumByte;
 
+	MODBUS_COMM_ClearRxBuf();
 	/*prima di ogni spedizione abilito la seriale del modbus perchè
 	 * potrebbe essere stata disabilita da una non corretta ricezione
 	 * per resettare la perifericare e riallinearla; all'interno della
@@ -693,6 +695,7 @@ void setPumpSpeedValue(unsigned char slaveAddr, int speedValue){
 	_funcRetVal.slvresRetPtr = _funcRetValPtr->slvresRetPtr;
 	_funcRetVal.slvresRetNumByte = _funcRetValPtr->slvresRetNumByte;
 
+	MODBUS_COMM_ClearRxBuf();
 	/*prima di ogni spedizione abilito la seriale del modbus perchè
 	 * potrebbe essere stata disabilita da una non corretta ricezione
 	 * per resettare la perifericare e riallinearla; all'interno della
@@ -724,6 +727,7 @@ void readPumpSpeedValue(unsigned char slaveAddr){
 	_funcRetVal.slvresRetPtr = _funcRetValPtr->slvresRetPtr;
 	_funcRetVal.slvresRetNumByte = _funcRetValPtr->slvresRetNumByte;
 
+	MODBUS_COMM_ClearRxBuf();
 	/*prima di ogni spedizione abilito la seriale del modbus perchè
 	 * potrebbe essere stata disabilita da una non corretta ricezione
 	 * per resettare la perifericare e riallinearla; all'interno della
@@ -852,7 +856,7 @@ void setPinchPosValue(unsigned char slaveAddr, int posValue){
 		_funcRetVal.slvresRetPtr = _funcRetValPtr->slvresRetPtr;
 		_funcRetVal.slvresRetNumByte = _funcRetValPtr->slvresRetNumByte;
 
-		/*prima di ogni spedizione abilito la seriale del modbus perchè
+		MODBUS_COMM_ClearRxBuf();		/*prima di ogni spedizione abilito la seriale del modbus perchè
 		 * potrebbe essere stata disabilita da una non corretta ricezione
 		 * per resettare la perifericare e riallinearla; all'interno della
 		 * funzione MODBUS_COMM_Enable() viene controllata la flag EnUser

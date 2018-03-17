@@ -197,7 +197,7 @@ void DebugString()
 					);
 
 		perfusionParam.treatDurPerfArt = (word)((TotalTreatDuration + TreatDuration) / 60);
-	}
+		perfusionParam.priDurPerfArt	= (word)((PrimingDuration) / 60);	}
 				
 				
 
