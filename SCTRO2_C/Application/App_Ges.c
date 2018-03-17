@@ -74,7 +74,8 @@ extern unsigned char PidFirstTime[];
 
 // tick di inizio del trattamento
 unsigned long StartTreatmentTime = 0;
-
+// tick di inizio del priming
+unsigned long StartPrimingTime = 0;
 
 // ferma il conteggio del tempo durante il trattamento
 unsigned char StopTreatmentTime;
@@ -129,6 +130,7 @@ void CallInIdleState(void)
 	StartTreatmentTime = 0;
 	TreatDuration = 0;
 	FilterSelected = FALSE;
+	PrimingDuration = 0;
 
 	// inizializza il target di pressione venosa necessaria al PID per lavorare
 	// parameterWordSetFromGUI[PAR_SET_VENOUS_PRESS_TARGET].value = SET_POINT_PRESSURE_INIT;
@@ -476,10 +478,14 @@ void CheckTemperatureSet(void)
 		}
 		else if(myTempValue == 360)
 		{
-			peltierCell.mySet  = (float) myTempValue/10 + 19;
-			peltierCell2.mySet = (float) myTempValue/10 + 19;
-			peltierCell.readAlwaysEnable = 0;
-			peltierCell2.readAlwaysEnable = 0;
+		//	peltierCell.mySet  = (float) myTempValue/10 + 6;
+		//	peltierCell2.mySet = (float) myTempValue/10 + 6;
+		//peltierCell.mySet  = (float) myTempValue/10 + 19;
+		//	peltierCell2.mySet = (float) myTempValue/10 + 19;
+		//	peltierCell.mySet  = (float) myTempValue/10 + 6;
+		//	peltierCell2.mySet = (float) myTempValue/10 + 6;
+			peltierCell.mySet  = (float) 62.0;
+			peltierCell2.mySet = (float) 62.0;				peltierCell2.readAlwaysEnable = 0;
 		}
 		else
 		{
@@ -1958,6 +1964,7 @@ void manageParentTreatAlways(void){
 			TotalTreatDuration += TreatDuration;
 			TreatDuration = 0;
 			StartTreatmentTime = 0;
+			StartPrimingTime 	= 0;
 			GlobalFlags.FlagsDef.EnableAllAlarms = 0;
 		}
 		else if(buttonGUITreatment[BUTTON_STOP_PERF_PUMP].state == GUI_BUTTON_RELEASED)
@@ -2927,6 +2934,16 @@ static void computeMachineStateGuardPrimingPh1(void){
 //		releaseGUIButton(BUTTON_PRIMING_FILT_INS_CONFIRM);
 //	}
 //	else
+	if(!StartPrimingTime)
+	{
+		// prendo il tempo di start del priming solo se il valore vale 0, cioe' sono partito da IDLE
+		StartPrimingTime = (unsigned long)timerCounterModBus;
+	}
+
+	// tempo trascorso di priming in sec
+	if(StartPrimingTime)
+		PrimingDuration = msTick_elapsed(StartPrimingTime) * 50L / 1000;
+
 	if(buttonGUITreatment[BUTTON_PRIMING_ABANDON].state == GUI_BUTTON_RELEASED)
 	{
 		releaseGUIButton(BUTTON_PRIMING_ABANDON);
@@ -2971,6 +2988,17 @@ static void computeMachineStateGuardPrimingPh1(void){
 /*  Controllo quando iniziare il trattamento
 /*--------------------------------------------------------------------*/
 static void computeMachineStateGuardPrimingPh2(void){
+
+	if(!StartPrimingTime)
+	{
+		// prendo il tempo di start del priming solo se il valore vale 0, cioe' sono partito da IDLE
+		StartPrimingTime = (unsigned long)timerCounterModBus;
+	}
+
+	// tempo trascorso di priming in sec
+	if(StartPrimingTime)
+		PrimingDuration = msTick_elapsed(StartPrimingTime) * 50L / 1000;
+
 	if(buttonGUITreatment[BUTTON_PRIMING_ABANDON].state == GUI_BUTTON_RELEASED)
 	{
 		releaseGUIButton(BUTTON_PRIMING_ABANDON);
@@ -3020,6 +3048,9 @@ static void computeMachineStateGuardTreatment(void)
 //	static int EndTreatmentState = 0;
 //	static unsigned long StartTimeout = 0;
 //	unsigned long ul;
+
+	//stoppo il conteggio del timer del priming
+	StartPrimingTime = 0;
 
 	// tempo trascorso di trattamento in sec
 	if(StartTreatmentTime)

@@ -516,8 +516,8 @@ void manageChildTreatAlm1StopAllActEntry(void)
 			//in TherapyType == KidneyTreat non è usata quindi preferisco non muoverla
 		}
 
-		stopPeltierActuator();
-		stopPeltier2Actuator();
+//		stopPeltierActuator();
+//		stopPeltier2Actuator();
 	}
 
 	if((timerCounterModBus%9) == 8)
@@ -619,8 +619,8 @@ void manageChildTreatAlm1StopAllActAlways(void)
 		{
 			//in TherapyType == KidneyTreat non è usata quindi preferisco non muoverla
 		}
-		stopPeltierActuator();
-		stopPeltier2Actuator();
+//		stopPeltierActuator();
+//		stopPeltier2Actuator();
 	}
 
 //	if((timerCounterModBus%9) == 8)

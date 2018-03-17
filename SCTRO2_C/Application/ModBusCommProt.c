@@ -613,7 +613,12 @@ void setPumpCurrentValue(unsigned char slaveAddr, int currValue){
 	_funcRetVal.slvresRetPtr = _funcRetValPtr->slvresRetPtr;
 	_funcRetVal.slvresRetNumByte = _funcRetValPtr->slvresRetNumByte;
 
-	MODBUS_COMM_ClearRxBuf();
+	/*prima di ogni spedizione abilito la seriale del modbus perchè
+	 * potrebbe essere stata disabilita da una non corretta ricezione
+	 * per resettare la perifericare e riallinearla; all'interno della
+	 * funzione MODBUS_COMM_Enable() viene controllata la flag EnUser
+	 * che esegue l'abilitazione della serrtiale solo se essa è disabilitata*/
+	MODBUS_COMM_Enable();
 	for(char k = 0; k < _funcRetVal.mstreqRetStructNumByte; k++)
 	{
 		MODBUS_COMM_SendChar(*(_funcRetVal.ptr_msg+k));
@@ -644,7 +649,12 @@ void setPumpAccelerationValue(unsigned char slaveAddr, int acc)
 	_funcRetVal.slvresRetPtr = _funcRetValPtr->slvresRetPtr;
 	_funcRetVal.slvresRetNumByte = _funcRetValPtr->slvresRetNumByte;
 
-	MODBUS_COMM_ClearRxBuf();
+	/*prima di ogni spedizione abilito la seriale del modbus perchè
+	 * potrebbe essere stata disabilita da una non corretta ricezione
+	 * per resettare la perifericare e riallinearla; all'interno della
+	 * funzione MODBUS_COMM_Enable() viene controllata la flag EnUser
+	 * che esegue l'abilitazione della serrtiale solo se essa è disabilitata*/
+	MODBUS_COMM_Enable();
 	for(char k = 0; k < _funcRetVal.mstreqRetStructNumByte; k++)
 	{
 		MODBUS_COMM_SendChar(*(_funcRetVal.ptr_msg+k));
@@ -683,7 +693,12 @@ void setPumpSpeedValue(unsigned char slaveAddr, int speedValue){
 	_funcRetVal.slvresRetPtr = _funcRetValPtr->slvresRetPtr;
 	_funcRetVal.slvresRetNumByte = _funcRetValPtr->slvresRetNumByte;
 
-	MODBUS_COMM_ClearRxBuf();
+	/*prima di ogni spedizione abilito la seriale del modbus perchè
+	 * potrebbe essere stata disabilita da una non corretta ricezione
+	 * per resettare la perifericare e riallinearla; all'interno della
+	 * funzione MODBUS_COMM_Enable() viene controllata la flag EnUser
+	 * che esegue l'abilitazione della serrtiale solo se essa è disabilitata*/
+	MODBUS_COMM_Enable();
 	for(char k = 0; k < _funcRetVal.mstreqRetStructNumByte; k++)
 	{
 		MODBUS_COMM_SendChar(*(_funcRetVal.ptr_msg+k));
@@ -709,7 +724,12 @@ void readPumpSpeedValue(unsigned char slaveAddr){
 	_funcRetVal.slvresRetPtr = _funcRetValPtr->slvresRetPtr;
 	_funcRetVal.slvresRetNumByte = _funcRetValPtr->slvresRetNumByte;
 
-	MODBUS_COMM_ClearRxBuf();
+	/*prima di ogni spedizione abilito la seriale del modbus perchè
+	 * potrebbe essere stata disabilita da una non corretta ricezione
+	 * per resettare la perifericare e riallinearla; all'interno della
+	 * funzione MODBUS_COMM_Enable() viene controllata la flag EnUser
+	 * che esegue l'abilitazione della serrtiale solo se essa è disabilitata*/
+	MODBUS_COMM_Enable();
 	for(char k = 0; k < _funcRetVal.mstreqRetStructNumByte; k++)
 	{
 		MODBUS_COMM_SendChar(*(_funcRetVal.ptr_msg+k));
@@ -832,7 +852,12 @@ void setPinchPosValue(unsigned char slaveAddr, int posValue){
 		_funcRetVal.slvresRetPtr = _funcRetValPtr->slvresRetPtr;
 		_funcRetVal.slvresRetNumByte = _funcRetValPtr->slvresRetNumByte;
 
-		MODBUS_COMM_ClearRxBuf();
+		/*prima di ogni spedizione abilito la seriale del modbus perchè
+		 * potrebbe essere stata disabilita da una non corretta ricezione
+		 * per resettare la perifericare e riallinearla; all'interno della
+		 * funzione MODBUS_COMM_Enable() viene controllata la flag EnUser
+		 * che esegue l'abilitazione della serrtiale solo se essa è disabilitata*/
+		MODBUS_COMM_Enable();
 		for(char k = 0; k < _funcRetVal.mstreqRetStructNumByte; k++)
 		{
 			MODBUS_COMM_SendChar(*(_funcRetVal.ptr_msg+k));
@@ -1210,12 +1235,15 @@ void Check_Actuator_Status (char slaveAddr,
 	_funcRetVal.slvresRetNumByte = _funcRetValPtr->slvresRetNumByte;
 
 
-	MODBUS_COMM_ClearRxBuf();
-	MODBUS_COMM_Disable();
+
+
+	/*prima di ogni spedizione abilito la seriale del modbus perchè
+	 * potrebbe essere stata disabilita da una non corretta ricezione
+	 * per resettare la perifericare e riallinearla; all'interno della
+	 * funzione MODBUS_COMM_Enable() viene controllata la flag EnUser
+	 * che esegue l'abilitazione della serrtiale solo se essa è disabilitata*/
 	MODBUS_COMM_Enable();
-//	MODBUS_COMM_SendBlock(_funcRetVal.ptr_msg,
-//						  _funcRetVal.mstreqRetStructNumByte,
-//						  &snd);
+
 	for(char k = 0; k < _funcRetVal.mstreqRetStructNumByte; k++)
 	{
 		MODBUS_COMM_SendChar(*(_funcRetVal.ptr_msg+k));
@@ -1292,7 +1320,7 @@ void Manage_and_Storage_ModBus_Actuator_Data(void)
  *  alla Check_Actuator_Status nella matrice modbusData*/
 void StorageModbusData(unsigned char LastActuatslvAddr)
 {
-	/*in questa funzione suppongo di usare sempre il msgToRecvFrame3 in quanto usata solo per messaggi di stao e non di impostazione
+	/*in questa funzione suppongo di usare sempre il msgToRecvFrame3 in quanto usata solo per messaggi di stato e non di impostazione
 	 * ecco perchè posso fare Address = msgToRecvFrame3[0] e funCode = msgToRecvFrame3[1]*/
 	unsigned char dataTemp[TOT_DATA_MODBUS_RECEIVED_PUMP],i,Address = msgToRecvFrame3[0],funCode = msgToRecvFrame3[1];
 	unsigned int  Pump_Average_Current	= 0,
@@ -1302,23 +1330,60 @@ void StorageModbusData(unsigned char LastActuatslvAddr)
 				  Pinch_Status			= 0;
 
 	int Tot_ModBus_Data_RX = 0;
+	word CRC_RX,CRC_CALC;
+	unsigned char *ptr_msg;
 
-	if(!((LastActuatslvAddr == Address) && (funCode == 3)))
+	/* controllo che il function code si esatto, se non lo
+	 * è non processo il messaggio e spengo la seriale
+	 * prima di ogni spedizione abilito la seriale tanto
+	 * esiste la flag 'EnUser' che abilita la seriale se non lo è
+	 * */
+	if (funCode != 0x03)
 	{
-		Address = msgToRecvFrame3[1];
-		funCode = msgToRecvFrame3[2];
-		if(!((LastActuatslvAddr == Address) && (funCode == 3)))
-		{
-			// non e' il messaggio di risposta che mi aspettavo
-			return;
-		}
+		MODBUS_COMM_Disable();
+		MODBUS_COMM_ClearRxBuf();
+		return;
 	}
 
-	if (Address >= FIRST_ACTUATOR && Address <= LAST_PUMP)
-		Tot_ModBus_Data_RX = TOT_DATA_MODBUS_RECEIVED_PUMP;
-	else if (Address >= FIRST_PINCH && Address <= LAST_ACTUATOR)
-		Tot_ModBus_Data_RX = TOT_DATA_MODBUS_RECEIVED_PINCH;
+	ptr_msg =&msgToRecvFrame3;
 
+	/*controllo i dati ricevuti e calcolo il relativo CRC cofrontandolo con quello ricevuto*/
+	if (Address >= FIRST_ACTUATOR && Address <= LAST_PUMP)
+	{
+		Tot_ModBus_Data_RX = TOT_DATA_MODBUS_RECEIVED_PUMP;
+		CRC_CALC = ComputeChecksum(ptr_msg, TOT_DATA_MODBUS_RECEIVED_PUMP -2);
+		CRC_RX = BYTES_TO_WORD(msgToRecvFrame3[10], msgToRecvFrame3[9]);
+	}
+	else if (Address >= FIRST_PINCH && Address <= LAST_ACTUATOR)
+	{
+		Tot_ModBus_Data_RX = TOT_DATA_MODBUS_RECEIVED_PINCH;
+		CRC_CALC = ComputeChecksum(ptr_msg, TOT_DATA_MODBUS_RECEIVED_PINCH -2);
+		CRC_RX = BYTES_TO_WORD(msgToRecvFrame3[8], msgToRecvFrame3[7]);
+	}
+	else
+	{
+		/*ho ricevuto qualcosa con un indirizzo non valido
+		 * non processo il messaggio e spengo la seriale
+		 * prima di ogni spedizione abilito la seriale tanto
+	 	 * esiste la flag 'EnUser' che abilita la seriale se non lo è*/
+		MODBUS_COMM_Disable();
+		MODBUS_COMM_ClearRxBuf();
+		return;
+	}
+
+	/*se il CRC calcolato sulla base dei byte ricevuti e il CRC ricevuto non sono uguali
+	 * non processo il messaggio e spengo la seriale
+	 * prima di ogni spedizione abilito la seriale tanto
+	 * esiste la flag 'EnUser' che abilita la seriale se non lo è*/
+	if (CRC_RX != CRC_CALC)
+	{
+		MODBUS_COMM_Disable();
+		MODBUS_COMM_ClearRxBuf();
+		return;
+	}
+
+	/*ho superato tutti i controlli di sicurezza sul messaggio, ossia fun code,
+	 *  Address e CRC  quindi posso copiare il messaggio*/
 	/*copio nell'array temporaneo i dati ricevuti*/
 	for (i=0; i<Tot_ModBus_Data_RX; i++)
 	{
@@ -1329,11 +1394,6 @@ void StorageModbusData(unsigned char LastActuatslvAddr)
 		 * che può essere 11 nel caso di una pompa oppure 9 nel caso di una pinch */
 		dataTemp[Tot_ModBus_Data_RX - 1 - i] = * (_funcRetVal.slvresRetPtr - i - 1); //così non sposto il puntatore, ma leggo direttamente quello che mi serve senza spostarlo
 	}
-
-	/*Address e funCode sono valorizzati all'inizializzazione
-	 * della variabile usando msgToRecvFrame3[0] e msgToRecvFrame3[1]*/
-//	Address = dataTemp[0];
-//	funCode = dataTemp[1];
 
 	/*se ho l'indirizzo di una pompa*/
 	if (Address >= FIRST_ACTUATOR && Address <= LAST_PUMP)
@@ -1350,18 +1410,8 @@ void StorageModbusData(unsigned char LastActuatslvAddr)
 		Pinch_Average_Current = BYTES_TO_WORD(dataTemp[3], dataTemp[4]);
 		Pinch_Status	 	  = BYTES_TO_WORD(dataTemp[5], dataTemp[6]);
 	}
-	else
-	{
-		/*ho ricevuto qualcosa con un indirizzo non valido*/
-	}
 
-
-	/*memorizzo i dati solo se il function code contenuto
-	 * nel secondo byte ricevuto è pari a 0x03 ossia
-	 * quella è una risposta al mio comando di Check_Actuator_Status*/
-	if (funCode == 0x03)
-	{
-		/*uso lo Address come indice per la matrice
+	/*uso l Address come indice per la matrice
 		 * ma lo decremento di due in quanto pompa con
 		 * selettore '0' corrisposnde a indirizzo '2'*/
 		/*se ho l'indirizzo di una pompa*/
@@ -1375,7 +1425,9 @@ void StorageModbusData(unsigned char LastActuatslvAddr)
 			 * le mancate risposte consecutive*/
 			CountErrorModbusMSG[Address-2] = 0;
 		}
-		/*se ho l'indirizzo di una pinch*/
+	/*se ho l'indirizzo di una pinch decremento l'address di 3
+	 *- come indice dell'array  in quanto address 6 non è usato
+	 -* e le pinch hano addres  7-8-9  */
 		else if (Address >= FIRST_PINCH && Address <= LAST_ACTUATOR)
 		{
 			modbusData[Address-3][16]= Pinch_Average_Current;
@@ -1385,7 +1437,7 @@ void StorageModbusData(unsigned char LastActuatslvAddr)
 			 * le mancate risposte consecutive*/
 			CountErrorModbusMSG[Address-3] = 0;
 		}
-	}
+
 }
 
 void StorageModbusDataInit(void)

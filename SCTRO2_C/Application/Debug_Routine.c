@@ -152,9 +152,12 @@ void Service_SBC(void){
 								_funcRetVal.slvresRetPtr = _funcRetValPtr->slvresRetPtr;
 								_funcRetVal.slvresRetNumByte = _funcRetValPtr->slvresRetNumByte;
 
-//								MODBUS_COMM_SendBlock(_funcRetVal.ptr_msg,
-//													  _funcRetVal.mstreqRetStructNumByte,
-//													  &snd);
+								/*prima di ogni spedizione abilito la seriale del modbus perchè
+								 * potrebbe essere stata disabilita da una non corretta ricezione
+								 * per resettare la perifericare e riallinearla; all'interno della
+								 * funzione MODBUS_COMM_Enable() viene controllata la flag EnUser
+								 * che esegue l'abilitazione della serrtiale solo se essa è disabilitata*/
+								MODBUS_COMM_Enable();
 								for(char k = 0; k < _funcRetVal.mstreqRetStructNumByte; k++)
 								{
 									MODBUS_COMM_SendChar(*(_funcRetVal.ptr_msg+k));
@@ -246,7 +249,14 @@ void Service_SBC(void){
 						_funcRetVal.mstreqRetStructNumByte = _funcRetValPtr->mstreqRetStructNumByte;
 						_funcRetVal.slvresRetPtr = _funcRetValPtr->slvresRetPtr;
 						_funcRetVal.slvresRetNumByte = _funcRetValPtr->slvresRetNumByte;
-
+						*/
+							/*prima di ogni spedizione abilito la seriale del modbus perchè
+							 * potrebbe essere stata disabilita da una non corretta ricezione
+							 * per resettare la perifericare e riallinearla; all'interno della
+							 * funzione MODBUS_COMM_Enable() viene controllata la flag EnUser
+							 * che esegue l'abilitazione della serrtiale solo se essa è disabilitata*/
+					/*
+					MODBUS_COMM_Enable();
 						for(char k = 0; k < _funcRetVal.mstreqRetStructNumByte; k++)
 						{
 							MODBUS_COMM_SendChar(*(_funcRetVal.ptr_msg+k));
@@ -407,6 +417,7 @@ void Service_SBC(void){
 					case 0x28:
 					{
 						sprintf(regId, "%u", sbc_rx_data[7]);
+						PeltierAssSendCommand(READ_DATA_REGISTER_XX,regId,0,"0",1);
 						PeltierAssSendCommand(READ_DATA_REGISTER_XX,regId,0,"0",2);
 
 						word snd;
@@ -452,7 +463,6 @@ void Service_SBC(void){
 						static int incr = 0;
 
 						peltierCell2.readAlwaysEnable = 0;
-
 						peltierCell.readAlwaysEnable = 0;
 
 //						if(incr && (peltierCell.mySet < 40.0))
@@ -475,17 +485,20 @@ void Service_SBC(void){
 //							incr = 1;
 //						}
 
-						if(incr)
+						if(!incr)
 						{
-							peltierCell.mySet = 55.0;
-							peltierCell2.mySet = 55.0;
-							incr = 0;
+						//	peltierCell.mySet = 55.0;
+						//	peltierCell2.mySet = 55.0;
+						//	incr = 0;
+							peltierCell.mySet = 62.0;
+							peltierCell2.mySet = 62.0;
+							incr = 1;
 						}
 						else
 						{
+							incr = 0;
 							peltierCell.mySet = -4.0;
 							peltierCell2.mySet = -4.0;
-							incr = 1;
 						}
 
 

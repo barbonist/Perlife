@@ -1267,6 +1267,8 @@ bool PANIC_BUTTON_ACTIVATION;
 // durata globale del trattamento in secondi
 unsigned long TreatDuration;
 unsigned long TotalTreatDuration;
+// durata globale del prtiming in secondi
+unsigned long PrimingDuration;
 
 typedef enum{Undef = 0, KidneyTreat = 0x10, LiverTreat = 0x50} THERAPY_TYPE;
 typedef enum{NOT_DEF = 0, NO = 1, YES = 2} PARAMETER_ACTIVE_TYPE;

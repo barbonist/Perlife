@@ -109,6 +109,16 @@ void Manage_IR_Sens_Temp(void)
  		unsigned char index_array = Slave_Address_Sent -1;
  		unsigned char * ptrChar;
 
+ 		/* index_array == 0 :
+ 		 * sensore con conettore 4 pin, indirizzo '0x01'. montato nela parte anteriore vicino al sensore di flusso,
+ 		 * Misura la temperatura del flusso di perfusione arteriosa
+ 		 * index_array == 1 :
+ 		 * sensore con conettore 5 pin, indirizzo '0x02'. montato nela parte anteriore vicino le pinch,
+ 		 * Misura la temperatura del flusido della vaschetta
+ 		 * index_array == 2 :
+ 		 * sensore con conettore 6 pin, indirizzo '0x03'. montato nela parte laterale vicino al sensore di flusso,
+ 		 * Misura la temperatura del flusso di perfusione Venosa
+ 		 *   */
  		ptrChar = &sensorIR_TM[index_array].bufferReceived[0];
 
  		/*devo salvare il dato solo dopo aver fatto il controllo della PEC Packet Error Code*/

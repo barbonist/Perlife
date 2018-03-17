@@ -986,11 +986,11 @@ void buildRDMachineStateResponseMsg(char code, char subcode)
 	sbc_tx_data[index++] = (((int)sensor_UFLOW[1].Average_Flow_Val) >> 8) & 0xFF;  // sensorsValues.flowVenOxy
 	sbc_tx_data[index++] = ((int)sensor_UFLOW[1].Average_Flow_Val) & 0xFF;
 	/* sensors parameters: temperature reservoir outlet */
-	sbc_tx_data[index++] = (((int)(sensorIR_TM[0].tempSensValue*10)) >> 8) & 0xFF;
-	sbc_tx_data[index++] = (((int)(sensorIR_TM[0].tempSensValue*10))     ) & 0xFF;
-	/* sensors parameters: temperature organ inlet */
 	sbc_tx_data[index++] = (((int)(sensorIR_TM[1].tempSensValue*10)) >> 8) & 0xFF;
 	sbc_tx_data[index++] = (((int)(sensorIR_TM[1].tempSensValue*10))     ) & 0xFF;
+	/* sensors parameters: temperature organ inlet */
+	sbc_tx_data[index++] = (((int)(sensorIR_TM[0].tempSensValue*10)) >> 8) & 0xFF;
+	sbc_tx_data[index++] = (((int)(sensorIR_TM[0].tempSensValue*10))     ) & 0xFF;
 	/* sensors parameters: temperature venous / oxygenation */
 	sbc_tx_data[index++] = (((int)(sensorIR_TM[2].tempSensValue*10)) >> 8) & 0xFF;
 	sbc_tx_data[index++] = (((int)(sensorIR_TM[2].tempSensValue*10))     ) & 0xFF;
@@ -1325,12 +1325,12 @@ void resetParamWordFromGUI(unsigned char parId){
 }
 
 
-
+/*
 #define NUM_LQUID_LEV_VALUES 39
 
 // tabella relativa al tubo piccolo della cassetta
 
-/*
+
 const word LiquidLevelTable[NUM_LQUID_LEV_VALUES][2] =
 {
 		// valore letto dal sensore di pressione mmHg, ml presenti nel recipiente

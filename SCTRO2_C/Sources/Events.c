@@ -817,6 +817,7 @@ void PC_DEBUG_COMM_OnFreeTxBuf(void)
 void MODBUS_COMM_OnError(void)
 {
   /* Write your code here ... */
+	int a = 0;
 }
 
 /*
