@@ -141,7 +141,7 @@ void Service_SBC(void){
 								}
 								valModBusArrayPtr = &valModBusArray[0];
 
-								_funcRetValPtr = ModBusWriteRegisterReq(slvAddr,
+								_funcRetValPtr = (struct funcRetStruct *) ModBusWriteRegisterReq(slvAddr,
 																		funcCode,
 																		wrAddrStart,
 																		numberOfAddress,
@@ -166,7 +166,7 @@ void Service_SBC(void){
 
 							}
 							//send answer to sbc
-							ptrMsgSbcRx = &sbc_rx_data;
+							ptrMsgSbcRx = &sbc_rx_data[0];
 							buildModBusWriteRegActResponseMsg(ptrMsgSbcRx);
 							ptrMsgSbcTx = &sbc_tx_data[0];
 							SBC_COMM_SendBlock(ptrMsgSbcTx,myCommunicatorToSBC.numByteToSend,&snd);
@@ -205,7 +205,7 @@ void Service_SBC(void){
 
 						//send answer to sbc
 						word snd;
-						ptrMsgSbcRx = &sbc_rx_data;
+						ptrMsgSbcRx = &sbc_rx_data[0];
 						buildModBusReadRegActResponseMsg(ptrMsgSbcRx, slvAddr, readAddrStart, numberOfAddress);
 						ptrMsgSbcTx = &sbc_tx_data[0];
 						SBC_COMM_SendBlock(ptrMsgSbcTx,myCommunicatorToSBC.numByteToSend,&snd);
@@ -217,7 +217,7 @@ void Service_SBC(void){
 					{
 						//send answer to sbc
 						word snd;
-						ptrMsgSbcRx = &sbc_rx_data;
+						ptrMsgSbcRx = &sbc_rx_data[0];
 						buildModBusReadStatusResponseMsg(ptrMsgSbcRx);
 						ptrMsgSbcTx = &sbc_tx_data[0];
 
@@ -268,7 +268,7 @@ void Service_SBC(void){
 					case 0x31:
 					{
 						word snd;
-						ptrMsgSbcRx = &sbc_rx_data;
+						ptrMsgSbcRx = &sbc_rx_data[0];
 						buildPressSensReadValuesResponseMsg(ptrMsgSbcRx);
 						ptrMsgSbcTx = &sbc_tx_data[0];
 						SBC_COMM_SendBlock(ptrMsgSbcTx,myCommunicatorToSBC.numByteToSend,&snd);
@@ -279,7 +279,7 @@ void Service_SBC(void){
 					case 0x32:
 					{
 						word snd;
-						ptrMsgSbcRx = &sbc_rx_data;
+						ptrMsgSbcRx = &sbc_rx_data[0];
 						buildPressSensReadParamResponseMsg(ptrMsgSbcRx);
 						ptrMsgSbcTx = &sbc_tx_data[0];
 						SBC_COMM_SendBlock(ptrMsgSbcTx,myCommunicatorToSBC.numByteToSend,&snd);
@@ -291,7 +291,7 @@ void Service_SBC(void){
 					{
 						//TODO Store zero point for calibration
 						word snd;
-						ptrMsgSbcRx = &sbc_rx_data;
+						ptrMsgSbcRx = &sbc_rx_data[0];
 
 						/*gli ID dei sensori delle GUI partono da 1, mentre i miei partono da 0 quindi sottraggo 1*/
 						Press_sens IdSens 	= sbc_rx_data[7];
@@ -313,7 +313,7 @@ void Service_SBC(void){
 					{
 						//TODO Store load point for calibration
 						word snd;
-						ptrMsgSbcRx = &sbc_rx_data;
+						ptrMsgSbcRx = &sbc_rx_data[0];
 
 						/*gli ID dei sensori delle GUI partono da 1, mentre i miei partono da 0 quindi sottraggo 1*/
 						Press_sens IdSens 	= sbc_rx_data[7];
@@ -334,7 +334,7 @@ void Service_SBC(void){
 					case 0x40:
 					{
 						word snd;
-						ptrMsgSbcRx = &sbc_rx_data;
+						ptrMsgSbcRx = &sbc_rx_data[0];
 						buildTempIRSensReadValuesResponseMsg(ptrMsgSbcRx);
 						ptrMsgSbcTx = &sbc_tx_data[0];
 						SBC_COMM_SendBlock(ptrMsgSbcTx,myCommunicatorToSBC.numByteToSend,&snd);
@@ -345,7 +345,7 @@ void Service_SBC(void){
 					case 0x41:
 					{
 						word snd;
-						ptrMsgSbcRx = &sbc_rx_data;
+						ptrMsgSbcRx = &sbc_rx_data[0];
 						buildTempIRSensReadRegResponseMsg(ptrMsgSbcRx);
 						ptrMsgSbcTx = &sbc_tx_data[0];
 						SBC_COMM_SendBlock(ptrMsgSbcTx,myCommunicatorToSBC.numByteToSend,&snd);
@@ -360,7 +360,7 @@ void Service_SBC(void){
 						CHANGE_ADDRESS_IR_SENS = TRUE;
 						unsigned char OldAddress = 0x5A;
 						word snd;
-						ptrMsgSbcRx = &sbc_rx_data;
+						ptrMsgSbcRx = &sbc_rx_data[0];
 						word NewAddress = BYTES_TO_WORD(ptrMsgSbcRx[9], ptrMsgSbcRx[10]);
 
 						buildTempIRSensWriteRegResponseMsg(ptrMsgSbcRx);
@@ -384,7 +384,7 @@ void Service_SBC(void){
 					case 0x50:
 					{
 						word snd;
-						ptrMsgSbcRx = &sbc_rx_data;
+						ptrMsgSbcRx = &sbc_rx_data[0];
 						buildReadFlowAirResponseMsg(ptrMsgSbcRx);
 						ptrMsgSbcTx = &sbc_tx_data[0];
 						SBC_COMM_SendBlock(ptrMsgSbcTx,myCommunicatorToSBC.numByteToSend,&snd);
@@ -394,7 +394,7 @@ void Service_SBC(void){
 					case 0x51:
 					{
 						word snd;
-						ptrMsgSbcRx = &sbc_rx_data;
+						ptrMsgSbcRx = &sbc_rx_data[0];
 						buildReadFlowResetResponseMsg(ptrMsgSbcRx);
 						ptrMsgSbcTx = &sbc_tx_data[0];
 						SBC_COMM_SendBlock(ptrMsgSbcTx,myCommunicatorToSBC.numByteToSend,&snd);
@@ -407,7 +407,7 @@ void Service_SBC(void){
 						PeltierAssSendCommand(READ_FLOAT_FROM_REG_XX,regId,0,"0",2);
 
 						word snd;
-						ptrMsgSbcRx = &sbc_rx_data;
+						ptrMsgSbcRx = &sbc_rx_data[0];
 						buildPeltierReadFloatResponseMsg(ptrMsgSbcRx, ptrMsgDataieee754start);
 						ptrMsgSbcTx = &sbc_tx_data[0];
 						SBC_COMM_SendBlock(ptrMsgSbcTx,myCommunicatorToSBC.numByteToSend,&snd);
@@ -421,7 +421,7 @@ void Service_SBC(void){
 						PeltierAssSendCommand(READ_DATA_REGISTER_XX,regId,0,"0",2);
 
 						word snd;
-						ptrMsgSbcRx = &sbc_rx_data;
+						ptrMsgSbcRx = &sbc_rx_data[0];
 						buildPeltierReadIntResponseMsg(ptrMsgSbcRx, ptrMsgDataPeltierInt);
 						ptrMsgSbcTx = &sbc_tx_data[0];
 						SBC_COMM_SendBlock(ptrMsgSbcTx,myCommunicatorToSBC.numByteToSend,&snd);
@@ -436,7 +436,7 @@ void Service_SBC(void){
 						PeltierAssSendCommand(WRITE_FLOAT_REG_XX,regId,0,valueIeee,2);
 
 						word snd;
-						ptrMsgSbcRx = &sbc_rx_data;
+						ptrMsgSbcRx = &sbc_rx_data[0];
 						buildPeltierWriteFloatResponseMsg(ptrMsgSbcRx);
 						ptrMsgSbcTx = &sbc_tx_data[0];
 						SBC_COMM_SendBlock(ptrMsgSbcTx,myCommunicatorToSBC.numByteToSend,&snd);
@@ -451,7 +451,7 @@ void Service_SBC(void){
 						PeltierAssSendCommand(WRITE_DATA_REGISTER_XX,regId,valueInt,"0",2);
 
 						word snd;
-						ptrMsgSbcRx = &sbc_rx_data;
+						ptrMsgSbcRx = &sbc_rx_data[0];
 						buildPeltierWriteIntResponseMsg(ptrMsgSbcRx);
 						ptrMsgSbcTx = &sbc_tx_data[0];
 						SBC_COMM_SendBlock(ptrMsgSbcTx,myCommunicatorToSBC.numByteToSend,&snd);
@@ -503,7 +503,7 @@ void Service_SBC(void){
 
 
 						word snd;
-						ptrMsgSbcRx = &sbc_rx_data;
+						ptrMsgSbcRx = &sbc_rx_data[0];
 						buildPeltierStartResponseMsg(ptrMsgSbcRx);
 						ptrMsgSbcTx = &sbc_tx_data[0];
 						SBC_COMM_SendBlock(ptrMsgSbcTx,myCommunicatorToSBC.numByteToSend,&snd);
@@ -516,7 +516,7 @@ void Service_SBC(void){
 						peltierCell2.StopEnable = 1;
 
 						word snd;
-						ptrMsgSbcRx = &sbc_rx_data;
+						ptrMsgSbcRx = &sbc_rx_data[0];
 						buildPeltierStopResponseMsg(ptrMsgSbcRx);
 						ptrMsgSbcTx = &sbc_tx_data[0];
 						SBC_COMM_SendBlock(ptrMsgSbcTx,myCommunicatorToSBC.numByteToSend,&snd);
@@ -528,7 +528,7 @@ void Service_SBC(void){
 						PeltierAssSendCommand(WRITE_REG_VAL_TO_EEPROM, "0",0,"0",2);
 
 						word snd;
-						ptrMsgSbcRx = &sbc_rx_data;
+						ptrMsgSbcRx = &sbc_rx_data[0];
 						buildPeltierWriteEEResponseMsg(ptrMsgSbcRx);
 						ptrMsgSbcTx = &sbc_tx_data[0];
 						SBC_COMM_SendBlock(ptrMsgSbcTx,myCommunicatorToSBC.numByteToSend,&snd);
