@@ -130,6 +130,8 @@ void CallInIdleState(void)
 	StartTreatmentTime = 0;
 	TreatDuration = 0;
 	FilterSelected = FALSE;
+	TotalPrimingDuration = 0;
+	StartPrimingTime = 0;
 	PrimingDuration = 0;
 
 	// inizializza il target di pressione venosa necessaria al PID per lavorare
@@ -145,7 +147,7 @@ void CallInIdleState(void)
 	GetTotalPrimingVolumePerf((int)RESET_CMD_TOT_PRIM_VOL);
 	TemperatureStateMach(TEMP_STATE_RESET);
 
-	GlobalFlags.FlagsDef.TankLevelHigh = 0;
+//	GlobalFlags.FlagsDef.TankLevelHigh = 0;
 
 	// abilito tutti gli allarmi previsti
 	GlobalFlags.FlagsDef.EnableAllAlarms = 1;
@@ -978,49 +980,6 @@ void manageParentPrimingEntry(void){
 }
 
 
-unsigned char TemperatureStateMach_orig(void)
-{
-	static unsigned long RicircTimeout;
-	static unsigned char TempStateMach = 0;
-	unsigned char TempReached = 0;
-
-	float tmpr;
-	word tmpr_trgt;
-	// temperatura raggiunta dal reservoir
-	tmpr = ((int)(sensorIR_TM[0].tempSensValue*10));
-	// temperatura da raggiungere moltiplicata per 10
-	tmpr_trgt = parameterWordSetFromGUI[PAR_SET_PRIMING_TEMPERATURE_PERFUSION].value;
-
-	switch (TempStateMach)
-	{
-		case 0:
-			if((tmpr >= (float)(tmpr_trgt - 10)) && (tmpr <= (float)(tmpr_trgt + 10)))
-			{
-				// ho raggiunto la temperatura target
-				TempStateMach = 1;
-				RicircTimeout = timerCounterModBus;
-			}
-			break;
-		case 1:
-			if((tmpr >= (float)(tmpr_trgt - 10)) && (tmpr <= (float)(tmpr_trgt + 10)))
-			{
-				// ho raggiunto la temperatura target
-				if(msTick_elapsed(RicircTimeout) * 50L >= TIMEOUT_TEMPERATURE_RICIRC)
-				{
-					// per almeno 2 secondi la temperatura si e' mantenuta nell'intorno del target
-					TempReached = 1;
-					TempStateMach = 0;
-				}
-			}
-			else
-			{
-				TempStateMach = 0;
-			}
-			break;
-	}
-	return TempReached;
-}
-
 //#define NUM_OF_FLOW_SAMPLES  5
 //typedef enum
 //{
@@ -1176,6 +1135,8 @@ unsigned char TemperatureStateMach(int cmd)
 		TempStateMach = START_RECIRC_IDLE;
 	}
 
+	if(StartPrimingTime)
+		PrimingDuration = msTick_elapsed(StartPrimingTime) * 50L / 1000;
 
 	switch (TempStateMach)
 	{
@@ -1188,6 +1149,12 @@ unsigned char TemperatureStateMach(int cmd)
 				// per cercare di eliminare l'aria
 				TempStateMach = START_RECIRC_HIGH_SPEED;
 				Delay = 0;
+
+				if(!StartPrimingTime)
+				{
+					// faccio ripartire il timer del priming
+					StartPrimingTime = (unsigned long)timerCounterModBus;
+				}
 			}
 			break;
 
@@ -1272,6 +1239,12 @@ unsigned char TemperatureStateMach(int cmd)
 			break;
 		case TEMP_ABANDONE_STATE:
 			// ho ricevuto il comando di abbandonare e tornare in idle
+
+			// il priming e' terminato blocco il conteggio del timer
+			TotalPrimingDuration += PrimingDuration;
+			PrimingDuration = 0;
+			// faccio in modo che il conteggio riprenda al prossimo button_start_priming
+			StartPrimingTime = 0;
 			break;
 	}
 	return TempReached;
@@ -1321,6 +1294,11 @@ void manageParentPrimingAlways(void){
 		}
 
 		releaseGUIButton(BUTTON_START_PRIMING);
+		if(!StartPrimingTime)
+		{
+			// prendo il tempo di start del priming solo se il valore vale 0, cioe' sono partito da IDLE
+			StartPrimingTime = (unsigned long)timerCounterModBus;
+		}
 	}
 	else if(buttonGUITreatment[BUTTON_START_PERF_PUMP].state == GUI_BUTTON_RELEASED)
 	{
@@ -1387,6 +1365,10 @@ void manageParentPrimingAlways(void){
 			setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, 0);
 		}
 		releaseGUIButton(BUTTON_STOP_PRIMING);
+		TotalPrimingDuration += PrimingDuration;
+		PrimingDuration = 0;
+		// faccio in modo che il conteggio riprenda al prossimo button_start_priming
+		StartPrimingTime = 0;
 	}
 	else if(buttonGUITreatment[BUTTON_STOP_OXYGEN_PUMP].state == GUI_BUTTON_RELEASED)
 	{
@@ -1453,12 +1435,13 @@ void manageParentPrimingAlways(void){
 	case PARENT_PRIMING_TREAT_KIDNEY_1_RUN:
 			if(buttonGUITreatment[BUTTON_START_PRIMING].state == GUI_BUTTON_RELEASED)
 			{
-				if((ptrCurrentState->state == STATE_PRIMING_RICIRCOLO) && AlarmOrStopInRecircFlag)
+				if(ptrCurrentState->state == STATE_PRIMING_RICIRCOLO)
 				{
 					// sono nella fase di ricircolo e si e' verificato un allarme oppure l'utente ha
 					// fermato il processo con stop priming e poi e' ripartito
+					if(AlarmOrStopInRecircFlag)
+						AlarmOrStopInRecircFlag = FALSE;
 					TemperatureStateMach(RESTART_CMD);
-					AlarmOrStopInRecircFlag = FALSE;
 				}
 				else
 				{
@@ -1493,6 +1476,11 @@ void manageParentPrimingAlways(void){
 				}
 
 				releaseGUIButton(BUTTON_START_PRIMING);
+				if(!StartPrimingTime)
+				{
+					// prendo il tempo di start del priming solo se il valore vale 0, cioe' sono partito da IDLE
+					StartPrimingTime = (unsigned long)timerCounterModBus;
+				}
 			}
 			else if(buttonGUITreatment[BUTTON_START_PERF_PUMP].state == GUI_BUTTON_RELEASED)
 			{
@@ -1564,6 +1552,10 @@ void manageParentPrimingAlways(void){
 					setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, 0);
 				}
 				releaseGUIButton(BUTTON_STOP_PRIMING);
+				TotalPrimingDuration += PrimingDuration;
+				PrimingDuration = 0;
+				// faccio in modo che il conteggio riprenda al prossimo button_start_priming
+				StartPrimingTime = 0;
 			}
 #ifdef DEBUG_WITH_SERVICE_SBC
 			else if((ptrCurrentState->state == STATE_PRIMING_PH_1) &&
@@ -1584,6 +1576,11 @@ void manageParentPrimingAlways(void){
 						// se sono nel trattamento fegato fermo anche l'altro motore !!
 						setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, 0);
 					}
+					// vengono fermate le pompe in attesa del montaggio del filtro poi il priming riprende
+					TotalPrimingDuration += PrimingDuration;
+					PrimingDuration = 0;
+					// faccio in modo che il conteggio riprenda al prossimo button_start_priming
+					StartPrimingTime = 0;
 				}
 				currentGuard[GUARD_ENABLE_STATE_PRIMING_PH_1_WAIT].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
 			}
@@ -1601,9 +1598,15 @@ void manageParentPrimingAlways(void){
 					// se sono nel trattamento fegato fermo anche l'altro motore !!
 					setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, 0);
 				}
-				// faccio andare lo stato principale in nello stato di attesa di un nuovo volume
+				// faccio andare lo stato principale nello stato di attesa di un nuovo volume
 				// o di un fine priming
 				currentGuard[GUARD_ENABLE_PRIMING_WAIT].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+
+				// vengono fermate le pompe in attesa della partenza della fase di ricircolo
+				TotalPrimingDuration += PrimingDuration;
+				PrimingDuration = 0;
+				// faccio in modo che il conteggio riprenda al prossimo button_start_priming
+				StartPrimingTime = 0;
 			}
 			else if(ptrCurrentState->state == STATE_PRIMING_RICIRCOLO)
 			{
@@ -2034,7 +2037,8 @@ void manageParentTreatAlways(void){
 			}
 			GlobalFlags.FlagsDef.EnableAllAlarms = 1;
 			// disabilito allarme di livello alto in trattamento (per ora)
-			GlobalFlags.FlagsDef.TankLevelHigh = 0;
+			GlobalFlags.FlagsDef.EnableLevHighAlarm = 0;
+			//GlobalFlags.FlagsDef.TankLevelHigh = 0;
 		}
 		else if(buttonGUITreatment[BUTTON_START_PERF_PUMP].state == GUI_BUTTON_RELEASED){
 			releaseGUIButton(BUTTON_START_PERF_PUMP);
@@ -2242,7 +2246,8 @@ void manageParentTreatAlways(void){
 				}
 				GlobalFlags.FlagsDef.EnableAllAlarms = 1;
 				// disabilito allarme di livello alto in trattamento (per ora)
-				GlobalFlags.FlagsDef.TankLevelHigh = 0;
+				GlobalFlags.FlagsDef.EnableLevHighAlarm = 0;
+				//GlobalFlags.FlagsDef.TankLevelHigh = 0;
 			}
 			else if(buttonGUITreatment[BUTTON_START_PERF_PUMP].state == GUI_BUTTON_RELEASED){
 				releaseGUIButton(BUTTON_START_PERF_PUMP);
@@ -2934,11 +2939,11 @@ static void computeMachineStateGuardPrimingPh1(void){
 //		releaseGUIButton(BUTTON_PRIMING_FILT_INS_CONFIRM);
 //	}
 //	else
-	if(!StartPrimingTime)
-	{
-		// prendo il tempo di start del priming solo se il valore vale 0, cioe' sono partito da IDLE
-		StartPrimingTime = (unsigned long)timerCounterModBus;
-	}
+//	if(!StartPrimingTime)
+//	{
+//		// prendo il tempo di start del priming solo se il valore vale 0, cioe' sono partito da IDLE
+//		StartPrimingTime = (unsigned long)timerCounterModBus;
+//	}
 
 	// tempo trascorso di priming in sec
 	if(StartPrimingTime)
@@ -2989,11 +2994,11 @@ static void computeMachineStateGuardPrimingPh1(void){
 /*--------------------------------------------------------------------*/
 static void computeMachineStateGuardPrimingPh2(void){
 
-	if(!StartPrimingTime)
-	{
-		// prendo il tempo di start del priming solo se il valore vale 0, cioe' sono partito da IDLE
-		StartPrimingTime = (unsigned long)timerCounterModBus;
-	}
+//	if(!StartPrimingTime)
+//	{
+//		// prendo il tempo di start del priming solo se il valore vale 0, cioe' sono partito da IDLE
+//		StartPrimingTime = (unsigned long)timerCounterModBus;
+//	}
 
 	// tempo trascorso di priming in sec
 	if(StartPrimingTime)
@@ -3416,8 +3421,14 @@ word GetTotalPrimingVolumePerf_new(int cmd)
 /*----------------------------------------------------------------------------*/
 void processMachineState(void)
 {
-	/* process state structure --> in base alla guard si decide lo stato --> in base allo stato si eseguono certe funzioni in modalità init o always */
+	if(buttonGUITreatment[BUTTON_SILENT_ALARM].state == GUI_BUTTON_RELEASED)
+	{
+		if(LevelBuzzer)
+			LevelBuzzer = 0;
+		releaseGUIButton(BUTTON_SILENT_ALARM);
+	}
 
+	/* process state structure --> in base alla guard si decide lo stato --> in base allo stato si eseguono certe funzioni in modalità init o always */
 	switch(ptrCurrentState->state)
 	{
 		case STATE_NULL:
@@ -4009,12 +4020,12 @@ void processMachineState(void)
 				// e quindi posso decidere di andare anche in un qualche altro stato ad hoc
 				// di allarme
 				//ptrAlarmCurrent->secActType
-				if(ptrAlarmCurrent->code == CODE_ALARM_TANK_LEVEL_HIGH)
-				{
-					// si e' verificato un allarme di troppo pieno, fermo tutto ed al successivo
-					// reset termino la procedura di priming e passo direttamente al ricircolo
-					GlobalFlags.FlagsDef.TankLevelHigh = 1;
-				}
+//				if(ptrAlarmCurrent->code == CODE_ALARM_TANK_LEVEL_HIGH)
+//				{
+//					// si e' verificato un allarme di troppo pieno, fermo tutto ed al successivo
+//					// reset termino la procedura di priming e passo direttamente al ricircolo
+//					GlobalFlags.FlagsDef.TankLevelHigh = 1;
+//				}
 				LevelBuzzer = 2;
 			}
 
@@ -4043,12 +4054,12 @@ void processMachineState(void)
 				// e quindi posso decidere di andare anche in un qualche altro stato ad hoc
 				// di allarme
 				//ptrAlarmCurrent->secActType
-				if(ptrAlarmCurrent->code == CODE_ALARM_TANK_LEVEL_HIGH)
-				{
-					// si e' verificato un allarme di troppo pieno, fermo tutto ed al successivo
-					// reset termino la procedura di priming e passo direttamente al ricircolo
-					GlobalFlags.FlagsDef.TankLevelHigh = 1;
-				}
+//				if(ptrAlarmCurrent->code == CODE_ALARM_TANK_LEVEL_HIGH)
+//				{
+//					// si e' verificato un allarme di troppo pieno, fermo tutto ed al successivo
+//					// reset termino la procedura di priming e passo direttamente al ricircolo
+//					GlobalFlags.FlagsDef.TankLevelHigh = 1;
+//				}
 				LevelBuzzer = 2;
 			}
 			break;

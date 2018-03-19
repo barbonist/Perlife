@@ -196,10 +196,11 @@ void DebugString()
 								(int) perfusionParam.priVolPerfArt
 					);
 
-		perfusionParam.treatDurPerfArt = (word)((TotalTreatDuration + TreatDuration) / 60);
-		perfusionParam.priDurPerfArt	= (word)((PrimingDuration) / 60);	}
-				
-				
+	}
+
+	perfusionParam.treatDurPerfArt = (word)((TotalTreatDuration + TreatDuration) / 60);
+	//perfusionParam.priDurPerfArt	= (word)((TotalPrimingDuration + PrimingDuration) / 60);
+	perfusionParam.priDurPerfArt	= (word)((TotalPrimingDuration + PrimingDuration));  // per prova lo esprimo in secondi
 
 //	sprintf(stringPr, "\r %i; %i; %i; - %i; %i; %d; %d;",
 //							(int) (sensorIR_TM[0].tempSensValue*10)/*PR_ADS_FLT_mmHg*/,

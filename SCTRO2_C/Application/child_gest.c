@@ -766,7 +766,9 @@ void manageChildTreatAlm1SFAAlways(void)
 
 
 //--------------------------------------------------------------------------------------------------
-
+// La gestione dell'allarme che segue e' stata fatta il troppo pieno.
+// Consiste nel disabilitare per sempre l'allarme senza aspettare che il segnale fisico
+// vada a 0 e poi proseguire normalmente
 /* Manage CHILD_TREAT_ALARM_1_WAIT_CMD entry state */
 /* (FM) risolvo la situazione di allarme
  * rene:   sposto wpwa a destra in modo da staccare l'organo
@@ -785,12 +787,12 @@ void manageChildAlmAndWaitCmdAlways(void)
 {
 	// apetto che tutte le pompe si siano fermate
 	manageChildTreatAlm1StopAllActAlways();
-	// Questa tipologia di allarmi deve essere forzata in off dal software prima di poter riprendere il lavoro
-	ForceCurrentAlarmOff();
 	if((buttonGUITreatment[BUTTON_RESET_ALARM].state == GUI_BUTTON_RELEASED) && IsSecurityStateActive())
 	{
+		// Questa tipologia di allarmi deve essere forzata in off dal software prima di poter riprendere il lavoro
+		ForceCurrentAlarmOff();
 		// setto la guard per fare in modo che quando l'allarme risultera' non attivo
-		// la macchina a stati parent vada nello stato di espulsione bolla aria
+		// la macchina a stati parent riprenda il funzionamento normale
 		currentGuard[GUARD_ALARM_WAIT_CMD_TO_EXIT].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
 		// ho raggiunto la condizione di sicurezza ed ho ricevuto un comando reset alarm
 		releaseGUIButton(BUTTON_RESET_ALARM);
@@ -802,6 +804,9 @@ void manageChildAlmAndWaitCmdAlways(void)
 
 
 //--------------------------------------------------------------------------------------------------
+// La gestione dell'allarme che segue e' stata fatta il troppo pieno.
+// Consiste nel disabilitare per sempre l'allarme senza aspettare che il segnale fisico
+// vada a 0 e poi proseguire normalmente
 /* Manage CHILD_PRIM_ALARM_1_WAIT_CMD entry state in priming*/
 /* (FM) risolvo la situazione di allarme
  * rene:   sposto wpwa a destra in modo da staccare l'organo
@@ -825,7 +830,7 @@ void manageChildPrimAlmAndWaitCmdAlways(void)
 		// Questa tipologia di allarmi deve essere forzata in off dal software prima di poter riprendere il lavoro
 		ForceCurrentAlarmOff();
 		// setto la guard per fare in modo che quando l'allarme risultera' non attivo
-		// la macchina a stati parent vada nello stato di espulsione bolla aria
+		// la macchina a stati parent riprenda il funzionamento normale
 		currentGuard[GUARD_ALARM_WAIT_CMD_TO_EXIT].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
 		// ho raggiunto la condizione di sicurezza ed ho ricevuto un comando reset alarm
 		releaseGUIButton(BUTTON_RESET_ALARM);

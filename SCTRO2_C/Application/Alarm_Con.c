@@ -63,6 +63,14 @@ struct alarm alarmList[] =
 		{}
 };
 
+
+void DisableAllAlarm()
+{
+	GlobalFlags.FlagsVal = 0;
+}
+
+
+
 void SetAllAlarmEnableFlags(void)
 {
 	GlobalFlags.FlagsDef.EnableLevHighAlarm = 1;          // Abilito allarme di livello alto (troppo pieno)
