@@ -48,6 +48,7 @@
 #include "statesStructs.h"
 #include "Alarm_Con.h"
 
+extern struct machineChild stateChildAlarmEmpty[];
 extern struct machineChild stateChildAlarmTreat1[];
 
 /* --------------------------------------------------------------------------------------------
@@ -669,7 +670,7 @@ void manageChildTreatAlm1SafAirFiltAlways(void)
 {
 	// apetto che tutte le pompe si siano fermate
 	manageChildTreatAlm1StopAllActAlways();
-	DisableAllAirAlarm = TRUE; // forzo la chiusura dell'allarme aria
+	DisableAllAirAlarm(TRUE); // forzo la chiusura dell'allarme aria
 	if((buttonGUITreatment[BUTTON_RESET_ALARM].state == GUI_BUTTON_RELEASED) && IsSecurityStateActive())
 	{
 		// setto la guard per fare in modo che quando l'allarme risultera' non attivo
@@ -709,7 +710,7 @@ void manageChildTreatAlm1SFVAlways(void)
 {
 	// apetto che tutte le pompe si siano fermate
 	manageChildTreatAlm1StopAllActAlways();
-	DisableAllAirAlarm = TRUE; // forzo la chiusura dell'allarme aria
+	DisableAllAirAlarm(TRUE); // forzo la chiusura dell'allarme aria
 	if((buttonGUITreatment[BUTTON_RESET_ALARM].state == GUI_BUTTON_RELEASED) && IsSecurityStateActive())
 	{
 		// setto la guard per fare in modo che quando l'allarme risultera' non attivo
@@ -752,7 +753,7 @@ void manageChildTreatAlm1SFAAlways(void)
 {
 	// apetto che tutte le pompe si siano fermate
 	manageChildTreatAlm1StopAllActAlways();
-	DisableAllAirAlarm = TRUE; // forzo la chiusura dell'allarme aria
+	DisableAllAirAlarm(TRUE); // forzo la chiusura dell'allarme aria
 	if((buttonGUITreatment[BUTTON_RESET_ALARM].state == GUI_BUTTON_RELEASED) && IsSecurityStateActive())
 	{
 		// setto la guard per fare in modo che quando l'allarme risultera' non attivo
@@ -1120,3 +1121,170 @@ bool IsSecurityStateActive(void)
 	else
 		return FALSE;
 }
+
+
+
+//-----------------------------------------------SVUOTAMENTO DISPOSABLE----------------------------------------------------------
+// PER LA GESTIONE DEGLI ALLARMI ARIA NEL CASO DI SVUOTAMENTO DISPOSABLE
+
+// Flags usati nel processo di svuotamento
+CHILD_EMPTY_FLAGS ChildEmptyFlags;
+
+//CHILD_TREAT_ALARM_1_INIT quando lo stato principale e' STATE_EMPTY_DISPOSABLE
+void manageChildEmptyAlm1InitEntry(void)
+{
+    if(currentGuard[GUARD_ALARM_SAF_AIR_FILT].guardValue == GUARD_VALUE_TRUE)
+    {
+        ptrFutureChild = &stateChildAlarmEmpty[3];
+    }
+    else if(currentGuard[GUARD_ALARM_SFV_AIR].guardValue == GUARD_VALUE_TRUE)
+    {
+        ptrFutureChild = &stateChildAlarmEmpty[5];
+    }
+    else if(currentGuard[GUARD_ALARM_SFA_AIR].guardValue == GUARD_VALUE_TRUE)
+    {
+        ptrFutureChild = &stateChildAlarmEmpty[7];
+    }
+    ChildEmptyFlags.FlagsVal = 0;
+}
+
+//CHILD_TREAT_ALARM_1_INIT quando lo stato principale e' STATE_EMPTY_DISPOSABLE
+void manageChildEmptyAlm1InitAlways(void)
+{
+
+}
+
+//CHILD_TREAT_ALARM_1_SAF_AIR_FILT quando lo stato principale e' STATE_EMPTY_DISPOSABLE
+// Allarme aria sul filtro
+void manageChildEmptyAlm1SafAirFiltEntry(void)
+{
+	ChildEmptyFlags.FlagsDef.SAFAirDetected = 1;
+	ForceCurrentAlarmOff();
+}
+
+void manageChildEmptyAlm1SafAirFiltAlways(void)
+{
+
+}
+
+//CHILD_TREAT_ALARM_1_SFV_AIR quando lo stato principale e' STATE_EMPTY_DISPOSABLE
+// Allarme aria sul circuito venoso
+void manageChildEmptyAlm1SFVEntry(void)
+{
+	ChildEmptyFlags.FlagsDef.SFVAirDetected = 1;
+	ForceCurrentAlarmOff();
+}
+
+void manageChildEmptyAlm1SFVAlways(void)
+{
+}
+
+//CHILD_TREAT_ALARM_1_SFA_AIR quando lo stato principale e' STATE_EMPTY_DISPOSABLE
+// Allarme aria sul circuito arterioso
+void manageChildEmptyAlm1SFAEntry(void)
+{
+	ChildEmptyFlags.FlagsDef.SFAAirDetected = 1;
+	ForceCurrentAlarmOff();
+}
+
+void manageChildEmptyAlm1SFAAlways(void)
+{
+
+}
+
+
+bool IsDisposableEmpty(void)
+{
+	bool DispEmpty = FALSE;
+	if(GetTherapyType() == LiverTreat)
+	{
+		if(ChildEmptyFlags.FlagsDef.SFAAirDetected && ChildEmptyFlags.FlagsDef.SFVAirDetected && ChildEmptyFlags.FlagsDef.SAFAirDetected)
+			DispEmpty = TRUE;
+	}
+	else if(GetTherapyType() == KidneyTreat)
+	{
+		if(/*ChildEmptyFlags.FlagsDef.SFAAirDetected &&*/ ChildEmptyFlags.FlagsDef.SFVAirDetected && ChildEmptyFlags.FlagsDef.SAFAirDetected)
+			DispEmpty = TRUE;
+	}
+	return DispEmpty;
+}
+
+// Funzione che gestisce gli allarmi nel processo di svuotamento disposable
+void ManageStateChildAlarmEmpty(void)
+{
+	switch(ptrCurrentChild->child){
+		case CHILD_TREAT_ALARM_1_INIT:
+			if(ptrCurrentChild->action == ACTION_ON_ENTRY)
+			{
+				ptrFutureChild = &stateChildAlarmEmpty[2];
+			}
+			else if(ptrCurrentChild->action == ACTION_ALWAYS)
+			{
+			}
+
+//            if(currentGuard[GUARD_ALARM_SAF_AIR_FILT].guardValue == GUARD_VALUE_TRUE)
+//            {
+//                ptrFutureChild = &stateChildAlarmEmpty[3];
+//            }
+//            else if(currentGuard[GUARD_ALARM_SFV_AIR].guardValue == GUARD_VALUE_TRUE)
+//            {
+//                ptrFutureChild = &stateChildAlarmEmpty[5];
+//            }
+//            else if(currentGuard[GUARD_ALARM_SFA_AIR].guardValue == GUARD_VALUE_TRUE)
+//            {
+//                ptrFutureChild = &stateChildAlarmEmpty[7];
+//            }
+			break;
+
+		case CHILD_TREAT_ALARM_1_SAF_AIR_FILT:
+			if(ptrCurrentChild->action == ACTION_ON_ENTRY)
+			{
+				ptrFutureChild = &stateChildAlarmEmpty[4];
+			}
+            else if( currentGuard[GUARD_ALARM_SAF_AIR_FILT].guardValue == GUARD_VALUE_FALSE )
+                ptrFutureChild = &stateChildAlarmEmpty[9]; /* FM allarme chiuso */
+			else if(ptrCurrentChild->action == ACTION_ALWAYS)
+			{
+			}
+			break;
+		case CHILD_TREAT_ALARM_1_SFV_AIR:
+			if(ptrCurrentChild->action == ACTION_ON_ENTRY)
+			{
+				ptrFutureChild = &stateChildAlarmEmpty[6];
+			}
+            else if( currentGuard[GUARD_ALARM_SFV_AIR].guardValue == GUARD_VALUE_FALSE )
+                ptrFutureChild = &stateChildAlarmEmpty[9]; /* FM allarme chiuso */
+			else if(ptrCurrentChild->action == ACTION_ALWAYS)
+			{
+			}
+			break;
+		case CHILD_TREAT_ALARM_1_SFA_AIR:
+			if(ptrCurrentChild->action == ACTION_ON_ENTRY)
+			{
+				ptrFutureChild = &stateChildAlarmEmpty[8];
+			}
+            else if( currentGuard[GUARD_ALARM_SFA_AIR].guardValue == GUARD_VALUE_FALSE )
+                ptrFutureChild = &stateChildAlarmEmpty[9]; /* FM allarme chiuso */
+			else if(ptrCurrentChild->action == ACTION_ALWAYS)
+			{
+			}
+			break;
+
+		case CHILD_TREAT_ALARM_1_END:
+			if(ptrCurrentChild->action == ACTION_ON_ENTRY)
+			{
+				ptrFutureChild = &stateChildAlarmEmpty[10];
+			}
+			else if(ptrCurrentChild->action == ACTION_ALWAYS){
+			}
+			break;
+
+		default:
+			break;
+	}
+}
+
+
+
+
+

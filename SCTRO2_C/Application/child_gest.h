@@ -65,4 +65,36 @@ void ManageStateChildAlarmTreat1(void);
 bool PinchWriteTerminated(int idx);
 bool IsSecurityStateActive(void);
 
+
+/* --------------------------------------------------------------------------------------------
+   CHILD LEVEL FUNCTION FOR EMPTY STATE
+ * --------------------------------------------------------------------------------------------*/
+
+
+typedef struct
+{
+	unsigned int SAFAirDetected : 1;    // aria rilevata su filtro
+	unsigned int SFVAirDetected : 1;    // aria rilevata su circuito venoso
+	unsigned int SFAAirDetected : 1;    // aria rilevata su circuito arterioso
+}CHILD_EMPTY_FLAGS_DEF;
+
+typedef union
+{
+	CHILD_EMPTY_FLAGS_DEF FlagsDef;
+	unsigned int FlagsVal;
+}CHILD_EMPTY_FLAGS;
+
+
+void manageChildEmptyAlm1InitEntry(void);
+void manageChildEmptyAlm1InitAlways(void);
+void manageChildEmptyAlm1SafAirFiltEntry(void);
+void manageChildEmptyAlm1SafAirFiltAlways(void);
+void manageChildEmptyAlm1SFVEntry(void);
+void manageChildEmptyAlm1SFVAlways(void);
+void manageChildEmptyAlm1SFAEntry(void);
+void manageChildEmptyAlm1SFAAlways(void);
+bool IsDisposableEmpty(void);
+
+void ManageStateChildAlarmEmpty(void);
+
 #endif /* APPLICATION_CHILD_GEST_H_ */

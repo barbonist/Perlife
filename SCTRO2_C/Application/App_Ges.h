@@ -221,4 +221,6 @@ void HandlePinch( int cmd);
 unsigned char TemperatureStateMach(int cmd);
 void CheckTemperatureSet(void);
 
+void LiquidTempContrTask(LIQUID_TEMP_CONTR_CMD LiqTempContrCmd);
+
 #endif /* APPLICATION_APP_GES_H_ */

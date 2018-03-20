@@ -159,8 +159,8 @@
 #include "PDD_Includes.h"
 #include "Init_Config.h"
 /* User includes (#include below this line is not maintained by Processor Expert) */
-#include "App_Ges.h"
 #include "Global.h"
+#include "App_Ges.h"
 #include "ModBusCommProt.h"
 #include "Peltier_Module.h"
 #include "Adc_Ges.h"
@@ -279,7 +279,7 @@ int main(void)
   StarTimeToRejAir = 0;
   TotalTimeToRejAir = 0;
   AirAlarmRecoveryState = INIT_AIR_ALARM_RECOVERY;
-  DisableAllAirAlarm = FALSE;
+  DisableAllAirAlarm(FALSE);
 
   LevelBuzzer = SILENT;
   initAllGuard();
@@ -573,6 +573,19 @@ int main(void)
 	        		 // il controllo della temperatura lo faccio solo se le peltier sono accese ed un eventuale comando
 	        		 // precedente e' terminato
 	        		 CheckTemperatureSet();
+	        		 if((peltierCell.readAlwaysEnable == 1) && (peltierCell2.readAlwaysEnable == 1))
+	        		 {
+	        			 // l'utente non ha cambiato il target di temperatura, quindi, se trovo
+	        			 // la temperatura del recipiente piu' alta fermo le peltier
+	        			 LiquidTempContrTask(NO_LIQUID_TEMP_CONTR_CMD);
+	        		 }
+	        		 else
+	        		 {
+	        			 // vuol dire che la temperatura e' stata cambiata, quindi, devo
+	        			 // aspettare che il nuovo target e' raggiunto prima di iniziare a
+	        			 // monitorare il mantenimento della temperatura
+	        			 LiquidTempContrTask(WAIT_FOR_NEW_TARGET_T);
+	        		 }
 	        	 }
 
 	        	 /*********************DISATTIVAZIONE PELTIER SE NON RISPONDONO **************************/
@@ -617,8 +630,9 @@ int main(void)
 				 if (peltierCell2.StopEnable == 1)
 					 stopPeltier2Actuator();
 
-				 perfusionParam.pulsatility = (word)pumpPerist[0].actualSpeed * 2;
-				}
+				 //if(ptrCurrentState->state == STATE_TREATMENT_KIDNEY_1)
+					 perfusionParam.pulsatility = (word)pumpPerist[0].actualSpeed * 2;
+		     }
 
 	         /********************************/
 	         /*          PANIC BUTTON        */
@@ -699,6 +713,10 @@ int main(void)
 
 
 	         /*********PUMP*********/
+
+			// solo per fare il priming senza disposable
+	        //if(ptrCurrentState->state != STATE_EMPTY_DISPOSABLE)
+	        //	DisableAllAlarm();
 
   }
   /**********MAIN LOOP END**************/

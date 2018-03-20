@@ -64,9 +64,28 @@ struct alarm alarmList[] =
 };
 
 
+// se dis == TRUE disabilito tutti gli allarmi aria
+void DisableAllAirAlarm(bool dis)
+{
+	if(dis)
+	{
+		GlobalFlags.FlagsDef.EnableSAFAir = 0;
+		GlobalFlags.FlagsDef.EnableSFVAir = 0;
+		GlobalFlags.FlagsDef.EnableSFAAir = 0;
+	}
+	else
+	{
+		GlobalFlags.FlagsDef.EnableSAFAir = 1;
+		GlobalFlags.FlagsDef.EnableSFVAir = 1;
+		GlobalFlags.FlagsDef.EnableSFAAir = 1;
+	}
+}
+
+// Disabilita singolarmente tutti gli allarmi
 void DisableAllAlarm()
 {
 	GlobalFlags.FlagsVal = 0;
+	GlobalFlags.FlagsDef.EnableAllAlarms = 1;
 }
 
 
@@ -83,6 +102,9 @@ void SetAllAlarmEnableFlags(void)
 	GlobalFlags.FlagsDef.EnableDeltaFlowVenAlarm = 1;     // abilito allarme delta flusso venoso troppo alto
 	GlobalFlags.FlagsDef.EnableDeltaTempRecVenAlarm = 1;  // abilito allarme delta temperatura recipiente e line venosa troppo alta
 	GlobalFlags.FlagsDef.EnableDeltaTempRecArtAlarm = 1;  // abilito allarme delta temperatura recipiente e line arteriosa troppo alta
+	GlobalFlags.FlagsDef.EnableSAFAir = 1;
+	GlobalFlags.FlagsDef.EnableSFVAir = 1;
+	GlobalFlags.FlagsDef.EnableSFAAir = 1;
 }
 
 // Questa funzione serve per forzare ad off un eventuale allarme.
@@ -126,6 +148,15 @@ void ForceAlarmOff(char code)
 			break;
 		case CODE_ALARM_DELTA_TEMP_REC_ART:
 			GlobalFlags.FlagsDef.EnableDeltaTempRecArtAlarm = 0;  // forzo allarme delta temperatura recipiente e line arteriosa troppo alta off
+			break;
+		case CODE_ALARM_AIR_PRES_ADSRB_FILTER:
+			GlobalFlags.FlagsDef.EnableSAFAir = 0;     // forzo allarme aria sul filtro off
+			break;
+		case CODE_ALARM_AIR_PRES_VEN:
+			GlobalFlags.FlagsDef.EnableSFVAir = 0;     // forzo allarme aria sul circuito venoso off
+			break;
+		case CODE_ALARM_AIR_PRES_ART:
+			GlobalFlags.FlagsDef.EnableSFAAir = 0;     // forzo allarme aria sul circuito arterioso off
 			break;
 	}
 }
@@ -514,9 +545,11 @@ void alarmEngineAlways(void)
 			case STATE_EMPTY_DISPOSABLE_1:
 			{
 				manageAlarmFlowSensNotDetected();
-				/* DA DEBUGGARE*/
 				manageAlarmIrTempSensNotDetected();
 
+				manageAlarmPhysicUFlowSens();
+				manageAlarmSAFAirSens();
+				manageAlarmPhysicUFlowSensVen();
 				break;
 			}
 
@@ -922,7 +955,7 @@ void manageAlarmPhysicTempSens(void)
 // sensore aria filtro
 void manageAlarmSAFAirSens(void)
 {
-	if(DisableAllAirAlarm)
+	if(!GlobalFlags.FlagsDef.EnableSAFAir)
 	{
 		alarmList[SAF_AIR_SENSOR].physic = PHYSIC_FALSE;
 		return;
@@ -938,7 +971,7 @@ void manageAlarmSAFAirSens(void)
 
 void manageAlarmPhysicUFlowSensVen(void)
 {
-	if(DisableAllAirAlarm)
+	if(!GlobalFlags.FlagsDef.EnableSFVAir)
 	{
 		alarmList[AIR_PRES_VEN].physic = PHYSIC_FALSE;
 		return;
@@ -962,7 +995,7 @@ void manageAlarmPhysicUFlowSensVen(void)
 
 
 void manageAlarmPhysicUFlowSens(void){
-	if(DisableAllAirAlarm)
+	if(!GlobalFlags.FlagsDef.EnableSFAAir)
 	{
 		alarmList[AIR_PRES_ART].physic = PHYSIC_FALSE;
 		return;

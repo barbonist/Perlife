@@ -110,6 +110,30 @@ struct machineChild stateChildIdle[] =
 		  	{}
 		  };
 
+struct machineChild stateChildAlarmEmpty[] =
+		  {
+			{STATE_NULL, PARENT_NULL, CHILD_NULL,                       ACTION_NULL,     &stateNull[0], &manageNull},                             /* 0 */
+			//alarm init
+			{STATE_NULL, PARENT_NULL, CHILD_TREAT_ALARM_1_INIT,         ACTION_ON_ENTRY, &stateNull[0], &manageChildEmptyAlm1InitEntry},          /* 1 */
+			{STATE_NULL, PARENT_NULL, CHILD_TREAT_ALARM_1_INIT,         ACTION_ALWAYS,   &stateNull[0], &manageChildEmptyAlm1InitAlways},         /* 2 */
+
+			//allarme di aria nel filtro di depurazione
+			{STATE_NULL, PARENT_NULL, CHILD_TREAT_ALARM_1_SAF_AIR_FILT, ACTION_ON_ENTRY, &stateNull[0], &manageChildEmptyAlm1SafAirFiltEntry},    /* 3 */
+			{STATE_NULL, PARENT_NULL, CHILD_TREAT_ALARM_1_SAF_AIR_FILT, ACTION_ALWAYS,   &stateNull[0], &manageChildEmptyAlm1SafAirFiltAlways},   /* 4 */
+			//allarme di aria nel circuito venoso
+			{STATE_NULL, PARENT_NULL, CHILD_TREAT_ALARM_1_SFV_AIR,      ACTION_ON_ENTRY, &stateNull[0], &manageChildEmptyAlm1SFVEntry},           /* 5 */
+			{STATE_NULL, PARENT_NULL, CHILD_TREAT_ALARM_1_SFV_AIR,      ACTION_ALWAYS,   &stateNull[0], &manageChildEmptyAlm1SFVAlways},          /* 6 */
+			//allarme di aria nel circuito arterioso
+			{STATE_NULL, PARENT_NULL, CHILD_TREAT_ALARM_1_SFA_AIR,      ACTION_ON_ENTRY, &stateNull[0], &manageChildEmptyAlm1SFAEntry},           /* 7 */
+			{STATE_NULL, PARENT_NULL, CHILD_TREAT_ALARM_1_SFA_AIR,      ACTION_ALWAYS,   &stateNull[0], &manageChildEmptyAlm1SFAAlways},          /* 8 */
+
+			//alarm priming end
+			{STATE_NULL, PARENT_NULL, CHILD_TREAT_ALARM_1_END,          ACTION_ON_ENTRY, &stateNull[0], &manageNull},                             /* 9 */
+			{STATE_NULL, PARENT_NULL, CHILD_TREAT_ALARM_1_END,          ACTION_ALWAYS,   &stateNull[0], &manageNull},                             /* 10 */
+			{}
+		  };
+
+
 struct machineChild stateChildAlarmTreat1[] =
 		  {
 			{STATE_NULL, PARENT_NULL, CHILD_NULL,                            ACTION_NULL,     &stateNull[0], &manageNull},                               /* 0 */
@@ -352,8 +376,8 @@ struct machineParent stateParentEmptyDisp[] =
 		 {STATE_NULL, PARENT_EMPTY_DISPOSABLE_RUN,   CHILD_NULL, ACTION_ON_ENTRY, &stateChildIdle[0],       &manageParentEmptyDisposRunEntry},    /* 3 */
 		 {STATE_NULL, PARENT_EMPTY_DISPOSABLE_RUN,   CHILD_NULL, ACTION_ALWAYS,   &stateChildIdle[0],       &manageParentEmptyDisposRunAlways},   /* 4 */
 
-		 {STATE_NULL, PARENT_EMPTY_DISPOSABLE_ALARM, CHILD_NULL, ACTION_ON_ENTRY, &stateChildAlarmTreat1[1], &manageParentEmptyDisposAlarmEntry},  /* 5 */
-		 {STATE_NULL, PARENT_EMPTY_DISPOSABLE_ALARM, CHILD_NULL, ACTION_ALWAYS,   &stateChildAlarmTreat1[1], &manageParentEmptyDisposAlarmAlways}, /* 6 */
+		 {STATE_NULL, PARENT_EMPTY_DISPOSABLE_ALARM, CHILD_NULL, ACTION_ON_ENTRY, &stateChildAlarmEmpty[1], &manageParentEmptyDisposAlarmEntry},  /* 5 */
+		 {STATE_NULL, PARENT_EMPTY_DISPOSABLE_ALARM, CHILD_NULL, ACTION_ALWAYS,   &stateChildAlarmEmpty[1], &manageParentEmptyDisposAlarmAlways}, /* 6 */
 
 		 {STATE_NULL, PARENT_EMPTY_DISPOSABLE_END,   CHILD_IDLE, ACTION_ON_ENTRY, &stateChildIdle[0],        &manageParentEmptyDisposEndEntry},	   /* 7 */
 		 {STATE_NULL, PARENT_EMPTY_DISPOSABLE_END,   CHILD_IDLE, ACTION_ALWAYS,   &stateChildIdle[0],        &manageParentEmptyDisposEndAlways},   /* 8 */

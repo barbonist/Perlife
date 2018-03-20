@@ -182,5 +182,6 @@ void SetAllAlarmEnableFlags(void);
 void ForceAlarmOff(char code);
 void ForceCurrentAlarmOff(void);
 void DisableAllAlarm();
+void DisableAllAirAlarm(bool dis);
 
 #endif /* APPLICATION_ALARM_CON_H_ */

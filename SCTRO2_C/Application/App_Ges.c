@@ -423,34 +423,8 @@ void manageStateTankFill(void)
 void manageStateTankFillAlways(void)
 {
 	// QUESTO STATO NON VIENE PIU' USATO
-
 	//QUESTA FUNZIONE NON DEVE FARE PIU' NIENTE DATO CHE LO STATO TANK_FILL ORA E' SOLO UNO STATO DI PASSAGGIO
-/*
-	static float myTempValue = 200;
-
-	if(myTempValue != parameterWordSetFromGUI[PAR_SET_TEMPERATURE].value){
-		myTempValue = parameterWordSetFromGUI[PAR_SET_TEMPERATURE].value;
-
-		if(myTempValue == 40)
-		{
-			peltierCell.mySet  = myTempValue - 80;
-			peltierCell2.mySet = myTempValue - 80;
-		}
-		else if(myTempValue == 360)
-		{
-			peltierCell.mySet  = myTempValue + 60;
-			peltierCell2.mySet = myTempValue + 60;
-		}
-		else
-		{
-			peltierCell.mySet  = 200;
-			peltierCell2.mySet = 200;
-		}
-	}
-
 	computeMachineStateGuardTankFill();
-
-*/
 }
 
 /*--------------------------------------------------------------*/
@@ -487,7 +461,9 @@ void CheckTemperatureSet(void)
 		//	peltierCell.mySet  = (float) myTempValue/10 + 6;
 		//	peltierCell2.mySet = (float) myTempValue/10 + 6;
 			peltierCell.mySet  = (float) 62.0;
-			peltierCell2.mySet = (float) 62.0;				peltierCell2.readAlwaysEnable = 0;
+			peltierCell2.mySet = (float) 62.0;
+			peltierCell.readAlwaysEnable = 0;
+			peltierCell2.readAlwaysEnable = 0;
 		}
 		else
 		{
@@ -1090,6 +1066,7 @@ float CalcVenPumpGain(float flow)
 		Pump_Gain = DEFAULT_VEN_PUMP_GAIN;
 	return Pump_Gain;
 }
+
 
 // cmd comando per eventuare riposizionamento della macchina a stati
 unsigned char TemperatureStateMach(int cmd)
@@ -2400,7 +2377,7 @@ void manageParentEntryAlways(void)
 }
 
 
-// Processo di svutamento del disposable----------------------------------------------
+// Processo di svuotamento del disposable----------------------------------------------
 word VolumeDischarged = 0;
 bool EmptyDisposStartOtherPump = FALSE;
 EMPTY_DISPOSABLE_STATE EmptyDispRunAlwaysState = INIT_EMPTY_DISPOSABLE;
@@ -2442,19 +2419,31 @@ void CalcVolumeDischarged(void)
 			pumpPerist[1].dataReady = DATA_READY_FALSE;
 		}
 	}
+
+	perfusionParam.unlVolRes = VolumeDischarged;
 }
 
+// I bottoni usati in questa funzione sono:
+//        BUTTON_START_EMPTY_DISPOSABLE per partire o ripartire con lo scaricamento
+//        BUTTON_START_TREATMENT        per tornare al trattamento
+//        BUTTON_PRIMING_ABANDON        per abbandonare lo stato ed andare in idle
+//        BUTTON_STOP_ALL_PUMP          per fermare momentaneamente tutte le pompe
 void EmptyDispStateMach(void)
 {
 	THERAPY_TYPE TherType = GetTherapyType();
+	int StarEmptyDispButId;
+	int StopAllPumpButId;
+
+	StarEmptyDispButId = BUTTON_START_OXYGEN_PUMP;    // BUTTON_START_EMPTY_DISPOSABLE;
+	StopAllPumpButId = BUTTON_STOP_OXYGEN_PUMP;       // BUTTON_STOP_ALL_PUMP;
 
 	switch (EmptyDispRunAlwaysState)
 	{
 		case INIT_EMPTY_DISPOSABLE:
-			if(buttonGUITreatment[BUTTON_START_EMPTY_DISPOSABLE].state == GUI_BUTTON_RELEASED)
+			if(buttonGUITreatment[StarEmptyDispButId].state == GUI_BUTTON_RELEASED)
 			{
 				// attivo la pompa per iniziare ko svuotamento
-				releaseGUIButton(BUTTON_START_EMPTY_DISPOSABLE);
+				releaseGUIButton(StarEmptyDispButId);
 
 				// attivazione della pompa di svuotamento
 				if(GetTherapyType() == LiverTreat)
@@ -2467,6 +2456,8 @@ void EmptyDispStateMach(void)
 					// nel caso del rene sono le pompe di ossigenazione che svuotano il recevoir
 					setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, KIDNEY_EMPTY_PPAR_SPEED);
 				}
+				// nel processo di svuotamento non mi servono tutti gli allarmi ma solo quelli di aria
+				DisableAllAlarm();
 				EmptyDispRunAlwaysState = WAIT_FOR_1000ML;
 			}
 			else if(buttonGUITreatment[BUTTON_START_TREATMENT].state == GUI_BUTTON_RELEASED)
@@ -2496,7 +2487,27 @@ void EmptyDispStateMach(void)
 				else if(TherType == KidneyTreat)
 					setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, KIDNEY_EMPTY_PPAR_SPEED);
 				EmptyDisposStartOtherPump = TRUE;
+
+				// abilito gli allarmi aria
+				DisableAllAirAlarm(FALSE);
 				EmptyDispRunAlwaysState = WAIT_FOR_AIR_ALARM;
+			}
+			else if(buttonGUITreatment[StopAllPumpButId].state == GUI_BUTTON_RELEASED)
+			{
+				releaseGUIButton(StopAllPumpButId);
+				if(GetTherapyType() == LiverTreat)
+					setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, 0);
+				else if(GetTherapyType() == KidneyTreat)
+					setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 0);
+			}
+			else if(buttonGUITreatment[StarEmptyDispButId].state == GUI_BUTTON_RELEASED)
+			{
+				// faccio ripartire le pompe per lo svuotamento
+				releaseGUIButton(StarEmptyDispButId);
+				if(GetTherapyType() == LiverTreat)
+					setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, LIVER_PPAR_SPEED);
+				else if(GetTherapyType() == KidneyTreat)
+					setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, KIDNEY_EMPTY_PPAR_SPEED);
 			}
 			else if(buttonGUITreatment[BUTTON_PRIMING_ABANDON].state == GUI_BUTTON_RELEASED)
 			{
@@ -2513,24 +2524,54 @@ void EmptyDispStateMach(void)
 			break;
 		case WAIT_FOR_AIR_ALARM:
 			// verificare che ci passa
-			if((ptrAlarmCurrent->code == CODE_ALARM_AIR_PRES_ART) && (ptrAlarmCurrent->active = ACTIVE_TRUE))
+			//if((ptrAlarmCurrent->code == CODE_ALARM_AIR_PRES_ART) && (ptrAlarmCurrent->active = ACTIVE_TRUE))
+			if(IsDisposableEmpty())
 			{
 				if(TherType == LiverTreat)
 				{
-					// ho rilevato una presenza aria nel circuito di perfusione arteriosa o venosa
-					// non dovrebbe servire lo stop alle pompe perche' e' gia' fatto nella gestione
-					// dell'allarme
-					//setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
-					//setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 0);
+					// ho rilevato una presenza aria nel circuito di perfusione arteriosa e venosa
+					// fermo le pompe e proseguo con lo svuotamento dall'ultimo liquido rimasto
+					setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
+					setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 0);
 					EmptyDispRunAlwaysState = WAIT_FOR_LEVEL_OR_AMOUNT;
 				}
 				else if(TherType == KidneyTreat)
 				{
 					// ho rilevato una presenza aria nel circuito di perfusione arteriosa
-					// non dovrebbe servire lo stop alle pompe perche' e' gia' fatto nella gestione
-					// dell'allarme
-					//setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
+					setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
+					// fermo la pompa e proseguo con lo svuotamento dall'ultimo liquido rimasto
 					EmptyDispRunAlwaysState = WAIT_FOR_LEVEL_OR_AMOUNT;
+				}
+			}
+			else if(buttonGUITreatment[StopAllPumpButId].state == GUI_BUTTON_RELEASED)
+			{
+				releaseGUIButton(StopAllPumpButId);
+				if(GetTherapyType() == LiverTreat)
+				{
+					setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, 0);
+					setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
+					setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 0);
+				}
+				else if(GetTherapyType() == KidneyTreat)
+				{
+					setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 0);
+					setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
+				}
+			}
+			else if(buttonGUITreatment[StarEmptyDispButId].state == GUI_BUTTON_RELEASED)
+			{
+				// faccio ripartire le pompe per lo svuotamento
+				releaseGUIButton(StarEmptyDispButId);
+				if(GetTherapyType() == LiverTreat)
+				{
+					setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, LIVER_PPAR_SPEED);
+					setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, LIVER_PPAR_SPEED);
+					setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, LIVER_PPAR_SPEED);
+				}
+				else if(GetTherapyType() == KidneyTreat)
+				{
+					setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, KIDNEY_EMPTY_PPAR_SPEED);
+					setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, KIDNEY_EMPTY_PPAR_SPEED);
 				}
 			}
 			else if(buttonGUITreatment[BUTTON_PRIMING_ABANDON].state == GUI_BUTTON_RELEASED)
@@ -2566,6 +2607,23 @@ void EmptyDispStateMach(void)
 					setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 0);
 				currentGuard[GUARD_ABANDON_PRIMING].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
 			}
+			else if(buttonGUITreatment[StopAllPumpButId].state == GUI_BUTTON_RELEASED)
+			{
+				releaseGUIButton(StopAllPumpButId);
+				if(GetTherapyType() == LiverTreat)
+					setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, 0);
+				else if(GetTherapyType() == KidneyTreat)
+					setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 0);
+			}
+			else if(buttonGUITreatment[StarEmptyDispButId].state == GUI_BUTTON_RELEASED)
+			{
+				// faccio ripartire le pompe per lo svuotamento
+				releaseGUIButton(StarEmptyDispButId);
+				if(GetTherapyType() == LiverTreat)
+					setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, LIVER_PPAR_SPEED);
+				else if(GetTherapyType() == KidneyTreat)
+					setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, KIDNEY_EMPTY_PPAR_SPEED);
+			}
 			break;
 	}
 }
@@ -2592,10 +2650,10 @@ void manageParentEmptyDisposInitAlways(void)
 void manageParentEmptyDisposRunEntry(void)
 {
 	// attivazione della pompa di depurazione se dovessi ritornare da un allarme
-	if(GetTherapyType() == LiverTreat)
-		setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, LIVER_PPAR_SPEED);
-	else if(GetTherapyType() == KidneyTreat)
-		setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, KIDNEY_EMPTY_PPAR_SPEED);
+//	if(GetTherapyType() == LiverTreat)
+//		setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, LIVER_PPAR_SPEED);
+//	else if(GetTherapyType() == KidneyTreat)
+//		setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, KIDNEY_EMPTY_PPAR_SPEED);
 }
 void manageParentEmptyDisposRunAlways(void)
 {
@@ -2610,6 +2668,9 @@ void manageParentEmptyDisposAlarmEntry(void)
 void manageParentEmptyDisposAlarmAlways(void)
 {
 	EmptyDispStateMach();
+	// durante l'allarme le pompe continuano a girare quindi
+	// devo continuare a contare il volume scaricato
+	CalcVolumeDischarged();
 }
 
 void manageParentEmptyDisposEndEntry(void)
@@ -2892,39 +2953,15 @@ static void computeMachineStateGuardSelTreat(void){
 /*--------------------------------------------------------------------*/
 /*  This function compute the guard value in mounting disposable state   */
 /*--------------------------------------------------------------------*/
-static void computeMachineStateGuardMountDisp(void){
-	/* Questi comandi non ci sono piu' nella nuova macchina a stati
-	if(
-		(buttonGUITreatment[BUTTON_PERF_DISP_MOUNTED].state == GUI_BUTTON_RELEASED) &&
-		(buttonGUITreatment[BUTTON_OXYG_DISP_MOUNTED].state == GUI_BUTTON_RELEASED) &&
-		(buttonGUITreatment[BUTTON_CONFIRM].state == GUI_BUTTON_RELEASED)
-			)
-	{
-		currentGuard[GUARD_ENABLE_TANK_FILL].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
-		releaseGUIButton(BUTTON_PERF_DISP_MOUNTED);
-		releaseGUIButton(BUTTON_OXYG_DISP_MOUNTED);
-		//releaseGUIButton(BUTTON_CONFIRM);
-	}
-	*/
-
-	// controllo che sia finito il posizionamento delle pinch poi passo alla fase di priming
+static void computeMachineStateGuardMountDisp(void)
+{
 }
 
 /*--------------------------------------------------------------------*/
 /*  This function compute the guard value in tank fill state   */
 /*--------------------------------------------------------------------*/
-static void computeMachineStateGuardTankFill(void){
-/*
-	if(
-		(buttonGUITreatment[BUTTON_PERF_TANK_FILL].state == GUI_BUTTON_RELEASED) &&
-		(buttonGUITreatment[BUTTON_CONFIRM].state == GUI_BUTTON_RELEASED)
-			)
-	{
-		currentGuard[GUARD_ENABLE_PRIMING_PHASE_1].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
-		releaseGUIButton(BUTTON_PERF_TANK_FILL);
-		releaseGUIButton(BUTTON_CONFIRM);
-	}
-*/
+static void computeMachineStateGuardTankFill(void)
+{
 }
 
 /*--------------------------------------------------------------------*/
@@ -3320,10 +3357,8 @@ void ParentEmptyDispStateMach(void)
 			}
 			else if(ptrCurrentParent->action == ACTION_ALWAYS)
 			{
-				// (FM) chiamo la funzione child che gestisce lo stato di allarme durante il trattamento
-				// Dovra fare tutte le attuazioni sulle pompe, pinch necessarie per risolvere la condizione
-				// di allarme
-				ManageStateChildAlarmTreat1();
+				// chiamo la funzione child che gestisce lo stato di allarme durante la fase di svuotamento
+				ManageStateChildAlarmEmpty();
 			}
 			break;
 
@@ -4157,7 +4192,7 @@ void processMachineState(void)
 				/* (FM) si e' verificato un allarme, passo alla sua gestione */
 				ptrFutureParent = &stateParentTreatKidney1[5];
 				ptrFutureChild = ptrFutureParent->ptrChild;
-				DisableAllAirAlarm = FALSE;
+				DisableAllAirAlarm(FALSE);
 				LevelBuzzer = 2;
 				// guardando a questo valore posso vedere il tipo di azione di sicurezza
 				// e quindi posso decidere di andare anche in un qualche altro stato ad hoc
@@ -4192,7 +4227,7 @@ void processMachineState(void)
 				/* (FM) si e' verificato un allarme, passo alla sua gestione */
 				ptrFutureParent = &stateParentTreatKidney1[5];
 				ptrFutureChild = ptrFutureParent->ptrChild;
-				DisableAllAirAlarm = FALSE;
+				DisableAllAirAlarm(FALSE);
 				LevelBuzzer = 2;
 				// guardando a questo valore posso vedere il tipo di azione di sicurezza
 				// e quindi posso decidere di andare anche in un qualche altro stato ad hoc
@@ -4318,7 +4353,7 @@ void processMachineState(void)
 				// ho rimosso l'aria dal circuito, posso ritornare nello stato di allarme in cui sono partito
 				// oppure nello stato di lavoro normale (dopo aver riabilitato gli allarmi).
 				// Decido di ripartire dalla fase iniziale del trattamento.
-				DisableAllAirAlarm = FALSE;
+				DisableAllAirAlarm(FALSE);
 				ptrFutureParent = &stateParentTreatKidney1[1];
 				ptrFutureChild = ptrFutureParent->ptrChild;
 
@@ -4360,7 +4395,7 @@ void processMachineState(void)
 				// ho rimosso l'aria dal circuito, posso ritornare nello stato di allarme in cui sono partito
 				// oppure nello stato di lavoro normale (dopo aver riabilitato gli allarmi).
 				// Decido di ripartire dalla fase iniziale del trattamento.
-				DisableAllAirAlarm = FALSE;
+				DisableAllAirAlarm(FALSE);
 				ptrFutureParent = &stateParentTreatKidney1[1];
 				ptrFutureChild = ptrFutureParent->ptrChild;
 
@@ -4402,7 +4437,7 @@ void processMachineState(void)
 				// ho rimosso l'aria dal circuito, posso ritornare nello stato di allarme in cui sono partito
 				// oppure nello stato di lavoro normale (dopo aver riabilitato gli allarmi).
 				// Decido di ripartire dalla fase iniziale del trattamento.
-				DisableAllAirAlarm = FALSE;
+				DisableAllAirAlarm(FALSE);
 				ptrFutureParent = &stateParentTreatKidney1[1];
 				ptrFutureChild = ptrFutureParent->ptrChild;
 
@@ -4896,6 +4931,94 @@ void Manage_Panic_Button(void)
 
 		default:
 			Status_Panic_Button = 0;
+			break;
+	}
+}
+
+// Task di controllo della temperatura
+// Se supero di 1 grado la temperatura target spengo le Peltier e le riaccendo quando
+// la temperatura ha raggiunto di nuovo il target.
+// Questo avviene solo quando sono in trattamento
+void LiquidTempContrTask(LIQUID_TEMP_CONTR_CMD LiqTempContrCmd)
+{
+	static unsigned long TempOkTimeout;
+	float tmpr;
+	word tmpr_trgt;
+	static LIQUID_TEMP_CONTR_STATE LiquidTempContrState = INIT_LIQTEMPCONTR_STATE;
+	int CurrTemp;
+	int myTempValue;
+
+	if(ptrCurrentState->state != STATE_TREATMENT_KIDNEY_1)
+		return;
+
+	if(LiqTempContrCmd == WAIT_FOR_NEW_TARGET_T)
+	{
+		// devo aspettare il raggiungimento del nuovo target prima di monitorare
+		// il mantenimento della nuova temperatura
+		LiquidTempContrState = TEMP_START_CHECK_LIQTEMPCONTR_STATE;
+	}
+
+	// temperatura raggiunta dal reservoir
+	tmpr = ((int)(sensorIR_TM[0].tempSensValue*10));
+	// temperatura da raggiungere moltiplicata per 10
+	tmpr_trgt = parameterWordSetFromGUI[PAR_SET_PRIMING_TEMPERATURE_PERFUSION].value;
+
+
+	CurrTemp = (int)(sensorIR_TM[1].tempSensValue * 10.0);
+	myTempValue = (int)parameterWordSetFromGUI[PAR_SET_PRIMING_TEMPERATURE_PERFUSION].value;
+	switch (LiquidTempContrState)
+	{
+		// controllo del mantenimento della temperatura precedentemente raggiunta
+		case INIT_LIQTEMPCONTR_STATE:
+			LiquidTempContrState = READ_LIQTEMPCONTR_STATE;
+			break;
+		case READ_LIQTEMPCONTR_STATE:
+			if(CurrTemp > (myTempValue + 10))
+			{
+				// la temperatura del reservoir e' superiore a quella impostata di almeno un grado
+				// fermo le Peltier e mi metto in attesa che si raffreddino
+				peltierCell.StopEnable = 1;
+				peltierCell2.StopEnable = 1;
+				LiquidTempContrState = WAIT_FOR_SET_T_LIQTEMPCONTR_STATE;
+			}
+			break;
+		case WAIT_FOR_SET_T_LIQTEMPCONTR_STATE:
+			if(CurrTemp <= (myTempValue + 2))
+			{
+				// la temperatura e' ritornata vicino al valore target posso far ripartire le Peltier
+				// la differenza di 2 decimi di grado serve per poter far ripartire le peltier
+				peltierCell.readAlwaysEnable = 0;
+				peltierCell2.readAlwaysEnable = 0;
+				LiquidTempContrState = INIT_LIQTEMPCONTR_STATE;
+			}
+			break;
+
+		// controllo che il recipiente raggiunga il nuovo target impostato prima di passare
+	    // nello stato di controllo del mantenimento del target
+		case TEMP_START_CHECK_LIQTEMPCONTR_STATE:
+			if((tmpr >= (float)(tmpr_trgt - 10)) && (tmpr <= (float)(tmpr_trgt + 10)))
+			{
+				// ho raggiunto la temperatura target
+				LiquidTempContrState = TEMP_CHECK_DUR_LIQTEMPCONTR_STATE;
+				TempOkTimeout = timerCounterModBus;
+			}
+			break;
+		case TEMP_CHECK_DUR_LIQTEMPCONTR_STATE:
+			if((tmpr >= (float)(tmpr_trgt - 10)) && (tmpr <= (float)(tmpr_trgt + 10)))
+			{
+				// ho raggiunto la temperatura target
+				if(msTick_elapsed(TempOkTimeout) * 50L >= TIMEOUT_TEMPERATURE_RICIRC)
+				{
+					// per almeno 2 secondi la temperatura si e' mantenuta nell'intorno del target,
+					// Considero il target di temperatura raggiunto e quindi posso passare alla fase
+					// di controllo del mantenimento della temperatura
+					LiquidTempContrState = INIT_LIQTEMPCONTR_STATE;
+				}
+			}
+			else
+			{
+				LiquidTempContrState = TEMP_START_CHECK_LIQTEMPCONTR_STATE;
+			}
 			break;
 	}
 }

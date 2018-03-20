@@ -1046,6 +1046,7 @@ enum buttonGUIEnum{
 
 	BUTTON_START_EMPTY_DISPOSABLE = 0xF0,    // comando per inizio svuotamento
 	BUTTON_UNMOUNT_END = 0xF1,               // comando per fine smontaggio, posso tornare in idle
+
 	BUTTON_END_NUMBER = 37
 };
 
@@ -1402,7 +1403,7 @@ Kd = Kp*Pu/8  = 0.01875
 #define MAX_LIQUID_AMOUNT 2500
 
 // velocita' con cui faccio partire, per ora, la pompa di depurazione
-#define LIVER_PPAR_SPEED 2000
+#define LIVER_PPAR_SPEED 4000
 // velocita' con cui faccio partire, per ora, la pompa di ossigenazione e perfusione venosa nel caso di priming
 #define LIVER_PRIMING_PMP_OXYG_SPEED 2000
 // definisce il valore massimo di giri che possono raggiungere le pompe di ossigenazione
@@ -1481,7 +1482,8 @@ unsigned short AirParentState;
 
 // Questa flag viene usata per disabilitare gli allarmi aria durante la fase di recupero da
 // un allarme aria precedente
-bool DisableAllAirAlarm;
+// E' STATA SOSTITUITA CON UNA FUNZIONE CON LO STESSO NOME
+//bool DisableAllAirAlarm;
 
 unsigned long StarTimeToRejAir;
 // serve per misurare il tempo per l'eliminazione della bolla d'aria
@@ -1565,6 +1567,10 @@ typedef struct
 	unsigned int EnableDeltaTempRecVenAlarm : 1;    // abilito allarme delta temperatura recipiente e line venosa troppo alta
 	unsigned int EnableDeltaTempRecArtAlarm : 1;    // abilito allarme delta temperatura recipiente e line arteriosa troppo alta
 
+	unsigned int EnableSAFAir               : 1;    // abilito allarme aria su filtro
+	unsigned int EnableSFVAir               : 1;    // abilito allarme aria su circuito venoso
+	unsigned int EnableSFAAir               : 1;    // abilito allarme aria su circuito arterioso
+
 	unsigned int TankLevelHigh              : 1;    // livello del liquido supera il massimo
 	unsigned int ChildAlmAndWaitCmdActive   : 1;
 }FLAGS_DEF;
@@ -1613,6 +1619,23 @@ bool Peltier2On;
 bool PeltierOn;
 
 unsigned long PeltierDelay;
+
+// stati del task di controllo delle peltier
+typedef enum
+{
+	INIT_LIQTEMPCONTR_STATE,
+	READ_LIQTEMPCONTR_STATE,
+	WAIT_FOR_SET_T_LIQTEMPCONTR_STATE,
+	PELT_NEW_TRGT_CMD_LIQTEMPCONTR_STATE,
+	TEMP_START_CHECK_LIQTEMPCONTR_STATE,
+	TEMP_CHECK_DUR_LIQTEMPCONTR_STATE
+}LIQUID_TEMP_CONTR_STATE;
+
+typedef enum
+{
+	NO_LIQUID_TEMP_CONTR_CMD,
+	WAIT_FOR_NEW_TARGET_T
+}LIQUID_TEMP_CONTR_CMD;
 
 #endif /* SOURCES_GLOBAL_H_ */
 
