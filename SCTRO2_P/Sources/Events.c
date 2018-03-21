@@ -58,33 +58,6 @@ void Cpu_OnNMI(void)
   /* Write your code here ... */
 }
 
-/*
-** ===================================================================
-**     Event       :  AS2_PC_DEBUG_OnRxChar (module Events)
-**
-**     Component   :  AS2_PC_DEBUG [AsynchroSerial]
-**     Description :
-**         This event is called after a correct character is received.
-**         The event is available only when the <Interrupt
-**         service/event> property is enabled and either the <Receiver>
-**         property is enabled or the <SCI output mode> property (if
-**         supported) is set to Single-wire mode.
-**     Parameters  : None
-**     Returns     : Nothing
-** ===================================================================
-*/
-void AS2_PC_DEBUG_OnRxChar(void)
-{
-  /* Write your code here ... */
-	AS2_PC_DEBUG_RecvChar(ptr);
-
-	ptr = ptr + 1;
-	ptrCount = ptrCount + 1;
-	if(ptrCount >= 16)
-	{
-		iflag_pc_rx |= IFLAG_PC_RX;
-	}
-}
 
 /*
 ** ===================================================================
