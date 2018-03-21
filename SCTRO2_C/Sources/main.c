@@ -240,7 +240,8 @@ int main(void)
   PeltierOn = FALSE;
   GlobalFlags.FlagsVal = 0;
   // abilito tutti gli allarmi previsti
-  GlobalFlags.FlagsDef.EnableAllAlarms = 1;
+  //GlobalFlags.FlagsDef.EnableAllAlarms = 1;
+  SetAllAlarmEnableFlags();
 
   CoversState = 4; // all covers chiusi
   ArteriousPumpGainForPid = DEFAULT_ART_PUMP_GAIN;

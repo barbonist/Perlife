@@ -122,7 +122,7 @@ float CalcolaPresArt_with_Flow(unsigned char type_flow)
     return press;
 }
 
-
+/*
 float CalcolaPresArt(float speed)
 {
 //  float m = ((float)128.0 - (float)50.0) / ((float)100.0 );
@@ -136,6 +136,7 @@ float CalcolaPresArt(float speed)
   float press = m * (speed) + (float)40.0;
   return press;
 }
+*/
 
 int SpeedCostanteArt( int CurrSpeed)
 {

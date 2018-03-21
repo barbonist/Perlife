@@ -85,7 +85,7 @@ void DisableAllAirAlarm(bool dis)
 void DisableAllAlarm()
 {
 	GlobalFlags.FlagsVal = 0;
-	GlobalFlags.FlagsDef.EnableAllAlarms = 1;
+	//GlobalFlags.FlagsDef.EnableAllAlarms = 1;
 }
 
 
@@ -318,7 +318,7 @@ void alarmEngineAlways(void)
 /*Faccio uno switch su tutta la macchina a stati in modo
  * gestire ogni allarme in funzioine dello stato in cui sono*/
 
-	if(GlobalFlags.FlagsDef.EnableAllAlarms)
+	//if(GlobalFlags.FlagsDef.EnableAllAlarms)
 	{
 		switch(ptrCurrentState->state)
 		{

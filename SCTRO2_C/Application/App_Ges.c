@@ -150,7 +150,7 @@ void CallInIdleState(void)
 //	GlobalFlags.FlagsDef.TankLevelHigh = 0;
 
 	// abilito tutti gli allarmi previsti
-	GlobalFlags.FlagsDef.EnableAllAlarms = 1;
+	//GlobalFlags.FlagsDef.EnableAllAlarms = 1;
 	SetAllAlarmEnableFlags();
 
 	if (PeltierOn && (peltierCell.StopEnable == 0))
@@ -1944,8 +1944,9 @@ void manageParentTreatAlways(void){
 			TotalTreatDuration += TreatDuration;
 			TreatDuration = 0;
 			StartTreatmentTime = 0;
-			StartPrimingTime 	= 0;
-			GlobalFlags.FlagsDef.EnableAllAlarms = 0;
+			StartPrimingTime = 0;
+			//GlobalFlags.FlagsDef.EnableAllAlarms = 0;
+			DisableAllAlarm();
 		}
 		else if(buttonGUITreatment[BUTTON_STOP_PERF_PUMP].state == GUI_BUTTON_RELEASED)
 		{
@@ -2012,7 +2013,8 @@ void manageParentTreatAlways(void){
 				pressSample1_Ven = PR_VEN_mmHg_Filtered;
 				pressSample2_Ven = PR_VEN_mmHg_Filtered;
 			}
-			GlobalFlags.FlagsDef.EnableAllAlarms = 1;
+			//GlobalFlags.FlagsDef.EnableAllAlarms = 1;
+			SetAllAlarmEnableFlags();
 			// disabilito allarme di livello alto in trattamento (per ora)
 			GlobalFlags.FlagsDef.EnableLevHighAlarm = 0;
 			//GlobalFlags.FlagsDef.TankLevelHigh = 0;
@@ -2149,7 +2151,8 @@ void manageParentTreatAlways(void){
 				TotalTreatDuration += TreatDuration;
 				TreatDuration = 0;
 				StartTreatmentTime = 0;
-				GlobalFlags.FlagsDef.EnableAllAlarms = 0;
+				//GlobalFlags.FlagsDef.EnableAllAlarms = 0;
+				DisableAllAlarm();
 			}
 			else if(buttonGUITreatment[BUTTON_STOP_PERF_PUMP].state == GUI_BUTTON_RELEASED)
 			{
@@ -2221,7 +2224,8 @@ void manageParentTreatAlways(void){
 					pressSample1_Ven = PR_VEN_Sistolyc_mmHg;
 					pressSample2_Ven = PR_VEN_Sistolyc_mmHg;
 				}
-				GlobalFlags.FlagsDef.EnableAllAlarms = 1;
+				//GlobalFlags.FlagsDef.EnableAllAlarms = 1;
+				SetAllAlarmEnableFlags();
 				// disabilito allarme di livello alto in trattamento (per ora)
 				GlobalFlags.FlagsDef.EnableLevHighAlarm = 0;
 				//GlobalFlags.FlagsDef.TankLevelHigh = 0;
@@ -2449,7 +2453,7 @@ void EmptyDispStateMach(void)
 				if(GetTherapyType() == LiverTreat)
 				{
 					// nel caso del fegato e' la pompa di depurazione che svuota il recevoir
-					setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, LIVER_PPAR_SPEED);
+					setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, LIVER_PPAR_EMPTY_SPEED);
 				}
 				else if(GetTherapyType() == KidneyTreat)
 				{
@@ -2481,8 +2485,8 @@ void EmptyDispStateMach(void)
 				// faccio partire le altre pompe per svuotare i tubi
 				if(TherType == LiverTreat)
 				{
-					setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, LIVER_PPAR_SPEED);
-					setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, LIVER_PPAR_SPEED);
+					setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, LIVER_PPAR_EMPTY_SPEED);
+					setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, LIVER_PPAR_EMPTY_SPEED);
 				}
 				else if(TherType == KidneyTreat)
 					setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, KIDNEY_EMPTY_PPAR_SPEED);
@@ -2505,7 +2509,7 @@ void EmptyDispStateMach(void)
 				// faccio ripartire le pompe per lo svuotamento
 				releaseGUIButton(StarEmptyDispButId);
 				if(GetTherapyType() == LiverTreat)
-					setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, LIVER_PPAR_SPEED);
+					setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, LIVER_PPAR_EMPTY_SPEED);
 				else if(GetTherapyType() == KidneyTreat)
 					setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, KIDNEY_EMPTY_PPAR_SPEED);
 			}
@@ -2564,9 +2568,9 @@ void EmptyDispStateMach(void)
 				releaseGUIButton(StarEmptyDispButId);
 				if(GetTherapyType() == LiverTreat)
 				{
-					setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, LIVER_PPAR_SPEED);
-					setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, LIVER_PPAR_SPEED);
-					setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, LIVER_PPAR_SPEED);
+					setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, LIVER_PPAR_EMPTY_SPEED);
+					setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, LIVER_PPAR_EMPTY_SPEED);
+					setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, LIVER_PPAR_EMPTY_SPEED);
 				}
 				else if(GetTherapyType() == KidneyTreat)
 				{
@@ -2587,7 +2591,7 @@ void EmptyDispStateMach(void)
 				}
 				else if(TherType == KidneyTreat)
 				{
-					setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, KIDNEY_EMPTY_PPAR_SPEED);
+					setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
 					setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 0);
 				}
 				currentGuard[GUARD_ABANDON_PRIMING].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
@@ -2620,7 +2624,7 @@ void EmptyDispStateMach(void)
 				// faccio ripartire le pompe per lo svuotamento
 				releaseGUIButton(StarEmptyDispButId);
 				if(GetTherapyType() == LiverTreat)
-					setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, LIVER_PPAR_SPEED);
+					setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, LIVER_PPAR_EMPTY_SPEED);
 				else if(GetTherapyType() == KidneyTreat)
 					setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, KIDNEY_EMPTY_PPAR_SPEED);
 			}
