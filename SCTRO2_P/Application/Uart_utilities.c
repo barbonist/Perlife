@@ -10,11 +10,11 @@
 #include "Global.h"
 
 #include "Pins1.h"
-#include "LED_GREEN.h"
+
 #include "BitIoLdd1.h"
-#include "LED_BLUE.h"
+
 #include "BitIoLdd2.h"
-#include "LED_RED.h"
+
 #include "BitIoLdd3.h"
 
 
@@ -37,7 +37,7 @@ void ManageCommPcDebug(void)
 		ptr = &pc_rx_data[0];
 
 		#ifdef	DEBUG_ENABLE
-		LED_BLUE_ClrVal();
+
 		#endif
 
 		switch(pc_rx_data[0])

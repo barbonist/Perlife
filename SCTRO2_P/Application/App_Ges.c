@@ -9,11 +9,11 @@
 #include "Global.h"
 
 #include "Pins1.h"
-#include "LED_GREEN.h"
+
 #include "BitIoLdd1.h"
-#include "LED_BLUE.h"
+
 #include "BitIoLdd2.h"
-#include "LED_RED.h"
+
 #include "BitIoLdd3.h"
 
 
@@ -398,8 +398,7 @@ void manageStateFatalErrorAlways(void)
 void manageStateDebug0(void)
 {
 		#ifdef DEBUG_ENABLE
-		LED_BLUE_SetVal();
-		LED_GREEN_NegVal();
+
 		#endif
 }
 
@@ -661,7 +660,7 @@ void processMachineState(void)
 
 		case STATE_DEBUG_0:
 			#ifdef	DEBUG_ENABLE
-			LED_BLUE_SetVal();
+
 			#endif
 			break;
 
