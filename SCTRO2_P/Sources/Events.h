@@ -123,6 +123,61 @@
 #include "BitIoLdd37.h"
 #include "EN_P_1_C.h"
 #include "BitIoLdd38.h"
+#include "TI1_10ms.h"
+#include "TimerIntLdd1.h"
+#include "TU1.h"
+#include "TI1_1ms.h"
+#include "TimerIntLdd2.h"
+#include "TU2.h"
+#include "TI1_100ms.h"
+#include "TimerIntLdd3.h"
+#include "TU3.h"
+#include "EN_MOTOR_P_1.h"
+#include "BitIoLdd39.h"
+#include "EN_MOTOR_P_2.h"
+#include "BitIoLdd40.h"
+#include "EN_MOTOR_P_3.h"
+#include "BitIoLdd41.h"
+#include "EN_MOTOR_P_4.h"
+#include "BitIoLdd42.h"
+#include "EN_MOTOR_P_5.h"
+#include "BitIoLdd47.h"
+#include "EN_CLAMP_P_1.h"
+#include "BitIoLdd43.h"
+#include "EN_CLAMP_P_2.h"
+#include "BitIoLdd44.h"
+#include "EN_CLAMP_P_3.h"
+#include "BitIoLdd45.h"
+#include "EN_CLAMP_P_4.h"
+#include "BitIoLdd46.h"
+#include "M1_HALL_A.h"
+#include "BitIoLdd48.h"
+#include "M1_HALL_B.h"
+#include "BitIoLdd49.h"
+#include "M2_HALL_A.h"
+#include "BitIoLdd50.h"
+#include "M2_HALL_B.h"
+#include "BitIoLdd51.h"
+#include "M3_HALL_A.h"
+#include "BitIoLdd52.h"
+#include "M3_HALL_B.h"
+#include "BitIoLdd53.h"
+#include "M4_HALL_A.h"
+#include "BitIoLdd54.h"
+#include "M4_HALL_B.h"
+#include "BitIoLdd55.h"
+#include "C1_HALL_L.h"
+#include "BitIoLdd56.h"
+#include "C1_HALL_R.h"
+#include "BitIoLdd57.h"
+#include "C2_HALL_L.h"
+#include "BitIoLdd58.h"
+#include "C2_HALL_R.h"
+#include "BitIoLdd59.h"
+#include "C3_HALL_L.h"
+#include "BitIoLdd60.h"
+#include "C3_HALL_R.h"
+#include "BitIoLdd61.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -575,6 +630,54 @@ void CAN_C_P_OnFreeTxBuffer(LDD_TUserData *UserDataPtr, LDD_CAN_TMBIndex BufferI
 */
 /* ===================================================================*/
 void CAN_C_P_OnFullRxBuffer(LDD_TUserData *UserDataPtr, LDD_CAN_TMBIndex BufferIdx);
+
+/*
+** ===================================================================
+**     Event       :  TI1_100ms_OnInterrupt (module Events)
+**
+**     Component   :  TI1_100ms [TimerInt]
+**     Description :
+**         When a timer interrupt occurs this event is called (only
+**         when the component is enabled - <Enable> and the events are
+**         enabled - <EnableEvent>). This event is enabled only if a
+**         <interrupt service/event> is enabled.
+**     Parameters  : None
+**     Returns     : Nothing
+** ===================================================================
+*/
+void TI1_100ms_OnInterrupt(void);
+
+/*
+** ===================================================================
+**     Event       :  TI1_1ms_OnInterrupt (module Events)
+**
+**     Component   :  TI1_1ms [TimerInt]
+**     Description :
+**         When a timer interrupt occurs this event is called (only
+**         when the component is enabled - <Enable> and the events are
+**         enabled - <EnableEvent>). This event is enabled only if a
+**         <interrupt service/event> is enabled.
+**     Parameters  : None
+**     Returns     : Nothing
+** ===================================================================
+*/
+void TI1_1ms_OnInterrupt(void);
+
+/*
+** ===================================================================
+**     Event       :  TI1_10ms_OnInterrupt (module Events)
+**
+**     Component   :  TI1_10ms [TimerInt]
+**     Description :
+**         When a timer interrupt occurs this event is called (only
+**         when the component is enabled - <Enable> and the events are
+**         enabled - <EnableEvent>). This event is enabled only if a
+**         <interrupt service/event> is enabled.
+**     Parameters  : None
+**     Returns     : Nothing
+** ===================================================================
+*/
+void TI1_10ms_OnInterrupt(void);
 
 /* END Events */
 
