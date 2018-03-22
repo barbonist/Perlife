@@ -80,6 +80,7 @@ float pressSample2_Art = 0;
 float CalcolaPresArt_with_Flow(unsigned char type_flow)
 {
 	float Gain,Offset, Target_Flow;
+	return 0.0;
 
 	if (type_flow == 0)
 		Target_Flow = (float)parameterWordSetFromGUI[PAR_SET_MAX_FLOW_PERFUSION].value;
@@ -178,19 +179,17 @@ int SpeedCostanteArt( int CurrSpeed)
 
 float kpForTuning = 1.0;
 
-void alwaysPumpPressLoopArt_yy(unsigned char pmpId, unsigned char *PidFirstTime)
+void alwaysPumpPressLoopArt(unsigned char pmpId, unsigned char *PidFirstTime)
 {
 	static float deltaSpeed_Art = 0;
 	static float actualSpeed_Art = 0;
+	static int Target_PID_ART = 0;
 	float pressSample0_Art = 0;
 	float errPress = 0;
-	static int Target_PID_ART = 0;
 	float Pump_Gain = 0;
 	int MAX_ART_RPM_Val;
 
 	Pump_Gain = ArteriousPumpGainForPid;
-
-
 	/*calcolo il massimo numnero di giri in funzione del flusso massimo che mi è stato impostato*/
 	MAX_ART_RPM_Val = (int)((float)parameterWordSetFromGUI[PAR_SET_MAX_FLOW_PERFUSION].value / Pump_Gain);
 
@@ -202,8 +201,8 @@ void alwaysPumpPressLoopArt_yy(unsigned char pmpId, unsigned char *PidFirstTime)
     {
     	*PidFirstTime = PRESS_LOOP_OFF;
     	actualSpeed_Art = (float)pumpPerist[pmpId].actualSpeed;
-    	Target_PID_ART = parameterWordSetFromGUI[PAR_SET_PRESS_ART_TARGET].value + CalcolaPresArt_with_Flow(0);
     }
+	Target_PID_ART = parameterWordSetFromGUI[PAR_SET_PRESS_ART_TARGET].value + CalcolaPresArt_with_Flow(0);
 
     //pressSample0_Art = PR_ART_mmHg_Filtered;
     //pressSample0_Art = MedForArteriousPid;
@@ -212,170 +211,42 @@ void alwaysPumpPressLoopArt_yy(unsigned char pmpId, unsigned char *PidFirstTime)
     // Ricordarsi che se cambio il valore usato dal pid devo modificare anche quelli in pressSample1_Art e pressSample2_Art
     // alla partenza del pid
     pressSample0_Art = PR_ART_Sistolyc_mmHg;
-
 	errPress = Target_PID_ART - pressSample0_Art;
 
 
-	/*se la veilocità resta costante ed inferiore alla masisma, sono in equilibrio, provo ad aumentarla per
-	 * vedere se trovo un equilibrio andando + forte e avvicindandomi al massimo flusso impostato*/
-   if (SpeedCostanteArt((int)actualSpeed_Art) && (actualSpeed_Art <= MAX_ART_RPM_Val))
-   {
-		actualSpeed_Art += 2.0;
-   }
 
    //deltaSpeed_Art = kpForTuning * errPress;
 	deltaSpeed_Art = (((float)parKITC_Art * errPress) -
 			         ((float)parKP_Art * (pressSample0_Art - pressSample1_Art)) -
 					 ((float)parKD_TC_Art * (pressSample0_Art - 2 * pressSample1_Art + pressSample2_Art)));
-
-	// valutare se mettere il deltaSpeed = 0 nel caso deltaSpeed sia negativo in modo da non far andare actualSpeed a zero troppo in fretta
-	// in alternativa il deltaSpeed va considerato solo se è abbastanza negativo
-	if((deltaSpeed_Art < -0.01) || (deltaSpeed_Art > 0.01))
-	{
-		actualSpeed_Art = actualSpeed_Art + deltaSpeed_Art;
-	}
-
-	/*se misuro un flusso e ho una velocità >0 e sto misurando uin flusso superiore al limite impostato
-	 * aggiorno la velocità al massimo flusso impostato */
-	if ((sensor_UFLOW[0].Average_Flow_Val > 0.0) &&
-		(sensor_UFLOW[0].Average_Flow_Val > ( parameterWordSetFromGUI[PAR_SET_MAX_FLOW_PERFUSION].value)) &&
-		(actualSpeed_Art > 0.0))
-	{
-		float pmp_gain = sensor_UFLOW[0].Average_Flow_Val / actualSpeed_Art;
-		actualSpeed_Art = (float)parameterWordSetFromGUI[PAR_SET_MAX_FLOW_PERFUSION].value / pmp_gain;
-	}
-
-	/*se ho velocità negativa o pressione oltre soglia massima, fermo le pompe*/
-	if(actualSpeed_Art < 0 || pressSample0_Art > 300)
-	{
-		actualSpeed_Art = 0;
-	//	Target_PID_ART = parameterWordSetFromGUI[PAR_SET_PRESS_ART_TARGET].value ;//+ CalcolaPresArt_with_Flow(0);
-	}
-
-	/*vincolo la velocità massima impostata dal pid al massimo valore che non mi fa perdere il passo*/
-	if(actualSpeed_Art > (float)MAX_ART_RPM_Val)
-		actualSpeed_Art = (float)MAX_ART_RPM_Val;
-
-	/*aggiorno il target ogni 3 secondi se sto decrementando la velocità
-	 * altrimenti lo aggiorno subito, altrimenti il pid va troppo veloce per il target*/
-	if (timerCounterUpdateTargetPressPidArt > 60)
-	{
-		timerCounterUpdateTargetPressPidArt = 0;
-		Target_PID_ART = parameterWordSetFromGUI[PAR_SET_PRESS_ART_TARGET].value + CalcolaPresArt_with_Flow(0);
-	}
-
-
-	/*aggiorno la velocità se è diversa dalla precedente*/
-	if((actualSpeed_Art != pumpPerist[pmpId].actualSpeedOld) || (pumpPerist[pmpId].actualSpeedOld == 0.0))
-	{
-		setPumpSpeedValueHighLevel(pumpPerist[pmpId].pmpMySlaveAddress, ((int)(actualSpeed_Art * 100)));
-		pumpPerist[pmpId].actualSpeedOld = actualSpeed_Art;
-	}
-
-	pressSample2_Art = pressSample1_Art;
-	pressSample1_Art = pressSample0_Art;
-}
-
-
-
-
-void alwaysPumpPressLoopArt(unsigned char pmpId, unsigned char *PidFirstTime){
-
-	static float deltaSpeed_Art = 0;
-	static float actualSpeed_Art = 0;
-	float pressSample0_Art = 0;
-
-	float errPress = 0;
-
-	static int Target_PID_ART = 0;
-	float Pump_Gain = 0;
-	int MAX_ART_RPM_Val;
-
-/* SERVE A FARE IL CALCOLO DEL PUMP_GAIN E NON STIMARLO
- * MA QUESTO CALCOLO ANDREBBE FATTO SOLO QUANDO IL FLUSSO E' GROSSOMODO STABILE
- * PERCHE' IL FLUSSO SI ALLINEA CON UN CERTO RITARDO RISPETTO ALLA PRESSIONE E AL PID
- * SI POTREBBE AFRLO ANCHE OGNI 5 SEC
-	if ( (sensor_UFLOW[0].Average_Flow_Val > 0.0) && (actualSpeed_Art > 0.0) )
-		Pump_Gain = sensor_UFLOW[0].Average_Flow_Val / actualSpeed_Art;
-
-	if(Pump_Gain == 0 || Pump_Gain > 10)
-		Pump_Gain = 9.3; */
-	Pump_Gain = ArteriousPumpGainForPid;
-
-
-	/*calcolo il massimo numnero di giri in funzione del flusso massimo che mi è stato impostato*/
-	MAX_ART_RPM_Val = (int)((float)parameterWordSetFromGUI[PAR_SET_MAX_FLOW_PERFUSION].value / Pump_Gain);
-
-	/*blocco al massimo totale ammissibile per non perdere il passo il numero di giri*/
-	if (MAX_ART_RPM_Val > MAX_ART_RPM)
-		MAX_ART_RPM_Val = MAX_ART_RPM;
-
-    if(*PidFirstTime == PRESS_LOOP_ON)
+	/*se la veilocità resta costante ed inferiore alla massima, sono in equilibrio, provo ad aumentarla per
+	 * vedere se trovo un equilibrio andando + forte e avvicindandomi al massimo flusso impostato*/
+    if (SpeedCostanteArt((int)actualSpeed_Art) && (actualSpeed_Art <= MAX_ART_RPM_Val))
     {
-    	*PidFirstTime = PRESS_LOOP_OFF;
-    	actualSpeed_Art = (float)pumpPerist[pmpId].actualSpeed;
-    	Target_PID_ART = parameterWordSetFromGUI[PAR_SET_PRESS_ART_TARGET].value + CalcolaPresArt_with_Flow(0);
+		//actualSpeed_Art += 2.0;
+		deltaSpeed_Art = 2.0;
     }
+	/*se misuro un flusso e ho una velocità >0 e sto misurando uin flusso superiore al limite impostato
+	 * aggiorno la velocità al massimo flusso impostato */
+	if ((sensor_UFLOW[0].Average_Flow_Val > 0.0) &&
+		(sensor_UFLOW[0].Average_Flow_Val > ( parameterWordSetFromGUI[PAR_SET_MAX_FLOW_PERFUSION].value)) &&
+		(actualSpeed_Art > 0.0) && (deltaSpeed_Art > 0.0))
+	{
+		deltaSpeed_Art = 0.0;
+	}
 
-    //pressSample0_Art = PR_ART_mmHg_Filtered;
-    //pressSample0_Art = MedForArteriousPid;
-    // cambio il parametro in ingresso al PID dal valore filtrato al valore sistolico di pressione preso all'organo
-    // oppure, posso prendere quello misurato direttamente al sensore che e' PR_ART_Sistolyc_mmHg.
-    // Ricordarsi che se cambio il valore usato dal pid devo modificare anche quelli in pressSample1_Art e pressSample2_Art
-    // alla partenza del pid
-    pressSample0_Art = PR_ART_Sistolyc_mmHg;
-
-	errPress = Target_PID_ART - pressSample0_Art;
-
-
-	/*se la veilocità resta costante ed inferiore alla masisma, sono in equilibrio, provo ad aumentarla per
-	 * vedere se trovo un equilibrio andando + forte e avvicindandomi al massimo flusso impostato*/
-   if (SpeedCostanteArt((int)actualSpeed_Art) && (actualSpeed_Art <= MAX_ART_RPM_Val))
-   {
-		actualSpeed_Art += 2.0;
-   }
-
-   //deltaSpeed_Art = kpForTuning * errPress;
-	deltaSpeed_Art = (((float)parKITC_Art * errPress) -
-			         ((float)parKP_Art * (pressSample0_Art - pressSample1_Art)) -
-					 ((float)parKD_TC_Art * (pressSample0_Art - 2 * pressSample1_Art + pressSample2_Art)));
-
-	// valutare se mettere il deltaSpeed = 0 nel caso deltaSpeed sia negativo in modo da non far andare actualSpeed a zero troppo in fretta
-	// in alternativa il deltaSpeed va considerato solo se è abbastanza negativo
 	if((deltaSpeed_Art < -0.01) || (deltaSpeed_Art > 0.01))
 	{
 		actualSpeed_Art = actualSpeed_Art + deltaSpeed_Art;
 	}
 
-	/*se misuro un flusso e ho una velocità >0 e sto misurando uin flusso superiore al limite impostato
-	 * aggiorno la velocità al massimo flusso impostato */
-	if ((sensor_UFLOW[0].Average_Flow_Val > 0.0) &&
-		(sensor_UFLOW[0].Average_Flow_Val > ( parameterWordSetFromGUI[PAR_SET_MAX_FLOW_PERFUSION].value)) &&
-		(actualSpeed_Art > 0.0))
-	{
-		float pmp_gain = sensor_UFLOW[0].Average_Flow_Val / actualSpeed_Art;
-		actualSpeed_Art = (float)parameterWordSetFromGUI[PAR_SET_MAX_FLOW_PERFUSION].value / pmp_gain;
-	}
-
 	/*se ho velocità negativa o pressione oltre soglia massima, fermo le pompe*/
-	if(actualSpeed_Art < 0 || pressSample0_Art > 300)
-	{
+	if(actualSpeed_Art < 0 || pressSample0_Art > 100)
 		actualSpeed_Art = 0;
-	//	Target_PID_ART = parameterWordSetFromGUI[PAR_SET_PRESS_ART_TARGET].value ;//+ CalcolaPresArt_with_Flow(0);
-	}
 
 	/*vincolo la velocità massima impostata dal pid al massimo valore che non mi fa perdere il passo*/
 	if(actualSpeed_Art > (float)MAX_ART_RPM_Val)
 		actualSpeed_Art = (float)MAX_ART_RPM_Val;
-
-	/*aggiorno il target ogni 3 secondi se sto decrementando la velocità
-	 * altrimenti lo aggiorno subito, altrimenti il pid va troppo veloce per il target*/
-	if (timerCounterUpdateTargetPressPidArt > 60)
-	{
-		timerCounterUpdateTargetPressPidArt = 0;
-		Target_PID_ART = parameterWordSetFromGUI[PAR_SET_PRESS_ART_TARGET].value + CalcolaPresArt_with_Flow(0);
-	}
-
 
 	/*aggiorno la velocità se è diversa dalla precedente*/
 	if((actualSpeed_Art != pumpPerist[pmpId].actualSpeedOld) || (pumpPerist[pmpId].actualSpeedOld == 0.0))
@@ -387,6 +258,119 @@ void alwaysPumpPressLoopArt(unsigned char pmpId, unsigned char *PidFirstTime){
 	pressSample2_Art = pressSample1_Art;
 	pressSample1_Art = pressSample0_Art;
 }
+
+
+
+// 21_03_2018 ultima versione testata con controllo della pressione sull'organo
+// fatta partendo dal flusso arterioso
+//void alwaysPumpPressLoopArt(unsigned char pmpId, unsigned char *PidFirstTime){
+//
+//	static float deltaSpeed_Art = 0;
+//	static float actualSpeed_Art = 0;
+//	float pressSample0_Art = 0;
+//
+//	float errPress = 0;
+//
+//	static int Target_PID_ART = 0;
+//	float Pump_Gain = 0;
+//	int MAX_ART_RPM_Val;
+//
+///* SERVE A FARE IL CALCOLO DEL PUMP_GAIN E NON STIMARLO
+// * MA QUESTO CALCOLO ANDREBBE FATTO SOLO QUANDO IL FLUSSO E' GROSSOMODO STABILE
+// * PERCHE' IL FLUSSO SI ALLINEA CON UN CERTO RITARDO RISPETTO ALLA PRESSIONE E AL PID
+// * SI POTREBBE AFRLO ANCHE OGNI 5 SEC
+//	if ( (sensor_UFLOW[0].Average_Flow_Val > 0.0) && (actualSpeed_Art > 0.0) )
+//		Pump_Gain = sensor_UFLOW[0].Average_Flow_Val / actualSpeed_Art;
+//
+//	if(Pump_Gain == 0 || Pump_Gain > 10)
+//		Pump_Gain = 9.3; */
+//	Pump_Gain = ArteriousPumpGainForPid;
+//
+//
+//	/*calcolo il massimo numnero di giri in funzione del flusso massimo che mi è stato impostato*/
+//	MAX_ART_RPM_Val = (int)((float)parameterWordSetFromGUI[PAR_SET_MAX_FLOW_PERFUSION].value / Pump_Gain);
+//
+//	/*blocco al massimo totale ammissibile per non perdere il passo il numero di giri*/
+//	if (MAX_ART_RPM_Val > MAX_ART_RPM)
+//		MAX_ART_RPM_Val = MAX_ART_RPM;
+//
+//    if(*PidFirstTime == PRESS_LOOP_ON)
+//    {
+//    	*PidFirstTime = PRESS_LOOP_OFF;
+//    	actualSpeed_Art = (float)pumpPerist[pmpId].actualSpeed;
+//    	Target_PID_ART = parameterWordSetFromGUI[PAR_SET_PRESS_ART_TARGET].value + CalcolaPresArt_with_Flow(0);
+//    }
+//
+//    //pressSample0_Art = PR_ART_mmHg_Filtered;
+//    //pressSample0_Art = MedForArteriousPid;
+//    // cambio il parametro in ingresso al PID dal valore filtrato al valore sistolico di pressione preso all'organo
+//    // oppure, posso prendere quello misurato direttamente al sensore che e' PR_ART_Sistolyc_mmHg.
+//    // Ricordarsi che se cambio il valore usato dal pid devo modificare anche quelli in pressSample1_Art e pressSample2_Art
+//    // alla partenza del pid
+//    pressSample0_Art = PR_ART_Sistolyc_mmHg;
+//
+//	errPress = Target_PID_ART - pressSample0_Art;
+//
+//
+//	/*se la veilocità resta costante ed inferiore alla masisma, sono in equilibrio, provo ad aumentarla per
+//	 * vedere se trovo un equilibrio andando + forte e avvicindandomi al massimo flusso impostato*/
+//   if (SpeedCostanteArt((int)actualSpeed_Art) && (actualSpeed_Art <= MAX_ART_RPM_Val))
+//   {
+//		actualSpeed_Art += 2.0;
+//   }
+//
+//   //deltaSpeed_Art = kpForTuning * errPress;
+//	deltaSpeed_Art = (((float)parKITC_Art * errPress) -
+//			         ((float)parKP_Art * (pressSample0_Art - pressSample1_Art)) -
+//					 ((float)parKD_TC_Art * (pressSample0_Art - 2 * pressSample1_Art + pressSample2_Art)));
+//
+//	// valutare se mettere il deltaSpeed = 0 nel caso deltaSpeed sia negativo in modo da non far andare actualSpeed a zero troppo in fretta
+//	// in alternativa il deltaSpeed va considerato solo se è abbastanza negativo
+//	if((deltaSpeed_Art < -0.01) || (deltaSpeed_Art > 0.01))
+//	{
+//		actualSpeed_Art = actualSpeed_Art + deltaSpeed_Art;
+//	}
+//
+//	/*se misuro un flusso e ho una velocità >0 e sto misurando uin flusso superiore al limite impostato
+//	 * aggiorno la velocità al massimo flusso impostato */
+//	if ((sensor_UFLOW[0].Average_Flow_Val > 0.0) &&
+//		(sensor_UFLOW[0].Average_Flow_Val > ( parameterWordSetFromGUI[PAR_SET_MAX_FLOW_PERFUSION].value)) &&
+//		(actualSpeed_Art > 0.0))
+//	{
+//		float pmp_gain = sensor_UFLOW[0].Average_Flow_Val / actualSpeed_Art;
+//		actualSpeed_Art = (float)parameterWordSetFromGUI[PAR_SET_MAX_FLOW_PERFUSION].value / pmp_gain;
+//	}
+//
+//	/*se ho velocità negativa o pressione oltre soglia massima, fermo le pompe*/
+//	if(actualSpeed_Art < 0 || pressSample0_Art > 300)
+//	{
+//		actualSpeed_Art = 0;
+//	//	Target_PID_ART = parameterWordSetFromGUI[PAR_SET_PRESS_ART_TARGET].value ;//+ CalcolaPresArt_with_Flow(0);
+//	}
+//
+//	/*vincolo la velocità massima impostata dal pid al massimo valore che non mi fa perdere il passo*/
+//	if(actualSpeed_Art > (float)MAX_ART_RPM_Val)
+//		actualSpeed_Art = (float)MAX_ART_RPM_Val;
+//
+//	/*aggiorno il target ogni 3 secondi se sto decrementando la velocità
+//	 * altrimenti lo aggiorno subito, altrimenti il pid va troppo veloce per il target*/
+//	if (timerCounterUpdateTargetPressPidArt > 60)
+//	{
+//		timerCounterUpdateTargetPressPidArt = 0;
+//		Target_PID_ART = parameterWordSetFromGUI[PAR_SET_PRESS_ART_TARGET].value + CalcolaPresArt_with_Flow(0);
+//	}
+//
+//
+//	/*aggiorno la velocità se è diversa dalla precedente*/
+//	if((actualSpeed_Art != pumpPerist[pmpId].actualSpeedOld) || (pumpPerist[pmpId].actualSpeedOld == 0.0))
+//	{
+//		setPumpSpeedValueHighLevel(pumpPerist[pmpId].pmpMySlaveAddress, ((int)(actualSpeed_Art * 100)));
+//		pumpPerist[pmpId].actualSpeedOld = actualSpeed_Art;
+//	}
+//
+//	pressSample2_Art = pressSample1_Art;
+//	pressSample1_Art = pressSample0_Art;
+//}
 
 //void alwaysPumpPressLoopArt(unsigned char pmpId, unsigned char *PidFirstTime)
 //{

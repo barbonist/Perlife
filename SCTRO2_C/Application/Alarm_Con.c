@@ -847,7 +847,11 @@ void manageAlarmPhysicPressSensLow(void)
 {
 	if(GlobalFlags.FlagsDef.EnablePressSensLowAlm)
 	{
-		if(PR_ART_mmHg_Filtered <= PR_ART_LOW)
+
+		// se il sensore di pressione arteriosa misura la pressione subito prima dell'organo
+		// questo codice va commentato perche' la pressione prima di andare in trattamento e' sempre 0
+		// Per ora faccio una prova mettendo PR_ART_LOW a 0
+		if(PR_ART_mmHg_Filtered < PR_ART_LOW)
 		{
 			alarmList[PRESS_ART_LOW].physic = PHYSIC_TRUE;
 		}
