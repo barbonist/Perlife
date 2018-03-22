@@ -617,7 +617,7 @@ void manageStatePrimingRicircoloAlways(void)
 	else
 	{
 		// controllo se e' cambiata la velocita' della pompa di ossigenazione e la aggiorno
-		CheckOxygenationSpeed(LastOxygenationSpeed);
+		//CheckOxygenationSpeed(LastOxygenationSpeed);
 	}
 
 //	// temperatura del reservoir
@@ -3025,7 +3025,7 @@ static void computeMachineStateGuardPrimingPh1(void){
 		}
 
 		// controllo se e' cambiata la velocita' della pompa di ossigenazione e la aggiorno
-		CheckOxygenationSpeed(LastOxygenationSpeed);
+		//CheckOxygenationSpeed(LastOxygenationSpeed);
 	}
 }
 
@@ -3079,7 +3079,7 @@ static void computeMachineStateGuardPrimingPh2(void){
 			StartOxygAndDepState = 1;
 		}
 		// controllo se e' cambiata la velocita' della pompa di ossigenazione e la aggiorno
-		CheckOxygenationSpeed(LastOxygenationSpeed);
+		//CheckOxygenationSpeed(LastOxygenationSpeed);
 	}
 }
 
@@ -3188,7 +3188,7 @@ static void computeMachineStateGuardTreatment(void)
 		if(GetTherapyType() == KidneyTreat)
 		{
 			// controllo se e' cambiata la velocita' della pompa di ossigenazione e la aggiorno
-			CheckOxygenationSpeed(LastOxygenationSpeed);
+			//CheckOxygenationSpeed(LastOxygenationSpeed);
 		}
 	}
 
