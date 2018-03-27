@@ -360,9 +360,16 @@ struct machineParent stateParentTreatKidney1[] =
 		{STATE_NULL, PARENT_TREAT_KIDNEY_1_ALM_AIR_REC,  CHILD_IDLE, ACTION_ALWAYS,   &stateChildAlarmTreat1[1], &manageParentTreatAirAlmRecAlways}, /* 14 */
 
 		/* treatment end */
-		{STATE_NULL, PARENT_TREAT_KIDNEY_1_END,          CHILD_IDLE, ACTION_ON_ENTRY, &stateChildIdle[0],        &manageParentTreatEntry},			/* 15 */
-		{STATE_NULL, PARENT_TREAT_KIDNEY_1_END,          CHILD_IDLE, ACTION_ALWAYS,   &stateChildIdle[0],        &manageParentTreatAlways},		    /* 16 */
+		{STATE_NULL, PARENT_TREAT_KIDNEY_1_END,          CHILD_IDLE, ACTION_ON_ENTRY, &stateChildIdle[0],        &manageParentTreatEntry},			 /* 15 */
+		{STATE_NULL, PARENT_TREAT_KIDNEY_1_END,          CHILD_IDLE, ACTION_ALWAYS,   &stateChildIdle[0],        &manageParentTreatAlways},		     /* 16 */
 
+		/* stop treatment ricevuto nella fase PARENT_TREAT_KIDNEY_1_INIT*/
+		{STATE_NULL, PARENT_TREAT_WAIT_START,            CHILD_IDLE, ACTION_ON_ENTRY, &stateChildIdle[0],        &manageNull},		                 /* 17 */
+		{STATE_NULL, PARENT_TREAT_WAIT_START,            CHILD_IDLE, ACTION_ALWAYS,   &stateChildIdle[0],        &manageParentTreatAlways},		     /* 18 */
+
+		/* stop treatment ricevuto nella fase PARENT_TREAT_KIDNEY_1_PUMP_ON*/
+		{STATE_NULL, PARENT_TREAT_WAIT_PAUSE,           CHILD_IDLE, ACTION_ON_ENTRY, &stateChildIdle[0],         &manageNull},			             /* 19 */
+		{STATE_NULL, PARENT_TREAT_WAIT_PAUSE,           CHILD_IDLE, ACTION_ALWAYS,   &stateChildIdle[0],         &manageParentTreatAlways},		     /* 20 */
 		{}
 };
 
@@ -434,21 +441,26 @@ struct machineState stateState[] =
 		{STATE_PRIMING_PH_2,       PARENT_NULL, CHILD_NULL, ACTION_ON_ENTRY,                &stateParentPrimingTreatKidney1[3], &managePrimingPh2},				/* 15 */
 		{STATE_PRIMING_PH_2,       PARENT_NULL, CHILD_NULL, ACTION_ALWAYS,                  &stateParentPrimingTreatKidney1[3], &managePrimingPh2Always},		/* 16 */
 
-		{STATE_TREATMENT_KIDNEY_1, PARENT_NULL, CHILD_NULL, ACTION_ON_ENTRY,                &stateParentTreatKidney1[1],        &manageStateTreatKidney1},		/* 17 */
-		{STATE_TREATMENT_KIDNEY_1, PARENT_NULL, CHILD_NULL, ACTION_ALWAYS,                  &stateParentTreatKidney1[1],        &manageStateTreatKidney1Always},/* 18 */
+		// stato di trattamento kidney o liver
+		{STATE_TREATMENT_KIDNEY_1, PARENT_NULL, CHILD_NULL, ACTION_ON_ENTRY,                &stateParentTreatKidney1[17]/*[1]*/, &manageStateTreatKidney1},		/* 17 */
+		{STATE_TREATMENT_KIDNEY_1, PARENT_NULL, CHILD_NULL, ACTION_ALWAYS,                  &stateParentTreatKidney1[17]/*[1]*/, &manageStateTreatKidney1Always},/* 18 */
 
+		// stato di svuotamento del disposable
 		{STATE_EMPTY_DISPOSABLE,   PARENT_NULL, CHILD_NULL, ACTION_ON_ENTRY,                &stateParentEmptyDisp[1],           &manageStateEmptyDisp},			/* 19 */
 		{STATE_EMPTY_DISPOSABLE,   PARENT_NULL, CHILD_NULL, ACTION_ALWAYS,                  &stateParentEmptyDisp[1],           &manageStateEmptyDispAlways},	/* 20 */
 
+		// stato di attesa del tasto priming end, abbandona o di un nuovo volumr per continuare il priming
 		{STATE_PRIMING_WAIT,       PARENT_NULL, CHILD_NULL, ACTION_ON_ENTRY,                &stateParentNull[0],                &manageStatePrimingWait},		/* 21 */
 		{STATE_PRIMING_WAIT,       PARENT_NULL, CHILD_NULL, ACTION_ALWAYS,                  &stateParentNull[0],                &manageStatePrimingWaitAlways},	/* 22 */
 
 		{STATE_PRIMING_RICIRCOLO,  PARENT_NULL, CHILD_NULL, ACTION_ON_ENTRY,                &stateParentPrimingTreatKidney1[3], &manageStatePrimingRicircolo},		 /* 23 */
 		{STATE_PRIMING_RICIRCOLO,  PARENT_NULL, CHILD_NULL, ACTION_ALWAYS,                  &stateParentPrimingTreatKidney1[3], &manageStatePrimingRicircoloAlways}, /* 24 */
 
+		// Questo stato non viene usato per ora
 		{STATE_WAIT_TREATMENT,     PARENT_NULL, CHILD_NULL, ACTION_ON_ENTRY,                &stateParentNull[0],                &manageStateWaitTreatment},			 /* 25 */
 		{STATE_WAIT_TREATMENT,     PARENT_NULL, CHILD_NULL, ACTION_ALWAYS,                  &stateParentNull[0],                &manageStateWaitTreatmentAlways},	 /* 26 */
 
+		// stato di smontaggio del disposable
 		{STATE_UNMOUNT_DISPOSABLE, PARENT_NULL, CHILD_NULL, ACTION_ON_ENTRY,                &stateParentNull[0],                &manageStateUnmountDisposableEntry},  /* 27 */
 		{STATE_UNMOUNT_DISPOSABLE, PARENT_NULL, CHILD_NULL, ACTION_ALWAYS,                  &stateParentNull[0],                &manageStateUnmountDisposableAlways}, /* 28 */
 
@@ -486,6 +498,7 @@ struct machineState stateState[] =
 		 {STATE_FATAL_ERROR,        PARENT_NULL, CHILD_NULL, ACTION_NULL,     &stateParentNull[0], &manageStateFatalError},                                           /* 37 */
 		 {STATE_FATAL_ERROR,        PARENT_NULL, CHILD_NULL, ACTION_NULL,     &stateParentNull[0], &manageStateFatalErrorAlways},                                     /* 38 */
 
+		 // stato di attesa caricamento del filtro
 		 {STATE_PRIMING_PH_1_WAIT,  PARENT_NULL, CHILD_NULL, ACTION_ON_ENTRY, &stateParentNull[0], &manageStatePriming_1_WaitEntry},			                      /* 39 */
 		 {STATE_PRIMING_PH_1_WAIT,  PARENT_NULL, CHILD_NULL, ACTION_ALWAYS,   &stateParentNull[0], &manageStatePriming_1_WaitAlways},		                          /* 40 */
 		 {}

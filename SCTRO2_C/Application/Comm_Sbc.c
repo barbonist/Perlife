@@ -944,8 +944,8 @@ void buildRDMachineStateResponseMsg(char code, char subcode)
 	sbc_tx_data[index++] = (PR_ADS_FLT_mmHg_Filtered) & 0xFF;
 	/* sensors parameters: pressure arterial */
 
-	sbc_tx_data[index++] = (PR_ART_Sistolyc_mmHg >> 8) & 0xFF;
-	sbc_tx_data[index++] = (PR_ART_Sistolyc_mmHg) & 0xFF;
+	sbc_tx_data[index++] = (PR_ART_mmHg_Filtered >> 8) & 0xFF;  // PR_ART_Sistolyc_mmHg
+	sbc_tx_data[index++] = (PR_ART_mmHg_Filtered) & 0xFF;       // PR_ART_Sistolyc_mmHg
 	/* sensors parameters: pressure venous */
 
 	sbc_tx_data[index++] = (MedForVenousPid >> 8) & 0xFF;

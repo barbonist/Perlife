@@ -541,9 +541,12 @@ void setPumpSpeedValueHighLevel(unsigned char slaveAddr, int speedValue){
 		return;
 	}
 
+	// QUESTO CONTROLLO E' STATO COMMENTATO PERCHE' LA VELOCITA' LETTA DA modbusData VARIA MOLTO
+	// PIU' LENTAMENTE DI newSpeedValue. LA VELOCITA' VIENE IMPOSTATA SOLO A TIME SLOT FISSI, QUINDI,
+	// SI PUO' MODIFICARE IL TARGET PIU' VOLTE.
 	/*se la velocità che mi da lo slave è uguale a quella che vorrei impostare non attuo il comando*/
-	if (pumpPerist[StructId].newSpeedValue == modbusData[slaveAddr-2][17])
-		return;
+	//if (pumpPerist[StructId].newSpeedValue == modbusData[slaveAddr-2][17] && pumpPerist[StructId].newSpeedValue != 0)
+	//	return;
 
 	if(speedValue == 0)
 	{

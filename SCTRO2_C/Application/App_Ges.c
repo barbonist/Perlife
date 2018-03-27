@@ -1619,40 +1619,6 @@ void manageParentPrimingAlways(void){
 				}
 
 			}
-//			Questo non serve tanto non ci passa mai perche' nello stato STATE_PRIMING_WAIT non viene impostata la ManageParentPrimingAlways
-//			else if(ptrCurrentState->state == STATE_PRIMING_WAIT &&
-//					GetTotalPrimingVolumePerf() > perfusionParam.priVolPerfArt)
-//			{
-//				// devo ritornare nello stato di priming_ph2 perche' devo aggiungere altro liquido
-//				currentGuard[GUARD_ENABLE_PRIMING_PHASE_2].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
-//			}
-
-
-			/*if(
-				(buttonGUITreatment[BUTTON_START_PRIMING].state == GUI_BUTTON_PRESSED) ||
-				(buttonGUITreatment[BUTTON_START_PERF_PUMP].state == GUI_BUTTON_PRESSED)
-				)
-			{
-				releaseGUIButton(BUTTON_START_PRIMING);
-				releaseGUIButton(BUTTON_START_PERF_PUMP);
-
-				if(iflag_perf == 0)
-				{
-					setPumpSpeedValue(pumpPerist[0].pmpMySlaveAddress, 4000);
-					iflag_perf = 1;
-				}
-			}
-			else if(
-					(buttonGUITreatment[BUTTON_STOP_ALL_PUMP].state == GUI_BUTTON_PRESSED) ||
-					(buttonGUITreatment[BUTTON_STOP_PERF_PUMP].state == GUI_BUTTON_PRESSED)
-					)
-			{
-				releaseGUIButton(BUTTON_STOP_ALL_PUMP);
-				releaseGUIButton(BUTTON_STOP_PERF_PUMP;
-
-				setPumpSpeedValue(pumpPerist[0].pmpMySlaveAddress, 0);
-				iflag_perf = 0;
-			}*/
 
 		if((timerCounterModBus%9) == 8)
 			{
@@ -1947,6 +1913,8 @@ void manageParentTreatAlways(void){
 			StartPrimingTime = 0;
 			//GlobalFlags.FlagsDef.EnableAllAlarms = 0;
 			DisableAllAlarm();
+			currentGuard[GUARD_ENT_PAUSE_STATE_TREAT_KIDNEY_1_INIT].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+			DebugStringStr("Stop 1");
 		}
 		else if(buttonGUITreatment[BUTTON_STOP_PERF_PUMP].state == GUI_BUTTON_RELEASED)
 		{
@@ -2153,6 +2121,8 @@ void manageParentTreatAlways(void){
 				StartTreatmentTime = 0;
 				//GlobalFlags.FlagsDef.EnableAllAlarms = 0;
 				DisableAllAlarm();
+				currentGuard[GUARD_ENT_PAUSE_STATE_KIDNEY_1_PUMP_ON].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+				DebugStringStr("Stop 2");
 			}
 			else if(buttonGUITreatment[BUTTON_STOP_PERF_PUMP].state == GUI_BUTTON_RELEASED)
 			{
@@ -2345,6 +2315,64 @@ void manageParentTreatAlways(void){
 			setPumpSpeedValue(pumpPerist[0].pmpMySlaveAddress, 0);
 			break;
 
+		case PARENT_TREAT_WAIT_START:
+		case PARENT_TREAT_WAIT_PAUSE:
+			if(buttonGUITreatment[BUTTON_START_TREATMENT].state == GUI_BUTTON_RELEASED)
+			{
+				// non faccio la release per fare in modo che quando arrivera' nel nuovo stato parta subito
+//				releaseGUIButton(BUTTON_START_TREATMENT);
+//				setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 2000); //pump 0: start value = 20 rpm than pressure loop
+//				//pump 1: start value = 30 rpm than open loop
+//				if((GetTherapyType() == KidneyTreat) && (((PARAMETER_ACTIVE_TYPE)parameterWordSetFromGUI[PAR_SET_OXYGENATOR_ACTIVE].value) == YES) )
+//				{
+//					// sono nel trattamento rene con ossigenatore abilitato ed ho superato una quantita' minima nel reservoir
+//					setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress,
+//											  (int)((float)parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value / OXYG_FLOW_TO_RPM_CONV * 100.0));
+//				}
+//				else if(GetTherapyType() == LiverTreat)
+//				{
+//					// sono nel trattamento fegato, devo impostare la pressione di lavoro del PID sull'ossigenatore.
+//					// Ci pensera' poi il pid a far partire la pompa.
+//					// faccio partire la pompa di depurazione ad una velocita' prestabilita
+//					setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, LIVER_PPAR_SPEED);
+//				}
+//
+//				setPumpPressLoop(0, PRESS_LOOP_ON);
+//				pressSample1_Art = PR_ART_Sistolyc_mmHg_ORG;
+//				pressSample2_Art = PR_ART_Sistolyc_mmHg_ORG;
+//				if(!StartTreatmentTime)
+//				{
+//					// prendo il tempo di start del trattamento solo se il valore vale 0, cioe' sono partito da IDLE
+//					// Qui ci passa anche quando esce dall'allarme
+//					StartTreatmentTime = (unsigned long)timerCounterModBus;
+//				}
+//
+//				// attivo il pid sull'ossigenazione e perfusione venosa solo se sono in fegato
+//				if(GetTherapyType() == LiverTreat)
+//				{
+//					setPumpPressLoop(1, PRESS_LOOP_ON);
+//					pressSample1_Ven = PR_VEN_mmHg_Filtered;
+//					pressSample2_Ven = PR_VEN_mmHg_Filtered;
+//				}
+//				SetAllAlarmEnableFlags();
+//				// disabilito allarme di livello alto in trattamento (per ora)
+//				GlobalFlags.FlagsDef.EnableLevHighAlarm = 0;
+
+				// devo fare il release altrimenti in questo posto ci passa piu' volte
+				releaseGUIButton(BUTTON_START_TREATMENT);
+				if(ptrCurrentParent->parent == PARENT_TREAT_WAIT_START)
+				{
+					currentGuard[GUARD_ENABLE_STATE_TREAT_KIDNEY_1_INIT].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+					DebugStringStr("Start (init)");
+				}
+				else
+				{
+					currentGuard[GUARD_ENABLE_STATE_KIDNEY_1_PUMP_ON].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+					DebugStringStr("Start (run)");
+				}
+			}
+			break;
+
 		default:
 			break;
 		}
@@ -2353,6 +2381,8 @@ void manageParentTreatAlways(void){
 void setPumpPressLoop(unsigned char pmpId, unsigned char valOnOff){
 	pumpPerist[pmpId].pmpPressLoop = valOnOff;
 	PidFirstTime[pmpId] = valOnOff;
+	if(valOnOff == PRESS_LOOP_OFF)
+		pumpPerist[pmpId].actualSpeedOld = 0;
 }
 
 unsigned char getPumpPressLoop(unsigned char pmpId){
@@ -4209,6 +4239,13 @@ void processMachineState(void)
 //					GlobalFlags.FlagsDef.TankLevelHigh = 1;
 //				}
 			}
+			else if(currentGuard[GUARD_ENT_PAUSE_STATE_TREAT_KIDNEY_1_INIT].guardValue == GUARD_VALUE_TRUE)
+			{
+				ptrFutureParent = &stateParentTreatKidney1[17];
+				ptrFutureChild = ptrFutureParent->ptrChild;
+				currentGuard[GUARD_ENT_PAUSE_STATE_TREAT_KIDNEY_1_INIT].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
+				currentGuard[GUARD_ENT_PAUSE_STATE_TREAT_KIDNEY_1_INIT].guardValue = GUARD_VALUE_FALSE;
+			}
 			break;
 
 		case PARENT_TREAT_KIDNEY_1_PUMP_ON:
@@ -4244,6 +4281,14 @@ void processMachineState(void)
 //					GlobalFlags.FlagsDef.TankLevelHigh = 1;
 //				}
 			}
+			else if(currentGuard[GUARD_ENT_PAUSE_STATE_KIDNEY_1_PUMP_ON].guardValue == GUARD_VALUE_TRUE)
+			{
+				ptrFutureParent = &stateParentTreatKidney1[19];
+				ptrFutureChild = ptrFutureParent->ptrChild;
+				currentGuard[GUARD_ENT_PAUSE_STATE_KIDNEY_1_PUMP_ON].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
+				currentGuard[GUARD_ENT_PAUSE_STATE_KIDNEY_1_PUMP_ON].guardValue = GUARD_VALUE_FALSE;
+			}
+
 			break;
 
 		case PARENT_TREAT_KIDNEY_1_ALARM:
@@ -4528,11 +4573,60 @@ void processMachineState(void)
 			break;
 		//---------------------------------------------------------------------------------------------
 
-
 		case PARENT_TREAT_KIDNEY_1_END:
             /* (FM) fine del trattamento  devo rimanere fermo qui, fino a quando non ricevo un nuovo
              comando di inizio trattamento */
 			break;
+
+
+		case PARENT_TREAT_WAIT_START:
+			if(currentGuard[GUARD_ENABLE_STATE_TREAT_KIDNEY_1_INIT].guardValue == GUARD_VALUE_TRUE)
+			{
+				ptrFutureParent = &stateParentTreatKidney1[1];
+				ptrFutureChild = ptrFutureParent->ptrChild;
+				// forzo anche una pressione del tasto TREATMENT START per fare in modo che
+				// il trattamento riprenda automaticamente
+				setGUIButton(BUTTON_START_TREATMENT);
+				currentGuard[GUARD_ENABLE_STATE_TREAT_KIDNEY_1_INIT].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
+				currentGuard[GUARD_ENABLE_STATE_TREAT_KIDNEY_1_INIT].guardValue = GUARD_VALUE_FALSE;
+				break;
+			}
+			if(ptrCurrentParent->action == ACTION_ON_ENTRY)
+			{
+				/* compute future parent */
+				/* FM passo alla gestione ACTION_ALWAYS */
+				ptrFutureParent = &stateParentTreatKidney1[18];
+				ptrFutureChild = ptrFutureParent->ptrChild;
+			}
+			else if(ptrCurrentParent->action == ACTION_ALWAYS)
+			{
+			}
+			break;
+
+		case PARENT_TREAT_WAIT_PAUSE:
+			if(currentGuard[GUARD_ENABLE_STATE_KIDNEY_1_PUMP_ON].guardValue == GUARD_VALUE_TRUE)
+			{
+				ptrFutureParent = &stateParentTreatKidney1[3];
+				ptrFutureChild = ptrFutureParent->ptrChild;
+				// forzo anche una pressione del tasto TREATMENT START per fare in modo che
+				// il trattamento riprenda automaticamente
+				setGUIButton(BUTTON_START_TREATMENT);
+				currentGuard[GUARD_ENABLE_STATE_KIDNEY_1_PUMP_ON].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
+				currentGuard[GUARD_ENABLE_STATE_KIDNEY_1_PUMP_ON].guardValue = GUARD_VALUE_FALSE;
+				break;
+			}
+			if(ptrCurrentParent->action == ACTION_ON_ENTRY)
+			{
+				/* compute future parent */
+				/* FM passo alla gestione ACTION_ALWAYS */
+				ptrFutureParent = &stateParentTreatKidney1[20];
+				ptrFutureChild = ptrFutureParent->ptrChild;
+			}
+			else if(ptrCurrentParent->action == ACTION_ALWAYS)
+			{
+			}
+			break;
+
 
 		default:
 			break;

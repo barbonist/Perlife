@@ -201,6 +201,8 @@ void alwaysPumpPressLoopArt(unsigned char pmpId, unsigned char *PidFirstTime)
     {
     	*PidFirstTime = PRESS_LOOP_OFF;
     	actualSpeed_Art = (float)pumpPerist[pmpId].actualSpeed;
+    	// forzo a 0 il valore old per fare in modo che la prima scrittura venga sempre fatta
+    	pumpPerist[pmpId].actualSpeedOld = 0;
     }
 	Target_PID_ART = parameterWordSetFromGUI[PAR_SET_PRESS_ART_TARGET].value + CalcolaPresArt_with_Flow(0);
 
@@ -1206,6 +1208,8 @@ void alwaysPumpPressLoopVen(unsigned char pmpId, unsigned char *PidFirstTime){
     {
     	*PidFirstTime = PRESS_LOOP_OFF;
     	actualSpeed_Ven = (float)pumpPerist[pmpId].actualSpeed;
+    	// forzo a 0 il valore old per fare in modo che la prima scrittura venga sempre fatta
+    	pumpPerist[pmpId].actualSpeedOld = 0;
     	Target_PID_VEN = parameterWordSetFromGUI[PAR_SET_VENOUS_PRESS_TARGET].value + SET_POINT_PRESSURE_INIT;
     }
 
@@ -1270,7 +1274,7 @@ void alwaysPumpPressLoopVen(unsigned char pmpId, unsigned char *PidFirstTime){
 
 
 	/*aggiorno la velocità se è doiversa dalla precedente*/
-	if(actualSpeed_Ven != pumpPerist[pmpId].actualSpeedOld)
+	if((actualSpeed_Ven != pumpPerist[pmpId].actualSpeedOld) || (pumpPerist[pmpId].actualSpeedOld == 0.0))
 	{
 		setPumpSpeedValueHighLevel(pumpPerist[pmpId].pmpMySlaveAddress, ((int)(actualSpeed_Ven * 100)));
 		pumpPerist[pmpId].actualSpeedOld = actualSpeed_Ven;
