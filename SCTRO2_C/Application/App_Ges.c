@@ -5154,7 +5154,7 @@ CHECK_PUMP_STOP_STATE CheckPumpStopTask(CHECK_PUMP_STOP_CMD cmd)
 			PompeInMovimento = 0;
 			if(GetTherapyType() == KidneyTreat)
 			{
-				for(int i = 0; i < 3; i++)
+				for(int i = 0; i <= 3; i++)
 				{
 					if(i == 1)
 						continue;
@@ -5176,7 +5176,7 @@ CHECK_PUMP_STOP_STATE CheckPumpStopTask(CHECK_PUMP_STOP_CMD cmd)
 			}
 			else if((GetTherapyType() == LiverTreat))
 			{
-				for(int i = 0; i < 3; i++)
+				for(int i = 0; i <= 3; i++)
 				{
 					if(modbusData[i][17] != 0)
 					{
