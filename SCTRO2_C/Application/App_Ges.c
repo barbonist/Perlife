@@ -1913,6 +1913,9 @@ void manageParentTreatAlways(void){
 			StartPrimingTime = 0;
 			//GlobalFlags.FlagsDef.EnableAllAlarms = 0;
 			DisableAllAlarm();
+
+			// resetto la macchina a stati che controlla se le pompe sono effettivamente ferme
+			CheckPumpStopTask((CHECK_PUMP_STOP_CMD)INIT_CHECK_SEQ_CMD);
 			currentGuard[GUARD_ENT_PAUSE_STATE_TREAT_KIDNEY_1_INIT].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
 			DebugStringStr("Stop 1");
 		}
@@ -2121,6 +2124,9 @@ void manageParentTreatAlways(void){
 				StartTreatmentTime = 0;
 				//GlobalFlags.FlagsDef.EnableAllAlarms = 0;
 				DisableAllAlarm();
+
+				// resetto la macchina a stati che controlla se le pompe sono effettivamente ferme
+				CheckPumpStopTask((CHECK_PUMP_STOP_CMD)INIT_CHECK_SEQ_CMD);
 				currentGuard[GUARD_ENT_PAUSE_STATE_KIDNEY_1_PUMP_ON].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
 				DebugStringStr("Stop 2");
 			}
@@ -2319,45 +2325,6 @@ void manageParentTreatAlways(void){
 		case PARENT_TREAT_WAIT_PAUSE:
 			if(buttonGUITreatment[BUTTON_START_TREATMENT].state == GUI_BUTTON_RELEASED)
 			{
-				// non faccio la release per fare in modo che quando arrivera' nel nuovo stato parta subito
-//				releaseGUIButton(BUTTON_START_TREATMENT);
-//				setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 2000); //pump 0: start value = 20 rpm than pressure loop
-//				//pump 1: start value = 30 rpm than open loop
-//				if((GetTherapyType() == KidneyTreat) && (((PARAMETER_ACTIVE_TYPE)parameterWordSetFromGUI[PAR_SET_OXYGENATOR_ACTIVE].value) == YES) )
-//				{
-//					// sono nel trattamento rene con ossigenatore abilitato ed ho superato una quantita' minima nel reservoir
-//					setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress,
-//											  (int)((float)parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value / OXYG_FLOW_TO_RPM_CONV * 100.0));
-//				}
-//				else if(GetTherapyType() == LiverTreat)
-//				{
-//					// sono nel trattamento fegato, devo impostare la pressione di lavoro del PID sull'ossigenatore.
-//					// Ci pensera' poi il pid a far partire la pompa.
-//					// faccio partire la pompa di depurazione ad una velocita' prestabilita
-//					setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, LIVER_PPAR_SPEED);
-//				}
-//
-//				setPumpPressLoop(0, PRESS_LOOP_ON);
-//				pressSample1_Art = PR_ART_Sistolyc_mmHg_ORG;
-//				pressSample2_Art = PR_ART_Sistolyc_mmHg_ORG;
-//				if(!StartTreatmentTime)
-//				{
-//					// prendo il tempo di start del trattamento solo se il valore vale 0, cioe' sono partito da IDLE
-//					// Qui ci passa anche quando esce dall'allarme
-//					StartTreatmentTime = (unsigned long)timerCounterModBus;
-//				}
-//
-//				// attivo il pid sull'ossigenazione e perfusione venosa solo se sono in fegato
-//				if(GetTherapyType() == LiverTreat)
-//				{
-//					setPumpPressLoop(1, PRESS_LOOP_ON);
-//					pressSample1_Ven = PR_VEN_mmHg_Filtered;
-//					pressSample2_Ven = PR_VEN_mmHg_Filtered;
-//				}
-//				SetAllAlarmEnableFlags();
-//				// disabilito allarme di livello alto in trattamento (per ora)
-//				GlobalFlags.FlagsDef.EnableLevHighAlarm = 0;
-
 				// devo fare il release altrimenti in questo posto ci passa piu' volte
 				releaseGUIButton(BUTTON_START_TREATMENT);
 				if(ptrCurrentParent->parent == PARENT_TREAT_WAIT_START)
@@ -2371,6 +2338,14 @@ void manageParentTreatAlways(void){
 					DebugStringStr("Start (run)");
 				}
 			}
+			else if(buttonGUITreatment[BUTTON_STOP_TREATMENT].state == GUI_BUTTON_RELEASED)
+			{
+				// se mi arriva uno stop in questo stato lo butto via altrimenti mi rimane memorizzato
+				// per quando ritornero' in run
+				releaseGUIButton(BUTTON_STOP_TREATMENT);
+			}
+
+			CheckPumpStopTask((CHECK_PUMP_STOP_CMD)NO_CHECK_PUMP_STOP_CMD);
 			break;
 
 		default:
@@ -3131,17 +3106,6 @@ static void computeMachineStateGuardTreatment(void)
 	// tempo trascorso di trattamento in sec
 	if(StartTreatmentTime)
 		TreatDuration = msTick_elapsed(StartTreatmentTime) * 50L / 1000;
-
-	// DA INSERIRE QUANDO VOGLIO USCIRE ED ANDARE ALLO SVUOTAMENTO
-//	if((buttonGUITreatment[BUTTON_STOP_ALL_PUMP].state == GUI_BUTTON_RELEASED) &&
-//	   (buttonGUITreatment[BUTTON_CONFIRM].state == GUI_BUTTON_RELEASED))
-//	{
-//		// passo allo svuotamento del circuito
-//		currentGuard[GUARD_ENABLE_DISPOSABLE_EMPTY].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
-//		releaseGUIButton(BUTTON_STOP_ALL_PUMP);
-//		releaseGUIButton(BUTTON_CONFIRM);
-//	}
-//	else
 
 	unsigned long ival = (unsigned long)(parameterWordSetFromGUI[PAR_SET_DESIRED_DURATION].value >> 8);
 	unsigned long isec;
@@ -5119,5 +5083,144 @@ void LiquidTempContrTask(LIQUID_TEMP_CONTR_CMD LiqTempContrCmd)
 			}
 			break;
 	}
+}
+
+
+
+bool IsPumpStopAlarmActive(void)
+{
+	CHECK_PUMP_STOP_STATE st;
+	st = CheckPumpStopTask((CHECK_PUMP_STOP_CMD)NO_CHECK_PUMP_STOP_CMD);
+	if(st == PUMP_WRITE_ALARM)
+		return TRUE;
+	else
+		return FALSE;
+}
+
+void ClearPumpStopAlarm(void)
+{
+	CheckPumpStopTask((CHECK_PUMP_STOP_CMD)RESET_ALARM);
+}
+
+
+// cmd comando per eventuare riposizionamento della macchina a stati
+CHECK_PUMP_STOP_STATE CheckPumpStopTask(CHECK_PUMP_STOP_CMD cmd)
+{
+	static unsigned long RicircTimeout;
+	static CHECK_PUMP_STOP_STATE CheckPumpStopTaskMach = CHECK_PUMP_STOP_IDLE;
+	static int Delay = 0;
+	static int CheckPumpStopCnt = 0;
+	char PompeInMovimento = 0;
+
+	if(cmd == INIT_CHECK_SEQ_CMD)
+	{
+		CheckPumpStopTaskMach = WAIT_FOR_NEW_READ;
+		Delay = 0;
+		CheckPumpStopCnt = 0;
+		return CheckPumpStopTaskMach;
+	}
+	else if(cmd == RESET_ALARM)
+	{
+		// lo metto in uno stato di inattivita'
+		CheckPumpStopTaskMach = CHECK_PUMP_STOP_IDLE;
+		return CheckPumpStopTaskMach;
+	}
+
+
+	if(!((ptrCurrentState->state == STATE_TREATMENT_KIDNEY_1) &&
+	    ((ptrCurrentParent->parent == PARENT_TREAT_WAIT_START) || (ptrCurrentParent->parent == PARENT_TREAT_WAIT_PAUSE))))
+	{
+		// se il task viene chiamato in uno stato non corretto
+		return CheckPumpStopTaskMach;
+	}
+
+	switch (CheckPumpStopTaskMach)
+	{
+		case CHECK_PUMP_STOP_IDLE:
+			break;
+
+		case WAIT_FOR_NEW_READ:
+			// in questo stato ci va all'inizio del priming ed in attesa di iniziare la fase di ricircolo
+			Delay++;
+			if(Delay > 30)
+			{
+				// aspetto 1.5 secondi poi vado a controllare le velocita' delle pompe
+				CheckPumpStopTaskMach = READ_PUMP_SPEED;
+				Delay = 0;
+			}
+			break;
+
+		case READ_PUMP_SPEED:
+			PompeInMovimento = 0;
+			if(GetTherapyType() == KidneyTreat)
+			{
+				for(int i = 0; i < 3; i++)
+				{
+					if(i == 1)
+						continue;
+					if(modbusData[i][17] != 0)
+					{
+						// la pompa non e' ferma
+						PompeInMovimento = 1;
+						break;
+					}
+				}
+
+				if(PompeInMovimento)
+				{
+					setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, (int)0);
+					setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, (int)0);
+					//setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, (int)0);
+					CheckPumpStopCnt++;
+				}
+			}
+			else if((GetTherapyType() == LiverTreat))
+			{
+				for(int i = 0; i < 3; i++)
+				{
+					if(modbusData[i][17] != 0)
+					{
+						// la pompa non e' ferma
+						PompeInMovimento = 1;
+						break;
+					}
+				}
+
+				if(PompeInMovimento)
+				{
+					setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, (int)0);
+					setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, (int)0);
+					setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, (int)0);
+					CheckPumpStopCnt++;
+				}
+			}
+			if(PompeInMovimento)
+			{
+				if(CheckPumpStopCnt >= 3)
+				{
+					// ho superato il numero massimo di tentativi senza successo, devo generare un allarme
+					CheckPumpStopTaskMach = PUMP_WRITE_ALARM;
+				}
+				else
+				{
+					CheckPumpStopTaskMach = WAIT_FOR_NEW_READ;
+					Delay = 0;
+				}
+			}
+			else
+			{
+				CheckPumpStopTaskMach = WAIT_FOR_NEW_READ;
+				Delay = 0;
+				CheckPumpStopCnt = 0;
+			}
+			break;
+
+		case PUMP_WRITE_ALARM:
+			break;
+
+		case END_PROCESS:
+			break;
+	}
+	return CheckPumpStopTaskMach;
 }
 

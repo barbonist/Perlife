@@ -1646,5 +1646,26 @@ typedef enum
 	WAIT_FOR_NEW_TARGET_T
 }LIQUID_TEMP_CONTR_CMD;
 
+
+//-------------------------------------------------------------------------------
+// usati nella funzione CheckPumpStopTask per il controllo delle pompe ferme
+typedef enum
+{
+	CHECK_PUMP_STOP_IDLE,
+	WAIT_FOR_NEW_READ,
+	READ_PUMP_SPEED,
+	PUMP_WRITE_ALARM,
+	END_PROCESS
+}CHECK_PUMP_STOP_STATE;
+
+typedef enum
+{
+	NO_CHECK_PUMP_STOP_CMD,
+	INIT_CHECK_SEQ_CMD,               // restart check sequence
+	RESET_ALARM
+}CHECK_PUMP_STOP_CMD;
+//-------------------------------------------------------------------------------
+
+
 #endif /* SOURCES_GLOBAL_H_ */
 

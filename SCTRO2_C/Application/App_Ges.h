@@ -222,5 +222,8 @@ unsigned char TemperatureStateMach(int cmd);
 void CheckTemperatureSet(void);
 
 void LiquidTempContrTask(LIQUID_TEMP_CONTR_CMD LiqTempContrCmd);
+bool IsPumpStopAlarmActive(void);
+void ClearPumpStopAlarm(void);
+CHECK_PUMP_STOP_STATE CheckPumpStopTask(CHECK_PUMP_STOP_CMD cmd);
 
 #endif /* APPLICATION_APP_GES_H_ */
