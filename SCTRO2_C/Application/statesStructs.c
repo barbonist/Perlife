@@ -328,6 +328,10 @@ struct machineParent stateParentPrimingTreatKidney1[] =
 		{STATE_NULL, PARENT_PRIMING_TREAT_KIDNEY_1_END,   CHILD_IDLE, ACTION_ON_ENTRY, &stateChildIdle[0],         &manageParentPrimingEntry},	      /* 7 */
 		{STATE_NULL, PARENT_PRIMING_TREAT_KIDNEY_1_END,   CHILD_IDLE, ACTION_ALWAYS,   &stateChildIdle[0],         &manageParentPrimingAlways},		  /* 8 */
 
+		/* stato di pausa del priming attivato partendo da PARENT_PRIMING_TREAT_KIDNEY_1_RUN mediante pressione del tasto priming stop */
+		{STATE_NULL, PARENT_PRIM_WAIT_PAUSE,              CHILD_IDLE, ACTION_ON_ENTRY, &stateChildIdle[0],         &manageNull},	                 /* 9 */
+		{STATE_NULL, PARENT_PRIM_WAIT_PAUSE,              CHILD_IDLE, ACTION_ALWAYS,   &stateChildIdle[0],         &manageParentPrimingAlways},      /* 10 */
+
 		{}
 };
 
@@ -360,8 +364,8 @@ struct machineParent stateParentTreatKidney1[] =
 		{STATE_NULL, PARENT_TREAT_KIDNEY_1_ALM_AIR_REC,  CHILD_IDLE, ACTION_ALWAYS,   &stateChildAlarmTreat1[1], &manageParentTreatAirAlmRecAlways}, /* 14 */
 
 		/* treatment end */
-		{STATE_NULL, PARENT_TREAT_KIDNEY_1_END,          CHILD_IDLE, ACTION_ON_ENTRY, &stateChildIdle[0],        &manageParentTreatEntry},			 /* 15 */
-		{STATE_NULL, PARENT_TREAT_KIDNEY_1_END,          CHILD_IDLE, ACTION_ALWAYS,   &stateChildIdle[0],        &manageParentTreatAlways},		     /* 16 */
+		{STATE_NULL, PARENT_TREAT_KIDNEY_1_END,          CHILD_IDLE, ACTION_ON_ENTRY, &stateChildIdle[0],        &manageParentTreatEndEntry},		 /* 15 */
+		{STATE_NULL, PARENT_TREAT_KIDNEY_1_END,          CHILD_IDLE, ACTION_ALWAYS,   &stateChildIdle[0],        &manageParentTreatEndAlways},	     /* 16 */
 
 		/* stop treatment ricevuto nella fase PARENT_TREAT_KIDNEY_1_INIT*/
 		{STATE_NULL, PARENT_TREAT_WAIT_START,            CHILD_IDLE, ACTION_ON_ENTRY, &stateChildIdle[0],        &manageNull},		                 /* 17 */

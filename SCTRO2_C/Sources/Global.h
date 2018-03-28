@@ -414,6 +414,10 @@ enum Parent {
 	PARENT_1,
 	PARENT_2,
 	PARENT_3,
+	// Questo stato viene usato per codificare lo stato di pausa del priming (attivato
+	// mediante il tasto BUTTON_STOP_PRIMING) quando gli stati della macchina sono del
+	// gruppo PARENT_PRIMING_TREAT_KIDNEY_1....
+	PARENT_PRIM_WAIT_PAUSE,
 	PARENT_END_NUMBER,
 };
 
@@ -510,6 +514,8 @@ enum MachineStateGuardId {
 	GUARD_ENABLE_UNMOUNT_END,
 	GUARD_ENABLE_STATE_PRIMING_PH_1_WAIT,
 	GUARD_FILTER_INSTALLED,
+	GUARD_ENT_PAUSE_STATE_PRIM_KIDNEY_1,
+	GUARD_ENABLE_STATE_KIDNEY_1_PRIM_RUN,
 	/*********************/
 	/* STATE LEVEL GUARD */
 	/*********************/
@@ -1031,6 +1037,7 @@ enum buttonGUIEnum{
 	BUTTON_STOP_ALL_PUMP = 0xB9,
 	BUTTON_START_TREATMENT = 0xBA, // viene dato alla fine del ricircolo per far partire il trattamento
 	BUTTON_STOP_TREATMENT = 0xBB,  // ferma le pompe e ferma il conteggio del trattamento
+	BUTTON_END_TREATMENT = 0xBC,
 
 	BUTTON_EN_PERFUSION = 0xC1,
 	BUTTON_EN_OXYGENATION = 0xC2,
@@ -1052,9 +1059,10 @@ enum buttonGUIEnum{
 	BUTTON_SILENT_ALARM = 0xE2,
 
 	BUTTON_START_EMPTY_DISPOSABLE = 0xF0,    // comando per inizio svuotamento
-	BUTTON_UNMOUNT_END = 0xF1,               // comando per fine smontaggio, posso tornare in idle
+	BUTTON_STOP_EMPTY_DISPOSABLE = 0xF1,     // ferma il processo di svuotamento
+	BUTTON_UNMOUNT_END = 0xF2,               // comando per fine smontaggio, posso tornare in idle
 
-	BUTTON_END_NUMBER = 37
+	BUTTON_END_NUMBER = 39
 };
 
 struct buttonGUI{

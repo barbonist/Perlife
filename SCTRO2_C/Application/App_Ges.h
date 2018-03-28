@@ -167,6 +167,10 @@ void manageParentTreatSFAAlways(void);
 void manageParentTreatAirAlmRecEntry(void);
 void manageParentTreatAirAlmRecAlways(void);
 
+void manageParentTreatEndEntry(void);
+void manageParentTreatEndAlways(void);
+
+
 
 /**************************************************************************************/
 /******-----------------------------TREATMENT----------------------------------********/

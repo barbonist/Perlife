@@ -890,14 +890,14 @@ void buildRDMachineStateResponseMsg(char code, char subcode)
 	sbc_tx_data[index++] = code;
 	/* command id */
 	sbc_tx_data[index++] = subcode;
-	/* TODO what is the meaning of this byte? */
+	/* what is the meaning of this byte? */
 	sbc_tx_data[index++] = 0x66;
 
 	/* STATUS PARAMETERS */
-	/* TODO status parameters: life  */
+	/* status parameters: life  */
 	sbc_tx_data[index++] = (life >> 8) & 0xFF;
 	sbc_tx_data[index++] = life & 0xFF;
-	/* TODO status parameters: rev fw-H
+	/* status parameters: rev fw-H
 	 * potrei usare questa come versione FW
 	 * della CON usando 5 bit per il primo numero
 	 * 5 bit per il seocndo numero e 6 bit per il

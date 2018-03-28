@@ -219,6 +219,8 @@ void manageStateIdle(void)
 {
 	// inizializzo a 0 il numero di parametri ricevuti durante la fase di montaggio
 	CallInIdleState();
+	// inzializzo il task di controllo della velocita' delle pompe a 0
+	CheckPumpStopTask((CHECK_PUMP_STOP_CMD)INIT_CHECK_SEQ_CMD);
 
 	releaseGUIButton(BUTTON_CONFIRM);
 }
@@ -226,6 +228,7 @@ void manageStateIdle(void)
 void manageStateIdleAlways(void)
 {
 	computeMachineStateGuardIdle();
+	CheckPumpStopTask((CHECK_PUMP_STOP_CMD)NO_CHECK_PUMP_STOP_CMD);
 }
 
 /*-----------------------------------------------------------*/
@@ -637,26 +640,33 @@ void manageStateWaitTreatment(void){
 
 void manageStateWaitTreatmentAlways(void)
 {
-	// aspetto che mi arrivi il comando per passare in trattamento oppure abbandono
-	if(buttonGUITreatment[BUTTON_PRIMING_ABANDON].state == GUI_BUTTON_RELEASED)
-	{
-		releaseGUIButton(BUTTON_PRIMING_ABANDON);
-		setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
-		setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 0);
-		if(GetTherapyType() == LiverTreat)
-		{
-			// se sono nel trattamento fegato fermo anche l'altro motore !!
-			setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, 0);
-		}
-		currentGuard[GUARD_ABANDON_PRIMING].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
-	}
-//	else if(buttonGUITreatment[BUTTON_START_TREATMENT].state == GUI_BUTTON_RELEASED)
+//	// aspetto che mi arrivi il comando per passare in trattamento oppure abbandono
+//	if(buttonGUITreatment[BUTTON_PRIMING_ABANDON].state == GUI_BUTTON_RELEASED)
 //	{
-//		// e' arrivato il comando di partenza del trattamento uso BUTTON_START_PRIMING
-//		// perche' mi fa partire subito le pompe
-//		releaseGUIButton(BUTTON_START_TREATMENT);
-//		currentGuard[GUARD_ENABLE_TREATMENT_KIDNEY_1].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+//		releaseGUIButton(BUTTON_PRIMING_ABANDON);
+//		setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
+//		setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 0);
+//		if(GetTherapyType() == LiverTreat)
+//		{
+//			// se sono nel trattamento fegato fermo anche l'altro motore !!
+//			setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, 0);
+//		}
+//		currentGuard[GUARD_ABANDON_PRIMING].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
 //	}
+
+	if(buttonGUITreatment[BUTTON_START_TREATMENT].state == GUI_BUTTON_RELEASED)
+	{
+		// prendo BUTTON_START_TREATMENT per ricominciare un nuovo trattamento
+		releaseGUIButton(BUTTON_START_TREATMENT);
+		currentGuard[GUARD_ENABLE_TREATMENT_KIDNEY_1].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+	}
+	else if(buttonGUITreatment[BUTTON_END_TREATMENT].state == GUI_BUTTON_RELEASED)
+	{
+		// prendo BUTTON_END_TREATMENT per andare in empty disposable
+		releaseGUIButton(BUTTON_STOP_TREATMENT);
+		currentGuard[GUARD_ENABLE_DISPOSABLE_EMPTY].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+	}
+
 }
 
 
@@ -1533,6 +1543,9 @@ void manageParentPrimingAlways(void){
 				PrimingDuration = 0;
 				// faccio in modo che il conteggio riprenda al prossimo button_start_priming
 				StartPrimingTime = 0;
+
+				currentGuard[GUARD_ENT_PAUSE_STATE_PRIM_KIDNEY_1].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+				DebugStringStr("Stop prim.");
 			}
 #ifdef DEBUG_WITH_SERVICE_SBC
 			else if((ptrCurrentState->state == STATE_PRIMING_PH_1) &&
@@ -1683,11 +1696,29 @@ void manageParentPrimingAlways(void){
 		setPumpSpeedValue(pumpPerist[0].pmpMySlaveAddress, 0);
 		break;
 
+	case PARENT_PRIM_WAIT_PAUSE:
+		if(buttonGUITreatment[BUTTON_START_PRIMING].state == GUI_BUTTON_RELEASED)
+		{
+			// devo fare il release altrimenti in questo posto ci passa piu' volte
+			releaseGUIButton(BUTTON_START_PRIMING);
+			currentGuard[GUARD_ENABLE_STATE_KIDNEY_1_PRIM_RUN].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+			DebugStringStr("Start (prim)");
+		}
+		else if(buttonGUITreatment[BUTTON_STOP_PRIMING].state == GUI_BUTTON_RELEASED)
+		{
+			// se mi arriva uno stop in questo stato lo butto via altrimenti mi rimane memorizzato
+			// per quando ritornero' in run
+			releaseGUIButton(BUTTON_STOP_PRIMING);
+		}
+		CheckPumpStopTask((CHECK_PUMP_STOP_CMD)NO_CHECK_PUMP_STOP_CMD);
+		break;
 	default:
 		break;
 	}
 
 }
+
+
 
 void manageParentPrimingAlarmEntry(void)
 {
@@ -2436,15 +2467,15 @@ void CalcVolumeDischarged(void)
 //        BUTTON_START_EMPTY_DISPOSABLE per partire o ripartire con lo scaricamento
 //        BUTTON_START_TREATMENT        per tornare al trattamento
 //        BUTTON_PRIMING_ABANDON        per abbandonare lo stato ed andare in idle
-//        BUTTON_STOP_ALL_PUMP          per fermare momentaneamente tutte le pompe
+//        BUTTON_STOP_EMPTY_DISPOSABLE  per fermare momentaneamente tutte le pompe
 void EmptyDispStateMach(void)
 {
 	THERAPY_TYPE TherType = GetTherapyType();
 	int StarEmptyDispButId;
 	int StopAllPumpButId;
 
-	StarEmptyDispButId = BUTTON_START_OXYGEN_PUMP;    // BUTTON_START_EMPTY_DISPOSABLE;
-	StopAllPumpButId = BUTTON_STOP_OXYGEN_PUMP;       // BUTTON_STOP_ALL_PUMP;
+	StarEmptyDispButId = BUTTON_START_EMPTY_DISPOSABLE;
+	StopAllPumpButId = BUTTON_STOP_EMPTY_DISPOSABLE;
 
 	switch (EmptyDispRunAlwaysState)
 	{
@@ -2850,6 +2881,16 @@ void manageParentTreatAirAlmRecAlways(void)
 // ------------FINE STATI ELIMINAZIONE ALLARME ARIA---------------------------------
 
 
+// procedura per gestire la fase entry nello stato PARENT_TREAT_KIDNEY_1_END
+void manageParentTreatEndEntry(void)
+{
+}
+// procedura per gestire la fase always nello stato PARENT_TREAT_KIDNEY_1_END
+void manageParentTreatEndAlways(void)
+{
+}
+
+
 
 /* CHILD LEVEL FUNCTION */
 
@@ -3148,7 +3189,9 @@ static void computeMachineStateGuardTreatment(void)
 
 		if ( CommandModBusPMPExecute(newSpeedPmp_0,newSpeedPmp1_2,newSpeedPmp_3) )
 		{
-			currentGuard[GUARD_ENABLE_DISPOSABLE_EMPTY].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+			// modificato il comando perche' ora devo andare in un'altro stato parent
+			//currentGuard[GUARD_ENABLE_DISPOSABLE_EMPTY].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+			currentGuard[GUARD_ENABLE_WAIT_TREATMENT].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
 			if (PeltierOn && (peltierCell.StopEnable == 0))
 			{
 				// se erano accese le spengo
@@ -3164,7 +3207,8 @@ static void computeMachineStateGuardTreatment(void)
 			{
 				// se sono trascorsi 5 secondi dalla fine del trattamento e non sono ancora uscito.
 				// la forzo io
-				currentGuard[GUARD_ENABLE_DISPOSABLE_EMPTY].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+				//currentGuard[GUARD_ENABLE_DISPOSABLE_EMPTY].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+				currentGuard[GUARD_ENABLE_WAIT_TREATMENT].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
 				if (PeltierOn && (peltierCell.StopEnable == 0))
 				{
 					// se erano accese le spengo
@@ -3490,12 +3534,6 @@ void processMachineState(void)
 
 			/* execute function parent and child level */
 			//NONE
-
-			#ifdef DEBUG_ENABLE
-			static int index = 0;
-			index++;
-			#endif
-
 			break;
 
 		case STATE_ENTRY:
@@ -3772,23 +3810,22 @@ void processMachineState(void)
                currentGuard[GUARD_ENABLE_DISPOSABLE_EMPTY].guardEntryValue (AVVERRA' QUANDO L'UTENTE PREMERA' LO STOP ALLE POMPE
                O SEMPLICEMENTE IL TASTO ENTER (VEDI FUNZIONE manageStateTreatKidney1Always).
                QUANDO ARRIVERA', POTRO' TORNARE NELLO STATE_ENTRY INIZIALE*/
-			if( currentGuard[GUARD_ENABLE_DISPOSABLE_EMPTY].guardValue == GUARD_VALUE_TRUE )
+			if( currentGuard[GUARD_ENABLE_WAIT_TREATMENT].guardValue == GUARD_VALUE_TRUE )
 			{
-				currentGuard[GUARD_ENABLE_DISPOSABLE_EMPTY].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
-				// se voglio andare in idle e selezionare un nuovo trattamento
-				//ptrFutureState = &stateState[3];
-				// se voglio andare nella procedura di svuotamento
-				ptrFutureState = &stateState[19];
+				// ho raggiunto la temperatura, vado nello stato di attesa start trattamento
+				currentGuard[GUARD_ENABLE_WAIT_TREATMENT].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
+				ptrFutureState = &stateState[25];
 				/* compute future parent */
 				ptrFutureParent = ptrFutureState->ptrParent;
 				/* compute future child */
 				ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
-				DebugStringStr("STATE_EMPTY_DISPOSABLE");
+				DebugStringStr("STATE_WAIT_TREATMENT");
 
 				/*per poter tornare indietro dallo stato STATE_EMPTY_DISPOSABLE allo stato STATE_TREATMENT_KIDNEY_1
 				 * resetto la flag di entry sullo stato in cui sono*/
 				currentGuard[GUARD_ENABLE_TREATMENT_KIDNEY_1].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
 				currentGuard[GUARD_ENABLE_TREATMENT_KIDNEY_1].guardValue = GUARD_VALUE_FALSE;
+				break;
 			}
 
 			/* execute function state level */
@@ -3806,6 +3843,7 @@ void processMachineState(void)
 					/* compute future child */
 					ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
 					DebugStringStr("STATE_RICICLO");
+					break;
 				}
 				else if( currentGuard[GUARD_ABANDON_PRIMING].guardValue == GUARD_VALUE_TRUE )
 				{
@@ -3817,6 +3855,7 @@ void processMachineState(void)
 					/* compute future child */
 					ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
 					DebugStringStr("STATE_IDLE(ABBANDONA)");
+					break;
 				}
 				else if( currentGuard[GUARD_ENABLE_PRIMING_PHASE_2].guardValue == GUARD_VALUE_TRUE )
 				{
@@ -3832,6 +3871,7 @@ void processMachineState(void)
 
 					/*torno indietro nella macchina a stati quindi resetto la flag di entry sullo stato in cui sono*/
 					currentGuard[GUARD_ENABLE_PRIMING_WAIT].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
+					break;
 				}
 
 				/* execute function state level */
@@ -3862,44 +3902,50 @@ void processMachineState(void)
 					DebugStringStr("STATE_IDLE(ABBANDONA)");
 				}
 
-// NON VADO NELLO STATO DI ATTESA TRATTAMENTO MA VADO DIRETTAMENTE NELLO STATO STATE_TREATMENT_KIDNEY_1 DOVE DOVREI
-// CONSIDERARE ANCHE LA POSSIBILITA' DI ABBANDONA
-//				if( currentGuard[GUARD_ENABLE_WAIT_TREATMENT].guardValue == GUARD_VALUE_TRUE )
-//				{
-//					// ho raggiunto la temperatura, vado nello stato di attesa start trattamento
-//					currentGuard[GUARD_ENABLE_WAIT_TREATMENT].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
-//					ptrFutureState = &stateState[25];
-//					/* compute future parent */
-//					ptrFutureParent = ptrFutureState->ptrParent;
-//					/* compute future child */
-//					ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
-//					DebugStringStr("STATE_WAIT_TREATMENT");
-//				}
 				/* execute function state level */
 				manageStateEntryAndStateAlways(24);
 				break;
 		case STATE_WAIT_TREATMENT:
-// QUESTO STATO NON VIENE PIU USATO PER ORA
-//				if((currentGuard[GUARD_ENABLE_TREATMENT_KIDNEY_1].guardValue == GUARD_VALUE_TRUE))
-//				{
-//					// PASSO ALLA FASE DI TRATTAMENTO
-//					currentGuard[GUARD_ENABLE_TREATMENT_KIDNEY_1].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
-//					// ho ricevuto il comando per entrare in trattamento
-//					ptrFutureState = &stateState[17];
-//					/* compute future parent */
-//					ptrFutureParent = ptrFutureState->ptrParent;
-//					/* compute future child */
-//					ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
-//					DebugStringStr("STATE_TREATMENT");
-//
-//					// memorizzo il tempo di inizio trattamento
-//					StartTreatmentTime = timerCounterModBus;
-//					// forzo anche uno start per far ripartire i motori nello stato di trattamento
-//					// altrimenti non partono. Nella vecchia gestione partono solo con un comando da utente.
-//					setGUIButton(BUTTON_START_TREATMENT);
-//				}
-//				/* execute function state level */
-//				manageStateEntryAndStateAlways(26);
+			    if( currentGuard[GUARD_ENABLE_DISPOSABLE_EMPTY].guardValue == GUARD_VALUE_TRUE )
+				{
+					currentGuard[GUARD_ENABLE_DISPOSABLE_EMPTY].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
+					// se voglio andare in idle e selezionare un nuovo trattamento
+					//ptrFutureState = &stateState[3];
+					// se voglio andare nella procedura di svuotamento
+					ptrFutureState = &stateState[19];
+					/* compute future parent */
+					ptrFutureParent = ptrFutureState->ptrParent;
+					/* compute future child */
+					ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
+					DebugStringStr("STATE_EMPTY_DISPOSABLE");
+					break;
+				}
+				else if( currentGuard[GUARD_ENABLE_TREATMENT_KIDNEY_1].guardValue == GUARD_VALUE_TRUE )
+				{
+					// ritorno direttamente in trattamento per cominciarne uno nuovo
+					currentGuard[GUARD_ENABLE_TREATMENT_KIDNEY_1].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
+
+					ptrFutureState = &stateState[17];
+					/* compute future parent */
+					ptrFutureParent = ptrFutureState->ptrParent;
+					/* compute future child */
+					ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
+					DebugStringStr("STATE_TREATMENT");
+
+					// riparte come se fosse un nuovo trattamento
+					StartTreatmentTime = 0;
+					TotalTreatDuration = 0;
+					TreatDuration = 0;
+					setGUIButton(BUTTON_START_TREATMENT);
+
+					/*per poter tornare indietro dallo stato STATE_WAIT_TREATMENT allo stato STATE_TREATMENT_KIDNEY_1
+					 * resetto la flag di entry sullo stato in cui sono*/
+					currentGuard[GUARD_ENABLE_WAIT_TREATMENT].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
+					currentGuard[GUARD_ENABLE_WAIT_TREATMENT].guardValue = GUARD_VALUE_FALSE;
+					break;
+				}
+				/* execute function state level */
+				manageStateEntryAndStateAlways(26);
 				break;
 
 
@@ -3930,27 +3976,6 @@ void processMachineState(void)
 				/* compute future child */
 				ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
 				DebugStringStr("STATE_UNMOUNT_DISPOSABLE");
-				break;
-			}
-			else if( currentGuard[GUARD_ENABLE_TREATMENT_KIDNEY_1].guardValue == GUARD_VALUE_TRUE )
-			{
-				// ritorno direttamente in trattamento per cominciarne uno nuovo
-				currentGuard[GUARD_ENABLE_TREATMENT_KIDNEY_1].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
-
-				ptrFutureState = &stateState[17];
-				/* compute future parent */
-				ptrFutureParent = ptrFutureState->ptrParent;
-				/* compute future child */
-				ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
-				DebugStringStr("STATE_TREATMENT");
-
-				// riparte come se fosse un nuovo trattamento
-				StartTreatmentTime = 0;
-				TotalTreatDuration = 0;
-				TreatDuration = 0;
-				/*torno indietro nella macchina a stati quindi resetto la flag di entry sullo stato in cui sono*/
-				currentGuard[GUARD_ENABLE_DISPOSABLE_EMPTY].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
-				currentGuard[GUARD_EMPTY_DISPOSABLE_END].guardValue = GUARD_VALUE_FALSE;
 				break;
 			}
 			else if( currentGuard[GUARD_ABANDON_PRIMING].guardValue == GUARD_VALUE_TRUE )
@@ -4015,6 +4040,8 @@ void processMachineState(void)
 		default:
 			break;
 	}
+
+// ------------------GESTIONE STATI PARENT PRIMING-------------------------------------------------------------------
 
 	//questo switch andrà suddiviso e portato dentro i singoli case dello switch sopra........
 	/* (FM) POSSO FARE UNA FUNZIONE CHIAMATA stateParentPrimingTreatKidney1_func ED INSERIRE TUTTI I CASE
@@ -4095,6 +4122,14 @@ void processMachineState(void)
 //				}
 				LevelBuzzer = 2;
 			}
+			else if(currentGuard[GUARD_ENT_PAUSE_STATE_PRIM_KIDNEY_1].guardValue == GUARD_VALUE_TRUE)
+			{
+				// VADO NELLO STATO DI PAUSA DEL PRIMING RUN
+				ptrFutureParent = &stateParentPrimingTreatKidney1[9];
+				ptrFutureChild = ptrFutureParent->ptrChild;
+				currentGuard[GUARD_ENT_PAUSE_STATE_PRIM_KIDNEY_1].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
+				currentGuard[GUARD_ENT_PAUSE_STATE_PRIM_KIDNEY_1].guardValue = GUARD_VALUE_FALSE;
+			}
 			break;
 
 		case PARENT_PRIMING_TREAT_KIDNEY_1_ALARM:
@@ -4162,6 +4197,32 @@ void processMachineState(void)
 		case PARENT_PRIMING_TREAT_KIDNEY_1_END:
 			break;
 
+		case PARENT_PRIM_WAIT_PAUSE:
+			if(currentGuard[GUARD_ENABLE_STATE_KIDNEY_1_PRIM_RUN].guardValue == GUARD_VALUE_TRUE)
+			{
+				ptrFutureParent = &stateParentPrimingTreatKidney1[3];
+				ptrFutureChild = ptrFutureParent->ptrChild;
+				// forzo anche una pressione del tasto TREATMENT START per fare in modo che
+				// il trattamento riprenda automaticamente
+				setGUIButton(BUTTON_START_TREATMENT);
+				currentGuard[GUARD_ENABLE_STATE_KIDNEY_1_PRIM_RUN].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
+				currentGuard[GUARD_ENABLE_STATE_KIDNEY_1_PRIM_RUN].guardValue = GUARD_VALUE_FALSE;
+				break;
+			}
+			if(ptrCurrentParent->action == ACTION_ON_ENTRY)
+			{
+				/* compute future parent */
+				/* FM passo alla gestione ACTION_ALWAYS */
+				ptrFutureParent = &stateParentPrimingTreatKidney1[10];
+				ptrFutureChild = ptrFutureParent->ptrChild;
+			}
+			else if(ptrCurrentParent->action == ACTION_ALWAYS)
+			{
+			}
+			break;
+
+
+// ------------------GESTIONE STATI PARENT TRATTAMENTO-------------------------------------------------------------------
 
 		case PARENT_TREAT_KIDNEY_1_INIT:
 			if(perfusionParam.treatVolPerfArt >= 200)
@@ -4252,7 +4313,6 @@ void processMachineState(void)
 				currentGuard[GUARD_ENT_PAUSE_STATE_KIDNEY_1_PUMP_ON].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
 				currentGuard[GUARD_ENT_PAUSE_STATE_KIDNEY_1_PUMP_ON].guardValue = GUARD_VALUE_FALSE;
 			}
-
 			break;
 
 		case PARENT_TREAT_KIDNEY_1_ALARM:
@@ -5112,6 +5172,10 @@ CHECK_PUMP_STOP_STATE CheckPumpStopTask(CHECK_PUMP_STOP_CMD cmd)
 	static int CheckPumpStopCnt = 0;
 	char PompeInMovimento = 0;
 
+	// TODO commentare se si vuole inserire il controllo sulla velocita' delle pompe a 0
+	// negli stati previsti
+	return CheckPumpStopTaskMach;
+
 	if(cmd == INIT_CHECK_SEQ_CMD)
 	{
 		CheckPumpStopTaskMach = WAIT_FOR_NEW_READ;
@@ -5127,8 +5191,12 @@ CHECK_PUMP_STOP_STATE CheckPumpStopTask(CHECK_PUMP_STOP_CMD cmd)
 	}
 
 
-	if(!((ptrCurrentState->state == STATE_TREATMENT_KIDNEY_1) &&
-	    ((ptrCurrentParent->parent == PARENT_TREAT_WAIT_START) || (ptrCurrentParent->parent == PARENT_TREAT_WAIT_PAUSE))))
+	if(!( ((ptrCurrentState->state == STATE_TREATMENT_KIDNEY_1) &&
+	      ((ptrCurrentParent->parent == PARENT_TREAT_WAIT_START) || (ptrCurrentParent->parent == PARENT_TREAT_WAIT_PAUSE))) ||
+		  (ptrCurrentState->state == STATE_IDLE) ||
+		  ((ptrCurrentState->state == STATE_PRIMING_PH_1) && (ptrCurrentParent->parent == PARENT_PRIM_WAIT_PAUSE)) ||
+		  ((ptrCurrentState->state == STATE_PRIMING_PH_2) && (ptrCurrentParent->parent == PARENT_PRIM_WAIT_PAUSE))
+		))
 	{
 		// se il task viene chiamato in uno stato non corretto
 		return CheckPumpStopTaskMach;
