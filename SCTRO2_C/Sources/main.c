@@ -281,6 +281,7 @@ int main(void)
   TotalTimeToRejAir = 0;
   AirAlarmRecoveryState = INIT_AIR_ALARM_RECOVERY;
   DisableAllAirAlarm(FALSE);
+  DisableCheckPumpStopTask = 0;
 
   LevelBuzzer = SILENT;
   initAllGuard();

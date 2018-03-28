@@ -1545,6 +1545,7 @@ void manageParentPrimingAlways(void){
 				StartPrimingTime = 0;
 
 				currentGuard[GUARD_ENT_PAUSE_STATE_PRIM_KIDNEY_1].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+				CheckPumpStopTask((CHECK_PUMP_STOP_CMD)INIT_CHECK_SEQ_CMD);
 				DebugStringStr("Stop prim.");
 			}
 #ifdef DEBUG_WITH_SERVICE_SBC
@@ -4204,7 +4205,7 @@ void processMachineState(void)
 				ptrFutureChild = ptrFutureParent->ptrChild;
 				// forzo anche una pressione del tasto TREATMENT START per fare in modo che
 				// il trattamento riprenda automaticamente
-				setGUIButton(BUTTON_START_TREATMENT);
+				setGUIButton(BUTTON_START_PRIMING);
 				currentGuard[GUARD_ENABLE_STATE_KIDNEY_1_PRIM_RUN].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
 				currentGuard[GUARD_ENABLE_STATE_KIDNEY_1_PRIM_RUN].guardValue = GUARD_VALUE_FALSE;
 				break;
@@ -5172,15 +5173,12 @@ CHECK_PUMP_STOP_STATE CheckPumpStopTask(CHECK_PUMP_STOP_CMD cmd)
 	static int CheckPumpStopCnt = 0;
 	char PompeInMovimento = 0;
 
-	// TODO commentare se si vuole inserire il controllo sulla velocita' delle pompe a 0
-	// negli stati previsti
-	return CheckPumpStopTaskMach;
-
 	if(cmd == INIT_CHECK_SEQ_CMD)
 	{
 		CheckPumpStopTaskMach = WAIT_FOR_NEW_READ;
 		Delay = 0;
 		CheckPumpStopCnt = 0;
+		DisableCheckPumpStopTask = 0;
 		return CheckPumpStopTaskMach;
 	}
 	else if(cmd == RESET_ALARM)
@@ -5190,6 +5188,10 @@ CHECK_PUMP_STOP_STATE CheckPumpStopTask(CHECK_PUMP_STOP_CMD cmd)
 		return CheckPumpStopTaskMach;
 	}
 
+	// dal momento in cui viene fatto un accesso alle pompe da service, questo task non viene piu'
+	// eseguito. Verra' ripristinato alla ricezione del primo comando INIT_CHECK_SEQ_CMD
+	if(DisableCheckPumpStopTask)
+		return CheckPumpStopTaskMach;
 
 	if(!( ((ptrCurrentState->state == STATE_TREATMENT_KIDNEY_1) &&
 	      ((ptrCurrentParent->parent == PARENT_TREAT_WAIT_START) || (ptrCurrentParent->parent == PARENT_TREAT_WAIT_PAUSE))) ||

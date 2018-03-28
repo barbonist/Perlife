@@ -129,7 +129,10 @@ void Service_SBC(void){
 								int dato = BYTES_TO_WORD(sbc_rx_data[12], sbc_rx_data[13]);
 
 								if (slvAddr >=2 && slvAddr <=5)
+								{
+									DisableCheckPumpStopTask = 1;
 									setPumpSpeedValueHighLevel(slvAddr, dato);
+								}
 								else if (slvAddr >=7 && slvAddr <=9)
 									setPinchPositionHighLevel(slvAddr, dato);
 							}

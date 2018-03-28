@@ -1674,6 +1674,10 @@ typedef enum
 }CHECK_PUMP_STOP_CMD;
 //-------------------------------------------------------------------------------
 
+// flag usata per disabilitare il task CheckPumpStopTask quando vengono
+// usate delle funzioni di service che agiscono sulle pompe.
+//  Verra' ripristinato alla ricezione del primo comando INIT_CHECK_SEQ_CM.
+char DisableCheckPumpStopTask;
 
 #endif /* SOURCES_GLOBAL_H_ */
 
