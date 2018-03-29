@@ -1377,7 +1377,13 @@ Kd = Kp*Pu/8  = 0.01875
 #define parKD_TC_Ven 						0.01875
 
 
-// parametri per il nuovo pid sulla arteriosa
+// parametri per il pid sulla arteriosa calcolati sul nuovo disposable
+// ku = 0.01197, Pu = 15 sec
+//#define parKITC_Art 						0.00096
+//#define parKP_Art 							0.0072
+//#define parKD_TC_Art 						0.0135
+
+// parametri per il nuovo pid sulla arteriosa (calcolati con Vincenzo sul vecchio disposable)
 // ku = 0.05, Pu = 8 sec
 #define parKITC_Art 						0.008
 #define parKP_Art 							0.03

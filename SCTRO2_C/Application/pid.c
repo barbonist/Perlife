@@ -217,7 +217,7 @@ void alwaysPumpPressLoopArt(unsigned char pmpId, unsigned char *PidFirstTime)
 
 
 
-   //deltaSpeed_Art = kpForTuning * errPress;
+//   deltaSpeed_Art = kpForTuning * errPress;
 	deltaSpeed_Art = (((float)parKITC_Art * errPress) -
 			         ((float)parKP_Art * (pressSample0_Art - pressSample1_Art)) -
 					 ((float)parKD_TC_Art * (pressSample0_Art - 2 * pressSample1_Art + pressSample2_Art)));

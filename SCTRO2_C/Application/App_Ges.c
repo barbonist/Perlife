@@ -2067,8 +2067,8 @@ void manageParentTreatAlways(void){
 
 		//if((getPumpPressLoop(0) == PRESS_LOOP_ON) && (timerCounterPID >=1))
 		// per calcolare il pid ogni 450 msec (sarebbe meglio usare questo per dare il tempo alle attuazioni di avere effetto)
-		//if((timerCounterModBus%9) == 7)
-		if(timerCounterPID >=1) //codice originale
+		if((timerCounterModBus%9) == 7)
+		//if(timerCounterPID >=1) //codice originale
 		{
 			timerCounterPID = 0;
 			if(getPumpPressLoop(0) == PRESS_LOOP_ON)
@@ -2286,8 +2286,8 @@ void manageParentTreatAlways(void){
 
 			//if((getPumpPressLoop(0) == PRESS_LOOP_ON) && (timerCounterPID >=1))
 			// per calcolare il pid ogni 450 msec (sarebbe meglio usare questo per dare il tempo alle attuazioni di avere effetto)
-			//if((timerCounterModBus%9) == 7)
-			if(timerCounterPID >=1)
+			if((timerCounterModBus%9) == 7)
+			//if(timerCounterPID >=1)
 			{
 				timerCounterPID = 0;
 				if(getPumpPressLoop(0) == PRESS_LOOP_ON)
@@ -2501,14 +2501,6 @@ void EmptyDispStateMach(void)
 				DisableAllAlarm();
 				EmptyDispRunAlwaysState = WAIT_FOR_1000ML;
 			}
-			else if(buttonGUITreatment[BUTTON_START_TREATMENT].state == GUI_BUTTON_RELEASED)
-			{
-				// mi e' arrivato un comando per ritornare in trattamento
-				// Non faccio la release perche', in questo modo, quando arriva nello stato
-				// STATE_TREATMENT_KIDNEY_1 parte subito il trattamento
-				//releaseGUIButton(BUTTON_START_TREATMENT);
-				currentGuard[GUARD_ENABLE_TREATMENT_KIDNEY_1].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
-			}
 			else if(buttonGUITreatment[BUTTON_PRIMING_ABANDON].state == GUI_BUTTON_RELEASED)
 			{
 				// nessuna pompa e' partita ancora
@@ -2676,11 +2668,6 @@ void manageParentEmptyDisposInitEntry(void)
 	VolumeDischarged = 0;
 	EmptyDisposStartOtherPump = FALSE;
 	EmptyDispRunAlwaysState = INIT_EMPTY_DISPOSABLE;
-	// attivazione della pompa di depurazione
-//	if(GetTherapyType() == LiverTreat)
-//		setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, LIVER_PPAR_SPEED);
-//	else if(GetTherapyType() == KidneyTreat)
-//		setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, KIDNEY_EMPTY_PPAR_SPEED);
 }
 void manageParentEmptyDisposInitAlways(void)
 {
@@ -2690,17 +2677,11 @@ void manageParentEmptyDisposInitAlways(void)
 
 void manageParentEmptyDisposRunEntry(void)
 {
-	// attivazione della pompa di depurazione se dovessi ritornare da un allarme
-//	if(GetTherapyType() == LiverTreat)
-//		setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, LIVER_PPAR_SPEED);
-//	else if(GetTherapyType() == KidneyTreat)
-//		setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, KIDNEY_EMPTY_PPAR_SPEED);
 }
 void manageParentEmptyDisposRunAlways(void)
 {
 	EmptyDispStateMach();
 	CalcVolumeDischarged();
-
 }
 
 void manageParentEmptyDisposAlarmEntry(void)
