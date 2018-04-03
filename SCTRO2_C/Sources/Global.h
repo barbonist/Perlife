@@ -1371,23 +1371,32 @@ Kp = 0.6 * Ku = 0.06
 Ki = 2Kp/Pu   = 0.048
 Kd = Kp*Pu/8  = 0.01875
 */
-// valori usati con il disposable definitivo
-#define parKITC_Ven 						0.048
-#define parKP_Ven 							0.06
-#define parKD_TC_Ven 						0.01875
+// valori usati con il disposable definitivo (calcolati con Vincenzo sul vecchio disposable)
+//#define parKITC_Ven 						0.048
+//#define parKP_Ven 							0.06
+//#define parKD_TC_Ven 						0.01875
 
+//------------------------------------------------------------------------------------------
+// parametri per il pid sulla venosa calcolati sul nuovo disposable (franco) e con il tempo
+// di aggiornamento del pid di 450 msec
+// ku = 0.8, Pu = 12 sec
+#define parKITC_Ven 						0.16
+#define parKP_Ven 							0.48
+#define parKD_TC_Ven 						0.72
 
-// parametri per il pid sulla arteriosa calcolati sul nuovo disposable
-// ku = 0.01197, Pu = 15 sec
-//#define parKITC_Art 						0.00096
-//#define parKP_Art 							0.0072
-//#define parKD_TC_Art 						0.0135
+// parametri per il pid sulla arteriosa calcolati sul nuovo disposable (franco) e con il tempo
+// di aggiornamento del pid di 450 msec
+// ku = 0.5, Pu = 3 sec
+#define parKITC_Art 						0.2
+#define parKP_Art 							0.30
+#define parKD_TC_Art 						0.1125
+//------------------------------------------------------------------------------------------
 
 // parametri per il nuovo pid sulla arteriosa (calcolati con Vincenzo sul vecchio disposable)
 // ku = 0.05, Pu = 8 sec
-#define parKITC_Art 						0.008
-#define parKP_Art 							0.03
-#define parKD_TC_Art 						0.03
+//#define parKITC_Art 						0.008
+//#define parKP_Art 							0.03
+//#define parKD_TC_Art 						0.03
 
 // Coefficienti del pid iniziale (calcolati da Davide)
 //#define parKP_Art 							1.0
@@ -1578,7 +1587,7 @@ float VenousPumpGainForPid;
 
 typedef struct
 {
-	unsigned int EnableAllAlarms            : 1;    // Abilito tutti gli allarmi
+	unsigned int EnableAllAlarms            : 1;    // POSIZIONE LIBERA
 	unsigned int EnableLevHighAlarm         : 1;    // Abilito allarme di livello alto (troppo pieno)
 	unsigned int EnableLevLowAlarm          : 1;    // Abilito allarme di livello basso
 	unsigned int EnableCoversAlarm          : 1;    // Abilito allarme di cover

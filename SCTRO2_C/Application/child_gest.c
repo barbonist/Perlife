@@ -1145,6 +1145,10 @@ void manageChildEmptyAlm1InitEntry(void)
     {
         ptrFutureChild = &stateChildAlarmEmpty[7];
     }
+    else if(currentGuard[GUARD_ALARM_STOP_ALL_ACTUATOR].guardValue == GUARD_VALUE_TRUE)
+    {
+        ptrFutureChild = &stateChildAlarmEmpty[11];
+    }
     ChildEmptyFlags.FlagsVal = 0;
 }
 
@@ -1191,6 +1195,21 @@ void manageChildEmptyAlm1SFAAlways(void)
 {
 
 }
+
+//CHILD_TREAT_ALARM_1_STOP_ALL_ACTUATOR quando lo stato principale e' STATE_EMPTY_DISPOSABLE
+// allarme generato quando viene rilevata una pressione eccessiva su almeno 1
+// dei 4 sensori
+void manageChildEmptyAlm1StAllActEntry(void)
+{
+	manageChildTreatAlm1StopAllActEntry();
+}
+
+void manageChildEmptyAlm1StAllActAlways(void)
+{
+	// fermo tutte le pompe e metto le pinch in sicurezza
+	manageChildTreatAlm1StopAllActAlways();
+}
+
 
 
 bool IsDisposableEmpty(void)
@@ -1276,6 +1295,18 @@ void ManageStateChildAlarmEmpty(void)
 				ptrFutureChild = &stateChildAlarmEmpty[10];
 			}
 			else if(ptrCurrentChild->action == ACTION_ALWAYS){
+			}
+			break;
+
+		case CHILD_TREAT_ALARM_1_STOP_ALL_ACTUATOR:
+			if(ptrCurrentChild->action == ACTION_ON_ENTRY)
+			{
+				ptrFutureChild = &stateChildAlarmEmpty[12];
+			}
+            else if( currentGuard[GUARD_ALARM_STOP_ALL_ACTUATOR].guardValue == GUARD_VALUE_FALSE )
+                ptrFutureChild = &stateChildAlarmEmpty[9]; /* FM allarme chiuso */
+			else if(ptrCurrentChild->action == ACTION_ALWAYS)
+			{
 			}
 			break;
 

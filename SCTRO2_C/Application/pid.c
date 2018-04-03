@@ -1179,6 +1179,7 @@ int SpeedCostanteVen( int CurrSpeed)
 //}
 
 
+float kpForTuning_Ven = 1.0;
 
 void alwaysPumpPressLoopVen(unsigned char pmpId, unsigned char *PidFirstTime){
 
@@ -1228,7 +1229,8 @@ void alwaysPumpPressLoopVen(unsigned char pmpId, unsigned char *PidFirstTime){
 		actualSpeed_Ven += 2.0;
    }
 
-	deltaSpeed_Ven = ((parKITC_Ven * errPress) -
+//   deltaSpeed_Ven = kpForTuning_Ven * errPress;
+   deltaSpeed_Ven = ((parKITC_Ven * errPress) -
 			         (parKP_Ven * (pressSample0_Ven - pressSample1_Ven)) -
 					 (parKD_TC_Ven * (pressSample0_Ven - 2 * pressSample1_Ven + pressSample2_Ven)));
 

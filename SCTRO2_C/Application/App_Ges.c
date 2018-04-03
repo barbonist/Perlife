@@ -2464,9 +2464,41 @@ void CalcVolumeDischarged(void)
 	perfusionParam.unlVolRes = VolumeDischarged;
 }
 
+// faccio ripartire le
+void RestartPumpsEmptyState(void)
+{
+	switch (EmptyDispRunAlwaysState)
+	{
+		case INIT_EMPTY_DISPOSABLE:
+			// in questo stato nessuna pompa e' attiva
+			break;
+		case WAIT_FOR_1000ML:
+			if(GetTherapyType() == LiverTreat)
+				setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, LIVER_PPAR_EMPTY_SPEED);
+			else if(GetTherapyType() == KidneyTreat)
+				setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, KIDNEY_EMPTY_PPAR_SPEED);
+			break;
+		case WAIT_FOR_AIR_ALARM:
+			if(GetTherapyType() == LiverTreat)
+			{
+				setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, LIVER_PPAR_EMPTY_SPEED);
+				setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, LIVER_PPAR_EMPTY_SPEED);
+				setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, LIVER_PPAR_EMPTY_SPEED);
+			}
+			else if(GetTherapyType() == KidneyTreat)
+			{
+				// nel caso del rene sono le pompe di ossigenazione che svuotano il recevoir
+				setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, KIDNEY_EMPTY_PPAR_SPEED);
+				setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, KIDNEY_EMPTY_PPAR_SPEED);
+			}
+			break;
+		case WAIT_FOR_LEVEL_OR_AMOUNT:
+			break;
+	}
+}
+
 // I bottoni usati in questa funzione sono:
 //        BUTTON_START_EMPTY_DISPOSABLE per partire o ripartire con lo scaricamento
-//        BUTTON_START_TREATMENT        per tornare al trattamento
 //        BUTTON_PRIMING_ABANDON        per abbandonare lo stato ed andare in idle
 //        BUTTON_STOP_EMPTY_DISPOSABLE  per fermare momentaneamente tutte le pompe
 void EmptyDispStateMach(void)
@@ -2523,6 +2555,8 @@ void EmptyDispStateMach(void)
 
 				// abilito gli allarmi aria
 				DisableAllAirAlarm(FALSE);
+				// abilito anche gli allarmi di pressione alta
+				GlobalFlags.FlagsDef.EnablePressSensHighAlm = 1;
 				EmptyDispRunAlwaysState = WAIT_FOR_AIR_ALARM;
 			}
 			else if(buttonGUITreatment[StopAllPumpButId].state == GUI_BUTTON_RELEASED)
@@ -3298,8 +3332,11 @@ void computeMachineStateGuard(void)
 		}
 }
 
-
-
+// In PARENT_EMPTY_DISPOSABLE_INIT e PARENT_EMPTY_DISPOSABLE_RUN sono attivi i bottoni BUTTON_START_EMPTY_DISPOSABLE
+//                                                                                     BUTTON_STOP_EMPTY_DISPOSABLE
+//												                                       BUTTON_PRIMING_ABANDON
+// In PARENT_EMPTY_DISPOSABLE_ALARM e' attivo solo il tasto BUTTON_RESET
+// In PARENT_EMPTY_DISPOSABLE_END non serve alcun tasto
 // macchina a stati del processo Parent da usare nello stato STATE_EMPTY_DISPOSABLE
 void ParentEmptyDispStateMach(void)
 {
@@ -3371,6 +3408,16 @@ void ParentEmptyDispStateMach(void)
 				ptrFutureParent = &stateParentEmptyDisp[3];
 				ptrFutureChild = ptrFutureParent->ptrChild;
 				break;
+			}
+			else if(buttonGUITreatment[BUTTON_RESET_ALARM].state == GUI_BUTTON_RELEASED)
+			{
+				// Il ritorno allo vuotamento viene fatto solo dopo la pressione del tasto BUTTON_RESET_ALARM
+				releaseGUIButton(BUTTON_RESET_ALARM);
+				// faccio ripartire le pompe per lo svuotamento
+				RestartPumpsEmptyState();
+				ptrFutureParent = &stateParentEmptyDisp[3];
+				ptrFutureChild = ptrFutureParent->ptrChild;
+				LevelBuzzer = 0;
 			}
 
 			if(ptrCurrentParent->action == ACTION_ON_ENTRY)
