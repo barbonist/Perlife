@@ -60,6 +60,9 @@
 #include "pid.h"
 #include "Comm_Sbc.h"
 
+// Flags usati nel processo di svuotamento
+extern CHILD_EMPTY_FLAGS ChildEmptyFlags;
+
 extern float pressSample1_Ven;
 extern float pressSample2_Ven;
 extern float pressSample1_Art;
@@ -2497,6 +2500,14 @@ void RestartPumpsEmptyState(void)
 	}
 }
 
+// bottoni da usare
+//#define BUT_START_EMPTY  BUTTON_START_EMPTY_DISPOSABLE
+//#define BUT_STOP_EMPTY  BUTTON_STOP_EMPTY_DISPOSABLE
+
+// bottoni usati senza gui per debug
+#define BUT_START_EMPTY  BUTTON_START_PRIMING
+#define BUT_STOP_EMPTY  BUTTON_STOP_PRIMING
+
 // I bottoni usati in questa funzione sono:
 //        BUTTON_START_EMPTY_DISPOSABLE per partire o ripartire con lo scaricamento
 //        BUTTON_PRIMING_ABANDON        per abbandonare lo stato ed andare in idle
@@ -2507,8 +2518,8 @@ void EmptyDispStateMach(void)
 	int StarEmptyDispButId;
 	int StopAllPumpButId;
 
-	StarEmptyDispButId = BUTTON_START_EMPTY_DISPOSABLE;
-	StopAllPumpButId = BUTTON_STOP_EMPTY_DISPOSABLE;
+	StarEmptyDispButId = BUT_START_EMPTY;
+	StopAllPumpButId = BUT_STOP_EMPTY;
 
 	switch (EmptyDispRunAlwaysState)
 	{
@@ -2553,6 +2564,7 @@ void EmptyDispStateMach(void)
 					setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, KIDNEY_EMPTY_PPAR_SPEED);
 				EmptyDisposStartOtherPump = TRUE;
 
+			    ChildEmptyFlags.FlagsVal = 0;
 				// abilito gli allarmi aria
 				DisableAllAirAlarm(FALSE);
 				// abilito anche gli allarmi di pressione alta
@@ -2592,20 +2604,23 @@ void EmptyDispStateMach(void)
 		case WAIT_FOR_AIR_ALARM:
 			// verificare che ci passa
 			//if((ptrAlarmCurrent->code == CODE_ALARM_AIR_PRES_ART) && (ptrAlarmCurrent->active = ACTIVE_TRUE))
-			if(IsDisposableEmpty())
+			if(IsDisposableEmpty() && (ptrCurrentParent->parent != PARENT_EMPTY_DISPOSABLE_ALARM))
 			{
+				// ho ricevuto tutti gli allarmi aria ed ho risposto con reset
 				if(TherType == LiverTreat)
 				{
+					// NON FERMO LE ALTRE POMPE MA LE FACCIO CONTINUARE FINO ALLA FINE
 					// ho rilevato una presenza aria nel circuito di perfusione arteriosa e venosa
 					// fermo le pompe e proseguo con lo svuotamento dall'ultimo liquido rimasto
-					setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
-					setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 0);
+					//setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
+					//setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 0);
 					EmptyDispRunAlwaysState = WAIT_FOR_LEVEL_OR_AMOUNT;
 				}
 				else if(TherType == KidneyTreat)
 				{
+					// NON FERMO LE ALTRE POMPE MA LE FACCIO CONTINUARE FINO ALLA FINE
 					// ho rilevato una presenza aria nel circuito di perfusione arteriosa
-					setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
+					//setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
 					// fermo la pompa e proseguo con lo svuotamento dall'ultimo liquido rimasto
 					EmptyDispRunAlwaysState = WAIT_FOR_LEVEL_OR_AMOUNT;
 				}
@@ -3368,12 +3383,14 @@ void ParentEmptyDispStateMach(void)
 				/* (FM) si e' verificato un allarme, passo alla sua gestione */
 				ptrFutureParent = &stateParentEmptyDisp[5];
 				ptrFutureChild = ptrFutureParent->ptrChild;
+				LevelBuzzer = 2;
 			}
 			break;
 
 		case PARENT_EMPTY_DISPOSABLE_RUN:
-			if((VolumeDischarged >= (perfusionParam.priVolPerfArt + (float)10.0 * (float)perfusionParam.priVolPerfArt / 100.0)) &&
-			   (PR_LEVEL_mmHg_Filtered <= 0))
+//			if((VolumeDischarged >= (perfusionParam.priVolPerfArt + (float)10.0 * (float)perfusionParam.priVolPerfArt / 100.0)) &&
+//			   (PR_LEVEL_mmHg_Filtered <= 0))
+			if(((VolumeDischarged >= perfusionParam.priVolPerfArt) /*|| (PR_LEVEL_mmHg_Filtered <= 0)*/) && IsDisposableEmpty())
 			{
 				// ho scaricato tutto, mi fermo
 				ptrFutureParent = &stateParentEmptyDisp[7];
@@ -3398,18 +3415,13 @@ void ParentEmptyDispStateMach(void)
 				/* (FM) si e' verificato un allarme, passo alla sua gestione */
 				ptrFutureParent = &stateParentEmptyDisp[5];
 				ptrFutureChild = ptrFutureParent->ptrChild;
+				LevelBuzzer = 2;
 			}
 			break;
 
 		case PARENT_EMPTY_DISPOSABLE_ALARM:
-			if(currentGuard[GUARD_ALARM_ACTIVE].guardValue == GUARD_VALUE_FALSE)
-			{
-				/* FM allarme finito posso ritornare nella fase run dello scarico */
-				ptrFutureParent = &stateParentEmptyDisp[3];
-				ptrFutureChild = ptrFutureParent->ptrChild;
-				break;
-			}
-			else if(buttonGUITreatment[BUTTON_RESET_ALARM].state == GUI_BUTTON_RELEASED)
+			if((currentGuard[GUARD_ALARM_ACTIVE].guardValue == GUARD_VALUE_FALSE) &&
+			   (buttonGUITreatment[BUTTON_RESET_ALARM].state == GUI_BUTTON_RELEASED))
 			{
 				// Il ritorno allo vuotamento viene fatto solo dopo la pressione del tasto BUTTON_RESET_ALARM
 				releaseGUIButton(BUTTON_RESET_ALARM);
@@ -3423,7 +3435,7 @@ void ParentEmptyDispStateMach(void)
 			if(ptrCurrentParent->action == ACTION_ON_ENTRY)
 			{
 				/* (FM) passo alla gestione ACTION_ALWAYS dell'allarme */
-				ptrFutureParent = &stateParentTreatKidney1[6];
+				ptrFutureParent = &stateParentEmptyDisp[6];
 				ptrFutureChild = ptrFutureParent->ptrChild;
 			}
 			else if(ptrCurrentParent->action == ACTION_ALWAYS)
@@ -3997,9 +4009,9 @@ void processMachineState(void)
 				// ho terminato lo svuotamento del reservoir vado nello stato di smontaggio del disposable
 				currentGuard[GUARD_EMPTY_DISPOSABLE_END].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
 				// se voglio andare in idle e selezionare un nuovo trattamento
-				ptrFutureState = &stateState[3];
+				//ptrFutureState = &stateState[3];
 				// se voglio andare in STATE_UNMOUNT_DISPOSABLE e staccare il disposable
-				//ptrFutureState = &stateState[27];
+				ptrFutureState = &stateState[27];
 				/* compute future parent */
 				ptrFutureParent = ptrFutureState->ptrParent;
 				/* compute future child */

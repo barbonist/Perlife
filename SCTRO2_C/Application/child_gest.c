@@ -1125,7 +1125,7 @@ bool IsSecurityStateActive(void)
 
 
 //-----------------------------------------------SVUOTAMENTO DISPOSABLE----------------------------------------------------------
-// PER LA GESTIONE DEGLI ALLARMI ARIA NEL CASO DI SVUOTAMENTO DISPOSABLE
+// PER LA GESTIONE DEGLI ALLARMI ARIA E PRESSIONE NEL CASO DI SVUOTAMENTO DISPOSABLE
 
 // Flags usati nel processo di svuotamento
 CHILD_EMPTY_FLAGS ChildEmptyFlags;
@@ -1149,7 +1149,6 @@ void manageChildEmptyAlm1InitEntry(void)
     {
         ptrFutureChild = &stateChildAlarmEmpty[11];
     }
-    ChildEmptyFlags.FlagsVal = 0;
 }
 
 //CHILD_TREAT_ALARM_1_INIT quando lo stato principale e' STATE_EMPTY_DISPOSABLE
@@ -1163,12 +1162,13 @@ void manageChildEmptyAlm1InitAlways(void)
 void manageChildEmptyAlm1SafAirFiltEntry(void)
 {
 	ChildEmptyFlags.FlagsDef.SAFAirDetected = 1;
+	manageChildTreatAlm1StopAllActEntry();
 	ForceCurrentAlarmOff();
 }
 
 void manageChildEmptyAlm1SafAirFiltAlways(void)
 {
-
+	manageChildTreatAlm1StopAllActAlways();
 }
 
 //CHILD_TREAT_ALARM_1_SFV_AIR quando lo stato principale e' STATE_EMPTY_DISPOSABLE
@@ -1176,11 +1176,13 @@ void manageChildEmptyAlm1SafAirFiltAlways(void)
 void manageChildEmptyAlm1SFVEntry(void)
 {
 	ChildEmptyFlags.FlagsDef.SFVAirDetected = 1;
+	manageChildTreatAlm1StopAllActEntry();
 	ForceCurrentAlarmOff();
 }
 
 void manageChildEmptyAlm1SFVAlways(void)
 {
+	manageChildTreatAlm1StopAllActAlways();
 }
 
 //CHILD_TREAT_ALARM_1_SFA_AIR quando lo stato principale e' STATE_EMPTY_DISPOSABLE
@@ -1188,12 +1190,13 @@ void manageChildEmptyAlm1SFVAlways(void)
 void manageChildEmptyAlm1SFAEntry(void)
 {
 	ChildEmptyFlags.FlagsDef.SFAAirDetected = 1;
+	manageChildTreatAlm1StopAllActEntry();
 	ForceCurrentAlarmOff();
 }
 
 void manageChildEmptyAlm1SFAAlways(void)
 {
-
+	manageChildTreatAlm1StopAllActAlways();
 }
 
 //CHILD_TREAT_ALARM_1_STOP_ALL_ACTUATOR quando lo stato principale e' STATE_EMPTY_DISPOSABLE

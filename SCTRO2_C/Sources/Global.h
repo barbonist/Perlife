@@ -1694,5 +1694,6 @@ typedef enum
 //  Verra' ripristinato alla ricezione del primo comando INIT_CHECK_SEQ_CM.
 char DisableCheckPumpStopTask;
 
+
 #endif /* SOURCES_GLOBAL_H_ */
 

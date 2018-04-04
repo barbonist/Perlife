@@ -544,6 +544,8 @@ void alarmEngineAlways(void)
 			case STATE_EMPTY_DISPOSABLE:
 			case STATE_EMPTY_DISPOSABLE_1:
 			{
+				manageAlarmPhysicPressSensHigh();
+
 				manageAlarmFlowSensNotDetected();
 				manageAlarmIrTempSensNotDetected();
 

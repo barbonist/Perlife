@@ -908,6 +908,9 @@ void ShowButtonStr(struct buttonGUI *ButtonGuiArray, unsigned char id)
 		case BUTTON_SILENT_ALARM:            DebugStringStr("BUT_SILENT_ALARM");               break;
 		case BUTTON_START_EMPTY_DISPOSABLE:  DebugStringStr("BUT_START_EMPTY_DISPOSABLE");     break;
 		case BUTTON_UNMOUNT_END:             DebugStringStr("BUT_UNMOUNT_END");                break;
+		case BUTTON_PRIMING_END_CONFIRM:     DebugStringStr("BUTTON_PRIMING_END_CONFIRM");     break;
+		case BUTTON_STOP_EMPTY_DISPOSABLE:   DebugStringStr("BUTTON_STOP_EMPTY_DISPOSABLE");   break;
+		case BUTTON_END_TREATMENT:           DebugStringStr("BUTTON_END_TREATMENT");           break;
 	}
 }
 
