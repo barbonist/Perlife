@@ -58,8 +58,9 @@ struct alarm alarmList[] =
 		{CODE_ALARM_DELTA_TEMP_REC_ART,    PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH,     500, 500, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull},	    /* 20 */
 		// allarme differenza tra temperatura vaschetta e temperatura fluido venoso troppo alta
 		{CODE_ALARM_DELTA_TEMP_REC_VEN,    PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH,     500, 500, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull},	    /* 21 */
-
-		{CODE_ALARM_MODBUS_ACTUATOR_SEND,  PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_WAIT_CONFIRM,          PRIORITY_LOW,        0,   0, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull},	    /* 22 */
+		// allarme comunicazione canbus
+		{CODE_ALARM_CAN_BUS_ERROR,         PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH,     500, 500, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull},	    /* 22 */
+		{CODE_ALARM_MODBUS_ACTUATOR_SEND,  PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_WAIT_CONFIRM,          PRIORITY_LOW,        0,   0, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull},	    /* 23 */
 		{}
 };
 
@@ -105,6 +106,7 @@ void SetAllAlarmEnableFlags(void)
 	GlobalFlags.FlagsDef.EnableSAFAir = 1;
 	GlobalFlags.FlagsDef.EnableSFVAir = 1;
 	GlobalFlags.FlagsDef.EnableSFAAir = 1;
+	GlobalFlags.FlagsDef.EnableCANBUSErr = 1;
 }
 
 // Questa funzione serve per forzare ad off un eventuale allarme.
@@ -157,6 +159,9 @@ void ForceAlarmOff(char code)
 			break;
 		case CODE_ALARM_AIR_PRES_ART:
 			GlobalFlags.FlagsDef.EnableSFAAir = 0;     // forzo allarme aria sul circuito arterioso off
+			break;
+		case CODE_ALARM_CAN_BUS_ERROR:
+			GlobalFlags.FlagsDef.EnableCANBUSErr = 0;
 			break;
 	}
 }
@@ -299,6 +304,13 @@ void ShowAlarmStr(int i, char * str)
 			strcat(s, str);
 			DebugStringStr(s);
 			break;
+		case CODE_ALARM_CAN_BUS_ERROR:
+			strcpy(s, "ALARM_CAN_BUS_ERR");
+			strcat(s, str);
+			DebugStringStr(s);
+			break;
+
+
 	}
 }
 
@@ -402,6 +414,8 @@ void alarmEngineAlways(void)
 					manageAlarmCoversPumpLiver();
 				else if(GetTherapyType() == KidneyTreat)
 					manageAlarmCoversPumpKidney();
+
+				manageAlarmCanBus();
 				break;
 			}
 
@@ -422,6 +436,7 @@ void alarmEngineAlways(void)
 					manageAlarmCoversPumpLiver();
 				else if(GetTherapyType() == KidneyTreat)
 					manageAlarmCoversPumpKidney();
+				manageAlarmCanBus();
 				break;
 			}
 
@@ -464,6 +479,7 @@ void alarmEngineAlways(void)
 				//manageAlarmDeltaFlowVen();
 				manageAlarmDeltaTempRecArt();
 				manageAlarmDeltaTempRecVen();
+				manageAlarmCanBus();
 				break;
 			}
 
@@ -487,6 +503,7 @@ void alarmEngineAlways(void)
 					manageAlarmCoversPumpLiver();
 				else if(GetTherapyType() == KidneyTreat)
 					manageAlarmCoversPumpKidney();
+				manageAlarmCanBus();
 				break;
 
 			case STATE_WAIT_TREATMENT:
@@ -656,6 +673,24 @@ void alarmEngineAlways(void)
 	}
 }
 
+bool IsCanBusError(void);
+
+void manageAlarmCanBus(void)
+{
+	if(!GlobalFlags.FlagsDef.EnableCANBUSErr)
+		alarmList[CAN_BUS_ERROR].physic = PHYSIC_FALSE;
+	else
+	{
+		if(IsCanBusError() )
+		{
+			alarmList[CAN_BUS_ERROR].physic = PHYSIC_TRUE;
+		}
+		else
+		{
+			alarmList[CAN_BUS_ERROR].physic = PHYSIC_FALSE;
+		}
+	}
+}
 
 // controllo se il delta di flusso tra quello misurato e quello calcolato in base al guadagno pompa e'
 // troppo elevato

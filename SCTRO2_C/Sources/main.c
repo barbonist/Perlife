@@ -173,7 +173,8 @@
 #include "Comm_Sbc.h"
 #include "Debug_Routine.h"
 #include "general_func.h"
-
+#include "SWTimer.h"
+#include "SevenSeg.h"
 
 extern unsigned char PidFirstTime[4];
 extern float pressSample1_Ven;
@@ -188,6 +189,8 @@ void TestPump(unsigned char Adr); //only for test
 void TestPinch(void);
 void GenerateSBCComm(void);
 
+void InitCAN(void);
+void InitTest(void);
 int FreeRunCnt10msecOld;
 
 int timerCounterModBusOld = 0;
@@ -217,6 +220,7 @@ void Manage_Debug_led(bool Status)
  		}
  	}
 }
+
 
 
 int main(void)
@@ -500,6 +504,12 @@ int main(void)
    ArteriousPumpGainForPid = DEFAULT_ART_PUMP_GAIN;
    VenousPumpGainForPid = DEFAULT_VEN_PUMP_GAIN;
 
+   InitCAN();
+   SwTimerInit();
+   InitTest();
+   InitSevenSeg();
+
+
 
   /**********MAIN LOOP START************/
   for(;;) {
@@ -719,6 +729,8 @@ int main(void)
 			// solo per fare il priming senza disposable
 	        //if(ptrCurrentState->state != STATE_EMPTY_DISPOSABLE)
 	        //	DisableAllAlarm();
+
+	      	ManageSwTimers();
 
   }
   /**********MAIN LOOP END**************/

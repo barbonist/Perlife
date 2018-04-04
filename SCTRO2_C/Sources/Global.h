@@ -1587,7 +1587,7 @@ float VenousPumpGainForPid;
 
 typedef struct
 {
-	unsigned int EnableAllAlarms            : 1;    // POSIZIONE LIBERA
+	unsigned int EnableCANBUSErr            : 1;    // abilito allarme per errore su can bus
 	unsigned int EnableLevHighAlarm         : 1;    // Abilito allarme di livello alto (troppo pieno)
 	unsigned int EnableLevLowAlarm          : 1;    // Abilito allarme di livello basso
 	unsigned int EnableCoversAlarm          : 1;    // Abilito allarme di cover

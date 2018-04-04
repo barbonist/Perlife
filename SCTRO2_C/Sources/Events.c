@@ -1111,9 +1111,11 @@ void CAN_C_P_OnFreeTxBuffer(LDD_TUserData *UserDataPtr, LDD_CAN_TMBIndex BufferI
 **         BufferIdx       - Transmit buffer index.
 */
 /* ===================================================================*/
+void TestReceiveCan( LDD_CAN_TMBIndex BufferIdx );
 void CAN_C_P_OnFullRxBuffer(LDD_TUserData *UserDataPtr, LDD_CAN_TMBIndex BufferIdx)
 {
   /* Write your code here ... */
+	TestReceiveCan( BufferIdx );
 }
 
 /*
@@ -1174,12 +1176,15 @@ void IR_TM_COMM_OnArbitLost(void)
 **     Returns     : Nothing
 ** ===================================================================
 */
+void timerIsr_10ms(void);
 void System_Tick_OnInterrupt(void)
 {
   /* Write your code here ... */
 	FreeRunCnt10msec++;
 	Prescaler_Tick_Timer++;
 	Prescaler_Tick_TEST++;
+
+	timerIsr_10ms();
 
 	if (Prescaler_Tick_Timer >=5)
 	{
