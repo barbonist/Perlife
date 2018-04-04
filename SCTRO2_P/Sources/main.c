@@ -190,73 +190,28 @@
 #include "App_Ges.h"
 #include "Uart_utilities.h"
 
+#include "SWTimer.h"
+#include "SevenSeg.h"
+
+void InitTest(void);
 /*lint -save  -e970 Disable MISRA rule (6.3) checking. */
 int main(void)
 /*lint -restore Enable MISRA rule (6.3) checking. */
 {
-  /* Write your local variable definition here */
-	static int index = 0;
-	//ptr_count = 0x00;
-	ptr = &pc_rx_data[0];
-	ptrCount = 0;
-	iflag_pc_rx = IFLAG_IDLE;
+
   /*** Processor Expert internal initialization. DON'T REMOVE THIS CODE!!! ***/
   PE_low_level_init();
   /*** End of Processor Expert internal initialization.                    ***/
 
   /* Write your code here */
+  InitCAN();
+  SwTimerInit();
+  InitTest();
+  InitSevenSeg();
 
-  /**************************************/
-  /*****Initialisation******************/
-
-  /* Init machine state */
-  initAllState();
-
-  /* Init guard */
-  initAllGuard();
-
-  /*****End Initialisation**************/
-  /* For example: for(;;) { } */
-  while(1)
+  for(;;)
   {
-	#ifdef DEBUG_ENABLE
-	  index++;
-	  if(index%64000 == 0)
-	  {
-		  EN_24_M_P_NegVal();
-	  }
-	#endif
-
-	  /*ADC reading */
-	  /*ADC reading */
-
-	  /*Machine state:
-	   	   	   	   	   - guard computing
-	   	   	   	   	   - state transition computing */
-	  computeMachineStateGuard();
-	  processMachineState();
-	  /*Machine state */
-
-	  /*UART 0 - actuator reading */
-		#ifdef	DEBUG_ENABLE
-
-		#endif
-	  //ManageCommActuator();
-	  /*UART 0 - actuator reading */
-
-	  /*UART 1 - pc debug */
-	  ManageCommPcDebug();
-	  /*UART 1 - pc debug */
-
-	  /*UART 2 - sbc */
-	  //ManageCommSBC();
-	  /*UART 2 - SBC */
-
-	  /*UART3 - C2P */
-	  //ManageCommC2P();
-	  /*UART3 - C2P */
-
-	  /**/
+	  ManageSwTimers();
   }
 
 

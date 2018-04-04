@@ -526,6 +526,7 @@ void AD0_OnCalibrationEnd(void)
 void CAN_C_P_OnFreeTxBuffer(LDD_TUserData *UserDataPtr, LDD_CAN_TMBIndex BufferIdx)
 {
   /* Write your code here ... */
+	int a = 0;
 }
 
 /*
@@ -547,9 +548,13 @@ void CAN_C_P_OnFreeTxBuffer(LDD_TUserData *UserDataPtr, LDD_CAN_TMBIndex BufferI
 **         BufferIdx       - Transmit buffer index.
 */
 /* ===================================================================*/
+
+
+void TestReceiveCan( LDD_CAN_TMBIndex BufferIdx );
 void CAN_C_P_OnFullRxBuffer(LDD_TUserData *UserDataPtr, LDD_CAN_TMBIndex BufferIdx)
 {
-  /* Write your code here ... */
+	TestReceiveCan( BufferIdx );
+
 }
 
 /*
@@ -588,6 +593,7 @@ void TI1_100ms_OnInterrupt(void)
 void TI1_1ms_OnInterrupt(void)
 {
   /* Write your code here ... */
+	int a =0 ;
 }
 
 /*
@@ -604,9 +610,12 @@ void TI1_1ms_OnInterrupt(void)
 **     Returns     : Nothing
 ** ===================================================================
 */
+void timerIsr_10ms(void);
 void TI1_10ms_OnInterrupt(void)
 {
-  /* Write your code here ... */
+	/* Write your code here ... */
+	// calling sw timer to manage application specific timers (SB)
+	timerIsr_10ms();
 }
 
 /* END Events */
