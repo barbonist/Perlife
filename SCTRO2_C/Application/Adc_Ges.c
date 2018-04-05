@@ -377,7 +377,7 @@ void CalcArtSistDiastPress(word Press)
 	PR_ART_Sistolyc_mmHg  = max;
 	PR_ART_Med_mmHg = (int) ( 2 * PR_ART_Sistolyc_mmHg + PR_ART_Diastolyc_mmHg)/3;
 
-	if ( pumpPerist[0].actualSpeed < 20)
+	if ( pumpPerist[0].actualSpeed < 12)
 	{
 		// per velocita' basse forzo la sistolica alla filtered perche, altrimenti, rimane bloccata a valori alti
 		// ed il pid non funziona piu' bene

@@ -675,9 +675,12 @@ void manageStateWaitTreatmentAlways(void)
 
 void manageStateUnmountDisposableEntry(void)
 {
+	// inzializzo il task di controllo della velocita' delle pompe a 0
+	CheckPumpStopTask((CHECK_PUMP_STOP_CMD)INIT_CHECK_SEQ_CMD);
 }
 void manageStateUnmountDisposableAlways(void)
 {
+	CheckPumpStopTask((CHECK_PUMP_STOP_CMD)NO_CHECK_PUMP_STOP_CMD);
 	if(buttonGUITreatment[BUTTON_PINCH_2WPVF_RIGHT_OPEN].state == GUI_BUTTON_RELEASED)
 	{
 		// pinch filter (pinch in basso aperto a destra)
@@ -2467,7 +2470,7 @@ void CalcVolumeDischarged(void)
 	perfusionParam.unlVolRes = VolumeDischarged;
 }
 
-// faccio ripartire le
+// faccio ripartire le pompe dopo un allarme
 void RestartPumpsEmptyState(void)
 {
 	switch (EmptyDispRunAlwaysState)
@@ -2485,14 +2488,20 @@ void RestartPumpsEmptyState(void)
 			if(GetTherapyType() == LiverTreat)
 			{
 				setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, LIVER_PPAR_EMPTY_SPEED);
-				setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, LIVER_PPAR_EMPTY_SPEED);
-				setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, LIVER_PPAR_EMPTY_SPEED);
+				// dopo l'ultimo allarme aria le pompe non addette allo scarico non devono piu' ripartire
+				if(!IsDisposableEmpty())
+				{
+					setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, LIVER_PPAR_EMPTY_SPEED);
+					setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, LIVER_PPAR_EMPTY_SPEED);
+				}
 			}
 			else if(GetTherapyType() == KidneyTreat)
 			{
 				// nel caso del rene sono le pompe di ossigenazione che svuotano il recevoir
 				setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, KIDNEY_EMPTY_PPAR_SPEED);
-				setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, KIDNEY_EMPTY_PPAR_SPEED);
+				// dopo l'ultimo allarme aria le pompe non addette allo scarico non devono piu' ripartire
+				if(!IsDisposableEmpty())
+					setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, KIDNEY_EMPTY_PPAR_SPEED);
 			}
 			break;
 		case WAIT_FOR_LEVEL_OR_AMOUNT:
@@ -2517,6 +2526,8 @@ void EmptyDispStateMach(void)
 	THERAPY_TYPE TherType = GetTherapyType();
 	int StarEmptyDispButId;
 	int StopAllPumpButId;
+	// quantita' di liquido scaricata prima di iniziare lo scaricamento del disposable
+	word DischargeAmountArtPump;
 
 	StarEmptyDispButId = BUT_START_EMPTY;
 	StopAllPumpButId = BUT_STOP_EMPTY;
@@ -2552,7 +2563,8 @@ void EmptyDispStateMach(void)
 			}
 			break;
 		case WAIT_FOR_1000ML:
-			if(!EmptyDisposStartOtherPump && VolumeDischarged >= DISCHARGE_AMOUNT_ART_PUMP)
+			DischargeAmountArtPump = (word)((float)perfusionParam.priVolPerfArt * (float)DISCHARGE_AMOUNT_ART_PUMP / 100.0);
+			if(!EmptyDisposStartOtherPump && VolumeDischarged >= DischargeAmountArtPump)
 			{
 				// faccio partire le altre pompe per svuotare i tubi
 				if(TherType == LiverTreat)
@@ -2612,16 +2624,16 @@ void EmptyDispStateMach(void)
 					// NON FERMO LE ALTRE POMPE MA LE FACCIO CONTINUARE FINO ALLA FINE
 					// ho rilevato una presenza aria nel circuito di perfusione arteriosa e venosa
 					// fermo le pompe e proseguo con lo svuotamento dall'ultimo liquido rimasto
-					//setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
-					//setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 0);
+					setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
+					setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 0);
 					EmptyDispRunAlwaysState = WAIT_FOR_LEVEL_OR_AMOUNT;
 				}
 				else if(TherType == KidneyTreat)
 				{
 					// NON FERMO LE ALTRE POMPE MA LE FACCIO CONTINUARE FINO ALLA FINE
 					// ho rilevato una presenza aria nel circuito di perfusione arteriosa
-					//setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
 					// fermo la pompa e proseguo con lo svuotamento dall'ultimo liquido rimasto
+					setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
 					EmptyDispRunAlwaysState = WAIT_FOR_LEVEL_OR_AMOUNT;
 				}
 			}
@@ -2928,9 +2940,6 @@ void manageParentTreatEndAlways(void)
 void manageChildNull(void)
 {
 	unsigned short dummy = 0;
-	#ifdef DEBUG_TREATMENT
-	dummy = dummy + 1;
-	#endif
 }
 
 void manageChildEntry(void)
@@ -2939,42 +2948,9 @@ void manageChildEntry(void)
 
 void manageChildEntryAlways(void)
 {
-	#ifdef DEBUG_ENABLE
-	static int index2 = 0;
-	index2++;
-	#endif
 }
 
 /* CORE FUNCTION */
-
-/*-----------------------------------------------------------*/
-/* This function manages the communication with the pc board */
-/*-----------------------------------------------------------*/
-void manageCommWithPc(void)
-{
-}
-
-/*----------------------------------------------------------------------------*/
-/* This function manages the communication with the protection microprocessor */
-/*----------------------------------------------------------------------------*/
-void manageCommWithProtection(void)
-{
-}
-
-/*----------------------------------------------------------------------------*/
-/* This function reads the analog sensor on the control microprocessor        */
-/*----------------------------------------------------------------------------*/
-void readAnalogSensor(void)
-{
-}
-
-/*----------------------------------------------------------------------------*/
-/* This function reads the digital sensor on the control microprocessor       */
-/*----------------------------------------------------------------------------*/
-void readDigitalSensor(void)
-{
-}
-
 
 /*--------------------------------------------------------*/
 /*  This function compute the guard value in entry state   */
@@ -3393,6 +3369,19 @@ void ParentEmptyDispStateMach(void)
 			if(((VolumeDischarged >= perfusionParam.priVolPerfArt) /*|| (PR_LEVEL_mmHg_Filtered <= 0)*/) && IsDisposableEmpty())
 			{
 				// ho scaricato tutto, mi fermo
+				// fine del processo di svuotamento
+				if(GetTherapyType() == LiverTreat)
+				{
+					setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
+					setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 0);
+					setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, 0);
+				}
+				else if(GetTherapyType() == KidneyTreat)
+				{
+					setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
+					setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 0);
+				}
+
 				ptrFutureParent = &stateParentEmptyDisp[7];
 				ptrFutureChild = ptrFutureParent->ptrChild;
 				currentGuard[GUARD_EMPTY_DISPOSABLE_END].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
@@ -3446,6 +3435,16 @@ void ParentEmptyDispStateMach(void)
 			break;
 
 		case PARENT_EMPTY_DISPOSABLE_END:
+			if(ptrCurrentParent->action == ACTION_ON_ENTRY)
+			{
+				/* compute future parent */
+				/* FM passo alla gestione ACTION_ALWAYS */
+				ptrFutureParent = &stateParentEmptyDisp[8];
+				ptrFutureChild = ptrFutureParent->ptrChild;
+			}
+			else if(ptrCurrentParent->action == ACTION_ALWAYS)
+			{
+			}
 			break;
 	}
 }
@@ -3656,12 +3655,6 @@ void processMachineState(void)
 			/* execute function state level */
 			// (FM) DOPO LA PRIMA VOLTA PASSA AUTOMATICAMENTE NELLO STATO IDLE,ACTION_ALWAYS
 			manageStateEntryAndStateAlways(4);
-
-//			#ifdef DEBUG_ENABLE
-//			Bit1_NegVal();
-//			TestPump(3, 1000 );
-//			#endif
-
 			break;
 
 		case STATE_SELECT_TREAT:     // NON E' USATO CON LA GESTIONE DA SERVICE
@@ -3739,20 +3732,6 @@ void processMachineState(void)
 			break;
 
 		case STATE_PRIMING_PH_1:
-//			if(
-//				(currentGuard[GUARD_ENABLE_PRIMING_PHASE_2].guardValue == GUARD_VALUE_TRUE)
-//				)
-//			{
-//				currentGuard[GUARD_ENABLE_PRIMING_PHASE_2].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
-//				/* (FM) FINITA LA FASE 1 DEL PRIMING POSSO PASSARE ALLA FASE 2 */
-//				/* compute future state */
-//				ptrFutureState = &stateState[15];
-//				/* compute future parent */
-//				ptrFutureParent = ptrFutureState->ptrParent;
-//				/* compute future child */
-//				ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
-//				DebugStringStr("STATE_PRIMING_PH_2");
-//			}
 			if(currentGuard[GUARD_ENABLE_STATE_PRIMING_PH_1_WAIT].guardValue == GUARD_VALUE_TRUE)
 			{
 				// nello stato priming 1 aspetto che mi arrivi il comando di caricamento del filtro
@@ -3797,6 +3776,7 @@ void processMachineState(void)
 				/* compute future child */
 				ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
 				DebugStringStr("STATE_PRIMING_PH_2");
+				break;
 			}
 			else if(currentGuard[GUARD_ABANDON_PRIMING].guardValue == GUARD_VALUE_TRUE)
 			{
@@ -3809,6 +3789,7 @@ void processMachineState(void)
 				/* compute future child */
 				ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
 				DebugStringStr("STATE_IDLE(ABBANDONA)");
+				break;
 			}
 			/* execute function state level */
 			manageStateEntryAndStateAlways(40);
@@ -3829,6 +3810,7 @@ void processMachineState(void)
 
 				/*torno indietro nella macchina a stati quindi resetto la flag di entry sullo stato in cui sono*/
 				currentGuard[GUARD_ENABLE_PRIMING_PHASE_2].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
+				break;
 			}
 			else if(currentGuard[GUARD_ABANDON_PRIMING].guardValue == GUARD_VALUE_TRUE)
 			{
@@ -3841,6 +3823,7 @@ void processMachineState(void)
 				/* compute future child */
 				ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
 				DebugStringStr("STATE_IDLE(ABBANDONA)");
+				break;
 			}
 			/* execute function state level */
 			manageStateEntryAndStateAlways(16);
@@ -3930,6 +3913,7 @@ void processMachineState(void)
 					/* compute future child */
 					ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
 					DebugStringStr("STATE_TREATMENT");
+					break;
 				}
 				else if( currentGuard[GUARD_ABANDON_PRIMING].guardValue == GUARD_VALUE_TRUE )
 				{
@@ -3941,6 +3925,7 @@ void processMachineState(void)
 					/* compute future child */
 					ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
 					DebugStringStr("STATE_IDLE(ABBANDONA)");
+					break;
 				}
 
 				/* execute function state level */
@@ -4083,7 +4068,6 @@ void processMachineState(void)
 	}
 
 // ------------------GESTIONE STATI PARENT PRIMING-------------------------------------------------------------------
-
 	//questo switch andrà suddiviso e portato dentro i singoli case dello switch sopra........
 	/* (FM) POSSO FARE UNA FUNZIONE CHIAMATA stateParentPrimingTreatKidney1_func ED INSERIRE TUTTI I CASE
 	   RELATIVI AL PRIMING E CHIAMARLA SEMPRE NEI CASE STATE_PRIMING_PH_1, STATE_PRIMING_PH_2 DELLO SWITCH PRECEDENTE
@@ -4264,7 +4248,6 @@ void processMachineState(void)
 
 
 // ------------------GESTIONE STATI PARENT TRATTAMENTO-------------------------------------------------------------------
-
 		case PARENT_TREAT_KIDNEY_1_INIT:
 			if(perfusionParam.treatVolPerfArt >= 200)
 			{
@@ -4692,7 +4675,6 @@ void processMachineState(void)
 			}
 			break;
 
-
 		default:
 			break;
 	}
@@ -4942,8 +4924,6 @@ void CheckOxygenationSpeed(word value)
 }
 
 
-
-
 void Display_7S_Management()
 {
 	//funzioni per spegnere e accenderfe display a 7 Segmenti
@@ -4984,11 +4964,6 @@ void Cover_Sensor_GetVal()
 	CoverM5 = COVER_M5_GetVal();
 
 }
-
-
-
-
-
 
 
 /* Source --> indirizzo di partenza da ci si legge in flash (es 0xFF000)

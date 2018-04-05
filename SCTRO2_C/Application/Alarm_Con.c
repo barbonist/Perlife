@@ -561,14 +561,17 @@ void alarmEngineAlways(void)
 			case STATE_EMPTY_DISPOSABLE:
 			case STATE_EMPTY_DISPOSABLE_1:
 			{
-				manageAlarmPhysicPressSensHigh();
-
 				manageAlarmFlowSensNotDetected();
 				manageAlarmIrTempSensNotDetected();
 
+				manageAlarmPhysicPressSensHigh();
 				manageAlarmPhysicUFlowSens();
 				manageAlarmSAFAirSens();
 				manageAlarmPhysicUFlowSensVen();
+				if(GetTherapyType() == LiverTreat)
+					manageAlarmCoversPumpLiver();
+				else if(GetTherapyType() == KidneyTreat)
+					manageAlarmCoversPumpKidney();
 				break;
 			}
 
@@ -577,7 +580,6 @@ void alarmEngineAlways(void)
 				/* DA DEBUGGARE*/
 				manageAlarmFlowSensNotDetected();
 				manageAlarmIrTempSensNotDetected();
-
 				break;
 			}
 
@@ -673,6 +675,7 @@ void alarmEngineAlways(void)
 	}
 }
 
+//------------------------FUNZIONI PER DETERMINARE LA CONDIZIONE DI ALLARME----------------------------------
 bool IsCanBusError(void);
 
 void manageAlarmCanBus(void)
@@ -878,13 +881,10 @@ void manageAlarmCoversPumpKidney(void)
 	}
 }
 
-
-
 void manageAlarmPhysicPressSensLow(void)
 {
 	if(GlobalFlags.FlagsDef.EnablePressSensLowAlm)
 	{
-
 		// se il sensore di pressione arteriosa misura la pressione subito prima dell'organo
 		// questo codice va commentato perche' la pressione prima di andare in trattamento e' sempre 0
 		// Per ora faccio una prova mettendo PR_ART_LOW a 0
@@ -1062,7 +1062,6 @@ void manageAlarmPhysicUFlowSens(void){
 	}
 }
 
-
 // Imposto un allarme non fisico da inviare ad SBC
 void SetNonPhysicalAlm( int AlarmCode)
 {
@@ -1217,6 +1216,10 @@ void manageAlarmActuatorModbusNotRespond(void)
 			CountErrorModbusMSG[j] = 0;
 	}
 }
+
+//------------------------FINE FUNZIONI PER DETERMINARE LA CONDIZIONE DI ALLARME----------------------------------
+
+
 
 void alarmManageNull(void)
 {

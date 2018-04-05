@@ -1387,9 +1387,12 @@ Kd = Kp*Pu/8  = 0.01875
 // parametri per il pid sulla arteriosa calcolati sul nuovo disposable (franco) e con il tempo
 // di aggiornamento del pid di 450 msec
 // ku = 0.5, Pu = 3 sec
-#define parKITC_Art 						0.2
-#define parKP_Art 							0.30
-#define parKD_TC_Art 						0.1125
+//#define parKITC_Art 						0.2
+//#define parKP_Art 							0.30
+//#define parKD_TC_Art 						0.1125
+#define parKITC_Art 						(0.2 / 3.0)
+#define parKP_Art 							(0.30 / 3.0)
+#define parKD_TC_Art 						(0.1125 * 2.0)
 //------------------------------------------------------------------------------------------
 
 // parametri per il nuovo pid sulla arteriosa (calcolati con Vincenzo sul vecchio disposable)
@@ -1404,30 +1407,17 @@ Kd = Kp*Pu/8  = 0.01875
 //#define parKD_TC_Art 						0.8
 
 //----------------------------------------------------------------------------------------------------------
-// i valori che seguono sono da considerare nel funzionamento normale
 // volume in ml nel reservoir prima di far partire le pompe di ossigenazione e pompa depurazione nel fegato
 #define MIN_LIQ_IN_RES_TO_START_OXY_VEN    400
 // volume aggiuntivo in ml da considerare in priming per tenere conto
 // del riempimento del disposable
 #define VOLUME_DISPOSABLE  200
-// quantita' di liquido scaricata prima di iniziare lo scaricamento del disposable
-#define DISCHARGE_AMOUNT_ART_PUMP  1000
+// quantita' di liquido scaricata prima di iniziare lo scaricamento del disposable espressa in percentuale del volume di priming
+// gia' caricato
+//#define DISCHARGE_AMOUNT_ART_PUMP  1000
+#define DISCHARGE_AMOUNT_ART_PUMP  80
 //----------------------------------------------------------------------------------------------------------
 
-
-/*
-//----------------------------------------------------------------------------------------------------------
-// i valori che seguono sono da considerare per il debug interno e quindi devono essere commentati
-// nel funzionamento normale e ripristinati quelli precedenti
-// volume in ml nel reservoir prima di far partire le pompe di ossigenazione e pompa depurazione nel fegato
-#define MIN_LIQ_IN_RES_TO_START_OXY_VEN    15
-// volume aggiuntivo in ml da considerare in priming per tenere conto
-// del riempimento del disposable
-#define VOLUME_DISPOSABLE  10
-// quantita' di liquido scaricata prima di iniziare lo scaricamento del disposable
-#define DISCHARGE_AMOUNT_ART_PUMP  20
-//----------------------------------------------------------------------------------------------------------
-*/
 
 // volume massimo caricabile in vaschetta in ml
 #define MAX_LIQUID_AMOUNT 2500

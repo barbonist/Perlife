@@ -26,10 +26,6 @@ void manageNull(void);
 void manageStateLevel(void);
 
 /* CORE FUNCTION */
-void manageCommWithPc(void);
-void manageCommWithProtection(void);
-void readAnalogSensor(void);
-void readDigitalSensor(void);
 void computeMachineStateGuard(void);
 static void computeMachineStateGuardEntryState(void);
 static void computeMachineStateGuardIdle(void);
