@@ -2523,6 +2523,7 @@ void RestartPumpsEmptyState(void)
 //        BUTTON_STOP_EMPTY_DISPOSABLE  per fermare momentaneamente tutte le pompe
 void EmptyDispStateMach(void)
 {
+	static bool PutPinchInSafetyPosFlag = FALSE;
 	THERAPY_TYPE TherType = GetTherapyType();
 	int StarEmptyDispButId;
 	int StopAllPumpButId;
@@ -2539,6 +2540,7 @@ void EmptyDispStateMach(void)
 			{
 				// attivo la pompa per iniziare ko svuotamento
 				releaseGUIButton(StarEmptyDispButId);
+				PutPinchInSafetyPosFlag = PutPinchInSafetyPos();
 
 				// attivazione della pompa di svuotamento
 				if(GetTherapyType() == LiverTreat)
@@ -2553,6 +2555,10 @@ void EmptyDispStateMach(void)
 				}
 				// nel processo di svuotamento non mi servono tutti gli allarmi ma solo quelli di aria
 				DisableAllAlarm();
+				// abilito anche gli allarmi di pressione alta
+				GlobalFlags.FlagsDef.EnablePressSensHighAlm = 1;
+				// abilito anche gli allarmi delle cover
+				GlobalFlags.FlagsDef.EnableCoversAlarm = 1;
 				EmptyDispRunAlwaysState = WAIT_FOR_1000ML;
 			}
 			else if(buttonGUITreatment[BUTTON_PRIMING_ABANDON].state == GUI_BUTTON_RELEASED)
@@ -2563,6 +2569,10 @@ void EmptyDispStateMach(void)
 			}
 			break;
 		case WAIT_FOR_1000ML:
+			// controllo che le pinch siano in sicurezza
+			if(!PutPinchInSafetyPosFlag)
+				PutPinchInSafetyPosFlag = PutPinchInSafetyPos();
+
 			DischargeAmountArtPump = (word)((float)perfusionParam.priVolPerfArt * (float)DISCHARGE_AMOUNT_ART_PUMP / 100.0);
 			if(!EmptyDisposStartOtherPump && VolumeDischarged >= DischargeAmountArtPump)
 			{
@@ -2579,8 +2589,6 @@ void EmptyDispStateMach(void)
 			    ChildEmptyFlags.FlagsVal = 0;
 				// abilito gli allarmi aria
 				DisableAllAirAlarm(FALSE);
-				// abilito anche gli allarmi di pressione alta
-				GlobalFlags.FlagsDef.EnablePressSensHighAlm = 1;
 				EmptyDispRunAlwaysState = WAIT_FOR_AIR_ALARM;
 			}
 			else if(buttonGUITreatment[StopAllPumpButId].state == GUI_BUTTON_RELEASED)
@@ -4086,14 +4094,14 @@ void processMachineState(void)
 			if(ptrCurrentParent->action == ACTION_ON_ENTRY)
 			{
 				/* execute parent callback function */
-				ptrCurrentParent->callBackFunct();
+				//ptrCurrentParent->callBackFunct(); NON SERVE QUESTO
 				/* compute future parent */
 				ptrFutureParent = &stateParentPrimingTreatKidney1[2];
 				ptrFutureChild = ptrFutureParent->ptrChild;
 			}
 			else if(ptrCurrentParent->action == ACTION_ALWAYS)
 			{
-				ptrCurrentParent->callBackFunct();
+				//ptrCurrentParent->callBackFunct(); NON SERVE QUESTO
 			}
 
 			/* (FM) se si e' verificato un allarme lo faccio partire */
@@ -4120,14 +4128,14 @@ void processMachineState(void)
 			if(ptrCurrentParent->action == ACTION_ON_ENTRY)
 			{
 				/* execute parent callback function */
-				ptrCurrentParent->callBackFunct();
+				// ptrCurrentParent->callBackFunct(); NON SERVE QUESTO
 				/* compute future parent */
 				ptrFutureParent = &stateParentPrimingTreatKidney1[4];
 				ptrFutureChild = ptrFutureParent->ptrChild;
 			}
 			else if(ptrCurrentParent->action == ACTION_ALWAYS)
 			{
-				ptrCurrentParent->callBackFunct();
+				// ptrCurrentParent->callBackFunct(); NON SERVE QUESTO
 			}
 
 			/* (FM) se si e' verificato un allarme lo faccio partire */
@@ -4173,6 +4181,13 @@ void processMachineState(void)
 					ptrFutureParent = &stateParentPrimingTreatKidney1[3];
 					ptrFutureChild = ptrFutureParent->ptrChild;
 
+					if( (perfusionParam.priVolPerfArt == 0) && ((ptrCurrentState->state == STATE_PRIMING_PH_1) || (ptrCurrentState->state == STATE_PRIMING_PH_2)))
+					{
+						// mi e' arrivato un segnale di troppo pieno ancora prima di cominciare il priming
+						// forzo l'uscita dal priming e vado subito in ricircolo
+						perfusionParam.priVolPerfArt = MAX_LIQUID_AMOUNT;
+					}
+
 					// forzo anche una pressione del tasto BUTTON_PRIMING_END_CONFIRM per fare in modo che
 					// il riempimento termini subito e si vada alla fase di riciclo
 					setGUIButton(BUTTON_PRIMING_END_CONFIRM);
@@ -4208,14 +4223,14 @@ void processMachineState(void)
 			if(ptrCurrentParent->action == ACTION_ON_ENTRY)
 			{
 				/* execute parent callback function */
-				ptrCurrentParent->callBackFunct();
+				//ptrCurrentParent->callBackFunct(); NON SERVE QUESTO
 				/* compute future parent */
 				ptrFutureParent = &stateParentPrimingTreatKidney1[6];
 				ptrFutureChild = ptrFutureParent->ptrChild;
 			}
 			else if(ptrCurrentParent->action == ACTION_ALWAYS)
 			{
-				ptrCurrentParent->callBackFunct();
+				//ptrCurrentParent->callBackFunct(); NON SERVE QUESTO
 			}
 			break;
 
@@ -4259,7 +4274,7 @@ void processMachineState(void)
 			if(ptrCurrentParent->action == ACTION_ON_ENTRY)
 			{
 				/* execute parent callback function */
-				ptrCurrentParent->callBackFunct();
+				//ptrCurrentParent->callBackFunct(); NON SERVE QUESTO
 				/* compute future parent */
 				/* FM entro nello stato in cui l'azione e' di tipo ACTION_ALWAYS */
 				ptrFutureParent = &stateParentTreatKidney1[2];
@@ -4267,7 +4282,7 @@ void processMachineState(void)
 			}
 			else if(ptrCurrentParent->action == ACTION_ALWAYS)
 			{
-				ptrCurrentParent->callBackFunct();
+				//ptrCurrentParent->callBackFunct(); NON SERVE QUESTO
 			}
 
 			if(currentGuard[GUARD_ALARM_ACTIVE].guardValue == GUARD_VALUE_TRUE)
@@ -4301,7 +4316,7 @@ void processMachineState(void)
 			if(ptrCurrentParent->action == ACTION_ON_ENTRY)
 			{
 				/* execute parent callback function */
-				ptrCurrentParent->callBackFunct();
+				//ptrCurrentParent->callBackFunct(); NON SERVE QUESTO
 				/* compute future parent */
 				/* FM passo alla gestione ACTION_ALWAYS */
 				ptrFutureParent = &stateParentTreatKidney1[4];
@@ -4309,7 +4324,7 @@ void processMachineState(void)
 			}
 			else if(ptrCurrentParent->action == ACTION_ALWAYS)
 			{
-				ptrCurrentParent->callBackFunct();
+				//ptrCurrentParent->callBackFunct(); NON SERVE QUESTO
 			}
 
 			if(currentGuard[GUARD_ALARM_ACTIVE].guardValue == GUARD_VALUE_TRUE)
@@ -4420,7 +4435,7 @@ void processMachineState(void)
 			if(ptrCurrentParent->action == ACTION_ON_ENTRY)
 			{
 				/* execute parent callback function */
-				ptrCurrentParent->callBackFunct();
+				//ptrCurrentParent->callBackFunct(); NON SERVE QUESTO
 				/* compute future parent */
 				/* (FM) passo alla gestione ACTION_ALWAYS dell'allarme */
 				ptrFutureParent = &stateParentTreatKidney1[6];
@@ -4433,7 +4448,7 @@ void processMachineState(void)
 			}
 			else if(ptrCurrentParent->action == ACTION_ALWAYS)
 			{
-				ptrCurrentParent->callBackFunct();
+				//ptrCurrentParent->callBackFunct(); NON SERVE QUESTO
 				// (FM) chiamo la funzione child che gestisce lo stato di allarme durante il trattamento
 				// Dovra fare tutte le attuazioni sulle pompe, pinch necessarie per risolvere la condizione
 				// di allarme
@@ -4700,12 +4715,12 @@ void processMachineState(void)
 			if(ptrCurrentChild->action == ACTION_ON_ENTRY)
 			{
 				/* (FM) esegue la parte ACTION_ON_ENTRY della gestione dell'allarme */
-				ptrCurrentChild->callBackFunct();
+				//ptrCurrentChild->callBackFunct(); NON SERVE QUESTO
 				ptrFutureChild = &stateChildAlarmPriming[2];
 			}
 			else if(ptrCurrentChild->action == ACTION_ALWAYS){
 				/* (FM) esegue la parte ACTION_ALWAYS della gestione dell'allarme */
-				ptrCurrentChild->callBackFunct();
+				//ptrCurrentChild->callBackFunct(); NON SERVE QUESTO
 			}
 
             /* (FM) probabilmente cio' che deve essere fatto per completare la gestione dell'allarme e'quello che segue.
@@ -4751,21 +4766,21 @@ void processMachineState(void)
 		case CHILD_PRIMING_ALARM_STOP_PERFUSION:
 			if(ptrCurrentChild->action == ACTION_ON_ENTRY)
 			{
-				ptrCurrentChild->callBackFunct();
+				//ptrCurrentChild->callBackFunct(); NON SERVE QUESTO
 
 				ptrFutureChild = &stateChildAlarmPriming[4];
 			}
             else if(currentGuard[GUARD_ALARM_STOP_PERF_PUMP].guardValue == GUARD_VALUE_FALSE )
                 ptrFutureChild = &stateChildAlarmPriming[13]; /* (FM) allarme chiuso */
 			else if(ptrCurrentChild->action == ACTION_ALWAYS){
-				ptrCurrentChild->callBackFunct();
+				//ptrCurrentChild->callBackFunct(); NON SERVE QUESTO
 			}
 			break;
 
 		case CHILD_PRIMING_ALARM_STOP_PURIFICATION:
 			if(ptrCurrentChild->action == ACTION_ON_ENTRY)
 			{
-				ptrCurrentChild->callBackFunct();
+				//ptrCurrentChild->callBackFunct(); NON SERVE QUESTO
 
 				ptrFutureChild = &stateChildAlarmPriming[6];
 			}
@@ -4773,61 +4788,61 @@ void processMachineState(void)
                      (currentGuard[GUARD_ALARM_STOP_OXYG_PUMP].guardValue == GUARD_VALUE_FALSE) )
                 ptrFutureChild = &stateChildAlarmPriming[13]; /* (FM) allarme chiuso */
 			else if(ptrCurrentChild->action == ACTION_ALWAYS){
-				ptrCurrentChild->callBackFunct();
+				//ptrCurrentChild->callBackFunct(); NON SERVE QUESTO
 			}
 			break;
 
 		case CHILD_PRIMING_ALARM_STOP_ALL_PUMP:
 			if(ptrCurrentChild->action == ACTION_ON_ENTRY)
 			{
-				ptrCurrentChild->callBackFunct();
+				//ptrCurrentChild->callBackFunct(); NON SERVE QUESTO
 
 				ptrFutureChild = &stateChildAlarmPriming[8];
 			}
             else if(currentGuard[GUARD_ALARM_STOP_ALL].guardValue == GUARD_VALUE_FALSE )
                 ptrFutureChild = &stateChildAlarmPriming[13]; /* FM allarme chiuso */
 			else if(ptrCurrentChild->action == ACTION_ALWAYS){
-				ptrCurrentChild->callBackFunct();
+				//ptrCurrentChild->callBackFunct(); NON SERVE QUESTO
 			}
 			break;
 
 		case CHILD_PRIMING_ALARM_STOP_PELTIER:
 			if(ptrCurrentChild->action == ACTION_ON_ENTRY)
 			{
-				ptrCurrentChild->callBackFunct();
+				//ptrCurrentChild->callBackFunct(); NON SERVE QUESTO
 
 				ptrFutureChild = &stateChildAlarmPriming[10];
 			}
             else if(currentGuard[GUARD_ALARM_STOP_PELTIER].guardValue == GUARD_VALUE_FALSE )
                 ptrFutureChild = &stateChildAlarmPriming[13]; /* FM allarme chiuso */
 			else if(ptrCurrentChild->action == ACTION_ALWAYS){
-				ptrCurrentChild->callBackFunct();
+				//ptrCurrentChild->callBackFunct(); NON SERVE QUESTO
 			}
 			break;
 
 		case CHILD_PRIMING_ALARM_STOP_ALL_ACTUATOR:
 			if(ptrCurrentChild->action == ACTION_ON_ENTRY)
 			{
-				ptrCurrentChild->callBackFunct();
+				//ptrCurrentChild->callBackFunct(); NON SERVE QUESTO
 				ptrFutureChild = &stateChildAlarmPriming[12];
 			}
             else if( currentGuard[GUARD_ALARM_STOP_ALL_ACTUATOR].guardValue == GUARD_VALUE_FALSE )
                 ptrFutureChild = &stateChildAlarmPriming[13]; /* FM allarme chiuso */
 			else if(ptrCurrentChild->action == ACTION_ALWAYS){
-				ptrCurrentChild->callBackFunct();
+				//ptrCurrentChild->callBackFunct(); NON SERVE QUESTO
 			}
 			break;
 
 		case CHILD_PRIMING_ALARM_END:
 			if(ptrCurrentChild->action == ACTION_ON_ENTRY)
 			{
-				ptrCurrentChild->callBackFunct();
+				//ptrCurrentChild->callBackFunct(); NON SERVE QUESTO
 				ptrFutureChild = &stateChildAlarmPriming[14];
 			}
 			else if(ptrCurrentChild->action == ACTION_ALWAYS){
                 /* (FM) RIMANGO FERMO QUI FINO AL PROSSIMO ALLARME. NON E' NECESSARIO USCIRE DA QUESTO STATO DOPO IL TERMINE
                    DELLA CONDIZIONE DI ALLARME. LA CONDIZIONE DI ALLARME SUCCESSIVA MI FARA' RIPARTIRE DA CHILD_PRIMING_ALARM_INIT */
-				ptrCurrentChild->callBackFunct();
+				//ptrCurrentChild->callBackFunct(); NON SERVE QUESTO
 			}
 			break;
 

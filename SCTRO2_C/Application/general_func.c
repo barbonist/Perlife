@@ -206,7 +206,7 @@ void DebugString()
 								(int) PR_ART_mmHg,            //PR_ART_Sistolyc_mmHg,     // PR_ART_mmHg_Filtered,
 								TotalTreatDuration + TreatDuration,
 								(int) pumpPerist[0].actualSpeedOld * 100, //pumpPerist[1].actualSpeed,
-								(int) perfusionParam.priVolPerfArt
+								(int) pumpPerist[1].actualSpeedOld * 100
 					);
 
 		perfusionParam.treatDurPerfArt = (word)((TotalTreatDuration + TreatDuration) / 60);

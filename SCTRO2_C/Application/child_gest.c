@@ -1122,6 +1122,46 @@ bool IsSecurityStateActive(void)
 		return FALSE;
 }
 
+// ritorna TRUE se sono in sicurezza
+bool PutPinchInSafetyPos(void)
+{
+	static unsigned char PutPinchInSafetyPos = 0;
+	bool InSafetyPos = TRUE;
+	THERAPY_TYPE TherType = GetTherapyType();
+
+	if(!PutPinchInSafetyPos)
+	{
+		setPinchPositionHighLevel(PINCH_2WPVF, MODBUS_PINCH_LEFT_OPEN);
+		setPinchPositionHighLevel(PINCH_2WPVA, MODBUS_PINCH_RIGHT_OPEN);
+		setPinchPositionHighLevel(PINCH_2WPVV, MODBUS_PINCH_RIGHT_OPEN);
+		PutPinchInSafetyPos = 1;
+		InSafetyPos = FALSE;
+	}
+	else
+	{
+		if (PinchWriteTerminated(0) && (modbusData[PINCH_2WPVF-3][17] != 0xaa))
+		{
+			// metto in bypass il filtro per sicurezza
+			setPinchPositionHighLevel(PINCH_2WPVF, MODBUS_PINCH_LEFT_OPEN);
+			InSafetyPos = FALSE;
+		}
+		if (PinchWriteTerminated(1) && (modbusData[PINCH_2WPVA-3][17] != 0xaa))
+		{
+			setPinchPositionHighLevel(PINCH_2WPVA, MODBUS_PINCH_RIGHT_OPEN);
+			InSafetyPos = FALSE;
+		}
+		if (PinchWriteTerminated(2) && (modbusData[PINCH_2WPVV-3][17] != 0xaa) && (TherType == LiverTreat))
+		{
+			setPinchPositionHighLevel(PINCH_2WPVV, MODBUS_PINCH_RIGHT_OPEN);
+			InSafetyPos = FALSE;
+		}
+		else if (PinchWriteTerminated(2) && (modbusData[PINCH_2WPVV-3][17] != 0xaa) && (TherType == KidneyTreat))
+		{
+			//in TherapyType == KidneyTreat non è usata quindi preferisco non muoverla
+		}
+	}
+	return InSafetyPos;
+}
 
 
 //-----------------------------------------------SVUOTAMENTO DISPOSABLE----------------------------------------------------------

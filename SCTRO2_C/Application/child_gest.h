@@ -64,7 +64,7 @@ void ManageStateChildAlarmTreat1(void);
 
 bool PinchWriteTerminated(int idx);
 bool IsSecurityStateActive(void);
-
+bool PutPinchInSafetyPos(void);
 
 /* --------------------------------------------------------------------------------------------
    CHILD LEVEL FUNCTION FOR EMPTY STATE
