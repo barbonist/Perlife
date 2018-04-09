@@ -123,40 +123,40 @@ void buildPressSensReadValuesResponseMsg(char *ptrMsgSbcRx)
 {
     byte index = 0;
 
-	sbc_tx_data[index++] = 0xA5;
-	sbc_tx_data[index++] = 0xAA;
-	sbc_tx_data[index++] = 0x55;
-	sbc_tx_data[index++] = 0x00;
-	sbc_tx_data[index++] = 0x16;
-	sbc_tx_data[index++] = ptrMsgSbcRx[5];
-	sbc_tx_data[index++] = ptrMsgSbcRx[6];
-	sbc_tx_data[index++] = 0x66;
-	sbc_tx_data[index++] = 0x00; //TODO stable byte
+/*0*/	sbc_tx_data[index++] = 0xA5;
+/*1*/	sbc_tx_data[index++] = 0xAA;
+/*2*/	sbc_tx_data[index++] = 0x55;
+/*3*/	sbc_tx_data[index++] = 0x00;
+/*4*/	sbc_tx_data[index++] = 0x16;
+/*5*/	sbc_tx_data[index++] = ptrMsgSbcRx[5];
+/*6*/	sbc_tx_data[index++] = ptrMsgSbcRx[6];
+/*7*/	sbc_tx_data[index++] = 0x66;
+/*8*/	sbc_tx_data[index++] = 0x00; //TODO stable byte
 
-	sbc_tx_data[index++] = (PR_OXYG_mmHg_Filtered >> 8)  & 0xFF;
-	sbc_tx_data[index++] = PR_OXYG_mmHg_Filtered  & 0xFF;
-	sbc_tx_data[index++] = (PR_OXYG_ADC_Filtered >> 8)  & 0xFF;
-	sbc_tx_data[index++] = PR_OXYG_ADC_Filtered  & 0xFF;
+/*9*/	sbc_tx_data[index++] = (PR_OXYG_mmHg_Filtered >> 8)  & 0xFF;
+/*10*/	sbc_tx_data[index++] = PR_OXYG_mmHg_Filtered  & 0xFF;
+/*11*/	sbc_tx_data[index++] = (PR_OXYG_ADC_Filtered >> 8)  & 0xFF;
+/*12*/	sbc_tx_data[index++] = PR_OXYG_ADC_Filtered  & 0xFF;
 
-	sbc_tx_data[index++] = (PR_LEVEL_mmHg_Filtered >> 8)  & 0xFF;
-	sbc_tx_data[index++] = PR_LEVEL_mmHg_Filtered & 0xFF;
-	sbc_tx_data[index++] = (PR_LEVEL_ADC_Filtered >> 8)  & 0xFF;
-	sbc_tx_data[index++] = PR_LEVEL_ADC_Filtered  & 0xFF;
+/*13*/	sbc_tx_data[index++] = (PR_LEVEL_mmHg_Filtered >> 8)  & 0xFF;
+/*14*/	sbc_tx_data[index++] = PR_LEVEL_mmHg_Filtered & 0xFF;
+/*15*/	sbc_tx_data[index++] = (PR_LEVEL_ADC_Filtered >> 8)  & 0xFF;
+/*16*/	sbc_tx_data[index++] = PR_LEVEL_ADC_Filtered  & 0xFF;
 
-	sbc_tx_data[index++] = (PR_ADS_FLT_mmHg_Filtered >> 8)  & 0xFF;
-	sbc_tx_data[index++] = (PR_ADS_FLT_mmHg_Filtered)  & 0xFF;
-	sbc_tx_data[index++] = (PR_ADS_FLT_ADC_Filtered >> 8)  & 0xFF;
-	sbc_tx_data[index++] = PR_ADS_FLT_ADC_Filtered  & 0xFF;
+/*17*/	sbc_tx_data[index++] = (PR_ADS_FLT_mmHg_Filtered >> 8)  & 0xFF;
+/*18*/	sbc_tx_data[index++] = (PR_ADS_FLT_mmHg_Filtered)  & 0xFF;
+/*19*/	sbc_tx_data[index++] = (PR_ADS_FLT_ADC_Filtered >> 8)  & 0xFF;
+/*20*/	sbc_tx_data[index++] = PR_ADS_FLT_ADC_Filtered  & 0xFF;
 
-	sbc_tx_data[index++] = (MedForVenousPid >> 8)  & 0xFF;
-	sbc_tx_data[index++] = (MedForVenousPid)  & 0xFF;
-	sbc_tx_data[index++] = (PR_VEN_ADC_Filtered >> 8)  & 0xFF;
-	sbc_tx_data[index++] = PR_VEN_ADC_Filtered  & 0xFF;
+/*21*/  sbc_tx_data[index++] = (MedForVenousPid >> 8)  & 0xFF;
+/*22*/	sbc_tx_data[index++] = (MedForVenousPid)  & 0xFF;
+/*23*/	sbc_tx_data[index++] = (PR_VEN_ADC_Filtered >> 8)  & 0xFF;
+/*24*/	sbc_tx_data[index++] = PR_VEN_ADC_Filtered  & 0xFF;
 
-	sbc_tx_data[index++] = (MedForArteriousPid >> 8)  & 0xFF;
-	sbc_tx_data[index++] = MedForArteriousPid  & 0xFF;
-	sbc_tx_data[index++] = (PR_ART_ADC_Filtered >> 8)  & 0xFF;
-	sbc_tx_data[index++] = PR_ART_ADC_Filtered  & 0xFF;
+/*25*/	sbc_tx_data[index++] = (MedForArteriousPid >> 8)  & 0xFF;
+/*26*/	sbc_tx_data[index++] = MedForArteriousPid  & 0xFF;
+/*27*/	sbc_tx_data[index++] = (PR_ART_ADC_Filtered >> 8)  & 0xFF;
+/*28*/	sbc_tx_data[index++] = PR_ART_ADC_Filtered  & 0xFF;
 
 	/*
 	for(int i = 0 ; i < 5 ; i++)
@@ -880,23 +880,23 @@ void buildRDMachineStateResponseMsg(char code, char subcode)
 	byte index = 0;
 	unsigned int life = FreeRunCnt10msec *10;
 
-	sbc_tx_data[index++] = 0xA5;
-	sbc_tx_data[index++] = 0xAA;
-	sbc_tx_data[index++] = 0x55;
-	sbc_tx_data[index++] = 0x00;
-	/* byte count: 79 byte */
-	sbc_tx_data[index++] = 0x5F;
+	/*0*/	sbc_tx_data[index++] = 0xA5;
+	/*1*/   sbc_tx_data[index++] = 0xAA;
+	/*2*/   sbc_tx_data[index++] = 0x55;
+	/*3*/	sbc_tx_data[index++] = 0x00;
+	/* byte count (esclusi i primi 4): 95 byte */
+	/*4*/	sbc_tx_data[index++] = 0x5F;
 	/* command id */
-	sbc_tx_data[index++] = code;
+	/*5*/	sbc_tx_data[index++] = code;
 	/* command id */
-	sbc_tx_data[index++] = subcode;
+	/*6*/	sbc_tx_data[index++] = subcode;
 	/* what is the meaning of this byte? */
-	sbc_tx_data[index++] = 0x66;
+	/*7*/	sbc_tx_data[index++] = 0x66;
 
 	/* STATUS PARAMETERS */
 	/* status parameters: life  */
-	sbc_tx_data[index++] = (life >> 8) & 0xFF;
-	sbc_tx_data[index++] = life & 0xFF;
+	/*8*/	sbc_tx_data[index++] = (life >> 8) & 0xFF;
+	/*9*/	sbc_tx_data[index++] = life & 0xFF;
 	/* status parameters: rev fw-H
 	 * potrei usare questa come versione FW
 	 * della CON usando 5 bit per il primo numero
@@ -904,8 +904,8 @@ void buildRDMachineStateResponseMsg(char code, char subcode)
 	 * terzo numero avendo quindi una versione massima
 	 * pari a 32.32.64  */
 
-	sbc_tx_data[index++] = 0x00;
-	sbc_tx_data[index++] = 0x00;
+	/*10*/	sbc_tx_data[index++] = 0x00;
+	/*11*/	sbc_tx_data[index++] = 0x00;
 
 	/* TODO status parameters: rev fw-H
 	 * potrei usare questa come versione FW
@@ -914,157 +914,157 @@ void buildRDMachineStateResponseMsg(char code, char subcode)
 	 * terzo numero avendo quindi una versione massima
 	 * pari a 32.32.64  */
 
-	sbc_tx_data[index++] = 0x00;
-	sbc_tx_data[index++] = 0x00;
+	/*12*/	sbc_tx_data[index++] = 0x00;
+	/*13*/	sbc_tx_data[index++] = 0x00;
 
 	/* status parameters: alarm code */
-	sbc_tx_data[index++] = (alarmCurrent.code >> 8 ) & 0xFF;
-	sbc_tx_data[index++] = (alarmCurrent.code 	    ) & 0xFF;
+	/*14*/	sbc_tx_data[index++] = (alarmCurrent.code >> 8 ) & 0xFF;
+	/*15*/	sbc_tx_data[index++] = (alarmCurrent.code 	    ) & 0xFF;
 	/* status parameters: alarm physic */
-	sbc_tx_data[index++] = (alarmCurrent.active >> 8 ) & 0xFF;
-	sbc_tx_data[index++] = (alarmCurrent.active      ) & 0xFF;
+	/*16*/	sbc_tx_data[index++] = (alarmCurrent.active >> 8 ) & 0xFF;
+	/*17*/	sbc_tx_data[index++] = (alarmCurrent.active      ) & 0xFF;
 	/* status parameters: alarm type */
-	sbc_tx_data[index++] = (alarmCurrent.type >> 8 ) & 0xFF;
-	sbc_tx_data[index++] = (alarmCurrent.type      ) & 0xFF;
+	/*18*/	sbc_tx_data[index++] = (alarmCurrent.type >> 8 ) & 0xFF;
+	/*19*/  sbc_tx_data[index++] = (alarmCurrent.type      ) & 0xFF;
 	/* status parameters: machine state state*/
-	sbc_tx_data[index++] = (ptrCurrentState->state >> 8) & 0xFF;
-	sbc_tx_data[index++] = (ptrCurrentState->state     ) & 0xFF;
+	/*20*/	sbc_tx_data[index++] = (ptrCurrentState->state >> 8) & 0xFF;
+	/*21*/	sbc_tx_data[index++] = (ptrCurrentState->state     ) & 0xFF;
 	/* status parameters: machine state parent*/
-	sbc_tx_data[index++] = (ptrCurrentParent->parent >> 8) & 0xFF;
-	sbc_tx_data[index++] = (ptrCurrentParent->parent     ) & 0xFF;
+	/*22*/	sbc_tx_data[index++] = (ptrCurrentParent->parent >> 8) & 0xFF;
+	/*23*/	sbc_tx_data[index++] = (ptrCurrentParent->parent     ) & 0xFF;
 	/* status parameters: machine state child*/
-	sbc_tx_data[index++] = (ptrCurrentChild->child >> 8) & 0xFF;
-	sbc_tx_data[index++] = (ptrCurrentChild->child     ) & 0xFF;
+	/*24*/	sbc_tx_data[index++] = (ptrCurrentChild->child >> 8) & 0xFF;
+	/*25*/	sbc_tx_data[index++] = (ptrCurrentChild->child     ) & 0xFF;
 	/* STATUS PARAMETERS */
 
 	/* SENS PARAMETERS */
 	/* sensors parameters: pressure adsorbent filter */
 
-	sbc_tx_data[index++] = (PR_ADS_FLT_mmHg_Filtered >> 8) & 0xFF;
-	sbc_tx_data[index++] = (PR_ADS_FLT_mmHg_Filtered) & 0xFF;
+	/*26*/	sbc_tx_data[index++] = (PR_ADS_FLT_mmHg_Filtered >> 8) & 0xFF;
+	/*27*/	sbc_tx_data[index++] = (PR_ADS_FLT_mmHg_Filtered) & 0xFF;
 	/* sensors parameters: pressure arterial */
 
-	sbc_tx_data[index++] = (PR_ART_mmHg_Filtered >> 8) & 0xFF;  // PR_ART_Sistolyc_mmHg
-	sbc_tx_data[index++] = (PR_ART_mmHg_Filtered) & 0xFF;       // PR_ART_Sistolyc_mmHg
+	/*28*/	sbc_tx_data[index++] = (PR_ART_mmHg_Filtered >> 8) & 0xFF;  // PR_ART_Sistolyc_mmHg
+	/*29*/	sbc_tx_data[index++] = (PR_ART_mmHg_Filtered) & 0xFF;       // PR_ART_Sistolyc_mmHg
 	/* sensors parameters: pressure venous */
 
-	sbc_tx_data[index++] = (MedForVenousPid >> 8) & 0xFF;
-	sbc_tx_data[index++] = (MedForVenousPid) & 0xFF;
+	/*30*/	sbc_tx_data[index++] = (MedForVenousPid >> 8) & 0xFF;
+	/*31*/	sbc_tx_data[index++] = (MedForVenousPid) & 0xFF;
 	/* sensors parameters: pressure oxygenation */
 
-	sbc_tx_data[index++] = (PR_OXYG_mmHg_Filtered >> 8) & 0xFF;
-	sbc_tx_data[index++] = (PR_OXYG_mmHg_Filtered) & 0xFF;
+	/*32*/	sbc_tx_data[index++] = (PR_OXYG_mmHg_Filtered >> 8) & 0xFF;
+	/*33*/	sbc_tx_data[index++] = (PR_OXYG_mmHg_Filtered) & 0xFF;
 	/* sensors parameters: pressure level */
 
-	sbc_tx_data[index++] = (LiquidAmount >> 8) & 0xFF; // PR_LEVEL_mmHg_Filtered
-	sbc_tx_data[index++] = (LiquidAmount) & 0xFF;      // PR_LEVEL_mmHg_Filtered
+	/*34*/	sbc_tx_data[index++] = (LiquidAmount >> 8) & 0xFF; // PR_LEVEL_mmHg_Filtered
+	/*35*/	sbc_tx_data[index++] = (LiquidAmount) & 0xFF;      // PR_LEVEL_mmHg_Filtered
 
 	/* sensors parameters: pressure systolic arterial */
-	sbc_tx_data[index++] = (PR_ART_Sistolyc_mmHg_ORG >> 8) & 0xFF;
-	sbc_tx_data[index++] = (PR_ART_Sistolyc_mmHg_ORG     ) & 0xFF;
+	/*36*/	sbc_tx_data[index++] = (PR_ART_Sistolyc_mmHg_ORG >> 8) & 0xFF;
+	/*37*/	sbc_tx_data[index++] = (PR_ART_Sistolyc_mmHg_ORG     ) & 0xFF;
 	/* sensors parameters: pressure diastolic arterial */
-	sbc_tx_data[index++] = (PR_ART_Diastolyc_mmHg_ORG >> 8) & 0xFF;
-	sbc_tx_data[index++] = (PR_ART_Diastolyc_mmHg_ORG     ) & 0xFF;
+	/*38*/	sbc_tx_data[index++] = (PR_ART_Diastolyc_mmHg_ORG >> 8) & 0xFF;
+	/*39*/	sbc_tx_data[index++] = (PR_ART_Diastolyc_mmHg_ORG     ) & 0xFF;
 	/* sensors parameters: pressure mean arterial */
 
-	sbc_tx_data[index++] = (PR_ART_Med_mmHg_ORG >> 8) & 0xFF;
-	sbc_tx_data[index++] = (PR_ART_Med_mmHg_ORG     ) & 0xFF;
+	/*40*/	sbc_tx_data[index++] = (PR_ART_Med_mmHg_ORG >> 8) & 0xFF;
+	/*41*/  sbc_tx_data[index++] = (PR_ART_Med_mmHg_ORG     ) & 0xFF;
 	/* sensors parameters: pressure systolic venous */
-	sbc_tx_data[index++] = (PR_VEN_Sistolyc_mmHg_ORG >> 8) & 0xFF;
-	sbc_tx_data[index++] = (PR_VEN_Sistolyc_mmHg_ORG     ) & 0xFF;
+	/*42*/  sbc_tx_data[index++] = (PR_VEN_Sistolyc_mmHg_ORG >> 8) & 0xFF;
+	/*43*/  sbc_tx_data[index++] = (PR_VEN_Sistolyc_mmHg_ORG     ) & 0xFF;
 	/* sensors parameters: pressure diastolic venous */
-	sbc_tx_data[index++] = (PR_VEN_Diastolyc_mmHg_ORG >> 8) & 0xFF;
-	sbc_tx_data[index++] = (PR_VEN_Diastolyc_mmHg_ORG     ) & 0xFF;
+	/*44*/  sbc_tx_data[index++] = (PR_VEN_Diastolyc_mmHg_ORG >> 8) & 0xFF;
+	/*45*/  sbc_tx_data[index++] = (PR_VEN_Diastolyc_mmHg_ORG     ) & 0xFF;
 	/* sensors parameters: pressure mean venous */
-	sbc_tx_data[index++] = (PR_VEN_Med_mmHg_ORG >> 8) & 0xFF;
-	sbc_tx_data[index++] = (PR_VEN_Med_mmHg_ORG     ) & 0xFF;
+	/*46*/  sbc_tx_data[index++] = (PR_VEN_Med_mmHg_ORG >> 8) & 0xFF;
+	/*47*/  sbc_tx_data[index++] = (PR_VEN_Med_mmHg_ORG     ) & 0xFF;
 
 	/* sensors parameters: pressure flow arterial */
-	sbc_tx_data[index++] = (((int)sensor_UFLOW[0].Average_Flow_Val) >> 8) & 0xFF;  // sensorsValues.flowArt
-	sbc_tx_data[index++] = ((int)sensor_UFLOW[0].Average_Flow_Val) & 0xFF;
+	/*48*/  sbc_tx_data[index++] = (((int)sensor_UFLOW[0].Average_Flow_Val) >> 8) & 0xFF;  // sensorsValues.flowArt
+	/*49*/  sbc_tx_data[index++] = ((int)sensor_UFLOW[0].Average_Flow_Val) & 0xFF;
 	/* sensors parameters: pressure flow venous / oxygenation */
-	sbc_tx_data[index++] = (((int)sensor_UFLOW[1].Average_Flow_Val) >> 8) & 0xFF;  // sensorsValues.flowVenOxy
-	sbc_tx_data[index++] = ((int)sensor_UFLOW[1].Average_Flow_Val) & 0xFF;
+	/*50*/  sbc_tx_data[index++] = (((int)sensor_UFLOW[1].Average_Flow_Val) >> 8) & 0xFF;  // sensorsValues.flowVenOxy
+	/*51*/  sbc_tx_data[index++] = ((int)sensor_UFLOW[1].Average_Flow_Val) & 0xFF;
 	/* sensors parameters: temperature reservoir outlet */
-	sbc_tx_data[index++] = (((int)(sensorIR_TM[1].tempSensValue*10)) >> 8) & 0xFF;
-	sbc_tx_data[index++] = (((int)(sensorIR_TM[1].tempSensValue*10))     ) & 0xFF;
+	/*52*/  sbc_tx_data[index++] = (((int)(sensorIR_TM[1].tempSensValue*10)) >> 8) & 0xFF;
+	/*53*/  sbc_tx_data[index++] = (((int)(sensorIR_TM[1].tempSensValue*10))     ) & 0xFF;
 	/* sensors parameters: temperature organ inlet */
-	sbc_tx_data[index++] = (((int)(sensorIR_TM[0].tempSensValue*10)) >> 8) & 0xFF;
-	sbc_tx_data[index++] = (((int)(sensorIR_TM[0].tempSensValue*10))     ) & 0xFF;
+	/*54*/  sbc_tx_data[index++] = (((int)(sensorIR_TM[0].tempSensValue*10)) >> 8) & 0xFF;
+	/*55*/  sbc_tx_data[index++] = (((int)(sensorIR_TM[0].tempSensValue*10))     ) & 0xFF;
 	/* sensors parameters: temperature venous / oxygenation */
-	sbc_tx_data[index++] = (((int)(sensorIR_TM[2].tempSensValue*10)) >> 8) & 0xFF;
-	sbc_tx_data[index++] = (((int)(sensorIR_TM[2].tempSensValue*10))     ) & 0xFF;
+	/*56*/  sbc_tx_data[index++] = (((int)(sensorIR_TM[2].tempSensValue*10)) >> 8) & 0xFF;
+	/*57*/  sbc_tx_data[index++] = (((int)(sensorIR_TM[2].tempSensValue*10))     ) & 0xFF;
 	/* SENS PARAMETERS */
 
 	/* PERFUSION PARAMETERS */
 	/* perfusion parameters: priming volume adsorbent filter */
-	sbc_tx_data[index++] = (perfusionParam.priVolAdsFilter >> 8) & 0xFF;
-	sbc_tx_data[index++] = (perfusionParam.priVolAdsFilter     ) & 0xFF;
+	/*58*/  sbc_tx_data[index++] = (perfusionParam.priVolAdsFilter >> 8) & 0xFF;
+	/*59*/  sbc_tx_data[index++] = (perfusionParam.priVolAdsFilter     ) & 0xFF;
 	/* perfusion parameters: priming volume perfusion arterial */
-	sbc_tx_data[index++] = (perfusionParam.priVolPerfArt >> 8) & 0xFF;
-	sbc_tx_data[index++] = (perfusionParam.priVolPerfArt     ) & 0xFF;
+	/*60*/  sbc_tx_data[index++] = (perfusionParam.priVolPerfArt >> 8) & 0xFF;
+	/*61*/  sbc_tx_data[index++] = (perfusionParam.priVolPerfArt     ) & 0xFF;
 	/* perfusion parameters: priming volume perfusion venous / oxygenation */
-	sbc_tx_data[index++] = (perfusionParam.priVolPerfVenOxy >> 8) & 0xFF;
-	sbc_tx_data[index++] = (perfusionParam.priVolPerfVenOxy     ) & 0xFF;
+	/*62*/  sbc_tx_data[index++] = (perfusionParam.priVolPerfVenOxy >> 8) & 0xFF;
+	/*63*/  sbc_tx_data[index++] = (perfusionParam.priVolPerfVenOxy     ) & 0xFF;
 	/* perfusion parameters: priming duration perfusion arterial */
-	sbc_tx_data[index++] = (perfusionParam.priDurPerfArt >> 8) & 0xFF;
-	sbc_tx_data[index++] = (perfusionParam.priDurPerfArt     ) & 0xFF;
+	/*64*/  sbc_tx_data[index++] = (perfusionParam.priDurPerfArt >> 8) & 0xFF;
+	/*65*/  sbc_tx_data[index++] = (perfusionParam.priDurPerfArt     ) & 0xFF;
 	/* perfusion parameters: priming duration perfusion venous / oxygenation */
-	sbc_tx_data[index++] = (perfusionParam.priDurPerVenOxy >> 8) & 0xFF;
-	sbc_tx_data[index++] = (perfusionParam.priDurPerVenOxy     ) & 0xFF;
+	/*66*/  sbc_tx_data[index++] = (perfusionParam.priDurPerVenOxy >> 8) & 0xFF;
+	/*67*/  sbc_tx_data[index++] = (perfusionParam.priDurPerVenOxy     ) & 0xFF;
 	/* perfusion parameters: treatment volume adsorbent filter */
-	sbc_tx_data[index++] = (perfusionParam.treatVolAdsFilter >> 8) & 0xFF;
-	sbc_tx_data[index++] = (perfusionParam.treatVolAdsFilter     ) & 0xFF;
+	/*68*/  sbc_tx_data[index++] = (perfusionParam.treatVolAdsFilter >> 8) & 0xFF;
+	/*69*/  sbc_tx_data[index++] = (perfusionParam.treatVolAdsFilter     ) & 0xFF;
 	/* perfusion parameters: treatment volume perfusion arterial */
-	sbc_tx_data[index++] = (perfusionParam.treatVolPerfArt >> 8) & 0xFF;
-	sbc_tx_data[index++] = (perfusionParam.treatVolPerfArt     ) & 0xFF;
+	/*70*/  sbc_tx_data[index++] = (perfusionParam.treatVolPerfArt >> 8) & 0xFF;
+	/*71*/  sbc_tx_data[index++] = (perfusionParam.treatVolPerfArt     ) & 0xFF;
 	/* perfusion parameters: treatment volume perfusion venous / oxygenation */
-	sbc_tx_data[index++] = (perfusionParam.treatVolPerfVenOxy >> 8) & 0xFF;
-	sbc_tx_data[index++] = (perfusionParam.treatVolPerfVenOxy     ) & 0xFF;
+	/*72*/  sbc_tx_data[index++] = (perfusionParam.treatVolPerfVenOxy >> 8) & 0xFF;
+	/*73*/  sbc_tx_data[index++] = (perfusionParam.treatVolPerfVenOxy     ) & 0xFF;
 	/* perfusion parameters: treatment duration perfusion arterial */
-	sbc_tx_data[index++] = (perfusionParam.treatDurPerfArt >> 8) & 0xFF;
-	sbc_tx_data[index++] = (perfusionParam.treatDurPerfArt     ) & 0xFF;
+	/*74*/  sbc_tx_data[index++] = (perfusionParam.treatDurPerfArt >> 8) & 0xFF;
+	/*75*/  sbc_tx_data[index++] = (perfusionParam.treatDurPerfArt     ) & 0xFF;
 	/* perfusion parameters: treatment duration perfusion venous / oxygenation */
-	sbc_tx_data[index++] = (perfusionParam.treatDurPerVenOxy >> 8) & 0xFF;
-	sbc_tx_data[index++] = (perfusionParam.treatDurPerVenOxy     ) & 0xFF;
+	/*76*/  sbc_tx_data[index++] = (perfusionParam.treatDurPerVenOxy >> 8) & 0xFF;
+	/*77*/  sbc_tx_data[index++] = (perfusionParam.treatDurPerVenOxy     ) & 0xFF;
 
 	/* perfusion parameters: unload volume adsorbent filter */
-	sbc_tx_data[index++] = (perfusionParam.unlVolAdsFilter >> 8) & 0xFF;
-	sbc_tx_data[index++] = (perfusionParam.unlVolAdsFilter     ) & 0xFF;
+	/*78*/  sbc_tx_data[index++] = (perfusionParam.unlVolAdsFilter >> 8) & 0xFF;
+	/*79*/  sbc_tx_data[index++] = (perfusionParam.unlVolAdsFilter     ) & 0xFF;
 	/* perfusion parameters: unload volume perfusion arterial */
-	sbc_tx_data[index++] = (perfusionParam.unlVolPerfArt >> 8) & 0xFF;
-	sbc_tx_data[index++] = (perfusionParam.unlVolPerfArt     ) & 0xFF;
+	/*80*/  sbc_tx_data[index++] = (perfusionParam.unlVolPerfArt >> 8) & 0xFF;
+	/*81*/  sbc_tx_data[index++] = (perfusionParam.unlVolPerfArt     ) & 0xFF;
 	/* perfusion parameters: unload volume perfusion venous / oxygenation */
-	sbc_tx_data[index++] = (perfusionParam.unlVolPerfVenOxy >> 8) & 0xFF;
-	sbc_tx_data[index++] = (perfusionParam.unlVolPerfVenOxy     ) & 0xFF;
+	/*82*/  sbc_tx_data[index++] = (perfusionParam.unlVolPerfVenOxy >> 8) & 0xFF;
+	/*83*/  sbc_tx_data[index++] = (perfusionParam.unlVolPerfVenOxy     ) & 0xFF;
 	/* perfusion parameters: unload volume reservoir */
-	sbc_tx_data[index++] = (perfusionParam.unlVolRes >> 8) & 0xFF;
-	sbc_tx_data[index++] = (perfusionParam.unlVolRes     ) & 0xFF;
+	/*84*/  sbc_tx_data[index++] = (perfusionParam.unlVolRes >> 8) & 0xFF;
+	/*85*/  sbc_tx_data[index++] = (perfusionParam.unlVolRes     ) & 0xFF;
 	/* perfusion parameters: unload duration perfusion arterial */
-	sbc_tx_data[index++] = (perfusionParam.unlDurPerfArt >> 8) & 0xFF;
-	sbc_tx_data[index++] = (perfusionParam.unlDurPerfArt     ) & 0xFF;
+	/*86*/  sbc_tx_data[index++] = (perfusionParam.unlDurPerfArt >> 8) & 0xFF;
+	/*87*/  sbc_tx_data[index++] = (perfusionParam.unlDurPerfArt     ) & 0xFF;
 	/* perfusion parameters: unload duration perfusion venous / oxygenation */
-	sbc_tx_data[index++] = (perfusionParam.unlDurPerVenOxy >> 8) & 0xFF;
-	sbc_tx_data[index++] = (perfusionParam.unlDurPerVenOxy     ) & 0xFF;
+	/*88*/  sbc_tx_data[index++] = (perfusionParam.unlDurPerVenOxy >> 8) & 0xFF;
+	/*89*/  sbc_tx_data[index++] = (perfusionParam.unlDurPerVenOxy     ) & 0xFF;
 
 	/* perfusion parameters: renal resistence */
-	sbc_tx_data[index++] = (perfusionParam.renalResistance >> 8) & 0xFF;
-	sbc_tx_data[index++] = (perfusionParam.renalResistance     ) & 0xFF;
+	/*90*/  sbc_tx_data[index++] = (perfusionParam.renalResistance >> 8) & 0xFF;
+	/*91*/  sbc_tx_data[index++] = (perfusionParam.renalResistance     ) & 0xFF;
 
 	/* perfusion parameters: pulsatility */
-	sbc_tx_data[index++] = (perfusionParam.pulsatility >> 8) & 0xFF;
-	sbc_tx_data[index++] = (perfusionParam.pulsatility     ) & 0xFF;
+	/*92*/  sbc_tx_data[index++] = (perfusionParam.pulsatility >> 8) & 0xFF;
+	/*93*/  sbc_tx_data[index++] = (perfusionParam.pulsatility     ) & 0xFF;
 	/* perfusion parameters: pressure drop adsorbent filter */
-	sbc_tx_data[index++] = (perfusionParam.pressDropAdsFilter >> 8) & 0xFF;
-	sbc_tx_data[index++] = (perfusionParam.pressDropAdsFilter     ) & 0xFF;
+	/*94*/  sbc_tx_data[index++] = (perfusionParam.pressDropAdsFilter >> 8) & 0xFF;
+	/*95*/  sbc_tx_data[index++] = (perfusionParam.pressDropAdsFilter     ) & 0xFF;
 	/* PERFUSION PARAMETERS */
 
 	/* TODO CRC H */
-	sbc_tx_data[index++] = 0x00;
+	/*96*/  sbc_tx_data[index++] = 0x00;
 	/* TODO CRC L */
-	sbc_tx_data[index++] = 0x00;
+	/*97*/  sbc_tx_data[index++] = 0x00;
 	/* End */
-	sbc_tx_data[index++] = 0x5A;
+	/*98*/  sbc_tx_data[index++] = 0x5A;
 
 	myCommunicatorToSBC.numByteToSend = index;
 }
