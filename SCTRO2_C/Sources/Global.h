@@ -1684,6 +1684,13 @@ typedef enum
 //  Verra' ripristinato alla ricezione del primo comando INIT_CHECK_SEQ_CM.
 char DisableCheckPumpStopTask;
 
+// Se definito, aggiunge alla risposta ai comandi di stato la lista dei valori di alcuni parametri
+// attualmente impostati da utente
+#define NEW_STATE_RESPONSE_MSG
+#define STATUS_MSG_LENGTH 0x87
+
+// quando e' TRUE viene abilitata la ricezione dell'allarme successivo
+bool EnableNextAlarm;
 
 #endif /* SOURCES_GLOBAL_H_ */
 

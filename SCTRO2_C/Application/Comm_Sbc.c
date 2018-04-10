@@ -26,6 +26,7 @@ extern word MedForVenousPid;
 void buildModBusWriteRegActResponseMsg(char *ptrMsgSbcRx)
 {
 	byte index = 0;
+	word wd;
 
 	sbc_tx_data[index++] = 0xA5;
 	sbc_tx_data[index++] = 0xAA;
@@ -41,8 +42,13 @@ void buildModBusWriteRegActResponseMsg(char *ptrMsgSbcRx)
 		sbc_tx_data[index++] = ptrMsgSbcRx[7+i];
 	}
 
-	sbc_tx_data[index++] = 0x00;
-	sbc_tx_data[index++] = 0x00;
+	wd = ComputeChecksum(sbc_tx_data, index);
+
+	/*  CRC H */
+	sbc_tx_data[index++] = (wd >> 8) & 0xFF;
+	/*  CRC L */
+	sbc_tx_data[index++] = (wd     ) & 0xFF;
+
 	sbc_tx_data[index++] = 0x5A;
 
 	myCommunicatorToSBC.numByteToSend = index;
@@ -54,6 +60,7 @@ void buildModBusReadRegActResponseMsg(char *ptrMsgSbcRx,
 									  unsigned int numRegisterRead)
 {
 	byte index = 0;
+	word wd;
 
 	sbc_tx_data[index++] = 0xA5;
 	sbc_tx_data[index++] = 0xAA;
@@ -75,8 +82,12 @@ void buildModBusReadRegActResponseMsg(char *ptrMsgSbcRx,
 		sbc_tx_data[index++] = (modbusData[slaveAddr][readStartAddr+i]     ) & 0xFF;
 	}
 
-	sbc_tx_data[index++] = 0x00;
-	sbc_tx_data[index++] = 0x00;
+	wd = ComputeChecksum(sbc_tx_data, index);
+
+	/*  CRC H */
+	sbc_tx_data[index++] = (wd >> 8) & 0xFF;
+	/*  CRC L */
+	sbc_tx_data[index++] = (wd     ) & 0xFF;
 	sbc_tx_data[index++] = 0x5A;
 
 	myCommunicatorToSBC.numByteToSend = index;
@@ -85,6 +96,7 @@ void buildModBusReadRegActResponseMsg(char *ptrMsgSbcRx,
 void buildModBusReadStatusResponseMsg(char *ptrMsgSbcRx)
 {
 	byte index = 0;
+	word wd;
 
 	sbc_tx_data[index++] = 0xA5;
 	sbc_tx_data[index++] = 0xAA;
@@ -112,8 +124,12 @@ void buildModBusReadStatusResponseMsg(char *ptrMsgSbcRx)
 		sbc_tx_data[index++] = (modbusData[i][0x0011]     ) & 0xFF;
 	}
 
-	sbc_tx_data[index++] = 0x00;
-	sbc_tx_data[index++] = 0x00;
+	wd = ComputeChecksum(sbc_tx_data, index);
+
+	/*  CRC H */
+	sbc_tx_data[index++] = (wd >> 8) & 0xFF;
+	/*  CRC L */
+	sbc_tx_data[index++] = (wd     ) & 0xFF;
 	sbc_tx_data[index++] = 0x5A;
 
 	myCommunicatorToSBC.numByteToSend = index;
@@ -122,6 +138,7 @@ void buildModBusReadStatusResponseMsg(char *ptrMsgSbcRx)
 void buildPressSensReadValuesResponseMsg(char *ptrMsgSbcRx)
 {
     byte index = 0;
+    word wd;
 
 /*0*/	sbc_tx_data[index++] = 0xA5;
 /*1*/	sbc_tx_data[index++] = 0xAA;
@@ -167,8 +184,12 @@ void buildPressSensReadValuesResponseMsg(char *ptrMsgSbcRx)
 		sbc_tx_data[index++] = sensor_PRx[i].prSensAdc;
 	}
 */
-	sbc_tx_data[index++] = 0x00;
-	sbc_tx_data[index++] = 0x00;
+	wd = ComputeChecksum(sbc_tx_data, index);
+
+	/*  CRC H */
+	sbc_tx_data[index++] = (wd >> 8) & 0xFF;
+	/*  CRC L */
+	sbc_tx_data[index++] = (wd     ) & 0xFF;
 	sbc_tx_data[index++] = 0x5A;
 
 	myCommunicatorToSBC.numByteToSend = index;
@@ -176,6 +197,7 @@ void buildPressSensReadValuesResponseMsg(char *ptrMsgSbcRx)
 
 void buildPressSensReadParamResponseMsg(char *ptrMsgSbcRx)
 {
+	word wd;
 	union NumFloatGain{
 				uint32 ieee754NumFormat_Gain;
 				float numFormatFloat_Gain;
@@ -214,8 +236,12 @@ void buildPressSensReadParamResponseMsg(char *ptrMsgSbcRx)
 		sbc_tx_data[index++] = numFloatSensor_Offset.ieee754NumFormat_Offset;
 	}
 
-	sbc_tx_data[index++] = 0x00;
-	sbc_tx_data[index++] = 0x00;
+	wd = ComputeChecksum(sbc_tx_data, index);
+
+	/*  CRC H */
+	sbc_tx_data[index++] = (wd >> 8) & 0xFF;
+	/*  CRC L */
+	sbc_tx_data[index++] = (wd     ) & 0xFF;
 	sbc_tx_data[index++] = 0x5A;
 
 	myCommunicatorToSBC.numByteToSend = index;
@@ -225,7 +251,7 @@ void buildPressSensReadParamResponseMsg(char *ptrMsgSbcRx)
 void buildPressSensCalibResponseMsg(char *ptrMsgSbcRx)
 {
     byte index = 0;
-
+    word wd;
 
 	sbc_tx_data[index++] = 0xA5;
 	sbc_tx_data[index++] = 0xAA;
@@ -275,8 +301,12 @@ void buildPressSensCalibResponseMsg(char *ptrMsgSbcRx)
 	}
 
 
-	sbc_tx_data[index++] = 0x00;
-	sbc_tx_data[index++] = 0x00;
+	wd = ComputeChecksum(sbc_tx_data, index);
+
+	/*  CRC H */
+	sbc_tx_data[index++] = (wd >> 8) & 0xFF;
+	/*  CRC L */
+	sbc_tx_data[index++] = (wd     ) & 0xFF;
 	sbc_tx_data[index++] = 0x5A;
 
 	myCommunicatorToSBC.numByteToSend = index;
@@ -286,6 +316,7 @@ void buildTempIRSensReadValuesResponseMsg(char *ptrMsgSbcRx)
 {
 	byte index = 0;
 	word value = 0;
+	word wd;
 
 	sbc_tx_data[index++] = 0xA5;
 	sbc_tx_data[index++] = 0xAA;
@@ -308,8 +339,12 @@ void buildTempIRSensReadValuesResponseMsg(char *ptrMsgSbcRx)
 		sbc_tx_data[index++] = (value     ) & 0xFF;
 	}
 
-	sbc_tx_data[index++] = 0x00;
-	sbc_tx_data[index++] = 0x00;
+	wd = ComputeChecksum(sbc_tx_data, index);
+
+	/*  CRC H */
+	sbc_tx_data[index++] = (wd >> 8) & 0xFF;
+	/*  CRC L */
+	sbc_tx_data[index++] = (wd     ) & 0xFF;
 	sbc_tx_data[index++] = 0x5A;
 
 	myCommunicatorToSBC.numByteToSend = index;
@@ -319,6 +354,7 @@ void buildTempIRSensReadRegResponseMsg(char *ptrMsgSbcRx)
 {
 	byte index = 0;
 	word value = 0;
+	word wd;
 
 	sbc_tx_data[index++] = 0xA5;
 	sbc_tx_data[index++] = 0xAA;
@@ -332,8 +368,12 @@ void buildTempIRSensReadRegResponseMsg(char *ptrMsgSbcRx)
 	sbc_tx_data[index++] = ptrMsgSbcRx[8];
 	sbc_tx_data[index++] = 0x00;	//TODO add mem value
 	sbc_tx_data[index++] = 0x00;	//TODO add mem value
-	sbc_tx_data[index++] = 0x00;
-	sbc_tx_data[index++] = 0x00;
+	wd = ComputeChecksum(sbc_tx_data, index);
+
+	/*  CRC H */
+	sbc_tx_data[index++] = (wd >> 8) & 0xFF;
+	/*  CRC L */
+	sbc_tx_data[index++] = (wd     ) & 0xFF;
 	sbc_tx_data[index++] = 0x5A;
 
 	myCommunicatorToSBC.numByteToSend = index;
@@ -342,6 +382,7 @@ void buildTempIRSensReadRegResponseMsg(char *ptrMsgSbcRx)
 void buildTempIRSensWriteRegResponseMsg(char *ptrMsgSbcRx)
 {
 	byte index = 0;
+	word wd;
 
 	sbc_tx_data[index++] = 0xA5;
 	sbc_tx_data[index++] = 0xAA;
@@ -355,8 +396,12 @@ void buildTempIRSensWriteRegResponseMsg(char *ptrMsgSbcRx)
 	sbc_tx_data[index++] = ptrMsgSbcRx[8];
 	sbc_tx_data[index++] = ptrMsgSbcRx[9];
 	sbc_tx_data[index++] = ptrMsgSbcRx[10];
-	sbc_tx_data[index++] = 0x00;
-	sbc_tx_data[index++] = 0x00;
+	wd = ComputeChecksum(sbc_tx_data, index);
+
+	/*  CRC H */
+	sbc_tx_data[index++] = (wd >> 8) & 0xFF;
+	/*  CRC L */
+	sbc_tx_data[index++] = (wd     ) & 0xFF;
 	sbc_tx_data[index++] = 0x5A;
 
 	myCommunicatorToSBC.numByteToSend = index;
@@ -365,6 +410,7 @@ void buildTempIRSensWriteRegResponseMsg(char *ptrMsgSbcRx)
 void buildReadFlowAirResponseMsg(char *ptrMsgSbcRx)
 {
 	byte index = 0;
+	word wd;
 
 	sbc_tx_data[index++] = 0xA5;
 	sbc_tx_data[index++] = 0xAA;
@@ -392,8 +438,12 @@ void buildReadFlowAirResponseMsg(char *ptrMsgSbcRx)
 		sbc_tx_data[index++] = sensor_UFLOW[i].bufferReceived[17];
 	}
 
-	sbc_tx_data[index++] = 0x00;
-	sbc_tx_data[index++] = 0x00;
+	wd = ComputeChecksum(sbc_tx_data, index);
+
+	/*  CRC H */
+	sbc_tx_data[index++] = (wd >> 8) & 0xFF;
+	/*  CRC L */
+	sbc_tx_data[index++] = (wd     ) & 0xFF;
 	sbc_tx_data[index++] = 0x5A;
 
 	myCommunicatorToSBC.numByteToSend = index;
@@ -402,6 +452,7 @@ void buildReadFlowAirResponseMsg(char *ptrMsgSbcRx)
 void buildReadFlowResetResponseMsg(char *ptrMsgSbcRx)
 {
 	byte index = 0;
+	word wd;
 
 	sbc_tx_data[index++] = 0xA5;
 	sbc_tx_data[index++] = 0xAA;
@@ -412,8 +463,12 @@ void buildReadFlowResetResponseMsg(char *ptrMsgSbcRx)
 	sbc_tx_data[index++] = ptrMsgSbcRx[6];
 	sbc_tx_data[index++] = 0x66;
 	sbc_tx_data[index++] = ptrMsgSbcRx[7];
-	sbc_tx_data[index++] = 0x00;
-	sbc_tx_data[index++] = 0x00;
+	wd = ComputeChecksum(sbc_tx_data, index);
+
+	/*  CRC H */
+	sbc_tx_data[index++] = (wd >> 8) & 0xFF;
+	/*  CRC L */
+	sbc_tx_data[index++] = (wd     ) & 0xFF;
 	sbc_tx_data[index++] = 0x5A;
 
 	myCommunicatorToSBC.numByteToSend = index;
@@ -422,6 +477,7 @@ void buildReadFlowResetResponseMsg(char *ptrMsgSbcRx)
 void buildPeltierReadFloatResponseMsg(char *ptrMsgSbcRx, char *ieee754ptr)
 {
 	byte index = 0;
+	word wd;
 
 	sbc_tx_data[index++] = 0xA5;
 	sbc_tx_data[index++] = 0xAA;
@@ -436,8 +492,12 @@ void buildPeltierReadFloatResponseMsg(char *ptrMsgSbcRx, char *ieee754ptr)
 	sbc_tx_data[index++] = *(ieee754ptr+1); //TODO HL value
 	sbc_tx_data[index++] = *(ieee754ptr+2); //TODO LH value
 	sbc_tx_data[index++] = *(ieee754ptr+3); //TODO LL value
-	sbc_tx_data[index++] = 0x00;
-	sbc_tx_data[index++] = 0x00;
+	wd = ComputeChecksum(sbc_tx_data, index);
+
+	/*  CRC H */
+	sbc_tx_data[index++] = (wd >> 8) & 0xFF;
+	/*  CRC L */
+	sbc_tx_data[index++] = (wd     ) & 0xFF;
 	sbc_tx_data[index++] = 0x5A;
 
 	myCommunicatorToSBC.numByteToSend = index;
@@ -446,6 +506,7 @@ void buildPeltierReadFloatResponseMsg(char *ptrMsgSbcRx, char *ieee754ptr)
 void buildPeltierReadIntResponseMsg(char *ptrMsgSbcRx, char *intptr)
 {
 	byte index = 0;
+	word wd;
 
 	sbc_tx_data[index++] = 0xA5;
 	sbc_tx_data[index++] = 0xAA;
@@ -457,8 +518,12 @@ void buildPeltierReadIntResponseMsg(char *ptrMsgSbcRx, char *intptr)
 	sbc_tx_data[index++] = 0x66;
 	sbc_tx_data[index++] = ptrMsgSbcRx[7];
 	sbc_tx_data[index++] = *intptr; //TODO int value
-	sbc_tx_data[index++] = 0x00;
-	sbc_tx_data[index++] = 0x00;
+	wd = ComputeChecksum(sbc_tx_data, index);
+
+	/*  CRC H */
+	sbc_tx_data[index++] = (wd >> 8) & 0xFF;
+	/*  CRC L */
+	sbc_tx_data[index++] = (wd     ) & 0xFF;
 	sbc_tx_data[index++] = 0x5A;
 
 	myCommunicatorToSBC.numByteToSend = index;
@@ -467,6 +532,7 @@ void buildPeltierReadIntResponseMsg(char *ptrMsgSbcRx, char *intptr)
 void buildPeltierWriteFloatResponseMsg(char *ptrMsgSbcRx)
 {
 	byte index = 0;
+	word wd;
 
 	sbc_tx_data[index++] = 0xA5;
 	sbc_tx_data[index++] = 0xAA;
@@ -481,8 +547,12 @@ void buildPeltierWriteFloatResponseMsg(char *ptrMsgSbcRx)
 	sbc_tx_data[index++] = ptrMsgSbcRx[9];
 	sbc_tx_data[index++] = ptrMsgSbcRx[10];
 	sbc_tx_data[index++] = ptrMsgSbcRx[11];
-	sbc_tx_data[index++] = 0x00;
-	sbc_tx_data[index++] = 0x00;
+	wd = ComputeChecksum(sbc_tx_data, index);
+
+	/*  CRC H */
+	sbc_tx_data[index++] = (wd >> 8) & 0xFF;
+	/*  CRC L */
+	sbc_tx_data[index++] = (wd     ) & 0xFF;
 	sbc_tx_data[index++] = 0x5A;
 
 	myCommunicatorToSBC.numByteToSend = index;
@@ -491,6 +561,7 @@ void buildPeltierWriteFloatResponseMsg(char *ptrMsgSbcRx)
 void buildPeltierWriteIntResponseMsg(char *ptrMsgSbcRx)
 {
 	byte index = 0;
+	word wd;
 
 	sbc_tx_data[index++] = 0xA5;
 	sbc_tx_data[index++] = 0xAA;
@@ -502,8 +573,12 @@ void buildPeltierWriteIntResponseMsg(char *ptrMsgSbcRx)
 	sbc_tx_data[index++] = 0x66;
 	sbc_tx_data[index++] = ptrMsgSbcRx[7];
 	sbc_tx_data[index++] = ptrMsgSbcRx[8];
-	sbc_tx_data[index++] = 0x00;
-	sbc_tx_data[index++] = 0x00;
+	wd = ComputeChecksum(sbc_tx_data, index);
+
+	/*  CRC H */
+	sbc_tx_data[index++] = (wd >> 8) & 0xFF;
+	/*  CRC L */
+	sbc_tx_data[index++] = (wd     ) & 0xFF;
 	sbc_tx_data[index++] = 0x5A;
 
 	myCommunicatorToSBC.numByteToSend = index;
@@ -512,6 +587,7 @@ void buildPeltierWriteIntResponseMsg(char *ptrMsgSbcRx)
 void buildPeltierStartResponseMsg(char *ptrMsgSbcRx)
 {
 	byte index = 0;
+	word wd;
 
 	sbc_tx_data[index++] = 0xA5;
 	sbc_tx_data[index++] = 0xAA;
@@ -521,8 +597,12 @@ void buildPeltierStartResponseMsg(char *ptrMsgSbcRx)
 	sbc_tx_data[index++] = ptrMsgSbcRx[5];
 	sbc_tx_data[index++] = ptrMsgSbcRx[6];
 	sbc_tx_data[index++] = 0x66;
-	sbc_tx_data[index++] = 0x00;
-	sbc_tx_data[index++] = 0x00;
+	wd = ComputeChecksum(sbc_tx_data, index);
+
+	/*  CRC H */
+	sbc_tx_data[index++] = (wd >> 8) & 0xFF;
+	/*  CRC L */
+	sbc_tx_data[index++] = (wd     ) & 0xFF;
 	sbc_tx_data[index++] = 0x5A;
 
 	myCommunicatorToSBC.numByteToSend = index;
@@ -531,6 +611,7 @@ void buildPeltierStartResponseMsg(char *ptrMsgSbcRx)
 void buildPeltierStopResponseMsg(char *ptrMsgSbcRx)
 {
 	byte index = 0;
+	word wd;
 
 	sbc_tx_data[index++] = 0xA5;
 	sbc_tx_data[index++] = 0xAA;
@@ -540,8 +621,12 @@ void buildPeltierStopResponseMsg(char *ptrMsgSbcRx)
 	sbc_tx_data[index++] = ptrMsgSbcRx[5];
 	sbc_tx_data[index++] = ptrMsgSbcRx[6];
 	sbc_tx_data[index++] = 0x66;
-	sbc_tx_data[index++] = 0x00;
-	sbc_tx_data[index++] = 0x00;
+	wd = ComputeChecksum(sbc_tx_data, index);
+
+	/*  CRC H */
+	sbc_tx_data[index++] = (wd >> 8) & 0xFF;
+	/*  CRC L */
+	sbc_tx_data[index++] = (wd     ) & 0xFF;
 	sbc_tx_data[index++] = 0x5A;
 
 	myCommunicatorToSBC.numByteToSend = index;
@@ -550,6 +635,7 @@ void buildPeltierStopResponseMsg(char *ptrMsgSbcRx)
 void buildPeltierWriteEEResponseMsg(char *ptrMsgSbcRx)
 {
 	byte index = 0;
+	word wd;
 
 	sbc_tx_data[index++] = 0xA5;
 	sbc_tx_data[index++] = 0xAA;
@@ -559,8 +645,12 @@ void buildPeltierWriteEEResponseMsg(char *ptrMsgSbcRx)
 	sbc_tx_data[index++] = ptrMsgSbcRx[5];
 	sbc_tx_data[index++] = ptrMsgSbcRx[6];
 	sbc_tx_data[index++] = 0x66;
-	sbc_tx_data[index++] = 0x00;
-	sbc_tx_data[index++] = 0x00;
+	wd = ComputeChecksum(sbc_tx_data, index);
+
+	/*  CRC H */
+	sbc_tx_data[index++] = (wd >> 8) & 0xFF;
+	/*  CRC L */
+	sbc_tx_data[index++] = (wd     ) & 0xFF;
 	sbc_tx_data[index++] = 0x5A;
 
 	myCommunicatorToSBC.numByteToSend = index;
@@ -755,6 +845,7 @@ void initCommSBC(void){
 }
 
 
+word CRCVal;
 
 void pollingSBCCommTreat(void){
 
@@ -780,6 +871,7 @@ void pollingSBCCommTreat(void){
 			case COMMAND_ID_ST:
 			{
 				myCommunicatorToSBC.dataMachineStateReadyFlag = DATA_COMM_READY_TO_BE_SEND;
+				CRCVal = ComputeChecksum(sbc_rx_data, 7); // calcolo il CRC del messaggio ricevuto per controllare che sia giusto
 			}
 			break;
 
@@ -791,6 +883,7 @@ void pollingSBCCommTreat(void){
 				ShowParameterStr(parameterWordSetFromGUI, sbc_rx_data[7]);
 
 				myCommunicatorToSBC.dataParamSetSBCReadyFlag = DATA_COMM_READY_TO_BE_SEND;
+				CRCVal = ComputeChecksum(sbc_rx_data, 10); // calcolo il CRC del messaggio ricevuto per controllare che sia giusto
 			}
 			break;
 
@@ -811,6 +904,7 @@ void pollingSBCCommTreat(void){
 					ShowButtonStr(buttonGUITreatment, sbc_rx_data[7]);
 				}
 				myCommunicatorToSBC.dataButtonSBCReadyFlag = DATA_COMM_READY_TO_BE_SEND;
+				CRCVal = ComputeChecksum(sbc_rx_data, 9);  // calcolo il CRC del messaggio ricevuto per controllare che sia giusto
 			}
 			break;
 
@@ -877,6 +971,7 @@ void pollingDataToSBCTreat(void)
 
 void buildRDMachineStateResponseMsg(char code, char subcode)
 {
+	word wd;
 	byte index = 0;
 	unsigned int life = FreeRunCnt10msec *10;
 
@@ -1059,12 +1154,88 @@ void buildRDMachineStateResponseMsg(char code, char subcode)
 	/*95*/  sbc_tx_data[index++] = (perfusionParam.pressDropAdsFilter     ) & 0xFF;
 	/* PERFUSION PARAMETERS */
 
-	/* TODO CRC H */
-	/*96*/  sbc_tx_data[index++] = 0x00;
-	/* TODO CRC L */
-	/*97*/  sbc_tx_data[index++] = 0x00;
+#ifdef NEW_STATE_RESPONSE_MSG
+	/* programmed therapy type */
+	wd = (word)GetTherapyType();
+	/*96*/  sbc_tx_data[index++] = (wd >> 8) & 0xFF;
+	/*97*/  sbc_tx_data[index++] = (wd     ) & 0xFF;
+	/* programmed priming volume perfusion (ml)*/
+	wd = parameterWordSetFromGUI[PAR_SET_PRIMING_VOL_PERFUSION].value;
+	/*98*/  sbc_tx_data[index++] = (wd >> 8) & 0xFF;
+	/*99*/  sbc_tx_data[index++] = (wd     ) & 0xFF;
+	/* programmed priming temperature perfusion (gradi Centigradi * 10)*/
+	wd = parameterWordSetFromGUI[PAR_SET_PRIMING_TEMPERATURE_PERFUSION].value;
+	/*100*/  sbc_tx_data[index++] = (wd >> 8) & 0xFF;
+	/*101*/  sbc_tx_data[index++] = (wd     ) & 0xFF;
+	/* programmed oxygenation active */
+	wd = parameterWordSetFromGUI[PAR_SET_OXYGENATOR_ACTIVE].value;
+	/*102*/  sbc_tx_data[index++] = (wd >> 8) & 0xFF;
+	/*103*/  sbc_tx_data[index++] = (wd     ) & 0xFF;
+	/* programmed oxygenation flow  ml/min*/
+	wd = parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value;
+	/*104*/  sbc_tx_data[index++] = (wd >> 8) & 0xFF;
+	/*105*/  sbc_tx_data[index++] = (wd     ) & 0xFF;
+	/* programmed depuration active */
+	wd = parameterWordSetFromGUI[PAR_SET_DEPURATION_ACTIVE].value;
+	/*106*/  sbc_tx_data[index++] = (wd >> 8) & 0xFF;
+	/*107*/  sbc_tx_data[index++] = (wd     ) & 0xFF;
+	/* programmed target arterial pressure (mmHg)*/
+	wd = parameterWordSetFromGUI[PAR_SET_PRESS_ART_TARGET].value;
+	/*108*/  sbc_tx_data[index++] = (wd >> 8) & 0xFF;
+	/*109*/  sbc_tx_data[index++] = (wd     ) & 0xFF;
+	/* programmed desired duration (MSB H (hours) LSB M minutes*/
+	wd = parameterWordSetFromGUI[PAR_SET_DESIRED_DURATION].value;
+	/*110*/  sbc_tx_data[index++] = (wd >> 8) & 0xFF;
+	/*111*/  sbc_tx_data[index++] = (wd     ) & 0xFF;
+	/* programmed flow max perfusion arterial ml/min*/
+	wd = parameterWordSetFromGUI[PAR_SET_MAX_FLOW_PERFUSION].value;
+	/*112*/  sbc_tx_data[index++] = (wd >> 8) & 0xFF;
+	/*113*/  sbc_tx_data[index++] = (wd     ) & 0xFF;
+	/* programmed target venous pressure (mmHg)*/
+	wd = parameterWordSetFromGUI[PAR_SET_VENOUS_PRESS_TARGET].value;
+	/*114*/  sbc_tx_data[index++] = (wd >> 8) & 0xFF;
+	/*115*/  sbc_tx_data[index++] = (wd     ) & 0xFF;
+	/* programmed temperature (gradi Centigradi * 10)*/
+	wd = parameterWordSetFromGUI[PAR_SET_TEMPERATURE].value;
+	/*116*/  sbc_tx_data[index++] = (wd >> 8) & 0xFF;
+	/*117*/  sbc_tx_data[index++] = (wd     ) & 0xFF;
+	/* free 1*/
+	wd = 0;
+	/*118*/  sbc_tx_data[index++] = (wd >> 8) & 0xFF;
+	/*119*/  sbc_tx_data[index++] = (wd     ) & 0xFF;
+	/* free 2*/
+	/*120*/  sbc_tx_data[index++] = (wd >> 8) & 0xFF;
+	/*121*/  sbc_tx_data[index++] = (wd     ) & 0xFF;
+	/* free 3*/
+	/*122*/  sbc_tx_data[index++] = (wd >> 8) & 0xFF;
+	/*123*/  sbc_tx_data[index++] = (wd     ) & 0xFF;
+	/* free 4*/
+	/*124*/  sbc_tx_data[index++] = (wd >> 8) & 0xFF;
+	/*125*/  sbc_tx_data[index++] = (wd     ) & 0xFF;
+	/* free 5*/
+	/*126*/  sbc_tx_data[index++] = (wd >> 8) & 0xFF;
+	/*127*/  sbc_tx_data[index++] = (wd     ) & 0xFF;
+	/* free 6*/
+	/*128*/  sbc_tx_data[index++] = (wd >> 8) & 0xFF;
+	/*129*/  sbc_tx_data[index++] = (wd     ) & 0xFF;
+	/* free 7*/
+	/*130*/  sbc_tx_data[index++] = (wd >> 8) & 0xFF;
+	/*131*/  sbc_tx_data[index++] = (wd     ) & 0xFF;
+	/* free 8*/
+	/*132*/  sbc_tx_data[index++] = (wd >> 8) & 0xFF;
+	/*133*/  sbc_tx_data[index++] = (wd     ) & 0xFF;
+	/* free 9*/
+	/*134*/  sbc_tx_data[index++] = (wd >> 8) & 0xFF;
+	/*135*/  sbc_tx_data[index++] = (wd     ) & 0xFF;
+
+#endif
+	wd = ComputeChecksum(sbc_tx_data, index);
+	/* CRC H */
+	/*136*/  sbc_tx_data[index++] = (wd >> 8) & 0xFF;
+	/* CRC L */
+	/*137*/  sbc_tx_data[index++] = (wd     ) & 0xFF;
 	/* End */
-	/*98*/  sbc_tx_data[index++] = 0x5A;
+	/*138*/  sbc_tx_data[index++] = 0x5A;
 
 	myCommunicatorToSBC.numByteToSend = index;
 }
@@ -1072,6 +1243,7 @@ void buildRDMachineStateResponseMsg(char code, char subcode)
 void buildButtonSBCResponseMsg(char code, char subcode, unsigned char buttonId)
 {
 	byte index = 0;
+	word wd;
 
 
 	sbc_tx_data[index++] = 0xA5;
@@ -1090,10 +1262,12 @@ void buildButtonSBCResponseMsg(char code, char subcode, unsigned char buttonId)
 	sbc_tx_data[index++] = buttonId;
 	/* button state */
 	sbc_tx_data[index++] = getGUIButton(buttonId);
-	/* TODO CRC H */
-	sbc_tx_data[index++] = 0x00;
-	/* TODO CRC L */
-	sbc_tx_data[index++] = 0x00;
+
+	wd = ComputeChecksum(sbc_tx_data, index);
+	/* CRC H */
+	sbc_tx_data[index++] = (wd >> 8) & 0xFF;
+	/* CRC L */
+	sbc_tx_data[index++] = (wd     ) & 0xFF;
 	/* End */
 	sbc_tx_data[index++] = 0x5A;
 
@@ -1103,6 +1277,7 @@ void buildButtonSBCResponseMsg(char code, char subcode, unsigned char buttonId)
 void buildParamSetSBCResponseMsg(char code, char subcode, unsigned char paramId, unsigned char param_h, unsigned char param_l)
 {
 	byte index = 0;
+	word wd;
 
 	sbc_tx_data[index++] = 0xA5;
 	sbc_tx_data[index++] = 0xAA;
@@ -1122,10 +1297,13 @@ void buildParamSetSBCResponseMsg(char code, char subcode, unsigned char paramId,
 	sbc_tx_data[index++] = param_h;
 	/* param value low */
 	sbc_tx_data[index++] = param_l;
-	/* TODO CRC H */
-	sbc_tx_data[index++] = 0x00;
-	/* TODO CRC L */
-	sbc_tx_data[index++] = 0x00;
+
+	wd = ComputeChecksum(sbc_tx_data,index);
+
+	/*  CRC H */
+	sbc_tx_data[index++] = (wd >> 8) & 0xFF;
+	/*  CRC L */
+	sbc_tx_data[index++] = (wd     ) & 0xFF;
 	/* End */
 	sbc_tx_data[index++] = 0x5A;
 
@@ -1189,6 +1367,8 @@ void setGUIButton(unsigned char buttonId){
 	//buttonGUITreatment[buttonId].state = GUI_BUTTON_PRESSED;
 	buttonGUITreatment[buttonId].state = GUI_BUTTON_RELEASED;
 	actionFlag = 2;
+	if(buttonId == BUTTON_RESET_ALARM)
+		actionFlag = 2;
 }
 
 unsigned char getGUIButton(unsigned char buttonId)
@@ -1223,7 +1403,6 @@ void initSetParamInSourceCode(void)
 	parameterWordSetFromGUI[PAR_SET_VENOUS_PRESS_TARGET].value = 0;
 	parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value = 2000;
 }
-
 
 void setParamWordFromGUI(unsigned char parId, int value)
 {

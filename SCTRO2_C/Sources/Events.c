@@ -108,11 +108,12 @@ void SBC_COMM_OnRxChar(void)
 	ptrMsgSbcRx = ptrMsgSbcRx + 1;
 
 	//if((ptrSbcCountRx > 20))
-	if(
-		((*(ptrMsgSbcRx-1)) == 0x5A) &&
-		((*(ptrMsgSbcRx-2)) == 0x00) &&
-		((*(ptrMsgSbcRx-3)) == 0x00)
-		)
+//	if(
+//		((*(ptrMsgSbcRx-1)) == 0x5A) &&
+//		((*(ptrMsgSbcRx-2)) == 0x00) &&
+//		((*(ptrMsgSbcRx-3)) == 0x00)
+//		)
+	if((*(ptrMsgSbcRx-1)) == 0x5A)
 	{
 		iflag_sbc_rx |= IFLAG_SBC_RX;
 

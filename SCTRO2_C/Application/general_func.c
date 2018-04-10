@@ -202,8 +202,8 @@ void DebugString()
 		sprintf(stringPr, "\r %i; %i; %i; %i; %i; %d; %d;",
 								(int) (sensorIR_TM[0].tempSensValue*10),
 								(int) sensor_UFLOW[0].Average_Flow_Val ,
-								(int) PR_VEN_mmHg,            //PR_VEN_Sistolyc_mmHg,      //PR_VEN_mmHg_Filtered,
-								(int) PR_ART_mmHg,            //PR_ART_Sistolyc_mmHg,     // PR_ART_mmHg_Filtered,
+								(int) PR_VEN_Sistolyc_mmHg, //PR_VEN_mmHg,            //PR_VEN_Sistolyc_mmHg,      //PR_VEN_mmHg_Filtered,
+								(int) PR_ART_Sistolyc_mmHg, //PR_ART_mmHg,            //PR_ART_Sistolyc_mmHg,     // PR_ART_mmHg_Filtered,
 								TotalTreatDuration + TreatDuration,
 								(int) pumpPerist[0].actualSpeedOld * 100, //pumpPerist[1].actualSpeed,
 								(int) pumpPerist[1].actualSpeedOld * 100

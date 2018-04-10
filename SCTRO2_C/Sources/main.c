@@ -231,6 +231,7 @@ int main(void)
   bool MOTORE_ACCESO_2 = FALSE;
   bool Status_Board;
   THERAPY_TYPE TreatType = KidneyTreat;
+  EnableNextAlarm = FALSE;
 
   pollingDataFromSBC = 0;
   pollingDataToSBC = 0;
@@ -508,7 +509,7 @@ int main(void)
    SwTimerInit();
    InitTest();
    InitSevenSeg();
-
+   EnableNextAlarm = TRUE;
 
 
   /**********MAIN LOOP START************/

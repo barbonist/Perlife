@@ -323,15 +323,23 @@ int i_al;
 
 void alarmEngineAlways(void)
 {
-	static int CntTickDelay = 0;
+//	static int CntTickDelay = 0;
 	static int StrAlarmWritten = 0;
 	static int IdxCurrAlarm = 0xff;
 
-	CntTickDelay++;
-	if((StartAlmArrIdx == 0) && (CntTickDelay <= 2))
-			return;
-	else if(StartAlmArrIdx == 0)
-		CntTickDelay = 2;
+//	CntTickDelay++;
+//	if((StartAlmArrIdx == 0) && (CntTickDelay <= 3))
+//			return;
+//	else if(StartAlmArrIdx == 0)
+//		CntTickDelay = 3;
+	if((StrAlarmWritten == 0) && !EnableNextAlarm)
+	{
+		// non ho ancora premuto il tasto button reset per resettare l'allarme corrente quindi non posso
+		// andare avanti.
+		// Se andassi avanti comunque avrei dei problemi nella gestione di due allarmi diversi e contemporanei
+		// come nel caso di livello alto e cover.
+		return;
+	}
 
 
 /*Faccio uno switch su tutta la macchina a stati in modo
@@ -663,12 +671,15 @@ void alarmEngineAlways(void)
 			// potrebbe essersi verificato un allarme molto breve che non e' riuscito
 			// ad attivarsi, forzo una ripartenza dall'inizio della tabella
 			StartAlmArrIdx = 0;
+			//CntTickDelay = 0;
+			EnableNextAlarm = TRUE;
 		}
 	}
 	else if(StrAlarmWritten == 1)
 	{
 		ShowAlarmStr((int)alarmList[IdxCurrAlarm].code, " on");
 		StrAlarmWritten = 2;
+		EnableNextAlarm = FALSE;
 	}
 	else if(StrAlarmWritten == 2)
 	{
@@ -678,7 +689,7 @@ void alarmEngineAlways(void)
 			StrAlarmWritten = 0;
 			ShowAlarmStr((int)alarmList[IdxCurrAlarm].code, " off");
 			StartAlmArrIdx = 0;
-			CntTickDelay = 0;
+			//CntTickDelay = 0;
 		}
 	}
 }

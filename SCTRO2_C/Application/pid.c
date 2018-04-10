@@ -247,8 +247,8 @@ void alwaysPumpPressLoopArt(unsigned char pmpId, unsigned char *PidFirstTime)
 		actualSpeed_Art = 0;
 
 	/*vincolo la velocità massima impostata dal pid al massimo valore che non mi fa perdere il passo*/
-	if(actualSpeed_Art > (float)MAX_ART_RPM_Val)
-		actualSpeed_Art = (float)MAX_ART_RPM_Val;
+	if(actualSpeed_Art > (float)MAX_ART_RPM)
+		actualSpeed_Art = (float)MAX_ART_RPM;
 
 	/*aggiorno la velocità se è diversa dalla precedente*/
 	if((actualSpeed_Art != pumpPerist[pmpId].actualSpeedOld) || (pumpPerist[pmpId].actualSpeedOld == 0.0))
@@ -1218,13 +1218,15 @@ void alwaysPumpPressLoopVen(unsigned char pmpId, unsigned char *PidFirstTime){
 //    pressSample0_Ven = MedForVenousPid;
 //    /*cambio il parametro in ingresso al PID dal valore filtrato al valore sistolico di pressione*/
     pressSample0_Ven = PR_VEN_Sistolyc_mmHg;
-
 	errPress = Target_PID_VEN - pressSample0_Ven;
 
 
 	/*se la veilocità resta costante ed inferiore alla masisma, sono in equilibrio, provo ad aumentarla per
 	 * vedere se trovo un equilibrio andando + forte e avvicindandomi al massimo flusso impostato*/
-   if (SpeedCostanteVen((int)actualSpeed_Ven) && (actualSpeed_Ven <= MAX_OXYG_RPM_Val))
+   if (SpeedCostanteVen((int)actualSpeed_Ven) &&
+	   (actualSpeed_Ven <= MAX_OXYG_RPM_Val)
+	   //(sensor_UFLOW[VENOUS_AIR_SENSOR].Average_Flow_Val < (float)parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value)
+	   )
    {
 		actualSpeed_Ven += 2.0;
    }
@@ -1240,6 +1242,7 @@ void alwaysPumpPressLoopVen(unsigned char pmpId, unsigned char *PidFirstTime){
 	fl = (float) parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value;
 	if ((sensor_UFLOW[1].Average_Flow_Val > 0.0) &&
 		(sensor_UFLOW[1].Average_Flow_Val > (fl - fl * 10.0 / 100.0)) &&
+		//(sensor_UFLOW[1].Average_Flow_Val > fl) &&
 		(actualSpeed_Ven > 0.0) && (deltaSpeed_Ven > 0))
 	{
 		deltaSpeed_Ven = 0.0;
@@ -1271,8 +1274,10 @@ void alwaysPumpPressLoopVen(unsigned char pmpId, unsigned char *PidFirstTime){
 	}
 
 	/*vincolo la velocità massima impostata dal pid al massimo valore che non mi fa perdere il passo*/
-	if(actualSpeed_Ven > (float)MAX_OXYG_RPM_Val)
-		actualSpeed_Ven = (float)MAX_OXYG_RPM_Val;
+//	if(actualSpeed_Ven > (float)MAX_OXYG_RPM_Val)
+//		actualSpeed_Ven = (float)MAX_OXYG_RPM_Val;
+	if(actualSpeed_Ven > (float)MAX_OXYG_RPM)
+		actualSpeed_Ven = (float)MAX_OXYG_RPM;
 
 
 	/*aggiorno la velocità se è doiversa dalla precedente*/
