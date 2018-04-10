@@ -1708,6 +1708,11 @@ void manageParentPrimingAlways(void){
 			// per quando ritornero' in run
 			releaseGUIButton(BUTTON_STOP_PRIMING);
 		}
+		else if(buttonGUITreatment[BUTTON_PRIMING_ABANDON].state == GUI_BUTTON_RELEASED)
+		{
+			releaseGUIButton(BUTTON_PRIMING_ABANDON);
+			currentGuard[GUARD_ABANDON_PRIMING].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+		}
 		CheckPumpStopTask((CHECK_PUMP_STOP_CMD)NO_CHECK_PUMP_STOP_CMD);
 		break;
 	default:
@@ -2391,6 +2396,11 @@ void manageParentTreatAlways(void){
 				// per quando ritornero' in run
 				releaseGUIButton(BUTTON_STOP_TREATMENT);
 			}
+			else if(buttonGUITreatment[BUTTON_PRIMING_ABANDON].state == GUI_BUTTON_RELEASED)
+			{
+				releaseGUIButton(BUTTON_PRIMING_ABANDON);
+				currentGuard[GUARD_ABANDON_PRIMING].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+			}
 
 			CheckPumpStopTask((CHECK_PUMP_STOP_CMD)NO_CHECK_PUMP_STOP_CMD);
 			break;
@@ -2582,7 +2592,8 @@ void EmptyDispStateMach(void)
 			if(!PutPinchInSafetyPosFlag)
 				PutPinchInSafetyPosFlag = PutPinchInSafetyPos();
 
-			DischargeAmountArtPump = (word)((float)perfusionParam.priVolPerfArt * (float)DISCHARGE_AMOUNT_ART_PUMP / 100.0);
+			//DischargeAmountArtPump = (word)((float)perfusionParam.priVolPerfArt * (float)DISCHARGE_AMOUNT_ART_PUMP / 100.0);
+			DischargeAmountArtPump = (word)((float)GetTotalPrimingVolumePerf((int)0) * (float)DISCHARGE_AMOUNT_ART_PUMP / 100.0);
 			if(!EmptyDisposStartOtherPump && VolumeDischarged >= DischargeAmountArtPump)
 			{
 				// faccio partire le altre pompe per svuotare i tubi
@@ -3351,7 +3362,7 @@ void ParentEmptyDispStateMach(void)
 	switch(ptrCurrentParent->parent)
 	{
 		case PARENT_EMPTY_DISPOSABLE_INIT:
-			if((VolumeDischarged >= 100) || (VolumeDischarged >= perfusionParam.priVolPerfArt))
+			if(VolumeDischarged >= 100)
 			{
 				// la seconda condizione e' necessaria se premo il tasto abbandona nella fase iniziale del priming
 				/* ho gia' scaricato una certa quantita' di liquido dal reservoir,
@@ -3384,7 +3395,7 @@ void ParentEmptyDispStateMach(void)
 		case PARENT_EMPTY_DISPOSABLE_RUN:
 //			if((VolumeDischarged >= (perfusionParam.priVolPerfArt + (float)10.0 * (float)perfusionParam.priVolPerfArt / 100.0)) &&
 //			   (PR_LEVEL_mmHg_Filtered <= 0))
-			if(((VolumeDischarged >= perfusionParam.priVolPerfArt) /*|| (PR_LEVEL_mmHg_Filtered <= 0)*/) && IsDisposableEmpty())
+			if(((VolumeDischarged >= GetTotalPrimingVolumePerf((int)0)) /*|| (PR_LEVEL_mmHg_Filtered <= 0)*/) && IsDisposableEmpty())
 			{
 				// ho scaricato tutto, mi fermo
 				// fine del processo di svuotamento
@@ -4023,10 +4034,9 @@ void processMachineState(void)
 			break;
 
 		case STATE_EMPTY_DISPOSABLE:
-			if( currentGuard[GUARD_EMPTY_DISPOSABLE_END].guardValue == GUARD_VALUE_TRUE )
+			if((currentGuard[GUARD_EMPTY_DISPOSABLE_END].guardValue == GUARD_VALUE_TRUE) ||
+			   (currentGuard[GUARD_ABANDON_PRIMING].guardValue == GUARD_VALUE_TRUE))
 			{
-				// ho terminato lo svuotamento del reservoir vado nello stato di smontaggio del disposable
-				currentGuard[GUARD_EMPTY_DISPOSABLE_END].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
 				// se voglio andare in idle e selezionare un nuovo trattamento
 				//ptrFutureState = &stateState[3];
 				// se voglio andare in STATE_UNMOUNT_DISPOSABLE e staccare il disposable
@@ -4035,19 +4045,18 @@ void processMachineState(void)
 				ptrFutureParent = ptrFutureState->ptrParent;
 				/* compute future child */
 				ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
-				DebugStringStr("STATE_UNMOUNT_DISPOSABLE");
-				break;
-			}
-			else if( currentGuard[GUARD_ABANDON_PRIMING].guardValue == GUARD_VALUE_TRUE )
-			{
-				// abbandono il priming e VADO NELLO STATO DI SVUOTAMENTO
-				currentGuard[GUARD_ABANDON_PRIMING].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
-				ptrFutureState = &stateState[19];
-				/* compute future parent */
-				ptrFutureParent = ptrFutureState->ptrParent;
-				/* compute future child */
-				ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
-				DebugStringStr("STATE_EMPTY_DISPOSABLE(ABBANDONA)");
+				if(currentGuard[GUARD_ABANDON_PRIMING].guardValue == GUARD_VALUE_TRUE)
+				{
+					// abbandono il priming e VADO NELLO STATO DI STATE_UNMOUNT_DISPOSABLE per smontare il disposable
+					currentGuard[GUARD_ABANDON_PRIMING].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
+					DebugStringStr("UNMOUNT_DISPOS(ABBANDONA)");
+				}
+				else
+				{
+					// ho terminato lo svuotamento del reservoir vado nello stato di smontaggio del disposable
+					currentGuard[GUARD_EMPTY_DISPOSABLE_END].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
+					DebugStringStr("STATE_UNMOUNT_DISPOSABLE");
+				}
 				break;
 			}
 
@@ -4056,28 +4065,27 @@ void processMachineState(void)
 			break;
 
 		case STATE_UNMOUNT_DISPOSABLE:
-			if( currentGuard[GUARD_ENABLE_UNMOUNT_END].guardValue == GUARD_VALUE_TRUE )
+			if((currentGuard[GUARD_ENABLE_UNMOUNT_END].guardValue == GUARD_VALUE_TRUE) ||
+			   (currentGuard[GUARD_ABANDON_PRIMING].guardValue == GUARD_VALUE_TRUE))
 			{
-				// ho smontato il disposable ritorno in idle
-				currentGuard[GUARD_ENABLE_UNMOUNT_END].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
 				ptrFutureState = &stateState[3];
 				/* compute future parent */
 				ptrFutureParent = ptrFutureState->ptrParent;
 				/* compute future child */
 				ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
-				DebugStringStr("STATE_IDLE");
-				break;
-			}
-			else if( currentGuard[GUARD_ABANDON_PRIMING].guardValue == GUARD_VALUE_TRUE )
-			{
-				// abbandono il priming e VADO NELLO STATO DI SVUOTAMENTO
-				currentGuard[GUARD_ABANDON_PRIMING].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
-				ptrFutureState = &stateState[19];
-				/* compute future parent */
-				ptrFutureParent = ptrFutureState->ptrParent;
-				/* compute future child */
-				ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
-				DebugStringStr("STATE_EMPTY_DISPOSABLE(ABBANDONA)");
+
+				if(currentGuard[GUARD_ABANDON_PRIMING].guardValue == GUARD_VALUE_TRUE)
+				{
+					// abbandono il priming e VADO NELLO STATO DI SVUOTAMENTO
+					currentGuard[GUARD_ABANDON_PRIMING].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
+					DebugStringStr("STATE_IDLE(ABBANDONA)");
+				}
+				else
+				{
+					// ho smontato il disposable ritorno in idle
+					currentGuard[GUARD_ENABLE_UNMOUNT_END].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
+					DebugStringStr("STATE_IDLE");
+				}
 				break;
 			}
 

@@ -992,8 +992,8 @@ struct ultrsndFlowSens{
 #define MASK_Error_In_Temp_Meas				0x40
 #define MASK_Device_Fault					0x80
 
-#define SAMPLE 								64          // se uso un campinamento di 50 msec
-//#define SAMPLE 							16 		    //numero di campioni su cui mediare il flusso istantaneo letto
+//#define SAMPLE 								64          // se uso un campinamento di 50 msec
+#define SAMPLE 							16 		    //numero di campioni su cui mediare il flusso istantaneo letto
 #define TOT_UF_SENSOR 						2
 #define BYTE_COUNT_GET_VAL_CODE 			0x17 		//numero di byte che mi aspetto in ricezione col comando di GET_VAL_CODE customizzato con 3 byte di richesta 0x82 -- 0x88 -- 0x8B
 float buffer_flow_value [TOT_UF_SENSOR][SAMPLE];

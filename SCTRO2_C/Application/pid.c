@@ -168,7 +168,7 @@ int SpeedCostanteArt( int CurrSpeed)
 			SpeedCostanteState = 0;
 		else
 			Cnt++;
-		if(Cnt >= 100)
+		if(Cnt >= 12)
 		{
 			SpeedCostanteFlag = 1;
 			SpeedCostanteState = 0;
@@ -226,15 +226,16 @@ void alwaysPumpPressLoopArt(unsigned char pmpId, unsigned char *PidFirstTime)
     if (SpeedCostanteArt((int)actualSpeed_Art) && (actualSpeed_Art <= MAX_ART_RPM_Val))
     {
 		//actualSpeed_Art += 2.0;
-		deltaSpeed_Art = 2.0;
+		deltaSpeed_Art = 0.5;
+	//	MAX_ART_RPM_Val = MAX_ART_RPM_Val + 0.5;
     }
 	/*se misuro un flusso e ho una velocità >0 e sto misurando uin flusso superiore al limite impostato
 	 * aggiorno la velocità al massimo flusso impostato */
 	if ((sensor_UFLOW[0].Average_Flow_Val > 0.0) &&
 		(sensor_UFLOW[0].Average_Flow_Val > ( parameterWordSetFromGUI[PAR_SET_MAX_FLOW_PERFUSION].value)) &&
-		(actualSpeed_Art > 0.0) && (deltaSpeed_Art > 0.0))
+		(actualSpeed_Art > 0.0))
 	{
-		deltaSpeed_Art = 0.0;
+		deltaSpeed_Art = -0.5;
 	}
 
 	if((deltaSpeed_Art < -0.01) || (deltaSpeed_Art > 0.01))
@@ -247,8 +248,8 @@ void alwaysPumpPressLoopArt(unsigned char pmpId, unsigned char *PidFirstTime)
 		actualSpeed_Art = 0;
 
 	/*vincolo la velocità massima impostata dal pid al massimo valore che non mi fa perdere il passo*/
-	if(actualSpeed_Art > (float)MAX_ART_RPM)
-		actualSpeed_Art = (float)MAX_ART_RPM;
+	if(actualSpeed_Art > (float)MAX_ART_RPM_Val)
+		actualSpeed_Art = (float)MAX_ART_RPM_Val;
 
 	/*aggiorno la velocità se è diversa dalla precedente*/
 	if((actualSpeed_Art != pumpPerist[pmpId].actualSpeedOld) || (pumpPerist[pmpId].actualSpeedOld == 0.0))
@@ -1063,7 +1064,7 @@ int SpeedCostanteVen( int CurrSpeed)
 			SpeedCostanteState = 0;
 		else
 			Cnt++;
-		if(Cnt >= 100)
+		if(Cnt >= 12)
 		{
 			SpeedCostanteFlag = 1;
 			SpeedCostanteState = 0;
@@ -1240,10 +1241,22 @@ void alwaysPumpPressLoopVen(unsigned char pmpId, unsigned char *PidFirstTime){
 	 * e il delta di velocità del pid non mi fa diminuire la velocità (deltaSpeed_Ven>0)
 	 * aggiorno la velocità al massimo flusso impostato */
 	fl = (float) parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value;
-	if ((sensor_UFLOW[1].Average_Flow_Val > 0.0) &&
-		(sensor_UFLOW[1].Average_Flow_Val > (fl - fl * 10.0 / 100.0)) &&
-		//(sensor_UFLOW[1].Average_Flow_Val > fl) &&
-		(actualSpeed_Ven > 0.0) && (deltaSpeed_Ven > 0))
+	if((sensor_UFLOW[1].Average_Flow_Val > 0.0) &&
+	   (sensor_UFLOW[1].Average_Flow_Val > fl))
+	{
+		// ho superato il flusso massimo impostato tiro giu' la velocita' di 1rpm
+		if((sensor_UFLOW[1].Average_Flow_Val - fl) > 200.0)
+		{
+			// probabilmente mi e' stato ridotto il flusso target da utente
+			deltaSpeed_Ven = -0.5;
+		}
+		else
+			deltaSpeed_Ven = -0.1;
+	}
+	else if ((sensor_UFLOW[1].Average_Flow_Val > 0.0) &&
+		     (sensor_UFLOW[1].Average_Flow_Val > (fl - fl * 8.0 / 100.0)) &&
+		     //(sensor_UFLOW[1].Average_Flow_Val > fl) &&
+		     (actualSpeed_Ven > 0.0) && (deltaSpeed_Ven > 0))
 	{
 		deltaSpeed_Ven = 0.0;
 	}
@@ -1274,10 +1287,10 @@ void alwaysPumpPressLoopVen(unsigned char pmpId, unsigned char *PidFirstTime){
 	}
 
 	/*vincolo la velocità massima impostata dal pid al massimo valore che non mi fa perdere il passo*/
-//	if(actualSpeed_Ven > (float)MAX_OXYG_RPM_Val)
-//		actualSpeed_Ven = (float)MAX_OXYG_RPM_Val;
-	if(actualSpeed_Ven > (float)MAX_OXYG_RPM)
-		actualSpeed_Ven = (float)MAX_OXYG_RPM;
+	if(actualSpeed_Ven > (float)MAX_OXYG_RPM_Val)
+		actualSpeed_Ven = (float)MAX_OXYG_RPM_Val;
+//	if(actualSpeed_Ven > (float)MAX_OXYG_RPM)
+//		actualSpeed_Ven = (float)MAX_OXYG_RPM;
 
 
 	/*aggiorno la velocità se è doiversa dalla precedente*/
