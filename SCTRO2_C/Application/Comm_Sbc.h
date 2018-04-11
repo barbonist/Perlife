@@ -57,6 +57,14 @@ word ConvertMMHgToMl( word mmhg);
 /******* TREATMENT - SBC COMM. FUNCTION *********/
 /********************/
 
+// Se definito, aggiunge alla risposta ai comandi di stato la lista dei valori di alcuni parametri
+// attualmente impostati da utente
+#define NEW_STATE_RESPONSE_MSG
+#ifdef NEW_STATE_RESPONSE_MSG
+	#define STATUS_MSG_LENGTH 0x87
+#else
+	#define STATUS_MSG_LENGTH 0x5F
+#endif
 
 
 #endif /* APPLICATION_COMM_SBC_H_ */

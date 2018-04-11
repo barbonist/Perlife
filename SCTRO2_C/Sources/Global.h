@@ -1640,24 +1640,43 @@ bool Peltier2On;
 // Quando e' true vuol dire che lo start e' stato inviato
 bool PeltierOn;
 
-unsigned long PeltierDelay;
 
 // stati del task di controllo delle peltier
+//typedef enum
+//{
+//	INIT_LIQTEMPCONTR_STATE,
+//	READ_LIQTEMPCONTR_STATE,
+//	WAIT_FOR_SET_T_LIQTEMPCONTR_STATE,
+//	WAIT_FOR_CHK_TIME_LIQTEMPCONTR_STATE,
+//	TEMP_START_CHECK_LIQTEMPCONTR_STATE,
+//	TEMP_CHECK_DUR_LIQTEMPCONTR_STATE,
+//	WAIT_FOR_CHK_TIME_LOW_LIQTEMPCNT_ST
+//}LIQUID_TEMP_CONTR_STATE;
+
 typedef enum
 {
 	INIT_LIQTEMPCONTR_STATE,
 	READ_LIQTEMPCONTR_STATE,
-	WAIT_FOR_SET_T_LIQTEMPCONTR_STATE,
-	PELT_NEW_TRGT_CMD_LIQTEMPCONTR_STATE,
-	TEMP_START_CHECK_LIQTEMPCONTR_STATE,
-	TEMP_CHECK_DUR_LIQTEMPCONTR_STATE
+	CHECK_TEMP_HIGH,
+	CHECK_TEMP_LOW,
 }LIQUID_TEMP_CONTR_STATE;
+
 
 typedef enum
 {
 	NO_LIQUID_TEMP_CONTR_CMD,
-	WAIT_FOR_NEW_TARGET_T
+	WAIT_FOR_NEW_TARGET_T,
+	RESET_LIQUID_TEMP_CONTR_CMD
 }LIQUID_TEMP_CONTR_CMD;
+
+// incremento di temperatura al di sopra del quale le peltier vengono spente
+// (espresso in decimi di grado)
+#define DELTA_TEMP_TO_STOP_PELTIER  5
+// incremento di temperatura al di sotto del quale le peltier vengono riaccese
+// (espresso in decimi di grado)
+#define DELTA_TEMP_TO_RESTART_PELTIER  1
+// intervallo di tempo usato nel task LiquidTempContrTask in msec
+#define LIQUID_TEMP_CONTR_TASK_TIME 2000L
 
 
 //-------------------------------------------------------------------------------
@@ -1684,13 +1703,12 @@ typedef enum
 //  Verra' ripristinato alla ricezione del primo comando INIT_CHECK_SEQ_CM.
 char DisableCheckPumpStopTask;
 
-// Se definito, aggiunge alla risposta ai comandi di stato la lista dei valori di alcuni parametri
-// attualmente impostati da utente
-#define NEW_STATE_RESPONSE_MSG
-#define STATUS_MSG_LENGTH 0x87
 
 // quando e' TRUE viene abilitata la ricezione dell'allarme successivo
 bool EnableNextAlarm;
+
+// viene settato nel momento in cui viene dato lo start alle Peltier la prima volta (nel priming)
+bool PeltierStarted;
 
 #endif /* SOURCES_GLOBAL_H_ */
 

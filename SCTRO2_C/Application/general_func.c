@@ -162,12 +162,12 @@ void DebugString()
 	   (ptrCurrentState->state == STATE_PRIMING_PH_1) ||
 	   (ptrCurrentState->state == STATE_PRIMING_PH_2))
 	{
-		sprintf(stringPr, "\r %i; %i; %i; %x; %x; %d; %d;",
+		sprintf(stringPr, "\r %i; %i; %i; %i; %x; %d; %d;",
 								(int) (sensorIR_TM[0].tempSensValue*10),
 								(int) sensor_UFLOW[VENOUS_AIR_SENSOR].bubbleSize,
 								(int) sensor_UFLOW[ARTERIOUS_AIR_SENSOR].bubbleSize,
-								alarmList[AIR_PRES_VEN].physic,
-								alarmList[AIR_PRES_ART].physic,
+								(int) (sensorIR_TM[1].tempSensValue * 10),  // temp. recevoir
+								(int) alarmList[AIR_PRES_ART].physic,
 								(int) pumpPerist[0].actualSpeed,
 								(int) perfusionParam.priVolPerfArt
 					);
@@ -185,23 +185,23 @@ void DebugString()
 					);
 
 	}
-//	else if((ptrCurrentState->state == STATE_PRIMING_RICIRCOLO))
-//	{
-//		sprintf(stringPr, "\r %i; %i; %i; %i; %i; %d; %d;",
-//								(int) (sensorIR_TM[0].tempSensValue*10),
-//								(int) sensor_UFLOW[VENOUS_AIR_SENSOR].bubbleSize,
-//								(int) sensor_UFLOW[ARTERIOUS_AIR_SENSOR].bubbleSize,
-//								(int) pumpPerist[0].actualSpeed,
-//								(int) pumpPerist[1].actualSpeed,
-//								(int) pumpPerist[2].actualSpeed,
-//								(int) perfusionParam.priVolPerfArt
-//					);
-//	}
+	else if((ptrCurrentState->state == STATE_IDLE))
+	{
+		sprintf(stringPr, "\r %i; %i; %i; %i; %i; %d; %d;",
+								(int) (sensorIR_TM[0].tempSensValue*10),
+								(int)(sensorIR_TM[1].tempSensValue*10),  // temp. recevoir
+								(int) PR_VEN_Sistolyc_mmHg, //PR_VEN_mmHg,            //PR_VEN_Sistolyc_mmHg,      //PR_VEN_mmHg_Filtered,
+								(int) PR_ART_Sistolyc_mmHg, //PR_ART_mmHg,            //PR_ART_Sistolyc_mmHg,     // PR_ART_mmHg_Filtered,
+								TotalTreatDuration + TreatDuration,
+								(int) pumpPerist[0].actualSpeedOld * 100, //pumpPerist[1].actualSpeed,
+								(int) pumpPerist[1].actualSpeedOld * 100
+					);
+	}
 	else
 	{
 		sprintf(stringPr, "\r %i; %i; %i; %i; %i; %d; %d;",
 								(int) (sensorIR_TM[0].tempSensValue*10),
-								(int) sensor_UFLOW[0].Average_Flow_Val ,
+								(int)(sensorIR_TM[1].tempSensValue*10),  // temp. recevoir
 								(int) PR_VEN_Sistolyc_mmHg, //PR_VEN_mmHg,            //PR_VEN_Sistolyc_mmHg,      //PR_VEN_mmHg_Filtered,
 								(int) PR_ART_Sistolyc_mmHg, //PR_ART_mmHg,            //PR_ART_Sistolyc_mmHg,     // PR_ART_mmHg_Filtered,
 								TotalTreatDuration + TreatDuration,

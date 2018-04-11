@@ -980,7 +980,7 @@ void buildRDMachineStateResponseMsg(char code, char subcode)
 	/*2*/   sbc_tx_data[index++] = 0x55;
 	/*3*/	sbc_tx_data[index++] = 0x00;
 	/* byte count (esclusi i primi 4): 95 byte */
-	/*4*/	sbc_tx_data[index++] = 0x5F;
+	/*4*/	sbc_tx_data[index++] = STATUS_MSG_LENGTH;
 	/* command id */
 	/*5*/	sbc_tx_data[index++] = code;
 	/* command id */

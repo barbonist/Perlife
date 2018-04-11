@@ -510,6 +510,7 @@ int main(void)
    InitTest();
    InitSevenSeg();
    EnableNextAlarm = TRUE;
+   PeltierStarted = FALSE;
 
 
   /**********MAIN LOOP START************/
@@ -580,8 +581,13 @@ int main(void)
 			if(timerCounterPeltier >= 2)
 			{
 	        	 timerCounterPeltier = 0;
-
-	        	 if(PeltierOn && (peltierCell.readAlwaysEnable == 1) && (peltierCell2.readAlwaysEnable == 1))
+		         if(PeltierStarted && (peltierCell.readAlwaysEnable == 1) && (peltierCell2.readAlwaysEnable == 1))
+	        	 {
+        			 LiquidTempContrTask(NO_LIQUID_TEMP_CONTR_CMD);
+	        	 }
+/*
+	        	 //if(PeltierOn && (peltierCell.readAlwaysEnable == 1) && (peltierCell2.readAlwaysEnable == 1))
+		         if(PeltierStarted && (peltierCell.readAlwaysEnable == 1) && (peltierCell2.readAlwaysEnable == 1))
 	        	 {
 	        		 // il controllo della temperatura lo faccio solo se le peltier sono accese ed un eventuale comando
 	        		 // precedente e' terminato
@@ -600,6 +606,7 @@ int main(void)
 	        			 LiquidTempContrTask(WAIT_FOR_NEW_TARGET_T);
 	        		 }
 	        	 }
+*/
 
 	        	 /*********************DISATTIVAZIONE PELTIER SE NON RISPONDONO **************************/
 	        	 /*messo qui soloper debug, dopo sarà da gestire con un allarme specifco
