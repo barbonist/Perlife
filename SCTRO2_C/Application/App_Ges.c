@@ -174,6 +174,7 @@ void CallInIdleState(void)
 	}
 	LevelBuzzer = 0;
 	PeltierStarted = FALSE;
+	LiquidTempContrTask(RESET_LIQUID_TEMP_CONTR_CMD);
 }
 
 
@@ -650,7 +651,8 @@ void manageStatePrimingRicircoloAlways(void)
 
 //------------------------------------------------------------------
 
-void manageStateWaitTreatment(void){
+void manageStateWaitTreatment(void)
+{
 }
 
 void manageStateWaitTreatmentAlways(void)
@@ -660,6 +662,8 @@ void manageStateWaitTreatmentAlways(void)
 		// prendo BUTTON_START_TREATMENT per ricominciare un nuovo trattamento
 		releaseGUIButton(BUTTON_START_TREATMENT);
 		currentGuard[GUARD_ENABLE_TREATMENT_KIDNEY_1].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+		// il trattamento deve ricominciare, quindi abilito di nuovo il task delle peltier definitivamente le peltier
+		PeltierStarted = TRUE;
 	}
 	else if(buttonGUITreatment[BUTTON_END_TREATMENT].state == GUI_BUTTON_RELEASED)
 	{
@@ -3228,6 +3232,9 @@ static void computeMachineStateGuardTreatment(void)
 				peltierCell.StopEnable = 1;
 				peltierCell2.StopEnable = 1;
 			}
+			// resetto anche il task di controllo per evitare che le peltier ripartano
+			PeltierStarted = FALSE;
+			LiquidTempContrTask(RESET_LIQUID_TEMP_CONTR_CMD);
 			DebugStringStr("TREATMENT END");
 		}
 		else
@@ -3245,6 +3252,9 @@ static void computeMachineStateGuardTreatment(void)
 					peltierCell.StopEnable = 1;
 					peltierCell2.StopEnable = 1;
 				}
+				// resetto anche il task di controllo per evitare che le peltier ripartano
+				PeltierStarted = FALSE;
+				LiquidTempContrTask(RESET_LIQUID_TEMP_CONTR_CMD);
 				DebugStringStr("TREATMENT END");
 			}
 		}
@@ -5119,12 +5129,6 @@ void Manage_Panic_Button(void)
 	}
 }
 
-typedef enum
-{
-	UNDEF,
-	ON,
-	OFF
-}LIQ_PELTIER_STATE;
 
 // Task di controllo della temperatura
 // Se supero di 1 grado la temperatura target spengo le Peltier e le riaccendo quando
@@ -5222,113 +5226,6 @@ void LiquidTempContrTask(LIQUID_TEMP_CONTR_CMD LiqTempContrCmd)
 	}
 }
 
-
-//// Task di controllo della temperatura
-//// Se supero di 1 grado la temperatura target spengo le Peltier e le riaccendo quando
-//// la temperatura ha raggiunto di nuovo il target.
-//// Questo avviene solo quando sono in trattamento
-//void LiquidTempContrTask(LIQUID_TEMP_CONTR_CMD LiqTempContrCmd)
-//{
-//	static unsigned long TempOkTimeout;
-//	float tmpr;
-//	word tmpr_trgt;
-//	static LIQUID_TEMP_CONTR_STATE LiquidTempContrState = INIT_LIQTEMPCONTR_STATE;
-//	int CurrTemp;
-//	int myTempValue;
-//
-//	if(ptrCurrentState->state != STATE_TREATMENT_KIDNEY_1)
-//		return;
-//
-//	if(LiqTempContrCmd == WAIT_FOR_NEW_TARGET_T)
-//	{
-//		// devo aspettare il raggiungimento del nuovo target prima di monitorare
-//		// il mantenimento della nuova temperatura
-//		LiquidTempContrState = TEMP_START_CHECK_LIQTEMPCONTR_STATE;
-//	}
-//
-//	// temperatura raggiunta dal reservoir
-//	tmpr = ((int)(sensorIR_TM[1].tempSensValue*10));
-//	// temperatura da raggiungere moltiplicata per 10
-//	tmpr_trgt = parameterWordSetFromGUI[PAR_SET_PRIMING_TEMPERATURE_PERFUSION].value;
-//
-//
-//	CurrTemp = (int)(sensorIR_TM[1].tempSensValue * 10.0);
-//	myTempValue = (int)parameterWordSetFromGUI[PAR_SET_PRIMING_TEMPERATURE_PERFUSION].value;
-//	switch (LiquidTempContrState)
-//	{
-//		// controllo del mantenimento della temperatura precedentemente raggiunta
-//		case INIT_LIQTEMPCONTR_STATE:
-//			LiquidTempContrState = READ_LIQTEMPCONTR_STATE;
-//			break;
-//		case READ_LIQTEMPCONTR_STATE:
-//			if(CurrTemp > (myTempValue + DELTA_TEMP_TO_STOP_PELTIER))
-//			{
-//				// la temperatura del reservoir e' superiore a quella impostata di almeno un grado
-//				// passo a controllare che questo si mantenga vero per un certo periodo di tempo
-//				LiquidTempContrState = WAIT_FOR_CHK_TIME_LIQTEMPCONTR_STATE;
-//				TempOkTimeout = timerCounterModBus;
-//			}
-//			break;
-//		case WAIT_FOR_CHK_TIME_LIQTEMPCONTR_STATE:
-//			// verifico che la temperatura si mantenga al di sopra del valore di controllo per un certo
-//			// periodo di tempo
-//			if(CurrTemp > (myTempValue + DELTA_TEMP_TO_STOP_PELTIER))
-//			{
-//				// ho raggiunto la temperatura target
-//				if(msTick_elapsed(TempOkTimeout) * 50L >= LIQUID_TEMP_CONTR_TASK_TIME)
-//				{
-//					// la temperatura del reservoir e' superiore a quella impostata di almeno un grado
-//					// fermo le Peltier e mi metto in attesa che si raffreddino
-//					peltierCell.StopEnable = 1;
-//					peltierCell2.StopEnable = 1;
-//					LiquidTempContrState = WAIT_FOR_SET_T_LIQTEMPCONTR_STATE;
-//				}
-//			}
-//			else
-//			{
-//				LiquidTempContrState = READ_LIQTEMPCONTR_STATE;
-//			}
-//			break;
-//		case WAIT_FOR_SET_T_LIQTEMPCONTR_STATE:
-//			if(CurrTemp <= (myTempValue + DELTA_TEMP_TO_RESTART_PELTIER))
-//			{
-//				// la temperatura e' ritornata vicino al valore target posso far ripartire le Peltier
-//				// la differenza di 2 decimi di grado serve per poter far ripartire le peltier
-//				peltierCell.readAlwaysEnable = 0;
-//				peltierCell2.readAlwaysEnable = 0;
-//				LiquidTempContrState = INIT_LIQTEMPCONTR_STATE;
-//			}
-//			break;
-//
-//		// controllo che il recipiente raggiunga il nuovo target impostato prima di passare
-//	    // nello stato di controllo del mantenimento del target
-//		case TEMP_START_CHECK_LIQTEMPCONTR_STATE:
-//			if((tmpr >= (float)(tmpr_trgt - DELTA_TEMP_TO_STOP_PELTIER)) && (tmpr <= (float)(tmpr_trgt + DELTA_TEMP_TO_STOP_PELTIER)))
-//			{
-//				// ho raggiunto la temperatura target
-//				LiquidTempContrState = TEMP_CHECK_DUR_LIQTEMPCONTR_STATE;
-//				TempOkTimeout = timerCounterModBus;
-//			}
-//			break;
-//		case TEMP_CHECK_DUR_LIQTEMPCONTR_STATE:
-//			if((tmpr >= (float)(tmpr_trgt - DELTA_TEMP_TO_STOP_PELTIER)) && (tmpr <= (float)(tmpr_trgt + DELTA_TEMP_TO_STOP_PELTIER)))
-//			{
-//				// ho raggiunto la temperatura target
-//				if(msTick_elapsed(TempOkTimeout) * 50L >= LIQUID_TEMP_CONTR_TASK_TIME)
-//				{
-//					// per almeno 2 secondi la temperatura si e' mantenuta nell'intorno del target,
-//					// Considero il target di temperatura raggiunto e quindi posso passare alla fase
-//					// di controllo del mantenimento della temperatura
-//					LiquidTempContrState = INIT_LIQTEMPCONTR_STATE;
-//				}
-//			}
-//			else
-//			{
-//				LiquidTempContrState = TEMP_START_CHECK_LIQTEMPCONTR_STATE;
-//			}
-//			break;
-//	}
-//}
 
 
 

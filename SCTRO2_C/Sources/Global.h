@@ -1669,6 +1669,14 @@ typedef enum
 	RESET_LIQUID_TEMP_CONTR_CMD
 }LIQUID_TEMP_CONTR_CMD;
 
+typedef enum
+{
+	UNDEF,
+	ON,
+	OFF
+}LIQ_PELTIER_STATE;
+
+
 // incremento di temperatura al di sopra del quale le peltier vengono spente
 // (espresso in decimi di grado)
 #define DELTA_TEMP_TO_STOP_PELTIER  5

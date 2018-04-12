@@ -511,7 +511,7 @@ int main(void)
    InitSevenSeg();
    EnableNextAlarm = TRUE;
    PeltierStarted = FALSE;
-
+   LiquidTempContrTask(RESET_LIQUID_TEMP_CONTR_CMD);
 
   /**********MAIN LOOP START************/
   for(;;) {
