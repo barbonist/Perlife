@@ -52,6 +52,9 @@ void initSetParamInSourceCode(void);
 void setParamWordFromGUI(unsigned char parId, int value);
 void resetParamWordFromGUI(unsigned char parId);
 word ConvertMMHgToMl( word mmhg);
+int CalcPrimingDuration(word volume);
+int CalcFilterFlow(unsigned char PumpSpeed);
+word CalcHoursMin(int seconds);
 
 /*******************/
 /******* TREATMENT - SBC COMM. FUNCTION *********/
@@ -59,7 +62,7 @@ word ConvertMMHgToMl( word mmhg);
 
 // Se definito, aggiunge alla risposta ai comandi di stato la lista dei valori di alcuni parametri
 // attualmente impostati da utente
-#define NEW_STATE_RESPONSE_MSG
+//#define NEW_STATE_RESPONSE_MSG
 #ifdef NEW_STATE_RESPONSE_MSG
 	#define STATUS_MSG_LENGTH 0x87
 #else

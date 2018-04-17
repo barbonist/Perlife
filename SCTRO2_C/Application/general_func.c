@@ -209,11 +209,17 @@ void DebugString()
 								(int) pumpPerist[1].actualSpeedOld * 100
 					);
 
-		perfusionParam.treatDurPerfArt = (word)((TotalTreatDuration + TreatDuration) / 60);
+		perfusionParam.treatDurPerfArt = (word)(TotalTreatDuration + TreatDuration);   // concordato con Iudici di esprimerlo in secondi
+		perfusionParam.treatDurPerVenOxy = perfusionParam.treatDurPerfArt;
 	}
 
-	//perfusionParam.priDurPerfArt	= (word)((TotalPrimingDuration + PrimingDuration) / 60);
-	perfusionParam.priDurPerfArt	= (word)((TotalPrimingDuration + PrimingDuration));  // per prova lo esprimo in secondi
+	perfusionParam.priDurPerfArt = (word)(TotalPrimingDuration + PrimingDuration);  // concordato con Iudici di esprimerlo in secondi
+	perfusionParam.priDurPerVenOxy = 0;
+	if(PrimDurUntilOxyStart)
+	{
+		// la durata comincia quando partono le pompe di ossigenazione
+		perfusionParam.priDurPerVenOxy = perfusionParam.priDurPerfArt - PrimDurUntilOxyStart;
+	}
 
 //	sprintf(stringPr, "\r %i; %i; %i; - %i; %i; %d; %d;",
 //							(int) (sensorIR_TM[0].tempSensValue*10)/*PR_ADS_FLT_mmHg*/,

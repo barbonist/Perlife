@@ -1096,31 +1096,36 @@ void buildRDMachineStateResponseMsg(char code, char subcode)
 	/*58*/  sbc_tx_data[index++] = (perfusionParam.priVolAdsFilter >> 8) & 0xFF;
 	/*59*/  sbc_tx_data[index++] = (perfusionParam.priVolAdsFilter     ) & 0xFF;
 	/* perfusion parameters: priming volume perfusion arterial */
-	/*60*/  sbc_tx_data[index++] = (perfusionParam.priVolPerfArt >> 8) & 0xFF;
-	/*61*/  sbc_tx_data[index++] = (perfusionParam.priVolPerfArt     ) & 0xFF;
+	wd = perfusionParam.priVolPerfArt;
+	if(wd <= VOLUME_DISPOSABLE)
+		wd = 0;
+	else
+		wd = wd - VOLUME_DISPOSABLE;
+	/*60*/  sbc_tx_data[index++] = (wd >> 8) & 0xFF;
+	/*61*/  sbc_tx_data[index++] = (wd     ) & 0xFF;
 	/* perfusion parameters: priming volume perfusion venous / oxygenation */
 	/*62*/  sbc_tx_data[index++] = (perfusionParam.priVolPerfVenOxy >> 8) & 0xFF;
 	/*63*/  sbc_tx_data[index++] = (perfusionParam.priVolPerfVenOxy     ) & 0xFF;
 	/* perfusion parameters: priming duration perfusion arterial */
-	/*64*/  sbc_tx_data[index++] = (perfusionParam.priDurPerfArt >> 8) & 0xFF;
+	/*64*/  sbc_tx_data[index++] = (perfusionParam.priDurPerfArt >> 8) & 0xFF;  // espressa in secondi
 	/*65*/  sbc_tx_data[index++] = (perfusionParam.priDurPerfArt     ) & 0xFF;
 	/* perfusion parameters: priming duration perfusion venous / oxygenation */
-	/*66*/  sbc_tx_data[index++] = (perfusionParam.priDurPerVenOxy >> 8) & 0xFF;
+	/*66*/  sbc_tx_data[index++] = (perfusionParam.priDurPerVenOxy >> 8) & 0xFF; // espressa in secondi
 	/*67*/  sbc_tx_data[index++] = (perfusionParam.priDurPerVenOxy     ) & 0xFF;
 	/* perfusion parameters: treatment volume adsorbent filter */
 	/*68*/  sbc_tx_data[index++] = (perfusionParam.treatVolAdsFilter >> 8) & 0xFF;
 	/*69*/  sbc_tx_data[index++] = (perfusionParam.treatVolAdsFilter     ) & 0xFF;
 	/* perfusion parameters: treatment volume perfusion arterial */
-	/*70*/  sbc_tx_data[index++] = (perfusionParam.treatVolPerfArt >> 8) & 0xFF;
+	/*70*/  sbc_tx_data[index++] = (perfusionParam.treatVolPerfArt >> 8) & 0xFF;    // espressa in ml
 	/*71*/  sbc_tx_data[index++] = (perfusionParam.treatVolPerfArt     ) & 0xFF;
 	/* perfusion parameters: treatment volume perfusion venous / oxygenation */
-	/*72*/  sbc_tx_data[index++] = (perfusionParam.treatVolPerfVenOxy >> 8) & 0xFF;
+	/*72*/  sbc_tx_data[index++] = (perfusionParam.treatVolPerfVenOxy >> 8) & 0xFF; // espressa in ml
 	/*73*/  sbc_tx_data[index++] = (perfusionParam.treatVolPerfVenOxy     ) & 0xFF;
 	/* perfusion parameters: treatment duration perfusion arterial */
-	/*74*/  sbc_tx_data[index++] = (perfusionParam.treatDurPerfArt >> 8) & 0xFF;
+	/*74*/  sbc_tx_data[index++] = (perfusionParam.treatDurPerfArt >> 8) & 0xFF;  // espressa in secondi
 	/*75*/  sbc_tx_data[index++] = (perfusionParam.treatDurPerfArt     ) & 0xFF;
 	/* perfusion parameters: treatment duration perfusion venous / oxygenation */
-	/*76*/  sbc_tx_data[index++] = (perfusionParam.treatDurPerVenOxy >> 8) & 0xFF;
+	/*76*/  sbc_tx_data[index++] = (perfusionParam.treatDurPerVenOxy >> 8) & 0xFF; // espressa in secondi
 	/*77*/  sbc_tx_data[index++] = (perfusionParam.treatDurPerVenOxy     ) & 0xFF;
 
 	/* perfusion parameters: unload volume adsorbent filter */
@@ -1199,32 +1204,31 @@ void buildRDMachineStateResponseMsg(char code, char subcode)
 	wd = parameterWordSetFromGUI[PAR_SET_TEMPERATURE].value;
 	/*116*/  sbc_tx_data[index++] = (wd >> 8) & 0xFF;
 	/*117*/  sbc_tx_data[index++] = (wd     ) & 0xFF;
-	/* free 1*/
+	// durata del priming calcolata
+	/*118*/  sbc_tx_data[index++] = (ExpectedPrimDuration >> 8) & 0xFF;
+	/*119*/  sbc_tx_data[index++] = (ExpectedPrimDuration     ) & 0xFF;
+	/*120*/  sbc_tx_data[index++] = ((word)FilterFlowVal >> 8) & 0xFF;  // flusso nel filtro in ml/min (!= 0 solo se il filtro e' presente)
+	/*121*/  sbc_tx_data[index++] = ((word)FilterFlowVal     ) & 0xFF;
 	wd = 0;
-	/*118*/  sbc_tx_data[index++] = (wd >> 8) & 0xFF;
-	/*119*/  sbc_tx_data[index++] = (wd     ) & 0xFF;
-	/* free 2*/
-	/*120*/  sbc_tx_data[index++] = (wd >> 8) & 0xFF;
-	/*121*/  sbc_tx_data[index++] = (wd     ) & 0xFF;
-	/* free 3*/
+	/* free 1*/
 	/*122*/  sbc_tx_data[index++] = (wd >> 8) & 0xFF;
 	/*123*/  sbc_tx_data[index++] = (wd     ) & 0xFF;
-	/* free 4*/
+	/* free 2*/
 	/*124*/  sbc_tx_data[index++] = (wd >> 8) & 0xFF;
 	/*125*/  sbc_tx_data[index++] = (wd     ) & 0xFF;
-	/* free 5*/
+	/* free 3*/
 	/*126*/  sbc_tx_data[index++] = (wd >> 8) & 0xFF;
 	/*127*/  sbc_tx_data[index++] = (wd     ) & 0xFF;
-	/* free 6*/
+	/* free 4*/
 	/*128*/  sbc_tx_data[index++] = (wd >> 8) & 0xFF;
 	/*129*/  sbc_tx_data[index++] = (wd     ) & 0xFF;
-	/* free 7*/
+	/* free 5*/
 	/*130*/  sbc_tx_data[index++] = (wd >> 8) & 0xFF;
 	/*131*/  sbc_tx_data[index++] = (wd     ) & 0xFF;
-	/* free 8*/
+	/* free 6*/
 	/*132*/  sbc_tx_data[index++] = (wd >> 8) & 0xFF;
 	/*133*/  sbc_tx_data[index++] = (wd     ) & 0xFF;
-	/* free 9*/
+	/* free 7*/
 	/*134*/  sbc_tx_data[index++] = (wd >> 8) & 0xFF;
 	/*135*/  sbc_tx_data[index++] = (wd     ) & 0xFF;
 
@@ -1497,6 +1501,17 @@ void setParamWordFromGUI(unsigned char parId, int value)
 	}
 
 	parameterWordSetFromGUI[parId].value = value;
+
+	if(parId == PAR_SET_PRIMING_VOL_PERFUSION)
+	{
+		int timesec;
+		word vol = GetTotalPrimingVolumePerf(0);
+		timesec =  CalcPrimingDuration(vol);
+		ExpectedPrimDuration = CalcHoursMin(timesec);
+	}
+
+	// TODO solo per debug GUI
+	parameterWordSetFromGUI[PAR_SET_DESIRED_DURATION].value = 20;
 }
 
 void resetParamWordFromGUI(unsigned char parId){
@@ -1695,9 +1710,53 @@ word ConvertMMHgToMl( word mmhg)
 
 
 
+// ritorna il tempo previsto per completare il priming espresso in secondi
+int CalcPrimingDuration(word volume)
+{
+	float pump_speed;
+	float mlpersecArt, mlpersecOxy;
+	float vol;
+	int timeSec;
+
+	pump_speed = (float)RPM_IN_PRIMING_PHASES / 100.0;
+	mlpersecArt = pump_speed * CONV_RPMMIN_TO_ML_PER_SEC;
+	// tempo per caricare i primi 400 ml
+	timeSec = (int)(((float)MIN_LIQ_IN_RES_TO_START_OXY_VEN / mlpersecArt) + 0.5);
+
+	if(volume > MIN_LIQ_IN_RES_TO_START_OXY_VEN)
+	{
+		if(GetTherapyType() == LiverTreat)
+			pump_speed = (int)LIVER_PRIMING_PMP_OXYG_SPEED / 100.0;
+		else
+			pump_speed = (int)((float)parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value / OXYG_FLOW_TO_RPM_CONV);
+
+		mlpersecOxy = pump_speed * CONV_RPMMIN_TO_ML_PER_SEC_OXYG * 2.0;
+		timeSec =  timeSec + (int)((((float)volume - (float)MIN_LIQ_IN_RES_TO_START_OXY_VEN) / (mlpersecArt + mlpersecOxy)) + 0.5);
+	}
+	return timeSec;
+}
+
+// PumpSpeed in rpm
+int CalcFilterFlow(unsigned char PumpSpeed)
+{
+	float pump_speed;
+	float mlpersec, mlpermin;
+	pump_speed = (float)PumpSpeed;
+	mlpersec = pump_speed * CONV_RPMMIN_TO_ML_PER_SEC;
+	mlpermin = mlpersec * 60.0 + 0.5;
+	return (int)mlpermin;
+}
 
 
-
+word CalcHoursMin(int seconds)
+{
+	word wd;
+	int min;
+	wd = ((unsigned char)(seconds / 3600.0)) << 8;
+	min = seconds % 3600;
+	wd = wd + (unsigned char)(((float)min / (float)60.0) + (float)0.5);
+	return wd;
+}
 
 
 
