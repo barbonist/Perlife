@@ -52,6 +52,9 @@ void initSetParamInSourceCode(void);
 void setParamWordFromGUI(unsigned char parId, int value);
 void resetParamWordFromGUI(unsigned char parId);
 word ConvertMMHgToMl( word mmhg);
+int CalcPrimingDuration(word volume);
+int CalcFilterFlow(unsigned char PumpSpeed);
+word CalcHoursMin(int seconds);
 
 /*******************/
 /******* TREATMENT - SBC COMM. FUNCTION *********/

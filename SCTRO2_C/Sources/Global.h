@@ -1309,7 +1309,8 @@ typedef enum{NOT_DEF = 0, NO = 1, YES = 2} PARAMETER_ACTIVE_TYPE;
 
 
 // percentuale del priming per l'inserimento del filtro
-#define PERC_OF_PRIM_FOR_FILTER    95
+//#define PERC_OF_PRIM_FOR_FILTER    95
+#define PERC_OF_PRIM_FOR_FILTER    50
 
 // fattore di conversione del flusso in giri al minuto per le pompe dell'ossigenatore
 //#define OXYG_FLOW_TO_RPM_CONV 18.3
@@ -1717,6 +1718,34 @@ bool EnableNextAlarm;
 
 // viene settato nel momento in cui viene dato lo start alle Peltier la prima volta (nel priming)
 bool PeltierStarted;
+
+
+
+// Quantita' di liquido pompata nell'intervallo di 1 sec. alla velocita' 1 rpm
+// 1 / 60  * 9.3
+#define CONV_RPMMIN_TO_ML_PER_SEC  (float)0.155
+// 1 / 60  * 11.0
+#define CONV_RPMMIN_TO_ML_PER_SEC_OXYG  (float)0.183
+
+// durata ipotizzata del priming
+// byte alto ore, byte basso minuti
+word ExpectedPrimDuration;
+
+// quando e' TRUE vuol dire che sono trascorsi 50 msec e devo controllare se e' cambiato lo stato per inviarlo
+// al protective
+bool SendCanMessageFlag;
+
+// durata del priming in secondi prima che vengono fatte partire le pompe di ossigenazione
+word PrimDurUntilOxyStart;
+
+// valore del flusso nel filtro (e' diverso da 0 solo se il filtro e' montato)
+int FilterFlowVal;
+
+#define PRIM_PINCH_2WPVA_POS MODBUS_PINCH_RIGHT_OPEN
+#define PRIM_PINCH_2WPVV_POS MODBUS_PINCH_RIGHT_OPEN
+
+//#define PRIM_PINCH_2WPVA_POS MODBUS_PINCH_LEFT_OPEN
+//#define PRIM_PINCH_2WPVV_POS MODBUS_PINCH_LEFT_OPEN
 
 #endif /* SOURCES_GLOBAL_H_ */
 

@@ -512,6 +512,9 @@ int main(void)
    EnableNextAlarm = TRUE;
    PeltierStarted = FALSE;
    LiquidTempContrTask(RESET_LIQUID_TEMP_CONTR_CMD);
+   ExpectedPrimDuration = 0;
+   SendCanMessageFlag = FALSE;
+   FilterFlowVal = 0;
 
   /**********MAIN LOOP START************/
   for(;;) {
