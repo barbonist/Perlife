@@ -648,18 +648,6 @@ void manageChildTreatAlm1StopAllActAlways(void)
  *         spostando wpwf a sinistra */
 void manageChildTreatAlm1SafAirFiltEntry(void)
 {
-	/*
-	THERAPY_TYPE TherType = GetTherapyType();
-	if(TherType == KidneyTreat)
-	{
-		HandlePinch(BUTTON_PINCH_2WPVF_LEFT_OPEN);
-		HandlePinch(BUTTON_PINCH_2WPVA_RIGHT_OPEN);
-	}
-	else if(TherType == LiverTreat)
-	{
-		HandlePinch(BUTTON_PINCH_2WPVF_LEFT_OPEN);
-	} */
-
 	// fermo le pompe e metto le pinch in sicurezza
 	manageChildTreatAlm1StopAllActEntry();
 	TreatAlm1SafAirFiltActive = TRUE;
@@ -734,17 +722,6 @@ void manageChildTreatAlm1SFVAlways(void)
 
 void manageChildTreatAlm1SFAEntry(void)
 {
-	/*
-	THERAPY_TYPE TherType = GetTherapyType();
-	if(TherType == KidneyTreat)
-	{
-		HandlePinch(BUTTON_PINCH_2WPVA_RIGHT_OPEN);
-	}
-	else if(TherType == LiverTreat)
-	{
-		HandlePinch(BUTTON_PINCH_2WPVA_RIGHT_OPEN);
-	}
-	*/
 	// fermo le pompe e metto le pinch in sicurezza
 	manageChildTreatAlm1StopAllActEntry();
 	TreatAlm1SFAActive = TRUE;

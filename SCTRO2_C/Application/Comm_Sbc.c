@@ -1740,21 +1740,33 @@ int CalcPrimingDuration(word volume)
 int CalcFilterFlow(unsigned char PumpSpeed)
 {
 	float pump_speed;
-	float mlpersec, mlpermin;
-	pump_speed = (float)PumpSpeed;
-	mlpersec = pump_speed * CONV_RPMMIN_TO_ML_PER_SEC;
-	mlpermin = mlpersec * 60.0 + 0.5;
+	float mlpersec;
+	static float mlpermin;
+	static unsigned char cnt = 0;
+	cnt++;
+	if(cnt >= 10)
+	{
+		cnt = 0;
+		pump_speed = (float)PumpSpeed;
+		mlpersec = pump_speed * CONV_RPMMIN_TO_ML_PER_SEC;
+		mlpermin = mlpersec * 60.0 + 0.5;
+	}
 	return (int)mlpermin;
 }
 
 
 word CalcHoursMin(int seconds)
 {
-	word wd;
-	int min;
-	wd = ((unsigned char)(seconds / 3600.0)) << 8;
-	min = seconds % 3600;
-	wd = wd + (unsigned char)(((float)min / (float)60.0) + (float)0.5);
+	static int sec = 0;
+	static word wd;
+	if(sec != seconds)
+	{
+		sec = seconds;
+		int min;
+		wd = ((unsigned char)(seconds / 3600.0)) << 8;
+		min = seconds % 3600;
+		wd = wd + (unsigned char)(((float)min / (float)60.0) + (float)0.5);
+	}
 	return wd;
 }
 
