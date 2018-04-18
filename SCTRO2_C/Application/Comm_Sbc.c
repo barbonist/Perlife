@@ -1495,7 +1495,7 @@ void setParamWordFromGUI(unsigned char parId, int value)
 	{
 		TherapyCmdArrived = 1;
 	}
-
+	parameterWordSetFromGUI[PAR_SET_DESIRED_DURATION].value = 20;
 	parameterWordSetFromGUI[parId].value = value;
 }
 

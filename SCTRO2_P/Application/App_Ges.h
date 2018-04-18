@@ -87,6 +87,7 @@ void initAllGuard(void);
 /*******************/
 /* VARIABLE */
 /******************/
+void UpdateActuatorPosition();
 
 
 #endif /* APPLICATION_APP_GES_H_ */

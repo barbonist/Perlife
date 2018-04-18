@@ -212,6 +212,9 @@ int main(void)
   for(;;)
   {
 	  ManageSwTimers();
+
+	  UpdateActuatorPosition();
+
   }
 
 
