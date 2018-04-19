@@ -603,4 +603,9 @@ struct tempIRSensor * ptrMsg_IR_TM;	/* puntatore utilizzato per spedire il messa
 
 int timerCounterCheckTempIRSens;
 
+//start addres FLASH used as EEPROM
+#define START_ADDRESS_EEPROM		0xFF000
+//stop addres FLASH used as EEPROM
+#define STOP_ADDRESS_EEPROM			0xFFFFF
+
 #endif /* SOURCES_GLOBAL_H_ */

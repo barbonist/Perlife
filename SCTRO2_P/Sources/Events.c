@@ -526,7 +526,6 @@ void AD0_OnCalibrationEnd(void)
 void CAN_C_P_OnFreeTxBuffer(LDD_TUserData *UserDataPtr, LDD_CAN_TMBIndex BufferIdx)
 {
   /* Write your code here ... */
-	int a = 0;
 }
 
 /*
@@ -616,6 +615,24 @@ void TI1_10ms_OnInterrupt(void)
 	/* Write your code here ... */
 	// calling sw timer to manage application specific timers (SB)
 	timerIsr_10ms();
+}
+
+/*
+** ===================================================================
+**     Event       :  EEPROM_OnWriteEnd (module Events)
+**
+**     Component   :  EEPROM [IntFLASH]
+*/
+/*!
+**     @brief
+**         Event is called after a write operation to FLASH memory is
+**         finished (except [SetPage]). This event is available only if
+**         an [Interrupt service/event] is selected.
+*/
+/* ===================================================================*/
+void EEPROM_OnWriteEnd(void)
+{
+  /* Write your code here ... */
 }
 
 /* END Events */

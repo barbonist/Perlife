@@ -175,6 +175,8 @@
 #include "BitIoLdd60.h"
 #include "C3_HALL_R.h"
 #include "BitIoLdd61.h"
+#include "EEPROM.h"
+#include "IntFlashLdd1.h"
 /* Including shared modules, which are used for whole project */
 #include "PE_Types.h"
 #include "PE_Error.h"
@@ -208,6 +210,8 @@ int main(void)
   SwTimerInit();
   InitTest();
   InitSevenSeg();
+  InitSensorsAccess();
+  InitControlProtectiveInterface();
 
   for(;;)
   {

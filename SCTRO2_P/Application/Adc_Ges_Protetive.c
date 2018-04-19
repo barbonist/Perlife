@@ -21,11 +21,11 @@
 #include "string.h"
 #include "stdio.h"
 #include "stdlib.h"
-//#include "EEPROM.h"
+#include "EEPROM.h"
 #include "App_Ges.h"
 #include "ModBusCommProt.h"
 #include "Comm_Sbc.h"
-//#include "pid.h"
+
 
 byte adcRes = 0xFF;
 word adcValue;
@@ -378,7 +378,7 @@ void Pressure_Sensor_Calibration(Press_sens ID_sens, float value, unsigned char 
 	static int ADCFirstPoint, ADCSecondPoint;
 	static float FirstValue, SecondValue;
 	static bool FIRST_POINT = FALSE;
-//	unsigned char *ptr_EEPROM = (EEPROM_TDataAddress)&config_data; TODO
+	unsigned char *ptr_EEPROM = (EEPROM_TDataAddress)&config_data;
 
 	/*primo punto di calibrazione*/
 	if (point == 0)
@@ -442,10 +442,10 @@ void Pressure_Sensor_Calibration(Press_sens ID_sens, float value, unsigned char 
 
 				/*carico il CRC della EEPROM (usata la stessa funzione di CRC del MOD_BUS
 				 * IL CRC lo clacolo su tutta la struttura meno i due byte ndel CRC stesso*/
-			//	config_data.EEPROM_CRC = ComputeChecksum(ptr_EEPROM, sizeof(config_data)-2); TODO
+				config_data.EEPROM_CRC = ComputeChecksum(ptr_EEPROM, sizeof(config_data)-2);
 
 				/*finita la calibrazione di un sensore la vado subito a salvare in EEPROM*/
-			//	EEPROM_write((EEPROM_TDataAddress)&config_data, START_ADDRESS_EEPROM, sizeof(config_data)); TODO
+				EEPROM_write((EEPROM_TDataAddress)&config_data, START_ADDRESS_EEPROM, sizeof(config_data));
 				break;
 
 			case LEVEL:
@@ -457,10 +457,10 @@ void Pressure_Sensor_Calibration(Press_sens ID_sens, float value, unsigned char 
 
 				/*carico il CRC della EEPROM (usata la stessa funzione di CRC del MOD_BUS
 				 * IL CRC lo clacolo su tutta la struttura meno i due byte ndel CRC stesso*/
-			//	config_data.EEPROM_CRC = ComputeChecksum(ptr_EEPROM, sizeof(config_data)-2); TODO
+				config_data.EEPROM_CRC = ComputeChecksum(ptr_EEPROM, sizeof(config_data)-2);
 
 				/*finita la calibrazione di un sensore la vado subito a salvare in EEPROM*/
-			//	EEPROM_write((EEPROM_TDataAddress)&config_data, START_ADDRESS_EEPROM, sizeof(config_data)); TODO
+				EEPROM_write((EEPROM_TDataAddress)&config_data, START_ADDRESS_EEPROM, sizeof(config_data));
 				break;
 
 			case ADS_FLT:
@@ -472,10 +472,10 @@ void Pressure_Sensor_Calibration(Press_sens ID_sens, float value, unsigned char 
 
 				/*carico il CRC della EEPROM (usata la stessa funzione di CRC del MOD_BUS
 				 * IL CRC lo clacolo su tutta la struttura meno i due byte ndel CRC stesso*/
-		//		config_data.EEPROM_CRC = ComputeChecksum(ptr_EEPROM, sizeof(config_data)-2); TODO
+				config_data.EEPROM_CRC = ComputeChecksum(ptr_EEPROM, sizeof(config_data)-2);
 
 				/*finita la calibrazione di un sensore la vado subito a salvare in EEPROM*/
-			//	EEPROM_write((EEPROM_TDataAddress)&config_data, START_ADDRESS_EEPROM, sizeof(config_data)); TOD
+				EEPROM_write((EEPROM_TDataAddress)&config_data, START_ADDRESS_EEPROM, sizeof(config_data));
 				break;
 
 			case VEN:
@@ -487,10 +487,10 @@ void Pressure_Sensor_Calibration(Press_sens ID_sens, float value, unsigned char 
 
 				/*carico il CRC della EEPROM (usata la stessa funzione di CRC del MOD_BUS
 				 * IL CRC lo clacolo su tutta la struttura meno i due byte ndel CRC stesso*/
-		//		config_data.EEPROM_CRC = ComputeChecksum(ptr_EEPROM, sizeof(config_data)-2); TODO
+				config_data.EEPROM_CRC = ComputeChecksum(ptr_EEPROM, sizeof(config_data)-2);
 
 				/*finita la calibrazione di un sensore la vado subito a salvare in EEPROM*/
-			//	EEPROM_write((EEPROM_TDataAddress)&config_data, START_ADDRESS_EEPROM, sizeof(config_data)); TODO
+				EEPROM_write((EEPROM_TDataAddress)&config_data, START_ADDRESS_EEPROM, sizeof(config_data));
 				break;
 
 			case ART:
@@ -502,10 +502,10 @@ void Pressure_Sensor_Calibration(Press_sens ID_sens, float value, unsigned char 
 
 				/*carico il CRC della EEPROM (usata la stessa funzione di CRC del MOD_BUS
 				 * IL CRC lo clacolo su tutta la struttura meno i due byte ndel CRC stesso*/
-	//			config_data.EEPROM_CRC = ComputeChecksum(ptr_EEPROM, sizeof(config_data)-2);TODO
+				config_data.EEPROM_CRC = ComputeChecksum(ptr_EEPROM, sizeof(config_data)-2);
 
 				/*finita la calibrazione di un sensore la vado subito a salvare in EEPROM*/
-			//	EEPROM_write((EEPROM_TDataAddress)&config_data, START_ADDRESS_EEPROM, sizeof(config_data)); TODO
+				EEPROM_write((EEPROM_TDataAddress)&config_data, START_ADDRESS_EEPROM, sizeof(config_data));
 				break;
 
 			default:

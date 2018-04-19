@@ -178,6 +178,8 @@
 #include "BitIoLdd60.h"
 #include "C3_HALL_R.h"
 #include "BitIoLdd61.h"
+#include "EEPROM.h"
+#include "IntFlashLdd1.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -678,6 +680,21 @@ void TI1_1ms_OnInterrupt(void);
 ** ===================================================================
 */
 void TI1_10ms_OnInterrupt(void);
+
+/*
+** ===================================================================
+**     Event       :  EEPROM_OnWriteEnd (module Events)
+**
+**     Component   :  EEPROM [IntFLASH]
+*/
+/*!
+**     @brief
+**         Event is called after a write operation to FLASH memory is
+**         finished (except [SetPage]). This event is available only if
+**         an [Interrupt service/event] is selected.
+*/
+/* ===================================================================*/
+void EEPROM_OnWriteEnd(void);
 
 /* END Events */
 
