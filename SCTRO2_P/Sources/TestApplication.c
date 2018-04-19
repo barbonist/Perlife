@@ -114,7 +114,7 @@ void ManageTestP100ms(void)
 
 }
 
-void ReceivedCanData(uint8_t *rxbuff, int rxlen, int RxChannel)
+void ReceivedCanData_1(uint8_t *rxbuff, int rxlen, int RxChannel)
 {
 #ifdef CONTROL_BOARD
 	if((RxChannel == 0) && (memcmp(rxbuff,"VINCENZO",8) == 0)){

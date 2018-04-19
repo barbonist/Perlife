@@ -16,6 +16,35 @@
 
 #include "BitIoLdd3.h"
 
+#include "M1_HALL_A.h"
+#include "BitIoLdd48.h"
+#include "M1_HALL_B.h"
+#include "BitIoLdd49.h"
+#include "M2_HALL_A.h"
+#include "BitIoLdd50.h"
+#include "M2_HALL_B.h"
+#include "BitIoLdd51.h"
+#include "M3_HALL_A.h"
+#include "BitIoLdd52.h"
+#include "M3_HALL_B.h"
+#include "BitIoLdd53.h"
+#include "M4_HALL_A.h"
+#include "BitIoLdd54.h"
+#include "M4_HALL_B.h"
+#include "BitIoLdd55.h"
+#include "C1_HALL_L.h"
+#include "BitIoLdd56.h"
+#include "C1_HALL_R.h"
+#include "BitIoLdd57.h"
+#include "C2_HALL_L.h"
+#include "BitIoLdd58.h"
+#include "C2_HALL_R.h"
+#include "BitIoLdd59.h"
+#include "C3_HALL_L.h"
+#include "BitIoLdd60.h"
+#include "C3_HALL_R.h"
+#include "BitIoLdd61.h"
+
 
 /********************************/
 /* machine state initialization */
@@ -734,6 +763,27 @@ void initAllGuard(void)
 	}
 }
 
+void UpdateActuatorPosition()
+{
+	  /*i nomi L/R delle pinch sulle get val non sono attendibili
+	   * le funzioni sono comunque state debuggate e sono corrette
+	   * c'è solo da identificare quale sia sulle pompe il primo e
+	   * il secondo sensore per capire il senso di rotazione*/
+	  HallSens.PumpFilter_1		 = M1_HALL_A_GetVal();
+	  HallSens.PumpFilter_2		 = M1_HALL_B_GetVal();
+	  HallSens.PumpArt_Liver_1 	 = M2_HALL_A_GetVal();
+	  HallSens.PumpArt_Liver_2	 = M2_HALL_B_GetVal();
+	  HallSens.PumpOxy_1_1 		 = M3_HALL_A_GetVal();
+	  HallSens.PumpOxy_1_2 		 = M3_HALL_B_GetVal();
+	  HallSens.PumpOxy_2_1 		 = M4_HALL_A_GetVal();
+	  HallSens.PumpOxy_2_2 		 = M4_HALL_B_GetVal();
+	  HallSens.PinchFilter_Left  = C2_HALL_R_GetVal();
+	  HallSens.PinchFilter_Right = C2_HALL_L_GetVal();
+	  HallSens.PinchArt_Left 	 = C3_HALL_R_GetVal();
+	  HallSens.PinchArt_Right 	 = C3_HALL_L_GetVal();
+	  HallSens.PinchVen_Left 	 = C1_HALL_L_GetVal();
+	  HallSens.PinchVen_Right 	 = C1_HALL_R_GetVal();
+}
 
 
 
