@@ -8,11 +8,16 @@
 #ifndef SOURCES_GLOBAL_H_
 #define SOURCES_GLOBAL_H_
 
+typedef unsigned short	word;
+
 /* Syncronization flag */
 char	iflag_pc_rx;
 char	iflag_pc_tx;
 char	iflag_pmp1_rx;
 char	iflag_pmp1_tx;
+char	iflag_sensTempIR_Meas_Ready;
+char	iflag_sensTempIRRW;
+unsigned char * ptrDataTemperatureIR;
 
 /* DEBUG */
 #define DEBUG_ENABLE
@@ -31,6 +36,11 @@ char	iflag_pmp1_tx;
 #define IFLAG_PMP3_TX			0x01 /* new data on tx 422 pmp3 */
 #define IFLAG_PMP4_TX			0x01 /* new data on tx 422 pmp4 */
 #define IFLAG_IDLE				0x00 /* idle flag */
+#define IFLAG_SENS_TEMPIR_TX		0x5A /* Message end trasmission */
+#define IFLAG_SENS_TEMPIR_RX		0xA5 /* Message end reception */
+#define IFLAG_SENS_TEMPIR_WAIT		0xCC /* Wait for rx/tx message */
+#define IFLAG_SENS_TEMPIR_WRITE		0xEE /* write request */
+#define IFLAG_IRTEMP_MEASURE_READY	0x01 /* valore di temperatura pronto da leggere */
 
 /**/
 #define BYTES_TO_WORD(hi,lo)  (unsigned int) (((unsigned int)(hi) << 8) | (unsigned int)(lo))
@@ -49,6 +59,54 @@ unsigned char * ptr;
 unsigned char * ptrDebug;
 char ptrCount;
 
+/************************************************************************/
+/* 					VARIABILI CANALI ADC		 						*/
+/************************************************************************/
+
+word DipSwitch_0_ADC;		//Variabile globale col valore ADC del DIP_SWITCH_1
+word DipSwitch_1_ADC;		//Variabile globale col valore ADC del DIP_SWITCH_2
+word DipSwitch_2_ADC;		//Variabile globale col valore ADC del DIP_SWITCH_3
+
+#define DipSwitch_0_ADC_CHANNEL 	4
+#define DipSwitch_1_ADC_CHANNEL 	5
+#define DipSwitch_2_ADC_CHANNEL 	13
+
+word V24_P1_CHK_ADC;
+word V24_P1_CHK_VOLT;
+word V24_P2_CHK_ADC;
+word V24_P2_CHK_VOLT;
+
+/*V24_P1_CHK:	 to 24 Volt --> 49764 ADC count; to 22 Volt 45576 ADC count*/
+#define V24_P1_CHK_GAIN 		0.00047755492
+#define V24_P1_CHK_OFFSET		0.25
+
+/*V24_P2_CHK:	 to 24 Volt --> 49600 ADC count; to 22 Volt 45523 ADC count*/
+#define V24_P2_CHK_GAIN 		0.00049055678
+#define V24_P2_CHK_OFFSET		-0.33
+
+#define V24_P2_CHK_ADC_CHANNEL 		10
+#define V24_P1_CHK_ADC_CHANNEL 		11
+
+
+#define PR_OXYG_ADC_CHANNEL		0
+#define PR_LEVEL_ADC_CHANNEL	1
+#define PR_ADS_FLT_ADC_CHANNEL 	2
+#define PR_VEN_ADC_CHANNEL		4
+#define PR_ART_ADC_CHANNEL		5
+
+char ON_NACK_IR_TM;			//variabile globale che viene messa ad 1 se ricevo un NACK da un sensore di Temp IR
+
+unsigned char END_ADC0;
+unsigned char END_ADC1;
+
+unsigned char OK_START;
+unsigned char CHANGE_ADDRESS_IR_SENS;
+
+#define BUTTON_1 0x01
+#define BUTTON_2 0x02
+#define BUTTON_3 0x03
+#define BUTTON_4 0x04
+
 struct funcRetStruct
 {
 	unsigned char *  ptr_msg;
@@ -60,13 +118,20 @@ struct funcRetStruct
 struct funcRetStruct * _funcRetValPtr;
 
 /* Data Structure */
-struct Peristaltic_Pump {
-	char	id;
-};
+typedef enum
+{
+	OXYG = 0,
+	LEVEL,
+	ADS_FLT,
+	VEN,
+	ART,
+	TOTAL_PPRESS_SENS
 
-struct Centrifugal_Pump {
-	char	id;
-};
+}Press_sens;
+
+
+
+
 
 struct Pinch_Valve {
 	char	id;
@@ -356,5 +421,186 @@ typedef struct
 }ActuatorHallStatus;
 
 ActuatorHallStatus HallSens;
+
+/*le variabili globali sottostanti usate perr la pressioner, potrebbero diventare solo 5 variabili della struttura che c'è sopra*/
+
+word  PR_OXYG_ADC;			 	//variabile globale per il valore ADC del sensore di pressione ossigenatore --> PTC10
+word  PR_OXYG_mmHg;			 	//variabile globale per il valore in mmHg del sensore di pressione ossigenatore
+word  PR_OXYG_mmHg_Filtered;  	//variabile globale per il valore in mmHg del sensore di pressione ossigenatore filtrato
+word  PR_OXYG_ADC_Filtered;  	//variabile globale per il valore ADC del sensore di pressione ossigenatore filtrato
+
+word  PR_LEVEL_ADC;			 	//variabile globale per il valore ADC del sensore di pressione di livello vaschetta --> PTC11
+word  PR_LEVEL_mmHg;			//variabile globale per il valore in mmHg del sensore di pressione di livello vaschetta
+word  PR_LEVEL_mmHg_Filtered; 	//variabile globale per il valore in mmHg del sensore di pressione di livello vaschetta filtrato
+word  PR_LEVEL_ADC_Filtered;  	//variabile globale per il valore ADC del sensore di pressione di livello filtrato
+
+word  PR_ADS_FLT_ADC;			//variabile globale per il valore ADC del sensore di pressione del filtro assorbente --> PTB11
+word  PR_ADS_FLT_mmHg;			//variabile globale per il valore in mmHg del sensore di pressione del filtro assorbente
+word  PR_ADS_FLT_mmHg_Filtered;	//variabile globale per il valore in mmHg del sensore di pressione del filtro assorbente filtrato
+word  PR_ADS_FLT_ADC_Filtered;  	//variabile globale per il valore ADC del sensore di pressione del filtro assorbente filtrato
+
+word  PR_VEN_ADC;				//variabile globale per il valore ADC del sensore di pressione Venoso --> PTB6
+word  PR_VEN_mmHg;				//variabile globale per il valore in mmHg del sensore di pressione Venoso
+word  PR_VEN_mmHg_Filtered;		//variabile globale per il valore in mmHg del sensore di pressione Venoso filtrato
+word  PR_VEN_ADC_Filtered;  	//variabile globale per il valore ADC del sensore di pressione Venoso filtrato
+word  PR_VEN_Diastolyc_mmHg;	//variabile globale per il valore diastolico  in mmHg del sensore di pressione venosa
+word  PR_VEN_Sistolyc_mmHg;	    //variabile globale per il valore sistolico  in mmHg del sensore di pressione venosa
+word  PR_VEN_Med_mmHg;			//variabile globale per il valore medio in mmHg del sensore di pressione venosa calcolato come (2 *PR_OXYG_Sistolyc_mmHg + PR_OXYG_Diastolyc_mmHg)/3
+int  PR_VEN_Diastolyc_mmHg_ORG;	//variabile globale per il valore diastolico  in mmHg del sensore di pressione venosa stimato sull'organo
+int  PR_VEN_Sistolyc_mmHg_ORG;	    //variabile globale per il valore sistolico  in mmHg del sensore di pressione venosa stimato sull'organo
+int  PR_VEN_Med_mmHg_ORG;			//variabile globale per il valore medio in mmHg del sensore di pressione venosa calcolato come (2 *PR_OXYG_Sistolyc_mmHg + PR_OXYG_Diastolyc_mmHg)/3 stimato sull'organo
+
+
+
+word  PR_ART_ADC;				//variabile globale per il valore ADC del sensore di pressione arteriosa --> PTB7
+word  PR_ART_mmHg;				//variabile globale per il valore in mmHg del sensore di pressione arteriosa
+word  PR_ART_mmHg_Filtered;		//variabile globale per il valore in mmHg del sensore di pressione arteriosa filtrato
+word  PR_ART_ADC_Filtered;  	//variabile globale per il valore ADC del sensore di pressione Arterioso filtrato
+word  PR_ART_Diastolyc_mmHg;	//variabile globale per il valore diastolico  in mmHg del sensore di pressione arteriosa
+word  PR_ART_Sistolyc_mmHg;	    //variabile globale per il valore sistolico  in mmHg del sensore di pressione arteriosa
+word  PR_ART_Med_mmHg;			//variabile globale per il valore medio in mmHg del sensore di pressione arteriosa calcolato come (2 *PR_OXYG_Sistolyc_mmHg + PR_OXYG_Diastolyc_mmHg)/3
+int   PR_ART_Diastolyc_mmHg_ORG; //variabile globale per il valore diastolico  in mmHg del sensore di pressione arteriosa
+int   PR_ART_Sistolyc_mmHg_ORG;	 //variabile globale per il valore sistolico  in mmHg del sensore di pressione arteriosa
+int   PR_ART_Med_mmHg_ORG;		 //variabile globale per il valore medio in mmHg del sensore di pressione arteriosa calcolato come (2 *PR_OXYG_Sistolyc_mmHg + PR_OXYG_Diastolyc_mmHg)/3
+
+unsigned char Air_1_Status;				//variabile globale per vedere lo stato del sensore di aria SONOTEC; può assumere valire AIR opp LIQUID
+
+#define PR_OXYG_GAIN_DEFAULT 		0.0277778
+#define PR_OXYG_OFFSET_DEFAULT		-549.583
+
+#define PR_LEVEL_GAIN_DEFAULT 		0.000535045
+#define PR_LEVEL_OFFSET_DEFAULT		-10.2772
+
+#define PR_ADS_FLT_GAIN_DEFAULT		0.0272547
+#define PR_ADS_FLT_OFFSET_DEFAULT	-537.517
+
+#define PR_VEN_GAIN_DEFAULT 		0.00658244
+#define PR_VEN_OFFSET_DEFAULT		-128.147
+
+#define PR_ART_GAIN_DEFAULT 		0.00657
+#define PR_ART_OFFSET_DEFAULT		-127.287
+
+#define AIR							0x00
+#define LIQUID						0x01
+
+struct pressureSensor{
+	float prSensOffset;
+//	float prSensOffsetVal;
+	float prSensGain;
+//	float prSensValue;
+//	int  prSensValueFilteredWA;
+//	word  prSensAdc;
+//	word * prSensAdcPtr;
+//	float prSensValueOld;
+//	word * (*readAdctPtr)(void);
+};
+
+struct ParSaveTO_EEPROM
+{
+	struct pressureSensor sensor_PRx[5];
+	float  FlowSensor_Ven_Gain;
+	float  FlowSensor_Ven_Offset;
+	float  FlowSensor_Art_Gain;
+	float  FlowSensor_Art_Offset;
+	unsigned char EEPROM_Revision;
+	word EEPROM_CRC;
+};
+
+//volume del liquido in vaschetta come percentuale rispetto al suo valore massimo
+word LiquidAmount;
+
+// volume massimo caricabile in vaschetta in ml
+#define MAX_LIQUID_AMOUNT 2500
+
+
+/* perfusion parameter */
+/* word will be converted to float by sbc */
+struct perfParam{
+	word priVolAdsFilter;
+	word priVolPerfArt;
+	word priVolPerfVenOxy;
+	word priDurPerfArt;
+	word priDurPerVenOxy;
+	word treatVolAdsFilter;
+	word treatVolPerfArt;
+	word treatVolPerfVenOxy;
+	word treatDurPerfArt;
+	word treatDurPerVenOxy;
+	word unlVolAdsFilter;
+	word unlVolPerfArt;
+	word unlVolPerfVenOxy;
+	word unlVolRes;
+	word unlDurPerfArt;
+	word unlDurPerVenOxy;
+	word renalResistance;
+	word pulsatility;
+	word pressDropAdsFilter;
+};
+
+struct perfParam	perfusionParam;
+/* perfusion parameter */
+
+struct Peristaltic_Pump {
+	char					id;
+	struct funcRetStruct * 	pmpStructPtr;
+	int						pmpSpeed;
+	int						pmpGoHomeSpeed;
+	unsigned int			pmpAccelSpeed;
+	unsigned int			pmpCurrent;
+	unsigned int			pmpCruiseSpeed;
+	int						pmpStepTarget;
+	char					pmpMySlaveAddress;
+	char					pmpFuncCode;
+	unsigned int			pmpWriteStartAddr;
+	unsigned int			pmpReadStartAddr;
+	unsigned int			pmpNumeRegWrite;
+	unsigned int			pmpNumRegRead;
+	unsigned int *			pmpWriteRegValuePtr;
+	unsigned char			pmpPressLoop;
+	unsigned char			entry;
+	unsigned char			reqState; //request pending / request not pending
+	unsigned char			reqType; //read / write
+	unsigned char			actuatorType; //pump / pinch
+	int						value;
+	unsigned char			dataReady;
+	unsigned char			actualSpeed;
+	float					actualSpeedOld;
+	int                     newSpeedValue; // nuovo valore di velocita' arrivato prima della conclusione della scrittura precedente
+	unsigned char           ReadRequestPending;  // e' arrivata una richiesta di lettura della velocita' della pompa
+};
+
+struct Peristaltic_Pump		pumpPerist[4];
+/* Peristaltic pump */
+
+struct ParSaveTO_EEPROM config_data;
+
+/* SENSORI TEMPERATURA DIGITALI */
+struct tempIRSensor{
+	unsigned char sensorId;
+	float tempSensOffset;
+	float tempSensOffsetVal;
+	float tempSensGain;
+	float tempSensValue;
+	word  tempSensAdc;
+	word * tempSensAdcPtr;
+	float tempSensValueOld;
+	unsigned char bufferToSendLenght;
+	unsigned char bufferToSend[4];
+	unsigned char bufferReceivedLenght;
+	unsigned char bufferReceived[4];
+	word * (*readIRTempSensor)(void);
+	word * (*writeIRTempSensor)(void);
+	word tempSensValToWrite;
+	unsigned char * ptrValToRead;
+	word errorNACK;
+	word errorPEC;
+	unsigned char ErrorMSG;
+};
+
+struct tempIRSensor sensorIR_TM[3];
+struct tempIRSensor * ptrCurrent_IR_TM; /* puntatore a struttura corrente - sensore attualmente interrogato */
+struct tempIRSensor * ptrMsg_IR_TM;	/* puntatore utilizzato per spedire il messaggio */
+
+int timerCounterCheckTempIRSens;
 
 #endif /* SOURCES_GLOBAL_H_ */
