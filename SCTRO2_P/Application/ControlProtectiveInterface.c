@@ -250,9 +250,12 @@ union URxCan*	OldRxBuffCanP[8] =
 
 void ReceivedCanData(uint8_t *rxbuff, int rxlen, int RxChannel)
 {
-	if(( rxlen <= 8 ) && (RxChannel <= 7)){
+	if(( rxlen <= 8 ) && (RxChannel <= 7))
+	{
+		RetriggerAlarm();
 		memcpy( RxBuffCanP[RxChannel]->RawCanBuffer , rxbuff, rxlen);
-		if(memcmp(RxBuffCanP[RxChannel]->RawCanBuffer , OldRxBuffCanP[RxChannel]->RawCanBuffer, SIZE_CAN_BUFFER) != 0){
+		if(memcmp(RxBuffCanP[RxChannel]->RawCanBuffer , OldRxBuffCanP[RxChannel]->RawCanBuffer, SIZE_CAN_BUFFER) != 0)
+		{
 			// data changed --> trigger some action
 			memcpy(OldRxBuffCanP[RxChannel]->RawCanBuffer , RxBuffCanP[RxChannel]->RawCanBuffer, SIZE_CAN_BUFFER);
 		}
