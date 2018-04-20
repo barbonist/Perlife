@@ -175,6 +175,7 @@
 #include "general_func.h"
 #include "SWTimer.h"
 #include "SevenSeg.h"
+#include "ControlProtectiveInterface_C.h"
 
 extern unsigned char PidFirstTime[4];
 extern float pressSample1_Ven;
@@ -188,7 +189,7 @@ extern unsigned char Released3;
 void TestPump(unsigned char Adr); //only for test
 void TestPinch(void);
 void GenerateSBCComm(void);
-
+void ProtectiveTask(void);
 void InitCAN(void);
 void InitTest(void);
 int FreeRunCnt10msecOld;
@@ -244,9 +245,6 @@ int main(void)
   Peltier2On = FALSE;
   PeltierOn = FALSE;
   GlobalFlags.FlagsVal = 0;
-  // abilito tutti gli allarmi previsti
-  //GlobalFlags.FlagsDef.EnableAllAlarms = 1;
-  SetAllAlarmEnableFlags();
 
   CoversState = 4; // all covers chiusi
   ArteriousPumpGainForPid = DEFAULT_ART_PUMP_GAIN;
@@ -497,6 +495,7 @@ int main(void)
 //	FreeRunCnt10msecOld = 0;
 //#endif
 
+   // abilito tutti gli allarmi previsti
    SetAllAlarmEnableFlags();
 
    // non faccio partire le peltier subito
@@ -513,8 +512,9 @@ int main(void)
    PeltierStarted = FALSE;
    LiquidTempContrTask(RESET_LIQUID_TEMP_CONTR_CMD);
    ExpectedPrimDuration = 0;
-   SendCanMessageFlag = FALSE;
    FilterFlowVal = 0;
+   PumpStoppedCnt = 0;
+   InitControlProtectiveInterface();
 
   /**********MAIN LOOP START************/
   for(;;) {
@@ -555,6 +555,7 @@ int main(void)
 
 	        	alarmEngineAlways();
 		        GenerateSBCComm();
+		        ProtectiveTask();
 	         }
 
 	         if(ReadKey1()) // per debug con la tastiera a bolle

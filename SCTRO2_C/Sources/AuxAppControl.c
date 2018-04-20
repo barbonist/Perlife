@@ -17,6 +17,7 @@
 #include "SWtimer.h"
 #include "SevenSeg.h"
 #include "Global.h"
+#include "ControlProtectiveInterface_C.h"
 
 
 void ManageTestP500ms(void);
@@ -32,12 +33,12 @@ bool BuzzStat = FALSE;
 bool BuzzCnt = 0;
 unsigned char TxCanMsg[8];
 unsigned char OldTxCanMsg1[8];
+CANBUS_MSG_11 CanBusMsg11;
 
 
 void InitTest(void)
 {
 	AddSwTimer(ManageTestP500ms,50,TM_REPEAT);
-	AddSwTimer(ManageTestP50ms,5,TM_REPEAT);
 	memset(TxCanMsg, 0, sizeof(TxCanMsg));
 	memset(OldTxCanMsg1, 0, sizeof(OldTxCanMsg1));
 }
@@ -79,34 +80,47 @@ void RetriggerAlarm(void){
 }
 
 
-LDD_TError  SendCAN(uint8_t *txbuff, int txsize, LDD_CAN_TMBIndex ChIndex);
-void ManageTestP50ms(void)
-{
-	// send a packet each 100ms if protective
-	//SendCAN("PERRONE", 7, 1);
 
-	// sono passati 50 msec devo controllare se e' ora di inviare qualche cosa su can bus
-	SendCanMessageFlag = TRUE;
+void onNewCanBusMsg11( CANBUS_MSG_11 ReceivedCanBusMsg11){
+	CanBusMsg11 = ReceivedCanBusMsg11;
 }
 
-void ReceivedCanData(uint8_t *rxbuff, int rxlen, int RxChannel)
+bool IsPinchPosOk(unsigned char *pArrPinchPos)
 {
-	if((RxChannel == 0) && (memcmp(rxbuff,"VINCENZO",8) == 0)){
-		// expected channel n message
-		RetriggerAlarm();
-	}
+	bool PinchPosOk = TRUE;
+	if((pArrPinchPos[0] != 0xff) && (pArrPinchPos[0] != CanBusMsg11.FilterPinchPos))
+		PinchPosOk = FALSE;
+	if((pArrPinchPos[1] != 0xff) && (pArrPinchPos[1] != CanBusMsg11.ArtPinchPos))
+		PinchPosOk = FALSE;
+	if((pArrPinchPos[2] != 0xff) && (pArrPinchPos[2] != CanBusMsg11.OxygPinchPos))
+		PinchPosOk = FALSE;
+	return PinchPosOk;
 }
+
+//void ReceivedCanDataFrank(uint8_t *rxbuff, int rxlen, int RxChannel)
+//{
+//	if((RxChannel == 0) && (memcmp(rxbuff,"VINCENZO",8) == 0)){
+//		// expected channel n message
+//		RetriggerAlarm();
+//	}
+//	else if(RxChannel == 11)
+//	{
+//		memcpy(&CanBusMsg11, rxbuff, 8);
+//		// expected channel n message
+//		RetriggerAlarm();
+//	}
+//}
 
 //Message buffer 1 CON > PRO (STATE MACHINE)
 // Byte 1	Byte 2	Byte 3	Byte 4	Byte 5	Byte 6	Byte 7	Byte 8
 //State - H	State - L	Parent -H	Parent -L	Child - H	Child - L	Guard - H	Guard - L
-void FillMessage1(void)
+void NotifyMachineStatus(void)
 {
 	int i;
 	//memset(TxCanMsg, 0, sizeof(TxCanMsg));
-	*(word*)TxCanMsg = ptrCurrentState->state;
-	*(word*)(TxCanMsg + 2) = ptrCurrentParent->parent;
-	*(word*)(TxCanMsg + 4) = ptrCurrentChild->child;
+//	*(word*)TxCanMsg = ptrCurrentState->state;
+//	*(word*)(TxCanMsg + 2) = ptrCurrentParent->parent;
+//	*(word*)(TxCanMsg + 4) = ptrCurrentChild->child;
 
 	for(i = 0; i <= GUARD_END_NUMBER; i++)
 	{
@@ -114,10 +128,15 @@ void FillMessage1(void)
 			break;
 	}
 
-	if(i < GUARD_END_NUMBER)
-		*(word*)(TxCanMsg + 6) = (word)i;
-	else
-		*(word*)(TxCanMsg + 6) = 0;
+//	if(i < GUARD_END_NUMBER)
+//		*(word*)(TxCanMsg + 6) = (word)i;
+//	else
+//		*(word*)(TxCanMsg + 6) = 0;
+
+	uint16_t Guard;
+	Guard = (i < GUARD_END_NUMBER) ? (word) i : 0;
+
+	onNewState( ptrCurrentState, ptrCurrentParent , ptrCurrentChild, Guard   );
 }
 
 
@@ -125,21 +144,11 @@ void ProtectiveTask(void)
 {
 	static unsigned short ProtTaskCnt = 0;
 
-	if(SendCanMessageFlag == TRUE)
+	NotifyMachineStatus();
+
+	if(ProtTaskCnt % 2)
 	{
-		ProtTaskCnt++;
-		FillMessage1();
-		if( memcmp(TxCanMsg, OldTxCanMsg1, sizeof(OldTxCanMsg1)))
-		{
-			SendCAN(TxCanMsg, 8, 0);
-			memcpy(OldTxCanMsg1, TxCanMsg, sizeof(OldTxCanMsg1));
-		}
-
-		if(ProtTaskCnt % 2)
-		{
-			// invio gli altri messaggi
-		}
-
+		// invio gli altri messaggi
 	}
 }
 

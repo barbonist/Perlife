@@ -127,9 +127,19 @@ void manageStatePriming_1_WaitAlways(void);
 /**************************************************************************************/
 void manageParentPrimingEntry(void);
 void manageParentPrimingAlways(void);
+void manageParPrimWaitMotStopEntry(void);
+void manageParPrimWaitMotStopEntryAlways(void);
+void manageParPrimWaitPinchCloseEntry(void);
+void manageParPrimWaitPinchCloseAlways(void);
+void  manageParPrimEndRecAlarmEntry(void);
+void manageParPrimEndRecAlarmAlways(void);
+
 void manageParentPrimingAlarmEntry(void);
 void manageParentPrimingAlarmAlways(void);
 
+bool IsTreatSetPinchPosTaskAlm(void);
+void ResetTreatSetPinchPosTaskAlm(void);
+TREAT_SET_PINCH_POS_TASK_STATE TreatSetPinchPosTask(TREAT_SET_PINCH_POS_CMD cmd);
 void manageParentTreatEntry(void);
 void manageParentTreatAlways(void);
 void manageParentTreatAlarmEntry(void);
@@ -215,6 +225,7 @@ void EEPROM_Read(LDD_FLASH_TAddress Source, LDD_TData *Dest, LDD_FLASH_TDataSize
 void CallInIdleState(void);
 word GetTotalPrimingVolumePerf(int cmd);
 void CheckOxygenationSpeed(word value);
+void CheckDepurationSpeed(word value);
 void GoToRecoveryParentState(int MachineParentState);
 
 void HandlePinch( int cmd);
@@ -224,6 +235,12 @@ void CheckTemperatureSet(void);
 void LiquidTempContrTask(LIQUID_TEMP_CONTR_CMD LiqTempContrCmd);
 bool IsPumpStopAlarmActive(void);
 void ClearPumpStopAlarm(void);
+bool AreAllPumpsStopped( void );
 CHECK_PUMP_STOP_STATE CheckPumpStopTask(CHECK_PUMP_STOP_CMD cmd);
+
+//bool IsPinchPosOk(void);
+//CHECK_PINCH_POS_STATE CheckPinchPosTask(CHECK_PINCH_CMD cmd);
+
+void ParentFunc(void);
 
 #endif /* APPLICATION_APP_GES_H_ */

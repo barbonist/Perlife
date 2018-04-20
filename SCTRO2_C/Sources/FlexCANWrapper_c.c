@@ -1,9 +1,9 @@
 //
 //
-//	filename:   FlexCANWrapper.c
+//	filename:   FlexCANWrapper_c.c
 //	date:		26/3/2018
 //	author:		SB
-//
+//  Versione per la scheda control
 #include "CAN_C_P.h"
 #include "string.h"
 
@@ -73,7 +73,7 @@ LDD_TError  SendCAN(uint8_t *txbuff, int txsize, LDD_CAN_TMBIndex ChIndex)
 	TxFrame.FrameType = LDD_CAN_DATA_FRAME;
 	TxFrame.Data = txbuff;
 	TxFrame.Length = txsize;
-	LDD_TError error = CAN_C_P_SendFrame(pUserData, 8U + ChIndex, &TxFrame);
+	LDD_TError error = CAN_C_P_SendFrame(pUserData, ChIndex, &TxFrame);
 	return error;
 }
 

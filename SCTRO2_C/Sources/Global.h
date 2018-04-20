@@ -418,6 +418,9 @@ enum Parent {
 	// mediante il tasto BUTTON_STOP_PRIMING) quando gli stati della macchina sono del
 	// gruppo PARENT_PRIMING_TREAT_KIDNEY_1....
 	PARENT_PRIM_WAIT_PAUSE,
+	PARENT_PRIM_WAIT_MOT_STOP,
+	PARENT_PRIM_WAIT_PINCH_CLOSE,
+	PARENT_PRIMING_END_RECIRC_ALARM,
 	PARENT_END_NUMBER,
 };
 
@@ -533,6 +536,8 @@ enum MachineStateGuardId {
 	GUARD_ENABLE_STATE_TREAT_KIDNEY_1_INIT,
 	GUARD_ENT_PAUSE_STATE_KIDNEY_1_PUMP_ON,
 	GUARD_ENT_PAUSE_STATE_TREAT_KIDNEY_1_INIT,
+	GUARD_CHK_FOR_ALL_MOT_STOP,
+	GUARD_EN_CLOSE_ALL_PINCH,
 
 
 
@@ -1703,6 +1708,7 @@ typedef enum
 {
 	NO_CHECK_PUMP_STOP_CMD,
 	INIT_CHECK_SEQ_CMD,               // restart check sequence
+	NO_CHECK_PUMP_READ_ALM_CMD,
 	RESET_ALARM
 }CHECK_PUMP_STOP_CMD;
 //-------------------------------------------------------------------------------
@@ -1731,9 +1737,6 @@ bool PeltierStarted;
 // byte alto ore, byte basso minuti
 word ExpectedPrimDuration;
 
-// quando e' TRUE vuol dire che sono trascorsi 50 msec e devo controllare se e' cambiato lo stato per inviarlo
-// al protective
-bool SendCanMessageFlag;
 
 // durata del priming in secondi prima che vengono fatte partire le pompe di ossigenazione
 word PrimDurUntilOxyStart;
@@ -1746,6 +1749,52 @@ int FilterFlowVal;
 
 //#define PRIM_PINCH_2WPVA_POS MODBUS_PINCH_LEFT_OPEN
 //#define PRIM_PINCH_2WPVV_POS MODBUS_PINCH_LEFT_OPEN
+
+//questa variabile e' usata nel task CheckPumpStopTask per contare il numero di volte consecutive che le
+// pompe sono state rilevate ferme
+unsigned char PumpStoppedCnt;
+
+
+//-------------------------------------------------------------------------------
+// strutture dati usate per lo scambio di messaggi su can bus tra protective e control
+typedef struct
+{
+	unsigned char  AirSensorFilter;
+	unsigned short AlarmCode;
+	unsigned char  Consensus;
+	unsigned char  FilterPinchPos;
+	unsigned char  ArtPinchPos;
+	unsigned char  OxygPinchPos;
+	unsigned char  free;
+}CANBUS_MSG_11;
+
+//-------------------------------------------------------------------------------
+
+
+
+//-------------------------------------------------------------------------------
+// usati nella funzione TreatSetPinchPosTask per il controllo delle pompe ferme
+typedef enum
+{
+	T_SET_PINCH_IDLE,
+	T_SET_PINCH_WAIT_START_BUTT, // aspetto BUTTON_START_TREATMENT posiziono le pinch per il trattamento
+	T_SET_PINCH_WAIT_POS,        // aspetto che il posizionamento sia completato
+	T_SET_PINCH_CHECK_POS,       // confronto la posizione con quella del protective
+	T_SET_PINCH,                 //
+	T_SET_PINCH_END,             // fine posizionamento pinch
+	T_SET_PINCH_ALARM,           // posizione non corretta devo generare un allarme
+	T_SET_PINCH_DISABLE          // task disabilitato
+}TREAT_SET_PINCH_POS_TASK_STATE;
+
+typedef enum
+{
+	T_SET_PINCH_NO_CMD,
+	T_SET_PINCH_RESET_CMD,
+	T_SET_PINCH_DISABLE_CMD,
+	T_SET_PINCH_ALARM_CMD,
+	T_SET_PINCH_RESET_ALARM_CMD
+}TREAT_SET_PINCH_POS_CMD;
+//-------------------------------------------------------------------------------
 
 #endif /* SOURCES_GLOBAL_H_ */
 

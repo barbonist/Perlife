@@ -1511,7 +1511,7 @@ void setParamWordFromGUI(unsigned char parId, int value)
 	}
 
 	// TODO solo per debug GUI
-	parameterWordSetFromGUI[PAR_SET_DESIRED_DURATION].value = 20;
+	//parameterWordSetFromGUI[PAR_SET_DESIRED_DURATION].value = 20;
 }
 
 void resetParamWordFromGUI(unsigned char parId){

@@ -336,6 +336,17 @@ struct machineParent stateParentPrimingTreatKidney1[] =
 		{STATE_NULL, PARENT_PRIM_WAIT_PAUSE,              CHILD_IDLE, ACTION_ON_ENTRY, &stateChildIdle[0],         &manageNull},	                 /* 9 */
 		{STATE_NULL, PARENT_PRIM_WAIT_PAUSE,              CHILD_IDLE, ACTION_ALWAYS,   &stateChildIdle[0],         &manageParentPrimingAlways},      /* 10 */
 
+		/* stato attivato alla fine del ricircolo per aspettare che i motori siano completamente fermi. Alla fine del ricircolo ora non va piu'
+		 * in trattamento diretto
+		 * Se i motori non si fermano entro un certo tempo genero un allarme */
+		{STATE_NULL, PARENT_PRIM_WAIT_MOT_STOP,          CHILD_IDLE, ACTION_ON_ENTRY, &stateChildIdle[0],          &manageParPrimWaitMotStopEntry},	      /* 11 */
+		{STATE_NULL, PARENT_PRIM_WAIT_MOT_STOP,          CHILD_IDLE, ACTION_ALWAYS,   &stateChildIdle[0],          &manageParPrimWaitMotStopEntryAlways}, /* 12 */
+		/* stato attesa di chusura delle pinch una volta fermati i motori */
+		{STATE_NULL, PARENT_PRIM_WAIT_PINCH_CLOSE,       CHILD_IDLE, ACTION_ON_ENTRY, &stateChildIdle[0],          &manageParPrimWaitPinchCloseEntry},	  /* 13 */
+		{STATE_NULL, PARENT_PRIM_WAIT_PINCH_CLOSE,       CHILD_IDLE, ACTION_ALWAYS,   &stateChildIdle[0],          &manageParPrimWaitPinchCloseAlways},   /* 14 */
+		/* stato per la gestione degli allarmi che si possono verificare negli stati PARENT_PRIM_WAIT_MOT_STOP, PARENT_PRIM_WAIT_PINCH_CLOSE*/
+		{STATE_NULL, PARENT_PRIMING_END_RECIRC_ALARM,    CHILD_IDLE, ACTION_ON_ENTRY, &stateChildAlarmPriming[1],  &manageParPrimEndRecAlarmEntry},	      /* 15 */
+		{STATE_NULL, PARENT_PRIMING_END_RECIRC_ALARM,    CHILD_IDLE, ACTION_ALWAYS,   &stateChildAlarmPriming[1],  &manageParPrimEndRecAlarmAlways},      /* 16 */
 		{}
 };
 

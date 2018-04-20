@@ -60,6 +60,8 @@
 #include "pid.h"
 #include "Comm_Sbc.h"
 
+bool IsPinchPosOk(unsigned char *pArrPinchPos);
+
 // Flags usati nel processo di svuotamento
 extern CHILD_EMPTY_FLAGS ChildEmptyFlags;
 
@@ -175,8 +177,8 @@ void CallInIdleState(void)
 //	GlobalFlags.FlagsDef.TankLevelHigh = 0;
 
 	// abilito tutti gli allarmi previsti
-	//GlobalFlags.FlagsDef.EnableAllAlarms = 1;
 	SetAllAlarmEnableFlags();
+	//GlobalFlags.FlagsDef.EnableCANBUSErr = 0;  // disabilito CAN bus alarm
 
 	if (PeltierOn && (peltierCell.StopEnable == 0))
 	{
@@ -581,6 +583,13 @@ void manageStateTreatKidney1Always(void)
 
 void manageStateEmptyDisp(void)
 {
+	setPinchPositionHighLevel(PINCH_2WPVF, MODBUS_PINCH_LEFT_OPEN);
+	setPinchPositionHighLevel(PINCH_2WPVA, MODBUS_PINCH_LEFT_OPEN);
+	if(GetTherapyType() == LiverTreat)
+	{
+		// ho selezionato il fegato, quindi devo chiudere anche questa
+		setPinchPositionHighLevel(PINCH_2WPVV, MODBUS_PINCH_LEFT_OPEN);
+	}
 }
 
 void manageStateEmptyDispAlways(void)
@@ -630,13 +639,6 @@ void manageStatePrimingRicircolo(void)
 
 void manageStatePrimingRicircoloAlways(void)
 {
-//	float tmpr;
-//	word tmpr_trgt;
-//	// temperatura raggiunta dal reservoir
-//	tmpr = ((int)(sensorIR_TM[0].tempSensValue*10));
-//	// temperatura da raggiungere moltiplicata per 10
-//	tmpr_trgt = parameterWordSetFromGUI[PAR_SET_PRIMING_TEMPERATURE_PERFUSION].value;
-
 	if(buttonGUITreatment[BUTTON_PRIMING_ABANDON].state == GUI_BUTTON_RELEASED)
 	{
 		releaseGUIButton(BUTTON_PRIMING_ABANDON);
@@ -654,14 +656,6 @@ void manageStatePrimingRicircoloAlways(void)
 		// controllo se e' cambiata la velocita' della pompa di ossigenazione e la aggiorno
 		//CheckOxygenationSpeed(LastOxygenationSpeed);
 	}
-
-//	// temperatura del reservoir
-//	else if((tmpr >= (float)(tmpr_trgt - 10)) && (tmpr <= (float)(tmpr_trgt + 10)))
-//	{
-//		// ho raggiunto la temperatura ( + o - un grado)richiesta posso passare nello stato di
-//		// attesa ricezione comando di start trattamento
-//		currentGuard[GUARD_ENABLE_WAIT_TREATMENT].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
-//	}
 }
 
 
@@ -689,7 +683,6 @@ void manageStateWaitTreatmentAlways(void)
 	}
 
 }
-
 
 void manageStateUnmountDisposableEntry(void)
 {
@@ -1646,7 +1639,11 @@ void manageParentPrimingAlways(void){
 					}
 					//currentGuard[GUARD_ENABLE_WAIT_TREATMENT].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
 					//StartTreatmentTime = (unsigned long)timerCounterModBus;
-					currentGuard[GUARD_ENABLE_TREATMENT_KIDNEY_1].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+
+					//currentGuard[GUARD_ENABLE_TREATMENT_KIDNEY_1].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+					// SE NON VADO PIU' INTRATTAMENTO MA DEVO PRIMA CONTROLLARE CHE LE POMPE SIANO FERME E POI CHIUDERE
+					// LE PINCH
+					currentGuard[GUARD_CHK_FOR_ALL_MOT_STOP].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
 				}
 				else if(buttonGUITreatment[BUTTON_PRIMING_ABANDON].state == GUI_BUTTON_RELEASED)
 				{
@@ -1768,6 +1765,93 @@ void manageParentPrimingAlways(void){
 
 }
 
+unsigned short MotStopTicksElapsed;
+bool StopMotorTimeOut;
+// controllo che tutte le pompe siano ferme altrimenti do un allarme
+void manageParPrimWaitMotStopEntry(void)
+{
+	CheckPumpStopTask((CHECK_PUMP_STOP_CMD)INIT_CHECK_SEQ_CMD);
+	MotStopTicksElapsed = 0;
+	StopMotorTimeOut = FALSE;
+}
+
+void manageParPrimWaitMotStopEntryAlways(void)
+{
+	MotStopTicksElapsed++;
+	CheckPumpStopTask((CHECK_PUMP_STOP_CMD)NO_CHECK_PUMP_STOP_CMD);
+	if(AreAllPumpsStopped() && currentGuard[GUARD_EN_CLOSE_ALL_PINCH].guardEntryValue == GUARD_ENTRY_VALUE_FALSE)
+	{
+		// passo alla chiusura totale delle due pinch connesse all'organo
+		currentGuard[GUARD_EN_CLOSE_ALL_PINCH].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+		DebugStringStr("PRESS BUTT_ST_TREAT");
+	}
+	else if(MotStopTicksElapsed > 100)
+	{
+		// se sono passati piu' di 5 sec e non sono ancora in allarme ce lo mando io
+		StopMotorTimeOut = TRUE;
+	}
+
+	if(buttonGUITreatment[BUTTON_PRIMING_ABANDON].state == GUI_BUTTON_RELEASED)
+	{
+		releaseGUIButton(BUTTON_PRIMING_ABANDON);
+		// non dovrebbe servire resettare la macchina a stati
+		//CheckPumpStopTask((CHECK_PUMP_STOP_CMD)NO_CHECK_PUMP_STOP_CMD);
+		currentGuard[GUARD_ABANDON_PRIMING].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+	}
+}
+
+
+// controllo che tutte le pinch siano in posizione altrimenti do un allarme
+// l'arteriosa e venosa devono essere chiuse per proteggere l'organo quando viene attaccato
+void manageParPrimWaitPinchCloseEntry(void)
+{
+//	CheckPinchPosTask((CHECK_PINCH_CMD)INIT_CHECK_PINCH_SEQ_CMD);
+
+	if(!FilterSelected)
+	{
+		// il filtro non viene usato quindi devo passare sempre sul bypass
+		setPinchPositionHighLevel(PINCH_2WPVF, MODBUS_PINCH_LEFT_OPEN);
+	}
+	else
+		setPinchPositionHighLevel(PINCH_2WPVF, MODBUS_PINCH_RIGHT_OPEN);
+
+	// prima di attaccare l'organo vogliono tutte le pinch chiuse
+	setPinchPositionHighLevel(PINCH_2WPVA, MODBUS_PINCH_POS_CLOSED);
+	if(GetTherapyType() == LiverTreat)
+	{
+		// ho selezionato il fegato, quindi devo chiudere anche questa
+		setPinchPositionHighLevel(PINCH_2WPVV, MODBUS_PINCH_POS_CLOSED);
+	}
+}
+
+void manageParPrimWaitPinchCloseAlways(void)
+{
+	unsigned char PinchPos[3] = {0xff, MODBUS_PINCH_POS_CLOSED, MODBUS_PINCH_POS_CLOSED};
+//	CheckPinchPosTask((CHECK_PINCH_CMD)NO_CHECK_PINCH_CMD);
+	if(IsPinchPosOk(PinchPos) && currentGuard[GUARD_ENABLE_TREATMENT_KIDNEY_1].guardEntryValue == GUARD_ENTRY_VALUE_FALSE)
+	{
+		// le pinch sono chiuse posso passare al trattamento
+		currentGuard[GUARD_ENABLE_TREATMENT_KIDNEY_1].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+	}
+
+	if(buttonGUITreatment[BUTTON_PRIMING_ABANDON].state == GUI_BUTTON_RELEASED)
+	{
+		releaseGUIButton(BUTTON_PRIMING_ABANDON);
+		// non dovrebbe servire resettare la macchina a stati
+		//CheckPumpStopTask((CHECK_PUMP_STOP_CMD)NO_CHECK_PUMP_STOP_CMD);
+		currentGuard[GUARD_ABANDON_PRIMING].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+	}
+}
+
+// gestione allarmi alla fine del ricircolo ( negli stati parent PARENT_PRIM_WAIT_MOT_STOP e PARENT_PRIM_WAIT_PINCH_CLOSE
+void  manageParPrimEndRecAlarmEntry(void)
+{
+
+}
+void manageParPrimEndRecAlarmAlways(void)
+{
+
+}
 
 
 void manageParentPrimingAlarmEntry(void)
@@ -1792,26 +1876,192 @@ void manageParentTreatAlarmAlways(void){
 
 }
 
+
+// ritorna TRUE se l'allarme e' attivo
+bool IsTreatSetPinchPosTaskAlm(void)
+{
+	TREAT_SET_PINCH_POS_TASK_STATE TSetPinchPosTaskS;
+	TSetPinchPosTaskS = TreatSetPinchPosTask((TREAT_SET_PINCH_POS_CMD)T_SET_PINCH_ALARM_CMD);
+	if(TSetPinchPosTaskS == T_SET_PINCH_ALARM)
+		return TRUE;
+	else
+		return FALSE;
+}
+
+// resetto l'allarme se e' attivo
+void ResetTreatSetPinchPosTaskAlm(void)
+{
+	TREAT_SET_PINCH_POS_TASK_STATE TSetPinchPosTaskS;
+	TSetPinchPosTaskS = TreatSetPinchPosTask((TREAT_SET_PINCH_POS_CMD)T_SET_PINCH_ALARM_CMD);
+	if(TSetPinchPosTaskS == T_SET_PINCH_ALARM)
+		TreatSetPinchPosTask((TREAT_SET_PINCH_POS_CMD)T_SET_PINCH_RESET_ALARM_CMD);
+}
+
+
+// questo task serve per posizionare le pinch e verificare il loro posizionamento
+// prima di iniziare il trattamento. Questo processo deve partire quando l'utente
+// preme il tasto BUTTON_START_TREATMENT.
+// E' stato fatto in questo modo per evitare di modificare l'interfaccia GUI che, attualmente
+// gestisce il bottone BUTTON_START_TREATMENT solo negli stati PARENT_TREAT_KIDNEY_1_INITPARENT_TREAT_KIDNEY_1_PUMP_ON,
+// PARENT_TREAT_WAIT_START, PARENT_TREAT_WAIT_PAUSE
+TREAT_SET_PINCH_POS_TASK_STATE TreatSetPinchPosTask(TREAT_SET_PINCH_POS_CMD cmd)
+{
+	static TREAT_SET_PINCH_POS_TASK_STATE TreatSetPinchPosTaskState = T_SET_PINCH_IDLE;
+	static int TreatSetPinchPosTaskPresc = 0;
+	static unsigned char CorrectPosCnt = 0;
+	static unsigned char WrongPosCnt = 0;
+	unsigned char EndPositioning;
+	unsigned char PinchPos[3] = {(FilterSelected) ? MODBUS_PINCH_RIGHT_OPEN : MODBUS_PINCH_LEFT_OPEN, MODBUS_PINCH_LEFT_OPEN, MODBUS_PINCH_LEFT_OPEN};
+
+	THERAPY_TYPE TherType = GetTherapyType();
+	if( cmd == T_SET_PINCH_RESET_CMD)
+	{
+		TreatSetPinchPosTaskState = T_SET_PINCH_IDLE;
+		return TreatSetPinchPosTaskState;
+	}
+	else if( cmd == T_SET_PINCH_DISABLE_CMD)
+	{
+		TreatSetPinchPosTaskState = T_SET_PINCH_DISABLE;
+		return TreatSetPinchPosTaskState;
+	}
+	else if( cmd == T_SET_PINCH_ALARM_CMD)
+	{
+		// ritorno lo stato in modo che posso vedere se sono in allarme
+		return TreatSetPinchPosTaskState;
+	}
+	else if( cmd == T_SET_PINCH_RESET_ALARM_CMD)
+	{
+		// vado nello stato di fine processo per proseguire nel trattamento
+		TreatSetPinchPosTaskState = T_SET_PINCH_END;
+		return TreatSetPinchPosTaskState;
+	}
+
+	if(buttonGUITreatment[BUTTON_PRIMING_ABANDON].state == GUI_BUTTON_RELEASED)
+	{
+		releaseGUIButton(BUTTON_PRIMING_ABANDON);
+		TreatSetPinchPosTaskState = T_SET_PINCH_DISABLE;
+		currentGuard[GUARD_ABANDON_PRIMING].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+		return TreatSetPinchPosTaskState;
+	}
+
+	switch (TreatSetPinchPosTaskState)
+	{
+		case T_SET_PINCH_IDLE:
+			TreatSetPinchPosTaskState = T_SET_PINCH_WAIT_START_BUTT;
+			break;
+		case T_SET_PINCH_WAIT_START_BUTT:
+			if(buttonGUITreatment[BUTTON_START_TREATMENT].state == GUI_BUTTON_RELEASED)
+			{
+				// NON FACCIO VOLUTAMENTE LA RELEASEBUTTON PERCHE' MI SERVIRA' PER FORZARE LO START
+				// DOPO AVER POSIZIONATO LE PINCH
+				if(!FilterSelected)
+				{
+					// il filtro non viene usato quindi devo passare sempre sul bypass
+					setPinchPositionHighLevel(PINCH_2WPVF, MODBUS_PINCH_LEFT_OPEN);
+				}
+				else
+					setPinchPositionHighLevel(PINCH_2WPVF, MODBUS_PINCH_RIGHT_OPEN);
+				// quando entro in trattamento la pinch deve essere attaccata all'organo
+				setPinchPositionHighLevel(PINCH_2WPVA, MODBUS_PINCH_LEFT_OPEN);
+				if(GetTherapyType() == LiverTreat)
+				{
+					// ho selezionato il fegato, quindi se entro in trattamento devo collegarmi all'organo
+					setPinchPositionHighLevel(PINCH_2WPVV, MODBUS_PINCH_LEFT_OPEN);
+				}
+				TreatSetPinchPosTaskState = T_SET_PINCH_WAIT_POS;
+			}
+			break;
+		case T_SET_PINCH_WAIT_POS:
+			EndPositioning = TRUE;
+			if (PinchWriteTerminated(0) && (modbusData[PINCH_2WPVF-3][17] != 0xaa))
+			{
+				// posizione impostata non raggiunta
+				EndPositioning = FALSE;
+			}
+			if (PinchWriteTerminated(1) && (modbusData[PINCH_2WPVA-3][17] != 0xaa))
+			{
+				// posizione impostata non raggiunta
+				EndPositioning = FALSE;
+			}
+			if (PinchWriteTerminated(2) && (modbusData[PINCH_2WPVV-3][17] != 0xaa) && (TherType == LiverTreat))
+			{
+				// posizione impostata non raggiunta
+				EndPositioning = FALSE;
+			}
+			if(EndPositioning)
+			{
+				// posizionamento delle pinch completate, passo alla verifica con la protective
+				TreatSetPinchPosTaskState = T_SET_PINCH_CHECK_POS;
+				TreatSetPinchPosTaskPresc = 0;
+				CorrectPosCnt = 0;
+				WrongPosCnt = 0;
+				if(IsPinchPosOk(PinchPos))
+					CorrectPosCnt++;
+				else
+					WrongPosCnt++;
+			}
+			break;
+		case T_SET_PINCH_CHECK_POS:
+			TreatSetPinchPosTaskPresc++;
+			if(TreatSetPinchPosTaskPresc >= 10)
+			{
+				// dopo mezzo secondo confronto ancora la posizione con la protective
+				TreatSetPinchPosTaskPresc = 0;
+				if(IsPinchPosOk(PinchPos))
+				{
+					WrongPosCnt = 0;
+					CorrectPosCnt++;
+					if(CorrectPosCnt >= 3)
+					{
+						// la posizione e' identica a quella del protective per 3 volte consecutive, posso iniziare il trattamento
+						TreatSetPinchPosTaskState = T_SET_PINCH_END;
+					}
+				}
+				else
+				{
+					CorrectPosCnt = 0;
+					WrongPosCnt++;
+					if(WrongPosCnt >= 3)
+					{
+						// la posizione e' diversa da quella del protective per 3 volte consecutive, posso generare un allarme
+						TreatSetPinchPosTaskState = T_SET_PINCH_ALARM;
+					}
+				}
+			}
+			break;
+		case T_SET_PINCH:
+			break;
+		case T_SET_PINCH_ALARM:
+			break;
+		case T_SET_PINCH_END:
+			break;
+		case T_SET_PINCH_DISABLE:
+			break;
+	}
+	return TreatSetPinchPosTaskState;
+}
+
+
 // In questa funzione ci va quando sono nella fase iniziale del trattamento
 // Le pompe verranno fatte partire successivamente su richiesta da parte dell'utente
 void manageParentTreatEntry(void){
 	if(pumpPerist[0].entry == 0)
 	{
 		setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
-		if(!FilterSelected)
-		{
-			// il filtro non viene usato quindi devo passare sempre sul bypass
-			setPinchPositionHighLevel(PINCH_2WPVF, MODBUS_PINCH_LEFT_OPEN);
-		}
-		else
-			setPinchPositionHighLevel(PINCH_2WPVF, MODBUS_PINCH_RIGHT_OPEN);
-		// quando entro in trattamento la pinch deve essere attaccata all'organo
-		setPinchPositionHighLevel(PINCH_2WPVA, MODBUS_PINCH_LEFT_OPEN);
-		if(GetTherapyType() == LiverTreat)
-		{
-			// ho selezionato il fegato, quindi se entro in trattamento devo collegarmi all'organo
-			setPinchPositionHighLevel(PINCH_2WPVV, MODBUS_PINCH_LEFT_OPEN);
-		}
+//		if(!FilterSelected)
+//		{
+//			// il filtro non viene usato quindi devo passare sempre sul bypass
+//			setPinchPositionHighLevel(PINCH_2WPVF, MODBUS_PINCH_LEFT_OPEN);
+//		}
+//		else
+//			setPinchPositionHighLevel(PINCH_2WPVF, MODBUS_PINCH_RIGHT_OPEN);
+//		// quando entro in trattamento la pinch deve essere attaccata all'organo
+//		setPinchPositionHighLevel(PINCH_2WPVA, MODBUS_PINCH_LEFT_OPEN);
+//		if(GetTherapyType() == LiverTreat)
+//		{
+//			// ho selezionato il fegato, quindi se entro in trattamento devo collegarmi all'organo
+//			setPinchPositionHighLevel(PINCH_2WPVV, MODBUS_PINCH_LEFT_OPEN);
+//		}
 		setPumpPressLoop(0, PRESS_LOOP_OFF);
 
 		pumpPerist[0].entry = 1;
@@ -1837,15 +2087,24 @@ void manageParentTreatEntry(void){
 		setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, 0);
 		pumpPerist[3].entry = 1;
 	}
+	TreatSetPinchPosTask((TREAT_SET_PINCH_POS_CMD)T_SET_PINCH_RESET_CMD);
 }
-
-
 
 void manageParentTreatAlways(void){
 		static char iflag_perf = 0;
 		static char iflag_oxyg = 0;
 		int speed = 0;
 		static int timerCopy = 0;
+
+		TREAT_SET_PINCH_POS_TASK_STATE TreatSePinchPosTaskStat;
+		TreatSePinchPosTaskStat = TreatSetPinchPosTask((TREAT_SET_PINCH_POS_CMD)T_SET_PINCH_NO_CMD);
+		if((TreatSePinchPosTaskStat == T_SET_PINCH_ALARM) ||
+		   (TreatSePinchPosTaskStat != T_SET_PINCH_END) &&
+		   (TreatSePinchPosTaskStat != T_SET_PINCH_DISABLE))
+		{
+			// non ho ancora terminato l'inizializzazione delle pinch oppure c'e' un allarme sul posizionamento delle pinch
+			return;
+		}
 
 		//manage pump
 		switch(ptrCurrentParent->parent){
@@ -3835,13 +4094,9 @@ void processMachineState(void)
 			break;
 
 		case STATE_TREATMENT_KIDNEY_1:
-            /* (FM) SONO IN TRATTAMENTO A QUESTO PUNTO FUNZIONANO GLI ALLARMI E SONO IN ATTESA DELL'ATTIVAZIONE DI
-               currentGuard[GUARD_ENABLE_DISPOSABLE_EMPTY].guardEntryValue (AVVERRA' QUANDO L'UTENTE PREMERA' LO STOP ALLE POMPE
-               O SEMPLICEMENTE IL TASTO ENTER (VEDI FUNZIONE manageStateTreatKidney1Always).
-               QUANDO ARRIVERA', POTRO' TORNARE NELLO STATE_ENTRY INIZIALE*/
 			if( currentGuard[GUARD_ENABLE_WAIT_TREATMENT].guardValue == GUARD_VALUE_TRUE )
 			{
-				// ho raggiunto la temperatura, vado nello stato di attesa start trattamento
+				// vado nello stato di attesa di un nuovo start trattamento o start svuotamento
 				currentGuard[GUARD_ENABLE_WAIT_TREATMENT].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
 				ptrFutureState = &stateState[25];
 				/* compute future parent */
@@ -3850,7 +4105,7 @@ void processMachineState(void)
 				ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
 				DebugStringStr("STATE_WAIT_TREATMENT");
 
-				/*per poter tornare indietro dallo stato STATE_EMPTY_DISPOSABLE allo stato STATE_TREATMENT_KIDNEY_1
+				/*per poter tornare indietro dallo stato STATE_WAIT_TREATMENT allo stato STATE_TREATMENT_KIDNEY_1
 				 * resetto la flag di entry sullo stato in cui sono*/
 				currentGuard[GUARD_ENABLE_TREATMENT_KIDNEY_1].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
 				currentGuard[GUARD_ENABLE_TREATMENT_KIDNEY_1].guardValue = GUARD_VALUE_FALSE;
@@ -4082,627 +4337,8 @@ void processMachineState(void)
 			break;
 	}
 
-// ------------------GESTIONE STATI PARENT PRIMING-------------------------------------------------------------------
-	//questo switch andrà suddiviso e portato dentro i singoli case dello switch sopra........
-	/* (FM) POSSO FARE UNA FUNZIONE CHIAMATA stateParentPrimingTreatKidney1_func ED INSERIRE TUTTI I CASE
-	   RELATIVI AL PRIMING E CHIAMARLA SEMPRE NEI CASE STATE_PRIMING_PH_1, STATE_PRIMING_PH_2 DELLO SWITCH PRECEDENTE
-	   L'ALTRA FUNZIONE, ANALOGAMENTE POTRA' ESSERE CHIAMATA stateParentTreatKidney1_func, CONTERRA' TUTTI I CASE DAL PARENT_TREAT_KIDNEY_1_INIT
-	   IN POI. LA FUNZIONE CREATA DOVRA' ESSERE CHIAMATA NEL CASE STATE_TREATMENT_KIDNEY_1. */
-	switch(ptrCurrentParent->parent){
-		case PARENT_PRIMING_TREAT_KIDNEY_1_INIT:
-			if(buttonGUITreatment[BUTTON_CONFIRM].state == GUI_BUTTON_RELEASED)
-			{
-				releaseGUIButton(BUTTON_CONFIRM);
-				/* (FM) alla ricezione del comando da tastiera faccio partire la fase di priming */
-				ptrFutureParent = &stateParentPrimingTreatKidney1[3];
-				ptrFutureChild = ptrFutureParent->ptrChild;
-			}
-
-			if(ptrCurrentParent->action == ACTION_ON_ENTRY)
-			{
-				/* execute parent callback function */
-				//ptrCurrentParent->callBackFunct(); NON SERVE QUESTO
-				/* compute future parent */
-				ptrFutureParent = &stateParentPrimingTreatKidney1[2];
-				ptrFutureChild = ptrFutureParent->ptrChild;
-			}
-			else if(ptrCurrentParent->action == ACTION_ALWAYS)
-			{
-				//ptrCurrentParent->callBackFunct(); NON SERVE QUESTO
-			}
-
-			/* (FM) se si e' verificato un allarme lo faccio partire */
-			if(currentGuard[GUARD_ALARM_ACTIVE].guardValue == GUARD_VALUE_TRUE)
-			{
-				ptrFutureParent = &stateParentPrimingTreatKidney1[5];
-				ptrFutureChild = ptrFutureParent->ptrChild;
-				// guardando a questo valore posso vedere il tipo di azione di sicurezza
-				// e quindi posso decidere di andare anche in un qualche altro stato ad hoc
-				// di allarme
-				//ptrAlarmCurrent->secActType
-//				if(ptrAlarmCurrent->code == CODE_ALARM_TANK_LEVEL_HIGH)
-//				{
-//					// si e' verificato un allarme di troppo pieno, fermo tutto ed al successivo
-//					// reset termino la procedura di priming e passo direttamente al ricircolo
-//					GlobalFlags.FlagsDef.TankLevelHigh = 1;
-//				}
-				LevelBuzzer = 2;
-			}
-
-			break;
-
-		case PARENT_PRIMING_TREAT_KIDNEY_1_RUN:
-			if(ptrCurrentParent->action == ACTION_ON_ENTRY)
-			{
-				/* execute parent callback function */
-				// ptrCurrentParent->callBackFunct(); NON SERVE QUESTO
-				/* compute future parent */
-				ptrFutureParent = &stateParentPrimingTreatKidney1[4];
-				ptrFutureChild = ptrFutureParent->ptrChild;
-			}
-			else if(ptrCurrentParent->action == ACTION_ALWAYS)
-			{
-				// ptrCurrentParent->callBackFunct(); NON SERVE QUESTO
-			}
-
-			/* (FM) se si e' verificato un allarme lo faccio partire */
-			if(currentGuard[GUARD_ALARM_ACTIVE].guardValue == GUARD_VALUE_TRUE)
-			{
-				ptrFutureParent = &stateParentPrimingTreatKidney1[5];
-				ptrFutureChild = ptrFutureParent->ptrChild;
-				// guardando a questo valore posso vedere il tipo di azione di sicurezza
-				// e quindi posso decidere di andare anche in un qualche altro stato ad hoc
-				// di allarme
-				//ptrAlarmCurrent->secActType
-//				if(ptrAlarmCurrent->code == CODE_ALARM_TANK_LEVEL_HIGH)
-//				{
-//					// si e' verificato un allarme di troppo pieno, fermo tutto ed al successivo
-//					// reset termino la procedura di priming e passo direttamente al ricircolo
-//					GlobalFlags.FlagsDef.TankLevelHigh = 1;
-//				}
-				LevelBuzzer = 2;
-			}
-			else if(currentGuard[GUARD_ENT_PAUSE_STATE_PRIM_KIDNEY_1].guardValue == GUARD_VALUE_TRUE)
-			{
-				// VADO NELLO STATO DI PAUSA DEL PRIMING RUN
-				ptrFutureParent = &stateParentPrimingTreatKidney1[9];
-				ptrFutureChild = ptrFutureParent->ptrChild;
-				currentGuard[GUARD_ENT_PAUSE_STATE_PRIM_KIDNEY_1].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
-				currentGuard[GUARD_ENT_PAUSE_STATE_PRIM_KIDNEY_1].guardValue = GUARD_VALUE_FALSE;
-			}
-			break;
-
-		case PARENT_PRIMING_TREAT_KIDNEY_1_ALARM:
-			if(currentGuard[GUARD_ALARM_ACTIVE].guardValue == GUARD_VALUE_FALSE)
-			{
-				if(currentGuard[GUARD_ALARM_WAIT_CMD_TO_EXIT].guardValue == GUARD_VALUE_TRUE)
-				{
-					// vado nello stato parent dove posso cercare di recuperare la condizione di allarme
-					currentGuard[GUARD_ALARM_WAIT_CMD_TO_EXIT].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
-					currentGuard[GUARD_ALARM_WAIT_CMD_TO_EXIT].guardValue = GUARD_VALUE_FALSE;
-
-					/* (FM) finita la situazione di allarme posso ritornare in PARENT_PRIMING_TREAT_KIDNEY_1_INIT*/
-					// nella nuova gestione il priming viene fatto partendo direttamente dallo stato PARENT_PRIMING_TREAT_KIDNEY_1_RUN
-					// e non da PARENT_PRIMING_TREAT_KIDNEY_1_INIT
-					//ptrFutureParent = &stateParentPrimingTreatKidney1[1];
-					ptrFutureParent = &stateParentPrimingTreatKidney1[3];
-					ptrFutureChild = ptrFutureParent->ptrChild;
-
-					if( (perfusionParam.priVolPerfArt == 0) && ((ptrCurrentState->state == STATE_PRIMING_PH_1) || (ptrCurrentState->state == STATE_PRIMING_PH_2)))
-					{
-						// mi e' arrivato un segnale di troppo pieno ancora prima di cominciare il priming
-						// forzo l'uscita dal priming e vado subito in ricircolo
-						perfusionParam.priVolPerfArt = MAX_LIQUID_AMOUNT;
-					}
-
-					// forzo anche una pressione del tasto BUTTON_PRIMING_END_CONFIRM per fare in modo che
-					// il riempimento termini subito e si vada alla fase di riciclo
-					setGUIButton(BUTTON_PRIMING_END_CONFIRM);
-				}
-				else if(buttonGUITreatment[BUTTON_RESET_ALARM].state == GUI_BUTTON_RELEASED)
-				{
-					// Il ritorno al priming viene fatto solo dopo la pressione del tasto BUTTON_RESET_ALARM
-					releaseGUIButton(BUTTON_RESET_ALARM);
-					EnableNextAlarm = TRUE;
-//					if(GlobalFlags.FlagsDef.TankLevelHigh)
-//					{
-//						// era un allarme di troppo pieno, forzo uscita dal priming
-//						setGUIButton(BUTTON_PRIMING_END_CONFIRM);
-//						GlobalFlags.FlagsDef.TankLevelHigh = 0;
-//					}
-//					else
-//					{
-						// forzo anche una pressione del tasto BUTTON_START_PRIMING START per fare in modo che
-						// il priming riprenda automaticamente
-						setGUIButton(BUTTON_START_PRIMING);
-//					}
-
-					/* (FM) finita la situazione di allarme posso ritornare in PARENT_PRIMING_TREAT_KIDNEY_1_INIT*/
-					// nella nuova gestione il priming viene fatto partendo direttamente dallo stato PARENT_PRIMING_TREAT_KIDNEY_1_RUN
-					// e non da PARENT_PRIMING_TREAT_KIDNEY_1_INIT
-					//ptrFutureParent = &stateParentPrimingTreatKidney1[1];
-					ptrFutureParent = &stateParentPrimingTreatKidney1[3];
-					ptrFutureChild = ptrFutureParent->ptrChild;
-
-					LevelBuzzer = 0;
-				}
-			}
-
-			if(ptrCurrentParent->action == ACTION_ON_ENTRY)
-			{
-				/* execute parent callback function */
-				//ptrCurrentParent->callBackFunct(); NON SERVE QUESTO
-				/* compute future parent */
-				ptrFutureParent = &stateParentPrimingTreatKidney1[6];
-				ptrFutureChild = ptrFutureParent->ptrChild;
-			}
-			else if(ptrCurrentParent->action == ACTION_ALWAYS)
-			{
-				//ptrCurrentParent->callBackFunct(); NON SERVE QUESTO
-			}
-			break;
-
-		case PARENT_PRIMING_TREAT_KIDNEY_1_END:
-			break;
-
-		case PARENT_PRIM_WAIT_PAUSE:
-			if(currentGuard[GUARD_ENABLE_STATE_KIDNEY_1_PRIM_RUN].guardValue == GUARD_VALUE_TRUE)
-			{
-				ptrFutureParent = &stateParentPrimingTreatKidney1[3];
-				ptrFutureChild = ptrFutureParent->ptrChild;
-				// forzo anche una pressione del tasto TREATMENT START per fare in modo che
-				// il trattamento riprenda automaticamente
-				setGUIButton(BUTTON_START_PRIMING);
-				currentGuard[GUARD_ENABLE_STATE_KIDNEY_1_PRIM_RUN].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
-				currentGuard[GUARD_ENABLE_STATE_KIDNEY_1_PRIM_RUN].guardValue = GUARD_VALUE_FALSE;
-				break;
-			}
-			if(ptrCurrentParent->action == ACTION_ON_ENTRY)
-			{
-				/* compute future parent */
-				/* FM passo alla gestione ACTION_ALWAYS */
-				ptrFutureParent = &stateParentPrimingTreatKidney1[10];
-				ptrFutureChild = ptrFutureParent->ptrChild;
-			}
-			else if(ptrCurrentParent->action == ACTION_ALWAYS)
-			{
-			}
-			break;
-
-
-// ------------------GESTIONE STATI PARENT TRATTAMENTO-------------------------------------------------------------------
-		case PARENT_TREAT_KIDNEY_1_INIT:
-			if(perfusionParam.treatVolPerfArt >= 200)
-			{
-				/* FM faccio partire la pompa */
-				ptrFutureParent = &stateParentTreatKidney1[3];
-				ptrFutureChild = ptrFutureParent->ptrChild;
-			}
-
-			if(ptrCurrentParent->action == ACTION_ON_ENTRY)
-			{
-				/* execute parent callback function */
-				//ptrCurrentParent->callBackFunct(); NON SERVE QUESTO
-				/* compute future parent */
-				/* FM entro nello stato in cui l'azione e' di tipo ACTION_ALWAYS */
-				ptrFutureParent = &stateParentTreatKidney1[2];
-				ptrFutureChild = ptrFutureParent->ptrChild;
-			}
-			else if(ptrCurrentParent->action == ACTION_ALWAYS)
-			{
-				//ptrCurrentParent->callBackFunct(); NON SERVE QUESTO
-			}
-
-			if(currentGuard[GUARD_ALARM_ACTIVE].guardValue == GUARD_VALUE_TRUE)
-			{
-				/* (FM) si e' verificato un allarme, passo alla sua gestione */
-				ptrFutureParent = &stateParentTreatKidney1[5];
-				ptrFutureChild = ptrFutureParent->ptrChild;
-				DisableAllAirAlarm(FALSE);
-				LevelBuzzer = 2;
-				// guardando a questo valore posso vedere il tipo di azione di sicurezza
-				// e quindi posso decidere di andare anche in un qualche altro stato ad hoc
-				// di allarme
-				//ptrAlarmCurrent->secActType
-//				if(ptrAlarmCurrent->code == CODE_ALARM_TANK_LEVEL_HIGH)
-//				{
-//					// si e' verificato un allarme di troppo pieno, fermo tutto ed al successivo
-//					// reset termino la procedura di priming e passo direttamente al ricircolo
-//					GlobalFlags.FlagsDef.TankLevelHigh = 1;
-//				}
-			}
-			else if(currentGuard[GUARD_ENT_PAUSE_STATE_TREAT_KIDNEY_1_INIT].guardValue == GUARD_VALUE_TRUE)
-			{
-				ptrFutureParent = &stateParentTreatKidney1[17];
-				ptrFutureChild = ptrFutureParent->ptrChild;
-				currentGuard[GUARD_ENT_PAUSE_STATE_TREAT_KIDNEY_1_INIT].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
-				currentGuard[GUARD_ENT_PAUSE_STATE_TREAT_KIDNEY_1_INIT].guardValue = GUARD_VALUE_FALSE;
-			}
-			break;
-
-		case PARENT_TREAT_KIDNEY_1_PUMP_ON:
-			if(ptrCurrentParent->action == ACTION_ON_ENTRY)
-			{
-				/* execute parent callback function */
-				//ptrCurrentParent->callBackFunct(); NON SERVE QUESTO
-				/* compute future parent */
-				/* FM passo alla gestione ACTION_ALWAYS */
-				ptrFutureParent = &stateParentTreatKidney1[4];
-				ptrFutureChild = ptrFutureParent->ptrChild;
-			}
-			else if(ptrCurrentParent->action == ACTION_ALWAYS)
-			{
-				//ptrCurrentParent->callBackFunct(); NON SERVE QUESTO
-			}
-
-			if(currentGuard[GUARD_ALARM_ACTIVE].guardValue == GUARD_VALUE_TRUE)
-			{
-				/* (FM) si e' verificato un allarme, passo alla sua gestione */
-				ptrFutureParent = &stateParentTreatKidney1[5];
-				ptrFutureChild = ptrFutureParent->ptrChild;
-				DisableAllAirAlarm(FALSE);
-				LevelBuzzer = 2;
-				// guardando a questo valore posso vedere il tipo di azione di sicurezza
-				// e quindi posso decidere di andare anche in un qualche altro stato ad hoc
-				// di allarme
-				//ptrAlarmCurrent->secActType
-//				if(ptrAlarmCurrent->code == CODE_ALARM_TANK_LEVEL_HIGH)
-//				{
-//					// si e' verificato un allarme di troppo pieno, fermo tutto ed al successivo
-//					// reset abortisco il trattamento
-//					GlobalFlags.FlagsDef.TankLevelHigh = 1;
-//				}
-			}
-			else if(currentGuard[GUARD_ENT_PAUSE_STATE_KIDNEY_1_PUMP_ON].guardValue == GUARD_VALUE_TRUE)
-			{
-				ptrFutureParent = &stateParentTreatKidney1[19];
-				ptrFutureChild = ptrFutureParent->ptrChild;
-				currentGuard[GUARD_ENT_PAUSE_STATE_KIDNEY_1_PUMP_ON].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
-				currentGuard[GUARD_ENT_PAUSE_STATE_KIDNEY_1_PUMP_ON].guardValue = GUARD_VALUE_FALSE;
-			}
-			break;
-
-		case PARENT_TREAT_KIDNEY_1_ALARM:
-			if(currentGuard[GUARD_ALARM_ACTIVE].guardValue == GUARD_VALUE_FALSE)
-			{
-				bool ButtonResetRcvd = FALSE;
-				if(buttonGUITreatment[BUTTON_RESET_ALARM].state == GUI_BUTTON_RELEASED)
-				{
-					releaseGUIButton(BUTTON_RESET_ALARM);
-					EnableNextAlarm = TRUE;
-					ButtonResetRcvd = TRUE;
-					LevelBuzzer = 0;
-				}
-
-				if((currentGuard[GUARD_ALARM_AIR_FILT_RECOVERY].guardValue == GUARD_VALUE_TRUE) || (ButtonResetRcvd && TreatAlm1SafAirFiltActive))
-				{
-					// ho ricevuto un BUTTON_RESET_ALARM e l'allarme era ancora attivo oppure
-					// ho ricevuto un BUTTON_RESET_ALARM dopo che l'allarme e' stato cancellato perche' la condizione
-					// fisica di allarme e' venuta meno
-					TreatAlm1SafAirFiltActive = FALSE;
-					// vado nello stato parent dove posso cercare di recuperare la condizione di allarme
-					currentGuard[GUARD_ALARM_AIR_FILT_RECOVERY].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
-					currentGuard[GUARD_ALARM_AIR_FILT_RECOVERY].guardValue = GUARD_VALUE_FALSE;
-					GoToRecoveryParentState(PARENT_TREAT_KIDNEY_1_AIR_FILT);
-				}
-				else if((currentGuard[GUARD_ALARM_AIR_SFV_RECOVERY].guardValue == GUARD_VALUE_TRUE) || (ButtonResetRcvd && TreatAlm1SFVActive))
-				{
-					TreatAlm1SFVActive = FALSE;
-					// vado nello stato parent dove posso cercare di recuperare la condizione di allarme
-					currentGuard[GUARD_ALARM_AIR_SFV_RECOVERY].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
-					currentGuard[GUARD_ALARM_AIR_SFV_RECOVERY].guardValue = GUARD_VALUE_FALSE;
-					GoToRecoveryParentState(PARENT_TREAT_KIDNEY_1_SFV);
-				}
-				else if((currentGuard[GUARD_ALARM_AIR_SFA_RECOVERY].guardValue == GUARD_VALUE_TRUE) || (ButtonResetRcvd && TreatAlm1SFAActive))
-				{
-					TreatAlm1SFAActive = FALSE;
-					// vado nello stato parent dove posso cercare di recuperare la condizione di allarme
-					currentGuard[GUARD_ALARM_AIR_SFA_RECOVERY].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
-					currentGuard[GUARD_ALARM_AIR_SFA_RECOVERY].guardValue = GUARD_VALUE_FALSE;
-					GoToRecoveryParentState(PARENT_TREAT_KIDNEY_1_SFA);
-				}
-				else if(currentGuard[GUARD_ALARM_WAIT_CMD_TO_EXIT].guardValue == GUARD_VALUE_TRUE)
-				{
-					// vado nello stato parent dove posso cercare di recuperare la condizione di allarme
-					currentGuard[GUARD_ALARM_WAIT_CMD_TO_EXIT].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
-					currentGuard[GUARD_ALARM_WAIT_CMD_TO_EXIT].guardValue = GUARD_VALUE_FALSE;
-
-					// FM allarme resettato posso ritornare nella fase iniziale del trattamento
-					ptrFutureParent = &stateParentTreatKidney1[1];
-					ptrFutureChild = ptrFutureParent->ptrChild;
-					// forzo anche una pressione del tasto TREATMENT START per fare in modo che
-					// il trattamento riprenda automaticamente
-					setGUIButton(BUTTON_START_TREATMENT);
-				}
-				else
-				{
-					if(ButtonResetRcvd)
-					{
-						ButtonResetRcvd = FALSE;
-//						if(GlobalFlags.FlagsDef.TankLevelHigh)
-//						{
-//							// era un allarme di troppo pieno, riprendo il trattamento
-//							// TODO DA VEDERE MEGLIO COME TRATTARLO, ABORTIRE IL TRATTAMENTO  O NO?
-//							GlobalFlags.FlagsDef.TankLevelHigh = 0;
-//							ptrFutureParent = &stateParentTreatKidney1[1];
-//							ptrFutureChild = ptrFutureParent->ptrChild;
-//							setGUIButton(BUTTON_START_TREATMENT);
-//						}
-//						else
-//						{
-							// FM allarme finito posso ritornare nella fase iniziale del trattamento
-							ptrFutureParent = &stateParentTreatKidney1[1];
-							ptrFutureChild = ptrFutureParent->ptrChild;
-							// forzo anche una pressione del tasto TREATMENT START per fare in modo che
-							// il trattamento riprenda automaticamente
-							setGUIButton(BUTTON_START_TREATMENT);
-//						}
-					}
-				}
-			}
-
-			if(ptrCurrentParent->action == ACTION_ON_ENTRY)
-			{
-				/* execute parent callback function */
-				//ptrCurrentParent->callBackFunct(); NON SERVE QUESTO
-				/* compute future parent */
-				/* (FM) passo alla gestione ACTION_ALWAYS dell'allarme */
-				ptrFutureParent = &stateParentTreatKidney1[6];
-				ptrFutureChild = ptrFutureParent->ptrChild;
-
-				// reinserire queste due istruzioni se si vuole fermare il conteggio del tempo di
-				// trattamento durante un allarme
-//    			TotalTreatDuration += TreatDuration;
-//    			TreatDuration = 0;
-			}
-			else if(ptrCurrentParent->action == ACTION_ALWAYS)
-			{
-				//ptrCurrentParent->callBackFunct(); NON SERVE QUESTO
-				// (FM) chiamo la funzione child che gestisce lo stato di allarme durante il trattamento
-				// Dovra fare tutte le attuazioni sulle pompe, pinch necessarie per risolvere la condizione
-				// di allarme
-				ManageStateChildAlarmTreat1();
-			}
-			break;
-
-		// STATI PER LA GESTIONE DELLA PROCEDURA DI RIMOZIONE DELL'ARIA DAL CIRCUITO -----------------------
-		case PARENT_TREAT_KIDNEY_1_AIR_FILT:
-			if(currentGuard[GUARD_AIR_RECOVERY_END].guardValue == GUARD_VALUE_TRUE)
-			{
-				currentGuard[GUARD_AIR_RECOVERY_END].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
-				currentGuard[GUARD_AIR_RECOVERY_END].guardValue = GUARD_VALUE_FALSE;
-				// ho rimosso l'aria dal circuito, posso ritornare nello stato di allarme in cui sono partito
-				// oppure nello stato di lavoro normale (dopo aver riabilitato gli allarmi).
-				// Decido di ripartire dalla fase iniziale del trattamento.
-				DisableAllAirAlarm(FALSE);
-				ptrFutureParent = &stateParentTreatKidney1[1];
-				ptrFutureChild = ptrFutureParent->ptrChild;
-
-				// forzo anche una pressione del tasto TREATMENT START per fare in modo che
-				// il trattamento riprenda automaticamente
-				setGUIButton(BUTTON_START_TREATMENT);
-				break;
-			}
-
-			if(ptrCurrentParent->action == ACTION_ON_ENTRY)
-			{
-				/* compute future parent */
-				/* FM passo alla gestione ACTION_ALWAYS */
-				ptrFutureParent = &stateParentTreatKidney1[8];
-				ptrFutureChild = ptrFutureParent->ptrChild;
-			}
-			else if(ptrCurrentParent->action == ACTION_ALWAYS)
-			{
-			}
-
-			if(currentGuard[GUARD_ALARM_ACTIVE].guardValue == GUARD_VALUE_TRUE)
-			{
-				/* (FM) si e' verificato un allarme, durante la procedura di recupero dell'allarme aria.
-				 * Per la sua gestione uso un nuovo stato 13  */
-				ptrFutureParent = &stateParentTreatKidney1[13];
-				ptrFutureChild = ptrFutureParent->ptrChild;
-				// guardando a questo valore posso vedere il tipo di azione di sicurezza
-				// e quindi posso decidere di andare anche in un qualche altro stato ad hoc
-				// di allarme
-				//ptrAlarmCurrent->secActType
-				TotalTimeToRejAir += msTick_elapsed(StarTimeToRejAir);
-			}
-			break;
-		case PARENT_TREAT_KIDNEY_1_SFV:
-			if(currentGuard[GUARD_AIR_RECOVERY_END].guardValue == GUARD_VALUE_TRUE)
-			{
-				currentGuard[GUARD_AIR_RECOVERY_END].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
-				currentGuard[GUARD_AIR_RECOVERY_END].guardValue = GUARD_VALUE_FALSE;
-				// ho rimosso l'aria dal circuito, posso ritornare nello stato di allarme in cui sono partito
-				// oppure nello stato di lavoro normale (dopo aver riabilitato gli allarmi).
-				// Decido di ripartire dalla fase iniziale del trattamento.
-				DisableAllAirAlarm(FALSE);
-				ptrFutureParent = &stateParentTreatKidney1[1];
-				ptrFutureChild = ptrFutureParent->ptrChild;
-
-				// forzo anche una pressione del tasto TREATMENT START per fare in modo che
-				// il trattamento riprenda automaticamente
-				setGUIButton(BUTTON_START_TREATMENT);
-				break;
-			}
-
-			if(ptrCurrentParent->action == ACTION_ON_ENTRY)
-			{
-				/* compute future parent */
-				/* FM passo alla gestione ACTION_ALWAYS */
-				ptrFutureParent = &stateParentTreatKidney1[10];
-				ptrFutureChild = ptrFutureParent->ptrChild;
-			}
-			else if(ptrCurrentParent->action == ACTION_ALWAYS)
-			{
-			}
-
-			if(currentGuard[GUARD_ALARM_ACTIVE].guardValue == GUARD_VALUE_TRUE)
-			{
-				/* (FM) si e' verificato un allarme, durante la procedura di recupero dell'allarme aria.
-				 * Per la sua gestione uso un nuovo stato 13  */
-				ptrFutureParent = &stateParentTreatKidney1[13];
-				ptrFutureChild = ptrFutureParent->ptrChild;
-				// guardando a questo valore posso vedere il tipo di azione di sicurezza
-				// e quindi posso decidere di andare anche in un qualche altro stato ad hoc
-				// di allarme
-				//ptrAlarmCurrent->secActType
-				TotalTimeToRejAir += msTick_elapsed(StarTimeToRejAir);
-			}
-			break;
-		case PARENT_TREAT_KIDNEY_1_SFA:
-			if(currentGuard[GUARD_AIR_RECOVERY_END].guardValue == GUARD_VALUE_TRUE)
-			{
-				currentGuard[GUARD_AIR_RECOVERY_END].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
-				currentGuard[GUARD_AIR_RECOVERY_END].guardValue = GUARD_VALUE_FALSE;
-				// ho rimosso l'aria dal circuito, posso ritornare nello stato di allarme in cui sono partito
-				// oppure nello stato di lavoro normale (dopo aver riabilitato gli allarmi).
-				// Decido di ripartire dalla fase iniziale del trattamento.
-				DisableAllAirAlarm(FALSE);
-				ptrFutureParent = &stateParentTreatKidney1[1];
-				ptrFutureChild = ptrFutureParent->ptrChild;
-
-				// forzo anche una pressione del tasto TREATMENT START per fare in modo che
-				// il trattamento riprenda automaticamente
-				setGUIButton(BUTTON_START_TREATMENT);
-				break;
-			}
-
-			if(ptrCurrentParent->action == ACTION_ON_ENTRY)
-			{
-				/* compute future parent */
-				/* FM passo alla gestione ACTION_ALWAYS */
-				ptrFutureParent = &stateParentTreatKidney1[12];
-				ptrFutureChild = ptrFutureParent->ptrChild;
-			}
-			else if(ptrCurrentParent->action == ACTION_ALWAYS)
-			{
-			}
-
-			if(currentGuard[GUARD_ALARM_ACTIVE].guardValue == GUARD_VALUE_TRUE)
-			{
-				/* (FM) si e' verificato un allarme, durante la procedura di recupero dell'allarme aria.
-				 * Per la sua gestione uso un nuovo stato 13  */
-				ptrFutureParent = &stateParentTreatKidney1[13];
-				ptrFutureChild = ptrFutureParent->ptrChild;
-				// guardando a questo valore posso vedere il tipo di azione di sicurezza
-				// e quindi posso decidere di andare anche in un qualche altro stato ad hoc
-				// di allarme
-				//ptrAlarmCurrent->secActType
-				TotalTimeToRejAir += msTick_elapsed(StarTimeToRejAir);
-			}
-			break;
-
-		case PARENT_TREAT_KIDNEY_1_ALM_AIR_REC:
-			if(currentGuard[GUARD_ALARM_ACTIVE].guardValue == GUARD_VALUE_FALSE)
-			{
-				/* FM allarme finito posso ritornare nello stato di partenza
-				 * quando si e' verificato l'allarme */
-				if(AirParentState == PARENT_TREAT_KIDNEY_1_AIR_FILT)
-				{
-					// ero nello stato recupero da allarme aria nel sensore aria on/off
-					ptrFutureParent = &stateParentTreatKidney1[7];
-					ptrFutureChild = ptrFutureParent->ptrChild;
-					StarTimeToRejAir = timerCounterModBus;
-					break;
-				}
-				else if(AirParentState == PARENT_TREAT_KIDNEY_1_SFV)
-				{
-					// ero nello stato recupero da allarme aria nel sensore aria venoso
-					ptrFutureParent = &stateParentTreatKidney1[9];
-					ptrFutureChild = ptrFutureParent->ptrChild;
-					StarTimeToRejAir = timerCounterModBus;
-					break;
-				}
-				else if(AirParentState == PARENT_TREAT_KIDNEY_1_SFA)
-				{
-					// ero nello stato recupero da allarme aria nel sensore aria arterioso
-					ptrFutureParent = &stateParentTreatKidney1[11];
-					ptrFutureChild = ptrFutureParent->ptrChild;
-					StarTimeToRejAir = timerCounterModBus;
-					break;
-				}
-				else
-				{
-					ptrFutureParent = &stateParentTreatKidney1[1];
-					ptrFutureChild = ptrFutureParent->ptrChild;
-					break;
-				}
-			}
-
-			if(ptrCurrentParent->action == ACTION_ON_ENTRY)
-			{
-				/* compute future parent */
-				/* (FM) passo alla gestione ACTION_ALWAYS dell'allarme */
-				ptrFutureParent = &stateParentTreatKidney1[14];
-				ptrFutureChild = ptrFutureParent->ptrChild;
-			}
-			else if(ptrCurrentParent->action == ACTION_ALWAYS)
-			{
-				// (FM) chiamo la funzione child che gestisce lo stato di allarme
-				ManageStateChildAlarmTreat1();
-			}
-			break;
-		//---------------------------------------------------------------------------------------------
-
-		case PARENT_TREAT_KIDNEY_1_END:
-            /* (FM) fine del trattamento  devo rimanere fermo qui, fino a quando non ricevo un nuovo
-             comando di inizio trattamento */
-			break;
-
-
-		case PARENT_TREAT_WAIT_START:
-			if(currentGuard[GUARD_ENABLE_STATE_TREAT_KIDNEY_1_INIT].guardValue == GUARD_VALUE_TRUE)
-			{
-				ptrFutureParent = &stateParentTreatKidney1[1];
-				ptrFutureChild = ptrFutureParent->ptrChild;
-				// forzo anche una pressione del tasto TREATMENT START per fare in modo che
-				// il trattamento riprenda automaticamente
-				setGUIButton(BUTTON_START_TREATMENT);
-				currentGuard[GUARD_ENABLE_STATE_TREAT_KIDNEY_1_INIT].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
-				currentGuard[GUARD_ENABLE_STATE_TREAT_KIDNEY_1_INIT].guardValue = GUARD_VALUE_FALSE;
-				break;
-			}
-			if(ptrCurrentParent->action == ACTION_ON_ENTRY)
-			{
-				/* compute future parent */
-				/* FM passo alla gestione ACTION_ALWAYS */
-				ptrFutureParent = &stateParentTreatKidney1[18];
-				ptrFutureChild = ptrFutureParent->ptrChild;
-			}
-			else if(ptrCurrentParent->action == ACTION_ALWAYS)
-			{
-			}
-			break;
-
-		case PARENT_TREAT_WAIT_PAUSE:
-			if(currentGuard[GUARD_ENABLE_STATE_KIDNEY_1_PUMP_ON].guardValue == GUARD_VALUE_TRUE)
-			{
-				ptrFutureParent = &stateParentTreatKidney1[3];
-				ptrFutureChild = ptrFutureParent->ptrChild;
-				// forzo anche una pressione del tasto TREATMENT START per fare in modo che
-				// il trattamento riprenda automaticamente
-				setGUIButton(BUTTON_START_TREATMENT);
-				currentGuard[GUARD_ENABLE_STATE_KIDNEY_1_PUMP_ON].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
-				currentGuard[GUARD_ENABLE_STATE_KIDNEY_1_PUMP_ON].guardValue = GUARD_VALUE_FALSE;
-				break;
-			}
-			if(ptrCurrentParent->action == ACTION_ON_ENTRY)
-			{
-				/* compute future parent */
-				/* FM passo alla gestione ACTION_ALWAYS */
-				ptrFutureParent = &stateParentTreatKidney1[20];
-				ptrFutureChild = ptrFutureParent->ptrChild;
-			}
-			else if(ptrCurrentParent->action == ACTION_ALWAYS)
-			{
-			}
-			break;
-
-		default:
-			break;
-	}
-
+	// chiamo la funzione che gestisce gli stati parent
+	ParentFunc();
 
     /* (FM) IL CODICE CONTENUTO POTREBBE ESSERE INSERITO ALL'INTERNO DELLA FUNZIONE stateChildAlarmPriming_func E CHIAMATA DA DENTRO
        LA FUNZIONE stateParentPrimingTreatKidney1_func. QUESTA STESSA FUNZIONE DOVREBBE ESSERE CHIAMATA ANCHE DENTRO LA FUNZIONE
@@ -5212,8 +4848,8 @@ void LiquidTempContrTask(LIQUID_TEMP_CONTR_CMD LiqTempContrCmd)
 bool IsPumpStopAlarmActive(void)
 {
 	CHECK_PUMP_STOP_STATE st;
-	st = CheckPumpStopTask((CHECK_PUMP_STOP_CMD)NO_CHECK_PUMP_STOP_CMD);
-	if(st == PUMP_WRITE_ALARM)
+	st = CheckPumpStopTask((CHECK_PUMP_STOP_CMD)NO_CHECK_PUMP_READ_ALM_CMD);
+	if((st == PUMP_WRITE_ALARM) || StopMotorTimeOut)
 		return TRUE;
 	else
 		return FALSE;
@@ -5224,11 +4860,18 @@ void ClearPumpStopAlarm(void)
 	CheckPumpStopTask((CHECK_PUMP_STOP_CMD)RESET_ALARM);
 }
 
+// Ritorna TRUE se tutte le 4 pompe sono ferme
+bool AreAllPumpsStopped( void )
+{
+	if(PumpStoppedCnt >= 3)
+		return TRUE;
+	else
+		return FALSE;
+}
 
 // cmd comando per eventuare riposizionamento della macchina a stati
 CHECK_PUMP_STOP_STATE CheckPumpStopTask(CHECK_PUMP_STOP_CMD cmd)
 {
-	static unsigned long RicircTimeout;
 	static CHECK_PUMP_STOP_STATE CheckPumpStopTaskMach = CHECK_PUMP_STOP_IDLE;
 	static int Delay = 0;
 	static int CheckPumpStopCnt = 0;
@@ -5240,12 +4883,17 @@ CHECK_PUMP_STOP_STATE CheckPumpStopTask(CHECK_PUMP_STOP_CMD cmd)
 		Delay = 0;
 		CheckPumpStopCnt = 0;
 		DisableCheckPumpStopTask = 0;
+		PumpStoppedCnt = 0;
 		return CheckPumpStopTaskMach;
 	}
 	else if(cmd == RESET_ALARM)
 	{
 		// lo metto in uno stato di inattivita'
 		CheckPumpStopTaskMach = CHECK_PUMP_STOP_IDLE;
+		return CheckPumpStopTaskMach;
+	}
+	else if(cmd == NO_CHECK_PUMP_READ_ALM_CMD)
+	{
 		return CheckPumpStopTaskMach;
 	}
 
@@ -5256,6 +4904,7 @@ CHECK_PUMP_STOP_STATE CheckPumpStopTask(CHECK_PUMP_STOP_CMD cmd)
 
 	if(!( ((ptrCurrentState->state == STATE_TREATMENT_KIDNEY_1) &&
 	      ((ptrCurrentParent->parent == PARENT_TREAT_WAIT_START) || (ptrCurrentParent->parent == PARENT_TREAT_WAIT_PAUSE))) ||
+		  ((ptrCurrentState->state == STATE_PRIMING_RICIRCOLO) && (ptrCurrentParent->parent == PARENT_PRIM_WAIT_MOT_STOP)) ||
 		  (ptrCurrentState->state == STATE_IDLE) ||
 		  ((ptrCurrentState->state == STATE_PRIMING_PH_1) && (ptrCurrentParent->parent == PARENT_PRIM_WAIT_PAUSE)) ||
 		  ((ptrCurrentState->state == STATE_PRIMING_PH_2) && (ptrCurrentParent->parent == PARENT_PRIM_WAIT_PAUSE))
@@ -5273,9 +4922,9 @@ CHECK_PUMP_STOP_STATE CheckPumpStopTask(CHECK_PUMP_STOP_CMD cmd)
 		case WAIT_FOR_NEW_READ:
 			// in questo stato ci va all'inizio del priming ed in attesa di iniziare la fase di ricircolo
 			Delay++;
-			if(Delay > 30)
+			if(Delay > 20)
 			{
-				// aspetto 1.5 secondi poi vado a controllare le velocita' delle pompe
+				// aspetto 1 secondo poi vado a controllare le velocita' delle pompe
 				CheckPumpStopTaskMach = READ_PUMP_SPEED;
 				Delay = 0;
 			}
@@ -5337,12 +4986,14 @@ CHECK_PUMP_STOP_STATE CheckPumpStopTask(CHECK_PUMP_STOP_CMD cmd)
 					CheckPumpStopTaskMach = WAIT_FOR_NEW_READ;
 					Delay = 0;
 				}
+				PumpStoppedCnt = 0;
 			}
 			else
 			{
 				CheckPumpStopTaskMach = WAIT_FOR_NEW_READ;
 				Delay = 0;
 				CheckPumpStopCnt = 0;
+				PumpStoppedCnt++;
 			}
 			break;
 
@@ -5354,4 +5005,7 @@ CHECK_PUMP_STOP_STATE CheckPumpStopTask(CHECK_PUMP_STOP_CMD cmd)
 	}
 	return CheckPumpStopTaskMach;
 }
+
+
+
 
