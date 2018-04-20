@@ -9,7 +9,12 @@
 #define CONTROLPROTECTIVEINTERFACE_H_
 
 
-
+void onNewPinchStat(ActuatorHallStatus Ahs );
+void onNewPressOxygen(uint16_t Value);
+void onNewTubPressLevel(uint16_t Value);
+void onNewPressADSFLT(uint16_t  Value);
+void onNewPressVen(uint16_t  Value);
+void onNewPressArt(uint16_t  Value);
 
 
 #endif /* CONTROLPROTECTIVEINTERFACE_H_ */

@@ -66,14 +66,14 @@ void InitCAN(void)
 LDD_TError  SendCAN(uint8_t *txbuff, int txsize, LDD_CAN_TMBIndex ChIndex)
 {
 
-	if((txsize > 8) || ( ChIndex > 7)){
+	if((txsize > 8) || ( ChIndex > 15) || ( ChIndex < 8)){
 		return ERR_PARAM_VALUE;
 	}
-	TxFrame.MessageID = 0x0701U + ChIndex;
+	TxFrame.MessageID = 0x0700U + ChIndex;
 	TxFrame.FrameType = LDD_CAN_DATA_FRAME;
 	TxFrame.Data = txbuff;
 	TxFrame.Length = txsize;
-	LDD_TError error = CAN_C_P_SendFrame(pUserData, 8U + ChIndex, &TxFrame);
+	LDD_TError error = CAN_C_P_SendFrame(pUserData, ChIndex, &TxFrame);
 	return error;
 }
 

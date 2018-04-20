@@ -11,11 +11,12 @@
 #include "stdint.h"
 #include "SwTimer.h"
 #include "FlexCANWrapper.h"
+#include "Global.h"
 
-#define VAL_JOLLY16	0x5A5A;
-#define VAL_JOLLY8	0x5A;
+#define VAL_JOLLY16	0x5A5A
+#define VAL_JOLLY8	0x5A
 #define SIZE_CAN_BUFFER	8
-#define LAST_INDEX_TXBUFF2SEND 3	//
+#define LAST_INDEX_TXBUFF2SEND 15	//
 
 
 
@@ -59,7 +60,7 @@ union UTxCan {
 		uint16_t PressOxy;	uint16_t TempFluidx10;	uint16_t TempArtx10;	uint16_t TempVenx10;
 	} STxCan1;
 	struct {
-		uint8_t AirAlarm;	uint16_t AlarmCode;	uint8_t Consenso;	uint8_t Pinch0Pos;	uint8_t Pimch1Pos;	uint8_t Pimch2Pos;	uint8_t Free;
+		uint8_t AirAlarm;	uint16_t AlarmCode;	uint8_t Consenso;	uint8_t Pinch0Pos;	uint8_t Pinch1Pos;	uint8_t Pinch2Pos;	uint8_t Free;
 	} STxCan2;
 	struct {
 		uint16_t SpeedPump1Rpmx10;	uint16_t SpeedPump2Rpmx10;	uint16_t SpeedPump3Rpmx10;	uint16_t SpeedPump4Rpmx10;
@@ -103,24 +104,27 @@ void ManageTxCan100ms(void);
 void InitControlProtectiveInterface(void)
 {
 	int ii;
-
+//TODO forse meglio inizializzare a 0
 	for(ii=0;ii<SIZE_CAN_BUFFER;ii++){
-		TxCan1.RawCanBuffer[ii] = VAL_JOLLY8;
-		TxCan2.RawCanBuffer[ii] = VAL_JOLLY8;
-		TxCan3.RawCanBuffer[ii] = VAL_JOLLY8;
-		TxCan4.RawCanBuffer[ii] = VAL_JOLLY8;
-		TxCan5.RawCanBuffer[ii] = VAL_JOLLY8;
-		TxCan6.RawCanBuffer[ii] = VAL_JOLLY8;
-		TxCan7.RawCanBuffer[ii] = VAL_JOLLY8;
+		TxCan0.RawCanBuffer[ii] = VAL_JOLLY8 ;
+		TxCan1.RawCanBuffer[ii] = VAL_JOLLY8 + 1;
+		TxCan2.RawCanBuffer[ii] = VAL_JOLLY8 + 2;
+		TxCan3.RawCanBuffer[ii] = VAL_JOLLY8 +3;
+		TxCan4.RawCanBuffer[ii] = VAL_JOLLY8 +4;
+		TxCan5.RawCanBuffer[ii] = VAL_JOLLY8 +5;
+		TxCan6.RawCanBuffer[ii] = VAL_JOLLY8 +6;
+		TxCan7.RawCanBuffer[ii] = VAL_JOLLY8 +7;
 		// cause difference to trigger data send 1st time
-		OldTxCan1.RawCanBuffer[ii] = VAL_JOLLY8 + 1;
-		OldTxCan2.RawCanBuffer[ii] = VAL_JOLLY8 + 1;
-		OldTxCan3.RawCanBuffer[ii] = VAL_JOLLY8 + 1;
-		OldTxCan4.RawCanBuffer[ii] = VAL_JOLLY8 + 1;
-		OldTxCan5.RawCanBuffer[ii] = VAL_JOLLY8 + 1;
-		OldTxCan6.RawCanBuffer[ii] = VAL_JOLLY8 + 1;
-		OldTxCan7.RawCanBuffer[ii] = VAL_JOLLY8 + 1;
+		OldTxCan0.RawCanBuffer[ii] = VAL_JOLLY8 + 11;
+		OldTxCan1.RawCanBuffer[ii] = VAL_JOLLY8 + 11;
+		OldTxCan2.RawCanBuffer[ii] = VAL_JOLLY8 + 11;
+		OldTxCan3.RawCanBuffer[ii] = VAL_JOLLY8 + 11;
+		OldTxCan4.RawCanBuffer[ii] = VAL_JOLLY8 + 11;
+		OldTxCan5.RawCanBuffer[ii] = VAL_JOLLY8 + 11;
+		OldTxCan6.RawCanBuffer[ii] = VAL_JOLLY8 + 11;
+		OldTxCan7.RawCanBuffer[ii] = VAL_JOLLY8 + 11;
 		// init rx buffers
+		RxCan0.RawCanBuffer[ii] = VAL_JOLLY8;
 		RxCan1.RawCanBuffer[ii] = VAL_JOLLY8;
 		RxCan2.RawCanBuffer[ii] = VAL_JOLLY8;
 		RxCan3.RawCanBuffer[ii] = VAL_JOLLY8;
@@ -129,6 +133,7 @@ void InitControlProtectiveInterface(void)
 		RxCan6.RawCanBuffer[ii] = VAL_JOLLY8;
 		RxCan7.RawCanBuffer[ii] = VAL_JOLLY8;
 
+		OldRxCan0.RawCanBuffer[ii] = VAL_JOLLY8;
 		OldRxCan1.RawCanBuffer[ii] = VAL_JOLLY8;
 		OldRxCan2.RawCanBuffer[ii] = VAL_JOLLY8;
 		OldRxCan3.RawCanBuffer[ii] = VAL_JOLLY8;
@@ -147,7 +152,7 @@ void InitControlProtectiveInterface(void)
 	TxCan7.SAux.NoSendCounter = 0;
 
 	//AddSwTimer(ManageTxCan10ms,1,TM_REPEAT);
-	AddSwTimer(ManageTxCan100ms,1,TM_REPEAT);
+	AddSwTimer(ManageTxCan100ms,10,TM_REPEAT);
 }
 
 // incoming new press values
@@ -156,6 +161,32 @@ void onNewTubPressLevel(uint16_t Value) { 	TxCan0.STxCan0.PressLevelx100 = Value
 void onNewPressADSFLT(uint16_t  Value) 	{	TxCan0.STxCan0.PressFilter = Value;	}
 void onNewPressVen(uint16_t  Value)		{	TxCan0.STxCan0.PressVen = Value; }
 void onNewPressArt(uint16_t  Value)		{	TxCan0.STxCan0.PressArt = Value; }
+
+void onNewPinchStat(ActuatorHallStatus Ahs )
+{
+
+	if (Ahs.PinchFilter_Left)
+		  TxCan2.STxCan2.Pinch0Pos = 0x02;
+	else if (Ahs.PinchFilter_Right)
+		  TxCan2.STxCan2.Pinch0Pos = 0x04;
+	else
+		  TxCan2.STxCan2.Pinch0Pos = 0x01;
+
+	if (Ahs.PinchArt_Left)
+		  TxCan2.STxCan2.Pinch1Pos = 0x02;
+	else if (Ahs.PinchArt_Right)
+		  TxCan2.STxCan2.Pinch1Pos = 0x04;
+	else
+		  TxCan2.STxCan2.Pinch1Pos = 0x01;
+
+	if (Ahs.PinchVen_Left)
+		  TxCan2.STxCan2.Pinch2Pos = 0x02;
+	 else if (Ahs.PinchVen_Right)
+		   TxCan2.STxCan2.Pinch2Pos = 0x04;
+	 else
+		   TxCan2.STxCan2.Pinch2Pos = 0x01;
+
+}
 
 
 int TxBuffIndex = 0;
@@ -200,10 +231,10 @@ void ManageTxCan10ms(void)
 //
 void ManageTxCan100ms(void)
 {
-int ii;
+int ii ;//= 11;
 
-	for( ii=0 ; ii<=LAST_INDEX_TXBUFF2SEND ; ii++)
-		SendCAN(TxBuffCanP[ii]->RawCanBuffer, SIZE_CAN_BUFFER, 0);
+	for( ii=8 ; ii<=LAST_INDEX_TXBUFF2SEND ; ii++)
+		SendCAN(TxBuffCanP[ii - 8]->RawCanBuffer, SIZE_CAN_BUFFER, ii);
 }
 
 union URxCan*	RxBuffCanP[8] =

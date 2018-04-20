@@ -24,6 +24,7 @@
 #include "BUZZER_HIGH_P.h"
 #include "SWtimer.h"
 #include "SevenSeg.h"
+#include "Global.h"
 
 #define CONTROL_BOARD
 #undef PROTECTIVE_BOARD
@@ -103,6 +104,7 @@ void RetriggerAlarm(void){
 LDD_TError  SendCAN(uint8_t *txbuff, int txsize, LDD_CAN_TMBIndex ChIndex);
 void ManageTestP100ms(void)
 {
+/*
 #ifdef PROTECTIVE_BOARD
 // send a packet each 100ms if protective
 	SendCAN("VINCENZO", 8, 0);
@@ -111,11 +113,12 @@ void ManageTestP100ms(void)
 // send a packet each 100ms if protective
 	SendCAN("PERRONE", 7, 1);
 #endif
-
+*/
 }
 
 void ReceivedCanData_1(uint8_t *rxbuff, int rxlen, int RxChannel)
 {
+/*
 #ifdef CONTROL_BOARD
 	if((RxChannel == 0) && (memcmp(rxbuff,"VINCENZO",8) == 0)){
 		// expected channel n message
@@ -128,7 +131,9 @@ void ReceivedCanData_1(uint8_t *rxbuff, int rxlen, int RxChannel)
 		RetriggerAlarm();
 	}
 #endif
+*/
 }
+
 
 void Application(void)
 {

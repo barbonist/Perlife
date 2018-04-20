@@ -213,6 +213,7 @@ int main(void)
   InitSensorsAccess();
   InitControlProtectiveInterface();
 
+
   for(;;)
   {
 	  ManageSwTimers();

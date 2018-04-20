@@ -44,6 +44,7 @@
 #include "BitIoLdd60.h"
 #include "C3_HALL_R.h"
 #include "BitIoLdd61.h"
+#include "ControlProtectiveInterface.h"
 
 
 /********************************/
@@ -783,6 +784,9 @@ void UpdateActuatorPosition()
 	  HallSens.PinchArt_Right 	 = C3_HALL_L_GetVal();
 	  HallSens.PinchVen_Left 	 = C1_HALL_L_GetVal();
 	  HallSens.PinchVen_Right 	 = C1_HALL_R_GetVal();
+
+	  onNewPinchStat(HallSens);
+
 }
 
 
