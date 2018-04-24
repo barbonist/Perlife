@@ -17,6 +17,7 @@
 #include "BUZZER_HIGH_C.h"
 #include "general_func.h"
 
+extern bool FilterSelected;
 
 // FM questa lista devo costruirla mettendo prima i PHYSIC_TRUE e poi i PHYSIC_FALSE,
 // ognuno deve poi essere ordinato in base alla priorita' ???
@@ -60,9 +61,44 @@ struct alarm alarmList[] =
 		{CODE_ALARM_DELTA_TEMP_REC_VEN,    PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH,  500,  500, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull},	    /* 21 */
 		// allarme comunicazione canbus
 		{CODE_ALARM_CAN_BUS_ERROR,         PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH,  500,  500, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull},	    /* 22 */
-		{CODE_ALARM_MODBUS_ACTUATOR_SEND,  PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_WAIT_CONFIRM,          PRIORITY_LOW,     0,  100, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull},	    /* 23 */
+
+		// allarme pompe non completamente ferme (usato nello stato di trattamento)
+		{CODE_ALARM_PUMPS_NOT_STILL,       PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_PUMPS_NOT_STILL,       PRIORITY_HIGH,  500,  500, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull},	    /* 23 */
+		// allarme pinch non posizionate correttamente (usato nello stato di trattamento)
+		{CODE_ALARM_BAD_PINCH_POS,         PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_BAD_PINCH_POS,         PRIORITY_HIGH,  500,  500, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull},	    /* 24 */
+		// allarme aria nel filtro (usato nello stato di trattamento)
+		{CODE_ALARM_SFA_PRIM_AIR_DET,      PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_SFA_PRIM_AIR_DET,      PRIORITY_HIGH,  1000, 1000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull},	    /* 25 */
+
+		{CODE_ALARM_MODBUS_ACTUATOR_SEND,  PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_WAIT_CONFIRM,           PRIORITY_LOW,     0,  100, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull},	    /* 26 */
 		{}
 };
+
+void EnablePumpNotStillAlmFunc(void)
+{
+	GlobalFlags.FlagsDef.EnablePumpNotStillAlm = 1;
+}
+void EnableBadPinchPosAlmFunc(void)
+{
+	GlobalFlags.FlagsDef.EnableBadPinchPosAlm = 1;
+}
+void EnablePrimAlmSFAAirDetAlmFunc(void)
+{
+	GlobalFlags.FlagsDef.EnablePrimAlmSFAAirDetAlm = 1;
+}
+
+void DisablePumpNotStillAlmFunc(void)
+{
+	GlobalFlags.FlagsDef.EnablePumpNotStillAlm = 0;
+}
+void DisableBadPinchPosAlmFunc(void)
+{
+	GlobalFlags.FlagsDef.EnableBadPinchPosAlm = 0;
+}
+void DisablePrimAlmSFAAirDetAlmFunc(void)
+{
+	GlobalFlags.FlagsDef.EnablePrimAlmSFAAirDetAlm = 0;
+}
+
 
 
 // se dis == TRUE disabilito tutti gli allarmi aria
@@ -107,6 +143,9 @@ void SetAllAlarmEnableFlags(void)
 	GlobalFlags.FlagsDef.EnableSFVAir = 1;
 	GlobalFlags.FlagsDef.EnableSFAAir = 1;
 	GlobalFlags.FlagsDef.EnableCANBUSErr = 1;
+	GlobalFlags.FlagsDef.EnablePumpNotStillAlm = 0;       // viene attivato in un'altro momento
+	GlobalFlags.FlagsDef.EnableBadPinchPosAlm = 0;        // viene attivato in un'altro momento
+	GlobalFlags.FlagsDef.EnablePrimAlmSFAAirDetAlm = 0;   // viene attivato in un'altro momento
 }
 
 // Questa funzione serve per forzare ad off un eventuale allarme.
@@ -163,6 +202,16 @@ void ForceAlarmOff(unsigned char code)
 		case CODE_ALARM_CAN_BUS_ERROR:
 			GlobalFlags.FlagsDef.EnableCANBUSErr = 0;
 			break;
+		case CODE_ALARM_PUMPS_NOT_STILL:
+			GlobalFlags.FlagsDef.EnablePumpNotStillAlm = 0;
+			break;
+		case CODE_ALARM_BAD_PINCH_POS:
+			GlobalFlags.FlagsDef.EnableBadPinchPosAlm = 0;
+			break;
+		case CODE_ALARM_SFA_PRIM_AIR_DET:
+			GlobalFlags.FlagsDef.EnablePrimAlmSFAAirDetAlm = 0; // disabilito allarme aria su filtro durante il priming
+			break;
+
 	}
 }
 
@@ -309,8 +358,21 @@ void ShowAlarmStr(int i, char * str)
 			strcat(s, str);
 			DebugStringStr(s);
 			break;
-
-
+		case CODE_ALARM_PUMPS_NOT_STILL:
+			strcpy(s, "AL_PUMPS_NOT_STILL");
+			strcat(s, str);
+			DebugStringStr(s);
+			break;
+		case CODE_ALARM_BAD_PINCH_POS:
+			strcpy(s, "AL_BAD_PINCH_POS");
+			strcat(s, str);
+			DebugStringStr(s);
+			break;
+		case CODE_ALARM_SFA_PRIM_AIR_DET:
+			strcpy(s, "AL_SFA_PRIM_AIR_DET");
+			strcat(s, str);
+			DebugStringStr(s);
+			break;
 	}
 }
 
@@ -452,6 +514,7 @@ void alarmEngineAlways(void)
 				else if(GetTherapyType() == KidneyTreat)
 					manageAlarmCoversPumpKidney();
 				manageAlarmCanBus();
+				manageAlarmPrimSFAAirDet();
 				break;
 			}
 
@@ -495,6 +558,7 @@ void alarmEngineAlways(void)
 				manageAlarmDeltaTempRecArt();
 				manageAlarmDeltaTempRecVen();
 				manageAlarmCanBus();
+				manageAlarmBadPinchPos(); // controllo il posizionamento delle pinch prima di iniziare un trattamento
 				break;
 			}
 
@@ -519,6 +583,9 @@ void alarmEngineAlways(void)
 				else if(GetTherapyType() == KidneyTreat)
 					manageAlarmCoversPumpKidney();
 				manageAlarmCanBus();
+				manageAlarmPumpNotStill();  // controllo allarme di pompe ferme alla fine del ricircolo
+				manageAlarmBadPinchPos();   // allarme di pinch posizionate correttamente
+				manageAlarmPrimSFAAirDet();
 				break;
 
 			case STATE_WAIT_TREATMENT:
@@ -695,6 +762,73 @@ void alarmEngineAlways(void)
 }
 
 //------------------------FUNZIONI PER DETERMINARE LA CONDIZIONE DI ALLARME----------------------------------
+
+// Allarme generato dalla condizione di aria nel filtro durante il priming. Viene preso in considerazione
+// dal momento in cui il filtro viene installato alla fine del priming
+void manageAlarmPrimSFAAirDet(void)
+{
+	if(!GlobalFlags.FlagsDef.EnablePrimAlmSFAAirDetAlm)
+		alarmList[PRIM_AIR_ON_FILTER].physic = PHYSIC_FALSE;
+	else if(!FilterSelected)
+		alarmList[PRIM_AIR_ON_FILTER].physic = PHYSIC_FALSE;
+	else
+	{
+		if(Air_1_Status == AIR)
+		{
+			alarmList[PRIM_AIR_ON_FILTER].physic = PHYSIC_TRUE;
+		}
+		else
+		{
+			alarmList[PRIM_AIR_ON_FILTER].physic = PHYSIC_FALSE;
+		}
+	}
+}
+
+
+bool IsTreatSetPinchPosTaskAlm(void);
+
+// Allarme generato dalla condizione di pinch posizionate male. Viene preso in considerazione alla fine
+// del ricircolo prima di attaccare l'organo.
+void manageAlarmBadPinchPos(void)
+{
+	if(!GlobalFlags.FlagsDef.EnableBadPinchPosAlm)
+		alarmList[BAD_PINCH_POS].physic = PHYSIC_FALSE;
+	else
+	{
+		if(IsTreatSetPinchPosTaskAlm())
+		{
+			alarmList[BAD_PINCH_POS].physic = PHYSIC_TRUE;
+		}
+		else
+		{
+			alarmList[BAD_PINCH_POS].physic = PHYSIC_FALSE;
+		}
+	}
+}
+
+
+bool IsPumpStopAlarmActive(void);
+
+// Allarme generato dalla condizione di pompe non ferme. Viene preso in considerazione alla fine
+// del ricircolo prima di attaccare l'organo.
+void manageAlarmPumpNotStill(void)
+{
+	if(!GlobalFlags.FlagsDef.EnablePumpNotStillAlm)
+		alarmList[PUMP_NOT_STILL].physic = PHYSIC_FALSE;
+	else
+	{
+		if(IsPumpStopAlarmActive() )
+		{
+			alarmList[PUMP_NOT_STILL].physic = PHYSIC_TRUE;
+		}
+		else
+		{
+			alarmList[PUMP_NOT_STILL].physic = PHYSIC_FALSE;
+		}
+	}
+}
+
+
 bool IsCanBusError(void);
 
 void manageAlarmCanBus(void)
@@ -1372,6 +1506,25 @@ void manageAlarmChildGuard(struct alarm * ptrAlarm){
 			currentGuard[GUARD_ALARM_STOP_ALL_ACT_WAIT_CMD].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
 		else
 			currentGuard[GUARD_ALARM_STOP_ALL_ACT_WAIT_CMD].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
+		break;
+
+	case SECURITY_PUMPS_NOT_STILL:
+		if(myAlarmPointer->active == ACTIVE_TRUE)
+			currentGuard[GUARD_ALARM_PUMPS_NOT_STILL].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+		else
+			currentGuard[GUARD_ALARM_PUMPS_NOT_STILL].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
+		break;
+	case SECURITY_BAD_PINCH_POS:
+		if(myAlarmPointer->active == ACTIVE_TRUE)
+			currentGuard[GUARD_ALARM_BAD_PINCH_POS].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+		else
+			currentGuard[GUARD_ALARM_BAD_PINCH_POS].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
+		break;
+	case SECURITY_SFA_PRIM_AIR_DET:
+		if(myAlarmPointer->active == ACTIVE_TRUE)
+			currentGuard[GUARD_ALARM_SFA_PRIM_AIR_DET].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+		else
+			currentGuard[GUARD_ALARM_SFA_PRIM_AIR_DET].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
 		break;
 
 	default:

@@ -26,6 +26,15 @@ void manageChildPrimAlarmStopAllActAlways(void);
 void manageChildPrimAlmAndWaitCmdEntry(void);
 void manageChildPrimAlmAndWaitCmdAlways(void);
 
+void manageChildPrimAlmPumpNotStillEntry(void);
+void manageChildPrimAlmPumpNotStillAlways(void);
+
+void manageChildPrimAlmBadPinchPosEntry(void);
+void manageChildPrimAlmBadPinchPosAlways(void);
+
+void manageChildPrimAlmSFAAirDetEntry(void);
+void manageChildPrimAlmSFAAirDetAlways(void);
+
 
 /* --------------------------------------------------------------------------------------------
    CHILD LEVEL FUNCTION FOR TREATMENT_1 (KIDNEY)
@@ -59,6 +68,10 @@ void manageChildTreatAlm1SFAAlways(void);
 
 void manageChildAlmAndWaitCmdEntry(void);
 void manageChildAlmAndWaitCmdAlways(void);
+
+void manageChildTreatAlmBadPinchPosEntry(void);
+void manageChildTreatAlmBadPinchPosAlways(void);
+
 
 void ManageStateChildAlarmTreat1(void);
 

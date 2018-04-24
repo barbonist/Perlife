@@ -466,6 +466,10 @@ enum Child {
 	CHILD_1,
 	CHILD_2,
 	CHILD_3,
+	CHILD_PRIM_ALARM_PUMPS_NOT_STILL,
+	CHILD_PRIM_ALARM_BAD_PINCH_POS,
+	CHILD_PRIM_ALARM_SFA_AIR_DET,
+	CHILD_TREAT_ALARM_BAD_PINCH_POS,
 	CHILD_END_NUMBER,
 };
 
@@ -565,6 +569,9 @@ enum MachineStateGuardId {
 	GUARD_ALARM_SFV_AIR,
 	GUARD_ALARM_SFA_AIR,
 	GUARD_ALARM_STOP_ALL_ACT_WAIT_CMD,
+	GUARD_ALARM_PUMPS_NOT_STILL,
+	GUARD_ALARM_BAD_PINCH_POS,
+	GUARD_ALARM_SFA_PRIM_AIR_DET,
 	/*********************/
 	/* CHILD LEVEL GUARD */
 	/*********************/
@@ -633,8 +640,8 @@ struct alarm {
 	unsigned char	physic;			/* alarm physic condition */
 	unsigned char	active;			/* alarm active condition */
 	unsigned char	type;			/* alarm type: control, protection */
-	unsigned short	secActType;		/* alarm security action: type of secuirty action required
-	                                   (FM modificato da char ad unsigned short perche' ho bisogno di piu' bit per distinguere i vari allarmi*/
+	unsigned int	secActType;		/* alarm security action: type of secuirty action required
+	                                   (FM modificato da char ad unsigned int perche' ho bisogno di piu' bit per distinguere i vari allarmi*/
 	unsigned char	priority;		/* alarm priority: low, medium, right */
 	unsigned short	entryTime;		/* entry time in ms */
 	unsigned short	exitTime;		/* exit time in ms */
@@ -1601,6 +1608,14 @@ typedef struct
 
 	unsigned int TankLevelHigh              : 1;    // livello del liquido supera il massimo
 	unsigned int ChildAlmAndWaitCmdActive   : 1;
+	unsigned int EnablePumpNotStillAlm      : 1;    // Abilito allarme di pompe non ferme. Viene preso in considerazione alla fine
+	                                                // del ricircolo prima di attaccare l'organo.
+	unsigned int EnableBadPinchPosAlm       : 1;    // abilito allarme di pinch non posizionate correttamente. Viene preso in
+	                                                // considerazione alla fine del ricircolo prima di attaccare l'organo e prima di
+	                                                // iniziare un trattamento.
+	unsigned int EnablePrimAlmSFAAirDetAlm  : 1;    // abilito allarme di possibile aria nel filtro. Viene preso in
+	                                                // considerazione dal momento in cui viene installato il filtro alla fine del
+	                                                // priming
 }FLAGS_DEF;
 
 typedef union

@@ -1371,8 +1371,12 @@ void setGUIButton(unsigned char buttonId){
 	//buttonGUITreatment[buttonId].state = GUI_BUTTON_PRESSED;
 	buttonGUITreatment[buttonId].state = GUI_BUTTON_RELEASED;
 	actionFlag = 2;
-	if(buttonId == BUTTON_RESET_ALARM)
+	if((buttonId == BUTTON_RESET_ALARM) || (buttonId == BUTTON_OVERRIDE_ALARM))
+	{
 		actionFlag = 2;
+		// serve per abilitare la ricezione del successivo allarme
+		EnableNextAlarm = TRUE;
+	}
 }
 
 unsigned char getGUIButton(unsigned char buttonId)

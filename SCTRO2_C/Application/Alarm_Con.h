@@ -13,7 +13,7 @@
 //#define CODE_ALARM0		0x00
 //#define CODE_ALARM1		0x01
 //#define CODE_ALARM2		0x02
-#define ALARM_ACTIVE_IN_STRUCT					24
+#define ALARM_ACTIVE_IN_STRUCT					27
 #define CODE_ALARM_PRESS_ART_HIGH				0X01
 #define CODE_ALARM_PRESS_ART_LOW				0X02
 #define CODE_ALARM_PRESS_VEN_HIGH				0X03
@@ -48,6 +48,8 @@
 #define CODE_ALARM_AIR_PRES_ART					0x50
 #define CODE_ALARM_AIR_PRES_VEN					0x51
 #define CODE_ALARM_AIR_PRES_ADSRB_FILTER		0x53
+#define CODE_ALARM_SFA_PRIM_AIR_DET             0x54
+
 
 #define CODE_ALARM_STOP_ALL_ACTUATOR			0X60 /* pump, pinch, peltier */
 #define CODE_ALARM_STOP_ALL_PUMP				0X61 /* pump */
@@ -59,6 +61,7 @@
 #define CODE_ALARM_PUMP_PERF_COVER_OPEN			0x70
 #define CODE_ALARM_PUMP_PURIF_COVER_OPEN		0x71
 #define CODE_ALARM_PUMP_OXYG_COVER_OPEN			0x73
+#define CODE_ALARM_PUMPS_NOT_STILL              0x74
 
 #define CODE_ALARM_END_PRIMING_PHASE_1			0x80
 #define CODE_ALARM_END_PRIMING_PHASE_2			0x81
@@ -66,6 +69,7 @@
 
 #define CODE_ALARM_MODBUS_ACTUATOR_SEND         0x90
 #define CODE_ALARM_CAN_BUS_ERROR                0x91
+#define CODE_ALARM_BAD_PINCH_POS                0x92
 
 
 #define	PHYSIC_TRUE		0xA5
@@ -89,9 +93,12 @@
 #define SECURITY_STOP_PELTIER			0x20
 #define SECURITY_WAIT_CONFIRM           0x40
 #define SECURITY_SAF_AIR_FILTER         0x80
-#define SECURITY_SFV_AIR_DET           0x100
-#define SECURITY_SFA_AIR_DET           0x200
-#define SECURITY_STOP_ALL_ACT_WAIT_CMD 0x400
+#define SECURITY_SFV_AIR_DET            0x100
+#define SECURITY_SFA_AIR_DET            0x200
+#define SECURITY_PUMPS_NOT_STILL        0x400
+#define SECURITY_BAD_PINCH_POS          0x800
+#define SECURITY_SFA_PRIM_AIR_DET       0x1000
+#define SECURITY_STOP_ALL_ACT_WAIT_CMD  0x2000
 
 #define OVRD_ENABLE				0xA5
 #define OVRD_NOT_ENABLED		0x5A
@@ -147,6 +154,9 @@ enum ALARM
 	 DELTA_TEMP_REC_ART,
 	 DELTA_TEMP_REC_VEN,
 	 CAN_BUS_ERROR,
+	 PUMP_NOT_STILL,
+	 BAD_PINCH_POS,
+	 PRIM_AIR_ON_FILTER,
 	 MODBUS_ACTUATOR_SEND
 };
 
@@ -186,5 +196,15 @@ void ForceCurrentAlarmOff(void);
 void DisableAllAlarm();
 void DisableAllAirAlarm(bool dis);
 void manageAlarmCanBus(void);
+void manageAlarmPumpNotStill(void);
+void manageAlarmBadPinchPos(void);
+void manageAlarmPrimSFAAirDet(void);
+
+void EnablePumpNotStillAlmFunc(void);
+void EnableBadPinchPosAlmFunc(void);
+void EnablePrimAlmSFAAirDetAlmFunc(void);
+void DisablePumpNotStillAlmFunc(void);
+void DisableBadPinchPosAlmFunc(void);
+void DisablePrimAlmSFAAirDetAlmFunc(void);
 
 #endif /* APPLICATION_ALARM_CON_H_ */

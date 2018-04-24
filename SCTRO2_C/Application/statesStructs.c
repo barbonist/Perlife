@@ -178,6 +178,10 @@ struct machineChild stateChildAlarmTreat1[] =
 			// premendo BUTTON_RESET forza l'uscita dalla condizione di allarme senza fare nessun'altra operazione
 			{STATE_NULL, PARENT_NULL, CHILD_TREAT_ALARM_1_WAIT_CMD,          ACTION_ON_ENTRY, &stateNull[0], &manageChildAlmAndWaitCmdEntry},            /* 21 */
 			{STATE_NULL, PARENT_NULL, CHILD_TREAT_ALARM_1_WAIT_CMD,          ACTION_ALWAYS,   &stateNull[0], &manageChildAlmAndWaitCmdAlways},           /* 22 */
+
+			// gestisce un eventuale allarme generato quando la posizione delle pinch confrontata con quella delle protective non coincide
+			{STATE_NULL, PARENT_NULL, CHILD_TREAT_ALARM_BAD_PINCH_POS,       ACTION_ON_ENTRY, &stateNull[0], &manageChildTreatAlmBadPinchPosEntry},      /* 23 */
+			{STATE_NULL, PARENT_NULL, CHILD_TREAT_ALARM_BAD_PINCH_POS,       ACTION_ALWAYS,   &stateNull[0], &manageChildTreatAlmBadPinchPosAlways},     /* 24 */
 			{}
 		  };
 
@@ -226,6 +230,17 @@ struct machineChild stateChildAlarmPriming[] ={
 		{STATE_NULL, PARENT_NULL, CHILD_PRIM_ALARM_1_WAIT_CMD,             ACTION_ON_ENTRY,    &stateNull[0], &manageChildPrimAlmAndWaitCmdEntry},     /* 15 */
 		{STATE_NULL, PARENT_NULL, CHILD_PRIM_ALARM_1_WAIT_CMD,             ACTION_ALWAYS,      &stateNull[0], &manageChildPrimAlmAndWaitCmdAlways},    /* 16 */
 
+		// gestisce un eventuale allarme generato quando non si riesce a fermare le pompe
+		{STATE_NULL, PARENT_NULL, CHILD_PRIM_ALARM_PUMPS_NOT_STILL,        ACTION_ON_ENTRY,    &stateNull[0], &manageChildPrimAlmPumpNotStillEntry},   /* 17 */
+		{STATE_NULL, PARENT_NULL, CHILD_PRIM_ALARM_PUMPS_NOT_STILL,        ACTION_ALWAYS,      &stateNull[0], &manageChildPrimAlmPumpNotStillAlways},  /* 18 */
+
+		// gestisce un eventuale allarme generato quando la posizione delle pinch confrontata con quella delle protective non coincide
+		{STATE_NULL, PARENT_NULL, CHILD_PRIM_ALARM_BAD_PINCH_POS,          ACTION_ON_ENTRY,    &stateNull[0], &manageChildPrimAlmBadPinchPosEntry},    /* 19 */
+		{STATE_NULL, PARENT_NULL, CHILD_PRIM_ALARM_BAD_PINCH_POS,          ACTION_ALWAYS,      &stateNull[0], &manageChildPrimAlmBadPinchPosAlways},   /* 20 */
+
+		// gestisce un allarme generato dal pericolo di pompare aria nel filtro durante il priming
+		{STATE_NULL, PARENT_NULL, CHILD_PRIM_ALARM_SFA_AIR_DET,            ACTION_ON_ENTRY,    &stateNull[0], &manageChildPrimAlmSFAAirDetEntry},      /* 21 */
+		{STATE_NULL, PARENT_NULL, CHILD_PRIM_ALARM_SFA_AIR_DET,            ACTION_ALWAYS,      &stateNull[0], &manageChildPrimAlmSFAAirDetAlways},     /* 22 */
 		{}
 };
 
@@ -460,9 +475,11 @@ struct machineState stateState[] =
 		{STATE_PRIMING_PH_2,       PARENT_NULL, CHILD_NULL, ACTION_ON_ENTRY,                &stateParentPrimingTreatKidney1[3], &managePrimingPh2},				/* 15 */
 		{STATE_PRIMING_PH_2,       PARENT_NULL, CHILD_NULL, ACTION_ALWAYS,                  &stateParentPrimingTreatKidney1[3], &managePrimingPh2Always},		/* 16 */
 
-		// stato di trattamento kidney o liver
-		{STATE_TREATMENT_KIDNEY_1, PARENT_NULL, CHILD_NULL, ACTION_ON_ENTRY,                &stateParentTreatKidney1[17]/*[1]*/, &manageStateTreatKidney1},		/* 17 */
-		{STATE_TREATMENT_KIDNEY_1, PARENT_NULL, CHILD_NULL, ACTION_ALWAYS,                  &stateParentTreatKidney1[17]/*[1]*/, &manageStateTreatKidney1Always},/* 18 */
+		// stato di trattamento kidney o liver. Co le ultime modifiche che mi sono state richieste (partenza con BUTTON_START_TREATMENT dopo
+		// che le pompe sono ferme e le pinch chiuse) non posso andare allo stato 17 (PARENT_TREAT_WAIT_START) perche', in quello stato, aspetterebbe
+		// ancora un'altro BUTTON_START_TREATMENT. Quindi, devo andare per forza nello stato 1 (PARENT_TREAT_KIDNEY_1_INIT).
+		{STATE_TREATMENT_KIDNEY_1, PARENT_NULL, CHILD_NULL, ACTION_ON_ENTRY,                &stateParentTreatKidney1[1]/*[17]*/, &manageStateTreatKidney1},		/* 17 */
+		{STATE_TREATMENT_KIDNEY_1, PARENT_NULL, CHILD_NULL, ACTION_ALWAYS,                  &stateParentTreatKidney1[1]/*[17]*/, &manageStateTreatKidney1Always},/* 18 */
 
 		// stato di svuotamento del disposable
 		{STATE_EMPTY_DISPOSABLE,   PARENT_NULL, CHILD_NULL, ACTION_ON_ENTRY,                &stateParentEmptyDisp[1],           &manageStateEmptyDisp},			/* 19 */

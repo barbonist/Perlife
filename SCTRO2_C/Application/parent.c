@@ -267,6 +267,7 @@ void ParentFunc(void)
 				ptrFutureChild = ptrFutureParent->ptrChild;
 				LevelBuzzer = 2;
 				ParentStateGenAlarm = PARENT_PRIM_WAIT_MOT_STOP;
+				break;
 			}
 			else if(currentGuard[GUARD_EN_CLOSE_ALL_PINCH].guardValue == GUARD_VALUE_TRUE)
 			{
@@ -275,6 +276,7 @@ void ParentFunc(void)
 				ptrFutureChild = ptrFutureParent->ptrChild;
 				currentGuard[GUARD_EN_CLOSE_ALL_PINCH].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
 				currentGuard[GUARD_EN_CLOSE_ALL_PINCH].guardValue = GUARD_VALUE_FALSE;
+				break;
 			}
 
 			if(ptrCurrentParent->action == ACTION_ON_ENTRY)
