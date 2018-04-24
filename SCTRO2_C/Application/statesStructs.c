@@ -362,6 +362,13 @@ struct machineParent stateParentPrimingTreatKidney1[] =
 		/* stato per la gestione degli allarmi che si possono verificare negli stati PARENT_PRIM_WAIT_MOT_STOP, PARENT_PRIM_WAIT_PINCH_CLOSE*/
 		{STATE_NULL, PARENT_PRIMING_END_RECIRC_ALARM,    CHILD_IDLE, ACTION_ON_ENTRY, &stateChildAlarmPriming[1],  &manageParPrimEndRecAlarmEntry},	      /* 15 */
 		{STATE_NULL, PARENT_PRIMING_END_RECIRC_ALARM,    CHILD_IDLE, ACTION_ALWAYS,   &stateChildAlarmPriming[1],  &manageParPrimEndRecAlarmAlways},      /* 16 */
+
+		/* treatment aria rilevata dal sensore digitale, cerco di svuotare */
+		{STATE_NULL, PARENT_PRIM_KIDNEY_1_AIR_FILT,     CHILD_IDLE, ACTION_ON_ENTRY, &stateChildIdle[0],           &manageParentPrimAirFiltEntry},	      /* 17 */
+		{STATE_NULL, PARENT_PRIM_KIDNEY_1_AIR_FILT,     CHILD_IDLE, ACTION_ALWAYS,   &stateChildIdle[0],           &manageParentPrimAirFiltAlways},	      /* 18 */
+		/* treatment allarme durante la procedura di recupero da un allarme aria */
+		{STATE_NULL, PARENT_PRIM_KIDNEY_1_ALM_AIR_REC,  CHILD_IDLE, ACTION_ON_ENTRY, &stateChildAlarmPriming[1],   &manageParentPrimAirAlmRecEntry},	  /* 19 */
+		{STATE_NULL, PARENT_PRIM_KIDNEY_1_ALM_AIR_REC,  CHILD_IDLE, ACTION_ALWAYS,   &stateChildAlarmPriming[1],   &manageParentPrimAirAlmRecAlways},     /* 20 */
 		{}
 };
 

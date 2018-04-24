@@ -248,7 +248,8 @@ void alwaysPumpPressLoopArt(unsigned char pmpId, unsigned char *PidFirstTime)
 		actualSpeed_Art = 0;
 
 	/*vincolo la velocità massima impostata dal pid al massimo valore che non mi fa perdere il passo*/
-	if(actualSpeed_Art > (float)MAX_ART_RPM_Val)
+	if(actualSpeed_Art > (float)MAX_ART_RPM_Val &&
+	   sensor_UFLOW[0].Average_Flow_Val > (float)parameterWordSetFromGUI[PAR_SET_MAX_FLOW_PERFUSION].value)
 		actualSpeed_Art = (float)MAX_ART_RPM_Val;
 
 	/*aggiorno la velocità se è diversa dalla precedente*/
@@ -1287,7 +1288,8 @@ void alwaysPumpPressLoopVen(unsigned char pmpId, unsigned char *PidFirstTime){
 	}
 
 	/*vincolo la velocità massima impostata dal pid al massimo valore che non mi fa perdere il passo*/
-	if(actualSpeed_Ven > (float)MAX_OXYG_RPM_Val)
+	if(actualSpeed_Ven > (float)MAX_OXYG_RPM_Val &&
+	   sensor_UFLOW[1].Average_Flow_Val > (float)parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value )
 		actualSpeed_Ven = (float)MAX_OXYG_RPM_Val;
 //	if(actualSpeed_Ven > (float)MAX_OXYG_RPM)
 //		actualSpeed_Ven = (float)MAX_OXYG_RPM;

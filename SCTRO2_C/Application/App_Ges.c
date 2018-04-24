@@ -1883,6 +1883,28 @@ void manageParPrimEndRecAlarmAlways(void)
 }
 
 
+// gestione dello stato parent  PARENT_PRIM_KIDNEY_1_AIR_FILT
+void manageParentPrimAirFiltEntry(void)
+{
+	AirAlarmRecoveryState = INIT_AIR_ALARM_RECOVERY;
+
+}
+void manageParentPrimAirFiltAlways(void)
+{
+	AirAlarmRecoveryStateMach();
+}
+// gestione dello stato parent  PARENT_PRIM_KIDNEY_1_ALM_AIR_REC
+void manageParentPrimAirAlmRecEntry(void)
+{
+
+}
+void manageParentPrimAirAlmRecAlways(void)
+{
+
+}
+
+
+
 void manageParentPrimingAlarmEntry(void)
 {
 	// entro in uno stato di allarme durante il priming
@@ -4065,6 +4087,7 @@ void processMachineState(void)
 			break;
 
 		case STATE_PRIMING_PH_1_WAIT:
+			// aspetto inserimento del filtro
 			if( (currentGuard[GUARD_FILTER_INSTALLED].guardValue == GUARD_VALUE_TRUE) )
 			{
 				// il filtro e' stato montato passo alla seconda fase di priming

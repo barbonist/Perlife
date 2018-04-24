@@ -67,7 +67,7 @@ struct alarm alarmList[] =
 		// allarme pinch non posizionate correttamente (usato nello stato di trattamento)
 		{CODE_ALARM_BAD_PINCH_POS,         PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_BAD_PINCH_POS,         PRIORITY_HIGH,  500,  500, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull},	    /* 24 */
 		// allarme aria nel filtro (usato nello stato di trattamento)
-		{CODE_ALARM_SFA_PRIM_AIR_DET,      PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_SFA_PRIM_AIR_DET,      PRIORITY_HIGH,  1000, 1000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull},	    /* 25 */
+		{CODE_ALARM_SFA_PRIM_AIR_DET,      PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_SFA_PRIM_AIR_DET,      PRIORITY_HIGH,  1000, 0,   OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull},	    /* 25 */
 
 		{CODE_ALARM_MODBUS_ACTUATOR_SEND,  PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_WAIT_CONFIRM,           PRIORITY_LOW,     0,  100, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull},	    /* 26 */
 		{}
@@ -75,11 +75,11 @@ struct alarm alarmList[] =
 
 void EnablePumpNotStillAlmFunc(void)
 {
-	GlobalFlags.FlagsDef.EnablePumpNotStillAlm = 1;
+	GlobalFlags.FlagsDef.EnablePumpNotStillAlm = 0;
 }
 void EnableBadPinchPosAlmFunc(void)
 {
-	GlobalFlags.FlagsDef.EnableBadPinchPosAlm = 1;
+	GlobalFlags.FlagsDef.EnableBadPinchPosAlm = 0;
 }
 void EnablePrimAlmSFAAirDetAlmFunc(void)
 {
@@ -99,7 +99,17 @@ void DisablePrimAlmSFAAirDetAlmFunc(void)
 	GlobalFlags.FlagsDef.EnablePrimAlmSFAAirDetAlm = 0;
 }
 
-
+void DisablePrimAirAlarm(bool dis)
+{
+	if(dis)
+	{
+		GlobalFlags.FlagsDef.EnablePrimAlmSFAAirDetAlm = 0;
+	}
+	else
+	{
+		GlobalFlags.FlagsDef.EnablePrimAlmSFAAirDetAlm = 1;
+	}
+}
 
 // se dis == TRUE disabilito tutti gli allarmi aria
 void DisableAllAirAlarm(bool dis)

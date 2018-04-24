@@ -206,5 +206,6 @@ void EnablePrimAlmSFAAirDetAlmFunc(void);
 void DisablePumpNotStillAlmFunc(void);
 void DisableBadPinchPosAlmFunc(void);
 void DisablePrimAlmSFAAirDetAlmFunc(void);
+void DisablePrimAirAlarm(bool dis);
 
 #endif /* APPLICATION_ALARM_CON_H_ */

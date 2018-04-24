@@ -327,7 +327,6 @@ void manageChildPrimAlmBadPinchPosAlways(void)
 
 //--------------------------------------------------------------------------------------------------
 // L'allarme viene generato quando viene rilevata aria nella linea del filtro e sono in priming
-// Dovrei deviare la pinch del filtro sul bypass per un po e poi ritornare sul filtro
 /* Manage CHILD_PRIM_ALARM_SFA_AIR_DET entry state in priming*/
 void manageChildPrimAlmSFAAirDetEntry(void)
 {
@@ -337,17 +336,6 @@ void manageChildPrimAlmSFAAirDetEntry(void)
 void manageChildPrimAlmSFAAirDetAlways(void)
 {
 	manageChildTreatAlm1StopAllActAlways();
-	if(buttonGUITreatment[BUTTON_RESET_ALARM].state == GUI_BUTTON_RELEASED)
-	{
-		releaseGUIButton(BUTTON_RESET_ALARM);
-		EnableNextAlarm = TRUE;
-	}
-	else if(buttonGUITreatment[BUTTON_OVERRIDE_ALARM].state == GUI_BUTTON_RELEASED)
-	{
-		ForceCurrentAlarmOff();
-		releaseGUIButton(BUTTON_OVERRIDE_ALARM);
-		EnableNextAlarm = TRUE;
-	}
 }
 //--------------------------------------------------------------------------------------------------
 

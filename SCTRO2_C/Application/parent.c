@@ -215,9 +215,27 @@ void ParentFunc(void)
 					//ptrFutureParent = &stateParentPrimingTreatKidney1[1];
 					ptrFutureParent = &stateParentPrimingTreatKidney1[3];
 					ptrFutureChild = ptrFutureParent->ptrChild;
-
 					LevelBuzzer = 0;
 				}
+			}
+			else if(buttonGUITreatment[BUTTON_RESET_ALARM].state == GUI_BUTTON_RELEASED)
+			{
+				// potrei essere in allarme aria e, quindi devo far partire la pompa per buttarla via
+				releaseGUIButton(BUTTON_RESET_ALARM);
+				EnableNextAlarm = TRUE;
+				if(ptrAlarmCurrent->code == CODE_ALARM_SFA_PRIM_AIR_DET)
+				{
+					AirParentState = PARENT_TREAT_KIDNEY_1_AIR_FILT;
+					StarTimeToRejAir = timerCounterModBus;
+					TotalTimeToRejAir = 0;
+					DisablePrimAirAlarm(TRUE); // forzo la chiusura dell'allarme aria
+					// stato di gestione dell'aria nel filtro durante il priming
+					// faccio girare la pompa per un po' poi ricomincio
+					ptrFutureParent = &stateParentPrimingTreatKidney1[17];
+					ptrFutureChild = ptrFutureParent->ptrChild;
+				}
+				LevelBuzzer = 0;
+				break;
 			}
 
 			if(ptrCurrentParent->action == ACTION_ON_ENTRY)
@@ -339,6 +357,82 @@ void ParentFunc(void)
 			}
 			else if(ptrCurrentParent->action == ACTION_ALWAYS){}
 			break;
+
+			// STATI PER LA GESTIONE DELLA PROCEDURA DI RIMOZIONE DELL'ARIA DAL CIRCUITO -----------------------
+			case PARENT_PRIM_KIDNEY_1_AIR_FILT:
+				if(currentGuard[GUARD_AIR_RECOVERY_END].guardValue == GUARD_VALUE_TRUE)
+				{
+					currentGuard[GUARD_AIR_RECOVERY_END].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
+					currentGuard[GUARD_AIR_RECOVERY_END].guardValue = GUARD_VALUE_FALSE;
+					// ho rimosso l'aria dal circuito, posso ritornare nello stato di allarme in cui sono partito
+					// oppure nello stato di lavoro normale (dopo aver riabilitato gli allarmi).
+					// Decido di ripartire dalla fase iniziale del primin.
+					DisablePrimAirAlarm(FALSE);
+					ptrFutureParent = &stateParentPrimingTreatKidney1[3];
+					ptrFutureChild = ptrFutureParent->ptrChild;
+					setGUIButton(BUTTON_START_PRIMING);
+					break;
+				}
+
+				if(ptrCurrentParent->action == ACTION_ON_ENTRY)
+				{
+					/* compute future parent */
+					/* FM passo alla gestione ACTION_ALWAYS */
+					ptrFutureParent = &stateParentPrimingTreatKidney1[18];
+					ptrFutureChild = ptrFutureParent->ptrChild;
+				}
+				else if(ptrCurrentParent->action == ACTION_ALWAYS)
+				{
+				}
+
+				if(currentGuard[GUARD_ALARM_ACTIVE].guardValue == GUARD_VALUE_TRUE)
+				{
+					/* (FM) si e' verificato un allarme, durante la procedura di recupero dell'allarme aria.
+					 * Per la sua gestione uso un nuovo stato 13  */
+					ptrFutureParent = &stateParentPrimingTreatKidney1[19];
+					ptrFutureChild = ptrFutureParent->ptrChild;
+					// guardando a questo valore posso vedere il tipo di azione di sicurezza
+					// e quindi posso decidere di andare anche in un qualche altro stato ad hoc
+					// di allarme
+					//ptrAlarmCurrent->secActType
+					//TotalTimeToRejAir += msTick_elapsed(StarTimeToRejAir);
+				}
+				break;
+			case PARENT_PRIM_KIDNEY_1_ALM_AIR_REC:
+				if(currentGuard[GUARD_ALARM_ACTIVE].guardValue == GUARD_VALUE_FALSE)
+				{
+					/* FM allarme finito posso ritornare nello stato di partenza
+					 * quando si e' verificato l'allarme */
+					if(AirParentState == PARENT_TREAT_KIDNEY_1_AIR_FILT)
+					{
+						// ero nello stato recupero da allarme aria nel sensore aria on/off
+						ptrFutureParent = &stateParentPrimingTreatKidney1[17];
+						ptrFutureChild = ptrFutureParent->ptrChild;
+						StarTimeToRejAir = timerCounterModBus;
+						break;
+					}
+					else
+					{
+						ptrFutureParent = &stateParentPrimingTreatKidney1[3];
+						ptrFutureChild = ptrFutureParent->ptrChild;
+						break;
+					}
+				}
+
+				if(ptrCurrentParent->action == ACTION_ON_ENTRY)
+				{
+					/* compute future parent */
+					/* (FM) passo alla gestione ACTION_ALWAYS dell'allarme */
+					ptrFutureParent = &stateParentPrimingTreatKidney1[20];
+					ptrFutureChild = ptrFutureParent->ptrChild;
+				}
+				else if(ptrCurrentParent->action == ACTION_ALWAYS)
+				{
+					// (FM) chiamo la funzione child che gestisce lo stato di allarme
+					//ManageStateChildAlarmTreat1();
+				}
+				break;
+			//---------------------------------------------------------------------------------------------
 
 
 

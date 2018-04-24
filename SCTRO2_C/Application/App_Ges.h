@@ -133,6 +133,11 @@ void manageParPrimWaitPinchCloseEntry(void);
 void manageParPrimWaitPinchCloseAlways(void);
 void  manageParPrimEndRecAlarmEntry(void);
 void manageParPrimEndRecAlarmAlways(void);
+void manageParentPrimAirFiltEntry(void);
+void manageParentPrimAirFiltAlways(void);
+void manageParentPrimAirAlmRecEntry(void);
+void manageParentPrimAirAlmRecAlways(void);
+
 
 void manageParentPrimingAlarmEntry(void);
 void manageParentPrimingAlarmAlways(void);
@@ -242,5 +247,6 @@ CHECK_PUMP_STOP_STATE CheckPumpStopTask(CHECK_PUMP_STOP_CMD cmd);
 //CHECK_PINCH_POS_STATE CheckPinchPosTask(CHECK_PINCH_CMD cmd);
 
 void ParentFunc(void);
+void AirAlarmRecoveryStateMach(void);
 
 #endif /* APPLICATION_APP_GES_H_ */

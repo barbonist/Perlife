@@ -1375,7 +1375,7 @@ void setGUIButton(unsigned char buttonId){
 	{
 		actionFlag = 2;
 		// serve per abilitare la ricezione del successivo allarme
-		EnableNextAlarm = TRUE;
+		//EnableNextAlarm = TRUE;
 	}
 }
 
@@ -1503,7 +1503,7 @@ void setParamWordFromGUI(unsigned char parId, int value)
 	{
 		TherapyCmdArrived = 1;
 	}
-	parameterWordSetFromGUI[PAR_SET_DESIRED_DURATION].value = 20;
+	parameterWordSetFromGUI[PAR_SET_DESIRED_DURATION].value = 20; // DA RIMUOVERE SOLO PER DEBUG !!!!
 	parameterWordSetFromGUI[parId].value = value;
 
 	if(parId == PAR_SET_PRIMING_VOL_PERFUSION)
