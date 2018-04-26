@@ -403,14 +403,14 @@ enum MachineStateGuardEntry
 
 typedef struct
 {
-	unsigned char PumpFilter_1;
-	unsigned char PumpFilter_2;
-	unsigned char PumpArt_Liver_1;
-	unsigned char PumpArt_Liver_2;
-	unsigned char PumpOxy_1_1;
-	unsigned char PumpOxy_1_2;
-	unsigned char PumpOxy_2_1;
-	unsigned char PumpOxy_2_2;
+	unsigned char PumpFilter_HSens1;
+	unsigned char PumpFilter_HSens2;
+	unsigned char PumpArt_Liver_HSens1;
+	unsigned char PumpArt_Liver_HSens2;
+	unsigned char PumpOxy_1_HSens1;
+	unsigned char PumpOxy_1_HSens2;
+	unsigned char PumpOxy_2_HSens1;
+	unsigned char PumpOxy_2_HSens2;
 	unsigned char PinchFilter_Left;
 	unsigned char PinchFilter_Right;
 	unsigned char PinchArt_Left;

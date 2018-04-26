@@ -35,7 +35,7 @@ union URxCan {
 		uint8_t AirAlarm;	uint16_t AlarmCode;	uint8_t Pinch0Pos;	uint8_t Pimch1Pos;	uint8_t Pimch2Pos;	uint8_t Free1; uint8_t Free2;
 	} SRxCan3;
 	struct {
-		uint16_t SpeedPump1Rpmx10;	uint16_t SpeedPump2Rpmx10;	uint16_t SpeedPump3Rpmx10;	uint16_t SpeedPump4Rpmx10;
+		uint16_t SpeedPump0Rpmx100;	uint16_t SpeedPump1Rpmx100;	uint16_t SpeedPump2Rpmx100;	uint16_t SpeedPump3Rpmx100;
 	} SRxCan4;
 	struct {
 		uint8_t Free1;	uint8_t Free2;	uint8_t Free3;	uint8_t Free4;	uint8_t Free5;	uint8_t Free6;	uint8_t Free7;	uint8_t Free8;
@@ -63,7 +63,7 @@ union UTxCan {
 		uint8_t AirAlarm;	uint16_t AlarmCode;	uint8_t Consenso;	uint8_t Pinch0Pos;	uint8_t Pinch1Pos;	uint8_t Pinch2Pos;	uint8_t Free;
 	} STxCan2;
 	struct {
-		uint16_t SpeedPump1Rpmx10;	uint16_t SpeedPump2Rpmx10;	uint16_t SpeedPump3Rpmx10;	uint16_t SpeedPump4Rpmx10;
+		uint16_t SpeedPump0Rpmx100;	uint16_t SpeedPump1Rpmx100;	uint16_t SpeedPump2Rpmx100;	uint16_t SpeedPump3Rpmx100;
 	} STxCan3;
 	struct {
 		uint8_t Free1;	uint8_t Free2;	uint8_t Free3;	uint8_t Free4;	uint8_t Free5;	uint8_t Free6;	uint8_t Free7;	uint8_t Free8;
@@ -161,6 +161,13 @@ void onNewTubPressLevel(uint16_t Value) { 	TxCan0.STxCan0.PressLevelx100 = Value
 void onNewPressADSFLT(uint16_t  Value) 	{	TxCan0.STxCan0.PressFilter = Value;	}
 void onNewPressVen(uint16_t  Value)		{	TxCan0.STxCan0.PressVen = Value; }
 void onNewPressArt(uint16_t  Value)		{	TxCan0.STxCan0.PressArt = Value; }
+
+// incoming new RPM values
+void onNewFilterPumpRPM( uint16_t Value) 		{	TxCan3.STxCan3.SpeedPump0Rpmx100 = Value; }
+void onNewArtLiverPumpRPM( uint16_t Value )  	{	TxCan3.STxCan3.SpeedPump1Rpmx100 = Value; }
+void onNewOxy1PumpRPM( uint16_t Value )  		{	TxCan3.STxCan3.SpeedPump2Rpmx100 = Value; }
+void onNewOxy2PumpRPM( uint16_t Value )  		{	TxCan3.STxCan3.SpeedPump3Rpmx100 = Value; }
+
 
 void onNewPinchStat(ActuatorHallStatus Ahs )
 {

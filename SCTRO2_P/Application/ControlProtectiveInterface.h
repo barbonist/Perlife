@@ -16,5 +16,9 @@ void onNewPressADSFLT(uint16_t  Value);
 void onNewPressVen(uint16_t  Value);
 void onNewPressArt(uint16_t  Value);
 
+void onNewFilterPumpRPM( uint16_t Value);
+void onNewArtLiverPumpRPM( uint16_t Value);
+void onNewOxy1PumpRPM( uint16_t Value );
+void onNewOxy2PumpRPM( uint16_t Value );
 
 #endif /* CONTROLPROTECTIVEINTERFACE_H_ */

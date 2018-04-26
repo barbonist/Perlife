@@ -212,14 +212,11 @@ int main(void)
   InitSevenSeg();
   InitSensorsAccess();
   InitControlProtectiveInterface();
-
-
+  InitRPMGauge();
   for(;;)
   {
 	  ManageSwTimers();
-
 	  UpdateActuatorPosition();
-
   }
 
 
