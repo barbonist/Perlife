@@ -45,15 +45,18 @@ void InitRPMGauge(void)
 //  When ADetected == 2 and BDetected == 2  , it is possible to perform an RPM evaluation
 //  both it A B ... A found or B A .. B found
 //
-int CurrentCounter = 0;
-int TimeABms = 0;
-int TimeBAms = 0;
-int Rpmx100 = 0;
+
 
 void RPMGaugeTimer10ms()
 {
-int ADetectCnt = 0;
-int BDetectCnt = 0;
+
+static int ADetectCnt 		= 0;
+static int BDetectCnt 		= 0;
+static int CurrentCounter 	= 0;
+static int TimeABms 		= 0;
+static int TimeBAms 		= 0;
+static int Rpmx100 			= 0;
+
 
 	CurrentCounter++;
 	if(HallARise()){
@@ -79,7 +82,7 @@ int BDetectCnt = 0;
 	else if(((ADetectCnt == 2) && (BDetectCnt == 1)) || ((BDetectCnt == 2) && (ADetectCnt == 1)))
 	{
 		Rpmx100 = (60 * 1000 * 100) / (2* (TimeBAms + TimeABms));
-		if(TimeBAms <= TimeABms) Rpmx100 *= -1;
+		//if(TimeBAms <= TimeABms) Rpmx100 *= -1;
 		BDetectCnt = ADetectCnt	= 0;
 		CurrentCounter = 0;
 		onNewFilterPumpRPM((uint16_t)Rpmx100);
@@ -103,7 +106,7 @@ bool HallARise(void)
 
 bool HallBRise(void)
 {
-	  if(HallSens.PumpFilter_HSens1 != OldValB){
+	  if(HallSens.PumpFilter_HSens2 != OldValB){
 		  // something changed
 		  OldValB = HallSens.PumpFilter_HSens2;
 		  // rising or falling edge ?
