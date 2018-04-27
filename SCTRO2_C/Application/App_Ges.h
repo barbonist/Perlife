@@ -16,7 +16,7 @@
 #define MASK_SECURITY_STOP_OXYG_PUMP		0x10
 #define MASK_SECURITY_STOP_PELTIER			0x20
 
-#define SET_POINT_PRESSURE_INIT				5 //70//185//130
+#define SET_POINT_PRESSURE_INIT				0
 #define DELTA_PRESSURE						30
 #define GAIN_PRESSURE						1
 
@@ -230,7 +230,7 @@ void EEPROM_Read(LDD_FLASH_TAddress Source, LDD_TData *Dest, LDD_FLASH_TDataSize
 void CallInIdleState(void);
 word GetTotalPrimingVolumePerf(int cmd);
 void CheckOxygenationSpeed(word value);
-void CheckDepurationSpeed(word value);
+void CheckDepurationSpeed(word value, bool ForceValue);
 void GoToRecoveryParentState(int MachineParentState);
 
 void HandlePinch( int cmd);

@@ -162,8 +162,6 @@ void CallInIdleState(void)
 	PrimingDuration = 0;
 
 	// inizializza il target di pressione venosa necessaria al PID per lavorare
-	// parameterWordSetFromGUI[PAR_SET_VENOUS_PRESS_TARGET].value = SET_POINT_PRESSURE_INIT;
-	// ed parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value = 2000;
 	initSetParamInSourceCode();
 	LastOxygenationSpeed = parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value;
 	StartOxygAndDepState = 0;
@@ -191,7 +189,7 @@ void CallInIdleState(void)
 	LiquidTempContrTask(RESET_LIQUID_TEMP_CONTR_CMD);
 	PrimDurUntilOxyStart = 0;
 	FilterFlowVal = 0;
-	LastDepurationSpeed = parameterWordSetFromGUI[PAR_SET_PURIF_FLOW_TARGET].value;
+	LastDepurationSpeed = 0;
 	TreatSetPinchPosTask((TREAT_SET_PINCH_POS_CMD)T_SET_PINCH_DISABLE_CMD);
 	DisablePumpNotStillAlmFunc();
 	DisableBadPinchPosAlmFunc();
@@ -428,7 +426,7 @@ void manageStateMountDispAlways(void)
 	// se in questa fase ricevo un nuovo valore di flusso nella linea di ossigenazione lo prendo
 	// come valore attuale.
 	LastOxygenationSpeed = parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value;
-	LastDepurationSpeed = parameterWordSetFromGUI[PAR_SET_PURIF_FLOW_TARGET].value;
+	LastDepurationSpeed = 0;
 }
 
 /*--------------------------------------------------------------*/
@@ -2246,9 +2244,9 @@ void manageParentTreatAlways(void){
 			{
 				// sono nel trattamento fegato, devo impostare la pressione di lavoro del PID sull'ossigenatore.
 				// Ci pensera' poi il pid a far partire la pompa.
-			//	parameterWordSetFromGUI[PAR_SET_VENOUS_PRESS_TARGET].value = SET_POINT_PRESSURE_INIT;
 				// faccio partire la pompa di depurazione ad una velocita' prestabilita
-				setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, LIVER_PPAR_SPEED);
+				//setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, LIVER_PPAR_SPEED);
+				CheckDepurationSpeed(LastDepurationSpeed, TRUE);
 			}
 
 			releaseGUIButton(BUTTON_START_TREATMENT);
@@ -3549,11 +3547,17 @@ static void computeMachineStateGuardTreatment(void)
 		//QUESTO NON LO DEVO FARE PERCHE' IL FLUSSO E' CONTROLLATO DAL PID DURANTE IL TRATTAMENTO !!!!!!!
 		if(GetTherapyType() == KidneyTreat)
 		{
-			// controllo se e' cambiata la velocita' della pompa di ossigenazione e la aggiorno
-			CheckOxygenationSpeed(LastOxygenationSpeed);
+			if(isec > 0)
+			{
+				// controllo se e' cambiata la velocita' della pompa di ossigenazione e la aggiorno
+				CheckOxygenationSpeed(LastOxygenationSpeed);
+			}
 		}
 		else if(GetTherapyType() == LiverTreat)
-			CheckDepurationSpeed(LastDepurationSpeed);
+		{
+			if(isec > 0)
+				CheckDepurationSpeed(LastDepurationSpeed, FALSE);
+		}
 	}
 
 /*aggiunta gestione con timer per cambio stato --> da testare*/
@@ -4690,9 +4694,14 @@ void CheckOxygenationSpeed(word value)
 
 // Questa funzione deve essere chiamata solo quando sono nel trattamento fegato
 // Questa cosa deve essere fatta nelle funzioni always e non quando arriva il parametro
-void CheckDepurationSpeed(word value)
+void CheckDepurationSpeed(word value, bool ForceValue)
 {
-	if(parameterWordSetFromGUI[PAR_SET_PURIF_FLOW_TARGET].value != value)
+	if(ForceValue)
+	{
+		setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, (int)((float)parameterWordSetFromGUI[PAR_SET_PURIF_FLOW_TARGET].value / DEFAULT_ART_PUMP_GAIN * 100.0));
+		LastDepurationSpeed = parameterWordSetFromGUI[PAR_SET_PURIF_FLOW_TARGET].value;
+	}
+	else if(parameterWordSetFromGUI[PAR_SET_PURIF_FLOW_TARGET].value != value)
 	{
 		// ho ricevuto un valore del flusso di depurazione diverso dal precedente
 		// devo aggiornare la velocita' della pompa

@@ -1408,8 +1408,11 @@ void initSetParamFromGUI(void){
 }
 void initSetParamInSourceCode(void)
 {
-	parameterWordSetFromGUI[PAR_SET_VENOUS_PRESS_TARGET].value = 0;
-	parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value = 2000;
+	// QUESTA FUNZIONE ORA NON SERVE PIU' PERCHE' I DATI DEVONO ESSERE INVIATi DALLA GUI
+	// SOLO SE SONO IN SERVICE DEVO IMPOSTARE PAR_SET_VENOUS_PRESS_TARGET PERCHE' NON C'E' NELLA USER INTERFACE
+	if(Service)
+		parameterWordSetFromGUI[PAR_SET_VENOUS_PRESS_TARGET].value = 5;
+	//parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value = 2000;
 }
 
 void setParamWordFromGUI(unsigned char parId, int value)
