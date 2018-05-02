@@ -60,7 +60,7 @@ struct alarm alarmList[] =
 		// allarme differenza tra temperatura vaschetta e temperatura fluido venoso troppo alta
 		{CODE_ALARM_DELTA_TEMP_REC_VEN,    PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH,  500,  500, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull},	    /* 21 */
 		// allarme comunicazione canbus
-		{CODE_ALARM_CAN_BUS_ERROR,         PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH,  500,  500, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull},	    /* 22 */
+		{CODE_ALARM_CAN_BUS_ERROR,         PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH,  500,  0,   OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull},	    /* 22 */
 
 		// allarme pompe non completamente ferme (usato nello stato di trattamento)
 		{CODE_ALARM_PUMPS_NOT_STILL,       PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_PUMPS_NOT_STILL,       PRIORITY_HIGH,  500,  500, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull},	    /* 23 */
@@ -69,9 +69,10 @@ struct alarm alarmList[] =
 		// allarme aria nel filtro (usato nello stato di trattamento)
 		{CODE_ALARM_SFA_PRIM_AIR_DET,      PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_SFA_PRIM_AIR_DET,      PRIORITY_HIGH,  1000, 0,   OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull},	    /* 25 */
 
-		{CODE_ALARM_MODBUS_ACTUATOR_SEND,  PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_WAIT_CONFIRM,           PRIORITY_LOW,     0,  100, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull},	    /* 26 */
+		{CODE_ALARM_MODBUS_ACTUATOR_SEND,  PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_WAIT_CONFIRM,           PRIORITY_LOW,     0, 100, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull},	    /* 26 */
 		{}
 };
+
 
 void EnablePumpNotStillAlmFunc(void)
 {
@@ -152,7 +153,11 @@ void SetAllAlarmEnableFlags(void)
 	GlobalFlags.FlagsDef.EnableSAFAir = 1;
 	GlobalFlags.FlagsDef.EnableSFVAir = 1;
 	GlobalFlags.FlagsDef.EnableSFAAir = 1;
+#ifdef ENABLE_PROTECTIVE_BOARD
 	GlobalFlags.FlagsDef.EnableCANBUSErr = 1;
+#else
+	GlobalFlags.FlagsDef.EnableCANBUSErr = 0;
+#endif
 	GlobalFlags.FlagsDef.EnablePumpNotStillAlm = 0;       // viene attivato in un'altro momento
 	GlobalFlags.FlagsDef.EnableBadPinchPosAlm = 0;        // viene attivato in un'altro momento
 	GlobalFlags.FlagsDef.EnablePrimAlmSFAAirDetAlm = 0;   // viene attivato in un'altro momento
@@ -393,6 +398,20 @@ void alarmConInit(void){
 int StartAlmArrIdx = 0;
 int i_al;
 
+void EnableNextAlarmFunc(void)
+{
+	EnableNextAlarm = TRUE;
+
+	//if((ptrAlarmCurrent->active == ACTIVE_TRUE) && (ptrAlarmCurrent->code == alarmCurrent.code) && (ptrAlarmCurrent->physic == PHYSIC_TRUE))
+	if(ptrAlarmCurrent->code == alarmCurrent.code)
+	{
+		// FM l'allarme e' stato disattivato perche' non sono piu'
+		// verificate le condizioni fisiche che lo hanno generato
+		memset(&alarmCurrent, 0, sizeof(struct alarm));
+	}
+}
+
+
 void alarmEngineAlways(void)
 {
 //	static int CntTickDelay = 0;
@@ -412,6 +431,14 @@ void alarmEngineAlways(void)
 		// come nel caso di livello alto e cover.
 		return;
 	}
+//	else if((StrAlarmWritten == 2) && EnableNextAlarm)
+//	{
+//		// ho ricevuto un reset allarme da utente ma la condizione di allarme e' ancora attiva
+//		// devo reinizializzare le variabili che seguono altrimenti l'allarme non viene riproposto
+//		StrAlarmWritten = 0;
+//		StartAlmArrIdx = 0;
+//	}
+
 
 
 /*Faccio uno switch su tutta la macchina a stati in modo
@@ -750,6 +777,7 @@ void alarmEngineAlways(void)
 			StartAlmArrIdx = 0;
 			//CntTickDelay = 0;
 			EnableNextAlarm = TRUE;
+			memset(&alarmCurrent, 0, sizeof(struct alarm));
 		}
 	}
 	else if(StrAlarmWritten == 1)
@@ -997,22 +1025,37 @@ void manageAlarmLiquidLevelHigh(void)
 // pompa arteriosa in kidney
 void manageAlarmCoversPumpLiver(void)
 {
+	static unsigned char alarmList_physic_OLD = PHYSIC_FALSE;
+
 	if(GlobalFlags.FlagsDef.EnableCoversAlarm)
 	{
-		if(CoversState == 0)
-			alarmList[PURIF_COVER_OPEN].physic = PHYSIC_TRUE;
-		else
+		if(CoversState == 4)
+		{
 			alarmList[PURIF_COVER_OPEN].physic = PHYSIC_FALSE;
-
-		if(CoversState == 1)
-			alarmList[PERF_COVER_OPEN].physic = PHYSIC_TRUE;
-		else
 			alarmList[PERF_COVER_OPEN].physic = PHYSIC_FALSE;
-
-		if((CoversState == 2) || (CoversState == 3))
-			alarmList[OXYG_COVER_OPEN].physic = PHYSIC_TRUE;
-		else
 			alarmList[OXYG_COVER_OPEN].physic = PHYSIC_FALSE;
+		}
+		else
+		{
+			if(CoversState == 0)
+				alarmList[PURIF_COVER_OPEN].physic = PHYSIC_TRUE;
+			else
+				alarmList[PURIF_COVER_OPEN].physic = PHYSIC_FALSE;
+
+			if(CoversState == 1)
+				alarmList[PERF_COVER_OPEN].physic = PHYSIC_TRUE;
+			else
+				alarmList[PERF_COVER_OPEN].physic = PHYSIC_FALSE;
+
+			if((CoversState == 2) || (CoversState == 3))
+				alarmList[OXYG_COVER_OPEN].physic = PHYSIC_TRUE;
+			else
+				alarmList[OXYG_COVER_OPEN].physic = PHYSIC_FALSE;
+		}
+
+		if((alarmList_physic_OLD == PHYSIC_TRUE) && (alarmList[PERF_COVER_OPEN].physic == PHYSIC_FALSE))
+			alarmList_physic_OLD = alarmList[PERF_COVER_OPEN].physic;
+		alarmList_physic_OLD = alarmList[PERF_COVER_OPEN].physic;
 	}
 	else
 	{
@@ -1027,15 +1070,23 @@ void manageAlarmCoversPumpKidney(void)
 {
 	if(GlobalFlags.FlagsDef.EnableCoversAlarm)
 	{
-		if(CoversState == 0)
-			alarmList[PERF_COVER_OPEN].physic = PHYSIC_TRUE;
-		else
+		if(CoversState == 4)
+		{
 			alarmList[PERF_COVER_OPEN].physic = PHYSIC_FALSE;
-
-		if((CoversState == 2) || (CoversState == 3))
-			alarmList[OXYG_COVER_OPEN].physic = PHYSIC_TRUE;
-		else
 			alarmList[OXYG_COVER_OPEN].physic = PHYSIC_FALSE;
+		}
+		else
+		{
+			if(CoversState == 0)
+				alarmList[PERF_COVER_OPEN].physic = PHYSIC_TRUE;
+			else
+				alarmList[PERF_COVER_OPEN].physic = PHYSIC_FALSE;
+
+			if((CoversState == 2) || (CoversState == 3))
+				alarmList[OXYG_COVER_OPEN].physic = PHYSIC_TRUE;
+			else
+				alarmList[OXYG_COVER_OPEN].physic = PHYSIC_FALSE;
+		}
 	}
 	else
 	{
@@ -1412,6 +1463,7 @@ void alarmManageNull(void)
 		//ShowAlarmStr((int)alarmList[StartAlmArrIdx].code, " alarm");
 	}
 	else if((ptrAlarmCurrent->active == ACTIVE_TRUE) && (elapsedExitTime > ptrAlarmCurrent->exitTime))
+	//else if((ptrAlarmCurrent->active == ACTIVE_TRUE) && (elapsedExitTime > ((EnableNextAlarm) ? 0 : ptrAlarmCurrent->exitTime)))
 	{
 		// esco dalla gestione di un allarme che ha bisogno di azioni sugli attuatori
 		elapsedEntryTime = 0;
@@ -1421,7 +1473,7 @@ void alarmManageNull(void)
 
 		// FM l'allarme e' stato disattivato perche' non sono piu'
 		// verificate le condizioni fisiche che lo hanno generato
-		memset(&alarmCurrent, 0, sizeof(struct alarm));
+		//memset(&alarmCurrent, 0, sizeof(struct alarm));
 
 		manageAlarmChildGuard(ptrAlarmCurrent);
 

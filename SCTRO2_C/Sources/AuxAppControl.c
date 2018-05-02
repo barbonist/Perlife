@@ -88,12 +88,14 @@ void onNewCanBusMsg11( CANBUS_MSG_11 ReceivedCanBusMsg11){
 bool IsPinchPosOk(unsigned char *pArrPinchPos)
 {
 	bool PinchPosOk = TRUE;
+#ifdef ENABLE_PROTECTIVE_BOARD
 	if((pArrPinchPos[0] != 0xff) && (pArrPinchPos[0] != CanBusMsg11.FilterPinchPos))
 		PinchPosOk = FALSE;
 	if((pArrPinchPos[1] != 0xff) && (pArrPinchPos[1] != CanBusMsg11.ArtPinchPos))
 		PinchPosOk = FALSE;
 	if((pArrPinchPos[2] != 0xff) && (pArrPinchPos[2] != CanBusMsg11.OxygPinchPos))
 		PinchPosOk = FALSE;
+#endif
 	return PinchPosOk;
 }
 

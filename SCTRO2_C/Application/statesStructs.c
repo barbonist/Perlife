@@ -485,8 +485,9 @@ struct machineState stateState[] =
 		// stato di trattamento kidney o liver. Co le ultime modifiche che mi sono state richieste (partenza con BUTTON_START_TREATMENT dopo
 		// che le pompe sono ferme e le pinch chiuse) non posso andare allo stato 17 (PARENT_TREAT_WAIT_START) perche', in quello stato, aspetterebbe
 		// ancora un'altro BUTTON_START_TREATMENT. Quindi, devo andare per forza nello stato 1 (PARENT_TREAT_KIDNEY_1_INIT).
-		{STATE_TREATMENT_KIDNEY_1, PARENT_NULL, CHILD_NULL, ACTION_ON_ENTRY,                &stateParentTreatKidney1[1]/*[17]*/, &manageStateTreatKidney1},		/* 17 */
-		{STATE_TREATMENT_KIDNEY_1, PARENT_NULL, CHILD_NULL, ACTION_ALWAYS,                  &stateParentTreatKidney1[1]/*[17]*/, &manageStateTreatKidney1Always},/* 18 */
+		// Dato che non si puo' modificare la gui sono costretto a ritornare allo stato 17 (02__05_2018)
+		{STATE_TREATMENT_KIDNEY_1, PARENT_NULL, CHILD_NULL, ACTION_ON_ENTRY,                &stateParentTreatKidney1[17]/*[1]*/, &manageStateTreatKidney1},		/* 17 */
+		{STATE_TREATMENT_KIDNEY_1, PARENT_NULL, CHILD_NULL, ACTION_ALWAYS,                  &stateParentTreatKidney1[17]/*[1]*/, &manageStateTreatKidney1Always},/* 18 */
 
 		// stato di svuotamento del disposable
 		{STATE_EMPTY_DISPOSABLE,   PARENT_NULL, CHILD_NULL, ACTION_ON_ENTRY,                &stateParentEmptyDisp[1],           &manageStateEmptyDisp},			/* 19 */

@@ -1980,6 +1980,9 @@ TREAT_SET_PINCH_POS_TASK_STATE TreatSetPinchPosTask(TREAT_SET_PINCH_POS_CMD cmd)
 	else if( cmd == T_SET_PINCH_RESET_ALARM_CMD)
 	{
 		// vado nello stato di fine processo per proseguire nel trattamento
+		// il tasto BUTTON_START_TREATMENT lo ho gia' ricevuto, quindi, per il prossimo start
+		// devo forzarlo
+		setGUIButton(BUTTON_START_TREATMENT);
 		TreatSetPinchPosTaskState = T_SET_PINCH_END;
 		return TreatSetPinchPosTaskState;
 	}
@@ -2063,6 +2066,10 @@ TREAT_SET_PINCH_POS_TASK_STATE TreatSetPinchPosTask(TREAT_SET_PINCH_POS_CMD cmd)
 					if(CorrectPosCnt >= 3)
 					{
 						// la posizione e' identica a quella del protective per 3 volte consecutive, posso iniziare il trattamento
+						setGUIButton(BUTTON_START_TREATMENT);
+						// il tasto BUTTON_START_TREATMENT lo ho gia' ricevuto, quindi, per il prossimo start
+						// devo forzarlo
+						setGUIButton(BUTTON_START_TREATMENT);
 						TreatSetPinchPosTaskState = T_SET_PINCH_END;
 						DebugStringStr("PINCH TO ORGAN 1");
 					}
@@ -2210,6 +2217,11 @@ void manageParentTreatAlways(void){
 				currentGuard[GUARD_ENT_PAUSE_STATE_TREAT_KIDNEY_1_INIT].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
 				DebugStringStr("Stop 1");
 			}
+			if(GetTherapyType() == LiverTreat)
+			{
+				// blocco aggiornamento della pompa di ossigenazione
+				CheckDepurationSpeed(LastDepurationSpeed, FALSE, TRUE);
+			}
 		}
 		else if(buttonGUITreatment[BUTTON_STOP_PERF_PUMP].state == GUI_BUTTON_RELEASED)
 		{
@@ -2246,7 +2258,9 @@ void manageParentTreatAlways(void){
 				// Ci pensera' poi il pid a far partire la pompa.
 				// faccio partire la pompa di depurazione ad una velocita' prestabilita
 				//setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, LIVER_PPAR_SPEED);
-				CheckDepurationSpeed(LastDepurationSpeed, TRUE);
+
+				// sblocco aggiornamento della pompa di ossigenazione
+				CheckDepurationSpeed(LastDepurationSpeed, TRUE, FALSE);
 			}
 
 			releaseGUIButton(BUTTON_START_TREATMENT);
@@ -2440,6 +2454,11 @@ void manageParentTreatAlways(void){
 					currentGuard[GUARD_ENT_PAUSE_STATE_KIDNEY_1_PUMP_ON].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
 					DebugStringStr("Stop 2");
 				}
+				if(GetTherapyType() == LiverTreat)
+				{
+					// blocco aggiornamento della pompa di ossigenazione
+					CheckDepurationSpeed(LastDepurationSpeed, FALSE, TRUE);
+				}
 			}
 			else if(buttonGUITreatment[BUTTON_STOP_PERF_PUMP].state == GUI_BUTTON_RELEASED)
 			{
@@ -2510,6 +2529,9 @@ void manageParentTreatAlways(void){
 					pressSample2_Ven = MedForVenousPid;
 					pressSample1_Ven = PR_VEN_Sistolyc_mmHg;
 					pressSample2_Ven = PR_VEN_Sistolyc_mmHg;
+
+					// sblocco aggiornamento della pompa di ossigenazione
+					CheckDepurationSpeed(LastDepurationSpeed, TRUE, FALSE);
 				}
 				//GlobalFlags.FlagsDef.EnableAllAlarms = 1;
 				SetAllAlarmEnableFlags();
@@ -3556,7 +3578,10 @@ static void computeMachineStateGuardTreatment(void)
 		else if(GetTherapyType() == LiverTreat)
 		{
 			if(isec > 0)
-				CheckDepurationSpeed(LastDepurationSpeed, FALSE);
+			{
+				// aggiorno la velocita' della pompa di depurazione
+				CheckDepurationSpeed(LastDepurationSpeed, FALSE, FALSE);
+			}
 		}
 	}
 
@@ -3737,7 +3762,7 @@ void ParentEmptyDispStateMach(void)
 			   (buttonGUITreatment[BUTTON_RESET_ALARM].state == GUI_BUTTON_RELEASED))
 			{
 				if(buttonGUITreatment[BUTTON_RESET_ALARM].state == GUI_BUTTON_RELEASED)
-					EnableNextAlarm = TRUE;
+					EnableNextAlarmFunc(); //EnableNextAlarm = TRUE;
 
 				// Il ritorno allo vuotamento viene fatto solo dopo la pressione del tasto BUTTON_RESET_ALARM
 				releaseGUIButton(BUTTON_RESET_ALARM);
@@ -4694,14 +4719,22 @@ void CheckOxygenationSpeed(word value)
 
 // Questa funzione deve essere chiamata solo quando sono nel trattamento fegato
 // Questa cosa deve essere fatta nelle funzioni always e non quando arriva il parametro
-void CheckDepurationSpeed(word value, bool ForceValue)
+void CheckDepurationSpeed(word value, bool ForceValue, bool DisableUpdateCmd)
 {
+	static bool EnableUpdate = FALSE;
+	if(DisableUpdateCmd)
+	{
+		EnableUpdate = FALSE;
+		return;
+	}
+
 	if(ForceValue)
 	{
 		setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, (int)((float)parameterWordSetFromGUI[PAR_SET_PURIF_FLOW_TARGET].value / DEFAULT_ART_PUMP_GAIN * 100.0));
 		LastDepurationSpeed = parameterWordSetFromGUI[PAR_SET_PURIF_FLOW_TARGET].value;
+		EnableUpdate = TRUE;
 	}
-	else if(parameterWordSetFromGUI[PAR_SET_PURIF_FLOW_TARGET].value != value)
+	else if(EnableUpdate && (parameterWordSetFromGUI[PAR_SET_PURIF_FLOW_TARGET].value != value))
 	{
 		// ho ricevuto un valore del flusso di depurazione diverso dal precedente
 		// devo aggiornare la velocita' della pompa

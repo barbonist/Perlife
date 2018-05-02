@@ -208,4 +208,6 @@ void DisableBadPinchPosAlmFunc(void);
 void DisablePrimAlmSFAAirDetAlmFunc(void);
 void DisablePrimAirAlarm(bool dis);
 
+void EnableNextAlarmFunc(void);
+
 #endif /* APPLICATION_ALARM_CON_H_ */

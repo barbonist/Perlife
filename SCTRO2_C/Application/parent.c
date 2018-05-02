@@ -195,7 +195,7 @@ void ParentFunc(void)
 				{
 					// Il ritorno al priming viene fatto solo dopo la pressione del tasto BUTTON_RESET_ALARM
 					releaseGUIButton(BUTTON_RESET_ALARM);
-					EnableNextAlarm = TRUE;
+					EnableNextAlarmFunc(); //EnableNextAlarm = TRUE;
 //					if(GlobalFlags.FlagsDef.TankLevelHigh)
 //					{
 //						// era un allarme di troppo pieno, forzo uscita dal priming
@@ -221,10 +221,10 @@ void ParentFunc(void)
 			else if(buttonGUITreatment[BUTTON_RESET_ALARM].state == GUI_BUTTON_RELEASED)
 			{
 				// potrei essere in allarme aria e, quindi devo far partire la pompa per buttarla via
-				releaseGUIButton(BUTTON_RESET_ALARM);
-				EnableNextAlarm = TRUE;
 				if(ptrAlarmCurrent->code == CODE_ALARM_SFA_PRIM_AIR_DET)
 				{
+					releaseGUIButton(BUTTON_RESET_ALARM);
+					EnableNextAlarmFunc(); //EnableNextAlarm = TRUE;
 					AirParentState = PARENT_TREAT_KIDNEY_1_AIR_FILT;
 					StarTimeToRejAir = timerCounterModBus;
 					TotalTimeToRejAir = 0;
@@ -334,7 +334,7 @@ void ParentFunc(void)
 				{
 					// Il ritorno allo stato di partenza del priming viene fatto solo dopo la pressione del tasto BUTTON_RESET_ALARM
 					releaseGUIButton(BUTTON_RESET_ALARM);
-					EnableNextAlarm = TRUE;
+					EnableNextAlarmFunc(); //EnableNextAlarm = TRUE;
 					if(ParentStateGenAlarm == PARENT_PRIM_WAIT_PINCH_CLOSE)
 					{
 						ptrFutureParent = &stateParentPrimingTreatKidney1[13];
@@ -535,7 +535,7 @@ void ParentFunc(void)
 				if(buttonGUITreatment[BUTTON_RESET_ALARM].state == GUI_BUTTON_RELEASED)
 				{
 					releaseGUIButton(BUTTON_RESET_ALARM);
-					EnableNextAlarm = TRUE;
+					EnableNextAlarmFunc(); //EnableNextAlarm = TRUE;
 					ButtonResetRcvd = TRUE;
 					LevelBuzzer = 0;
 				}

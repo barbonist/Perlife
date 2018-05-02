@@ -1107,12 +1107,12 @@ enum paramWordSetFromSBC{
 	PAR_SET_PRESS_ART_TARGET = 0xB1,               // mmHg
 	PAR_SET_DESIRED_DURATION = 0xB3,
 	PAR_SET_MAX_FLOW_PERFUSION = 0xB7,             // ml/min
-	PAR_SET_PRESS_VEN_TARGET = 0xC2,
+	PAR_SET_VENOUS_PRESS_TARGET = 0xC2,
 	PAR_SET_PURIF_FLOW_TARGET = 0xD3,
 	PAR_SET_PURIF_UF_FLOW_TARGET = 0xE4,
 	/*da qui in poi parametri non passati dal PC ma
 	 * define sul source code definiti con 0xFX*/
-	PAR_SET_VENOUS_PRESS_TARGET = 0xF1,
+	PAR_SET_PRESS_VEN_TARGET = 0xF1,
 	PAR_SET_WORD_END_NUMBER = PAR_SET_VENOUS_PRESS_TARGET +1
 };
 
@@ -1323,8 +1323,8 @@ typedef enum{NOT_DEF = 0, NO = 1, YES = 2} PARAMETER_ACTIVE_TYPE;
 
 
 // percentuale del priming per l'inserimento del filtro
-//#define PERC_OF_PRIM_FOR_FILTER    95
-#define PERC_OF_PRIM_FOR_FILTER    50
+#define PERC_OF_PRIM_FOR_FILTER    95
+//#define PERC_OF_PRIM_FOR_FILTER    50
 
 // fattore di conversione del flusso in giri al minuto per le pompe dell'ossigenatore
 //#define OXYG_FLOW_TO_RPM_CONV 18.3
@@ -1813,5 +1813,7 @@ typedef enum
 }TREAT_SET_PINCH_POS_CMD;
 //-------------------------------------------------------------------------------
 
+// Questa define deve essere attiva se voglio rilevare l'allarme della connessione con la protective
+//#define ENABLE_PROTECTIVE_BOARD
 #endif /* SOURCES_GLOBAL_H_ */
 

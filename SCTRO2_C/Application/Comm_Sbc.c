@@ -1405,6 +1405,7 @@ void initSetParamFromGUI(void){
 	parameterWordSetFromGUI[PAR_SET_PRESS_VEN_TARGET].value = 0;
 	parameterWordSetFromGUI[PAR_SET_PURIF_FLOW_TARGET].value = 0;
 	parameterWordSetFromGUI[PAR_SET_PURIF_UF_FLOW_TARGET].value = 0;
+	parameterWordSetFromGUI[PAR_SET_VENOUS_PRESS_TARGET].value = 0;
 }
 void initSetParamInSourceCode(void)
 {
@@ -1506,7 +1507,6 @@ void setParamWordFromGUI(unsigned char parId, int value)
 	{
 		TherapyCmdArrived = 1;
 	}
-	parameterWordSetFromGUI[PAR_SET_DESIRED_DURATION].value = 20; // DA RIMUOVERE SOLO PER DEBUG !!!!
 	parameterWordSetFromGUI[parId].value = value;
 
 	if(parId == PAR_SET_PRIMING_VOL_PERFUSION)
@@ -1517,8 +1517,8 @@ void setParamWordFromGUI(unsigned char parId, int value)
 		ExpectedPrimDuration = CalcHoursMin(timesec);
 	}
 
-	// TODO solo per debug GUI
-	//parameterWordSetFromGUI[PAR_SET_DESIRED_DURATION].value = 20;
+	// TODO DA RIMUOVERE SOLO PER DEBUG GUI !!!!
+	parameterWordSetFromGUI[PAR_SET_DESIRED_DURATION].value = 20;
 }
 
 void resetParamWordFromGUI(unsigned char parId){

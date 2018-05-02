@@ -508,7 +508,7 @@ int main(void)
    SwTimerInit();
    InitTest();
    InitSevenSeg();
-   EnableNextAlarm = TRUE;
+   EnableNextAlarmFunc(); //EnableNextAlarm = TRUE;
    PeltierStarted = FALSE;
    LiquidTempContrTask(RESET_LIQUID_TEMP_CONTR_CMD);
    ExpectedPrimDuration = 0;
@@ -556,6 +556,7 @@ int main(void)
 	        	alarmEngineAlways();
 		        GenerateSBCComm();
 		        ProtectiveTask();
+		        CoversState = CheckCoverPump();
 	         }
 
 	         if(ReadKey1()) // per debug con la tastiera a bolle
@@ -690,7 +691,7 @@ int main(void)
 	          * i coperchi saranno chiusi (la funzione restituisce 4)
 	          * tolgo la condizione di allarme, SBC metterà a video il retry
 	          * e solo allora potrò far ripartire le pompe e riprendere con la macchina a stati*/
-	         CoversState = CheckCoverPump();
+	         //CoversState = CheckCoverPump();
 
 	         /********************************/
 	         /*             ADC	             */
