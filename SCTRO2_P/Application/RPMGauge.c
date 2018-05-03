@@ -12,25 +12,36 @@
 #include "ControlProtectiveInterface.h"
 
 void RPMGaugeTimer10ms(void);
-bool HallARise(void);
-bool HallBRise(void);
+bool HallARise(int PumpIndex);
+bool HallBRise(int PumpIndex);
+void ManageRPMPump(int ii);
 
+uint16_t SignedSpeedRPMx100[4] = {0,0,0,0};
 
 void InitRPMGauge(void)
 {
 	AddSwTimer(RPMGaugeTimer10ms,1,TM_REPEAT);
 }
 
+
+uint16_t GetMeasuredPumpSpeed(int PumpIndex) {
+	if (PumpIndex <= 3)
+		return SignedSpeedRPMx100[PumpIndex];
+	else
+		return 0xFFFF;
+}
+
+
 //
 //  each rotor include a couple of magnets at 180 degrees each other. Therefore  the following sequence is expected for 1 turn
 //
-//	----+-timeAB--+----------timeBA-------------------+---timeAB--+-----------TimeBA---+----------
-//     +-+                                            +-+                              +-+
-//     | |                                            | |                              | |
-// A --+ +--------------------------------------------+ +------------------------------+ +--------
-//                +-+                                            +-+
-//                | |                                            | |
-// B -------------+ +--------------------------------------------+ +------------------------------
+//	---+timeAB +-------------timeBA--------------------+timeAB-+---------------TimeBA---+----------
+//     +-----------+                                   +---------+                      +------------+
+//     |           |                                   |         |                      |            |
+// A --+           +-----------------------------------+         +----------------------+            +--------
+//             +----------+                                    +----------+
+//             |          |                                    |          !
+// B ----------+          +------------------------------------+          +-------------------------
 //
 
 //  if timeBA > timeAB ,  CCW turning is supposed
@@ -42,78 +53,99 @@ void InitRPMGauge(void)
 //
 //  ADetectedCnt is 2 when 2 times A have been detected
 //  BDetectedCnt is 2 when 2 times B have been detected
-//  When ADetected == 2 and BDetected == 2  , it is possible to perform an RPM evaluation
-//  both it A B ... A found or B A .. B found
+//  When ADetected == 2 and BDetected == 1  , it is possible to perform an RPM evaluation
+//  When ADetected == 1 and BDetected == 2  , it is possible to perform an RPM evaluation
 //
-
-
 void RPMGaugeTimer10ms()
 {
-
-static int ADetectCnt 		= 0;
-static int BDetectCnt 		= 0;
-static int CurrentCounter 	= 0;
-static int TimeABms 		= 0;
-static int TimeBAms 		= 0;
-static int Rpmx100 			= 0;
-
-
-	CurrentCounter++;
-	if(HallARise()){
-		TimeBAms = CurrentCounter * 10;
-		CurrentCounter = 0;
-		ADetectCnt++;
-	}
-	else if( HallBRise()){
-		TimeABms = CurrentCounter * 10;
-		CurrentCounter = 0;
-		BDetectCnt++;
-	}
-
-	// verify timeout --> motor stopped
-	// if rpm < 6 , send rpm = 0
-	// 6 rpm  --> 10s per round -->  5 sec per half round --> 5000 ms
-	if(CurrentCounter >= 500){
-		Rpmx100 = 0;
-		BDetectCnt = ADetectCnt	= 0;
-		CurrentCounter = 0;
-		onNewFilterPumpRPM(0);
-	}
-	else if(((ADetectCnt == 2) && (BDetectCnt == 1)) || ((BDetectCnt == 2) && (ADetectCnt == 1)))
-	{
-		Rpmx100 = (60 * 1000 * 100) / (2* (TimeBAms + TimeABms));
-		//if(TimeBAms <= TimeABms) Rpmx100 *= -1;
-		BDetectCnt = ADetectCnt	= 0;
-		CurrentCounter = 0;
-		onNewFilterPumpRPM((uint16_t)Rpmx100);
-	}
+	int ii;
+	for( ii=0; ii<4 ; ii++)
+		ManageRPMPump(ii);
 }
 
-bool OldValA = FALSE;
-bool OldValB = FALSE;
 
-bool HallARise(void)
+void ManageRPMPump(int ii)
 {
-	  if(HallSens.PumpFilter_HSens1 != OldValA){
+	static int ADetectCnt[4] 	= {0,0,0,0};
+	static int BDetectCnt[4]	= {0,0,0,0};
+	static int CurrentCounter[4] = {0,0,0,0};
+	static int TimeABms[4] 		= {0,0,0,0};
+	static int TimeBAms[4] 		= {0,0,0,0};
+	static int Rpmx100[4] 		= {0,0,0,0};
+
+
+		CurrentCounter[ii]++;
+		if(HallARise(ii)){
+			TimeBAms[ii] = CurrentCounter[ii] * 10;
+			CurrentCounter[ii] = 0;
+			ADetectCnt[ii]++;
+		}
+		else if( HallBRise(ii)){
+			TimeABms[ii] = CurrentCounter[ii] * 10;
+			CurrentCounter[ii] = 0;
+			BDetectCnt[ii]++;
+		}
+
+		// verify timeout --> motor stopped
+		// if rpm < 6 , send rpm = 0
+		// 6 rpm  --> 10s per round -->  5 sec per half round --> 5000 ms
+		if(CurrentCounter[ii] >= 500){
+			Rpmx100[ii] = 0;
+			BDetectCnt[ii] = ADetectCnt[ii]	= 0;
+			CurrentCounter[ii] = 0;
+			onNewFilterPumpRPM(0);
+		}
+		else if(((ADetectCnt[ii] == 2) && (BDetectCnt[ii] == 1)) || ((BDetectCnt[ii] == 2) && (ADetectCnt[ii] == 1)))
+		{
+			Rpmx100[ii] = (60 * 1000 * 100) / (2* (TimeBAms[ii] + TimeABms[ii]));
+			//if(TimeBAms <= TimeABms) Rpmx100 *= -1;
+			BDetectCnt[ii] = ADetectCnt[ii]	= 0;
+			CurrentCounter[ii] = 0;
+			int16_t NewVal = (int16_t)Rpmx100[ii];
+			if(TimeBAms[ii] <= TimeABms[ii]) NewVal *= -1;
+			onNewPumpRPM(NewVal, ii);
+			SignedSpeedRPMx100[ii] = NewVal; // store locally
+		}
+}
+
+
+bool* ASensorValP[4] = {
+		&HallSens.PumpFilter_HSens1,
+		&HallSens.PumpArt_Liver_HSens1,
+		&HallSens.PumpOxy_1_HSens1,
+		&HallSens.PumpOxy_2_HSens1
+};
+
+bool HallARise(int PumpIndex)
+{
+static	bool OldValA[4] = {FALSE,FALSE,FALSE,FALSE};
+	  if(*ASensorValP[PumpIndex] != OldValA[PumpIndex]){
 		  // something changed
-		  OldValA = HallSens.PumpFilter_HSens1;
+		  OldValA[PumpIndex] = *ASensorValP[PumpIndex];
 		  // rising or falling edge ?
-		  return HallSens.PumpFilter_HSens1 ? TRUE : FALSE ;
+		  return *ASensorValP[PumpIndex] ? FALSE : TRUE ;
 	  }
 	  // nothing changed
 	  return FALSE;
 }
 
-bool HallBRise(void)
-{
-	  if(HallSens.PumpFilter_HSens2 != OldValB){
-		  // something changed
-		  OldValB = HallSens.PumpFilter_HSens2;
-		  // rising or falling edge ?
-		  return HallSens.PumpFilter_HSens2 ? TRUE : FALSE ;
-	  }
-	  // nothing changed
-	  return FALSE;
+bool* BSensorValP[4] = {
+		&HallSens.PumpFilter_HSens2,
+		&HallSens.PumpArt_Liver_HSens2,
+		&HallSens.PumpOxy_1_HSens2,
+		&HallSens.PumpOxy_2_HSens2
+};
+
+bool HallBRise(int PumpIndex) {
+	static bool OldValB[4] = { FALSE, FALSE, FALSE, FALSE };
+	if (*BSensorValP[PumpIndex] != OldValB[PumpIndex]) {
+		// something changed
+		OldValB[PumpIndex] = *BSensorValP[PumpIndex];
+		// rising or falling edge ?
+		return *BSensorValP[PumpIndex] ? FALSE : TRUE;
+	}
+	// nothing changed
+	return FALSE;
 }
 
 

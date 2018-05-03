@@ -130,7 +130,15 @@ typedef enum
 }Press_sens;
 
 
+typedef enum
+{
+	SILENT  = 0,
+	LOW 	= 1,
+	MEDIUM 	= 2,
+	HIGH   	= 3,
+}BUZZER_LEVEL;
 
+BUZZER_LEVEL LevelBuzzer;
 
 
 struct Pinch_Valve {
@@ -600,6 +608,8 @@ struct tempIRSensor{
 struct tempIRSensor sensorIR_TM[3];
 struct tempIRSensor * ptrCurrent_IR_TM; /* puntatore a struttura corrente - sensore attualmente interrogato */
 struct tempIRSensor * ptrMsg_IR_TM;	/* puntatore utilizzato per spedire il messaggio */
+
+struct tempIRSensor sensorIR_TM5A;
 
 int timerCounterCheckTempIRSens;
 

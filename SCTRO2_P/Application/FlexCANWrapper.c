@@ -6,6 +6,8 @@
 //
 #include "CAN_C_P.h"
 #include "string.h"
+#include "global.h"
+#include "ControlProtectiveInterface.h"
 
 LDD_TUserData	*pUserData;
 //LDD_CAN_TFrame* FrameInP;

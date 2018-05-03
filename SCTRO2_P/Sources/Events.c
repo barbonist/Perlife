@@ -76,6 +76,9 @@ void Cpu_OnNMI(void)
 void IR_TM_COMM_OnReceiveData(void)
 {
   /* Write your code here ... */
+
+	iflag_sensTempIR_Meas_Ready = IFLAG_IRTEMP_MEASURE_READY;
+	IR_TM_COMM_SendStop();
 }
 
 /*
@@ -95,6 +98,14 @@ void IR_TM_COMM_OnReceiveData(void)
 void IR_TM_COMM_OnTransmitData(void)
 {
   /* Write your code here ... */
+	unsigned char err;
+	word ret;
+
+	err = IR_TM_COMM_RecvBlock(ptrDataTemperatureIR, 3, &ret);
+	if(iflag_sensTempIRRW == IFLAG_SENS_TEMPIR_WRITE)
+	{
+		IR_TM_COMM_SendStop();
+	}
 }
 
 /*
@@ -132,6 +143,9 @@ void IR_TM_COMM_OnArbitLost(void)
 void IR_TM_COMM_OnNACK(void)
 {
   /* Write your code here ... */
+	/*Setto il flag che indica che c'è, stato un NACK sul bus I2C quindi
+	 * devo far ripartire la trasmissione dei sensori di temperatura dall'inizio*/
+	ON_NACK_IR_TM = TRUE;
 }
 
 /*
@@ -573,6 +587,7 @@ void CAN_C_P_OnFullRxBuffer(LDD_TUserData *UserDataPtr, LDD_CAN_TMBIndex BufferI
 void TI1_100ms_OnInterrupt(void)
 {
   /* Write your code here ... */
+	timerCounterCheckTempIRSens ++;
 }
 
 /*

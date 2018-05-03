@@ -5,8 +5,8 @@
  *      Author: W15
  */
 
-#ifndef APPLICATION_TEMP_SENSIR_H_
-#define APPLICATION_TEMP_SENSIR_H_
+#ifndef APPLICATION_TEMP_SENSIR_PROTECTIVE_H_
+#define APPLICATION_TEMP_SENSIR_PROTECTIVE_H_
 
 #include "PE_Types.h"
 
@@ -53,4 +53,4 @@ unsigned char * buildCmdWriteTempSensIR(unsigned char  tempSensAddress,
 
 void alwaysIRTempSensRead(void);
 
-#endif /* APPLICATION_TEMP_SENSIR_H_ */
+#endif /* APPLICATION_TEMP_SENSIR_PROTECTIVE_H_ */

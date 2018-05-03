@@ -194,6 +194,12 @@
 
 #include "SWTimer.h"
 #include "SevenSeg.h"
+#include "FlexCanWrapper.h"
+#include "Temp_sensIR_protective.h"
+#include "SensorAccess.h"
+#include "ControlProtectiveInterface.h"
+#include "RPMGauge.h"
+#include "BubbleKeyboard.h"
 
 void InitTest(void);
 /*lint -save  -e970 Disable MISRA rule (6.3) checking. */
@@ -209,14 +215,17 @@ int main(void)
   InitCAN();
   SwTimerInit();
   InitTest();
+  initTempSensIR();
   InitSevenSeg();
   InitSensorsAccess();
   InitControlProtectiveInterface();
   InitRPMGauge();
+  InitBubbleKeyboard();
   for(;;)
   {
 	  ManageSwTimers();
 	  UpdateActuatorPosition();
+	  Manage_IR_Sens_Temp();
   }
 
 

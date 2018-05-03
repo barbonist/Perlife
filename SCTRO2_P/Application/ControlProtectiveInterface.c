@@ -12,6 +12,8 @@
 #include "SwTimer.h"
 #include "FlexCANWrapper.h"
 #include "Global.h"
+#include "ShowAlarm.h"
+#include "VerificatorRx.h"
 
 #define VAL_JOLLY16	0x5A5A
 #define VAL_JOLLY8	0x5A
@@ -32,10 +34,10 @@ union URxCan {
 		uint16_t PressOxy;	uint16_t TempFluidx10;	uint16_t TempArtx10;	uint16_t TempVenx10;
 	} SRxCan2;
 	struct {
-		uint8_t AirAlarm;	uint16_t AlarmCode;	uint8_t Pinch0Pos;	uint8_t Pimch1Pos;	uint8_t Pimch2Pos;	uint8_t Free1; uint8_t Free2;
+		uint8_t AirAlarm;	uint16_t AlarmCode;	uint8_t Pinch0Pos;	uint8_t Pinch1Pos;	uint8_t Pinch2Pos;	uint8_t Free1; uint8_t Free2;
 	} SRxCan3;
 	struct {
-		uint16_t SpeedPump0Rpmx100;	uint16_t SpeedPump1Rpmx100;	uint16_t SpeedPump2Rpmx100;	uint16_t SpeedPump3Rpmx100;
+		int16_t SpeedPump0Rpmx100;	int16_t SpeedPump1Rpmx100;	int16_t SpeedPump2Rpmx100;	int16_t SpeedPump3Rpmx100;
 	} SRxCan4;
 	struct {
 		uint8_t Free1;	uint8_t Free2;	uint8_t Free3;	uint8_t Free4;	uint8_t Free5;	uint8_t Free6;	uint8_t Free7;	uint8_t Free8;
@@ -63,7 +65,7 @@ union UTxCan {
 		uint8_t AirAlarm;	uint16_t AlarmCode;	uint8_t Consenso;	uint8_t Pinch0Pos;	uint8_t Pinch1Pos;	uint8_t Pinch2Pos;	uint8_t Free;
 	} STxCan2;
 	struct {
-		uint16_t SpeedPump0Rpmx100;	uint16_t SpeedPump1Rpmx100;	uint16_t SpeedPump2Rpmx100;	uint16_t SpeedPump3Rpmx100;
+		int16_t SpeedPump0Rpmx100;	int16_t SpeedPump1Rpmx100;	int16_t SpeedPump2Rpmx100;	int16_t SpeedPump3Rpmx100;
 	} STxCan3;
 	struct {
 		uint8_t Free1;	uint8_t Free2;	uint8_t Free3;	uint8_t Free4;	uint8_t Free5;	uint8_t Free6;	uint8_t Free7;	uint8_t Free8;
@@ -153,6 +155,7 @@ void InitControlProtectiveInterface(void)
 
 	//AddSwTimer(ManageTxCan10ms,1,TM_REPEAT);
 	AddSwTimer(ManageTxCan100ms,10,TM_REPEAT);
+	InitVerificatorRx();
 }
 
 // incoming new press values
@@ -162,11 +165,39 @@ void onNewPressADSFLT(uint16_t  Value) 	{	TxCan0.STxCan0.PressFilter = Value;	}
 void onNewPressVen(uint16_t  Value)		{	TxCan0.STxCan0.PressVen = Value; }
 void onNewPressArt(uint16_t  Value)		{	TxCan0.STxCan0.PressArt = Value; }
 
-// incoming new RPM values
-void onNewFilterPumpRPM( uint16_t Value) 		{	TxCan3.STxCan3.SpeedPump0Rpmx100 = Value; }
-void onNewArtLiverPumpRPM( uint16_t Value )  	{	TxCan3.STxCan3.SpeedPump1Rpmx100 = Value; }
-void onNewOxy1PumpRPM( uint16_t Value )  		{	TxCan3.STxCan3.SpeedPump2Rpmx100 = Value; }
-void onNewOxy2PumpRPM( uint16_t Value )  		{	TxCan3.STxCan3.SpeedPump3Rpmx100 = Value; }
+
+
+void onNewPumpRPM(int16_t Value, int PumpIndex) {
+	switch (PumpIndex) {
+	case 0:
+		TxCan3.STxCan3.SpeedPump0Rpmx100 = Value;
+		break;
+	case 1:
+		TxCan3.STxCan3.SpeedPump1Rpmx100 = Value;
+		break;
+	case 2:
+		TxCan3.STxCan3.SpeedPump2Rpmx100 = Value;
+		break;
+	case 3:
+		TxCan3.STxCan3.SpeedPump3Rpmx100 = Value;
+		break;
+	}
+}
+
+// incoming new RPM values ( reduntant funtions , for possible future use )
+void onNewFilterPumpRPM(int16_t Value) {
+	TxCan3.STxCan3.SpeedPump0Rpmx100 = Value;
+}
+//
+//void onNewArtLiverPumpRPM(int16_t Value) {
+//	TxCan3.STxCan3.SpeedPump1Rpmx100 = Value;
+//}
+//void onNewOxy1PumpRPM(int16_t Value) {
+//	TxCan3.STxCan3.SpeedPump2Rpmx100 = Value;
+//}
+//void onNewOxy2PumpRPM(int16_t Value) {
+//	TxCan3.STxCan3.SpeedPump3Rpmx100 = Value;
+//}
 
 
 void onNewPinchStat(ActuatorHallStatus Ahs )
@@ -254,20 +285,97 @@ union URxCan*	OldRxBuffCanP[8] =
 	&OldRxCan0, &OldRxCan1, &OldRxCan2, &OldRxCan3, &OldRxCan4 , &OldRxCan5 , &OldRxCan6 , &OldRxCan7
 };
 
+void NewDataRxChannel0(void);
+void NewDataRxChannel1(void);
+void NewDataRxChannel2(void);
+void NewDataRxChannel3(void);
+void NewDataRxChannel4(void);
 
-void ReceivedCanData(uint8_t *rxbuff, int rxlen, int RxChannel)
-{
-	if(( rxlen <= 8 ) && (RxChannel <= 7))
-	{
-		RetriggerAlarm();
-		memcpy( RxBuffCanP[RxChannel]->RawCanBuffer , rxbuff, rxlen);
-		if(memcmp(RxBuffCanP[RxChannel]->RawCanBuffer , OldRxBuffCanP[RxChannel]->RawCanBuffer, SIZE_CAN_BUFFER) != 0)
-		{
+void ReceivedCanData(uint8_t *rxbuff, int rxlen, int RxChannel) {
+	if ((rxlen <= 8) && (RxChannel <= 7)) {
+		RetriggerNoCANRxTxAlarm();
+		memcpy(RxBuffCanP[RxChannel]->RawCanBuffer, rxbuff, rxlen);
+		if (memcmp(RxBuffCanP[RxChannel]->RawCanBuffer,
+				OldRxBuffCanP[RxChannel]->RawCanBuffer, SIZE_CAN_BUFFER) != 0) {
 			// data changed --> trigger some action
-			memcpy(OldRxBuffCanP[RxChannel]->RawCanBuffer , RxBuffCanP[RxChannel]->RawCanBuffer, SIZE_CAN_BUFFER);
+			switch (RxChannel) {
+			case 0:
+				NewDataRxChannel0();
+				break;
+			case 1:
+				NewDataRxChannel1();
+				break;
+			case 2:
+				NewDataRxChannel2();
+				break;
+			case 3:
+				NewDataRxChannel3();
+				break;
+			case 4:
+				NewDataRxChannel4();
+				break;
+			}
+			// !! keep this statement after vals management
+			memcpy(OldRxBuffCanP[RxChannel]->RawCanBuffer,
+					RxBuffCanP[RxChannel]->RawCanBuffer, SIZE_CAN_BUFFER);
 		}
 	}
 }
 
+void NewDataRxChannel0(void) {
+	VerifyRxState(RxCan0.SRxCan0.State, RxCan0.SRxCan0.Parent,
+			RxCan0.SRxCan0.Child, RxCan0.SRxCan0.Guard);
+}
 
+void NewDataRxChannel1(void) {
+	VerifyRxPressures(RxCan1.SRxCan1.PressFilter, RxCan1.SRxCan1.PressArt,
+			RxCan1.SRxCan1.PressVen, RxCan1.SRxCan1.PressLevelx100,
+			RxCan2.SRxCan2.PressOxy);
+}
+
+void NewDataRxChannel2(void) {
+	// pressure changed
+	if (RxCan2.SRxCan2.PressOxy != OldRxCan2.SRxCan2.PressOxy) {
+		// oxy pressure changed
+		VerifyRxPressures(RxCan1.SRxCan1.PressFilter, RxCan1.SRxCan1.PressArt,
+				RxCan1.SRxCan1.PressVen, RxCan1.SRxCan1.PressLevelx100,
+				RxCan2.SRxCan2.PressOxy);
+	}
+
+	// temperature changed
+	if ((RxCan2.SRxCan2.TempArtx10 != OldRxCan2.SRxCan2.TempArtx10)
+			|| (RxCan2.SRxCan2.TempVenx10 != OldRxCan2.SRxCan2.TempVenx10)
+			|| (RxCan2.SRxCan2.TempFluidx10 != OldRxCan2.SRxCan2.TempFluidx10)) {
+
+		VerifyRxTemperatures(RxCan2.SRxCan2.TempArtx10,
+				RxCan2.SRxCan2.TempFluidx10, RxCan2.SRxCan2.TempVenx10);
+	}
+}
+
+void NewDataRxChannel3(void) {
+	// air alarm
+	if (RxCan3.SRxCan3.AirAlarm != OldRxCan3.SRxCan3.AirAlarm) {
+		VerifyRxAirAlarm(RxCan3.SRxCan3.AirAlarm);
+	}
+
+	// Alarm code
+	if (RxCan3.SRxCan3.AlarmCode != OldRxCan3.SRxCan3.AlarmCode) {
+		ManageRxAlarmCode(RxCan3.SRxCan3.AlarmCode);
+	}
+
+	// pinch pos
+	if ((RxCan3.SRxCan3.Pinch0Pos != OldRxCan3.SRxCan3.Pinch0Pos)
+			|| (RxCan3.SRxCan3.Pinch1Pos != OldRxCan3.SRxCan3.Pinch1Pos)
+			|| (RxCan3.SRxCan3.Pinch2Pos != OldRxCan3.SRxCan3.Pinch2Pos)) {
+
+		VerifyRxPinchPos(RxCan3.SRxCan3.Pinch0Pos, RxCan3.SRxCan3.Pinch1Pos,
+				RxCan3.SRxCan3.Pinch2Pos);
+	}
+}
+
+void NewDataRxChannel4(void) {
+	VerifyRxPumpsRpm(RxCan4.SRxCan4.SpeedPump0Rpmx100,
+			RxCan4.SRxCan4.SpeedPump1Rpmx100, RxCan4.SRxCan4.SpeedPump2Rpmx100,
+			RxCan4.SRxCan4.SpeedPump3Rpmx100);
+}
 
