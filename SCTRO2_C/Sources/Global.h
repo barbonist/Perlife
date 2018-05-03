@@ -421,6 +421,8 @@ enum Parent {
 	PARENT_PRIM_WAIT_MOT_STOP,
 	PARENT_PRIM_WAIT_PINCH_CLOSE,
 	PARENT_PRIMING_END_RECIRC_ALARM,
+	PARENT_PRIM_KIDNEY_1_AIR_FILT,
+	PARENT_PRIM_KIDNEY_1_ALM_AIR_REC,
 	PARENT_END_NUMBER,
 };
 
@@ -466,6 +468,10 @@ enum Child {
 	CHILD_1,
 	CHILD_2,
 	CHILD_3,
+	CHILD_PRIM_ALARM_PUMPS_NOT_STILL,
+	CHILD_PRIM_ALARM_BAD_PINCH_POS,
+	CHILD_PRIM_ALARM_SFA_AIR_DET,
+	CHILD_TREAT_ALARM_BAD_PINCH_POS,
 	CHILD_END_NUMBER,
 };
 
@@ -565,6 +571,9 @@ enum MachineStateGuardId {
 	GUARD_ALARM_SFV_AIR,
 	GUARD_ALARM_SFA_AIR,
 	GUARD_ALARM_STOP_ALL_ACT_WAIT_CMD,
+	GUARD_ALARM_PUMPS_NOT_STILL,
+	GUARD_ALARM_BAD_PINCH_POS,
+	GUARD_ALARM_SFA_PRIM_AIR_DET,
 	/*********************/
 	/* CHILD LEVEL GUARD */
 	/*********************/
@@ -633,8 +642,8 @@ struct alarm {
 	unsigned char	physic;			/* alarm physic condition */
 	unsigned char	active;			/* alarm active condition */
 	unsigned char	type;			/* alarm type: control, protection */
-	unsigned short	secActType;		/* alarm security action: type of secuirty action required
-	                                   (FM modificato da char ad unsigned short perche' ho bisogno di piu' bit per distinguere i vari allarmi*/
+	unsigned int	secActType;		/* alarm security action: type of secuirty action required
+	                                   (FM modificato da char ad unsigned int perche' ho bisogno di piu' bit per distinguere i vari allarmi*/
 	unsigned char	priority;		/* alarm priority: low, medium, right */
 	unsigned short	entryTime;		/* entry time in ms */
 	unsigned short	exitTime;		/* exit time in ms */
@@ -1098,12 +1107,12 @@ enum paramWordSetFromSBC{
 	PAR_SET_PRESS_ART_TARGET = 0xB1,               // mmHg
 	PAR_SET_DESIRED_DURATION = 0xB3,
 	PAR_SET_MAX_FLOW_PERFUSION = 0xB7,             // ml/min
-	PAR_SET_PRESS_VEN_TARGET = 0xC2,
+	PAR_SET_VENOUS_PRESS_TARGET = 0xC2,
 	PAR_SET_PURIF_FLOW_TARGET = 0xD3,
 	PAR_SET_PURIF_UF_FLOW_TARGET = 0xE4,
 	/*da qui in poi parametri non passati dal PC ma
 	 * define sul source code definiti con 0xFX*/
-	PAR_SET_VENOUS_PRESS_TARGET = 0xF1,
+	PAR_SET_PRESS_VEN_TARGET = 0xF1,
 	PAR_SET_WORD_END_NUMBER = PAR_SET_VENOUS_PRESS_TARGET +1
 };
 
@@ -1314,8 +1323,8 @@ typedef enum{NOT_DEF = 0, NO = 1, YES = 2} PARAMETER_ACTIVE_TYPE;
 
 
 // percentuale del priming per l'inserimento del filtro
-//#define PERC_OF_PRIM_FOR_FILTER    95
-#define PERC_OF_PRIM_FOR_FILTER    50
+#define PERC_OF_PRIM_FOR_FILTER    95
+//#define PERC_OF_PRIM_FOR_FILTER    50
 
 // fattore di conversione del flusso in giri al minuto per le pompe dell'ossigenatore
 //#define OXYG_FLOW_TO_RPM_CONV 18.3
@@ -1601,6 +1610,14 @@ typedef struct
 
 	unsigned int TankLevelHigh              : 1;    // livello del liquido supera il massimo
 	unsigned int ChildAlmAndWaitCmdActive   : 1;
+	unsigned int EnablePumpNotStillAlm      : 1;    // Abilito allarme di pompe non ferme. Viene preso in considerazione alla fine
+	                                                // del ricircolo prima di attaccare l'organo.
+	unsigned int EnableBadPinchPosAlm       : 1;    // abilito allarme di pinch non posizionate correttamente. Viene preso in
+	                                                // considerazione alla fine del ricircolo prima di attaccare l'organo e prima di
+	                                                // iniziare un trattamento.
+	unsigned int EnablePrimAlmSFAAirDetAlm  : 1;    // abilito allarme di possibile aria nel filtro. Viene preso in
+	                                                // considerazione dal momento in cui viene installato il filtro alla fine del
+	                                                // priming
 }FLAGS_DEF;
 
 typedef union
@@ -1796,5 +1813,7 @@ typedef enum
 }TREAT_SET_PINCH_POS_CMD;
 //-------------------------------------------------------------------------------
 
+// Questa define deve essere attiva se voglio rilevare l'allarme della connessione con la protective
+//#define ENABLE_PROTECTIVE_BOARD
 #endif /* SOURCES_GLOBAL_H_ */
 

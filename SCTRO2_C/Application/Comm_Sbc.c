@@ -1371,8 +1371,19 @@ void setGUIButton(unsigned char buttonId){
 	//buttonGUITreatment[buttonId].state = GUI_BUTTON_PRESSED;
 	buttonGUITreatment[buttonId].state = GUI_BUTTON_RELEASED;
 	actionFlag = 2;
-	if(buttonId == BUTTON_RESET_ALARM)
+	if((buttonId == BUTTON_RESET_ALARM) || (buttonId == BUTTON_OVERRIDE_ALARM))
+	{
 		actionFlag = 2;
+		// serve per abilitare la ricezione del successivo allarme
+		//EnableNextAlarm = TRUE;
+	}
+
+	if((buttonId == BUTTON_RESET_ALARM) && alarmCurrent.code)
+	{
+		// dovro' uscire dalla condizione di allarme e quindi azzero subito l'allarme
+		// inviato alla gui
+		//memset(&alarmCurrent, 0, sizeof(struct alarm));
+	}
 }
 
 unsigned char getGUIButton(unsigned char buttonId)
@@ -1401,11 +1412,15 @@ void initSetParamFromGUI(void){
 	parameterWordSetFromGUI[PAR_SET_PRESS_VEN_TARGET].value = 0;
 	parameterWordSetFromGUI[PAR_SET_PURIF_FLOW_TARGET].value = 0;
 	parameterWordSetFromGUI[PAR_SET_PURIF_UF_FLOW_TARGET].value = 0;
+	parameterWordSetFromGUI[PAR_SET_VENOUS_PRESS_TARGET].value = 0;
 }
 void initSetParamInSourceCode(void)
 {
-	parameterWordSetFromGUI[PAR_SET_VENOUS_PRESS_TARGET].value = 0;
-	parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value = 2000;
+	// QUESTA FUNZIONE ORA NON SERVE PIU' PERCHE' I DATI DEVONO ESSERE INVIATi DALLA GUI
+	// SOLO SE SONO IN SERVICE DEVO IMPOSTARE PAR_SET_VENOUS_PRESS_TARGET PERCHE' NON C'E' NELLA USER INTERFACE
+	if(Service)
+		parameterWordSetFromGUI[PAR_SET_VENOUS_PRESS_TARGET].value = 5;
+	//parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value = 2000;
 }
 
 void setParamWordFromGUI(unsigned char parId, int value)
@@ -1499,7 +1514,6 @@ void setParamWordFromGUI(unsigned char parId, int value)
 	{
 		TherapyCmdArrived = 1;
 	}
-	parameterWordSetFromGUI[PAR_SET_DESIRED_DURATION].value = 20;
 	parameterWordSetFromGUI[parId].value = value;
 
 	if(parId == PAR_SET_PRIMING_VOL_PERFUSION)
@@ -1510,8 +1524,8 @@ void setParamWordFromGUI(unsigned char parId, int value)
 		ExpectedPrimDuration = CalcHoursMin(timesec);
 	}
 
-	// TODO solo per debug GUI
-	//parameterWordSetFromGUI[PAR_SET_DESIRED_DURATION].value = 20;
+	// TODO DA RIMUOVERE SOLO PER DEBUG GUI !!!!
+	parameterWordSetFromGUI[PAR_SET_DESIRED_DURATION].value = 20;
 }
 
 void resetParamWordFromGUI(unsigned char parId){

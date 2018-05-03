@@ -162,8 +162,6 @@ void CallInIdleState(void)
 	PrimingDuration = 0;
 
 	// inizializza il target di pressione venosa necessaria al PID per lavorare
-	// parameterWordSetFromGUI[PAR_SET_VENOUS_PRESS_TARGET].value = SET_POINT_PRESSURE_INIT;
-	// ed parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value = 2000;
 	initSetParamInSourceCode();
 	LastOxygenationSpeed = parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value;
 	StartOxygAndDepState = 0;
@@ -191,7 +189,11 @@ void CallInIdleState(void)
 	LiquidTempContrTask(RESET_LIQUID_TEMP_CONTR_CMD);
 	PrimDurUntilOxyStart = 0;
 	FilterFlowVal = 0;
-	LastDepurationSpeed = parameterWordSetFromGUI[PAR_SET_PURIF_FLOW_TARGET].value;
+	LastDepurationSpeed = 0;
+	TreatSetPinchPosTask((TREAT_SET_PINCH_POS_CMD)T_SET_PINCH_DISABLE_CMD);
+	DisablePumpNotStillAlmFunc();
+	DisableBadPinchPosAlmFunc();
+	DisablePrimAlmSFAAirDetAlmFunc();
 }
 
 
@@ -424,7 +426,7 @@ void manageStateMountDispAlways(void)
 	// se in questa fase ricevo un nuovo valore di flusso nella linea di ossigenazione lo prendo
 	// come valore attuale.
 	LastOxygenationSpeed = parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value;
-	LastDepurationSpeed = parameterWordSetFromGUI[PAR_SET_PURIF_FLOW_TARGET].value;
+	LastDepurationSpeed = 0;
 }
 
 /*--------------------------------------------------------------*/
@@ -590,6 +592,9 @@ void manageStateEmptyDisp(void)
 		// ho selezionato il fegato, quindi devo chiudere anche questa
 		setPinchPositionHighLevel(PINCH_2WPVV, MODBUS_PINCH_LEFT_OPEN);
 	}
+	DisablePumpNotStillAlmFunc();
+	DisableBadPinchPosAlmFunc();
+	DisablePrimAlmSFAAirDetAlmFunc();
 }
 
 void manageStateEmptyDispAlways(void)
@@ -893,6 +898,8 @@ void computeMachineStateGuardPriming_1_Wait(void)
 	if( buttonGUITreatment[BUTTON_PRIMING_FILT_INS_CONFIRM].state == GUI_BUTTON_RELEASED)
 	{
 		FilterSelected = TRUE;
+		// abilito allarme di aria nel filtro durante il priming
+		EnablePrimAlmSFAAirDetAlmFunc();
 		currentGuard[GUARD_FILTER_INSTALLED].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
 		releaseGUIButton(BUTTON_PRIMING_FILT_INS_CONFIRM);
 		// forzo anche uno start priming per il nuovo stato per far partire subito le pompe
@@ -1770,6 +1777,8 @@ bool StopMotorTimeOut;
 // controllo che tutte le pompe siano ferme altrimenti do un allarme
 void manageParPrimWaitMotStopEntry(void)
 {
+	// abilito allarme di pompe non ferme
+	EnablePumpNotStillAlmFunc();
 	CheckPumpStopTask((CHECK_PUMP_STOP_CMD)INIT_CHECK_SEQ_CMD);
 	MotStopTicksElapsed = 0;
 	StopMotorTimeOut = FALSE;
@@ -1783,7 +1792,12 @@ void manageParPrimWaitMotStopEntryAlways(void)
 	{
 		// passo alla chiusura totale delle due pinch connesse all'organo
 		currentGuard[GUARD_EN_CLOSE_ALL_PINCH].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
-		DebugStringStr("PRESS BUTT_ST_TREAT");
+		// disabilito allarme di pompe non ferme
+		DisablePumpNotStillAlmFunc();
+		// disabilito allarme di aria nel filtro durante il priming
+		DisablePrimAlmSFAAirDetAlmFunc();
+
+		DebugStringStr("PUMPS STOPPED");
 	}
 	else if(MotStopTicksElapsed > 100)
 	{
@@ -1797,6 +1811,10 @@ void manageParPrimWaitMotStopEntryAlways(void)
 		// non dovrebbe servire resettare la macchina a stati
 		//CheckPumpStopTask((CHECK_PUMP_STOP_CMD)NO_CHECK_PUMP_STOP_CMD);
 		currentGuard[GUARD_ABANDON_PRIMING].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+		// disabilito allarme di pompe non ferme
+		DisablePumpNotStillAlmFunc();
+		// disabilito allarme di aria nel filtro durante il priming
+		DisablePrimAlmSFAAirDetAlmFunc();
 	}
 }
 
@@ -1822,6 +1840,8 @@ void manageParPrimWaitPinchCloseEntry(void)
 		// ho selezionato il fegato, quindi devo chiudere anche questa
 		setPinchPositionHighLevel(PINCH_2WPVV, MODBUS_PINCH_POS_CLOSED);
 	}
+	// abilito allarme di pinch posizionate male
+	EnableBadPinchPosAlmFunc();
 }
 
 void manageParPrimWaitPinchCloseAlways(void)
@@ -1832,6 +1852,11 @@ void manageParPrimWaitPinchCloseAlways(void)
 	{
 		// le pinch sono chiuse posso passare al trattamento
 		currentGuard[GUARD_ENABLE_TREATMENT_KIDNEY_1].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+		// preparo la macchina a stati per il controllo delle pinch aperte nella posizione richiesta per lo stato di trattamento
+		TreatSetPinchPosTask((TREAT_SET_PINCH_POS_CMD)T_SET_PINCH_RESET_CMD);
+		// disabilito allarme di pinch non posizionate correttamente
+		DisableBadPinchPosAlmFunc();
+		DebugStringStr("PINCH CLOSED");
 	}
 
 	if(buttonGUITreatment[BUTTON_PRIMING_ABANDON].state == GUI_BUTTON_RELEASED)
@@ -1840,6 +1865,8 @@ void manageParPrimWaitPinchCloseAlways(void)
 		// non dovrebbe servire resettare la macchina a stati
 		//CheckPumpStopTask((CHECK_PUMP_STOP_CMD)NO_CHECK_PUMP_STOP_CMD);
 		currentGuard[GUARD_ABANDON_PRIMING].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+		// disabilito allarme di pinch non posizionate correttamente
+		DisableBadPinchPosAlmFunc();
 	}
 }
 
@@ -1852,6 +1879,28 @@ void manageParPrimEndRecAlarmAlways(void)
 {
 
 }
+
+
+// gestione dello stato parent  PARENT_PRIM_KIDNEY_1_AIR_FILT
+void manageParentPrimAirFiltEntry(void)
+{
+	AirAlarmRecoveryState = INIT_AIR_ALARM_RECOVERY;
+
+}
+void manageParentPrimAirFiltAlways(void)
+{
+	AirAlarmRecoveryStateMach();
+}
+// gestione dello stato parent  PARENT_PRIM_KIDNEY_1_ALM_AIR_REC
+void manageParentPrimAirAlmRecEntry(void)
+{
+
+}
+void manageParentPrimAirAlmRecAlways(void)
+{
+
+}
+
 
 
 void manageParentPrimingAlarmEntry(void)
@@ -1897,7 +1946,6 @@ void ResetTreatSetPinchPosTaskAlm(void)
 		TreatSetPinchPosTask((TREAT_SET_PINCH_POS_CMD)T_SET_PINCH_RESET_ALARM_CMD);
 }
 
-
 // questo task serve per posizionare le pinch e verificare il loro posizionamento
 // prima di iniziare il trattamento. Questo processo deve partire quando l'utente
 // preme il tasto BUTTON_START_TREATMENT.
@@ -1932,6 +1980,9 @@ TREAT_SET_PINCH_POS_TASK_STATE TreatSetPinchPosTask(TREAT_SET_PINCH_POS_CMD cmd)
 	else if( cmd == T_SET_PINCH_RESET_ALARM_CMD)
 	{
 		// vado nello stato di fine processo per proseguire nel trattamento
+		// il tasto BUTTON_START_TREATMENT lo ho gia' ricevuto, quindi, per il prossimo start
+		// devo forzarlo
+		setGUIButton(BUTTON_START_TREATMENT);
 		TreatSetPinchPosTaskState = T_SET_PINCH_END;
 		return TreatSetPinchPosTaskState;
 	}
@@ -1969,6 +2020,7 @@ TREAT_SET_PINCH_POS_TASK_STATE TreatSetPinchPosTask(TREAT_SET_PINCH_POS_CMD cmd)
 					setPinchPositionHighLevel(PINCH_2WPVV, MODBUS_PINCH_LEFT_OPEN);
 				}
 				TreatSetPinchPosTaskState = T_SET_PINCH_WAIT_POS;
+				DebugStringStr("PINCH TO ORGAN");
 			}
 			break;
 		case T_SET_PINCH_WAIT_POS:
@@ -2014,7 +2066,11 @@ TREAT_SET_PINCH_POS_TASK_STATE TreatSetPinchPosTask(TREAT_SET_PINCH_POS_CMD cmd)
 					if(CorrectPosCnt >= 3)
 					{
 						// la posizione e' identica a quella del protective per 3 volte consecutive, posso iniziare il trattamento
+						// il tasto BUTTON_START_TREATMENT lo ho gia' ricevuto, quindi, per il prossimo start
+						// devo forzarlo
+						setGUIButton(BUTTON_START_TREATMENT);
 						TreatSetPinchPosTaskState = T_SET_PINCH_END;
+						DebugStringStr("PINCH TO ORGAN 1");
 					}
 				}
 				else
@@ -2087,7 +2143,6 @@ void manageParentTreatEntry(void){
 		setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, 0);
 		pumpPerist[3].entry = 1;
 	}
-	TreatSetPinchPosTask((TREAT_SET_PINCH_POS_CMD)T_SET_PINCH_RESET_CMD);
 }
 
 void manageParentTreatAlways(void){
@@ -2096,14 +2151,18 @@ void manageParentTreatAlways(void){
 		int speed = 0;
 		static int timerCopy = 0;
 
-		TREAT_SET_PINCH_POS_TASK_STATE TreatSePinchPosTaskStat;
-		TreatSePinchPosTaskStat = TreatSetPinchPosTask((TREAT_SET_PINCH_POS_CMD)T_SET_PINCH_NO_CMD);
-		if((TreatSePinchPosTaskStat == T_SET_PINCH_ALARM) ||
-		   (TreatSePinchPosTaskStat != T_SET_PINCH_END) &&
-		   (TreatSePinchPosTaskStat != T_SET_PINCH_DISABLE))
+		//if(ptrCurrentParent->parent == PARENT_TREAT_KIDNEY_1_INIT)
 		{
-			// non ho ancora terminato l'inizializzazione delle pinch oppure c'e' un allarme sul posizionamento delle pinch
-			return;
+			// l'operazione che segue, controll
+			TREAT_SET_PINCH_POS_TASK_STATE TreatSePinchPosTaskStat;
+			TreatSePinchPosTaskStat = TreatSetPinchPosTask((TREAT_SET_PINCH_POS_CMD)T_SET_PINCH_NO_CMD);
+			if((TreatSePinchPosTaskStat == T_SET_PINCH_ALARM) ||
+			   (TreatSePinchPosTaskStat != T_SET_PINCH_END) &&
+			   (TreatSePinchPosTaskStat != T_SET_PINCH_DISABLE))
+			{
+				// non ho ancora terminato l'inizializzazione delle pinch oppure c'e' un allarme sul posizionamento delle pinch
+				return;
+			}
 		}
 
 		//manage pump
@@ -2157,6 +2216,11 @@ void manageParentTreatAlways(void){
 				currentGuard[GUARD_ENT_PAUSE_STATE_TREAT_KIDNEY_1_INIT].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
 				DebugStringStr("Stop 1");
 			}
+			if(GetTherapyType() == LiverTreat)
+			{
+				// blocco aggiornamento della pompa di ossigenazione
+				CheckDepurationSpeed(LastDepurationSpeed, FALSE, TRUE);
+			}
 		}
 		else if(buttonGUITreatment[BUTTON_STOP_PERF_PUMP].state == GUI_BUTTON_RELEASED)
 		{
@@ -2191,9 +2255,11 @@ void manageParentTreatAlways(void){
 			{
 				// sono nel trattamento fegato, devo impostare la pressione di lavoro del PID sull'ossigenatore.
 				// Ci pensera' poi il pid a far partire la pompa.
-			//	parameterWordSetFromGUI[PAR_SET_VENOUS_PRESS_TARGET].value = SET_POINT_PRESSURE_INIT;
 				// faccio partire la pompa di depurazione ad una velocita' prestabilita
-				setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, LIVER_PPAR_SPEED);
+				//setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, LIVER_PPAR_SPEED);
+
+				// sblocco aggiornamento della pompa di ossigenazione
+				CheckDepurationSpeed(LastDepurationSpeed, TRUE, FALSE);
 			}
 
 			releaseGUIButton(BUTTON_START_TREATMENT);
@@ -2387,6 +2453,11 @@ void manageParentTreatAlways(void){
 					currentGuard[GUARD_ENT_PAUSE_STATE_KIDNEY_1_PUMP_ON].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
 					DebugStringStr("Stop 2");
 				}
+				if(GetTherapyType() == LiverTreat)
+				{
+					// blocco aggiornamento della pompa di ossigenazione
+					CheckDepurationSpeed(LastDepurationSpeed, FALSE, TRUE);
+				}
 			}
 			else if(buttonGUITreatment[BUTTON_STOP_PERF_PUMP].state == GUI_BUTTON_RELEASED)
 			{
@@ -2457,6 +2528,9 @@ void manageParentTreatAlways(void){
 					pressSample2_Ven = MedForVenousPid;
 					pressSample1_Ven = PR_VEN_Sistolyc_mmHg;
 					pressSample2_Ven = PR_VEN_Sistolyc_mmHg;
+
+					// sblocco aggiornamento della pompa di ossigenazione
+					CheckDepurationSpeed(LastDepurationSpeed, TRUE, FALSE);
 				}
 				//GlobalFlags.FlagsDef.EnableAllAlarms = 1;
 				SetAllAlarmEnableFlags();
@@ -2597,11 +2671,15 @@ void manageParentTreatAlways(void){
 				releaseGUIButton(BUTTON_START_TREATMENT);
 				if(ptrCurrentParent->parent == PARENT_TREAT_WAIT_START)
 				{
+					// preparo la macchina a stati per il controllo delle pinch aperte nella posizione richiesta per lo stato di trattamento
+					TreatSetPinchPosTask((TREAT_SET_PINCH_POS_CMD)T_SET_PINCH_RESET_CMD);
 					currentGuard[GUARD_ENABLE_STATE_TREAT_KIDNEY_1_INIT].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
 					DebugStringStr("Start (init)");
 				}
 				else
 				{
+					// preparo la macchina a stati per il controllo delle pinch aperte nella posizione richiesta per lo stato di trattamento
+					TreatSetPinchPosTask((TREAT_SET_PINCH_POS_CMD)T_SET_PINCH_RESET_CMD);
 					currentGuard[GUARD_ENABLE_STATE_KIDNEY_1_PUMP_ON].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
 					DebugStringStr("Start (run)");
 				}
@@ -3490,11 +3568,20 @@ static void computeMachineStateGuardTreatment(void)
 		//QUESTO NON LO DEVO FARE PERCHE' IL FLUSSO E' CONTROLLATO DAL PID DURANTE IL TRATTAMENTO !!!!!!!
 		if(GetTherapyType() == KidneyTreat)
 		{
-			// controllo se e' cambiata la velocita' della pompa di ossigenazione e la aggiorno
-			CheckOxygenationSpeed(LastOxygenationSpeed);
+			if(isec > 0)
+			{
+				// controllo se e' cambiata la velocita' della pompa di ossigenazione e la aggiorno
+				CheckOxygenationSpeed(LastOxygenationSpeed);
+			}
 		}
 		else if(GetTherapyType() == LiverTreat)
-			CheckDepurationSpeed(LastDepurationSpeed);
+		{
+			if(isec > 0)
+			{
+				// aggiorno la velocita' della pompa di depurazione
+				CheckDepurationSpeed(LastDepurationSpeed, FALSE, FALSE);
+			}
+		}
 	}
 
 /*aggiunta gestione con timer per cambio stato --> da testare*/
@@ -3674,7 +3761,7 @@ void ParentEmptyDispStateMach(void)
 			   (buttonGUITreatment[BUTTON_RESET_ALARM].state == GUI_BUTTON_RELEASED))
 			{
 				if(buttonGUITreatment[BUTTON_RESET_ALARM].state == GUI_BUTTON_RELEASED)
-					EnableNextAlarm = TRUE;
+					EnableNextAlarmFunc(); //EnableNextAlarm = TRUE;
 
 				// Il ritorno allo vuotamento viene fatto solo dopo la pressione del tasto BUTTON_RESET_ALARM
 				releaseGUIButton(BUTTON_RESET_ALARM);
@@ -4028,6 +4115,7 @@ void processMachineState(void)
 			break;
 
 		case STATE_PRIMING_PH_1_WAIT:
+			// aspetto inserimento del filtro
 			if( (currentGuard[GUARD_FILTER_INSTALLED].guardValue == GUARD_VALUE_TRUE) )
 			{
 				// il filtro e' stato montato passo alla seconda fase di priming
@@ -4406,6 +4494,21 @@ void processMachineState(void)
             	/* (FM) risolvo la situazione di allarme andando  a spegnere tutti gli attuatori */
                 ptrFutureChild = &stateChildAlarmPriming[15];
             }
+            else if(currentGuard[GUARD_ALARM_PUMPS_NOT_STILL].guardValue == GUARD_VALUE_TRUE)
+            {
+            	/* (FM) risolvo la situazione di allarme andando  a spegnere tutti gli attuatori */
+                ptrFutureChild = &stateChildAlarmPriming[17];
+            }
+            else if(currentGuard[GUARD_ALARM_BAD_PINCH_POS].guardValue == GUARD_VALUE_TRUE)
+            {
+            	/* (FM) risolvo la situazione di allarme andando  a spegnere tutti gli attuatori */
+                ptrFutureChild = &stateChildAlarmPriming[19];
+            }
+            else if(currentGuard[GUARD_ALARM_SFA_PRIM_AIR_DET].guardValue == GUARD_VALUE_TRUE)
+            {
+            	/* (FM) risolvo la situazione di allarme andando  a spegnere tutti gli attuatori */
+                ptrFutureChild = &stateChildAlarmPriming[21];
+            }
 			break;
 
 		case CHILD_PRIMING_ALARM_STOP_PERFUSION:
@@ -4503,6 +4606,36 @@ void processMachineState(void)
 			}
 			break;
 
+		case CHILD_PRIM_ALARM_PUMPS_NOT_STILL:
+			if(ptrCurrentChild->action == ACTION_ON_ENTRY)
+			{
+				ptrFutureChild = &stateChildAlarmPriming[18];
+			}
+            else if( currentGuard[GUARD_ALARM_PUMPS_NOT_STILL].guardValue == GUARD_VALUE_FALSE )
+                ptrFutureChild = &stateChildAlarmPriming[13]; /* FM allarme chiuso */
+			else if(ptrCurrentChild->action == ACTION_ALWAYS){}
+			break;
+
+		case CHILD_PRIM_ALARM_BAD_PINCH_POS:
+			if(ptrCurrentChild->action == ACTION_ON_ENTRY)
+			{
+				ptrFutureChild = &stateChildAlarmPriming[20];
+			}
+            else if( currentGuard[GUARD_ALARM_BAD_PINCH_POS].guardValue == GUARD_VALUE_FALSE )
+                ptrFutureChild = &stateChildAlarmPriming[13]; /* FM allarme chiuso */
+			else if(ptrCurrentChild->action == ACTION_ALWAYS){}
+			break;
+
+		case CHILD_PRIM_ALARM_SFA_AIR_DET:
+			if(ptrCurrentChild->action == ACTION_ON_ENTRY)
+			{
+				ptrFutureChild = &stateChildAlarmPriming[22];
+			}
+            else if( currentGuard[GUARD_ALARM_SFA_PRIM_AIR_DET].guardValue == GUARD_VALUE_FALSE )
+                ptrFutureChild = &stateChildAlarmPriming[13]; /* FM allarme chiuso */
+			else if(ptrCurrentChild->action == ACTION_ALWAYS){}
+			break;
+
 		default:
 			break;
 	}
@@ -4585,9 +4718,22 @@ void CheckOxygenationSpeed(word value)
 
 // Questa funzione deve essere chiamata solo quando sono nel trattamento fegato
 // Questa cosa deve essere fatta nelle funzioni always e non quando arriva il parametro
-void CheckDepurationSpeed(word value)
+void CheckDepurationSpeed(word value, bool ForceValue, bool DisableUpdateCmd)
 {
-	if(parameterWordSetFromGUI[PAR_SET_PURIF_FLOW_TARGET].value != value)
+	static bool EnableUpdate = FALSE;
+	if(DisableUpdateCmd)
+	{
+		EnableUpdate = FALSE;
+		return;
+	}
+
+	if(ForceValue)
+	{
+		setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, (int)((float)parameterWordSetFromGUI[PAR_SET_PURIF_FLOW_TARGET].value / DEFAULT_ART_PUMP_GAIN * 100.0));
+		LastDepurationSpeed = parameterWordSetFromGUI[PAR_SET_PURIF_FLOW_TARGET].value;
+		EnableUpdate = TRUE;
+	}
+	else if(EnableUpdate && (parameterWordSetFromGUI[PAR_SET_PURIF_FLOW_TARGET].value != value))
 	{
 		// ho ricevuto un valore del flusso di depurazione diverso dal precedente
 		// devo aggiornare la velocita' della pompa

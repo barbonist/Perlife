@@ -16,7 +16,7 @@
 #define MASK_SECURITY_STOP_OXYG_PUMP		0x10
 #define MASK_SECURITY_STOP_PELTIER			0x20
 
-#define SET_POINT_PRESSURE_INIT				5 //70//185//130
+#define SET_POINT_PRESSURE_INIT				0
 #define DELTA_PRESSURE						30
 #define GAIN_PRESSURE						1
 
@@ -133,6 +133,11 @@ void manageParPrimWaitPinchCloseEntry(void);
 void manageParPrimWaitPinchCloseAlways(void);
 void  manageParPrimEndRecAlarmEntry(void);
 void manageParPrimEndRecAlarmAlways(void);
+void manageParentPrimAirFiltEntry(void);
+void manageParentPrimAirFiltAlways(void);
+void manageParentPrimAirAlmRecEntry(void);
+void manageParentPrimAirAlmRecAlways(void);
+
 
 void manageParentPrimingAlarmEntry(void);
 void manageParentPrimingAlarmAlways(void);
@@ -225,7 +230,7 @@ void EEPROM_Read(LDD_FLASH_TAddress Source, LDD_TData *Dest, LDD_FLASH_TDataSize
 void CallInIdleState(void);
 word GetTotalPrimingVolumePerf(int cmd);
 void CheckOxygenationSpeed(word value);
-void CheckDepurationSpeed(word value);
+void CheckDepurationSpeed(word value, bool ForceValue, bool DisableUpdateCmd);
 void GoToRecoveryParentState(int MachineParentState);
 
 void HandlePinch( int cmd);
@@ -242,5 +247,6 @@ CHECK_PUMP_STOP_STATE CheckPumpStopTask(CHECK_PUMP_STOP_CMD cmd);
 //CHECK_PINCH_POS_STATE CheckPinchPosTask(CHECK_PINCH_CMD cmd);
 
 void ParentFunc(void);
+void AirAlarmRecoveryStateMach(void);
 
 #endif /* APPLICATION_APP_GES_H_ */

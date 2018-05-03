@@ -1552,11 +1552,58 @@ void StorageModbusDataInit(void)
 
 /*funzione che ritorna il numero della pompa con il
  * cover perto oppure 4 se tutti i cover sono chiusi*/
+//unsigned char CheckCoverPump()
+//{
+//	for (unsigned char i= 0; i<4; i++)
+//	{
+//		if (modbusData[i][18] & 0x0200)
+//			return(i);
+//	}
+//
+//	return(4);
+//}
+
+unsigned char CoverOpenCnt[4] = {0, 0, 0, 0};
+unsigned char CoverCloseCnt[4] = {0, 0, 0, 0};
+unsigned char CoverState[4] = {0, 0, 0, 0};   // 0 chiuse 1 aperte
+unsigned char CoverPresc = 0;
+
+/*funzione che ritorna il numero della pompa con il
+ * cover perto oppure 4 se tutti i cover sono chiusi*/
 unsigned char CheckCoverPump()
 {
+	CoverPresc++;
+	if(CoverPresc >= 10)
+	{
+		CoverPresc = 0;
+		for (unsigned char i= 0; i<4; i++)
+		{
+			if (modbusData[i][18] & 0x0200)
+			{
+				CoverOpenCnt[i]++;
+				if(CoverOpenCnt[i] > 3)
+				{
+					CoverOpenCnt[i] = 3;
+					CoverState[i] = 1;
+				}
+				CoverCloseCnt[i] = 0;
+			}
+			else
+			{
+				CoverCloseCnt[i]++;
+				if(CoverCloseCnt[i] > 3)
+				{
+					CoverCloseCnt[i] = 3;
+					CoverState[i] = 0;
+				}
+				CoverOpenCnt[i] = 0;
+			}
+		}
+	}
+
 	for (unsigned char i= 0; i<4; i++)
 	{
-		if (modbusData[i][18] & 0x0200)
+		if (CoverState[i] == 1)
 			return(i);
 	}
 

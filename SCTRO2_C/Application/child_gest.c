@@ -233,6 +233,113 @@ void manageChildPrimAlarmStopAllActAlways(void)
 	manageChildTreatAlm1StopAllActAlways();
 }
 
+//--------------------------------------------------------------------------------------------------
+// La gestione dell'allarme che segue e' stata fatta il troppo pieno.
+// Consiste nel disabilitare per sempre l'allarme senza aspettare che il segnale fisico
+// vada a 0 e poi proseguire normalmente
+/* Manage CHILD_PRIM_ALARM_1_WAIT_CMD entry state in priming*/
+void manageChildPrimAlmAndWaitCmdEntry(void)
+{
+	// fermo le pompe e metto le pinch in sicurezza
+	manageChildTreatAlm1StopAllActEntry();
+	GlobalFlags.FlagsDef.ChildAlmAndWaitCmdActive = 1;
+}
+
+/* Manage CHILD_PRIM_ALARM_1_WAIT_CMD always state in priming */
+void manageChildPrimAlmAndWaitCmdAlways(void)
+{
+	// apetto che tutte le pompe si siano fermate
+	manageChildTreatAlm1StopAllActAlways();
+	if((buttonGUITreatment[BUTTON_RESET_ALARM].state == GUI_BUTTON_RELEASED) && IsSecurityStateActive())
+	{
+		// Questa tipologia di allarmi deve essere forzata in off dal software prima di poter riprendere il lavoro
+		ForceCurrentAlarmOff();
+		// setto la guard per fare in modo che quando l'allarme risultera' non attivo
+		// la macchina a stati parent riprenda il funzionamento normale
+		currentGuard[GUARD_ALARM_WAIT_CMD_TO_EXIT].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+		// ho raggiunto la condizione di sicurezza ed ho ricevuto un comando reset alarm
+		releaseGUIButton(BUTTON_RESET_ALARM);
+		EnableNextAlarmFunc(); //EnableNextAlarm = TRUE;
+		LevelBuzzer = 0;
+	}
+}
+//--------------------------------------------------------------------------------------------------
+
+
+//--------------------------------------------------------------------------------------------------
+// L'allarme viene generato quando per un qualsiasi motivo non si riesce a fermare le pompe.
+// In questo caso, lo stop viene forzato togliendo l'enable alle pompe
+/* Manage CHILD_PRIM_ALARM_PUMPS_NOT_STILL entry state in priming*/
+void manageChildPrimAlmPumpNotStillEntry(void)
+{
+	EN_Motor_Control(DISABLE);
+}
+
+void ClearPumpStopAlarm(void);
+void manageChildPrimAlmPumpNotStillAlways(void)
+{
+	if(buttonGUITreatment[BUTTON_RESET_ALARM].state == GUI_BUTTON_RELEASED)
+	{
+		EN_Motor_Control(ENABLE);
+		ClearPumpStopAlarm();
+		releaseGUIButton(BUTTON_RESET_ALARM);
+		EnableNextAlarmFunc(); //EnableNextAlarm = TRUE;
+	}
+	else if(buttonGUITreatment[BUTTON_OVERRIDE_ALARM].state == GUI_BUTTON_RELEASED)
+	{
+		EN_Motor_Control(ENABLE);
+		ClearPumpStopAlarm();
+		ForceCurrentAlarmOff();
+		releaseGUIButton(BUTTON_OVERRIDE_ALARM);
+		EnableNextAlarmFunc(); //EnableNextAlarm = TRUE;
+	}
+}
+//--------------------------------------------------------------------------------------------------
+
+//--------------------------------------------------------------------------------------------------
+// L'allarme viene generato quando viene rilevata una posizione delle pinch sulla
+// protective diversa da quella della control
+// Per risolvere questo caso non e' possibile fare niente perche' non e' possibile per
+// la control leggere la posizione reale delle pinch
+/* Manage CHILD_PRIM_ALARM_BAD_PINCH_POS entry state in priming*/
+void manageChildPrimAlmBadPinchPosEntry(void)
+{
+}
+
+void ResetTreatSetPinchPosTaskAlm(void);
+void manageChildPrimAlmBadPinchPosAlways(void)
+{
+	if(buttonGUITreatment[BUTTON_RESET_ALARM].state == GUI_BUTTON_RELEASED)
+	{
+		ResetTreatSetPinchPosTaskAlm();
+		releaseGUIButton(BUTTON_RESET_ALARM);
+		EnableNextAlarmFunc(); //EnableNextAlarm = TRUE;
+	}
+	else if(buttonGUITreatment[BUTTON_OVERRIDE_ALARM].state == GUI_BUTTON_RELEASED)
+	{
+		ResetTreatSetPinchPosTaskAlm();
+		ForceCurrentAlarmOff();
+		releaseGUIButton(BUTTON_OVERRIDE_ALARM);
+		EnableNextAlarmFunc(); //EnableNextAlarm = TRUE;
+	}
+}
+//--------------------------------------------------------------------------------------------------
+
+//--------------------------------------------------------------------------------------------------
+// L'allarme viene generato quando viene rilevata aria nella linea del filtro e sono in priming
+/* Manage CHILD_PRIM_ALARM_SFA_AIR_DET entry state in priming*/
+void manageChildPrimAlmSFAAirDetEntry(void)
+{
+	manageChildTreatAlm1StopAllActEntry();
+}
+
+void manageChildPrimAlmSFAAirDetAlways(void)
+{
+	manageChildTreatAlm1StopAllActAlways();
+}
+//--------------------------------------------------------------------------------------------------
+
+
 
 
 /* --------------------------------------------------------------------------------------------
@@ -278,6 +385,11 @@ void manageChildTreatAlm1InitAlways(void)
     {
     	/* (FM) risolvo la situazione di allarme andando  a spegnere tutti gli attuatori */
         ptrFutureChild = &stateChildAlarmTreat1[21];
+    }
+    else if(currentGuard[GUARD_ALARM_BAD_PINCH_POS].guardValue == GUARD_VALUE_TRUE)
+    {
+    	/* (FM) risolvo la situazione di allarme andando  a spegnere tutti gli attuatori */
+        ptrFutureChild = &stateChildAlarmTreat1[23];
     }
 }
 
@@ -666,7 +778,7 @@ void manageChildTreatAlm1SafAirFiltAlways(void)
 		currentGuard[GUARD_ALARM_AIR_FILT_RECOVERY].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
 		// ho raggiunto la condizione di sicurezza ed ho ricevuto un comando reset alarm
 		releaseGUIButton(BUTTON_RESET_ALARM);
-		EnableNextAlarm = TRUE;
+		EnableNextAlarmFunc(); //EnableNextAlarm = TRUE;
 		LevelBuzzer = 0;
 	}
 }
@@ -707,7 +819,7 @@ void manageChildTreatAlm1SFVAlways(void)
 		currentGuard[GUARD_ALARM_AIR_SFV_RECOVERY].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
 		// ho raggiunto la condizione di sicurezza ed ho ricevuto un comando reset alarm
 		releaseGUIButton(BUTTON_RESET_ALARM);
-		EnableNextAlarm = TRUE;
+		EnableNextAlarmFunc(); //EnableNextAlarm = TRUE;
 		LevelBuzzer = 0;
 	}
 }
@@ -740,7 +852,7 @@ void manageChildTreatAlm1SFAAlways(void)
 		currentGuard[GUARD_ALARM_AIR_SFA_RECOVERY].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
 		// ho raggiunto la condizione di sicurezza ed ho ricevuto un comando reset alarm
 		releaseGUIButton(BUTTON_RESET_ALARM);
-		EnableNextAlarm = TRUE;
+		EnableNextAlarmFunc(); //EnableNextAlarm = TRUE;
 		LevelBuzzer = 0;
 	}
 }
@@ -777,48 +889,35 @@ void manageChildAlmAndWaitCmdAlways(void)
 		currentGuard[GUARD_ALARM_WAIT_CMD_TO_EXIT].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
 		// ho raggiunto la condizione di sicurezza ed ho ricevuto un comando reset alarm
 		releaseGUIButton(BUTTON_RESET_ALARM);
-		EnableNextAlarm = TRUE;
+		EnableNextAlarmFunc(); //EnableNextAlarm = TRUE;
 		LevelBuzzer = 0;
 	}
 }
 //--------------------------------------------------------------------------------------------------
 
-
-
 //--------------------------------------------------------------------------------------------------
-// La gestione dell'allarme che segue e' stata fatta il troppo pieno.
-// Consiste nel disabilitare per sempre l'allarme senza aspettare che il segnale fisico
-// vada a 0 e poi proseguire normalmente
-/* Manage CHILD_PRIM_ALARM_1_WAIT_CMD entry state in priming*/
-/* (FM) risolvo la situazione di allarme
- * rene:   sposto wpwa a destra in modo da staccare l'organo
- *         e scaricare sul reservoir
- * fegato: sposto wpwa a destra in modo da staccare l'organo
- *         e scaricare sul reservoir */
-void manageChildPrimAlmAndWaitCmdEntry(void)
+// allarme di pinch posizionate male nella fase iniziale del trattamento
+// CHILD_TREAT_ALARM_BAD_PINCH_POS state
+void manageChildTreatAlmBadPinchPosEntry(void)
 {
-	// fermo le pompe e metto le pinch in sicurezza
-	manageChildTreatAlm1StopAllActEntry();
-	GlobalFlags.FlagsDef.ChildAlmAndWaitCmdActive = 1;
-}
 
-/* Manage CHILD_PRIM_ALARM_1_WAIT_CMD always state in priming */
-void manageChildPrimAlmAndWaitCmdAlways(void)
+}
+void manageChildTreatAlmBadPinchPosAlways(void)
 {
-	// apetto che tutte le pompe si siano fermate
-	manageChildTreatAlm1StopAllActAlways();
-	if((buttonGUITreatment[BUTTON_RESET_ALARM].state == GUI_BUTTON_RELEASED) && IsSecurityStateActive())
+	if(buttonGUITreatment[BUTTON_RESET_ALARM].state == GUI_BUTTON_RELEASED)
 	{
-		// Questa tipologia di allarmi deve essere forzata in off dal software prima di poter riprendere il lavoro
-		ForceCurrentAlarmOff();
-		// setto la guard per fare in modo che quando l'allarme risultera' non attivo
-		// la macchina a stati parent riprenda il funzionamento normale
-		currentGuard[GUARD_ALARM_WAIT_CMD_TO_EXIT].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
-		// ho raggiunto la condizione di sicurezza ed ho ricevuto un comando reset alarm
+		ResetTreatSetPinchPosTaskAlm();
 		releaseGUIButton(BUTTON_RESET_ALARM);
-		EnableNextAlarm = TRUE;
-		LevelBuzzer = 0;
+		EnableNextAlarmFunc(); //EnableNextAlarm = TRUE;
 	}
+	else if(buttonGUITreatment[BUTTON_OVERRIDE_ALARM].state == GUI_BUTTON_RELEASED)
+	{
+		ResetTreatSetPinchPosTaskAlm();
+		ForceCurrentAlarmOff();
+		releaseGUIButton(BUTTON_OVERRIDE_ALARM);
+		EnableNextAlarmFunc(); //EnableNextAlarm = TRUE;
+	}
+
 }
 //--------------------------------------------------------------------------------------------------
 
@@ -910,6 +1009,11 @@ void ManageStateChildAlarmTreat1(void)
             	 * fegato: sposto wpwa a destra in modo da staccare l'organo
             	 *         e scaricare sul reservoir */
                 ptrFutureChild = &stateChildAlarmTreat1[21]; // DA AGGIUNGERE
+            }
+            else if(currentGuard[GUARD_ALARM_BAD_PINCH_POS].guardValue == GUARD_VALUE_TRUE)
+            {
+            	/* (FM) risolvo la situazione di allarme andando  a spegnere tutti gli attuatori */
+                ptrFutureChild = &stateChildAlarmTreat1[23];
             }
 			break;
 
@@ -1030,6 +1134,18 @@ void ManageStateChildAlarmTreat1(void)
 				ptrFutureChild = &stateChildAlarmTreat1[22];
 			}
             else if( currentGuard[GUARD_ALARM_STOP_ALL_ACT_WAIT_CMD].guardValue == GUARD_VALUE_FALSE )
+                ptrFutureChild = &stateChildAlarmTreat1[19]; /* FM allarme chiuso */
+			else if(ptrCurrentChild->action == ACTION_ALWAYS)
+			{
+			}
+			break;
+
+		case CHILD_TREAT_ALARM_BAD_PINCH_POS:
+			if(ptrCurrentChild->action == ACTION_ON_ENTRY)
+			{
+				ptrFutureChild = &stateChildAlarmTreat1[24];
+			}
+            else if( currentGuard[GUARD_ALARM_BAD_PINCH_POS].guardValue == GUARD_VALUE_FALSE )
                 ptrFutureChild = &stateChildAlarmTreat1[19]; /* FM allarme chiuso */
 			else if(ptrCurrentChild->action == ACTION_ALWAYS)
 			{
