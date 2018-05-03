@@ -1377,6 +1377,13 @@ void setGUIButton(unsigned char buttonId){
 		// serve per abilitare la ricezione del successivo allarme
 		//EnableNextAlarm = TRUE;
 	}
+
+	if((buttonId == BUTTON_RESET_ALARM) && alarmCurrent.code)
+	{
+		// dovro' uscire dalla condizione di allarme e quindi azzero subito l'allarme
+		// inviato alla gui
+		//memset(&alarmCurrent, 0, sizeof(struct alarm));
+	}
 }
 
 unsigned char getGUIButton(unsigned char buttonId)

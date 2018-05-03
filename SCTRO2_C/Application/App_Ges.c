@@ -2066,7 +2066,6 @@ TREAT_SET_PINCH_POS_TASK_STATE TreatSetPinchPosTask(TREAT_SET_PINCH_POS_CMD cmd)
 					if(CorrectPosCnt >= 3)
 					{
 						// la posizione e' identica a quella del protective per 3 volte consecutive, posso iniziare il trattamento
-						setGUIButton(BUTTON_START_TREATMENT);
 						// il tasto BUTTON_START_TREATMENT lo ho gia' ricevuto, quindi, per il prossimo start
 						// devo forzarlo
 						setGUIButton(BUTTON_START_TREATMENT);
