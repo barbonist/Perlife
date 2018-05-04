@@ -971,6 +971,9 @@ void pollingDataToSBCTreat(void)
 
 void buildRDMachineStateResponseMsg(char code, char subcode)
 {
+	// contatore usato per determinare il numero si status inviati con allarme a 0
+	// dopo che ho ricevuto un BUTTON_ALARM_RESET per ripartire dopo un allarme
+	static unsigned char StatrespCnt = 0;
 	word wd;
 	byte index = 0;
 	unsigned int life = FreeRunCnt10msec *10;
@@ -1012,15 +1015,36 @@ void buildRDMachineStateResponseMsg(char code, char subcode)
 	/*12*/	sbc_tx_data[index++] = 0x00;
 	/*13*/	sbc_tx_data[index++] = 0x00;
 
-	/* status parameters: alarm code */
-	/*14*/	sbc_tx_data[index++] = (alarmCurrent.code >> 8 ) & 0xFF;
-	/*15*/	sbc_tx_data[index++] = (alarmCurrent.code 	    ) & 0xFF;
-	/* status parameters: alarm physic */
-	/*16*/	sbc_tx_data[index++] = (alarmCurrent.active >> 8 ) & 0xFF;
-	/*17*/	sbc_tx_data[index++] = (alarmCurrent.active      ) & 0xFF;
-	/* status parameters: alarm type */
-	/*18*/	sbc_tx_data[index++] = (alarmCurrent.type >> 8 ) & 0xFF;
-	/*19*/  sbc_tx_data[index++] = (alarmCurrent.type      ) & 0xFF;
+	if(SuspendInvioAlarmCode)
+	{
+		StatrespCnt++;
+		/* status parameters: alarm code */
+		/*14*/	sbc_tx_data[index++] = 0;
+		/*15*/	sbc_tx_data[index++] = 0;
+		/* status parameters: alarm physic */
+		/*16*/	sbc_tx_data[index++] = 0;
+		/*17*/	sbc_tx_data[index++] = 0;
+		/* status parameters: alarm type */
+		/*18*/	sbc_tx_data[index++] = 0;
+		/*19*/  sbc_tx_data[index++] = 0;
+		if(StatrespCnt >= 3)
+		{
+			StatrespCnt = 0;
+			SuspendInvioAlarmCode = 0;
+		}
+	}
+	else
+	{
+		/* status parameters: alarm code */
+		/*14*/	sbc_tx_data[index++] = (alarmCurrent.code >> 8 ) & 0xFF;
+		/*15*/	sbc_tx_data[index++] = (alarmCurrent.code 	    ) & 0xFF;
+		/* status parameters: alarm physic */
+		/*16*/	sbc_tx_data[index++] = (alarmCurrent.active >> 8 ) & 0xFF;
+		/*17*/	sbc_tx_data[index++] = (alarmCurrent.active      ) & 0xFF;
+		/* status parameters: alarm type */
+		/*18*/	sbc_tx_data[index++] = (alarmCurrent.type >> 8 ) & 0xFF;
+		/*19*/  sbc_tx_data[index++] = (alarmCurrent.type      ) & 0xFF;
+	}
 	/* status parameters: machine state state*/
 	/*20*/	sbc_tx_data[index++] = (ptrCurrentState->state >> 8) & 0xFF;
 	/*21*/	sbc_tx_data[index++] = (ptrCurrentState->state     ) & 0xFF;
@@ -1383,6 +1407,7 @@ void setGUIButton(unsigned char buttonId){
 		// dovro' uscire dalla condizione di allarme e quindi azzero subito l'allarme
 		// inviato alla gui
 		//memset(&alarmCurrent, 0, sizeof(struct alarm));
+		SuspendInvioAlarmCode = 1;
 	}
 }
 
@@ -1525,7 +1550,7 @@ void setParamWordFromGUI(unsigned char parId, int value)
 	}
 
 	// TODO DA RIMUOVERE SOLO PER DEBUG GUI !!!!
-	parameterWordSetFromGUI[PAR_SET_DESIRED_DURATION].value = 20;
+	parameterWordSetFromGUI[PAR_SET_DESIRED_DURATION].value = 0x200;
 }
 
 void resetParamWordFromGUI(unsigned char parId){

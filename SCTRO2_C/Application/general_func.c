@@ -164,7 +164,7 @@ void DebugString()
 	{
 		sprintf(stringPr, "\r %i; %i; %i; %i; %x; %d; %d;",
 								(int) (sensorIR_TM[0].tempSensValue*10),
-								(int) sensor_UFLOW[VENOUS_AIR_SENSOR].bubbleSize,
+								(int) LiquidAmount, //sensor_UFLOW[VENOUS_AIR_SENSOR].bubbleSize,
 								(int) sensor_UFLOW[ARTERIOUS_AIR_SENSOR].bubbleSize,
 								(int) (sensorIR_TM[1].tempSensValue * 10),  // temp. recevoir
 								(int) alarmList[AIR_PRES_ART].physic,
@@ -189,7 +189,7 @@ void DebugString()
 	{
 		sprintf(stringPr, "\r %i; %i; %i; %i; %i; %d; %d;",
 								(int) (sensorIR_TM[0].tempSensValue*10),
-								(int)(sensorIR_TM[1].tempSensValue*10),  // temp. recevoir
+								(int) LiquidAmount, //(sensorIR_TM[1].tempSensValue*10),  // temp. recevoir
 								(int) PR_VEN_Sistolyc_mmHg, //PR_VEN_mmHg,            //PR_VEN_Sistolyc_mmHg,      //PR_VEN_mmHg_Filtered,
 								(int) PR_ART_Sistolyc_mmHg, //PR_ART_mmHg,            //PR_ART_Sistolyc_mmHg,     // PR_ART_mmHg_Filtered,
 								TotalTreatDuration + TreatDuration,

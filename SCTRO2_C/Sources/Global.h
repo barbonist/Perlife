@@ -1814,6 +1814,10 @@ typedef enum
 //-------------------------------------------------------------------------------
 
 // Questa define deve essere attiva se voglio rilevare l'allarme della connessione con la protective
-//#define ENABLE_PROTECTIVE_BOARD
+#define ENABLE_PROTECTIVE_BOARD
+
+// flag per iniziare un periodo di allarme nullo da trasferire alla GUI
+unsigned char SuspendInvioAlarmCode;
+
 #endif /* SOURCES_GLOBAL_H_ */
 

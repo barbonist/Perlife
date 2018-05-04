@@ -18,7 +18,7 @@
 #include "SevenSeg.h"
 #include "Global.h"
 #include "ControlProtectiveInterface_C.h"
-
+#include "ModBusCommProt.h"
 
 void ManageTestP500ms(void);
 void ManageTestP50ms(void);
@@ -139,14 +139,40 @@ void NotifyMachineStatus(void)
 	Guard = (i < GUARD_END_NUMBER) ? (word) i : 0;
 
 	onNewState( ptrCurrentState, ptrCurrentParent , ptrCurrentChild, Guard   );
+
 }
 
+
+void NotifyPumpsSpeed(void)
+{
+	uint16_t Pump0Speed, Pump1Speed, Pump2Speed, Pump3Speed;
+	Pump0Speed = 0;
+	Pump1Speed = 0;
+	Pump2Speed = 0;
+	Pump3Speed = 0;
+//	if(GetTherapyType() == LiverTreat)
+//	{
+		Pump0Speed = modbusData[pumpPerist[3].pmpMySlaveAddress-2][17];
+		Pump1Speed = modbusData[pumpPerist[0].pmpMySlaveAddress-2][17];
+		Pump2Speed = modbusData[pumpPerist[1].pmpMySlaveAddress-2][17];
+		Pump3Speed = modbusData[pumpPerist[2].pmpMySlaveAddress-2][17];
+//	}
+//	else if(GetTherapyType() == KidneyTreat)
+//	{
+//		Pump0Speed = 0;
+//		Pump1Speed = modbusData[pumpPerist[0].pmpMySlaveAddress-2][17];
+//		Pump2Speed = modbusData[pumpPerist[1].pmpMySlaveAddress-2][17];
+//		Pump3Speed = modbusData[pumpPerist[2].pmpMySlaveAddress-2][17];
+//	}
+	onNewPumpSpeed(Pump0Speed, Pump1Speed, Pump2Speed, Pump3Speed);
+}
 
 void ProtectiveTask(void)
 {
 	static unsigned short ProtTaskCnt = 0;
 
 	NotifyMachineStatus();
+	NotifyPumpsSpeed();
 
 	if(ProtTaskCnt % 2)
 	{

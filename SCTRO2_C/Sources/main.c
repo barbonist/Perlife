@@ -515,6 +515,7 @@ int main(void)
    FilterFlowVal = 0;
    PumpStoppedCnt = 0;
    InitControlProtectiveInterface();
+   SuspendInvioAlarmCode = 0;
 
   /**********MAIN LOOP START************/
   for(;;) {

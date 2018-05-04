@@ -1858,6 +1858,25 @@ void manageParPrimWaitPinchCloseAlways(void)
 		DisableBadPinchPosAlmFunc();
 		DebugStringStr("PINCH CLOSED");
 	}
+	else if(!IsPinchPosOk(PinchPos))
+	{
+		// ripeto i comandi sulle pinch
+		if(!FilterSelected)
+		{
+			// il filtro non viene usato quindi devo passare sempre sul bypass
+			setPinchPositionHighLevel(PINCH_2WPVF, MODBUS_PINCH_LEFT_OPEN);
+		}
+		else
+			setPinchPositionHighLevel(PINCH_2WPVF, MODBUS_PINCH_RIGHT_OPEN);
+
+		// prima di attaccare l'organo vogliono tutte le pinch chiuse
+		setPinchPositionHighLevel(PINCH_2WPVA, MODBUS_PINCH_POS_CLOSED);
+		if(GetTherapyType() == LiverTreat)
+		{
+			// ho selezionato il fegato, quindi devo chiudere anche questa
+			setPinchPositionHighLevel(PINCH_2WPVV, MODBUS_PINCH_POS_CLOSED);
+		}
+	}
 
 	if(buttonGUITreatment[BUTTON_PRIMING_ABANDON].state == GUI_BUTTON_RELEASED)
 	{
