@@ -295,8 +295,9 @@ void ReceivedCanData(uint8_t *rxbuff, int rxlen, int RxChannel) {
 	if ((rxlen <= 8) && (RxChannel <= 7)) {
 		RetriggerNoCANRxTxAlarm();
 		memcpy(RxBuffCanP[RxChannel]->RawCanBuffer, rxbuff, rxlen);
-		if (memcmp(RxBuffCanP[RxChannel]->RawCanBuffer,
-				OldRxBuffCanP[RxChannel]->RawCanBuffer, SIZE_CAN_BUFFER) != 0) {
+//		if (memcmp(RxBuffCanP[RxChannel]->RawCanBuffer,
+//				OldRxBuffCanP[RxChannel]->RawCanBuffer, SIZE_CAN_BUFFER) != 0) {
+		if(1){
 			// data changed --> trigger some action
 			switch (RxChannel) {
 			case 0:
