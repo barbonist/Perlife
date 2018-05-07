@@ -8,6 +8,7 @@
 #ifndef APPLICATION_APP_GES_H_
 #define APPLICATION_APP_GES_H_
 
+#define CRC_POLYNOMIAL		0xA001
 
 /* MACHINE STATE FUNCTION */
 void manageNull(void);
@@ -88,6 +89,14 @@ void initAllGuard(void);
 /* VARIABLE */
 /******************/
 void UpdateActuatorPosition();
+
+void Set_Data_EEPROM_Default(void);
+#include "EEPROM.h"
+byte EEPROM_GetFlash(LDD_FLASH_TAddress Source, LDD_TData *Dest, LDD_FLASH_TDataSize Count);
+byte EEPROM_SetFlash(EEPROM_TDataAddress Source, EEPROM_TAddress Dest, word Count);
+void EEPROM_write(EEPROM_TDataAddress Src, EEPROM_TAddress Dst, word Count);
+void EEPROM_Read(LDD_FLASH_TAddress Source, LDD_TData *Dest, LDD_FLASH_TDataSize Count);
+unsigned int ComputeChecksum(unsigned char * data, int size);
 
 
 #endif /* APPLICATION_APP_GES_H_ */

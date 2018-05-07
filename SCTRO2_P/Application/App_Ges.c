@@ -789,8 +789,91 @@ void UpdateActuatorPosition()
 
 }
 
+void EEPROM_Read(LDD_FLASH_TAddress Source, LDD_TData *Dest, LDD_FLASH_TDataSize Count)
+{
+	EEPROM_GetFlash(Source,Dest,Count);
+}
+
+/* Src   --> indirizzo della variabile o array da cui prendiamo i dati da scrivere
+ * Dst   --> indirizzo di partenza da cui si scrive in flash (es 0xFF000)
+ * Count --> numero di byte che andiamo a scrivere
+ * */
+void EEPROM_write(EEPROM_TDataAddress Src, EEPROM_TAddress Dst, word Count)
+{
+	EEPROM_SetFlash(Src,Dst,Count);
+}
 
 
+void Set_Data_EEPROM_Default(void)
+{
+
+	unsigned char *ptr_EEPROM = (EEPROM_TDataAddress)&config_data;
+
+	/*Calcolo il CRC sui dati letti dalla EEPROM
+	 * * IL CRC lo clacolo su tutta la struttura meno i due byte ndel CRC stesso*/
+	unsigned int Calc_CRC_EEPROM = ComputeChecksum(ptr_EEPROM, sizeof(config_data)-2);
+
+	/*Se il CRC calcolato non è uguale a quello letto o la revsione non è uguale a quella attesa
+	 * scrivo i parametri di default*/
+	if ( config_data.EEPROM_CRC != Calc_CRC_EEPROM || config_data.EEPROM_Revision != EEPROM_REVISION)
+	{
+		 config_data.sensor_PRx[OXYG].prSensGain      = PR_OXYG_GAIN_DEFAULT;
+		 config_data.sensor_PRx[OXYG].prSensOffset    = PR_OXYG_OFFSET_DEFAULT;
+
+		 config_data.sensor_PRx[LEVEL].prSensGain     = PR_LEVEL_GAIN_DEFAULT;
+		 config_data.sensor_PRx[LEVEL].prSensOffset   = PR_LEVEL_OFFSET_DEFAULT;
+
+		 config_data.sensor_PRx[ADS_FLT].prSensGain   = PR_ADS_FLT_GAIN_DEFAULT;
+		 config_data.sensor_PRx[ADS_FLT].prSensOffset = PR_ADS_FLT_OFFSET_DEFAULT;
+
+		 config_data.sensor_PRx[VEN].prSensGain       = PR_VEN_GAIN_DEFAULT;
+		 config_data.sensor_PRx[VEN].prSensOffset     = PR_VEN_OFFSET_DEFAULT;
+
+		 config_data.sensor_PRx[ART].prSensGain       = PR_ART_GAIN_DEFAULT;
+		 config_data.sensor_PRx[ART].prSensOffset     = PR_ART_OFFSET_DEFAULT;
+
+		 config_data.T_Plate_Sensor_Gain              = GAIN_T_PLATE_SENS;
+		 config_data.T_Plate_Sensor_Offset            = OFFSET_T_PLATE_SENS;
+
+		 //revsione della EEPROM
+		 config_data.EEPROM_Revision 				  = EEPROM_REVISION;
+
+		 /*carico il CRC della EEPROM (usata la stessa funzione di CRC del MOD_BUS
+		  * IL CRC lo clacolo su tutta la struttura meno i due byte ndel CRC stesso*/
+		 config_data.EEPROM_CRC = ComputeChecksum(ptr_EEPROM, sizeof(config_data)-2);
+
+		 EEPROM_write((EEPROM_TDataAddress)&config_data, START_ADDRESS_EEPROM, sizeof(config_data));
+	}
+
+}
+
+/*funzione del CheckSum usata anche per la EEPROM e per il protocollo con SBC*/
+unsigned int ComputeChecksum(unsigned char * data, int size)
+{
+	unsigned int CRC16 = 0xFFFF;
+	unsigned int CRCLsb = 0x0000;
+	unsigned int byte = 0x0000;
+
+	for(int i = 0; i < size; i++)
+	{
+		byte = *(data+i) & 0x00FF;
+		CRC16 = CRC16 ^ byte;
+
+		for(int j = 0; j < 8; j++)
+		{
+			CRCLsb = CRC16 & 0x0001;
+			CRC16 = (CRC16 >> 1) & 0x7FFF;
+
+			if(CRCLsb == 0x0001)
+			{
+				CRC16 = CRC16 ^ CRC_POLYNOMIAL;
+			}
+		}
+	}
+
+	return CRC16;
+}
+/* Public function */
 
 
 

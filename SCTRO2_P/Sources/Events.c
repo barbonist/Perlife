@@ -459,6 +459,9 @@ void FLOWSENS_COMM_OnTxComplete(void)
 void AD1_OnEnd(void)
 {
   /* Write your code here ... */
+	END_ADC1=TRUE;
+
+	AD1_Stop();
 }
 
 /*
@@ -497,6 +500,9 @@ void AD1_OnCalibrationEnd(void)
 void AD0_OnEnd(void)
 {
   /* Write your code here ... */
+	END_ADC0=TRUE;
+
+	AD0_Stop();
 }
 
 /*
@@ -607,7 +613,7 @@ void TI1_100ms_OnInterrupt(void)
 void TI1_1ms_OnInterrupt(void)
 {
   /* Write your code here ... */
-	int a =0 ;
+	timerCounterADC1++;
 }
 
 /*
@@ -630,6 +636,7 @@ void TI1_10ms_OnInterrupt(void)
 	/* Write your code here ... */
 	// calling sw timer to manage application specific timers (SB)
 	timerIsr_10ms();
+	timerCounterADC0++;
 }
 
 /*
