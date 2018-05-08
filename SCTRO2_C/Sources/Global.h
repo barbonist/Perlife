@@ -544,6 +544,7 @@ enum MachineStateGuardId {
 	GUARD_ENT_PAUSE_STATE_TREAT_KIDNEY_1_INIT,
 	GUARD_CHK_FOR_ALL_MOT_STOP,
 	GUARD_EN_CLOSE_ALL_PINCH,
+	GUARD_ALARM_PRIM_AIR_FILT_RECOVERY,
 
 
 
@@ -1323,8 +1324,8 @@ typedef enum{NOT_DEF = 0, NO = 1, YES = 2} PARAMETER_ACTIVE_TYPE;
 
 
 // percentuale del priming per l'inserimento del filtro
-#define PERC_OF_PRIM_FOR_FILTER    95
-//#define PERC_OF_PRIM_FOR_FILTER    50
+//#define PERC_OF_PRIM_FOR_FILTER    95
+#define PERC_OF_PRIM_FOR_FILTER    50
 
 // fattore di conversione del flusso in giri al minuto per le pompe dell'ossigenatore
 //#define OXYG_FLOW_TO_RPM_CONV 18.3

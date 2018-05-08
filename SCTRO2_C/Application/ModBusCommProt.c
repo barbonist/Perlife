@@ -1155,14 +1155,14 @@ void alwaysModBusActuator(void)
 				// l'ultima scrittura era una pompa
 				setPumpSpeedValueHighLevel(pumpPerist[LasActuatorWriteID].pmpMySlaveAddress, pumpPerist[LasActuatorWriteID].value);
 				//pumpPerist[LasActuatorWriteID].dataReady = DATA_READY_TRUE;
-				pumpPerist[LasActuatorWriteID].reqType = REQ_TYPE_IDLE;
+				//pumpPerist[LasActuatorWriteID].reqType = REQ_TYPE_IDLE;
 			}
 			else if(LasActuatorWriteID <= 6)
 			{
 				// l'ultima scrittura era una pinch
 				setPinchPositionHighLevel(pinchActuator[LasActuatorWriteID - 4].pinchMySlaveAddress, pinchActuator[LasActuatorWriteID - 4].value);
 				//pinchActuator[LasActuatorWriteID - 4].dataReady = DATA_READY_TRUE; //non serve questo
-				pinchActuator[LasActuatorWriteID - 4].reqType = REQ_TYPE_IDLE;
+				//pinchActuator[LasActuatorWriteID - 4].reqType = REQ_TYPE_IDLE;
 			}
 
 //			if(ActuatorWriteCnt >= 2)

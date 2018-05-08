@@ -176,7 +176,30 @@ void ParentFunc(void)
 		case PARENT_PRIMING_TREAT_KIDNEY_1_ALARM:
 			if(currentGuard[GUARD_ALARM_ACTIVE].guardValue == GUARD_VALUE_FALSE)
 			{
-				if(currentGuard[GUARD_ALARM_WAIT_CMD_TO_EXIT].guardValue == GUARD_VALUE_TRUE)
+				if((currentGuard[GUARD_ALARM_PRIM_AIR_FILT_RECOVERY].guardValue == GUARD_VALUE_TRUE) ||
+				   ((buttonGUITreatment[BUTTON_RESET_ALARM].state == GUI_BUTTON_RELEASED) && TreatAlm1SafAirFiltActive))
+				{
+					if((buttonGUITreatment[BUTTON_RESET_ALARM].state == GUI_BUTTON_RELEASED))
+					{
+						releaseGUIButton(BUTTON_RESET_ALARM);
+						EnableNextAlarmFunc(); //EnableNextAlarm = TRUE;
+						LevelBuzzer = 0;
+					}
+					// ho ricevuto un BUTTON_RESET_ALARM e l'allarme era ancora attivo oppure
+					// ho ricevuto un BUTTON_RESET_ALARM dopo che l'allarme e' stato cancellato perche' la condizione
+					// fisica di allarme e' venuta meno
+					TreatAlm1SafAirFiltActive = FALSE;
+					// vado nello stato parent dove posso cercare di recuperare la condizione di allarme
+					currentGuard[GUARD_ALARM_PRIM_AIR_FILT_RECOVERY].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
+					currentGuard[GUARD_ALARM_PRIM_AIR_FILT_RECOVERY].guardValue = GUARD_VALUE_FALSE;
+					AirParentState = PARENT_TREAT_KIDNEY_1_AIR_FILT;
+					StarTimeToRejAir = timerCounterModBus;
+					TotalTimeToRejAir = 0;
+					/* (FM) passo nello stato per la risoluzione dell'allarme aria nella linea arteriosa*/
+					ptrFutureParent = &stateParentPrimingTreatKidney1[17];
+					ptrFutureChild = ptrFutureParent->ptrChild;
+				}
+				else if(currentGuard[GUARD_ALARM_WAIT_CMD_TO_EXIT].guardValue == GUARD_VALUE_TRUE)
 				{
 					// vado nello stato parent dove posso cercare di recuperare la condizione di allarme
 					currentGuard[GUARD_ALARM_WAIT_CMD_TO_EXIT].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
@@ -227,25 +250,25 @@ void ParentFunc(void)
 					LevelBuzzer = 0;
 				}
 			}
-			else if(buttonGUITreatment[BUTTON_RESET_ALARM].state == GUI_BUTTON_RELEASED)
-			{
-				releaseGUIButton(BUTTON_RESET_ALARM);
-				// potrei essere in allarme aria e, quindi devo far partire la pompa per buttarla via
-				if(ptrAlarmCurrent->code == CODE_ALARM_SFA_PRIM_AIR_DET)
-				{
-					EnableNextAlarmFunc(); //EnableNextAlarm = TRUE;
-					AirParentState = PARENT_TREAT_KIDNEY_1_AIR_FILT;
-					StarTimeToRejAir = timerCounterModBus;
-					TotalTimeToRejAir = 0;
-					DisablePrimAirAlarm(TRUE); // forzo la chiusura dell'allarme aria
-					// stato di gestione dell'aria nel filtro durante il priming
-					// faccio girare la pompa per un po' poi ricomincio
-					ptrFutureParent = &stateParentPrimingTreatKidney1[17];
-					ptrFutureChild = ptrFutureParent->ptrChild;
-				}
-				LevelBuzzer = 0;
-				break;
-			}
+//			else if(buttonGUITreatment[BUTTON_RESET_ALARM].state == GUI_BUTTON_RELEASED)
+//			{
+//				releaseGUIButton(BUTTON_RESET_ALARM);
+//				// potrei essere in allarme aria e, quindi devo far partire la pompa per buttarla via
+//				if(ptrAlarmCurrent->code == CODE_ALARM_SFA_PRIM_AIR_DET)
+//				{
+//					EnableNextAlarmFunc(); //EnableNextAlarm = TRUE;
+//					AirParentState = PARENT_TREAT_KIDNEY_1_AIR_FILT;
+//					StarTimeToRejAir = timerCounterModBus;
+//					TotalTimeToRejAir = 0;
+//					DisablePrimAirAlarm(TRUE); // forzo la chiusura dell'allarme aria
+//					// stato di gestione dell'aria nel filtro durante il priming
+//					// faccio girare la pompa per un po' poi ricomincio
+//					ptrFutureParent = &stateParentPrimingTreatKidney1[17];
+//					ptrFutureChild = ptrFutureParent->ptrChild;
+//				}
+//				LevelBuzzer = 0;
+//				break;
+//			}
 
 			if(ptrCurrentParent->action == ACTION_ON_ENTRY)
 			{
@@ -439,6 +462,8 @@ void ParentFunc(void)
 				{
 					// (FM) chiamo la funzione child che gestisce lo stato di allarme
 					//ManageStateChildAlarmTreat1();
+					// LA FUNZIONE CHILD CHE GESTISCE LO STATO DI ALLARME, IN QUESTO CASO, SI TROVA NELLA FUNZIONE
+					// ProcessMachineState
 				}
 				break;
 			//---------------------------------------------------------------------------------------------

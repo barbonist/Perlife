@@ -1783,7 +1783,8 @@ int CalcFilterFlow(unsigned char PumpSpeed)
 	static float mlpermin;
 	static unsigned char cnt = 0;
 	cnt++;
-	if(cnt >= 10)
+	//if(cnt >= 10)
+	if(cnt >= 1)
 	{
 		cnt = 0;
 		pump_speed = (float)PumpSpeed;
@@ -1793,6 +1794,23 @@ int CalcFilterFlow(unsigned char PumpSpeed)
 	return (int)mlpermin;
 }
 
+void UpdateFilterFlowVal(void)
+{
+	static unsigned long u32 = 0;
+
+	if((msTick_elapsed(u32) * 50L) >= 500L)
+	{
+		u32 = timerCounterModBus;
+		if(GetTherapyType() == KidneyTreat)
+		{
+			FilterFlowVal = CalcFilterFlow((unsigned char)(modbusData[pumpPerist[0].pmpMySlaveAddress-2][17] / 100));
+		}
+		else if(GetTherapyType() == LiverTreat)
+		{
+			FilterFlowVal = CalcFilterFlow((unsigned char)(modbusData[pumpPerist[3].pmpMySlaveAddress-2][17] / 100));
+		}
+	}
+}
 
 word CalcHoursMin(int seconds)
 {

@@ -328,15 +328,41 @@ void manageChildPrimAlmBadPinchPosAlways(void)
 //--------------------------------------------------------------------------------------------------
 // L'allarme viene generato quando viene rilevata aria nella linea del filtro e sono in priming
 /* Manage CHILD_PRIM_ALARM_SFA_AIR_DET entry state in priming*/
+//void manageChildPrimAlmSFAAirDetEntry(void)
+//{
+//	manageChildTreatAlm1StopAllActEntry();
+//}
+//
+//void manageChildPrimAlmSFAAirDetAlways(void)
+//{
+//	manageChildTreatAlm1StopAllActAlways();
+//}
+
 void manageChildPrimAlmSFAAirDetEntry(void)
 {
+	// fermo le pompe e metto le pinch in sicurezza
 	manageChildTreatAlm1StopAllActEntry();
+	TreatAlm1SafAirFiltActive = TRUE;
 }
 
+/* Manage CHILD_TREAT_ALARM_1_SAF_AIR_FILT always state */
 void manageChildPrimAlmSFAAirDetAlways(void)
 {
+	// apetto che tutte le pompe si siano fermate
 	manageChildTreatAlm1StopAllActAlways();
+	DisablePrimAirAlarm(TRUE); // forzo la chiusura dell'allarme aria
+	if((buttonGUITreatment[BUTTON_RESET_ALARM].state == GUI_BUTTON_RELEASED) && IsSecurityStateActive())
+	{
+		// setto la guard per fare in modo che quando l'allarme risultera' non attivo
+		// la macchina a stati parent vada nello stato di espulsione bolla aria
+		currentGuard[GUARD_ALARM_PRIM_AIR_FILT_RECOVERY].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+		// ho raggiunto la condizione di sicurezza ed ho ricevuto un comando reset alarm
+		releaseGUIButton(BUTTON_RESET_ALARM);
+		EnableNextAlarmFunc(); //EnableNextAlarm = TRUE;
+		LevelBuzzer = 0;
+	}
 }
+
 //--------------------------------------------------------------------------------------------------
 
 

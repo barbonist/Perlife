@@ -118,7 +118,7 @@
 
 #define MAX_MSG_CONSECUTIVE_FLOW_SENS_NOT_DETECTED 			10
 #define MAX_MSG_CONSECUTIVE_IR_TEMP_SENS_NOT_DETECTED 		10
-#define PR_ART_HIGH											300  //100
+#define PR_ART_HIGH											100
 #define PR_ART_LOW											0
 #define PR_VEN_HIGH											10  //290
 //TODO da definire esattamente

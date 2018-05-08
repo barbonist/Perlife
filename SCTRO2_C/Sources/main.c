@@ -746,6 +746,9 @@ int main(void)
 
 	      	ManageSwTimers();
 
+	      	// aggiorno il valore del flusso sul filtro
+	      	UpdateFilterFlowVal();
+
   }
   /**********MAIN LOOP END**************/
 
