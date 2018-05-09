@@ -1858,25 +1858,6 @@ void manageParPrimWaitPinchCloseAlways(void)
 		DisableBadPinchPosAlmFunc();
 		DebugStringStr("PINCH CLOSED");
 	}
-	else if(!IsPinchPosOk(PinchPos))
-	{
-		// ripeto i comandi sulle pinch
-		if(!FilterSelected)
-		{
-			// il filtro non viene usato quindi devo passare sempre sul bypass
-			setPinchPositionHighLevel(PINCH_2WPVF, MODBUS_PINCH_LEFT_OPEN);
-		}
-		else
-			setPinchPositionHighLevel(PINCH_2WPVF, MODBUS_PINCH_RIGHT_OPEN);
-
-		// prima di attaccare l'organo vogliono tutte le pinch chiuse
-		setPinchPositionHighLevel(PINCH_2WPVA, MODBUS_PINCH_POS_CLOSED);
-		if(GetTherapyType() == LiverTreat)
-		{
-			// ho selezionato il fegato, quindi devo chiudere anche questa
-			setPinchPositionHighLevel(PINCH_2WPVV, MODBUS_PINCH_POS_CLOSED);
-		}
-	}
 
 	if(buttonGUITreatment[BUTTON_PRIMING_ABANDON].state == GUI_BUTTON_RELEASED)
 	{
@@ -1999,9 +1980,6 @@ TREAT_SET_PINCH_POS_TASK_STATE TreatSetPinchPosTask(TREAT_SET_PINCH_POS_CMD cmd)
 	else if( cmd == T_SET_PINCH_RESET_ALARM_CMD)
 	{
 		// vado nello stato di fine processo per proseguire nel trattamento
-		// il tasto BUTTON_START_TREATMENT lo ho gia' ricevuto, quindi, per il prossimo start
-		// devo forzarlo
-		setGUIButton(BUTTON_START_TREATMENT);
 		TreatSetPinchPosTaskState = T_SET_PINCH_END;
 		return TreatSetPinchPosTaskState;
 	}
@@ -2085,9 +2063,6 @@ TREAT_SET_PINCH_POS_TASK_STATE TreatSetPinchPosTask(TREAT_SET_PINCH_POS_CMD cmd)
 					if(CorrectPosCnt >= 3)
 					{
 						// la posizione e' identica a quella del protective per 3 volte consecutive, posso iniziare il trattamento
-						// il tasto BUTTON_START_TREATMENT lo ho gia' ricevuto, quindi, per il prossimo start
-						// devo forzarlo
-						setGUIButton(BUTTON_START_TREATMENT);
 						TreatSetPinchPosTaskState = T_SET_PINCH_END;
 						DebugStringStr("PINCH TO ORGAN 1");
 					}
@@ -2235,11 +2210,6 @@ void manageParentTreatAlways(void){
 				currentGuard[GUARD_ENT_PAUSE_STATE_TREAT_KIDNEY_1_INIT].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
 				DebugStringStr("Stop 1");
 			}
-			if(GetTherapyType() == LiverTreat)
-			{
-				// blocco aggiornamento della pompa di ossigenazione
-				CheckDepurationSpeed(LastDepurationSpeed, FALSE, TRUE);
-			}
 		}
 		else if(buttonGUITreatment[BUTTON_STOP_PERF_PUMP].state == GUI_BUTTON_RELEASED)
 		{
@@ -2276,9 +2246,7 @@ void manageParentTreatAlways(void){
 				// Ci pensera' poi il pid a far partire la pompa.
 				// faccio partire la pompa di depurazione ad una velocita' prestabilita
 				//setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, LIVER_PPAR_SPEED);
-
-				// sblocco aggiornamento della pompa di ossigenazione
-				CheckDepurationSpeed(LastDepurationSpeed, TRUE, FALSE);
+				CheckDepurationSpeed(LastDepurationSpeed, TRUE);
 			}
 
 			releaseGUIButton(BUTTON_START_TREATMENT);
@@ -2472,11 +2440,6 @@ void manageParentTreatAlways(void){
 					currentGuard[GUARD_ENT_PAUSE_STATE_KIDNEY_1_PUMP_ON].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
 					DebugStringStr("Stop 2");
 				}
-				if(GetTherapyType() == LiverTreat)
-				{
-					// blocco aggiornamento della pompa di ossigenazione
-					CheckDepurationSpeed(LastDepurationSpeed, FALSE, TRUE);
-				}
 			}
 			else if(buttonGUITreatment[BUTTON_STOP_PERF_PUMP].state == GUI_BUTTON_RELEASED)
 			{
@@ -2547,9 +2510,6 @@ void manageParentTreatAlways(void){
 					pressSample2_Ven = MedForVenousPid;
 					pressSample1_Ven = PR_VEN_Sistolyc_mmHg;
 					pressSample2_Ven = PR_VEN_Sistolyc_mmHg;
-
-					// sblocco aggiornamento della pompa di ossigenazione
-					CheckDepurationSpeed(LastDepurationSpeed, TRUE, FALSE);
 				}
 				//GlobalFlags.FlagsDef.EnableAllAlarms = 1;
 				SetAllAlarmEnableFlags();
@@ -2751,8 +2711,9 @@ void manageParentEntryAlways(void)
 	// TODO
 	// (FM) qui posso gestire il T1 test e l'inizializzazione della comm ed alla fine
 	// devo eseguire le due istruzioni
-	currentGuard[GUARD_HW_T1T_DONE].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
-	currentGuard[GUARD_COMM_ENABLED].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+	//currentGuard[GUARD_HW_T1T_DONE].guardEntryValue = GUARD_ENTRY_VALUE_TRUE; //messa a true solo se t1 test sono positivi
+	//currentGuard[GUARD_COMM_ENABLED].guardEntryValue = GUARD_ENTRY_VALUE_TRUE; //messa a true solo se t1 test sono positivi
+	currentGuard[GUARD_T1_NO_DISP_OK].guardEntryValue = GUARD_ENTRY_VALUE_TRUE; //inizio dei t1 test
 }
 
 
@@ -3297,11 +3258,9 @@ void manageChildEntryAlways(void)
 /*  This function compute the guard value in entry state   */
 /*--------------------------------------------------------*/
 static void computeMachineStateGuardEntryState(void){
-	if((currentGuard[GUARD_HW_T1T_DONE].guardValue == GUARD_VALUE_TRUE) &&
-		(currentGuard[GUARD_COMM_ENABLED].guardValue == GUARD_VALUE_TRUE))
-	{
-		currentGuard[GUARD_ENABLE_STATE_IDLE].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
-	}
+
+	currentGuard[GUARD_ENABLE_T1_NO_DISP].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+
 }
 
 /*--------------------------------------------------------*/
@@ -3596,10 +3555,7 @@ static void computeMachineStateGuardTreatment(void)
 		else if(GetTherapyType() == LiverTreat)
 		{
 			if(isec > 0)
-			{
-				// aggiorno la velocita' della pompa di depurazione
-				CheckDepurationSpeed(LastDepurationSpeed, FALSE, FALSE);
-			}
+				CheckDepurationSpeed(LastDepurationSpeed, FALSE);
 		}
 	}
 
@@ -3780,7 +3736,7 @@ void ParentEmptyDispStateMach(void)
 			   (buttonGUITreatment[BUTTON_RESET_ALARM].state == GUI_BUTTON_RELEASED))
 			{
 				if(buttonGUITreatment[BUTTON_RESET_ALARM].state == GUI_BUTTON_RELEASED)
-					EnableNextAlarmFunc(); //EnableNextAlarm = TRUE;
+					EnableNextAlarm = TRUE;
 
 				// Il ritorno allo vuotamento viene fatto solo dopo la pressione del tasto BUTTON_RESET_ALARM
 				releaseGUIButton(BUTTON_RESET_ALARM);
@@ -3928,6 +3884,7 @@ void processMachineState(void)
 				ptrFutureParent = ptrFutureState->ptrParent;
 				/* compute future child */
 				ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
+				break; //cambio stato NULL --> ENTRY
 			}
 
 			/* execute function state level */
@@ -3948,17 +3905,17 @@ void processMachineState(void)
 
 		case STATE_ENTRY:
 			/* compute future state */
-			if((currentGuard[GUARD_HW_T1T_DONE].guardValue == GUARD_VALUE_TRUE) &&
-				(currentGuard[GUARD_COMM_ENABLED].guardValue == GUARD_VALUE_TRUE))
+			if(currentGuard[GUARD_T1_NO_DISP_OK].guardValue == GUARD_VALUE_TRUE)
 			{
 				/* (FM) VADO NELLO STATO IDLE,ACTION_ON_ENTRY DATO CHE LA FASE INIZIALE DI TEST E' FINITA */
 				/* compute future state */
-				ptrFutureState = &stateState[3];
+				ptrFutureState = &stateState[7];
 				/* compute future parent */
 				ptrFutureParent = ptrFutureState->ptrParent;
 				/* compute future child */
 				ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
-				DebugStringStr("IDLE");
+				DebugStringStr("exit from entry");
+				break; //cambio stato ENTRY --> T1_TEST_NO_DISP
 			}
 
 			/* compute parent......compute child */
@@ -3968,7 +3925,7 @@ void processMachineState(void)
 				// non serve qui verra' chiamata nella manageStateEntryAndStateAlways
 				//ptrCurrentParent->callBackFunct();
 				/* compute future parent */
-				ptrFutureParent = &stateParentEntry[2];
+				//ptrFutureParent = &stateParentEntry[2]; //non si può attribuire al ON_ENTRY una funzione ALWAYS
 			}
 			else if(ptrCurrentParent->action == ACTION_ALWAYS)
 			{
@@ -3983,7 +3940,7 @@ void processMachineState(void)
 					/* (FM) esegue la parte ACTION_ON_ENTRY dello stato entry - child */
 					// non serve qui verra' chiamata nella manageStateEntryAndStateAlways
 					//ptrCurrentChild->callBackFunct();
-					ptrFutureChild = &stateChildEntry[2];
+					//ptrFutureChild = &stateChildEntry[2]; //non si può attribuire al ON_ENTRY una funzione ALWAYS
 				}
 				else if(ptrCurrentChild->action == ACTION_ALWAYS){
 					/* (FM) esegue la parte ACTION_ALWAYS dello stato entry - child */
@@ -3997,6 +3954,21 @@ void processMachineState(void)
                E LI' RIMANE FINO A QUANDO NON GLI ARRIVA UN NUOVO COMANDO */
 			manageStateEntryAndStateAlways(2);
 			break;
+
+		case STATE_T1_NO_DISPOSABLE:
+			if((currentGuard[GUARD_HW_T1T_DONE].guardValue == GUARD_VALUE_TRUE) &&
+			   (currentGuard[GUARD_COMM_ENABLED].guardValue == GUARD_VALUE_TRUE))
+			{
+				ptrFutureState = &stateState[3];
+				/* compute future parent */
+				ptrFutureParent = ptrFutureState->ptrParent;
+				/* compute future child */
+				ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
+				DebugStringStr("enable state idle");
+			}
+
+			manageStateEntryAndStateAlways(8);
+		break;
 
 		case STATE_IDLE:
 			/* compute future state */
@@ -4025,6 +3997,8 @@ void processMachineState(void)
 			/* execute function state level */
 			// (FM) DOPO LA PRIMA VOLTA PASSA AUTOMATICAMENTE NELLO STATO IDLE,ACTION_ALWAYS
 			manageStateEntryAndStateAlways(4);
+
+			DebugStringStr("reach idle state");
 			break;
 
 		case STATE_SELECT_TREAT:     // NON E' USATO CON LA GESTIONE DA SERVICE
@@ -4044,9 +4018,6 @@ void processMachineState(void)
 
 			/* execute function state level */
 			manageStateEntryAndStateAlways(6);
-			break;
-
-		case STATE_T1_NO_DISPOSABLE:
 			break;
 
 		case STATE_MOUNTING_DISP:
@@ -4445,6 +4416,9 @@ void processMachineState(void)
 	}
 
 	// chiamo la funzione che gestisce gli stati parent
+	if(ptrCurrentState->state == STATE_T1_NO_DISPOSABLE) //chiamo la funzione parent solo quando serve
+		ParentFuncT1Test();
+
 	ParentFunc();
 
     /* (FM) IL CODICE CONTENUTO POTREBBE ESSERE INSERITO ALL'INTERNO DELLA FUNZIONE stateChildAlarmPriming_func E CHIAMATA DA DENTRO
@@ -4737,22 +4711,14 @@ void CheckOxygenationSpeed(word value)
 
 // Questa funzione deve essere chiamata solo quando sono nel trattamento fegato
 // Questa cosa deve essere fatta nelle funzioni always e non quando arriva il parametro
-void CheckDepurationSpeed(word value, bool ForceValue, bool DisableUpdateCmd)
+void CheckDepurationSpeed(word value, bool ForceValue)
 {
-	static bool EnableUpdate = FALSE;
-	if(DisableUpdateCmd)
-	{
-		EnableUpdate = FALSE;
-		return;
-	}
-
 	if(ForceValue)
 	{
 		setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, (int)((float)parameterWordSetFromGUI[PAR_SET_PURIF_FLOW_TARGET].value / DEFAULT_ART_PUMP_GAIN * 100.0));
 		LastDepurationSpeed = parameterWordSetFromGUI[PAR_SET_PURIF_FLOW_TARGET].value;
-		EnableUpdate = TRUE;
 	}
-	else if(EnableUpdate && (parameterWordSetFromGUI[PAR_SET_PURIF_FLOW_TARGET].value != value))
+	else if(parameterWordSetFromGUI[PAR_SET_PURIF_FLOW_TARGET].value != value)
 	{
 		// ho ricevuto un valore del flusso di depurazione diverso dal precedente
 		// devo aggiornare la velocita' della pompa

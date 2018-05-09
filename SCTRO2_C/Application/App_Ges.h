@@ -123,6 +123,14 @@ void manageStatePriming_1_WaitAlways(void);
 
 /* PARENT LEVEL FUNCTION */
 /**************************************************************************************/
+/******-----------------------------T1 TEST NO DISP----------------------------********/
+/**************************************************************************************/
+void manageParentT1InitEntry(void);
+void manageParentT1NoDispEntry(void);
+void manageParentT1NoDispAlways(void);
+void manageParentT1EndEntry(void);
+
+/**************************************************************************************/
 /******-----------------------------TREATMENT----------------------------------********/
 /**************************************************************************************/
 void manageParentPrimingEntry(void);
@@ -230,7 +238,7 @@ void EEPROM_Read(LDD_FLASH_TAddress Source, LDD_TData *Dest, LDD_FLASH_TDataSize
 void CallInIdleState(void);
 word GetTotalPrimingVolumePerf(int cmd);
 void CheckOxygenationSpeed(word value);
-void CheckDepurationSpeed(word value, bool ForceValue, bool DisableUpdateCmd);
+void CheckDepurationSpeed(word value, bool ForceValue);
 void GoToRecoveryParentState(int MachineParentState);
 
 void HandlePinch( int cmd);
@@ -246,6 +254,7 @@ CHECK_PUMP_STOP_STATE CheckPumpStopTask(CHECK_PUMP_STOP_CMD cmd);
 //bool IsPinchPosOk(void);
 //CHECK_PINCH_POS_STATE CheckPinchPosTask(CHECK_PINCH_CMD cmd);
 
+void ParentFuncT1Test(void);
 void ParentFunc(void);
 void AirAlarmRecoveryStateMach(void);
 
