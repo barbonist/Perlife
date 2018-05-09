@@ -245,6 +245,8 @@ int main(void)
   Peltier2On = FALSE;
   PeltierOn = FALSE;
   GlobalFlags.FlagsVal = 0;
+  Prescaler_Freq_Signal_AMS = 10;
+  Enable_AMS = 0;
 
   CoversState = 4; // all covers chiusi
   ArteriousPumpGainForPid = DEFAULT_ART_PUMP_GAIN;
@@ -573,11 +575,30 @@ int main(void)
 	         }
 
 	         if(ReadKey1()) // per debug con la tastiera a bolle
+	         {
+	        	 Prescaler_Freq_Signal_AMS ++;
+	        	 if (Prescaler_Freq_Signal_AMS > 40)
+	        		 Prescaler_Freq_Signal_AMS = 40;
 	        	 Released1 = 1;
+	         }
 	         if(ReadKey2()) // per debug con la tastiera a bolle
+	         {
+	        	 Prescaler_Freq_Signal_AMS --;
+	        	 if (Prescaler_Freq_Signal_AMS < 10)
+	        		 Prescaler_Freq_Signal_AMS = 10;
 	        	 Released2 = 1;
+	         }
 	         if(ReadKey3()) // per debug con la tastiera a bolle
+	         {
+	        	if (!Enable_AMS)
+	        		Enable_AMS = TRUE;
+	        	else
+	        	{
+	        		Enable_AMS = FALSE;
+	        		COMP_PWM_ClrVal();
+	        	}
 	        	 Released3 = 1;
+	         }
 
 	         /****MACHINE STATE UPDATE END****/
 
