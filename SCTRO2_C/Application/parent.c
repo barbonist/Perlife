@@ -310,6 +310,9 @@ void ParentFunc(void)
 			{
 			}
 			break;
+
+		// STATO PER LA GESTIONE DELL'ATTESA DELLE POMPE FERME. SE NON SI FERMANO
+		// VERRA' GENERATO UN ALLARME GESTITO NELLO STATO PARENT_PRIMING_END_RECIRC_ALARM
 		case PARENT_PRIM_WAIT_MOT_STOP:
 			if(currentGuard[GUARD_ALARM_ACTIVE].guardValue == GUARD_VALUE_TRUE)
 			{
@@ -340,6 +343,8 @@ void ParentFunc(void)
 			{
 			}
 			break;
+		// STATO PER LA GESTIONE DELL'ATTESA DELLE PINCH TUTTE CHIUSE. sE NON SI DOVESSERO CHIUDERE VERRA'
+		// GENERATO UN ALLARME GESTITO NELLO STATO PARENT_PRIMING_END_RECIRC_ALARM
 		case PARENT_PRIM_WAIT_PINCH_CLOSE:
 			if(currentGuard[GUARD_ALARM_ACTIVE].guardValue == GUARD_VALUE_TRUE)
 			{
@@ -362,10 +367,12 @@ void ParentFunc(void)
 		case PARENT_PRIMING_END_RECIRC_ALARM:
 			if(currentGuard[GUARD_ALARM_ACTIVE].guardValue == GUARD_VALUE_FALSE)
 			{
-				if(buttonGUITreatment[BUTTON_RESET_ALARM].state == GUI_BUTTON_RELEASED)
+				// Il BUTTON_RESET_ALARM e' stato usato nelle funzioni child per resettare
+				// l'allarme e proseguire
+				//if(buttonGUITreatment[BUTTON_RESET_ALARM].state == GUI_BUTTON_RELEASED)
 				{
 					// Il ritorno allo stato di partenza del priming viene fatto solo dopo la pressione del tasto BUTTON_RESET_ALARM
-					releaseGUIButton(BUTTON_RESET_ALARM);
+					//releaseGUIButton(BUTTON_RESET_ALARM);
 					EnableNextAlarmFunc(); //EnableNextAlarm = TRUE;
 					if(ParentStateGenAlarm == PARENT_PRIM_WAIT_PINCH_CLOSE)
 					{
@@ -389,6 +396,10 @@ void ParentFunc(void)
 			}
 			else if(ptrCurrentParent->action == ACTION_ALWAYS){}
 			break;
+
+			// SE DURANTE IL PRIMING CON FILTRO ABILITATO SI VERIFICA UN ALLARME ARIA SUL FILTRO SI
+			// ARRIVA IN QUESTO STATO DOVE VIENE ATTIVATA LA PROCEDURA DI ESPULSIONE DELL'ARIA E CONTEMPORANEAMENTE
+			// VENGONO CONTROLLATI EVENTUALI ALLARMI DI PRESSIONE NEL CASO LE LINEE SIANO OTTURATE
 
 			// STATI PER LA GESTIONE DELLA PROCEDURA DI RIMOZIONE DELL'ARIA DAL CIRCUITO -----------------------
 			case PARENT_PRIM_KIDNEY_1_AIR_FILT:
@@ -420,7 +431,7 @@ void ParentFunc(void)
 				if(currentGuard[GUARD_ALARM_ACTIVE].guardValue == GUARD_VALUE_TRUE)
 				{
 					/* (FM) si e' verificato un allarme, durante la procedura di recupero dell'allarme aria.
-					 * Per la sua gestione uso un nuovo stato 13  */
+					 * Per la sua gestione uso un nuovo stato 19  */
 					ptrFutureParent = &stateParentPrimingTreatKidney1[19];
 					ptrFutureChild = ptrFutureParent->ptrChild;
 					// guardando a questo valore posso vedere il tipo di azione di sicurezza

@@ -126,10 +126,13 @@ void manageStatePriming_1_WaitAlways(void);
 /******-----------------------------TREATMENT----------------------------------********/
 /**************************************************************************************/
 void manageParentPrimingEntry(void);
+void SetPinchPosInPriming(void);
 void manageParentPrimingAlways(void);
 void manageParPrimWaitMotStopEntry(void);
 void manageParPrimWaitMotStopEntryAlways(void);
 void manageParPrimWaitPinchCloseEntry(void);
+bool AreAllPinchClose( void );
+void ResetPrimPinchAlm(void);
 void manageParPrimWaitPinchCloseAlways(void);
 void  manageParPrimEndRecAlarmEntry(void);
 void manageParPrimEndRecAlarmAlways(void);

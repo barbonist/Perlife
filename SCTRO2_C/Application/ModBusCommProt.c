@@ -1323,6 +1323,8 @@ void Manage_and_Storage_ModBus_Actuator_Data(void)
     }
 }
 
+//char st[STR_DBG_LENGHT];
+//int SelPump = 0;
 /*In questa funzione memorizzo i dati ricevuti in seguito
  *  alla Check_Actuator_Status nella matrice modbusData*/
 void StorageModbusData(unsigned char LastActuatslvAddr)
@@ -1409,6 +1411,11 @@ void StorageModbusData(unsigned char LastActuatslvAddr)
 		Pump_Average_Current = BYTES_TO_WORD(dataTemp[3], dataTemp[4]);
 		Pump_Speed_Status	 = BYTES_TO_WORD(dataTemp[5], dataTemp[6]);
 		Pump_Status 		 = BYTES_TO_WORD(dataTemp[7], dataTemp[8]);
+//		if(SelPump == Address)
+//		{
+//		sprintf(st, "*%x*", Pump_Status & 0x200);
+//		DebugStringStr(st);
+//		}
 	}
 	/*se ho l'indirizzo di una pinch*/
 	else if (Address >= FIRST_PINCH && Address <= LAST_ACTUATOR)
@@ -1581,7 +1588,7 @@ unsigned char CheckCoverPump()
 			if (modbusData[i][18] & 0x0200)
 			{
 				CoverOpenCnt[i]++;
-				if(CoverOpenCnt[i] > 3)
+				if(CoverOpenCnt[i] > 2)
 				{
 					CoverOpenCnt[i] = 3;
 					CoverState[i] = 1;
@@ -1591,7 +1598,7 @@ unsigned char CheckCoverPump()
 			else
 			{
 				CoverCloseCnt[i]++;
-				if(CoverCloseCnt[i] > 3)
+				if(CoverCloseCnt[i] > 4)
 				{
 					CoverCloseCnt[i] = 3;
 					CoverState[i] = 0;

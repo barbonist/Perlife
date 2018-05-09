@@ -1234,25 +1234,24 @@ void buildRDMachineStateResponseMsg(char code, char subcode)
 	/*120*/  sbc_tx_data[index++] = ((word)FilterFlowVal >> 8) & 0xFF;  // flusso nel filtro in ml/min (!= 0 solo se il filtro e' presente)
 	/*121*/  sbc_tx_data[index++] = ((word)FilterFlowVal     ) & 0xFF;
 	wd = 0;
+	/*122*/  sbc_tx_data[index++] = (TimeoutAirEjection >> 8) & 0xFF;  // flag di timeout nell'espulsione dell'aria
+	/*123*/  sbc_tx_data[index++] = (TimeoutAirEjection     ) & 0xFF;
 	/* free 1*/
-	/*122*/  sbc_tx_data[index++] = (wd >> 8) & 0xFF;
-	/*123*/  sbc_tx_data[index++] = (wd     ) & 0xFF;
-	/* free 2*/
 	/*124*/  sbc_tx_data[index++] = (wd >> 8) & 0xFF;
 	/*125*/  sbc_tx_data[index++] = (wd     ) & 0xFF;
-	/* free 3*/
+	/* free 2*/
 	/*126*/  sbc_tx_data[index++] = (wd >> 8) & 0xFF;
 	/*127*/  sbc_tx_data[index++] = (wd     ) & 0xFF;
-	/* free 4*/
+	/* free 3*/
 	/*128*/  sbc_tx_data[index++] = (wd >> 8) & 0xFF;
 	/*129*/  sbc_tx_data[index++] = (wd     ) & 0xFF;
-	/* free 5*/
+	/* free 4*/
 	/*130*/  sbc_tx_data[index++] = (wd >> 8) & 0xFF;
 	/*131*/  sbc_tx_data[index++] = (wd     ) & 0xFF;
-	/* free 6*/
+	/* free 5*/
 	/*132*/  sbc_tx_data[index++] = (wd >> 8) & 0xFF;
 	/*133*/  sbc_tx_data[index++] = (wd     ) & 0xFF;
-	/* free 7*/
+	/* free 6*/
 	/*134*/  sbc_tx_data[index++] = (wd >> 8) & 0xFF;
 	/*135*/  sbc_tx_data[index++] = (wd     ) & 0xFF;
 

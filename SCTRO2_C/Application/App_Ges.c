@@ -1242,6 +1242,7 @@ void manageParentPrimingAlways(void){
 		}
 
 		SetPinchPosInPriming();
+		// QUESTO CODICE E' STATO SPOSTATO NELLA FUNZIONE SetPinchPosInPriming
 //		if(!FilterSelected)
 //			setPinchPositionHighLevel(PINCH_2WPVF, MODBUS_PINCH_LEFT_OPEN);
 //		else
@@ -1267,6 +1268,7 @@ void manageParentPrimingAlways(void){
 		setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, RPM_IN_PRIMING_PHASES);
 
 		SetPinchPosInPriming();
+		// QUESTO CODICE E' STATO SPOSTATO NELLA FUNZIONE SetPinchPosInPriming
 //		if(!FilterSelected)
 //			setPinchPositionHighLevel(PINCH_2WPVF, MODBUS_PINCH_LEFT_OPEN);
 //		else
@@ -1412,6 +1414,7 @@ void manageParentPrimingAlways(void){
 			{
 				if(ptrCurrentState->state == STATE_PRIMING_RICIRCOLO)
 				{
+					SetPinchPosInPriming();
 					// sono nella fase di ricircolo e si e' verificato un allarme oppure l'utente ha
 					// fermato il processo con stop priming e poi e' ripartito
 					if(AlarmOrStopInRecircFlag)
@@ -1440,6 +1443,7 @@ void manageParentPrimingAlways(void){
 				}
 
 				SetPinchPosInPriming();
+				// QUESTO CODICE E' STATO SPOSTATO NELLA FUNZIONE SetPinchPosInPriming
 //				if(!FilterSelected)
 //					setPinchPositionHighLevel(PINCH_2WPVF, MODBUS_PINCH_LEFT_OPEN);
 //				else
@@ -1465,6 +1469,7 @@ void manageParentPrimingAlways(void){
 				setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, RPM_IN_PRIMING_PHASES);
 
 				SetPinchPosInPriming();
+				// QUESTO CODICE E' STATO SPOSTATO NELLA FUNZIONE SetPinchPosInPriming
 //				if(!FilterSelected)
 //					setPinchPositionHighLevel(PINCH_2WPVF, MODBUS_PINCH_LEFT_OPEN);
 //				else
@@ -1598,6 +1603,11 @@ void manageParentPrimingAlways(void){
 					// ho raggiunto la temperatura ( + o - un grado)richiesta posso passare nello stato di
 					// attesa ricezione comando di start trattamento
 					// fermo le pompe ed aspetto
+
+					// debugVal le 7 linee di programma che seguono le devo commentare
+					// se voglio provare l'allarme delle pompe che non si fermano alla fine
+					// del ricircolo
+					// commento solo per debug. DA TOGLIERE !!!!
 					setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
 					setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 0);
 					if(GetTherapyType() == LiverTreat)
@@ -1605,6 +1615,7 @@ void manageParentPrimingAlways(void){
 						// se sono nel trattamento fegato fermo anche l'altro motore !!
 						setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, 0);
 					}
+
 					//currentGuard[GUARD_ENABLE_WAIT_TREATMENT].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
 					//StartTreatmentTime = (unsigned long)timerCounterModBus;
 
@@ -1779,7 +1790,11 @@ void manageParPrimWaitMotStopEntryAlways(void)
 	}
 }
 
+// conta il numero di volte che le pinch sono rilevate in una posizione non corretta
+int PinchCloseAlwaysCnt;
+int PinchClosedCnt;
 
+// FUNZIONI PARENT PE RGESTIRE LO STATO PARENT_PRIM_WAIT_PINCH_CLOSE
 // controllo che tutte le pinch siano in posizione altrimenti do un allarme
 // l'arteriosa e venosa devono essere chiuse per proteggere l'organo quando viene attaccato
 void manageParPrimWaitPinchCloseEntry(void)
@@ -1801,15 +1816,47 @@ void manageParPrimWaitPinchCloseEntry(void)
 		// ho selezionato il fegato, quindi devo chiudere anche questa
 		setPinchPositionHighLevel(PINCH_2WPVV, MODBUS_PINCH_POS_CLOSED);
 	}
+	PinchCloseAlwaysCnt = 0;
+	PinchClosedCnt = 0;
 	// abilito allarme di pinch posizionate male
 	EnableBadPinchPosAlmFunc();
 }
 
+// quando ritorna true posso generare un allarme di pinch posizionate male
+// prima di collegare l'organo (devono essere tutte chiuse tranne quella del filter
+bool AreAllPinchClose( void )
+{
+	// aspetto un tempo pari a 50 * 30 = 1500 msec
+	// per fare in modo che 3 possibili attuazioni vengano attuate
+	if(PinchCloseAlwaysCnt > 30)
+	{
+		return TRUE;
+	}
+	return FALSE;
+}
+
+// resetto la flag di allarme per permettere l'uscita dallo stato di
+// allarme PARENT_PRIMING_END_RECIRC_ALARM
+void ResetPrimPinchAlm(void)
+{
+	PinchCloseAlwaysCnt = 0;
+}
+
 void manageParPrimWaitPinchCloseAlways(void)
 {
+	bool PinchposOK;
+	int PinchClosedCntForClose = 10;
 	unsigned char PinchPos[3] = {0xff, MODBUS_PINCH_POS_CLOSED, MODBUS_PINCH_POS_CLOSED};
 //	CheckPinchPosTask((CHECK_PINCH_CMD)NO_CHECK_PINCH_CMD);
-	if(IsPinchPosOk(PinchPos) && currentGuard[GUARD_ENABLE_TREATMENT_KIDNEY_1].guardEntryValue == GUARD_ENTRY_VALUE_FALSE)
+
+	PinchposOK = IsPinchPosOk(PinchPos);
+	if(PinchposOK)
+	{
+		PinchClosedCnt++;
+		PinchCloseAlwaysCnt = 0;
+	}
+	if((PinchClosedCnt >= PinchClosedCntForClose) &&
+	   currentGuard[GUARD_ENABLE_TREATMENT_KIDNEY_1].guardEntryValue == GUARD_ENTRY_VALUE_FALSE)
 	{
 		// le pinch sono chiuse posso passare al trattamento
 		currentGuard[GUARD_ENABLE_TREATMENT_KIDNEY_1].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
@@ -1819,8 +1866,10 @@ void manageParPrimWaitPinchCloseAlways(void)
 		DisableBadPinchPosAlmFunc();
 		DebugStringStr("PINCH CLOSED");
 	}
-	else if(!IsPinchPosOk(PinchPos))
+	else if(!PinchposOK)
 	{
+		PinchCloseAlwaysCnt++;
+		PinchClosedCnt = 0;
 		// ripeto i comandi sulle pinch
 		if(!FilterSelected)
 		{
@@ -1933,7 +1982,7 @@ void ResetTreatSetPinchPosTaskAlm(void)
 // prima di iniziare il trattamento. Questo processo deve partire quando l'utente
 // preme il tasto BUTTON_START_TREATMENT.
 // E' stato fatto in questo modo per evitare di modificare l'interfaccia GUI che, attualmente
-// gestisce il bottone BUTTON_START_TREATMENT solo negli stati PARENT_TREAT_KIDNEY_1_INITPARENT_TREAT_KIDNEY_1_PUMP_ON,
+// gestisce il bottone BUTTON_START_TREATMENT solo negli stati PARENT_TREAT_KIDNEY_1_INIT,PARENT_TREAT_KIDNEY_1_PUMP_ON,
 // PARENT_TREAT_WAIT_START, PARENT_TREAT_WAIT_PAUSE
 TREAT_SET_PINCH_POS_TASK_STATE TreatSetPinchPosTask(TREAT_SET_PINCH_POS_CMD cmd)
 {
@@ -2087,6 +2136,21 @@ void manageParentTreatEntry(void){
 	if(pumpPerist[0].entry == 0)
 	{
 		setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
+
+		//-------------------------------------------------------------------------------------------------------------------------
+		// PROBABILMENTE QUESTO CODICE NO SERVE PERCHE' LA RICHIESTA DI CONTROLLARE IL POSIZIONAMENTO DELLE PINCH VIENE FATTO ANCHE
+		// IN ALTRI STATI:
+		// - RITORNO DA ALLARME
+		// - PARENT_TREAT_WAIT_START
+		// - PARENT_TREAT_WAIT_PAUSE
+		// FORSE SE INSERISCO QUESTA CHIAMATA POSSO ELIMINARE TUTTE LE ALTRE NEGLI ALTRI STATI.        NON LO PROVO PER ORA !!!!
+		// preparo la macchina a stati per il controllo delle pinch aperte nella posizione richiesta per lo stato di trattamento
+		// TreatSetPinchPosTask((TREAT_SET_PINCH_POS_CMD)T_SET_PINCH_RESET_CMD);
+		//------------------------------------------------------------------------------------------------------------------------
+
+//   CODICE USATO SIN DALL'INIZIO PER IL POSIZIONAMENTO DELLE PINCH PRIMA DI PARTIRE PER IL TRATTAMENTO E QUANDO SI
+//   RITORNAVA DA UNA SITUAZIONE DI ALLARME. ORA NON SERVE PIU' PERCHE' SI E' DECISO DI UTILIZZARE LA FUNZIONE TreatSetPinchPosTask
+//   ALL'INIZIO DELLA manageParentTreatAlways CHE CONTROLLA IL CORRETTO POSIZIONAMENTO DELLE PINCH PRIMA DI PROCEDERE CON IL TRATTAMENTO
 //		if(!FilterSelected)
 //		{
 //			// il filtro non viene usato quindi devo passare sempre sul bypass
@@ -2126,6 +2190,9 @@ void manageParentTreatEntry(void){
 		setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, 0);
 		pumpPerist[3].entry = 1;
 	}
+
+	// abilito allarme di pinch posizionate male
+	EnableBadPinchPosAlmFunc();
 }
 
 void manageParentTreatAlways(void){
@@ -3093,6 +3160,7 @@ void AirAlarmRecoveryStateMach(void)
 	{
 		case INIT_AIR_ALARM_RECOVERY:
 			AirAlarmRecoveryState = START_AIR_PUMP;
+			TimeoutAirEjection = 0;
 			break;
 		case START_AIR_PUMP:
 			if(AirParentState == PARENT_TREAT_KIDNEY_1_AIR_FILT)
@@ -3102,18 +3170,21 @@ void AirAlarmRecoveryStateMach(void)
 				else if(TherType == LiverTreat)
 					setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, AIR_REJECT_SPEED);
 				AirAlarmRecoveryState = AIR_CHANGE_START_TIME;
+				StarDelay = timerCounterModBus;
 			}
 			else if(AirParentState == PARENT_TREAT_KIDNEY_1_SFV)
 			{
 				// faccio partire la coppia di pompe per la venosa nel fegato e per l'ossigenazione nel rene
 				setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, AIR_REJECT_SPEED);
 				AirAlarmRecoveryState = AIR_CHANGE_START_TIME;
+				StarDelay = timerCounterModBus;
 			}
 			else if(AirParentState == PARENT_TREAT_KIDNEY_1_SFA)
 			{
 				// parte la sempre la pompa a cui si riferisce la struttura pumpPerist 0
 				setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, AIR_REJECT_SPEED);
 				AirAlarmRecoveryState = AIR_CHANGE_START_TIME;
+				StarDelay = timerCounterModBus;
 			}
 			break;
 		case AIR_CHANGE_START_TIME:
@@ -3134,6 +3205,18 @@ void AirAlarmRecoveryStateMach(void)
 				//  la bolla se ne e' andata faccio; ripartire il timer per misurare il tempo a partire da ora
 				StarTimeToRejAir = timerCounterModBus;
 				AirAlarmRecoveryState = STOP_AIR_PUMP;
+			}
+			else
+			{
+				// Dopo un timeout esco comunque e vado avanti dopo aver segnalato alla gui il fatto
+				if(StarDelay && ((msTick_elapsed(StarDelay) * 50L) >= 10000L))
+				{
+					// sono passati 10 secondi la bolla d'aria non si e' ancora spostata
+					// forzo il passaggio allo stato successivo.
+					StarTimeToRejAir = timerCounterModBus;
+					AirAlarmRecoveryState = STOP_AIR_PUMP;
+					TimeoutAirEjection = 1;
+				}
 			}
 			break;
 		case STOP_AIR_PUMP:
@@ -4184,6 +4267,10 @@ void processMachineState(void)
 				 * resetto la flag di entry sullo stato in cui sono*/
 				currentGuard[GUARD_ENABLE_TREATMENT_KIDNEY_1].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
 				currentGuard[GUARD_ENABLE_TREATMENT_KIDNEY_1].guardValue = GUARD_VALUE_FALSE;
+
+				// disabilito allarme di pinch posizionate male perche' sto uscendo dal trattamento.
+				// Il controllo sulle pinch posizionate correttamente viene fatto solo nello stato di trattamento
+				DisableBadPinchPosAlmFunc();
 				break;
 			}
 			else if(currentGuard[GUARD_ABANDON_PRIMING].guardValue == GUARD_VALUE_TRUE)
@@ -4197,6 +4284,10 @@ void processMachineState(void)
 				/* compute future child */
 				ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
 				DebugStringStr("STATE_EMPTY_DISPOSABLE(ABBANDONA)");
+
+				// disabilito allarme di pinch posizionate male perche' sto uscendo dal trattamento.
+				// Il controllo sulle pinch posizionate correttamente viene fatto solo nello stato di trattamento
+				DisableBadPinchPosAlmFunc();
 				break;
 			}
 
@@ -5002,6 +5093,7 @@ bool AreAllPumpsStopped( void )
 		return FALSE;
 }
 
+int debugVal = 0;
 // cmd comando per eventuare riposizionamento della macchina a stati
 CHECK_PUMP_STOP_STATE CheckPumpStopTask(CHECK_PUMP_STOP_CMD cmd)
 {
@@ -5017,12 +5109,14 @@ CHECK_PUMP_STOP_STATE CheckPumpStopTask(CHECK_PUMP_STOP_CMD cmd)
 		CheckPumpStopCnt = 0;
 		DisableCheckPumpStopTask = 0;
 		PumpStoppedCnt = 0;
+		StopMotorTimeOut = FALSE;
 		return CheckPumpStopTaskMach;
 	}
 	else if(cmd == RESET_ALARM)
 	{
 		// lo metto in uno stato di inattivita'
 		CheckPumpStopTaskMach = CHECK_PUMP_STOP_IDLE;
+		StopMotorTimeOut = FALSE;
 		return CheckPumpStopTaskMach;
 	}
 	else if(cmd == NO_CHECK_PUMP_READ_ALM_CMD)
@@ -5101,9 +5195,15 @@ CHECK_PUMP_STOP_STATE CheckPumpStopTask(CHECK_PUMP_STOP_CMD cmd)
 
 				if(PompeInMovimento)
 				{
+					// l'if che segue puo' essere inserito, insieme al codice alla linea 1606,
+					// solo se devo controllare in debug l'allarme di pompe che non si
+					// fermano alla fine del ricircolo
+					//if(debugVal) // solo per debug. DA TOGLIERE !!!!
+					{
 					setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, (int)0);
 					setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, (int)0);
 					setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, (int)0);
+					}
 					CheckPumpStopCnt++;
 				}
 			}

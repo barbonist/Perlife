@@ -76,11 +76,11 @@ struct alarm alarmList[] =
 
 void EnablePumpNotStillAlmFunc(void)
 {
-	GlobalFlags.FlagsDef.EnablePumpNotStillAlm = 0;
+	GlobalFlags.FlagsDef.EnablePumpNotStillAlm = 1;
 }
 void EnableBadPinchPosAlmFunc(void)
 {
-	GlobalFlags.FlagsDef.EnableBadPinchPosAlm = 0;
+	GlobalFlags.FlagsDef.EnableBadPinchPosAlm = 1;
 }
 void EnablePrimAlmSFAAirDetAlmFunc(void)
 {
@@ -652,28 +652,6 @@ void alarmEngineAlways(void)
 
 			case STATE_TREATMENT_2:
 			{
-				//verifica physic pressioni
-				manageAlarmPhysicPressSensHigh();
-				manageAlarmPhysicPressSensLow();
-
-				/*DA DEBUGGARE*/
-				//verifica physic flow sensor
-			//	manageAlarmPhysicUFlowSens();
-
-				//verifica physic ir temp sens
-				manageAlarmPhysicTempSens();
-
-				/*DA DEBUGGARE*/
-				//verifica physic flusso di perfusione arteriosa alto
-			//	manageAlarmPhysicFlowPerfArtHigh();
-
-				/*DA DEBUGGARE*/
-				//verifica  flusso  non rilevato
-			//	manageAlarmFlowSensNotDetected();
-
-				/*DA DEBUGGARE*/
-				//verifica temperatura noin rilevata
-				manageAlarmIrTempSensNotDetected();
 				break;
 			}
 
@@ -833,7 +811,7 @@ void manageAlarmBadPinchPos(void)
 		alarmList[BAD_PINCH_POS].physic = PHYSIC_FALSE;
 	else
 	{
-		if(IsTreatSetPinchPosTaskAlm())
+		if(AreAllPinchClose() || IsTreatSetPinchPosTaskAlm())
 		{
 			alarmList[BAD_PINCH_POS].physic = PHYSIC_TRUE;
 		}

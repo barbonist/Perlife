@@ -516,6 +516,7 @@ int main(void)
    PumpStoppedCnt = 0;
    InitControlProtectiveInterface();
    SuspendInvioAlarmCode = 0;
+   TimeoutAirEjection = 0;
 
   /**********MAIN LOOP START************/
   for(;;) {

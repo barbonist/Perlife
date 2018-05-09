@@ -282,6 +282,10 @@ void manageChildPrimAlmPumpNotStillAlways(void)
 	{
 		EN_Motor_Control(ENABLE);
 		ClearPumpStopAlarm();
+		// in questo caso posso rilasciare il tasto BUTTON_RESET_ALARM perche' per uscire dallo stato
+		// di allarme PARENT_PRIMING_END_RECIRC_ALARM controllo solo
+		// currentGuard[GUARD_ALARM_ACTIVE].guardValue == GUARD_VALUE_FALSE e non mi aspetto un comando
+		// di reset
 		releaseGUIButton(BUTTON_RESET_ALARM);
 		EnableNextAlarmFunc(); //EnableNextAlarm = TRUE;
 	}
@@ -311,13 +315,17 @@ void manageChildPrimAlmBadPinchPosAlways(void)
 {
 	if(buttonGUITreatment[BUTTON_RESET_ALARM].state == GUI_BUTTON_RELEASED)
 	{
-		ResetTreatSetPinchPosTaskAlm();
+		ResetPrimPinchAlm();
+		// in questo caso posso rilasciare il tasto BUTTON_RESET_ALARM perche' per uscire dallo stato
+		// di allarme PARENT_PRIMING_END_RECIRC_ALARM controllo solo
+		// currentGuard[GUARD_ALARM_ACTIVE].guardValue == GUARD_VALUE_FALSE e non mi aspetto un comando
+		// di reset
 		releaseGUIButton(BUTTON_RESET_ALARM);
 		EnableNextAlarmFunc(); //EnableNextAlarm = TRUE;
 	}
 	else if(buttonGUITreatment[BUTTON_OVERRIDE_ALARM].state == GUI_BUTTON_RELEASED)
 	{
-		ResetTreatSetPinchPosTaskAlm();
+		ResetPrimPinchAlm();
 		ForceCurrentAlarmOff();
 		releaseGUIButton(BUTTON_OVERRIDE_ALARM);
 		EnableNextAlarmFunc(); //EnableNextAlarm = TRUE;
@@ -353,6 +361,8 @@ void manageChildPrimAlmSFAAirDetAlways(void)
 	DisablePrimAirAlarm(TRUE); // forzo la chiusura dell'allarme aria
 	if((buttonGUITreatment[BUTTON_RESET_ALARM].state == GUI_BUTTON_RELEASED) && IsSecurityStateActive())
 	{
+		// IN QUESTO PUNTO CI PASSA SOLO SE IL TASK CHE GESTISCE GLI ALLARMI NON RIESCE A DISABILITARLI PRIMA DELL'ARRIVO
+		// DI BUTTON_RESET_ALARM (PROBABILMENTE NON CI PASSA MAI)
 		// setto la guard per fare in modo che quando l'allarme risultera' non attivo
 		// la macchina a stati parent vada nello stato di espulsione bolla aria
 		currentGuard[GUARD_ALARM_PRIM_AIR_FILT_RECOVERY].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
@@ -933,7 +943,8 @@ void manageChildTreatAlmBadPinchPosAlways(void)
 	if(buttonGUITreatment[BUTTON_RESET_ALARM].state == GUI_BUTTON_RELEASED)
 	{
 		ResetTreatSetPinchPosTaskAlm();
-		releaseGUIButton(BUTTON_RESET_ALARM);
+		// evito di fare la release perche' il comando mi servira' per uscire dallo stato PARENT_TREAT_KIDNEY_1_ALARM
+		//releaseGUIButton(BUTTON_RESET_ALARM);
 		EnableNextAlarmFunc(); //EnableNextAlarm = TRUE;
 	}
 	else if(buttonGUITreatment[BUTTON_OVERRIDE_ALARM].state == GUI_BUTTON_RELEASED)
@@ -942,6 +953,10 @@ void manageChildTreatAlmBadPinchPosAlways(void)
 		ForceCurrentAlarmOff();
 		releaseGUIButton(BUTTON_OVERRIDE_ALARM);
 		EnableNextAlarmFunc(); //EnableNextAlarm = TRUE;
+
+		// forzo un BUTTON_RESET_ALARM perche' il comando mi servira' per uscire dallo stato PARENT_TREAT_KIDNEY_1_ALARM
+		// ed andare nello stato di funzionamento normale
+		setGUIButton(BUTTON_RESET_ALARM);
 	}
 
 }

@@ -243,7 +243,7 @@ void ReceivedCanData(uint8_t *rxbuff, int rxlen, int RxChannel)
 	RetriggerAlarm();
 	if(( rxlen <= 8 ) && (RxChannel >= 8) /*>= 8) && (RxChannel <= 15)*/){
 		memcpy( RxBuffCanP[RxChannel - 8]->RawCanBuffer , rxbuff, rxlen);
-		if(memcmp(RxBuffCanP[RxChannel - 8]->RawCanBuffer , OldRxBuffCanP[RxChannel - 8]->RawCanBuffer, SIZE_CAN_BUFFER) != 0){
+//		if(memcmp(RxBuffCanP[RxChannel - 8]->RawCanBuffer , OldRxBuffCanP[RxChannel - 8]->RawCanBuffer, SIZE_CAN_BUFFER) != 0){
 			// data changed --> trigger some action
 			memcpy(OldRxBuffCanP[RxChannel -8]->RawCanBuffer , RxBuffCanP[RxChannel - 8]->RawCanBuffer, SIZE_CAN_BUFFER);
 			if( RxChannel == 10)
@@ -257,7 +257,7 @@ void ReceivedCanData(uint8_t *rxbuff, int rxlen, int RxChannel)
 				TempCanBusMsg11.free = 0;
 				onNewCanBusMsg11(TempCanBusMsg11);
 			}
-		}
+		//}
 	}
 }
 

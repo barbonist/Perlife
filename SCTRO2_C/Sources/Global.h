@@ -1820,5 +1820,10 @@ typedef enum
 // flag per iniziare un periodo di allarme nullo da trasferire alla GUI
 unsigned char SuspendInvioAlarmCode;
 
+// Questa flag sta ad indicare che sono uscito da un allarme aria con timeout cioe',
+// nei primi 10 secondi di movimento delle pompe non sono riuscito ad eliminare l'aria
+// presente nel sensore. Comunque per evitare di rimanere bloccato vado avanti lo stesso.
+word TimeoutAirEjection;
+
 #endif /* SOURCES_GLOBAL_H_ */
 
