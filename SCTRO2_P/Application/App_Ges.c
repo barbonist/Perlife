@@ -770,20 +770,20 @@ void UpdateActuatorPosition()
 	   * le funzioni sono comunque state debuggate e sono corrette
 	   * c'è solo da identificare quale sia sulle pompe il primo e
 	   * il secondo sensore per capire il senso di rotazione*/
-	  HallSens.PumpFilter_HSens1		 = M1_HALL_A_GetVal();
-	  HallSens.PumpFilter_HSens2		 = M1_HALL_B_GetVal();
-	  HallSens.PumpArt_Liver_HSens1 	 = M2_HALL_A_GetVal();
+	  HallSens.PumpFilter_HSens1	 = M1_HALL_A_GetVal();
+	  HallSens.PumpFilter_HSens2	 = M1_HALL_B_GetVal();
+	  HallSens.PumpArt_Liver_HSens1  = M2_HALL_A_GetVal();
 	  HallSens.PumpArt_Liver_HSens2	 = M2_HALL_B_GetVal();
-	  HallSens.PumpOxy_1_HSens1 		 = M3_HALL_A_GetVal();
-	  HallSens.PumpOxy_1_HSens2 		 = M3_HALL_B_GetVal();
-	  HallSens.PumpOxy_2_HSens1 		 = M4_HALL_A_GetVal();
-	  HallSens.PumpOxy_2_HSens2 		 = M4_HALL_B_GetVal();
-	  HallSens.PinchFilter_Left  = C2_HALL_R_GetVal();
-	  HallSens.PinchFilter_Right = C2_HALL_L_GetVal();
-	  HallSens.PinchArt_Left 	 = C3_HALL_R_GetVal();
-	  HallSens.PinchArt_Right 	 = C3_HALL_L_GetVal();
-	  HallSens.PinchVen_Left 	 = C1_HALL_L_GetVal();
-	  HallSens.PinchVen_Right 	 = C1_HALL_R_GetVal();
+	  HallSens.PumpOxy_1_HSens1 	 = M3_HALL_A_GetVal();
+	  HallSens.PumpOxy_1_HSens2 	 = M3_HALL_B_GetVal();
+	  HallSens.PumpOxy_2_HSens1 	 = M4_HALL_A_GetVal();
+	  HallSens.PumpOxy_2_HSens2 	 = M4_HALL_B_GetVal();
+	  HallSens.PinchFilter_Left  	 = C2_HALL_R_GetVal();
+	  HallSens.PinchFilter_Right 	 = C2_HALL_L_GetVal();
+	  HallSens.PinchArt_Left 	 	 = C3_HALL_R_GetVal();
+	  HallSens.PinchArt_Right 	 	 = C3_HALL_L_GetVal();
+	  HallSens.PinchVen_Left 	 	 = C1_HALL_L_GetVal();
+	  HallSens.PinchVen_Right 	 	 = C1_HALL_R_GetVal();
 
 	  onNewPinchStat(HallSens);
 
