@@ -49,6 +49,7 @@ char    iFlag_modbusDataStorage;
 #define DEBUG_PUMP				0x02
 #define DEBUG_CENTRIF_PUMP		0x03
 #define DEBUG_PELTIER			0x04
+#define DEBUG_T1_TEST			0x05
 
 #define DEBUG_MACHINE_STATE		0x06
 #define DEBUG_CONTROL			0xA5
@@ -336,6 +337,20 @@ enum Parent {
 	/*********************/
 	/* 		PARENT		 */
 	/*********************/
+	PARENT_T1_NO_DISP_INIT,
+	PARENT_T1_NO_DISP_CHK_CONFG,
+	PARENT_T1_NO_DISP_CHK_24VBRK,
+	PARENT_T1_NO_DISP_CHECK_PRESS,
+	PARENT_T1_NO_DISP_CHECK_TEMP,
+	PARENT_T1_NO_DISP_CHECK_LEVEL,
+	PARENT_T1_NO_DISP_CHECK_FLWMTR,
+	PARENT_T1_NO_DISP_CHEK_AIR,
+	PARENT_T1_NO_DISP_CHEK_PINCH,
+	PARENT_T1_NO_DISP_CHEK_PUMP,
+	PARENT_T1_NO_DISP_CHEK_PELTIER,
+	PARENT_T1_NO_DISP_END,
+	PARENT_T1_NO_DISP_ALARM,
+	PARENT_T1_NO_DISP_FATAL_ERROR,
 	PARENT_PRIMING_TREAT_KIDNEY_1_INIT,
 	PARENT_PRIMING_TREAT_KIDNEY_1_RUN,
 	PARENT_PRIMING_TREAT_KIDNEY_1_ALARM,
@@ -357,15 +372,6 @@ enum Parent {
 	PARENT_ENTRY,
 	PARENT_IDLE,
 	PARENT_IDLE_ALARM,
-	PARENT_T1_NO_DISP_INIT,
-	PARENT_T1_NO_DISP_CHECK_PRESS,
-	PARENT_T1_NO_DISP_CHECK_TEMP,
-	PARENT_T1_NO_DISP_CHECK_LEVEL,
-	PARENT_T1_NO_DISP_CHECK_FLWMTR,
-	PARENT_T1_NO_DISP_CHEK_AIR,
-	PARENT_T1_NO_DISP_ALARM,
-	PARENT_T1_NO_DISP_END,
-	PARENT_T1_NO_DISP_FATAL_ERROR,
 	PARENT_T1_WITH_DISP_INIT,
 	PARENT_T1_WITH_DISP_LEAK,
 	PARENT_T1_WITH_DISP_LEVEL,
@@ -545,8 +551,19 @@ enum MachineStateGuardId {
 	GUARD_CHK_FOR_ALL_MOT_STOP,
 	GUARD_EN_CLOSE_ALL_PINCH,
 	GUARD_ALARM_PRIM_AIR_FILT_RECOVERY,
-
-
+	GUARD_ENABLE_T1_CONFIG,
+	GUARD_ENABLE_T1_24VBRK,
+	GUARD_ENABLE_T1_PRESS,
+	GUARD_ENABLE_T1_TEMPIR,
+	GUARD_ENABLE_T1_LEVEL,
+	GUARD_ENABLE_T1_FLOWMTR,
+	GUARD_ENABLE_T1_AIRSENS,
+	GUARD_ENABLE_T1_PINCH,
+	GUARD_ENABLE_T1_PUMP,
+	GUARD_ENABLE_T1_TERMO,
+	GUARD_ENABLE_T1_END,
+	GUARD_ENABLE_T1_ALARM,
+	GUARD_ENABLE_T1_ERROR,
 
 	/*valutare se gestire le azioni di sicurezza con le guard: tutti gli allarmi possono essere ricondotti a 6 tipologie di azioni di sicurezza:
 	 ALARM_STOP_ALL_ACTUATOR: tutti gli attuatori devono essere fermati
@@ -581,9 +598,6 @@ enum MachineStateGuardId {
 
 	/**/
 	GUARD_SELECT_ORGAN,
-
-	GUARD_T1_NO_DISP_START,
-	GUARD_T1_NO_DISP_END,
 	GUARD_THERAPY_SELECTED,
 	GUARD_THERAPY_CONFIRMED,
 	GUARD_KIT_MOUNTED_CONFIRMED,
@@ -1108,12 +1122,12 @@ enum paramWordSetFromSBC{
 	PAR_SET_PRESS_ART_TARGET = 0xB1,               // mmHg
 	PAR_SET_DESIRED_DURATION = 0xB3,
 	PAR_SET_MAX_FLOW_PERFUSION = 0xB7,             // ml/min
-	PAR_SET_VENOUS_PRESS_TARGET = 0xC2,
+	PAR_SET_PRESS_VEN_TARGET = 0xC2,
 	PAR_SET_PURIF_FLOW_TARGET = 0xD3,
 	PAR_SET_PURIF_UF_FLOW_TARGET = 0xE4,
 	/*da qui in poi parametri non passati dal PC ma
 	 * define sul source code definiti con 0xFX*/
-	PAR_SET_PRESS_VEN_TARGET = 0xF1,
+	PAR_SET_VENOUS_PRESS_TARGET = 0xF1,
 	PAR_SET_WORD_END_NUMBER = PAR_SET_VENOUS_PRESS_TARGET +1
 };
 
@@ -1814,10 +1828,6 @@ typedef enum
 }TREAT_SET_PINCH_POS_CMD;
 //-------------------------------------------------------------------------------
 
-// Questa define deve essere attiva se voglio rilevare l'allarme della connessione con la protective
-#define ENABLE_PROTECTIVE_BOARD
-
-// flag per iniziare un periodo di allarme nullo da trasferire alla GUI
 unsigned char SuspendInvioAlarmCode;
 
 // Questa flag sta ad indicare che sono uscito da un allarme aria con timeout cioe',
