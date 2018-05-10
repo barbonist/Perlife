@@ -1213,8 +1213,8 @@ void alwaysPumpPressLoopVen(unsigned char pmpId, unsigned char *PidFirstTime){
     	actualSpeed_Ven = (float)pumpPerist[pmpId].actualSpeed;
     	// forzo a 0 il valore old per fare in modo che la prima scrittura venga sempre fatta
     	pumpPerist[pmpId].actualSpeedOld = 0;
-    	Target_PID_VEN = parameterWordSetFromGUI[PAR_SET_VENOUS_PRESS_TARGET].value + SET_POINT_PRESSURE_INIT;
     }
+	Target_PID_VEN = parameterWordSetFromGUI[PAR_SET_VENOUS_PRESS_TARGET].value + SET_POINT_PRESSURE_INIT;
 
     //pressSample0_Ven = PR_VEN_mmHg_Filtered;
 //    pressSample0_Ven = MedForVenousPid;

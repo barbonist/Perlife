@@ -1575,8 +1575,8 @@ unsigned char CoverCloseCnt[4] = {0, 0, 0, 0};
 unsigned char CoverState[4] = {0, 0, 0, 0};   // 0 chiuse 1 aperte
 unsigned char CoverPresc = 0;
 
-/*funzione che ritorna il numero della pompa con il
- * cover perto oppure 4 se tutti i cover sono chiusi*/
+/* funzione che ritorna il numero della pompa con il
+ * cover aperto oppure 4 se tutti i cover sono chiusi*/
 unsigned char CheckCoverPump()
 {
 	CoverPresc++;
@@ -1588,7 +1588,7 @@ unsigned char CheckCoverPump()
 			if (modbusData[i][18] & 0x0200)
 			{
 				CoverOpenCnt[i]++;
-				if(CoverOpenCnt[i] > 2)
+				if(CoverOpenCnt[i] >= 2)
 				{
 					CoverOpenCnt[i] = 3;
 					CoverState[i] = 1;
@@ -1598,7 +1598,7 @@ unsigned char CheckCoverPump()
 			else
 			{
 				CoverCloseCnt[i]++;
-				if(CoverCloseCnt[i] > 4)
+				if(CoverCloseCnt[i] > 6)
 				{
 					CoverCloseCnt[i] = 3;
 					CoverState[i] = 0;
@@ -1613,7 +1613,6 @@ unsigned char CheckCoverPump()
 		if (CoverState[i] == 1)
 			return(i);
 	}
-
 	return(4);
 }
 
