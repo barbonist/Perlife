@@ -13,7 +13,7 @@
 //#define CODE_ALARM0		0x00
 //#define CODE_ALARM1		0x01
 //#define CODE_ALARM2		0x02
-#define ALARM_ACTIVE_IN_STRUCT					27
+#define ALARM_ACTIVE_IN_STRUCT					29
 #define CODE_ALARM_PRESS_ART_HIGH				0X01
 #define CODE_ALARM_PRESS_ART_LOW				0X02
 #define CODE_ALARM_PRESS_VEN_HIGH				0X03
@@ -22,6 +22,8 @@
 #define CODE_ALARM_PRESS_PLASMA_FILTER_HIGH		0X06
 #define CODE_ALARM_PRESS_FRACTION_FILTER_HIGH	0X07
 #define CODE_ALARM_PRESS_OXYG_INLET				0x08
+#define CODE_ALARM_PRESS_ADS_FILTER_LOW         0x09
+#define CODE_ALARM_PRESS_OXYG_LOW               0x0a
 
 #define CODE_ALARM_TEMP_ART_HIGH				0x10
 #define CODE_ALARM_TEMP_ART_LOW					0x11
@@ -123,11 +125,15 @@
 #define PR_VEN_HIGH											10  //290
 //TODO da definire esattamente
 #define PR_OXYG_HIGH                                        800
+#define PR_OXYG_LOW                                          10
+
 //#define PR_VEN_LOW											40
 // modificato altrimenti viene sempre fuori allarme di pressione bassa
 #define PR_VEN_LOW											25
-#define PR_ADS_FILTER_HIGH									250
+#define PR_ADS_FILTER_HIGH									150
+#define PR_ADS_FILTER_LOW                                   10
 #define MAX_MSG_CONSECUTIVE_ACTUATOR_MODBUS_NOT_RESPOND 	10
+
 
 enum ALARM
 {
@@ -157,6 +163,8 @@ enum ALARM
 	 PUMP_NOT_STILL,
 	 BAD_PINCH_POS,
 	 PRIM_AIR_ON_FILTER,
+	 PRESS_ADS_FILTER_LOW,
+	 PRESS_OXYG_LOW,
 	 MODBUS_ACTUATOR_SEND
 };
 
@@ -209,5 +217,6 @@ void DisablePrimAlmSFAAirDetAlmFunc(void);
 void DisablePrimAirAlarm(bool dis);
 
 void EnableNextAlarmFunc(void);
+bool IsDisposableEmptyNoAlarm(void);
 
 #endif /* APPLICATION_ALARM_CON_H_ */

@@ -295,6 +295,8 @@ struct machineChild * ptrFutureChild;
 unsigned short	actionFlag;
 /* Machine State Structure */
 
+// NB!!!!!   I NUOVI VALORI DEVONO ESSERE AGGIUNTI IN CODA SUBITO PRIMA
+// DI STATE_END_NUMBER
 /* Machine State Data */
 enum State {
 	/*********************/
@@ -331,26 +333,14 @@ enum State {
 	STATE_END_NUMBER,
 };
 
+// NB!!!!!   I NUOVI VALORI DEVONO ESSERE AGGIUNTI IN CODA SUBITO PRIMA
+// DI PARENT_END_NUMBER
 enum Parent {
 	PARENT_NULL = 0x0000,
 
 	/*********************/
 	/* 		PARENT		 */
 	/*********************/
-	PARENT_T1_NO_DISP_INIT,
-	PARENT_T1_NO_DISP_CHK_CONFG,
-	PARENT_T1_NO_DISP_CHK_24VBRK,
-	PARENT_T1_NO_DISP_CHECK_PRESS,
-	PARENT_T1_NO_DISP_CHECK_TEMP,
-	PARENT_T1_NO_DISP_CHECK_LEVEL,
-	PARENT_T1_NO_DISP_CHECK_FLWMTR,
-	PARENT_T1_NO_DISP_CHEK_AIR,
-	PARENT_T1_NO_DISP_CHEK_PINCH,
-	PARENT_T1_NO_DISP_CHEK_PUMP,
-	PARENT_T1_NO_DISP_CHEK_PELTIER,
-	PARENT_T1_NO_DISP_END,
-	PARENT_T1_NO_DISP_ALARM,
-	PARENT_T1_NO_DISP_FATAL_ERROR,
 	PARENT_PRIMING_TREAT_KIDNEY_1_INIT,
 	PARENT_PRIMING_TREAT_KIDNEY_1_RUN,
 	PARENT_PRIMING_TREAT_KIDNEY_1_ALARM,
@@ -429,9 +419,25 @@ enum Parent {
 	PARENT_PRIMING_END_RECIRC_ALARM,
 	PARENT_PRIM_KIDNEY_1_AIR_FILT,
 	PARENT_PRIM_KIDNEY_1_ALM_AIR_REC,
+	PARENT_T1_NO_DISP_INIT,
+	PARENT_T1_NO_DISP_CHK_CONFG,
+	PARENT_T1_NO_DISP_CHK_24VBRK,
+	PARENT_T1_NO_DISP_CHECK_PRESS,
+	PARENT_T1_NO_DISP_CHECK_TEMP,
+	PARENT_T1_NO_DISP_CHECK_LEVEL,
+	PARENT_T1_NO_DISP_CHECK_FLWMTR,
+	PARENT_T1_NO_DISP_CHEK_AIR,
+	PARENT_T1_NO_DISP_CHEK_PINCH,
+	PARENT_T1_NO_DISP_CHEK_PUMP,
+	PARENT_T1_NO_DISP_CHEK_PELTIER,
+	PARENT_T1_NO_DISP_END,
+	PARENT_T1_NO_DISP_ALARM,
+	PARENT_T1_NO_DISP_FATAL_ERROR,
 	PARENT_END_NUMBER,
 };
 
+// NB!!!!!   I NUOVI VALORI DEVONO ESSERE AGGIUNTI IN CODA SUBITO PRIMA
+// DI CHILD_END_NUMBER
 enum Child {
 	/*********************/
 	/* 		CHILD		 */
@@ -1834,6 +1840,16 @@ unsigned char SuspendInvioAlarmCode;
 // nei primi 10 secondi di movimento delle pompe non sono riuscito ad eliminare l'aria
 // presente nel sensore. Comunque per evitare di rimanere bloccato vado avanti lo stesso.
 word TimeoutAirEjection;
+
+// LE DEFINE CHE SEGUONO SONO IN ALTERNATIVA
+// da definire se voglio fare lo svuotamento usando gli allarmi aria
+//#define EMPTY_PROC_WITH_ALARM
+//#define IsDisposableEmpty      IsDisposableEmptyWithAlm
+
+//-----------------------------------------------------------
+// da definire se voglio fare lo svuotamento senza gli allarmi
+#define IsDisposableEmpty      IsDisposableEmptyNoAlarm
+//-----------------------------------------------------------
 
 #endif /* SOURCES_GLOBAL_H_ */
 

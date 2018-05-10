@@ -241,7 +241,7 @@ void EEPROM_Read(LDD_FLASH_TAddress Source, LDD_TData *Dest, LDD_FLASH_TDataSize
 void CallInIdleState(void);
 word GetTotalPrimingVolumePerf(int cmd);
 void CheckOxygenationSpeed(word value);
-void CheckDepurationSpeed(word value, bool ForceValue);
+void CheckDepurationSpeed(word value, bool ForceValue, bool DisableUpdateCmd);
 void GoToRecoveryParentState(int MachineParentState);
 
 void HandlePinch( int cmd);

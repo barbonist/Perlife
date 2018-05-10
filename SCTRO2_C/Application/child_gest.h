@@ -106,7 +106,7 @@ void manageChildEmptyAlm1SFVEntry(void);
 void manageChildEmptyAlm1SFVAlways(void);
 void manageChildEmptyAlm1SFAEntry(void);
 void manageChildEmptyAlm1SFAAlways(void);
-bool IsDisposableEmpty(void);
+bool IsDisposableEmptyWithAlm(void);
 
 void ManageStateChildAlarmEmpty(void);
 

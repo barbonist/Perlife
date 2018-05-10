@@ -1394,7 +1394,7 @@ void manageChildEmptyAlm1StAllActAlways(void)
 
 
 
-bool IsDisposableEmpty(void)
+bool IsDisposableEmptyWithAlm(void)
 {
 	bool DispEmpty = FALSE;
 	if(GetTherapyType() == LiverTreat)

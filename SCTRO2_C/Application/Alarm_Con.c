@@ -16,6 +16,8 @@
 #include "BUZZER_MEDIUM_C.h"
 #include "BUZZER_HIGH_C.h"
 #include "general_func.h"
+#include "child_gest.h"
+#include "App_Ges.h"
 
 extern bool FilterSelected;
 
@@ -69,7 +71,10 @@ struct alarm alarmList[] =
 		// allarme aria nel filtro (usato nello stato di trattamento)
 		{CODE_ALARM_SFA_PRIM_AIR_DET,      PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_SFA_PRIM_AIR_DET,      PRIORITY_HIGH,  1000, 0,   OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull},	    /* 25 */
 
-		{CODE_ALARM_MODBUS_ACTUATOR_SEND,  PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_WAIT_CONFIRM,           PRIORITY_LOW,     0, 100, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull},	    /* 26 */
+		{CODE_ALARM_PRESS_ADS_FILTER_LOW,  PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH, 2000, 2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull},	    /* 26 */
+		{CODE_ALARM_PRESS_OXYG_LOW, 	   PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH, 2000, 2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull}, 		/* 27 */
+
+		{CODE_ALARM_MODBUS_ACTUATOR_SEND,  PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_WAIT_CONFIRM,           PRIORITY_LOW,     0, 100, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull},	    /* 28 */
 		{}
 };
 
@@ -182,6 +187,8 @@ void ForceAlarmOff(unsigned char code)
 			break;
 		case CODE_ALARM_PRESS_ART_LOW:
 		case CODE_ALARM_PRESS_VEN_LOW:
+		case CODE_ALARM_PRESS_ADS_FILTER_LOW:
+		case CODE_ALARM_PRESS_OXYG_LOW:
 			GlobalFlags.FlagsDef.EnablePressSensLowAlm = 0;  // forzo allarme pressione bassa off
 			break;
 		case CODE_ALARM_PRESS_ART_HIGH:
@@ -388,6 +395,17 @@ void ShowAlarmStr(int i, char * str)
 			strcat(s, str);
 			DebugStringStr(s);
 			break;
+		case CODE_ALARM_PRESS_ADS_FILTER_LOW:
+			strcpy(s, "AL_PRESS_ADS_FILT_LOW");
+			strcat(s, str);
+			DebugStringStr(s);
+			break;
+		case CODE_ALARM_PRESS_OXYG_LOW:
+			strcpy(s, "AL_SFA_PRIM_AIR_DET");
+			strcat(s, str);
+			DebugStringStr(s);
+			break;
+
 	}
 }
 
@@ -1077,6 +1095,24 @@ void manageAlarmPhysicPressSensLow(void)
 {
 	if(GlobalFlags.FlagsDef.EnablePressSensLowAlm)
 	{
+		if(PR_ADS_FLT_mmHg_Filtered < PR_ADS_FILTER_LOW)
+		{
+			alarmList[PRESS_ADS_FILTER_LOW].physic = PHYSIC_TRUE;
+		}
+		else
+		{
+			alarmList[PRESS_ADS_FILTER_LOW].physic = PHYSIC_FALSE;
+		}
+
+		if(PR_OXYG_mmHg_Filtered < PR_OXYG_LOW)
+		{
+			alarmList[PRESS_OXYG_LOW].physic = PHYSIC_TRUE;
+		}
+		else
+		{
+			alarmList[PRESS_OXYG_LOW].physic = PHYSIC_FALSE;
+		}
+/*
 		// se il sensore di pressione arteriosa misura la pressione subito prima dell'organo
 		// questo codice va commentato perche' la pressione prima di andare in trattamento e' sempre 0
 		// Per ora faccio una prova mettendo PR_ART_LOW a 0
@@ -1088,7 +1124,7 @@ void manageAlarmPhysicPressSensLow(void)
 		{
 			alarmList[PRESS_ART_LOW].physic = PHYSIC_FALSE;
 		}
-	/*
+
 		if(PR_VEN_mmHg_Filtered <= PR_VEN_LOW && GetTherapyType() == LiverTreat)
 		{
 			alarmList[PRESS_VEN_LOW].physic = PHYSIC_TRUE;
@@ -1101,8 +1137,8 @@ void manageAlarmPhysicPressSensLow(void)
 	}
 	else
 	{
-		alarmList[PRESS_ART_LOW].physic = PHYSIC_FALSE;
-		alarmList[PRESS_VEN_LOW].physic = PHYSIC_FALSE;
+		alarmList[PR_ADS_FILTER_LOW].physic = PHYSIC_FALSE;
+		alarmList[PR_OXYG_LOW].physic = PHYSIC_FALSE;
 	}
 }
 
@@ -1610,4 +1646,57 @@ void Buzzer_Management(BUZZER_LEVEL level)
 			break;
 	}
 }
+
+// sono definiti in child_gest.c
+extern CHILD_EMPTY_FLAGS ChildEmptyFlags;
+
+// rileva la presenza di aria nei sensori senza usare gli allarmi
+bool IsDisposableEmptyNoAlarm(void)
+{
+	bool DispEmpty = FALSE;
+
+	if(Air_1_Status == AIR)
+		ChildEmptyFlags.FlagsDef.SAFAirDetected = 1;
+	else
+		ChildEmptyFlags.FlagsDef.SAFAirDetected = 0;
+
+	if(((sensor_UFLOW[VENOUS_AIR_SENSOR].bubbleSize >= 50) ||
+		(sensor_UFLOW[VENOUS_AIR_SENSOR].bubblePresence == MASK_ERROR_BUBBLE_ALARM)) &&
+		(sensor_UFLOW[VENOUS_AIR_SENSOR].bubbleSize != 255))
+	{
+		ChildEmptyFlags.FlagsDef.SFVAirDetected = 1;
+	}
+	else
+	{
+		ChildEmptyFlags.FlagsDef.SFVAirDetected = 0;
+	}
+
+	if(((sensor_UFLOW[ARTERIOUS_AIR_SENSOR].bubbleSize >= 50) ||
+		(sensor_UFLOW[ARTERIOUS_AIR_SENSOR].bubblePresence == MASK_ERROR_BUBBLE_ALARM)) &&
+		(sensor_UFLOW[ARTERIOUS_AIR_SENSOR].bubbleSize != 255)
+		)
+	{
+		ChildEmptyFlags.FlagsDef.SFAAirDetected = 1;
+	}
+	else
+	{
+		ChildEmptyFlags.FlagsDef.SFAAirDetected = 0;
+	}
+
+
+	if(GetTherapyType() == LiverTreat)
+	{
+		if(ChildEmptyFlags.FlagsDef.SFAAirDetected && ChildEmptyFlags.FlagsDef.SFVAirDetected && ChildEmptyFlags.FlagsDef.SAFAirDetected)
+			DispEmpty = TRUE;
+	}
+	else if(GetTherapyType() == KidneyTreat)
+	{
+		if(/*ChildEmptyFlags.FlagsDef.SFAAirDetected &&*/ ChildEmptyFlags.FlagsDef.SFVAirDetected && ChildEmptyFlags.FlagsDef.SAFAirDetected)
+			DispEmpty = TRUE;
+	}
+	return DispEmpty;
+}
+
+
+
 
