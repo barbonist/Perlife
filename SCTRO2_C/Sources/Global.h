@@ -805,7 +805,7 @@ struct peltier	peltierCell2;
 struct Peristaltic_Pump {
 	char					id;
 	struct funcRetStruct * 	pmpStructPtr;
-	int						pmpSpeed;
+	int						pmpSpeed;           // ultimo valore di velocita' pompa programmato
 	int						pmpGoHomeSpeed;
 	unsigned int			pmpAccelSpeed;
 	unsigned int			pmpCurrent;
@@ -1808,6 +1808,17 @@ typedef struct
 
 //-------------------------------------------------------------------------------
 
+//-------------------------------------------------------------------------------
+// strutture dati usate per lo scambio di messaggi su can bus tra protective e control
+typedef struct
+{
+	unsigned short SpeedPump1;
+	unsigned short SpeedPump2;
+	unsigned short SpeedPump3;
+	unsigned short SpeedPump4;
+}CANBUS_MSG_12;
+
+//-------------------------------------------------------------------------------
 
 
 //-------------------------------------------------------------------------------
@@ -1850,6 +1861,8 @@ word TimeoutAirEjection;
 // da definire se voglio fare lo svuotamento senza gli allarmi
 #define IsDisposableEmpty      IsDisposableEmptyNoAlarm
 //-----------------------------------------------------------
+
+char ActuatorWriteCnt[LAST_ACTUATOR];
 
 #endif /* SOURCES_GLOBAL_H_ */
 

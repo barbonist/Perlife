@@ -99,8 +99,11 @@ union URxCan  RxCan6,  OldRxCan6;
 union URxCan  RxCan7,  OldRxCan7;
 
 
+//#define CAN_DEBUG 1
+
 void ManageTxCan10ms(void);
 void ManageTxCan50ms(void);
+void DebugFillTxBuffers(void);
 
 void InitControlProtectiveInterface(void)
 {
@@ -152,6 +155,28 @@ void InitControlProtectiveInterface(void)
 	AddSwTimer(ManageTxCan50ms,5,TM_REPEAT);
 }
 
+#ifdef CAN_DEBUG
+
+// incoming new press values
+void onNewPressOxygen(uint16_t Value)  	{   }
+void onNewTubPressLevel(uint16_t Value) { 	}
+void onNewPressADSFLT(uint16_t  Value) 	{		}
+void onNewPressVen(uint16_t  Value)		{	 }
+void onNewPressArt(uint16_t  Value)		{	 }
+void onNewState( struct machineState* MSp, struct machineParent* MPp ,
+				  struct machineChild* MCp, uint16_t Guard   )
+{
+
+}
+
+void onNewPumpSpeed(uint16_t Pump0Speed, uint16_t Pump1Speed ,
+		            uint16_t Pump2Speed, uint16_t Pump3Speed)
+{
+
+}
+
+#else
+
 // incoming new press values
 void onNewPressOxygen(uint16_t Value)  	{  	TxCan1.STxCan2.PressOxy = Value; }
 void onNewTubPressLevel(uint16_t Value) { 	TxCan0.STxCan1.PressLevelx100 = Value; }
@@ -175,6 +200,9 @@ void onNewPumpSpeed(uint16_t Pump0Speed, uint16_t Pump1Speed ,
 	TxCan4.STxCan4.SpeedPump3Rpmx10 = Pump2Speed;
 	TxCan4.STxCan4.SpeedPump4Rpmx10 = Pump3Speed;
 }
+
+
+#endif
 
 int TxBuffIndex = 0;
 
@@ -222,6 +250,9 @@ void ManageTxCan50ms(void)
 
 	for( ii=0 ; ii<=LAST_INDEX_TXBUFF2SEND ; ii++)
 		SendCAN(TxBuffCanP[ii]->RawCanBuffer, SIZE_CAN_BUFFER, ii);
+#ifdef CAN_DEBUG
+	DebugFillTxBuffers();
+#endif
 }
 
 union URxCan*	RxBuffCanP[8] =
@@ -239,6 +270,7 @@ void onNewCanBusMsg11( CANBUS_MSG_11 ReceivedCanBusMsg11);
 void ReceivedCanData(uint8_t *rxbuff, int rxlen, int RxChannel)
 {
 	CANBUS_MSG_11 TempCanBusMsg11;
+	CANBUS_MSG_12 TempCanBusMsg12;
 
 	RetriggerAlarm();
 	if(( rxlen <= 8 ) && (RxChannel >= 8) /*>= 8) && (RxChannel <= 15)*/){
@@ -257,9 +289,43 @@ void ReceivedCanData(uint8_t *rxbuff, int rxlen, int RxChannel)
 				TempCanBusMsg11.free = 0;
 				onNewCanBusMsg11(TempCanBusMsg11);
 			}
+			if( RxChannel == 11)
+			{
+				TempCanBusMsg12.SpeedPump1 = RxBuffCanP[RxChannel-8]->SRxCan3.SpeedPump1Rpmx10;
+				TempCanBusMsg12.SpeedPump2 = RxBuffCanP[RxChannel-8]->SRxCan3.SpeedPump2Rpmx10;
+				TempCanBusMsg12.SpeedPump3 = RxBuffCanP[RxChannel-8]->SRxCan3.SpeedPump3Rpmx10;
+				TempCanBusMsg12.SpeedPump4 = RxBuffCanP[RxChannel-8]->SRxCan3.SpeedPump4Rpmx10;
+				//onNewCanBusMsg11(TempCanBusMsg11);
+			}
 		//}
 	}
 }
 
 
 
+void DebugFillTxBuffers(void)
+{
+    static uint16_t seq_number = 0;
+    int ii;
+    uint16_t *p16;
+
+    for(ii=0; ii<4;ii++){
+        p16 = (uint16_t*)&TxCan0.RawCanBuffer[ii*2];
+        *p16 = (ii + seq_number) | 0x8000;
+        p16 = (uint16_t*)&TxCan1.RawCanBuffer[ii*2];
+        *p16 = (ii + seq_number) | 0xC000;
+        p16 = (uint16_t*)&TxCan2.RawCanBuffer[ii*2];
+        *p16 = (ii + seq_number) | 0xE000;
+        p16 = (uint16_t*)&TxCan3.RawCanBuffer[ii*2];
+        *p16 = (ii + seq_number) | 0xF000;
+        p16 = (uint16_t*)&TxCan4.RawCanBuffer[ii*2];
+        *p16 = (ii + seq_number) | 0xF800;
+        p16 = (uint16_t*)&TxCan5.RawCanBuffer[ii*2];
+        *p16 = (ii + seq_number) | 0xFC00;
+        p16 = (uint16_t*)&TxCan6.RawCanBuffer[ii*2];
+        *p16 = (ii + seq_number) | 0xFE00;
+        p16 = (uint16_t*)&TxCan7.RawCanBuffer[ii*2];
+        *p16 = (ii + seq_number) | 0xFF00;
+    }
+    seq_number++;
+}

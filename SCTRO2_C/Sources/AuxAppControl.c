@@ -142,28 +142,93 @@ void NotifyMachineStatus(void)
 
 }
 
-
 void NotifyPumpsSpeed(void)
 {
+	int i;
 	uint16_t Pump0Speed, Pump1Speed, Pump2Speed, Pump3Speed;
 	Pump0Speed = 0;
 	Pump1Speed = 0;
 	Pump2Speed = 0;
 	Pump3Speed = 0;
-//	if(GetTherapyType() == LiverTreat)
-//	{
-		Pump0Speed = modbusData[pumpPerist[3].pmpMySlaveAddress-2][17];
-		Pump1Speed = modbusData[pumpPerist[0].pmpMySlaveAddress-2][17];
-		Pump2Speed = modbusData[pumpPerist[1].pmpMySlaveAddress-2][17];
-		Pump3Speed = modbusData[pumpPerist[2].pmpMySlaveAddress-2][17];
-//	}
-//	else if(GetTherapyType() == KidneyTreat)
-//	{
-//		Pump0Speed = 0;
-//		Pump1Speed = modbusData[pumpPerist[0].pmpMySlaveAddress-2][17];
-//		Pump2Speed = modbusData[pumpPerist[1].pmpMySlaveAddress-2][17];
-//		Pump3Speed = modbusData[pumpPerist[2].pmpMySlaveAddress-2][17];
-//	}
+	if(GetTherapyType() == LiverTreat)
+	{
+		if(CoversState == 0)
+			Pump0Speed = 0;
+		else
+		{
+			Pump0Speed = modbusData[pumpPerist[3].pmpMySlaveAddress-2][17];
+			//		if(!Pump0Speed)
+			//			i = 0;
+		}
+
+		if(CoversState == 1)
+			Pump1Speed = 0;
+		else
+		{
+			Pump1Speed = modbusData[pumpPerist[0].pmpMySlaveAddress-2][17];
+			//		if(!Pump1Speed)
+			//			i = 0;
+		}
+
+		if(CoversState == 2)
+			Pump2Speed = 0;
+		else
+		{
+			Pump2Speed = modbusData[pumpPerist[1].pmpMySlaveAddress-2][17];
+			//		if(!Pump2Speed)
+			//			i = 0;
+		}
+
+		if(CoversState == 3)
+			Pump3Speed = 0;
+		else
+		{
+			Pump3Speed = modbusData[pumpPerist[2].pmpMySlaveAddress-2][17];
+			//		if(!Pump3Speed)
+			//			i = 0;
+		}
+	}
+	else //if(GetTherapyType() == KidneyTreat)
+	{
+		if(CoversState == 0)
+			Pump0Speed = 0;
+		else
+		{
+			Pump0Speed = modbusData[pumpPerist[0].pmpMySlaveAddress-2][17];
+			//Pump0Speed = pumpPerist[0].pmpSpeed;
+			//		if(!Pump0Speed)
+			//			i = 0;
+		}
+
+		if(CoversState == 1)
+			Pump1Speed = 0;
+		else
+		{
+			Pump1Speed = modbusData[1][17];
+			//		if(!Pump1Speed)
+			//			i = 0;
+		}
+
+		if(CoversState == 2)
+			Pump2Speed = 0;
+		else
+		{
+			//Pump2Speed = modbusData[pumpPerist[1].pmpMySlaveAddress-2][17];
+			Pump2Speed = pumpPerist[1].pmpSpeed;
+			//		if(!Pump2Speed)
+			//			i = 0;
+		}
+
+		if(CoversState == 3)
+			Pump3Speed = 0;
+		else
+		{
+			//Pump3Speed = modbusData[pumpPerist[2].pmpMySlaveAddress-2][17];
+			Pump3Speed = pumpPerist[2].pmpSpeed;
+			//		if(!Pump3Speed)
+			//			i = 0;
+		}
+	}
 	onNewPumpSpeed(Pump0Speed, Pump1Speed, Pump2Speed, Pump3Speed);
 }
 
