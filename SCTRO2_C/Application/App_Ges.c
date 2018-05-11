@@ -1882,8 +1882,8 @@ void manageParPrimWaitPinchCloseAlways(void)
 		setPinchPositionHighLevel(PINCH_2WPVA, MODBUS_PINCH_POS_CLOSED);
 		if(GetTherapyType() == LiverTreat)
 		{
-					// ho selezionato il fegato, quindi devo chiudere anche questa
-					setPinchPositionHighLevel(PINCH_2WPVV, MODBUS_PINCH_POS_CLOSED);
+			// ho selezionato il fegato, quindi devo chiudere anche questa
+			setPinchPositionHighLevel(PINCH_2WPVV, MODBUS_PINCH_POS_CLOSED);
 		}
 	}
 
@@ -3098,6 +3098,7 @@ void manageParentEmptyDisposInitEntry(void)
 	VolumeDischarged = 0;
 	EmptyDisposStartOtherPump = FALSE;
 	EmptyDispRunAlwaysState = INIT_EMPTY_DISPOSABLE;
+	ChildEmptyFlags.FlagsVal = 0;
 }
 void manageParentEmptyDisposInitAlways(void)
 {

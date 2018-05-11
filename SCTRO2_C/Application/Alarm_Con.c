@@ -1655,34 +1655,25 @@ bool IsDisposableEmptyNoAlarm(void)
 {
 	bool DispEmpty = FALSE;
 
-	if(Air_1_Status == AIR)
+	if((Air_1_Status == AIR) && (ChildEmptyFlags.FlagsDef.SAFAirDetected == 0))
 		ChildEmptyFlags.FlagsDef.SAFAirDetected = 1;
-	else
-		ChildEmptyFlags.FlagsDef.SAFAirDetected = 0;
 
 	if(((sensor_UFLOW[VENOUS_AIR_SENSOR].bubbleSize >= 50) ||
 		(sensor_UFLOW[VENOUS_AIR_SENSOR].bubblePresence == MASK_ERROR_BUBBLE_ALARM)) &&
-		(sensor_UFLOW[VENOUS_AIR_SENSOR].bubbleSize != 255))
+		(sensor_UFLOW[VENOUS_AIR_SENSOR].bubbleSize != 255) &&
+		(ChildEmptyFlags.FlagsDef.SFVAirDetected == 0))
 	{
 		ChildEmptyFlags.FlagsDef.SFVAirDetected = 1;
-	}
-	else
-	{
-		ChildEmptyFlags.FlagsDef.SFVAirDetected = 0;
 	}
 
 	if(((sensor_UFLOW[ARTERIOUS_AIR_SENSOR].bubbleSize >= 50) ||
 		(sensor_UFLOW[ARTERIOUS_AIR_SENSOR].bubblePresence == MASK_ERROR_BUBBLE_ALARM)) &&
-		(sensor_UFLOW[ARTERIOUS_AIR_SENSOR].bubbleSize != 255)
+		(sensor_UFLOW[ARTERIOUS_AIR_SENSOR].bubbleSize != 255) &&
+		(ChildEmptyFlags.FlagsDef.SFAAirDetected == 0)
 		)
 	{
 		ChildEmptyFlags.FlagsDef.SFAAirDetected = 1;
 	}
-	else
-	{
-		ChildEmptyFlags.FlagsDef.SFAAirDetected = 0;
-	}
-
 
 	if(GetTherapyType() == LiverTreat)
 	{
