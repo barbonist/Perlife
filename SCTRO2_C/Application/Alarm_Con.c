@@ -1317,6 +1317,7 @@ int IsNonPhysicalAlm(int AlarmCode)
 // allarme che non implica alcuna azione sul sistema (tipo arresto pompe)
 void ClearNonPhysicalAlm( int AlarmCode)
 {
+	EnableNextAlarm = TRUE;
 	switch (AlarmCode)
 	{
 		case CODE_ALARM_MODBUS_ACTUATOR_SEND:

@@ -31,6 +31,7 @@
 #include "Cpu.h"
 #include "Events.h"
 #include "Pins1.h"
+#include "string.h"
 #include "MODBUS_COMM.h"
 #include "ASerialLdd1.h"
 #include "RTS_MOTOR.h"
@@ -519,6 +520,7 @@ int main(void)
    InitControlProtectiveInterface();
    SuspendInvioAlarmCode = 0;
    TimeoutAirEjection = 0;
+   memset(ActuatorWriteCnt, 0, LAST_ACTUATOR);
 
   /**********MAIN LOOP START************/
   for(;;) {

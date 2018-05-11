@@ -69,7 +69,7 @@ LDD_TError  SendCAN(uint8_t *txbuff, int txsize, LDD_CAN_TMBIndex ChIndex)
 	if((txsize > 8) || ( ChIndex > 7)){
 		return ERR_PARAM_VALUE;
 	}
-	TxFrame.MessageID = 0x0701U + ChIndex;
+	TxFrame.MessageID = 0x0700U + ChIndex;
 	TxFrame.FrameType = LDD_CAN_DATA_FRAME;
 	TxFrame.Data = txbuff;
 	TxFrame.Length = txsize;
