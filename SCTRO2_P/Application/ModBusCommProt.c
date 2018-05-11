@@ -227,32 +227,7 @@ struct func17RetStruct * ModBusRWRegisterReq(char slaveAddr,
 }
 /* Public function */
 
-/* Private function */
-static unsigned int ComputeChecksum(unsigned char * data, int size)
-{
-	unsigned int CRC16 = 0xFFFF;
-	unsigned int CRCLsb = 0x0000;
-	unsigned int byte = 0x0000;
 
-	for(int i = 0; i < size; i++)
-	{
-		byte = *(data+i) & 0x00FF;
-		CRC16 = CRC16 ^ byte;
-
-		for(int j = 0; j < 8; j++)
-		{
-			CRCLsb = CRC16 & 0x0001;
-			CRC16 = (CRC16 >> 1) & 0x7FFF;
-
-			if(CRCLsb == 0x0001)
-			{
-				CRC16 = CRC16 ^ CRC_POLYNOMIAL;
-			}
-		}
-	}
-
-	return CRC16;
-}
 
 static void FrameInitFunc3(void)
 {

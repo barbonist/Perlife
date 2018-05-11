@@ -1140,8 +1140,14 @@ void TI1_OnInterrupt(void)
 	 * Se si vuole variare la frequenza (200 HZ dovrebbe essere il massimo
 	 * si può mettere una variabile globale impsotabile che funzioni da
 	 * divisore di frequenza*/
+	static char count = 0;
+	count ++;
 
-	COMP_PWM_NegVal();
+	if (count >= Prescaler_Freq_Signal_AMS  && Enable_AMS)
+	{
+		COMP_PWM_NegVal();
+		count = 0;
+	}
 }
 
 /*

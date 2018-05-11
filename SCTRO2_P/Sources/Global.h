@@ -69,6 +69,7 @@ word DipSwitch_2_ADC;		//Variabile globale col valore ADC del DIP_SWITCH_3
 
 #define DipSwitch_0_ADC_CHANNEL 	4
 #define DipSwitch_1_ADC_CHANNEL 	5
+#define T_PLATE_P_ADC_CHANNEL		6
 #define DipSwitch_2_ADC_CHANNEL 	13
 
 word V24_P1_CHK_ADC;
@@ -93,6 +94,7 @@ word V24_P2_CHK_VOLT;
 #define PR_ADS_FLT_ADC_CHANNEL 	2
 #define PR_VEN_ADC_CHANNEL		4
 #define PR_ART_ADC_CHANNEL		5
+
 
 char ON_NACK_IR_TM;			//variabile globale che viene messa ad 1 se ricevo un NACK da un sensore di Temp IR
 
@@ -467,6 +469,8 @@ word  PR_ART_ADC_Filtered;  	//variabile globale per il valore ADC del sensore d
 word  PR_ART_Diastolyc_mmHg;	//variabile globale per il valore diastolico  in mmHg del sensore di pressione arteriosa
 word  PR_ART_Sistolyc_mmHg;	    //variabile globale per il valore sistolico  in mmHg del sensore di pressione arteriosa
 word  PR_ART_Med_mmHg;			//variabile globale per il valore medio in mmHg del sensore di pressione arteriosa calcolato come (2 *PR_OXYG_Sistolyc_mmHg + PR_OXYG_Diastolyc_mmHg)/3
+word  T_PLATE_P_ADC;			// variabile globale per il valore in ADC della temperatura di piastra letta dalla protective
+float  T_PLATE_P_GRADI_CENT;		// variabile globale per il valore in gradi centigradi della temperatura di piastra letta dalla protective
 int   PR_ART_Diastolyc_mmHg_ORG; //variabile globale per il valore diastolico  in mmHg del sensore di pressione arteriosa
 int   PR_ART_Sistolyc_mmHg_ORG;	 //variabile globale per il valore sistolico  in mmHg del sensore di pressione arteriosa
 int   PR_ART_Med_mmHg_ORG;		 //variabile globale per il valore medio in mmHg del sensore di pressione arteriosa calcolato come (2 *PR_OXYG_Sistolyc_mmHg + PR_OXYG_Diastolyc_mmHg)/3
@@ -488,6 +492,15 @@ unsigned char Air_1_Status;				//variabile globale per vedere lo stato del senso
 #define PR_ART_GAIN_DEFAULT 		0.00657
 #define PR_ART_OFFSET_DEFAULT		-127.287
 
+/*valori di GAIN e OFFSET calcolati con: R1 = 931  ohm  = -17.9°C a cui corrispondono 21345 ADC
+ * 										 R2 = 1238 ohm = 61.8 °C   a cui corrispondono 51464 ADC
+ * 										 le temperature le ho considerate tutte moltiplicate per 10
+ * 										 per avere la risoluzione del decimo di grado
+ * con una pt100 montata e una temp misurata con termometro esterno pari a 25.6 si è visto
+ * che era necessario ridurre l'offset di altri 2.6 °C (da -743.8  a -769.8)							 */
+#define GAIN_T_PLATE_SENS			0.016864
+#define OFFSET_T_PLATE_SENS			-384.935
+
 #define AIR							0x00
 #define LIQUID						0x01
 
@@ -506,10 +519,8 @@ struct pressureSensor{
 struct ParSaveTO_EEPROM
 {
 	struct pressureSensor sensor_PRx[5];
-	float  FlowSensor_Ven_Gain;
-	float  FlowSensor_Ven_Offset;
-	float  FlowSensor_Art_Gain;
-	float  FlowSensor_Art_Offset;
+	float  T_Plate_Sensor_Gain;
+	float  T_Plate_Sensor_Offset;
 	unsigned char EEPROM_Revision;
 	word EEPROM_CRC;
 };
@@ -581,6 +592,7 @@ struct Peristaltic_Pump		pumpPerist[4];
 /* Peristaltic pump */
 
 struct ParSaveTO_EEPROM config_data;
+#define EEPROM_REVISION 0x01
 
 /* SENSORI TEMPERATURA DIGITALI */
 struct tempIRSensor{
@@ -612,6 +624,8 @@ struct tempIRSensor * ptrMsg_IR_TM;	/* puntatore utilizzato per spedire il messa
 struct tempIRSensor sensorIR_TM5A;
 
 int timerCounterCheckTempIRSens;
+unsigned int timerCounterADC0;
+unsigned int timerCounterADC1;
 
 //start addres FLASH used as EEPROM
 #define START_ADDRESS_EEPROM		0xFF000

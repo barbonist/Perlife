@@ -200,6 +200,7 @@
 #include "ControlProtectiveInterface.h"
 #include "RPMGauge.h"
 #include "BubbleKeyboard.h"
+#include "Adc_Ges.h"
 
 void InitTest(void);
 /*lint -save  -e970 Disable MISRA rule (6.3) checking. */
@@ -221,11 +222,51 @@ int main(void)
   InitControlProtectiveInterface();
   InitRPMGauge();
   InitBubbleKeyboard();
+  /**/
+  ADC0_Calibration();
+  ADC1_Calibration();
+  timerCounterADC1 = 0;
+  timerCounterADC0 = 0;
+
+  Dip_Switch_ADC_Init();
+  PR_Sens_ADC_Init();
+  T_PLATE_P_Init();
+
+  /*leggo tutta la struttura dati salvata nella parte di flash usata come EEPROM (ci saranno ad esmepio i coefficienti di claibrazione)*/
+   EEPROM_Read(START_ADDRESS_EEPROM, (EEPROM_TDataAddress)&config_data, sizeof(config_data));
+
+  /*scrivo i dati di default sulla flash usata come eeprom
+   * (tra cui i coef di calibrazione dei sensori) solo
+   * se la flash usata come eeprom non è mai stata scritta.
+   * TODO quando sarà fatta la funzione per la calibrazione,
+   * dovrà essere fatta in modo simile per sovrascrivere i coefficienti*/
+   Set_Data_EEPROM_Default();
+
   for(;;)
   {
 	  ManageSwTimers();
 	  UpdateActuatorPosition();
 	  Manage_IR_Sens_Temp();
+	  /*funzioni per leggere i canali AD*/
+	  Manange_ADC0();
+	  Manange_ADC1();
+	  /*END funzioni per leggere i canali AD*/
+
+	 /*faccio lo start della conversione sul canale AD0 ogni 50 msec*/
+	 if (timerCounterADC0 >=1)
+	 {
+		timerCounterADC0 = 0;
+		AD0_Start();
+	 }
+	 /*faccio lo start della conversione sul canale AD1 ogni 10 msec
+	  * per avere le pressioni a 100 HZ (timerCounterADC1 si incremente ogni msec*/
+	 if (timerCounterADC1 >=10)
+	 {
+		//EnterCritical();
+		timerCounterADC1 = 0;
+		//ExitCritical();
+		AD1_Start();
+	 }
   }
 
 

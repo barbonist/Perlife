@@ -282,6 +282,10 @@ void manageChildPrimAlmPumpNotStillAlways(void)
 	{
 		EN_Motor_Control(ENABLE);
 		ClearPumpStopAlarm();
+		// in questo caso posso rilasciare il tasto BUTTON_RESET_ALARM perche' per uscire dallo stato
+		// di allarme PARENT_PRIMING_END_RECIRC_ALARM controllo solo
+		// currentGuard[GUARD_ALARM_ACTIVE].guardValue == GUARD_VALUE_FALSE e non mi aspetto un comando
+		// di reset
 		releaseGUIButton(BUTTON_RESET_ALARM);
 		EnableNextAlarmFunc(); //EnableNextAlarm = TRUE;
 	}
@@ -311,13 +315,17 @@ void manageChildPrimAlmBadPinchPosAlways(void)
 {
 	if(buttonGUITreatment[BUTTON_RESET_ALARM].state == GUI_BUTTON_RELEASED)
 	{
-		ResetTreatSetPinchPosTaskAlm();
+		ResetPrimPinchAlm();
+		// in questo caso posso rilasciare il tasto BUTTON_RESET_ALARM perche' per uscire dallo stato
+		// di allarme PARENT_PRIMING_END_RECIRC_ALARM controllo solo
+		// currentGuard[GUARD_ALARM_ACTIVE].guardValue == GUARD_VALUE_FALSE e non mi aspetto un comando
+		// di reset
 		releaseGUIButton(BUTTON_RESET_ALARM);
 		EnableNextAlarmFunc(); //EnableNextAlarm = TRUE;
 	}
 	else if(buttonGUITreatment[BUTTON_OVERRIDE_ALARM].state == GUI_BUTTON_RELEASED)
 	{
-		ResetTreatSetPinchPosTaskAlm();
+		ResetPrimPinchAlm();
 		ForceCurrentAlarmOff();
 		releaseGUIButton(BUTTON_OVERRIDE_ALARM);
 		EnableNextAlarmFunc(); //EnableNextAlarm = TRUE;
@@ -328,15 +336,43 @@ void manageChildPrimAlmBadPinchPosAlways(void)
 //--------------------------------------------------------------------------------------------------
 // L'allarme viene generato quando viene rilevata aria nella linea del filtro e sono in priming
 /* Manage CHILD_PRIM_ALARM_SFA_AIR_DET entry state in priming*/
+//void manageChildPrimAlmSFAAirDetEntry(void)
+//{
+//	manageChildTreatAlm1StopAllActEntry();
+//}
+//
+//void manageChildPrimAlmSFAAirDetAlways(void)
+//{
+//	manageChildTreatAlm1StopAllActAlways();
+//}
+
 void manageChildPrimAlmSFAAirDetEntry(void)
 {
+	// fermo le pompe e metto le pinch in sicurezza
 	manageChildTreatAlm1StopAllActEntry();
+	TreatAlm1SafAirFiltActive = TRUE;
 }
 
+/* Manage CHILD_TREAT_ALARM_1_SAF_AIR_FILT always state */
 void manageChildPrimAlmSFAAirDetAlways(void)
 {
+	// apetto che tutte le pompe si siano fermate
 	manageChildTreatAlm1StopAllActAlways();
+	DisablePrimAirAlarm(TRUE); // forzo la chiusura dell'allarme aria
+	if((buttonGUITreatment[BUTTON_RESET_ALARM].state == GUI_BUTTON_RELEASED) && IsSecurityStateActive())
+	{
+		// IN QUESTO PUNTO CI PASSA SOLO SE IL TASK CHE GESTISCE GLI ALLARMI NON RIESCE A DISABILITARLI PRIMA DELL'ARRIVO
+		// DI BUTTON_RESET_ALARM (PROBABILMENTE NON CI PASSA MAI)
+		// setto la guard per fare in modo che quando l'allarme risultera' non attivo
+		// la macchina a stati parent vada nello stato di espulsione bolla aria
+		currentGuard[GUARD_ALARM_PRIM_AIR_FILT_RECOVERY].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+		// ho raggiunto la condizione di sicurezza ed ho ricevuto un comando reset alarm
+		releaseGUIButton(BUTTON_RESET_ALARM);
+		EnableNextAlarmFunc(); //EnableNextAlarm = TRUE;
+		LevelBuzzer = 0;
+	}
 }
+
 //--------------------------------------------------------------------------------------------------
 
 
@@ -907,7 +943,8 @@ void manageChildTreatAlmBadPinchPosAlways(void)
 	if(buttonGUITreatment[BUTTON_RESET_ALARM].state == GUI_BUTTON_RELEASED)
 	{
 		ResetTreatSetPinchPosTaskAlm();
-		releaseGUIButton(BUTTON_RESET_ALARM);
+		// evito di fare la release perche' il comando mi servira' per uscire dallo stato PARENT_TREAT_KIDNEY_1_ALARM
+		//releaseGUIButton(BUTTON_RESET_ALARM);
 		EnableNextAlarmFunc(); //EnableNextAlarm = TRUE;
 	}
 	else if(buttonGUITreatment[BUTTON_OVERRIDE_ALARM].state == GUI_BUTTON_RELEASED)
@@ -916,6 +953,10 @@ void manageChildTreatAlmBadPinchPosAlways(void)
 		ForceCurrentAlarmOff();
 		releaseGUIButton(BUTTON_OVERRIDE_ALARM);
 		EnableNextAlarmFunc(); //EnableNextAlarm = TRUE;
+
+		// forzo un BUTTON_RESET_ALARM perche' il comando mi servira' per uscire dallo stato PARENT_TREAT_KIDNEY_1_ALARM
+		// ed andare nello stato di funzionamento normale
+		setGUIButton(BUTTON_RESET_ALARM);
 	}
 
 }
@@ -1353,7 +1394,7 @@ void manageChildEmptyAlm1StAllActAlways(void)
 
 
 
-bool IsDisposableEmpty(void)
+bool IsDisposableEmptyWithAlm(void)
 {
 	bool DispEmpty = FALSE;
 	if(GetTherapyType() == LiverTreat)

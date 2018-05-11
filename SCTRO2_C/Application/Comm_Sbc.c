@@ -971,6 +971,9 @@ void pollingDataToSBCTreat(void)
 
 void buildRDMachineStateResponseMsg(char code, char subcode)
 {
+	// contatore usato per determinare il numero si status inviati con allarme a 0
+	// dopo che ho ricevuto un BUTTON_ALARM_RESET per ripartire dopo un allarme
+	static unsigned char StatrespCnt = 0;
 	word wd;
 	byte index = 0;
 	unsigned int life = FreeRunCnt10msec *10;
@@ -1012,15 +1015,36 @@ void buildRDMachineStateResponseMsg(char code, char subcode)
 	/*12*/	sbc_tx_data[index++] = 0x00;
 	/*13*/	sbc_tx_data[index++] = 0x00;
 
-	/* status parameters: alarm code */
-	/*14*/	sbc_tx_data[index++] = (alarmCurrent.code >> 8 ) & 0xFF;
-	/*15*/	sbc_tx_data[index++] = (alarmCurrent.code 	    ) & 0xFF;
-	/* status parameters: alarm physic */
-	/*16*/	sbc_tx_data[index++] = (alarmCurrent.active >> 8 ) & 0xFF;
-	/*17*/	sbc_tx_data[index++] = (alarmCurrent.active      ) & 0xFF;
-	/* status parameters: alarm type */
-	/*18*/	sbc_tx_data[index++] = (alarmCurrent.type >> 8 ) & 0xFF;
-	/*19*/  sbc_tx_data[index++] = (alarmCurrent.type      ) & 0xFF;
+	if(SuspendInvioAlarmCode)
+	{
+		StatrespCnt++;
+		/* status parameters: alarm code */
+		/*14*/	sbc_tx_data[index++] = 0;
+		/*15*/	sbc_tx_data[index++] = 0;
+		/* status parameters: alarm physic */
+		/*16*/	sbc_tx_data[index++] = 0;
+		/*17*/	sbc_tx_data[index++] = 0;
+		/* status parameters: alarm type */
+		/*18*/	sbc_tx_data[index++] = 0;
+		/*19*/  sbc_tx_data[index++] = 0;
+		if(StatrespCnt >= 3)
+		{
+			StatrespCnt = 0;
+			SuspendInvioAlarmCode = 0;
+		}
+	}
+	else
+	{
+		/* status parameters: alarm code */
+		/*14*/	sbc_tx_data[index++] = (alarmCurrent.code >> 8 ) & 0xFF;
+		/*15*/	sbc_tx_data[index++] = (alarmCurrent.code 	    ) & 0xFF;
+		/* status parameters: alarm physic */
+		/*16*/	sbc_tx_data[index++] = (alarmCurrent.active >> 8 ) & 0xFF;
+		/*17*/	sbc_tx_data[index++] = (alarmCurrent.active      ) & 0xFF;
+		/* status parameters: alarm type */
+		/*18*/	sbc_tx_data[index++] = (alarmCurrent.type >> 8 ) & 0xFF;
+		/*19*/  sbc_tx_data[index++] = (alarmCurrent.type      ) & 0xFF;
+	}
 	/* status parameters: machine state state*/
 	/*20*/	sbc_tx_data[index++] = (ptrCurrentState->state >> 8) & 0xFF;
 	/*21*/	sbc_tx_data[index++] = (ptrCurrentState->state     ) & 0xFF;
@@ -1210,25 +1234,24 @@ void buildRDMachineStateResponseMsg(char code, char subcode)
 	/*120*/  sbc_tx_data[index++] = ((word)FilterFlowVal >> 8) & 0xFF;  // flusso nel filtro in ml/min (!= 0 solo se il filtro e' presente)
 	/*121*/  sbc_tx_data[index++] = ((word)FilterFlowVal     ) & 0xFF;
 	wd = 0;
+	/*122*/  sbc_tx_data[index++] = (TimeoutAirEjection >> 8) & 0xFF;  // flag di timeout nell'espulsione dell'aria
+	/*123*/  sbc_tx_data[index++] = (TimeoutAirEjection     ) & 0xFF;
 	/* free 1*/
-	/*122*/  sbc_tx_data[index++] = (wd >> 8) & 0xFF;
-	/*123*/  sbc_tx_data[index++] = (wd     ) & 0xFF;
-	/* free 2*/
 	/*124*/  sbc_tx_data[index++] = (wd >> 8) & 0xFF;
 	/*125*/  sbc_tx_data[index++] = (wd     ) & 0xFF;
-	/* free 3*/
+	/* free 2*/
 	/*126*/  sbc_tx_data[index++] = (wd >> 8) & 0xFF;
 	/*127*/  sbc_tx_data[index++] = (wd     ) & 0xFF;
-	/* free 4*/
+	/* free 3*/
 	/*128*/  sbc_tx_data[index++] = (wd >> 8) & 0xFF;
 	/*129*/  sbc_tx_data[index++] = (wd     ) & 0xFF;
-	/* free 5*/
+	/* free 4*/
 	/*130*/  sbc_tx_data[index++] = (wd >> 8) & 0xFF;
 	/*131*/  sbc_tx_data[index++] = (wd     ) & 0xFF;
-	/* free 6*/
+	/* free 5*/
 	/*132*/  sbc_tx_data[index++] = (wd >> 8) & 0xFF;
 	/*133*/  sbc_tx_data[index++] = (wd     ) & 0xFF;
-	/* free 7*/
+	/* free 6*/
 	/*134*/  sbc_tx_data[index++] = (wd >> 8) & 0xFF;
 	/*135*/  sbc_tx_data[index++] = (wd     ) & 0xFF;
 
@@ -1383,6 +1406,7 @@ void setGUIButton(unsigned char buttonId){
 		// dovro' uscire dalla condizione di allarme e quindi azzero subito l'allarme
 		// inviato alla gui
 		//memset(&alarmCurrent, 0, sizeof(struct alarm));
+		SuspendInvioAlarmCode = 1;
 	}
 }
 
@@ -1525,7 +1549,7 @@ void setParamWordFromGUI(unsigned char parId, int value)
 	}
 
 	// TODO DA RIMUOVERE SOLO PER DEBUG GUI !!!!
-	parameterWordSetFromGUI[PAR_SET_DESIRED_DURATION].value = 20;
+	parameterWordSetFromGUI[PAR_SET_DESIRED_DURATION].value = 0x200;
 }
 
 void resetParamWordFromGUI(unsigned char parId){
@@ -1758,7 +1782,8 @@ int CalcFilterFlow(unsigned char PumpSpeed)
 	static float mlpermin;
 	static unsigned char cnt = 0;
 	cnt++;
-	if(cnt >= 10)
+	//if(cnt >= 10)
+	if(cnt >= 1)
 	{
 		cnt = 0;
 		pump_speed = (float)PumpSpeed;
@@ -1768,6 +1793,23 @@ int CalcFilterFlow(unsigned char PumpSpeed)
 	return (int)mlpermin;
 }
 
+void UpdateFilterFlowVal(void)
+{
+	static unsigned long u32 = 0;
+
+	if((msTick_elapsed(u32) * 50L) >= 500L)
+	{
+		u32 = timerCounterModBus;
+		if(GetTherapyType() == KidneyTreat)
+		{
+			FilterFlowVal = CalcFilterFlow((unsigned char)(modbusData[pumpPerist[0].pmpMySlaveAddress-2][17] / 100));
+		}
+		else if(GetTherapyType() == LiverTreat)
+		{
+			FilterFlowVal = CalcFilterFlow((unsigned char)(modbusData[pumpPerist[3].pmpMySlaveAddress-2][17] / 100));
+		}
+	}
+}
 
 word CalcHoursMin(int seconds)
 {

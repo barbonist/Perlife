@@ -17,7 +17,7 @@
 #define VAL_JOLLY16	0x5A5A
 #define VAL_JOLLY8	0x5A
 #define SIZE_CAN_BUFFER	8
-#define LAST_INDEX_TXBUFF2SEND 3	//
+#define LAST_INDEX_TXBUFF2SEND 7	//
 
 
 
@@ -167,6 +167,15 @@ void onNewState( struct machineState* MSp, struct machineParent* MPp ,
 	TxCan0.STxCan0.Guard = Guard;
 }
 
+void onNewPumpSpeed(uint16_t Pump0Speed, uint16_t Pump1Speed ,
+		            uint16_t Pump2Speed, uint16_t Pump3Speed)
+{
+	TxCan4.STxCan4.SpeedPump1Rpmx10 = Pump0Speed;
+	TxCan4.STxCan4.SpeedPump2Rpmx10 = Pump1Speed;
+	TxCan4.STxCan4.SpeedPump3Rpmx10 = Pump2Speed;
+	TxCan4.STxCan4.SpeedPump4Rpmx10 = Pump3Speed;
+}
+
 int TxBuffIndex = 0;
 
 union UTxCan*	TxBuffCanP[8] =
@@ -234,7 +243,7 @@ void ReceivedCanData(uint8_t *rxbuff, int rxlen, int RxChannel)
 	RetriggerAlarm();
 	if(( rxlen <= 8 ) && (RxChannel >= 8) /*>= 8) && (RxChannel <= 15)*/){
 		memcpy( RxBuffCanP[RxChannel - 8]->RawCanBuffer , rxbuff, rxlen);
-		if(memcmp(RxBuffCanP[RxChannel - 8]->RawCanBuffer , OldRxBuffCanP[RxChannel - 8]->RawCanBuffer, SIZE_CAN_BUFFER) != 0){
+//		if(memcmp(RxBuffCanP[RxChannel - 8]->RawCanBuffer , OldRxBuffCanP[RxChannel - 8]->RawCanBuffer, SIZE_CAN_BUFFER) != 0){
 			// data changed --> trigger some action
 			memcpy(OldRxBuffCanP[RxChannel -8]->RawCanBuffer , RxBuffCanP[RxChannel - 8]->RawCanBuffer, SIZE_CAN_BUFFER);
 			if( RxChannel == 10)
@@ -248,7 +257,7 @@ void ReceivedCanData(uint8_t *rxbuff, int rxlen, int RxChannel)
 				TempCanBusMsg11.free = 0;
 				onNewCanBusMsg11(TempCanBusMsg11);
 			}
-		}
+		//}
 	}
 }
 

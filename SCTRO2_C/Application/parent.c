@@ -170,13 +170,35 @@ void ParentFunc(void)
 			{
 				// per sicurezza resetto la flag di reset alarm premuto, nel caso mi fosse rimasto settato
 				releaseGUIButton(BUTTON_RESET_ALARM);
-			}
-			break;
+			}			break;
 
 		case PARENT_PRIMING_TREAT_KIDNEY_1_ALARM:
 			if(currentGuard[GUARD_ALARM_ACTIVE].guardValue == GUARD_VALUE_FALSE)
 			{
-				if(currentGuard[GUARD_ALARM_WAIT_CMD_TO_EXIT].guardValue == GUARD_VALUE_TRUE)
+				if((currentGuard[GUARD_ALARM_PRIM_AIR_FILT_RECOVERY].guardValue == GUARD_VALUE_TRUE) ||
+				   ((buttonGUITreatment[BUTTON_RESET_ALARM].state == GUI_BUTTON_RELEASED) && TreatAlm1SafAirFiltActive))
+				{
+					if((buttonGUITreatment[BUTTON_RESET_ALARM].state == GUI_BUTTON_RELEASED))
+					{
+						releaseGUIButton(BUTTON_RESET_ALARM);
+						EnableNextAlarmFunc(); //EnableNextAlarm = TRUE;
+						LevelBuzzer = 0;
+					}
+					// ho ricevuto un BUTTON_RESET_ALARM e l'allarme era ancora attivo oppure
+					// ho ricevuto un BUTTON_RESET_ALARM dopo che l'allarme e' stato cancellato perche' la condizione
+					// fisica di allarme e' venuta meno
+					TreatAlm1SafAirFiltActive = FALSE;
+					// vado nello stato parent dove posso cercare di recuperare la condizione di allarme
+					currentGuard[GUARD_ALARM_PRIM_AIR_FILT_RECOVERY].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
+					currentGuard[GUARD_ALARM_PRIM_AIR_FILT_RECOVERY].guardValue = GUARD_VALUE_FALSE;
+					AirParentState = PARENT_TREAT_KIDNEY_1_AIR_FILT;
+					StarTimeToRejAir = timerCounterModBus;
+					TotalTimeToRejAir = 0;
+					/* (FM) passo nello stato per la risoluzione dell'allarme aria nella linea arteriosa*/
+					ptrFutureParent = &stateParentPrimingTreatKidney1[17];
+					ptrFutureChild = ptrFutureParent->ptrChild;
+				}
+				else if(currentGuard[GUARD_ALARM_WAIT_CMD_TO_EXIT].guardValue == GUARD_VALUE_TRUE)
 				{
 					// vado nello stato parent dove posso cercare di recuperare la condizione di allarme
 					currentGuard[GUARD_ALARM_WAIT_CMD_TO_EXIT].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
@@ -227,25 +249,25 @@ void ParentFunc(void)
 					LevelBuzzer = 0;
 				}
 			}
-			else if(buttonGUITreatment[BUTTON_RESET_ALARM].state == GUI_BUTTON_RELEASED)
-			{
-				releaseGUIButton(BUTTON_RESET_ALARM);
-				// potrei essere in allarme aria e, quindi devo far partire la pompa per buttarla via
-				if(ptrAlarmCurrent->code == CODE_ALARM_SFA_PRIM_AIR_DET)
-				{
-					EnableNextAlarmFunc(); //EnableNextAlarm = TRUE;
-					AirParentState = PARENT_TREAT_KIDNEY_1_AIR_FILT;
-					StarTimeToRejAir = timerCounterModBus;
-					TotalTimeToRejAir = 0;
-					DisablePrimAirAlarm(TRUE); // forzo la chiusura dell'allarme aria
-					// stato di gestione dell'aria nel filtro durante il priming
-					// faccio girare la pompa per un po' poi ricomincio
-					ptrFutureParent = &stateParentPrimingTreatKidney1[17];
-					ptrFutureChild = ptrFutureParent->ptrChild;
-				}
-				LevelBuzzer = 0;
-				break;
-			}
+//			else if(buttonGUITreatment[BUTTON_RESET_ALARM].state == GUI_BUTTON_RELEASED)
+//			{
+//				releaseGUIButton(BUTTON_RESET_ALARM);
+//				// potrei essere in allarme aria e, quindi devo far partire la pompa per buttarla via
+//				if(ptrAlarmCurrent->code == CODE_ALARM_SFA_PRIM_AIR_DET)
+//				{
+//					EnableNextAlarmFunc(); //EnableNextAlarm = TRUE;
+//					AirParentState = PARENT_TREAT_KIDNEY_1_AIR_FILT;
+//					StarTimeToRejAir = timerCounterModBus;
+//					TotalTimeToRejAir = 0;
+//					DisablePrimAirAlarm(TRUE); // forzo la chiusura dell'allarme aria
+//					// stato di gestione dell'aria nel filtro durante il priming
+//					// faccio girare la pompa per un po' poi ricomincio
+//					ptrFutureParent = &stateParentPrimingTreatKidney1[17];
+//					ptrFutureChild = ptrFutureParent->ptrChild;
+//				}
+//				LevelBuzzer = 0;
+//				break;
+//			}
 
 			if(ptrCurrentParent->action == ACTION_ON_ENTRY)
 			{
@@ -287,6 +309,9 @@ void ParentFunc(void)
 			{
 			}
 			break;
+
+		// STATO PER LA GESTIONE DELL'ATTESA DELLE POMPE FERME. SE NON SI FERMANO
+		// VERRA' GENERATO UN ALLARME GESTITO NELLO STATO PARENT_PRIMING_END_RECIRC_ALARM
 		case PARENT_PRIM_WAIT_MOT_STOP:
 			if(currentGuard[GUARD_ALARM_ACTIVE].guardValue == GUARD_VALUE_TRUE)
 			{
@@ -317,6 +342,8 @@ void ParentFunc(void)
 			{
 			}
 			break;
+		// STATO PER LA GESTIONE DELL'ATTESA DELLE PINCH TUTTE CHIUSE. sE NON SI DOVESSERO CHIUDERE VERRA'
+		// GENERATO UN ALLARME GESTITO NELLO STATO PARENT_PRIMING_END_RECIRC_ALARM
 		case PARENT_PRIM_WAIT_PINCH_CLOSE:
 			if(currentGuard[GUARD_ALARM_ACTIVE].guardValue == GUARD_VALUE_TRUE)
 			{
@@ -339,10 +366,12 @@ void ParentFunc(void)
 		case PARENT_PRIMING_END_RECIRC_ALARM:
 			if(currentGuard[GUARD_ALARM_ACTIVE].guardValue == GUARD_VALUE_FALSE)
 			{
-				if(buttonGUITreatment[BUTTON_RESET_ALARM].state == GUI_BUTTON_RELEASED)
+				// Il BUTTON_RESET_ALARM e' stato usato nelle funzioni child per resettare
+				// l'allarme e proseguire
+				//if(buttonGUITreatment[BUTTON_RESET_ALARM].state == GUI_BUTTON_RELEASED)
 				{
 					// Il ritorno allo stato di partenza del priming viene fatto solo dopo la pressione del tasto BUTTON_RESET_ALARM
-					releaseGUIButton(BUTTON_RESET_ALARM);
+					//releaseGUIButton(BUTTON_RESET_ALARM);
 					EnableNextAlarmFunc(); //EnableNextAlarm = TRUE;
 					if(ParentStateGenAlarm == PARENT_PRIM_WAIT_PINCH_CLOSE)
 					{
@@ -366,6 +395,10 @@ void ParentFunc(void)
 			}
 			else if(ptrCurrentParent->action == ACTION_ALWAYS){}
 			break;
+
+			// SE DURANTE IL PRIMING CON FILTRO ABILITATO SI VERIFICA UN ALLARME ARIA SUL FILTRO SI
+			// ARRIVA IN QUESTO STATO DOVE VIENE ATTIVATA LA PROCEDURA DI ESPULSIONE DELL'ARIA E CONTEMPORANEAMENTE
+			// VENGONO CONTROLLATI EVENTUALI ALLARMI DI PRESSIONE NEL CASO LE LINEE SIANO OTTURATE
 
 			// STATI PER LA GESTIONE DELLA PROCEDURA DI RIMOZIONE DELL'ARIA DAL CIRCUITO -----------------------
 			case PARENT_PRIM_KIDNEY_1_AIR_FILT:
@@ -397,7 +430,7 @@ void ParentFunc(void)
 				if(currentGuard[GUARD_ALARM_ACTIVE].guardValue == GUARD_VALUE_TRUE)
 				{
 					/* (FM) si e' verificato un allarme, durante la procedura di recupero dell'allarme aria.
-					 * Per la sua gestione uso un nuovo stato 13  */
+					 * Per la sua gestione uso un nuovo stato 19  */
 					ptrFutureParent = &stateParentPrimingTreatKidney1[19];
 					ptrFutureChild = ptrFutureParent->ptrChild;
 					// guardando a questo valore posso vedere il tipo di azione di sicurezza
@@ -439,6 +472,8 @@ void ParentFunc(void)
 				{
 					// (FM) chiamo la funzione child che gestisce lo stato di allarme
 					//ManageStateChildAlarmTreat1();
+					// LA FUNZIONE CHILD CHE GESTISCE LO STATO DI ALLARME, IN QUESTO CASO, SI TROVA NELLA FUNZIONE
+					// ProcessMachineState
 				}
 				break;
 			//---------------------------------------------------------------------------------------------
@@ -497,8 +532,7 @@ void ParentFunc(void)
 			{
 				// per sicurezza resetto la flag di reset alarm premuto, nel caso mi fosse rimasto settato
 				releaseGUIButton(BUTTON_RESET_ALARM);
-			}
-			break;
+			}			break;
 
 		case PARENT_TREAT_KIDNEY_1_PUMP_ON:
 			if(ptrCurrentParent->action == ACTION_ON_ENTRY)
@@ -544,8 +578,7 @@ void ParentFunc(void)
 			{
 				// per sicurezza resetto la flag di reset alarm premuto, nel caso mi fosse rimasto settato
 				releaseGUIButton(BUTTON_RESET_ALARM);
-			}
-			break;
+			}			break;
 
 		case PARENT_TREAT_KIDNEY_1_ALARM:
 			if(currentGuard[GUARD_ALARM_ACTIVE].guardValue == GUARD_VALUE_FALSE)
@@ -558,8 +591,7 @@ void ParentFunc(void)
 					ButtonResetRcvd = TRUE;
 					LevelBuzzer = 0;
 					// preparo la macchina a stati per il controllo delle pinch aperte nella posizione richiesta per lo stato di trattamento
-					TreatSetPinchPosTask((TREAT_SET_PINCH_POS_CMD)T_SET_PINCH_RESET_CMD);
-				}
+					TreatSetPinchPosTask((TREAT_SET_PINCH_POS_CMD)T_SET_PINCH_RESET_CMD);				}
 
 				if((currentGuard[GUARD_ALARM_AIR_FILT_RECOVERY].guardValue == GUARD_VALUE_TRUE) || (ButtonResetRcvd && TreatAlm1SafAirFiltActive))
 				{
@@ -890,6 +922,250 @@ void ParentFunc(void)
 			break;
 	}
 
+}
+
+
+
+void ParentFuncT1Test(void)
+{
+#ifdef DEBUG_T1_TEST
+	switch(ptrCurrentParent->parent){
+	case PARENT_T1_NO_DISP_INIT:
+		if(currentGuard[GUARD_ENABLE_T1_CONFIG].guardValue == GUARD_VALUE_TRUE)
+		{
+		ptrFutureParent = &stateParentT1TNoDisposable[3];
+		ptrFutureChild = ptrFutureParent->ptrChild;
+		DebugStringStr("parent chk config");
+		break;
+		}
+
+		if(ptrCurrentParent->action == ACTION_ON_ENTRY)
+		{
+		ptrFutureParent = &stateParentT1TNoDisposable[2];
+		ptrFutureChild = ptrFutureParent->ptrChild;
+		}
+		else if(ptrCurrentParent->action == ACTION_ALWAYS)
+		{
+			currentGuard[GUARD_ENABLE_T1_CONFIG].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+		}
+		break;
+
+	case PARENT_T1_NO_DISP_CHK_CONFG:
+		if(currentGuard[GUARD_ENABLE_T1_24VBRK].guardValue == GUARD_VALUE_TRUE)
+		{
+		ptrFutureParent = &stateParentT1TNoDisposable[5];
+		ptrFutureChild = ptrFutureParent->ptrChild;
+		DebugStringStr("parent chk 24vbrk");
+		break;
+		}
+
+		if(ptrCurrentParent->action == ACTION_ON_ENTRY)
+		{
+		ptrFutureParent = &stateParentT1TNoDisposable[4];
+		ptrFutureChild = ptrFutureParent->ptrChild;
+		}
+		else if(ptrCurrentParent->action == ACTION_ALWAYS)
+		{
+			currentGuard[GUARD_ENABLE_T1_24VBRK].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+		}
+		break;
+
+	case PARENT_T1_NO_DISP_CHK_24VBRK:
+		if(currentGuard[GUARD_ENABLE_T1_PRESS].guardValue == GUARD_VALUE_TRUE)
+		{
+		ptrFutureParent = &stateParentT1TNoDisposable[7];
+		ptrFutureChild = ptrFutureParent->ptrChild;
+		DebugStringStr("parent chk press");
+		break;
+		}
+
+		if(ptrCurrentParent->action == ACTION_ON_ENTRY)
+		{
+		ptrFutureParent = &stateParentT1TNoDisposable[6];
+		ptrFutureChild = ptrFutureParent->ptrChild;
+		}
+		else if(ptrCurrentParent->action == ACTION_ALWAYS)
+		{
+			currentGuard[GUARD_ENABLE_T1_PRESS].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+		}
+		break;
+
+	case PARENT_T1_NO_DISP_CHECK_PRESS:
+		if(currentGuard[GUARD_ENABLE_T1_TEMPIR].guardValue == GUARD_VALUE_TRUE)
+		{
+		ptrFutureParent = &stateParentT1TNoDisposable[9];
+		ptrFutureChild = ptrFutureParent->ptrChild;
+		DebugStringStr("parent chk temp");
+		break;
+		}
+
+		if(ptrCurrentParent->action == ACTION_ON_ENTRY)
+		{
+		ptrFutureParent = &stateParentT1TNoDisposable[8];
+		ptrFutureChild = ptrFutureParent->ptrChild;
+		}
+		else if(ptrCurrentParent->action == ACTION_ALWAYS)
+		{
+			currentGuard[GUARD_ENABLE_T1_TEMPIR].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+		}
+		break;
+
+	case PARENT_T1_NO_DISP_CHECK_TEMP:
+		if(currentGuard[GUARD_ENABLE_T1_LEVEL].guardValue == GUARD_VALUE_TRUE)
+		{
+		ptrFutureParent = &stateParentT1TNoDisposable[11];
+		ptrFutureChild = ptrFutureParent->ptrChild;
+		DebugStringStr("parent chk level");
+		break;
+		}
+
+		if(ptrCurrentParent->action == ACTION_ON_ENTRY)
+		{
+		ptrFutureParent = &stateParentT1TNoDisposable[10];
+		ptrFutureChild = ptrFutureParent->ptrChild;
+		}
+		else if(ptrCurrentParent->action == ACTION_ALWAYS)
+		{
+			currentGuard[GUARD_ENABLE_T1_LEVEL].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+		}
+		break;
+
+	case PARENT_T1_NO_DISP_CHECK_LEVEL:
+		if(currentGuard[GUARD_ENABLE_T1_FLOWMTR].guardValue == GUARD_VALUE_TRUE)
+		{
+		ptrFutureParent = &stateParentT1TNoDisposable[13];
+		ptrFutureChild = ptrFutureParent->ptrChild;
+		DebugStringStr("parent chk flwmtr");
+		break;
+		}
+
+		if(ptrCurrentParent->action == ACTION_ON_ENTRY)
+		{
+		ptrFutureParent = &stateParentT1TNoDisposable[12];
+		ptrFutureChild = ptrFutureParent->ptrChild;
+		}
+		else if(ptrCurrentParent->action == ACTION_ALWAYS)
+		{
+			currentGuard[GUARD_ENABLE_T1_FLOWMTR].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+		}
+		break;
+
+	case PARENT_T1_NO_DISP_CHECK_FLWMTR:
+		if(currentGuard[GUARD_ENABLE_T1_AIRSENS].guardValue == GUARD_VALUE_TRUE)
+		{
+		ptrFutureParent = &stateParentT1TNoDisposable[15];
+		ptrFutureChild = ptrFutureParent->ptrChild;
+		DebugStringStr("parent chk air");
+		break;
+		}
+
+		if(ptrCurrentParent->action == ACTION_ON_ENTRY)
+		{
+		ptrFutureParent = &stateParentT1TNoDisposable[14];
+		ptrFutureChild = ptrFutureParent->ptrChild;
+		}
+		else if(ptrCurrentParent->action == ACTION_ALWAYS)
+		{
+			currentGuard[GUARD_ENABLE_T1_AIRSENS].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+		}
+		break;
+
+	case PARENT_T1_NO_DISP_CHEK_AIR:
+		if(currentGuard[GUARD_ENABLE_T1_PINCH].guardValue == GUARD_VALUE_TRUE)
+		{
+		ptrFutureParent = &stateParentT1TNoDisposable[17];
+		ptrFutureChild = ptrFutureParent->ptrChild;
+		DebugStringStr("parent chk pinch");
+		break;
+		}
+
+		if(ptrCurrentParent->action == ACTION_ON_ENTRY)
+		{
+		ptrFutureParent = &stateParentT1TNoDisposable[16];
+		ptrFutureChild = ptrFutureParent->ptrChild;
+		}
+		else if(ptrCurrentParent->action == ACTION_ALWAYS)
+		{
+			currentGuard[GUARD_ENABLE_T1_PINCH].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+		}
+		break;
+
+	case PARENT_T1_NO_DISP_CHEK_PINCH:
+		if(currentGuard[GUARD_ENABLE_T1_PUMP].guardValue == GUARD_VALUE_TRUE)
+		{
+		ptrFutureParent = &stateParentT1TNoDisposable[19];
+		ptrFutureChild = ptrFutureParent->ptrChild;
+		DebugStringStr("parent chk pump");
+		break;
+		}
+
+		if(ptrCurrentParent->action == ACTION_ON_ENTRY)
+		{
+		ptrFutureParent = &stateParentT1TNoDisposable[18];
+		ptrFutureChild = ptrFutureParent->ptrChild;
+		}
+		else if(ptrCurrentParent->action == ACTION_ALWAYS)
+		{
+			currentGuard[GUARD_ENABLE_T1_PUMP].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+		}
+		break;
+
+	case PARENT_T1_NO_DISP_CHEK_PUMP:
+		if(currentGuard[GUARD_ENABLE_T1_TERMO].guardValue == GUARD_VALUE_TRUE)
+		{
+		ptrFutureParent = &stateParentT1TNoDisposable[21];
+		ptrFutureChild = ptrFutureParent->ptrChild;
+		DebugStringStr("parent chk termo");
+		break;
+		}
+
+		if(ptrCurrentParent->action == ACTION_ON_ENTRY)
+		{
+		ptrFutureParent = &stateParentT1TNoDisposable[20];
+		ptrFutureChild = ptrFutureParent->ptrChild;
+		}
+		else if(ptrCurrentParent->action == ACTION_ALWAYS)
+		{
+			currentGuard[GUARD_ENABLE_T1_TERMO].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+		}
+		break;
+
+	case PARENT_T1_NO_DISP_CHEK_PELTIER:
+		if(currentGuard[GUARD_ENABLE_T1_END].guardValue == GUARD_VALUE_TRUE)
+		{
+		ptrFutureParent = &stateParentT1TNoDisposable[23];
+		ptrFutureChild = ptrFutureParent->ptrChild;
+		DebugStringStr("parent to end");
+		break;
+		}
+
+		if(ptrCurrentParent->action == ACTION_ON_ENTRY)
+		{
+		ptrFutureParent = &stateParentT1TNoDisposable[22];
+		ptrFutureChild = ptrFutureParent->ptrChild;
+		}
+		else if(ptrCurrentParent->action == ACTION_ALWAYS)
+		{
+			currentGuard[GUARD_ENABLE_T1_END].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+		}
+		break;
+
+	case PARENT_T1_NO_DISP_END:
+		currentGuard[GUARD_HW_T1T_DONE].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+		currentGuard[GUARD_COMM_ENABLED].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+		DebugStringStr("parent to idle state");
+		break;
+
+	case PARENT_T1_NO_DISP_ALARM:
+		break;
+
+	case PARENT_T1_NO_DISP_FATAL_ERROR:
+		break;
+
+	default:
+		break;
+	}
+#endif
 }
 
 

@@ -55,6 +55,7 @@ word ConvertMMHgToMl( word mmhg);
 int CalcPrimingDuration(word volume);
 int CalcFilterFlow(unsigned char PumpSpeed);
 word CalcHoursMin(int seconds);
+void UpdateFilterFlowVal(void);
 
 /*******************/
 /******* TREATMENT - SBC COMM. FUNCTION *********/

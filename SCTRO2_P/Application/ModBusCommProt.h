@@ -90,7 +90,7 @@ int		msg_pmp1_numbyte_rx;	/* modbus codified num byte received */
 char	data_pmp1[252];			/* pmp1 data field */
 
 /* MODBUS CRC */
-#define CRC_POLYNOMIAL		0xA001
+//#define CRC_POLYNOMIAL		0xA001
 
 /* MODBUS Actuator address */
 #define		PMP1_ADDRESS		0x02 /* pump 1 address */
@@ -177,7 +177,6 @@ static void ComputeWriteByteCount(void);
 static void FrameInitFunc3(void);
 static void FrameInitFunc10(void);
 static void FrameInitFunc17(void);
-static unsigned int ComputeChecksum(unsigned char * data, int size);
 /* Private function */
 
 #endif /* APPLICATION_MODBUSCOMMPROT_H_ */

@@ -293,23 +293,35 @@ struct machineParent stateParentIdle[] =
 
 struct machineParent stateParentT1TNoDisposable[] =
 		{
-		 {STATE_NULL, PARENT_NULL,                    CHILD_NULL, ACTION_NULL,     &stateChildIdle[0], &manageNull},
-		 {STATE_NULL, PARENT_T1_NO_DISP_INIT,         CHILD_IDLE, ACTION_ON_ENTRY, &stateChildIdle[1], &manageNull},
-		 {STATE_NULL, PARENT_T1_NO_DISP_INIT,         CHILD_IDLE, ACTION_ALWAYS,   &stateChildIdle[1], &manageNull},
-		 {STATE_NULL, PARENT_T1_NO_DISP_CHECK_PRESS,  CHILD_IDLE, ACTION_ON_ENTRY, &stateChildIdle[1], &manageNull},
-		 {STATE_NULL, PARENT_T1_NO_DISP_CHECK_PRESS,  CHILD_IDLE, ACTION_ALWAYS,   &stateChildIdle[1], &manageNull},
-		 {STATE_NULL, PARENT_T1_NO_DISP_CHECK_TEMP,   CHILD_IDLE, ACTION_ON_ENTRY, &stateChildIdle[1], &manageNull},
-		 {STATE_NULL, PARENT_T1_NO_DISP_CHECK_TEMP,   CHILD_IDLE, ACTION_ALWAYS,   &stateChildIdle[1], &manageNull},
-		 {STATE_NULL, PARENT_T1_NO_DISP_CHECK_FLWMTR, CHILD_IDLE, ACTION_ON_ENTRY, &stateChildIdle[1], &manageNull},
-		 {STATE_NULL, PARENT_T1_NO_DISP_CHECK_FLWMTR, CHILD_IDLE, ACTION_ALWAYS,   &stateChildIdle[1], &manageNull},
-	     {STATE_NULL, PARENT_T1_NO_DISP_CHEK_AIR,     CHILD_IDLE, ACTION_ON_ENTRY, &stateChildIdle[1], &manageNull},
-		 {STATE_NULL, PARENT_T1_NO_DISP_CHEK_AIR,     CHILD_IDLE, ACTION_ALWAYS,   &stateChildIdle[1], &manageNull},
-		 {STATE_NULL, PARENT_T1_NO_DISP_ALARM,        CHILD_IDLE, ACTION_ON_ENTRY, &stateChildIdle[1], &manageNull},
-		 {STATE_NULL, PARENT_T1_NO_DISP_ALARM,        CHILD_IDLE, ACTION_ALWAYS,   &stateChildIdle[1], &manageNull},
-		 {STATE_NULL, PARENT_T1_NO_DISP_END,          CHILD_IDLE, ACTION_ON_ENTRY, &stateChildIdle[1], &manageNull},
-		 {STATE_NULL, PARENT_T1_NO_DISP_END,          CHILD_IDLE, ACTION_ALWAYS,   &stateChildIdle[1], &manageNull},
-		 {STATE_NULL, PARENT_T1_NO_DISP_FATAL_ERROR,  CHILD_IDLE, ACTION_ON_ENTRY, &stateChildIdle[1], &manageNull},
-		 {STATE_NULL, PARENT_T1_NO_DISP_FATAL_ERROR,  CHILD_IDLE, ACTION_ALWAYS,   &stateChildIdle[1], &manageNull},
+		 {STATE_NULL, PARENT_NULL,                    CHILD_NULL, ACTION_NULL,     &stateChildIdle[0], &manageNull}, /* 0 */
+		 {STATE_NULL, PARENT_T1_NO_DISP_INIT,         CHILD_IDLE, ACTION_ON_ENTRY, &stateChildIdle[1], &manageNull}, /* 1 */ /* init */
+		 {STATE_NULL, PARENT_T1_NO_DISP_INIT,         CHILD_IDLE, ACTION_ALWAYS,   &stateChildIdle[1], &manageNull}, /* 2 */ /* init */
+		 {STATE_NULL, PARENT_T1_NO_DISP_CHK_CONFG,    CHILD_IDLE, ACTION_ON_ENTRY, &stateChildIdle[1], &manageNull}, /* 3 */ /* t1 check confg data */
+		 {STATE_NULL, PARENT_T1_NO_DISP_CHK_CONFG,    CHILD_IDLE, ACTION_ALWAYS,   &stateChildIdle[1], &manageNull}, /* 4 */ /* t1 check confg data */
+		 {STATE_NULL, PARENT_T1_NO_DISP_CHK_24VBRK,   CHILD_IDLE, ACTION_ON_ENTRY, &stateChildIdle[1], &manageNull}, /* 5 */ /* t1 check 24VBRK */
+		 {STATE_NULL, PARENT_T1_NO_DISP_CHK_24VBRK,   CHILD_IDLE, ACTION_ALWAYS,   &stateChildIdle[1], &manageNull}, /* 6 */ /* t1 check 24VBRK */
+		 {STATE_NULL, PARENT_T1_NO_DISP_CHECK_PRESS,  CHILD_IDLE, ACTION_ON_ENTRY, &stateChildIdle[1], &manageNull}, /* 7 */ /* t1 chk press. sensor */
+		 {STATE_NULL, PARENT_T1_NO_DISP_CHECK_PRESS,  CHILD_IDLE, ACTION_ALWAYS,   &stateChildIdle[1], &manageNull}, /* 8 */ /* t1 chk press. sensor */
+		 {STATE_NULL, PARENT_T1_NO_DISP_CHECK_TEMP,   CHILD_IDLE, ACTION_ON_ENTRY, &stateChildIdle[1], &manageNull}, /* 9 */ /* t1 chk temp. sensor */
+		 {STATE_NULL, PARENT_T1_NO_DISP_CHECK_TEMP,   CHILD_IDLE, ACTION_ALWAYS,   &stateChildIdle[1], &manageNull}, /* 10 */ /* t1 chk temp. sensor */
+		 {STATE_NULL, PARENT_T1_NO_DISP_CHECK_LEVEL,  CHILD_IDLE, ACTION_ON_ENTRY, &stateChildIdle[1], &manageNull}, /* 11 */ /* t1 chk level sensor */
+		 {STATE_NULL, PARENT_T1_NO_DISP_CHECK_LEVEL,  CHILD_IDLE, ACTION_ALWAYS,   &stateChildIdle[1], &manageNull}, /* 12 */ /* t1 chk level sensor */
+		 {STATE_NULL, PARENT_T1_NO_DISP_CHECK_FLWMTR, CHILD_IDLE, ACTION_ON_ENTRY, &stateChildIdle[1], &manageNull}, /* 13 */ /* t1 chk flowmeter sensor */
+		 {STATE_NULL, PARENT_T1_NO_DISP_CHECK_FLWMTR, CHILD_IDLE, ACTION_ALWAYS,   &stateChildIdle[1], &manageNull}, /* 14 */ /* t1 chk flowmeter sensor */
+	     {STATE_NULL, PARENT_T1_NO_DISP_CHEK_AIR,     CHILD_IDLE, ACTION_ON_ENTRY, &stateChildIdle[1], &manageNull}, /* 15 */ /* t1 chk air sensor */
+		 {STATE_NULL, PARENT_T1_NO_DISP_CHEK_AIR,     CHILD_IDLE, ACTION_ALWAYS,   &stateChildIdle[1], &manageNull}, /* 16 */ /* t1 chk air sensor */
+		 {STATE_NULL, PARENT_T1_NO_DISP_CHEK_PINCH,   CHILD_IDLE, ACTION_ON_ENTRY, &stateChildIdle[1], &manageNull}, /* 17 */ /* t1 chk pinch */
+		 {STATE_NULL, PARENT_T1_NO_DISP_CHEK_PINCH,   CHILD_IDLE, ACTION_ALWAYS,   &stateChildIdle[1], &manageNull}, /* 18 */ /* t1 chk pinch */
+		 {STATE_NULL, PARENT_T1_NO_DISP_CHEK_PUMP,    CHILD_IDLE, ACTION_ON_ENTRY, &stateChildIdle[1], &manageNull}, /* 19 */ /* t1 chk pump */
+		 {STATE_NULL, PARENT_T1_NO_DISP_CHEK_PUMP,    CHILD_IDLE, ACTION_ALWAYS,   &stateChildIdle[1], &manageNull}, /* 20 */ /* t1 chk pump */
+		 {STATE_NULL, PARENT_T1_NO_DISP_CHEK_PELTIER, CHILD_IDLE, ACTION_ON_ENTRY, &stateChildIdle[1], &manageNull}, /* 21 */ /* t1 chk Peltier */
+		 {STATE_NULL, PARENT_T1_NO_DISP_CHEK_PELTIER, CHILD_IDLE, ACTION_ALWAYS,   &stateChildIdle[1], &manageNull}, /* 22 */ /* t1 chk Peltier */
+		 {STATE_NULL, PARENT_T1_NO_DISP_END,          CHILD_IDLE, ACTION_ON_ENTRY, &stateChildIdle[1], &manageNull}, /* 23 */ /* t1 test end */
+		 {STATE_NULL, PARENT_T1_NO_DISP_END,          CHILD_IDLE, ACTION_ALWAYS,   &stateChildIdle[1], &manageNull}, /* 24 */ /* t1 test end */
+		 {STATE_NULL, PARENT_T1_NO_DISP_ALARM,        CHILD_IDLE, ACTION_ON_ENTRY, &stateChildIdle[1], &manageNull}, /* 25 */ /* t1 test alarm */
+		 {STATE_NULL, PARENT_T1_NO_DISP_ALARM,        CHILD_IDLE, ACTION_ALWAYS,   &stateChildIdle[1], &manageNull}, /* 26 */ /* t1 test alarm */
+		 {STATE_NULL, PARENT_T1_NO_DISP_FATAL_ERROR,  CHILD_IDLE, ACTION_ON_ENTRY, &stateChildIdle[1], &manageNull}, /* 27 */ /* t1 test error */
+		 {STATE_NULL, PARENT_T1_NO_DISP_FATAL_ERROR,  CHILD_IDLE, ACTION_ALWAYS,   &stateChildIdle[1], &manageNull}, /* 28 */ /* t1 test error */
 		 {}
 		};
 
@@ -465,8 +477,8 @@ struct machineState stateState[] =
 		{STATE_SELECT_TREAT,       PARENT_NULL, CHILD_NULL, ACTION_ON_ENTRY,                &stateParentNull[0],                &manageStateSelTreat},			/* 5 */
 		{STATE_SELECT_TREAT,       PARENT_NULL, CHILD_NULL, ACTION_ALWAYS,                  &stateParentNull[0],                &manageStateSelTreatAlways},	/* 6 */
 
-		{STATE_T1_NO_DISPOSABLE,   PARENT_NULL, CHILD_NULL, ACTION_ON_ENTRY,                &stateParentNull[0],                &manageStateT1NoDisp},			/* 7 */
-		{STATE_T1_NO_DISPOSABLE,   PARENT_NULL, CHILD_NULL, ACTION_ALWAYS,                  &stateParentNull[0],                &manageStateT1NoDispAlways},	/* 8 */
+		{STATE_T1_NO_DISPOSABLE,   PARENT_NULL, CHILD_NULL, ACTION_ON_ENTRY,                &stateParentT1TNoDisposable[1],     &manageStateT1NoDisp},			/* 7 */
+		{STATE_T1_NO_DISPOSABLE,   PARENT_NULL, CHILD_NULL, ACTION_ALWAYS,                  &stateParentT1TNoDisposable[2],     &manageStateT1NoDispAlways},	/* 8 */
 
 		{STATE_MOUNTING_DISP,      PARENT_NULL, CHILD_NULL, ACTION_ON_ENTRY,                &stateParentNull[0],                &manageStateMountDisp},			/* 9 */
 		{STATE_MOUNTING_DISP,      PARENT_NULL, CHILD_NULL, ACTION_ALWAYS,                  &stateParentNull[0],                &manageStateMountDispAlways},	/* 10 */
@@ -512,9 +524,6 @@ struct machineState stateState[] =
 		/**************************************************************************************/
 		/******-----------------------------MACHINE STATE------------------------------********/
 		/**************************************************************************************/
-
-
-		 //{STATE_T1_NO_DISPOSABLE, PARENT_T1_NO_DISP_INIT, CHILD_NULL, ACTION_ON_EXIT, &stateParentT1TNoDisposable[1], &manageNull},
 
 		 //{STATE_T1_WITH_DISPOSABLE, PARENT_NULL, CHILD_NULL, ACTION_ON_ENTRY, &stateParentNull[0], &manageStateT1WithDisp},
 		 //{STATE_T1_WITH_DISPOSABLE, PARENT_NULL, CHILD_NULL, ACTION_ALWAYS, &stateParentNull[0], &manageStateT1WithDispAlways},

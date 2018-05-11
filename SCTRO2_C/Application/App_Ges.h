@@ -123,13 +123,24 @@ void manageStatePriming_1_WaitAlways(void);
 
 /* PARENT LEVEL FUNCTION */
 /**************************************************************************************/
+/******-----------------------------T1 TEST NO DISP----------------------------********/
+/**************************************************************************************/
+void manageParentT1InitEntry(void);
+void manageParentT1NoDispEntry(void);
+void manageParentT1NoDispAlways(void);
+void manageParentT1EndEntry(void);
+
+/**************************************************************************************/
 /******-----------------------------TREATMENT----------------------------------********/
 /**************************************************************************************/
 void manageParentPrimingEntry(void);
+void SetPinchPosInPriming(void);
 void manageParentPrimingAlways(void);
 void manageParPrimWaitMotStopEntry(void);
 void manageParPrimWaitMotStopEntryAlways(void);
 void manageParPrimWaitPinchCloseEntry(void);
+bool AreAllPinchClose( void );
+void ResetPrimPinchAlm(void);
 void manageParPrimWaitPinchCloseAlways(void);
 void  manageParPrimEndRecAlarmEntry(void);
 void manageParPrimEndRecAlarmAlways(void);
@@ -246,6 +257,7 @@ CHECK_PUMP_STOP_STATE CheckPumpStopTask(CHECK_PUMP_STOP_CMD cmd);
 //bool IsPinchPosOk(void);
 //CHECK_PINCH_POS_STATE CheckPinchPosTask(CHECK_PINCH_CMD cmd);
 
+void ParentFuncT1Test(void);
 void ParentFunc(void);
 void AirAlarmRecoveryStateMach(void);
 
