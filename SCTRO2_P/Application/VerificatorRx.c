@@ -27,7 +27,7 @@ typedef struct {
 	bool AlarmActive;
 } TAlarmTimer;
 
-TAlarmTimer PumpAlarmTimer = {0,20,false,false}; // alarm after 2 s mismatch
+TAlarmTimer PumpAlarmTimer = {0,60,false,false}; // alarm after 2 s mismatch
 
 void ManageVerificatorAlarms100ms(void);
 bool ValueIsInRange(uint16_t RefValue, uint16_t Val2Test, uint16_t IPercent);
@@ -97,10 +97,10 @@ bool Pump1Ok = true;
 bool Pump2Ok = true;
 bool Pump3Ok = true;
 
-	Pump0Ok = ValueIsInRange(GetMeasuredPumpSpeed(0), SpeedPump0Rpmx100, 10) ? true : false;
-	Pump1Ok = ValueIsInRange(GetMeasuredPumpSpeed(1), SpeedPump1Rpmx100, 10) ? true : false;
-	Pump2Ok = ValueIsInRange(GetMeasuredPumpSpeed(2), SpeedPump2Rpmx100, 10) ? true : false;
-	Pump3Ok = ValueIsInRange(GetMeasuredPumpSpeed(3), SpeedPump3Rpmx100, 10) ? true : false;
+	Pump0Ok = ValueIsInRange(GetMeasuredPumpSpeed(0), SpeedPump0Rpmx100, 1000) ? true : false;
+	Pump1Ok = ValueIsInRange(GetMeasuredPumpSpeed(1), SpeedPump1Rpmx100, 1000) ? true : false;
+	Pump2Ok = ValueIsInRange(GetMeasuredPumpSpeed(2), SpeedPump2Rpmx100, 1000) ? true : false;
+	Pump3Ok = ValueIsInRange(GetMeasuredPumpSpeed(3), SpeedPump3Rpmx100, 1000) ? true : false;
 
 	if( Pump0Ok && Pump1Ok && Pump2Ok && Pump3Ok ){
 		PumpAlarmTimer.AlarmConditionPending = false;
@@ -116,7 +116,7 @@ void ManageRxAlarmCode(uint16_t AlarmCode)
 }
 
 
-bool ValueIsInRange(uint16_t RefValue, uint16_t Val2Test, uint16_t IPercent) {
+bool ValueIsInRangePerc(uint16_t RefValue, uint16_t Val2Test, uint16_t IPercent) {
 	uint16_t max;
 	uint16_t min;
 
@@ -126,3 +126,17 @@ bool ValueIsInRange(uint16_t RefValue, uint16_t Val2Test, uint16_t IPercent) {
 
 }
 
+bool ValueIsInRange(uint16_t RefValue, uint16_t Val2Test, uint16_t IDelta) {
+	int16_t max;
+	int16_t min;
+
+	max = RefValue + IDelta;
+	if (RefValue > IDelta) 	min = RefValue - IDelta;
+	else min = 0;
+	if( (Val2Test <= max) && (Val2Test >= min) )
+		return true;
+	else
+		return false;
+//	return ((Val2Test <= max) && (Val2Test >= min));
+
+}

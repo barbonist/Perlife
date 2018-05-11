@@ -20,7 +20,7 @@
 #define SIZE_CAN_BUFFER	8
 #define LAST_INDEX_TXBUFF2SEND 15	//
 
-
+//#define CAN_DEBUG 1
 
 union URxCan {
 	uint8_t RawCanBuffer[SIZE_CAN_BUFFER];
@@ -102,6 +102,7 @@ union URxCan  RxCan7,  OldRxCan7;
 
 void ManageTxCan10ms(void);
 void ManageTxCan100ms(void);
+void DebugFillTxBuffers(void);
 
 void InitControlProtectiveInterface(void)
 {
@@ -159,15 +160,23 @@ void InitControlProtectiveInterface(void)
 }
 
 // incoming new press values
+#ifdef CAN_DEBUG
+void onNewPressOxygen(uint16_t Value)  	{  }
+void onNewTubPressLevel(uint16_t Value) {  }
+void onNewPressADSFLT(uint16_t  Value) 	{  }
+void onNewPressVen(uint16_t  Value)		{  }
+void onNewPressArt(uint16_t  Value)		{  }
+#else
 void onNewPressOxygen(uint16_t Value)  	{  	TxCan1.STxCan1.PressOxy = Value; }
 void onNewTubPressLevel(uint16_t Value) { 	TxCan0.STxCan0.PressLevelx100 = Value; }
 void onNewPressADSFLT(uint16_t  Value) 	{	TxCan0.STxCan0.PressFilter = Value;	}
 void onNewPressVen(uint16_t  Value)		{	TxCan0.STxCan0.PressVen = Value; }
 void onNewPressArt(uint16_t  Value)		{	TxCan0.STxCan0.PressArt = Value; }
-
+#endif
 
 
 void onNewPumpRPM(int16_t Value, int PumpIndex) {
+#ifndef CAN_DEBUG
 	switch (PumpIndex) {
 	case 0:
 		TxCan3.STxCan3.SpeedPump0Rpmx100 = Value;
@@ -182,6 +191,7 @@ void onNewPumpRPM(int16_t Value, int PumpIndex) {
 		TxCan3.STxCan3.SpeedPump3Rpmx100 = Value;
 		break;
 	}
+#endif
 }
 
 // incoming new RPM values ( reduntant funtions , for possible future use )
@@ -202,7 +212,7 @@ void onNewFilterPumpRPM(int16_t Value) {
 
 void onNewPinchStat(ActuatorHallStatus Ahs )
 {
-
+#ifndef CAN_DEBUG
 	if (Ahs.PinchFilter_Left)
 		  TxCan2.STxCan2.Pinch0Pos = 0x02;
 	else if (Ahs.PinchFilter_Right)
@@ -223,7 +233,7 @@ void onNewPinchStat(ActuatorHallStatus Ahs )
 		   TxCan2.STxCan2.Pinch2Pos = 0x04;
 	 else
 		   TxCan2.STxCan2.Pinch2Pos = 0x01;
-
+#endif
 }
 
 
@@ -273,6 +283,10 @@ int ii ;//= 11;
 
 	for( ii=8 ; ii<=LAST_INDEX_TXBUFF2SEND ; ii++)
 		SendCAN(TxBuffCanP[ii - 8]->RawCanBuffer, SIZE_CAN_BUFFER, ii);
+
+#ifdef CAN_DEBUG
+	DebugFillTxBuffers();
+#endif
 }
 
 union URxCan*	RxBuffCanP[8] =
@@ -378,5 +392,35 @@ void NewDataRxChannel4(void) {
 	VerifyRxPumpsRpm(RxCan4.SRxCan4.SpeedPump0Rpmx100,
 			RxCan4.SRxCan4.SpeedPump1Rpmx100, RxCan4.SRxCan4.SpeedPump2Rpmx100,
 			RxCan4.SRxCan4.SpeedPump3Rpmx100);
+}
+
+
+
+
+void DebugFillTxBuffers(void)
+{
+	static uint16_t seq_number = 0;
+	int ii;
+	uint16_t *p16;
+
+	for(ii=0; ii<4;ii++){
+		p16 = (uint16_t*)&TxCan0.RawCanBuffer[ii*2];
+		*p16 = (ii + seq_number) | 0x8000;
+		p16 = (uint16_t*)&TxCan1.RawCanBuffer[ii*2];
+		*p16 = (ii + seq_number) | 0xC000;
+		p16 = (uint16_t*)&TxCan2.RawCanBuffer[ii*2];
+		*p16 = (ii + seq_number) | 0xE000;
+		p16 = (uint16_t*)&TxCan3.RawCanBuffer[ii*2];
+		*p16 = (ii + seq_number) | 0xF000;
+		p16 = (uint16_t*)&TxCan4.RawCanBuffer[ii*2];
+		*p16 = (ii + seq_number) | 0xF800;
+		p16 = (uint16_t*)&TxCan5.RawCanBuffer[ii*2];
+		*p16 = (ii + seq_number) | 0xFC00;
+		p16 = (uint16_t*)&TxCan6.RawCanBuffer[ii*2];
+		*p16 = (ii + seq_number) | 0xFE00;
+		p16 = (uint16_t*)&TxCan7.RawCanBuffer[ii*2];
+		*p16 = (ii + seq_number) | 0xFF00;
+	}
+	seq_number++;
 }
 

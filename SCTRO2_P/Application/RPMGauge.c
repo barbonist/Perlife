@@ -94,6 +94,7 @@ void ManageRPMPump(int ii)
 			BDetectCnt[ii] = ADetectCnt[ii]	= 0;
 			CurrentCounter[ii] = 0;
 			onNewPumpRPM(0, ii);
+			SignedSpeedRPMx100[ii] = 0; // store locally
 		}
 		else if(((ADetectCnt[ii] == 2) && (BDetectCnt[ii] == 1)) || ((BDetectCnt[ii] == 2) && (ADetectCnt[ii] == 1)))
 		{
