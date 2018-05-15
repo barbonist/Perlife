@@ -176,6 +176,8 @@ void manageAlarmPhysicFlowPerfArtHigh(void);
 void manageAlarmFlowSensNotDetected(void);
 void manageAlarmIrTempSensNotDetected(void);
 void manageAlarmActuatorModbusNotRespond(void);
+void manageAlarmActuatorWRModbusNotRespond(void);
+void manageAlarmActuatorWRModbusNotRespond(void);
 
 void manageAlarmPhysicPressSensHigh(void);
 void manageAlarmPhysicPressSensLow(void);

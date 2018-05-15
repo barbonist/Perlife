@@ -304,6 +304,8 @@ void modBusPmpInit(THERAPY_TYPE tt)
 {
 	for (int i=0; i<8; i++)
 		CountErrorModbusMSG[i] = 0;
+	for (int i = 0; i < LAST_ACTUATOR; i++)
+		ActuatorWriteCnt[i] = 0;
 
 	/***************** PMP 1********************/
 	pumpPerist[0].id = 0;
@@ -875,15 +877,12 @@ void setPinchPosValue(unsigned char slaveAddr, int posValue){
 }
 
 
-
 // ogni 50 msec controlla un attuatore ed esegue l'operazione richiesta.
 // Una volta terminata l'operazione mette la flag iflag_pmp1_rx a IFLAG_IDLE
-void alwaysModBusActuator_new(void)
+void alwaysModBusActuator(void)
 {
-	//static char ActuatorWriteCnt = 0;
 	static int timerCounterModBusStart = 0;
 	static unsigned long timerCounterModBusStartWr;
-	static char AlarmSet = 0;
 	unsigned char *ptrMsg;
 
 
@@ -918,7 +917,6 @@ void alwaysModBusActuator_new(void)
 				timerCounterModBusStartWr = timerCounterModBus;
 				setPumpSpeedValue(pumpPerist[0].pmpMySlaveAddress, pumpPerist[0].value);
 				LasActuatorWriteID = 0;
-				//ActuatorWriteCnt[LasActuatorWriteID] = 0;
 			}
 			else if(
 					(pumpPerist[0].reqState == REQ_STATE_ON) &&
@@ -961,7 +959,6 @@ void alwaysModBusActuator_new(void)
 				timerCounterModBusStartWr = timerCounterModBus;
 				setPumpSpeedValue(pumpPerist[1].pmpMySlaveAddress, pumpPerist[1].value);
 				LasActuatorWriteID = 1;
-				//ActuatorWriteCnt[LasActuatorWriteID] = 0;
 			}
 			else if(
 					(pumpPerist[1].reqState == REQ_STATE_ON) &&
@@ -1004,7 +1001,6 @@ void alwaysModBusActuator_new(void)
 				timerCounterModBusStartWr = timerCounterModBus;
 				setPumpSpeedValue(pumpPerist[2].pmpMySlaveAddress, pumpPerist[2].value);
 				LasActuatorWriteID = 2;
-				//ActuatorWriteCnt[LasActuatorWriteID] = 0;
 			}
 			else if(
 					(pumpPerist[2].reqState == REQ_STATE_ON) &&
@@ -1046,7 +1042,6 @@ void alwaysModBusActuator_new(void)
 				timerCounterModBusStartWr = timerCounterModBus;
 				setPumpSpeedValue(pumpPerist[3].pmpMySlaveAddress, pumpPerist[3].value);
 				LasActuatorWriteID = 3;
-				//ActuatorWriteCnt[LasActuatorWriteID] = 0;
 			}
 			else if(
 					(pumpPerist[3].reqState == REQ_STATE_ON) &&
@@ -1089,7 +1084,6 @@ void alwaysModBusActuator_new(void)
 				timerCounterModBusStartWr = timerCounterModBus;
 				setPinchPosValue(pinchActuator[0].pinchMySlaveAddress, pinchActuator[0].value);
 				LasActuatorWriteID = 4;
-				//ActuatorWriteCnt[LasActuatorWriteID] = 0;
 			}
 			break;
 
@@ -1109,7 +1103,6 @@ void alwaysModBusActuator_new(void)
 				timerCounterModBusStartWr = timerCounterModBus;
 				setPinchPosValue(pinchActuator[1].pinchMySlaveAddress, pinchActuator[1].value);
 				LasActuatorWriteID = 5;
-				//ActuatorWriteCnt[LasActuatorWriteID] = 0;
 			}
 			break;
 
@@ -1129,7 +1122,6 @@ void alwaysModBusActuator_new(void)
 				timerCounterModBusStartWr = timerCounterModBus;
 				setPinchPosValue(pinchActuator[2].pinchMySlaveAddress, pinchActuator[2].value);
 				LasActuatorWriteID = 6;
-				//ActuatorWriteCnt[LasActuatorWriteID] = 0;
 			}
 			break;
 
@@ -1165,21 +1157,13 @@ void alwaysModBusActuator_new(void)
 		else
 		{
 			ActuatorWriteCnt[LasActuatorWriteID] += 1;
-			if(ActuatorWriteCnt[LasActuatorWriteID] >= 2)
+			if(ActuatorWriteCnt[LasActuatorWriteID] >= MAX_MSG_CONSECUTIVE_ACTUATOR_MODBUS_NOT_RESPOND)
 			{
 				// termino la sequenza di scritture e posso generare un allarme
 				if(LasActuatorWriteID <= 3)
 					pumpPerist[LasActuatorWriteID].reqType = REQ_TYPE_IDLE;
 				else if(LasActuatorWriteID <= 6)
 					pinchActuator[LasActuatorWriteID - 4].reqType = REQ_TYPE_IDLE;
-
-				if(!AlarmSet)
-				{
-					SetNonPhysicalAlm((int)CODE_ALARM_MODBUS_ACTUATOR_SEND);
-					timerCounterModBusStart = timerCounterModBus;
-					AlarmSet = 1;
-				}
-				ActuatorWriteCnt[LasActuatorWriteID] = 0;
 			}
 			else
 			{
@@ -1217,29 +1201,33 @@ void alwaysModBusActuator_new(void)
 			// incremento il contatore delle scritture errate
 			ActuatorWriteCnt[LasActuatorWriteID] += 1;
 
-			// dato che non ho avuto alcuna risposta, ritento l'ultima scrittura
-			if(LasActuatorWriteID <= 3)
+			if(ActuatorWriteCnt[LasActuatorWriteID] >= MAX_MSG_CONSECUTIVE_ACTUATOR_MODBUS_NOT_RESPOND)
 			{
-				// l'ultima scrittura era una pompa
-				setPumpSpeedValueHighLevel(pumpPerist[LasActuatorWriteID].pmpMySlaveAddress, pumpPerist[LasActuatorWriteID].value);
+				// termino la sequenza di scritture e posso generare un allarme
+				if(LasActuatorWriteID <= 3)
+					pumpPerist[LasActuatorWriteID].reqType = REQ_TYPE_IDLE;
+				else if(LasActuatorWriteID <= 6)
+					pinchActuator[LasActuatorWriteID - 4].reqType = REQ_TYPE_IDLE;
 			}
-			else if(LasActuatorWriteID <= 6)
+			else
 			{
-				// l'ultima scrittura era una pinch
-				setPinchPositionHighLevel(pinchActuator[LasActuatorWriteID - 4].pinchMySlaveAddress, pinchActuator[LasActuatorWriteID - 4].value);
+				// dato che non ho avuto alcuna risposta, ritento l'ultima scrittura
+				if(LasActuatorWriteID <= 3)
+				{
+					// l'ultima scrittura era una pompa
+					setPumpSpeedValueHighLevel(pumpPerist[LasActuatorWriteID].pmpMySlaveAddress, pumpPerist[LasActuatorWriteID].value);
+				}
+				else if(LasActuatorWriteID <= 6)
+				{
+					// l'ultima scrittura era una pinch
+					setPinchPositionHighLevel(pinchActuator[LasActuatorWriteID - 4].pinchMySlaveAddress, pinchActuator[LasActuatorWriteID - 4].value);
+				}
 			}
 		}
 	}
-
-	if( AlarmSet && (msTick_elapsed(timerCounterModBusStart) >= 10))
-	{
-		// dopo 500 msec tolgo automaticamente l'allarme generato per l'errore di retry su modbus
-		ClearNonPhysicalAlm( (int)CODE_ALARM_MODBUS_ACTUATOR_SEND);
-		AlarmSet = 0;
-	}
 }
 
-void alwaysModBusActuator(void)
+void alwaysModBusActuator_old(void)
 {
 	static char ActuatorWriteCnt = 0;
 	static int timerCounterModBusStart = 0;

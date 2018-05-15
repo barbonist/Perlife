@@ -2870,12 +2870,12 @@ void RestartPumpsEmptyState(void)
 }
 
 // bottoni da usare
-//#define BUT_START_EMPTY  BUTTON_START_EMPTY_DISPOSABLE
-//#define BUT_STOP_EMPTY  BUTTON_STOP_EMPTY_DISPOSABLE
+#define BUT_START_EMPTY  BUTTON_START_EMPTY_DISPOSABLE
+#define BUT_STOP_EMPTY  BUTTON_STOP_EMPTY_DISPOSABLE
 
 // bottoni usati senza gui per debug
-#define BUT_START_EMPTY  BUTTON_START_PRIMING
-#define BUT_STOP_EMPTY  BUTTON_STOP_PRIMING
+//#define BUT_START_EMPTY  BUTTON_START_PRIMING
+//#define BUT_STOP_EMPTY  BUTTON_STOP_PRIMING
 
 // I bottoni usati in questa funzione sono:
 //        BUTTON_START_EMPTY_DISPOSABLE per partire o ripartire con lo scaricamento

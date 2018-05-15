@@ -112,6 +112,8 @@ void ManageStateChildAlarmEmpty(void);
 
 void manageChildEmptyAlm1StAllActEntry(void);
 void manageChildEmptyAlm1StAllActAlways(void);
+void manageChildEmptyAlmPumpNotStillEntry(void);
+void manageChildEmptyAlmPumpNotStillAlways(void);
 
 
 #endif /* APPLICATION_CHILD_GEST_H_ */

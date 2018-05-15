@@ -991,6 +991,26 @@ void buildRDMachineStateResponseMsg(char code, char subcode)
 	/* what is the meaning of this byte? */
 	/*7*/	sbc_tx_data[index++] = 0x66;
 
+#ifdef DEBUG_SBC
+
+	for (word i = 0; i<= 63 ; i++)
+	{
+		if (i != 3 && i != 4 && i != 5)
+		{
+			sbc_tx_data[index++] = (i >> 8) & 0xFF;
+			sbc_tx_data[index++] = i & 0xFF;
+		}
+		else
+		{
+			sbc_tx_data[index++] = (0 >> 8) & 0xFF;
+			sbc_tx_data[index++] = 0 & 0xFF;
+		}
+
+	}
+
+
+#else
+
 	/* STATUS PARAMETERS */
 	/* status parameters: life  */
 	/*8*/	sbc_tx_data[index++] = (life >> 8) & 0xFF;
@@ -1045,6 +1065,9 @@ void buildRDMachineStateResponseMsg(char code, char subcode)
 		/*18*/	sbc_tx_data[index++] = (alarmCurrent.type >> 8 ) & 0xFF;
 		/*19*/  sbc_tx_data[index++] = (alarmCurrent.type      ) & 0xFF;
 	}
+
+	if(ptrCurrentState->state == STATE_WAIT_TREATMENT)
+		wd = 0;
 	/* status parameters: machine state state*/
 	/*20*/	sbc_tx_data[index++] = (ptrCurrentState->state >> 8) & 0xFF;
 	/*21*/	sbc_tx_data[index++] = (ptrCurrentState->state     ) & 0xFF;
@@ -1255,7 +1278,9 @@ void buildRDMachineStateResponseMsg(char code, char subcode)
 	/*134*/  sbc_tx_data[index++] = (wd >> 8) & 0xFF;
 	/*135*/  sbc_tx_data[index++] = (wd     ) & 0xFF;
 
-#endif
+#endif //NEW_STATE_RESPONSE_MSG
+
+#endif	//DEBUG_SBC
 	wd = ComputeChecksum(sbc_tx_data, index);
 	/* CRC H */
 	/*136*/  sbc_tx_data[index++] = (wd >> 8) & 0xFF;
@@ -1549,7 +1574,8 @@ void setParamWordFromGUI(unsigned char parId, int value)
 	}
 
 	// TODO DA RIMUOVERE SOLO PER DEBUG GUI !!!!
-	parameterWordSetFromGUI[PAR_SET_DESIRED_DURATION].value = 0x200;
+	//parameterWordSetFromGUI[PAR_SET_DESIRED_DURATION].value = 0x200; // due ore
+	parameterWordSetFromGUI[PAR_SET_DESIRED_DURATION].value = 0x0001; // 60 secondi
 }
 
 void resetParamWordFromGUI(unsigned char parId){

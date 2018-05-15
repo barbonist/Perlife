@@ -175,6 +175,12 @@ void onNewPumpSpeed(uint16_t Pump0Speed, uint16_t Pump1Speed ,
 
 }
 
+void onNewSensPressVal(uint16_t PressFilt, uint16_t PressArt ,
+		               uint16_t PressVen, uint16_t PressLev)
+{
+
+}
+
 #else
 
 // incoming new press values
@@ -199,6 +205,15 @@ void onNewPumpSpeed(uint16_t Pump0Speed, uint16_t Pump1Speed ,
 	TxCan4.STxCan4.SpeedPump2Rpmx10 = Pump1Speed;
 	TxCan4.STxCan4.SpeedPump3Rpmx10 = Pump2Speed;
 	TxCan4.STxCan4.SpeedPump4Rpmx10 = Pump3Speed;
+}
+
+void onNewSensPressVal(uint16_t PressFilt, uint16_t PressArt ,
+		               uint16_t PressVen, uint16_t PressLev)
+{
+	TxCan1.STxCan1.PressFilter = PressFilt;
+	TxCan1.STxCan1.PressArt = PressArt;
+	TxCan1.STxCan1.PressVen = PressVen;
+	TxCan1.STxCan1.PressLevelx100 = PressLev;
 }
 
 

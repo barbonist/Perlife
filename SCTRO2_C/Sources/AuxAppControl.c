@@ -232,12 +232,27 @@ void NotifyPumpsSpeed(void)
 	onNewPumpSpeed(Pump0Speed, Pump1Speed, Pump2Speed, Pump3Speed);
 }
 
+
+void NotifyPressSens(void)
+{
+	if(GetTherapyType() == LiverTreat)
+	{
+		onNewSensPressVal(PR_ADS_FLT_mmHg_Filtered, PR_ART_Med_mmHg, PR_VEN_Med_mmHg, PR_LEVEL_mmHg_Filtered);
+	}
+	else
+	{
+		onNewSensPressVal(PR_ADS_FLT_mmHg_Filtered, PR_ART_Med_mmHg, PR_VEN_Med_mmHg, PR_LEVEL_mmHg_Filtered);
+	}
+}
+
+
 void ProtectiveTask(void)
 {
 	static unsigned short ProtTaskCnt = 0;
 
 	NotifyMachineStatus();
 	NotifyPumpsSpeed();
+	NotifyPressSens();
 
 	if(ProtTaskCnt % 2)
 	{

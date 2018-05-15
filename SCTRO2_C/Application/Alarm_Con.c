@@ -74,7 +74,10 @@ struct alarm alarmList[] =
 		{CODE_ALARM_PRESS_ADS_FILTER_LOW,  PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH, 2000, 2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull},	    /* 26 */
 		{CODE_ALARM_PRESS_OXYG_LOW, 	   PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH, 2000, 2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull}, 		/* 27 */
 
-		{CODE_ALARM_MODBUS_ACTUATOR_SEND,  PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_WAIT_CONFIRM,           PRIORITY_LOW,     0, 100, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull},	    /* 28 */
+		//Allarme per errore nella lettura e scrittura modbus. Se dopo 10 ripetizioni non ottengo risposta alla lettura o scrittura genero un allarme.
+		// Per questo allarme uso la stessa procedura per le pompe non ferme. (Dovrei tolgliere direttamente l'enable alle pompe.
+		//{CODE_ALARM_MODBUS_ACTUATOR_SEND,  PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_WAIT_CONFIRM,        PRIORITY_LOW,     0, 100, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull},	        /* 28 */
+		{CODE_ALARM_MODBUS_ACTUATOR_SEND,  PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_PUMPS_NOT_STILL,       PRIORITY_HIGH,    0, 100, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull},	        /* 28 */
 		{}
 };
 
@@ -166,6 +169,8 @@ void SetAllAlarmEnableFlags(void)
 	GlobalFlags.FlagsDef.EnablePumpNotStillAlm = 0;       // viene attivato in un'altro momento
 	GlobalFlags.FlagsDef.EnableBadPinchPosAlm = 0;        // viene attivato in un'altro momento
 	GlobalFlags.FlagsDef.EnablePrimAlmSFAAirDetAlm = 0;   // viene attivato in un'altro momento
+
+	GlobalFlags.FlagsDef.EnableModbusNotRespAlm = 1;      // abilito l'allarme dovuto ad un cattivo funzionamento del modbus
 }
 
 // Questa funzione serve per forzare ad off un eventuale allarme.
@@ -548,6 +553,8 @@ void alarmEngineAlways(void)
 					manageAlarmCoversPumpKidney();
 
 				manageAlarmCanBus();
+				manageAlarmActuatorModbusNotRespond();
+				manageAlarmActuatorWRModbusNotRespond();
 				break;
 			}
 
@@ -570,6 +577,8 @@ void alarmEngineAlways(void)
 					manageAlarmCoversPumpKidney();
 				manageAlarmCanBus();
 				manageAlarmPrimSFAAirDet();
+				manageAlarmActuatorModbusNotRespond();
+				manageAlarmActuatorWRModbusNotRespond();
 				break;
 			}
 
@@ -641,6 +650,8 @@ void alarmEngineAlways(void)
 				manageAlarmPumpNotStill();  // controllo allarme di pompe ferme alla fine del ricircolo
 				manageAlarmBadPinchPos();   // allarme di pinch posizionate correttamente
 				manageAlarmPrimSFAAirDet();
+				manageAlarmActuatorModbusNotRespond();
+				manageAlarmActuatorWRModbusNotRespond();
 				break;
 
 			case STATE_WAIT_TREATMENT:
@@ -687,6 +698,8 @@ void alarmEngineAlways(void)
 					manageAlarmCoversPumpLiver();
 				else if(GetTherapyType() == KidneyTreat)
 					manageAlarmCoversPumpKidney();
+				manageAlarmActuatorModbusNotRespond();
+				manageAlarmActuatorWRModbusNotRespond();
 				break;
 			}
 
@@ -1423,26 +1436,68 @@ void manageAlarmIrTempSensNotDetected(void)
 void manageAlarmActuatorModbusNotRespond(void)
 {
 	int i;
-	for (i = 0; i <8; i++)
-	{
-		/*se non ricevo 10 msg consecutivi da un sensore di temperatura ossia il sensore non risposnde per 6 secondi consecutivi vado in allarme*/
-		if (CountErrorModbusMSG[i] > MAX_MSG_CONSECUTIVE_ACTUATOR_MODBUS_NOT_RESPOND)
-		{
-			alarmList[MODBUS_ACTUATOR_SEND].physic = PHYSIC_TRUE;
-			//CountErrorModbusMSG[i] = 0;
-
-			/*in questo caso bisogna comunicarlo all'SBC che metterà a video un pop up per le possibili soluzioni*/
-			break;
-		}
-	}
-
-	//se ho ciclato tutto il for senza trovare allarmi e precedentemente era stato attivato un allarme
-	if(i == 8 && alarmList[MODBUS_ACTUATOR_SEND].physic == PHYSIC_TRUE)
+	if(!GlobalFlags.FlagsDef.EnableModbusNotRespAlm)
 	{
 		alarmList[MODBUS_ACTUATOR_SEND].physic = PHYSIC_FALSE;
+		memset(CountErrorModbusMSG, 0, sizeof(CountErrorModbusMSG));
+	}
+	else
+	{
+		for (i = 0; i <8; i++)
+		{
+			/*se non ricevo 10 msg consecutivi da un sensore di temperatura ossia il sensore non risposnde per 6 secondi consecutivi vado in allarme*/
+			if (CountErrorModbusMSG[i] > MAX_MSG_CONSECUTIVE_ACTUATOR_MODBUS_NOT_RESPOND)
+			{
+				alarmList[MODBUS_ACTUATOR_SEND].physic = PHYSIC_TRUE;
+				//CountErrorModbusMSG[i] = 0;
 
-		for (int j = 0; j<8; j++)
-			CountErrorModbusMSG[j] = 0;
+				/*in questo caso bisogna comunicarlo all'SBC che metterà a video un pop up per le possibili soluzioni*/
+				break;
+			}
+		}
+
+		//se ho ciclato tutto il for senza trovare allarmi e precedentemente era stato attivato un allarme
+		if(i == 8 && alarmList[MODBUS_ACTUATOR_SEND].physic == PHYSIC_TRUE)
+		{
+			alarmList[MODBUS_ACTUATOR_SEND].physic = PHYSIC_FALSE;
+
+			for (int j = 0; j<8; j++)
+				CountErrorModbusMSG[j] = 0;
+		}
+	}
+}
+
+// errore su modbus durante le operazioni di scrittura
+void manageAlarmActuatorWRModbusNotRespond(void)
+{
+	int i;
+	if(!GlobalFlags.FlagsDef.EnableModbusNotRespAlm)
+	{
+		alarmList[MODBUS_ACTUATOR_SEND].physic = PHYSIC_FALSE;
+		memset(ActuatorWriteCnt, 0, sizeof(ActuatorWriteCnt));
+	}
+	else
+	{
+		for (i = 0; i <LAST_ACTUATOR; i++)
+		{
+			/*se non ricevo 10 msg consecutivi da un sensore di temperatura ossia il sensore non risposnde per 6 secondi consecutivi vado in allarme*/
+			if (ActuatorWriteCnt[i] > MAX_MSG_CONSECUTIVE_ACTUATOR_MODBUS_NOT_RESPOND)
+			{
+				alarmList[MODBUS_ACTUATOR_SEND].physic = PHYSIC_TRUE;
+
+				/*in questo caso bisogna comunicarlo all'SBC che metterà a video un pop up per le possibili soluzioni*/
+				break;
+			}
+		}
+
+		//se ho ciclato tutto il for senza trovare allarmi e precedentemente era stato attivato un allarme
+		if(i == LAST_ACTUATOR && alarmList[MODBUS_ACTUATOR_SEND].physic == PHYSIC_TRUE)
+		{
+			alarmList[MODBUS_ACTUATOR_SEND].physic = PHYSIC_FALSE;
+
+			for (int j = 0; j<8; j++)
+				ActuatorWriteCnt[j] = 0;
+		}
 	}
 }
 

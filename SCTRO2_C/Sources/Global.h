@@ -1639,6 +1639,8 @@ typedef struct
 	unsigned int EnablePrimAlmSFAAirDetAlm  : 1;    // abilito allarme di possibile aria nel filtro. Viene preso in
 	                                                // considerazione dal momento in cui viene installato il filtro alla fine del
 	                                                // priming
+	unsigned int EnableModbusNotRespAlm     : 1;    // abilito l'allarme dovuto ad un cattivo funzionamento del modbus (almeno 10 richieste
+	                                                // di lettura o scrittura non hanno avuto risposta)
 }FLAGS_DEF;
 
 typedef union
@@ -1863,6 +1865,9 @@ word TimeoutAirEjection;
 //-----------------------------------------------------------
 
 char ActuatorWriteCnt[LAST_ACTUATOR];
+
+// scommentare se si vuole usare il messaggio di stato costituito con gli indici dei campi
+//#define DEBUG_SBC
 
 #endif /* SOURCES_GLOBAL_H_ */
 
