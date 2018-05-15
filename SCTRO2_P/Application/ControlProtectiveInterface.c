@@ -103,6 +103,7 @@ union URxCan  RxCan7,  OldRxCan7;
 void ManageTxCan10ms(void);
 void ManageTxCan100ms(void);
 void DebugFillTxBuffers(void);
+void CanCheckTimer(void);
 
 void InitControlProtectiveInterface(void)
 {
@@ -287,6 +288,7 @@ int ii ;//= 11;
 #ifdef CAN_DEBUG
 	DebugFillTxBuffers();
 #endif
+	CanCheckTimer();
 }
 
 union URxCan*	RxBuffCanP[8] =
@@ -422,5 +424,26 @@ void DebugFillTxBuffers(void)
 		*p16 = (ii + seq_number) | 0xFF00;
 	}
 	seq_number++;
+}
+
+
+static int CanAlarmCounter = 0;
+
+void RetriggerNoCANRxTxAlarm(void){
+	NotifyCanOnline(true);
+	CanAlarmCounter = 0;
+}
+
+void CanCheckTimer(void)
+{
+	if( CanAlarmCounter < 10 ){
+		CanAlarmCounter ++;
+		if(CanAlarmCounter == 10){
+			// notify can alarm
+			NotifyCanOnline(false);
+			// cause repeated notification if alarm persist
+			CanAlarmCounter = 0;
+		}
+	}
 }
 

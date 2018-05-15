@@ -27,7 +27,8 @@ typedef struct {
 	bool AlarmActive;
 } TAlarmTimer;
 
-TAlarmTimer PumpAlarmTimer = {0,60,false,false}; // alarm after 2 s mismatch
+TAlarmTimer PumpAlarmTimer = {0,60,false,false}; // alarm after 6 s mismatch
+TAlarmTimer CanOfflineAlarmTimer = {0,20,false,false}; // alarm after 2 s mismatch
 
 void ManageVerificatorAlarms100ms(void);
 bool ValueIsInRange(uint16_t RefValue, uint16_t Val2Test, uint16_t IPercent);
@@ -36,7 +37,15 @@ void InitVerificatorRx(void){
 	AddSwTimer(ManageVerificatorAlarms100ms,10,TM_REPEAT);
 }
 
+int StartupDelayCnt = 0;
 void ManageVerificatorAlarms100ms(void) {
+
+	if(StartupDelayCnt < 100){
+		// verificator idle for 10 seconds from startup
+		StartupDelayCnt++;
+		return;
+	}
+
 	if (PumpAlarmTimer.AlarmConditionPending) {
 		if (PumpAlarmTimer.AlarmCounter < PumpAlarmTimer.CountTreshold) {
 			PumpAlarmTimer.AlarmCounter++;
@@ -51,6 +60,22 @@ void ManageVerificatorAlarms100ms(void) {
 		// if AlarmActive , don't clear alarm anyway ,
 		// if not AlarmActive ,  restart AlarmCounter
 		PumpAlarmTimer.AlarmCounter = 0;
+	}
+
+	if (CanOfflineAlarmTimer.AlarmConditionPending) {
+		if (CanOfflineAlarmTimer.AlarmCounter < CanOfflineAlarmTimer.CountTreshold) {
+			CanOfflineAlarmTimer.AlarmCounter++;
+			if (CanOfflineAlarmTimer.AlarmCounter == CanOfflineAlarmTimer.CountTreshold) {
+				// show alarm
+				CanOfflineAlarmTimer.AlarmActive = true;
+				ShowNewAlarmError(CODE_ALARM_NOCAN_COMMUNICATION);
+			}
+		}
+	}
+	else{
+		// if AlarmActive , don't clear alarm anyway ,
+		// if not AlarmActive ,  restart AlarmCounter
+		CanOfflineAlarmTimer.AlarmCounter = 0;
 	}
 }
 
@@ -115,6 +140,10 @@ void ManageRxAlarmCode(uint16_t AlarmCode)
 
 }
 
+void NotifyCanOnline(bool Online)
+{
+	CanOfflineAlarmTimer.AlarmConditionPending = !Online;
+}
 
 bool ValueIsInRangePerc(uint16_t RefValue, uint16_t Val2Test, uint16_t IPercent) {
 	uint16_t max;
