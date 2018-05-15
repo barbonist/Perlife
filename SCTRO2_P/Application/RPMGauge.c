@@ -16,7 +16,7 @@ bool HallARise(int PumpIndex);
 bool HallBRise(int PumpIndex);
 void ManageRPMPump(int ii);
 
-uint16_t SignedSpeedRPMx100[4] = {0,0,0,0};
+int16_t SignedSpeedRPMx100[4] = {0,0,0,0};
 
 void InitRPMGauge(void)
 {
@@ -93,7 +93,8 @@ void ManageRPMPump(int ii)
 			Rpmx100[ii] = 0;
 			BDetectCnt[ii] = ADetectCnt[ii]	= 0;
 			CurrentCounter[ii] = 0;
-			onNewFilterPumpRPM(0);
+			onNewPumpRPM(0, ii);
+			SignedSpeedRPMx100[ii] = 0; // store locally
 		}
 		else if(((ADetectCnt[ii] == 2) && (BDetectCnt[ii] == 1)) || ((BDetectCnt[ii] == 2) && (ADetectCnt[ii] == 1)))
 		{
@@ -102,7 +103,12 @@ void ManageRPMPump(int ii)
 			BDetectCnt[ii] = ADetectCnt[ii]	= 0;
 			CurrentCounter[ii] = 0;
 			int16_t NewVal = (int16_t)Rpmx100[ii];
-			if(TimeBAms[ii] <= TimeABms[ii]) NewVal *= -1;
+			if( ii != 1 ){
+				if(TimeBAms[ii] >= TimeABms[ii]) NewVal *= -1;
+			}
+			else{
+				if(TimeBAms[ii] <= TimeABms[ii]) NewVal *= -1;
+			}
 			onNewPumpRPM(NewVal, ii);
 			SignedSpeedRPMx100[ii] = NewVal; // store locally
 		}

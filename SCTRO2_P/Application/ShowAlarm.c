@@ -75,6 +75,6 @@ ShowNewAlarmError(uint16_t AlarmCode)
 
 void RetriggerNoCANRxTxAlarm(void){
 	AlarmCounter = 0;
-	ActualErrNum = 0;
+	//ActualErrNum = 0;
 }
 
