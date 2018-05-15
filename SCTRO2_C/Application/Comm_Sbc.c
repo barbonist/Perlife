@@ -905,6 +905,11 @@ void pollingSBCCommTreat(void){
 				}
 				myCommunicatorToSBC.dataButtonSBCReadyFlag = DATA_COMM_READY_TO_BE_SEND;
 				CRCVal = ComputeChecksum(sbc_rx_data, 9);  // calcolo il CRC del messaggio ricevuto per controllare che sia giusto
+
+				if(buttonGUITreatment[BUTTON_PRIMING_ABANDON].state == GUI_BUTTON_RELEASED)
+				{
+					int ii = 0;
+				}
 			}
 			break;
 

@@ -77,7 +77,7 @@ struct alarm alarmList[] =
 		//Allarme per errore nella lettura e scrittura modbus. Se dopo 10 ripetizioni non ottengo risposta alla lettura o scrittura genero un allarme.
 		// Per questo allarme uso la stessa procedura per le pompe non ferme. (Dovrei tolgliere direttamente l'enable alle pompe.
 		//{CODE_ALARM_MODBUS_ACTUATOR_SEND,  PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_WAIT_CONFIRM,        PRIORITY_LOW,     0, 100, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull},	        /* 28 */
-		{CODE_ALARM_MODBUS_ACTUATOR_SEND,  PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_PUMPS_NOT_STILL,       PRIORITY_HIGH,    0, 100, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull},	        /* 28 */
+		{CODE_ALARM_MODBUS_ACTUATOR_SEND,  PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_PUMPS_NOT_STILL,       PRIORITY_HIGH,    0, 500, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull},	        /* 28 */
 		{}
 };
 
@@ -237,6 +237,9 @@ void ForceAlarmOff(unsigned char code)
 			break;
 		case CODE_ALARM_SFA_PRIM_AIR_DET:
 			GlobalFlags.FlagsDef.EnablePrimAlmSFAAirDetAlm = 0; // disabilito allarme aria su filtro durante il priming
+			break;
+		case CODE_ALARM_MODBUS_ACTUATOR_SEND:
+			GlobalFlags.FlagsDef.EnableModbusNotRespAlm = 0; // disabilito allarme modbus
 			break;
 
 	}
@@ -1320,8 +1323,8 @@ void SetNonPhysicalAlm( int AlarmCode)
 int IsNonPhysicalAlm(int AlarmCode)
 {
 	int NonPhysAlm = 0;
-	if(AlarmCode == CODE_ALARM_MODBUS_ACTUATOR_SEND)
-		NonPhysAlm = 1;
+//	if(AlarmCode == CODE_ALARM_MODBUS_ACTUATOR_SEND)
+//		NonPhysAlm = 1;
 	return NonPhysAlm;
 }
 
@@ -1669,6 +1672,18 @@ void manageAlarmChildGuard(struct alarm * ptrAlarm){
 unsigned long msTick_elapsed( unsigned long last )
 {
 	int elapsed = timerCounterModBus;
+	if ( elapsed >= last )
+		elapsed -= last;
+	else
+		elapsed += (0xFFFFFFFFUL - last + 1);
+	return elapsed;
+}
+
+
+// ritorna il numero di intervalli di 10 msec trascorsi dal valore last
+unsigned long msTick10_elapsed( unsigned long last )
+{
+	int elapsed = FreeRunCnt10msec;
 	if ( elapsed >= last )
 		elapsed -= last;
 	else

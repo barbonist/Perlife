@@ -531,6 +531,19 @@ void managePrimingPh1Always(void)
 {
 	//guard macchina a stati (controllo quando arriva il segnale per i passaggio alla fase 2)
 	computeMachineStateGuardPrimingPh1();
+
+	// il codice che segue serve SOLO PER DEBUG E NELLA VERSIONE DEFINITIVA
+	// DEVE ESSERE CANCELLATO
+	if(buttonGUITreatment[BUTTON_START_OXYGEN_PUMP].state == GUI_BUTTON_RELEASED)
+	{
+		releaseGUIButton(BUTTON_START_OXYGEN_PUMP);
+		ActuatorWriteCnt[0] += 1;
+	}
+	else if(buttonGUITreatment[BUTTON_STOP_OXYGEN_PUMP].state == GUI_BUTTON_RELEASED)
+	{
+		releaseGUIButton(BUTTON_STOP_OXYGEN_PUMP);
+		ActuatorWriteCnt[0] = 0;
+	}
 }
 
 /*--------------------------------------------------------------*/
@@ -627,7 +640,8 @@ void manageStatePrimingWaitAlways(void){
 			// se sono nel trattamento fegato fermo anche l'altro motore !!
 			setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, 0);
 		}
-		currentGuard[GUARD_ABANDON_PRIMING].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+		//currentGuard[GUARD_ABANDON_PRIMING].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+		SetAbandonGuard();
 	}
 	else if(GetTotalPrimingVolumePerf(0) > perfusionParam.priVolPerfArt) // parameterWordSetFromGUI[PAR_SET_PRIMING_VOL_PERFUSION].value
 	{
@@ -654,7 +668,8 @@ void manageStatePrimingRicircoloAlways(void)
 			// se sono nel trattamento fegato fermo anche l'altro motore !!
 			setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, 0);
 		}
-		currentGuard[GUARD_ABANDON_PRIMING].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+		//currentGuard[GUARD_ABANDON_PRIMING].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+		SetAbandonGuard();
 	}
 	else
 	{
@@ -763,7 +778,8 @@ void manageStateUnmountDisposableAlways(void)
 	{
 		// mi e' stato richiesto di abbandonare la fase di smontaggio e andare direttamente in IDLE
 		releaseGUIButton(BUTTON_PRIMING_ABANDON);
-		currentGuard[GUARD_ABANDON_PRIMING].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+		//currentGuard[GUARD_ABANDON_PRIMING].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+		SetAbandonGuard();
 	}
 
 }
@@ -1634,7 +1650,8 @@ void manageParentPrimingAlways(void){
 						// se sono nel trattamento fegato fermo anche l'altro motore !!
 						setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, 0);
 					}
-					currentGuard[GUARD_ABANDON_PRIMING].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+					//currentGuard[GUARD_ABANDON_PRIMING].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+					SetAbandonGuard();
 					// sposto la macchina a stati in TEMP_ABANDONE_CMD per evitare problemi
 					TemperatureStateMach(TEMP_ABANDONE_CMD);
 				}
@@ -1734,7 +1751,8 @@ void manageParentPrimingAlways(void){
 		else if(buttonGUITreatment[BUTTON_PRIMING_ABANDON].state == GUI_BUTTON_RELEASED)
 		{
 			releaseGUIButton(BUTTON_PRIMING_ABANDON);
-			currentGuard[GUARD_ABANDON_PRIMING].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+			//currentGuard[GUARD_ABANDON_PRIMING].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+			SetAbandonGuard();
 		}
 		CheckPumpStopTask((CHECK_PUMP_STOP_CMD)NO_CHECK_PUMP_STOP_CMD);
 		break;
@@ -1782,7 +1800,8 @@ void manageParPrimWaitMotStopEntryAlways(void)
 		releaseGUIButton(BUTTON_PRIMING_ABANDON);
 		// non dovrebbe servire resettare la macchina a stati
 		//CheckPumpStopTask((CHECK_PUMP_STOP_CMD)NO_CHECK_PUMP_STOP_CMD);
-		currentGuard[GUARD_ABANDON_PRIMING].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+		//currentGuard[GUARD_ABANDON_PRIMING].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+		SetAbandonGuard();
 		// disabilito allarme di pompe non ferme
 		DisablePumpNotStillAlmFunc();
 		// disabilito allarme di aria nel filtro durante il priming
@@ -1892,7 +1911,8 @@ void manageParPrimWaitPinchCloseAlways(void)
 		releaseGUIButton(BUTTON_PRIMING_ABANDON);
 		// non dovrebbe servire resettare la macchina a stati
 		//CheckPumpStopTask((CHECK_PUMP_STOP_CMD)NO_CHECK_PUMP_STOP_CMD);
-		currentGuard[GUARD_ABANDON_PRIMING].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+		//currentGuard[GUARD_ABANDON_PRIMING].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+		SetAbandonGuard();
 		// disabilito allarme di pinch non posizionate correttamente
 		DisableBadPinchPosAlmFunc();
 	}
@@ -2021,7 +2041,8 @@ TREAT_SET_PINCH_POS_TASK_STATE TreatSetPinchPosTask(TREAT_SET_PINCH_POS_CMD cmd)
 	{
 		releaseGUIButton(BUTTON_PRIMING_ABANDON);
 		TreatSetPinchPosTaskState = T_SET_PINCH_DISABLE;
-		currentGuard[GUARD_ABANDON_PRIMING].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+		//currentGuard[GUARD_ABANDON_PRIMING].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+		SetAbandonGuard();
 		return TreatSetPinchPosTaskState;
 	}
 
@@ -2254,7 +2275,8 @@ void manageParentTreatAlways(void){
 			if(buttonGUITreatment[BUTTON_PRIMING_ABANDON].state == GUI_BUTTON_RELEASED)
 			{
 				releaseGUIButton(BUTTON_PRIMING_ABANDON);
-				currentGuard[GUARD_ABANDON_PRIMING].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+				//currentGuard[GUARD_ABANDON_PRIMING].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+				SetAbandonGuard();
 			}
 			else
 			{
@@ -2491,7 +2513,8 @@ void manageParentTreatAlways(void){
 				if(buttonGUITreatment[BUTTON_PRIMING_ABANDON].state == GUI_BUTTON_RELEASED)
 				{
 					releaseGUIButton(BUTTON_PRIMING_ABANDON);
-					currentGuard[GUARD_ABANDON_PRIMING].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+					//currentGuard[GUARD_ABANDON_PRIMING].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+					SetAbandonGuard();
 				}
 				else
 				{
@@ -2739,7 +2762,8 @@ void manageParentTreatAlways(void){
 			else if(buttonGUITreatment[BUTTON_PRIMING_ABANDON].state == GUI_BUTTON_RELEASED)
 			{
 				releaseGUIButton(BUTTON_PRIMING_ABANDON);
-				currentGuard[GUARD_ABANDON_PRIMING].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+				//currentGuard[GUARD_ABANDON_PRIMING].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+				SetAbandonGuard();
 			}
 
 			CheckPumpStopTask((CHECK_PUMP_STOP_CMD)NO_CHECK_PUMP_STOP_CMD);
@@ -2925,7 +2949,8 @@ void EmptyDispStateMach(void)
 			{
 				// nessuna pompa e' partita ancora
 				releaseGUIButton(BUTTON_PRIMING_ABANDON);
-				currentGuard[GUARD_ABANDON_PRIMING].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+				//currentGuard[GUARD_ABANDON_PRIMING].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+				SetAbandonGuard();
 			}
 			break;
 		case WAIT_FOR_1000ML:
@@ -2981,7 +3006,8 @@ void EmptyDispStateMach(void)
 				}
 				else if(TherType == KidneyTreat)
 					setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 0);
-				currentGuard[GUARD_ABANDON_PRIMING].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+				//currentGuard[GUARD_ABANDON_PRIMING].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+				SetAbandonGuard();
 			}
 			break;
 		case WAIT_FOR_AIR_ALARM:
@@ -3053,7 +3079,8 @@ void EmptyDispStateMach(void)
 					setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
 					setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 0);
 				}
-				currentGuard[GUARD_ABANDON_PRIMING].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+				//currentGuard[GUARD_ABANDON_PRIMING].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+				SetAbandonGuard();
 			}
 			break;
 		case WAIT_FOR_LEVEL_OR_AMOUNT:
@@ -3068,7 +3095,8 @@ void EmptyDispStateMach(void)
 				}
 				else if(TherType == KidneyTreat)
 					setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 0);
-				currentGuard[GUARD_ABANDON_PRIMING].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+				//currentGuard[GUARD_ABANDON_PRIMING].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+				SetAbandonGuard();
 			}
 			else if(buttonGUITreatment[StopAllPumpButId].state == GUI_BUTTON_RELEASED)
 			{
@@ -3439,7 +3467,8 @@ static void computeMachineStateGuardPrimingPh1(void){
 			// se sono nel trattamento fegato fermo anche l'altro motore !!
 			setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, 0);
 		}
-		currentGuard[GUARD_ABANDON_PRIMING].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+		//currentGuard[GUARD_ABANDON_PRIMING].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+		SetAbandonGuard();
 	}
 	else
 	{
@@ -3498,7 +3527,8 @@ static void computeMachineStateGuardPrimingPh2(void){
 			// se sono nel trattamento fegato fermo anche l'altro motore !!
 			setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, 0);
 		}
-		currentGuard[GUARD_ABANDON_PRIMING].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+		//currentGuard[GUARD_ABANDON_PRIMING].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+		SetAbandonGuard();
 	}
 	else
 	{
@@ -5250,6 +5280,9 @@ CHECK_PUMP_STOP_STATE CheckPumpStopTask(CHECK_PUMP_STOP_CMD cmd)
 	return CheckPumpStopTaskMach;
 }
 
-
+void SetAbandonGuard(void)
+{
+	currentGuard[GUARD_ABANDON_PRIMING].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+}
 
 

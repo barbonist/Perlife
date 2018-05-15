@@ -1865,6 +1865,9 @@ word TimeoutAirEjection;
 //-----------------------------------------------------------
 
 char ActuatorWriteCnt[LAST_ACTUATOR];
+// quando vale 1 vuol dire che il relativo comando di scrittura high level e' stato eseguito
+// partendo dalla alwaysModBusActuator a causa di una ripetizione di un precedente comando
+char ActuatorWrRepeatCmd[LAST_ACTUATOR];
 
 // scommentare se si vuole usare il messaggio di stato costituito con gli indici dei campi
 //#define DEBUG_SBC

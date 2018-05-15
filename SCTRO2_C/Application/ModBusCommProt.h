@@ -220,6 +220,7 @@ static void FrameInitFunc10(void);
 static void FrameInitFunc17(void);
 unsigned int ComputeChecksum(unsigned char * data, int size);
 unsigned long msTick_elapsed( unsigned long last );
+unsigned long msTick10_elapsed( unsigned long last );
 void SetNonPhysicalAlm( int AlarmCode);
 void ClearNonPhysicalAlm( int AlarmCode);
 bool CommandModBusPMPExecute(int SpeedPMP_0, int SpeedPMP_1_2, int SpeedPMP_3);

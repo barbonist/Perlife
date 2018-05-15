@@ -260,5 +260,6 @@ CHECK_PUMP_STOP_STATE CheckPumpStopTask(CHECK_PUMP_STOP_CMD cmd);
 void ParentFuncT1Test(void);
 void ParentFunc(void);
 void AirAlarmRecoveryStateMach(void);
+void SetAbandonGuard(void);
 
 #endif /* APPLICATION_APP_GES_H_ */

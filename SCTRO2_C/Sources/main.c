@@ -520,7 +520,6 @@ int main(void)
    InitControlProtectiveInterface();
    SuspendInvioAlarmCode = 0;
    TimeoutAirEjection = 0;
-   memset(ActuatorWriteCnt, 0, LAST_ACTUATOR);
 
   /**********MAIN LOOP START************/
   for(;;) {

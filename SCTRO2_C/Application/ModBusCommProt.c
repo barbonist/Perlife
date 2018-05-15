@@ -498,6 +498,14 @@ void modbusDataInit (void)
 		for (j=0; j<TOTAL_MODBUS_DATA;j++)
 			modbusData [TOTAL_ACTUATOR] [TOTAL_MODBUS_DATA] = 0;
 	}
+
+	TherapyType = KidneyTreat;
+	WriteActive = FALSE;
+	ReadActive = FALSE;
+	LasActuatorWriteID = 0;      // id dell'attuatore modbus con scrittura in corso
+	memset(ActuatorWriteCnt, 0, LAST_ACTUATOR);
+	memset(ActuatorWrRepeatCmd, 0, LAST_ACTUATOR);
+
 }
 
 int SelectStruct(unsigned char slaveAddr)
@@ -563,6 +571,12 @@ void setPumpSpeedValueHighLevel(unsigned char slaveAddr, int speedValue){
 		pumpPerist[0].reqType = REQ_TYPE_WRITE;
 		pumpPerist[0].actuatorType = ACTUATOR_PUMP_TYPE;
 		pumpPerist[0].value = speedValue;
+		if(!ActuatorWrRepeatCmd[0])
+		{
+			// l'indice coincide con LasActuatorWriteID di alwaysModBusActuator
+			// il comando high level non e' una ripetizione di un comando precedente quindi resetto il contatore di tentativi
+			ActuatorWriteCnt[0] = 0;
+		}
 		break;
 
 	case 1:
@@ -570,6 +584,12 @@ void setPumpSpeedValueHighLevel(unsigned char slaveAddr, int speedValue){
 		pumpPerist[1].reqType = REQ_TYPE_WRITE;
 		pumpPerist[1].actuatorType = ACTUATOR_PUMP_TYPE;
 		pumpPerist[1].value = speedValue;
+		if(!ActuatorWrRepeatCmd[1])
+		{
+			// l'indice coincide con LasActuatorWriteID di alwaysModBusActuator
+			// il comando high level non e' una ripetizione di un comando precedente quindi resetto il contatore di tentativi
+			ActuatorWriteCnt[1] = 0;
+		}
 		// il break e' stato tolto volutamente perche' le due pump devono lavorare insieme --> a livello logico sono un unica pompa
 		//break;
 
@@ -578,6 +598,12 @@ void setPumpSpeedValueHighLevel(unsigned char slaveAddr, int speedValue){
 		pumpPerist[2].reqType = REQ_TYPE_WRITE;
 		pumpPerist[2].actuatorType = ACTUATOR_PUMP_TYPE;
 		pumpPerist[2].value = speedValue;
+		if(!ActuatorWrRepeatCmd[2])
+		{
+			// l'indice coincide con LasActuatorWriteID di alwaysModBusActuator
+			// il comando high level non e' una ripetizione di un comando precedente quindi resetto il contatore di tentativi
+			ActuatorWriteCnt[2] = 0;
+		}
 		break;
 
 	case 3:
@@ -585,6 +611,12 @@ void setPumpSpeedValueHighLevel(unsigned char slaveAddr, int speedValue){
 		pumpPerist[3].reqType = REQ_TYPE_WRITE;
 		pumpPerist[3].actuatorType = ACTUATOR_PUMP_TYPE;
 		pumpPerist[3].value = speedValue;
+		if(!ActuatorWrRepeatCmd[3])
+		{
+			// l'indice coincide con LasActuatorWriteID di alwaysModBusActuator
+			// il comando high level non e' una ripetizione di un comando precedente quindi resetto il contatore di tentativi
+			ActuatorWriteCnt[3] = 0;
+		}
 		break;
 
 	default:
@@ -815,6 +847,12 @@ void setPinchPositionHighLevel(unsigned char slaveAddr, int posValue){
 			pinchActuator[0].reqType = REQ_TYPE_WRITE;
 			pinchActuator[0].actuatorType = ACTUATOR_PINCH_TYPE;
 			pinchActuator[0].value = posValue;
+			if(!ActuatorWrRepeatCmd[4])
+			{
+				// l'indice coincide con LasActuatorWriteID di alwaysModBusActuator
+				// il comando high level non e' una ripetizione di un comando precedente quindi resetto il contatore di tentativi
+				ActuatorWriteCnt[4] = 0;
+			}
 			break;
 
 		case 0x08:  // pinchActuator[1].pinchMySlaveAddress
@@ -822,6 +860,12 @@ void setPinchPositionHighLevel(unsigned char slaveAddr, int posValue){
 			pinchActuator[1].reqType = REQ_TYPE_WRITE;
 			pinchActuator[1].actuatorType = ACTUATOR_PINCH_TYPE;
 			pinchActuator[1].value = posValue;
+			if(!ActuatorWrRepeatCmd[5])
+			{
+				// l'indice coincide con LasActuatorWriteID di alwaysModBusActuator
+				// il comando high level non e' una ripetizione di un comando precedente quindi resetto il contatore di tentativi
+				ActuatorWriteCnt[5] = 0;
+			}
 			break;
 
 		case 0x09:  // pinchActuator[2].pinchMySlaveAddress
@@ -829,6 +873,12 @@ void setPinchPositionHighLevel(unsigned char slaveAddr, int posValue){
 			pinchActuator[2].reqType = REQ_TYPE_WRITE;
 			pinchActuator[2].actuatorType = ACTUATOR_PINCH_TYPE;
 			pinchActuator[2].value = posValue;
+			if(!ActuatorWrRepeatCmd[6])
+			{
+				// l'indice coincide con LasActuatorWriteID di alwaysModBusActuator
+				// il comando high level non e' una ripetizione di un comando precedente quindi resetto il contatore di tentativi
+				ActuatorWriteCnt[6] = 0;
+			}
 			break;
 
 		default:
@@ -876,6 +926,40 @@ void setPinchPosValue(unsigned char slaveAddr, int posValue){
 		}
 }
 
+// in base all'indice dell'ultima scrittura fatta risalgo all'indirizzo fisico
+// dell'attuatore a cui era rivolta
+// ritorna 2..9
+unsigned char GetActuatorPhysAddr(char LasActuatorWriteIDVal)
+{
+	unsigned char ActId = 0;
+	switch (LasActuatorWriteIDVal)
+	{
+		case 0:
+			ActId = pumpPerist[0].pmpMySlaveAddress;
+			break;
+		case 1:
+			ActId = pumpPerist[1].pmpMySlaveAddress;
+			break;
+		case 2:
+			ActId = pumpPerist[2].pmpMySlaveAddress;
+			break;
+		case 3:
+			ActId = pumpPerist[3].pmpMySlaveAddress;
+			break;
+		case 4:
+			ActId = pinchActuator[0].pinchMySlaveAddress;
+			break;
+		case 5:
+			ActId = pinchActuator[1].pinchMySlaveAddress;
+			break;
+		case 6:
+			ActId = pinchActuator[2].pinchMySlaveAddress;
+			break;
+		case 7:
+			break;
+	}
+}
+
 
 // ogni 50 msec controlla un attuatore ed esegue l'operazione richiesta.
 // Una volta terminata l'operazione mette la flag iflag_pmp1_rx a IFLAG_IDLE
@@ -914,7 +998,7 @@ void alwaysModBusActuator(void)
 				iflag_pmp1_rx = IFLAG_PMP1_BUSY;
 				//timerCounterModBus = 0; //da verificare.....serve azzerare il contatore prima che arrivi la risposta?
 				WriteActive = TRUE;
-				timerCounterModBusStartWr = timerCounterModBus;
+				timerCounterModBusStartWr = FreeRunCnt10msec; //timerCounterModBus;
 				setPumpSpeedValue(pumpPerist[0].pmpMySlaveAddress, pumpPerist[0].value);
 				LasActuatorWriteID = 0;
 			}
@@ -956,7 +1040,7 @@ void alwaysModBusActuator(void)
 				//pumpPerist[1].reqType = REQ_TYPE_IDLE;
 				iflag_pmp1_rx = IFLAG_PMP1_BUSY;
 				WriteActive = TRUE;
-				timerCounterModBusStartWr = timerCounterModBus;
+				timerCounterModBusStartWr = FreeRunCnt10msec;  //timerCounterModBus;
 				setPumpSpeedValue(pumpPerist[1].pmpMySlaveAddress, pumpPerist[1].value);
 				LasActuatorWriteID = 1;
 			}
@@ -998,7 +1082,7 @@ void alwaysModBusActuator(void)
 				//pumpPerist[2].reqType = REQ_TYPE_IDLE;
 				iflag_pmp1_rx = IFLAG_PMP1_BUSY;
 				WriteActive = TRUE;
-				timerCounterModBusStartWr = timerCounterModBus;
+				timerCounterModBusStartWr = FreeRunCnt10msec;  //timerCounterModBus;
 				setPumpSpeedValue(pumpPerist[2].pmpMySlaveAddress, pumpPerist[2].value);
 				LasActuatorWriteID = 2;
 			}
@@ -1039,7 +1123,7 @@ void alwaysModBusActuator(void)
 				//pumpPerist[3].reqType = REQ_TYPE_IDLE;
 				iflag_pmp1_rx = IFLAG_PMP1_BUSY;
 				WriteActive = TRUE;
-				timerCounterModBusStartWr = timerCounterModBus;
+				timerCounterModBusStartWr = FreeRunCnt10msec; //timerCounterModBus;
 				setPumpSpeedValue(pumpPerist[3].pmpMySlaveAddress, pumpPerist[3].value);
 				LasActuatorWriteID = 3;
 			}
@@ -1081,7 +1165,7 @@ void alwaysModBusActuator(void)
 				iflag_pmp1_rx = IFLAG_PMP1_BUSY;
 				//timerCounterModBus = 0; //da verificare.....serve azzerare il contatore prima che arrivi la risposta?
 				WriteActive = TRUE;
-				timerCounterModBusStartWr = timerCounterModBus;
+				timerCounterModBusStartWr = FreeRunCnt10msec; //timerCounterModBus;
 				setPinchPosValue(pinchActuator[0].pinchMySlaveAddress, pinchActuator[0].value);
 				LasActuatorWriteID = 4;
 			}
@@ -1100,7 +1184,7 @@ void alwaysModBusActuator(void)
 				iflag_pmp1_rx = IFLAG_PMP1_BUSY;
 				//timerCounterModBus = 0; //da verificare.....serve azzerare il contatore prima che arrivi la risposta?
 				WriteActive = TRUE;
-				timerCounterModBusStartWr = timerCounterModBus;
+				timerCounterModBusStartWr = FreeRunCnt10msec;  //timerCounterModBus;
 				setPinchPosValue(pinchActuator[1].pinchMySlaveAddress, pinchActuator[1].value);
 				LasActuatorWriteID = 5;
 			}
@@ -1119,7 +1203,7 @@ void alwaysModBusActuator(void)
 				iflag_pmp1_rx = IFLAG_PMP1_BUSY;
 				//timerCounterModBus = 0; //da verificare.....serve azzerare il contatore prima che arrivi la risposta?
 				WriteActive = TRUE;
-				timerCounterModBusStartWr = timerCounterModBus;
+				timerCounterModBusStartWr = FreeRunCnt10msec;  //timerCounterModBus;
 				setPinchPosValue(pinchActuator[2].pinchMySlaveAddress, pinchActuator[2].value);
 				LasActuatorWriteID = 6;
 			}
@@ -1140,20 +1224,39 @@ void alwaysModBusActuator(void)
 		WriteActive = FALSE;
 		ptrMsg = msgToRecvFrame10;
 		Adr = *ptrMsg;
-		if((*(ptrMsg + 1) == 0x10) && ((Adr - 2) == LasActuatorWriteID))
-		{
-			// ho ricevuto la risposta dalla pompa
-			//pumpPerist[Adr - 2].dataReady = DATA_READY_TRUE;
-			pumpPerist[Adr - 2].reqType = REQ_TYPE_IDLE;
-			ActuatorWriteCnt[LasActuatorWriteID] = 0; // reset del contatore di errore
-		}
-		else if((*(ptrMsg + 1) == 0x10) && ((Adr - 7) == (LasActuatorWriteID - 4)))
+		if((*(ptrMsg + 1) == 0x10) && (Adr >= 7) && (GetActuatorPhysAddr(LasActuatorWriteID) == Adr))
 		{
 			// ho ricevuto la risposta da un pinch
 			//pinchActuator[Adr - 7].dataReady = DATA_READY_TRUE;
 			pinchActuator[Adr - 7].reqType = REQ_TYPE_IDLE;
 			ActuatorWriteCnt[LasActuatorWriteID] = 0;  // reset del contatore di errore
+			ActuatorWrRepeatCmd[LasActuatorWriteID] = 0;
 		}
+		else if((*(ptrMsg + 1) == 0x10) && (GetActuatorPhysAddr(LasActuatorWriteID) == Adr))
+		{
+			// ho ricevuto la risposta dalla pompa
+			//pumpPerist[Adr - 2].dataReady = DATA_READY_TRUE;
+			//pumpPerist[Adr - 2].reqType = REQ_TYPE_IDLE;
+			pumpPerist[LasActuatorWriteID].reqType = REQ_TYPE_IDLE;
+			ActuatorWriteCnt[LasActuatorWriteID] = 0; // reset del contatore di errore
+			ActuatorWrRepeatCmd[LasActuatorWriteID] = 0;
+		}
+//		if((*(ptrMsg + 1) == 0x10) && (Adr > 7) && ((Adr - 7) == (LasActuatorWriteID - 4)))
+//		{
+//			// ho ricevuto la risposta da un pinch
+//			//pinchActuator[Adr - 7].dataReady = DATA_READY_TRUE;
+//			pinchActuator[Adr - 7].reqType = REQ_TYPE_IDLE;
+//			ActuatorWriteCnt[LasActuatorWriteID] = 0;  // reset del contatore di errore
+//			ActuatorWrRepeatCmd[LasActuatorWriteID] = 0;
+//		}
+//		else if((*(ptrMsg + 1) == 0x10) && ((Adr - 2) == LasActuatorWriteID))
+//		{
+//			// ho ricevuto la risposta dalla pompa
+//			//pumpPerist[Adr - 2].dataReady = DATA_READY_TRUE;
+//			pumpPerist[Adr - 2].reqType = REQ_TYPE_IDLE;
+//			ActuatorWriteCnt[LasActuatorWriteID] = 0; // reset del contatore di errore
+//			ActuatorWrRepeatCmd[LasActuatorWriteID] = 0;
+//		}
 		else
 		{
 			ActuatorWriteCnt[LasActuatorWriteID] += 1;
@@ -1171,14 +1274,18 @@ void alwaysModBusActuator(void)
 				if(LasActuatorWriteID <= 3)
 				{
 					// l'ultima scrittura era una pompa
+					ActuatorWrRepeatCmd[LasActuatorWriteID] = 1;
 					setPumpSpeedValueHighLevel(pumpPerist[LasActuatorWriteID].pmpMySlaveAddress, pumpPerist[LasActuatorWriteID].value);
+					ActuatorWrRepeatCmd[LasActuatorWriteID] = 0;
 					//pumpPerist[LasActuatorWriteID].dataReady = DATA_READY_TRUE;
 					//pumpPerist[LasActuatorWriteID].reqType = REQ_TYPE_IDLE;
 				}
 				else if(LasActuatorWriteID <= 6)
 				{
 					// l'ultima scrittura era una pinch
+					ActuatorWrRepeatCmd[LasActuatorWriteID] = 1;
 					setPinchPositionHighLevel(pinchActuator[LasActuatorWriteID - 4].pinchMySlaveAddress, pinchActuator[LasActuatorWriteID - 4].value);
+					ActuatorWrRepeatCmd[LasActuatorWriteID] = 0;
 					//pinchActuator[LasActuatorWriteID - 4].dataReady = DATA_READY_TRUE; //non serve questo
 					//pinchActuator[LasActuatorWriteID - 4].reqType = REQ_TYPE_IDLE;
 				}
@@ -1192,9 +1299,9 @@ void alwaysModBusActuator(void)
 	else if(iflag_pmp1_rx == IFLAG_PMP1_BUSY)
 	{
 		// sono in attesa della risposta da un attuatore pinch o pompa
-		if(timerCounterModBusStartWr && (msTick_elapsed(timerCounterModBusStartWr) >= 1))
+		if(timerCounterModBusStartWr && (msTick10_elapsed(timerCounterModBusStartWr) >= 3))
 		{
-			// sono passati 50 msec e non ho ancora ricevuto alcuna risposta
+			// sono passati 30 msec e non ho ancora ricevuto alcuna risposta
 			WriteActive = FALSE; // termino la fase di scritture che era rimasta aperta
 			timerCounterModBusStartWr = 0;
 			iflag_pmp1_rx = IFLAG_IDLE;
@@ -1215,12 +1322,16 @@ void alwaysModBusActuator(void)
 				if(LasActuatorWriteID <= 3)
 				{
 					// l'ultima scrittura era una pompa
+					ActuatorWrRepeatCmd[LasActuatorWriteID] = 1;
 					setPumpSpeedValueHighLevel(pumpPerist[LasActuatorWriteID].pmpMySlaveAddress, pumpPerist[LasActuatorWriteID].value);
+					ActuatorWrRepeatCmd[LasActuatorWriteID] = 0;
 				}
 				else if(LasActuatorWriteID <= 6)
 				{
 					// l'ultima scrittura era una pinch
+					ActuatorWrRepeatCmd[LasActuatorWriteID] = 1;
 					setPinchPositionHighLevel(pinchActuator[LasActuatorWriteID - 4].pinchMySlaveAddress, pinchActuator[LasActuatorWriteID - 4].value);
+					ActuatorWrRepeatCmd[LasActuatorWriteID] = 0;
 				}
 			}
 		}
@@ -1490,13 +1601,14 @@ void alwaysModBusActuator_old(void)
 		WriteActive = FALSE;
 		ptrMsg = msgToRecvFrame10;
 		Adr = *ptrMsg;
-		if( (*(ptrMsg + 1) == 0x10) && ((Adr - 2) == LasActuatorWriteID) )
+		//if( (*(ptrMsg + 1) == 0x10) && ((Adr - 2) == LasActuatorWriteID) )
+		if( (*(ptrMsg + 1) == 0x10) && (GetActuatorPhysAddr(LasActuatorWriteID) == Adr) )
 		{
 			// ho ricevuto la risposta dalla pompa
 			//pumpPerist[Adr - 2].dataReady = DATA_READY_TRUE;
-			pumpPerist[Adr - 2].reqType = REQ_TYPE_IDLE;
+			pumpPerist[LasActuatorWriteID].reqType = REQ_TYPE_IDLE;
 		}
-		else if((*(ptrMsg + 1) == 0x10) && ((Adr - 7) == (LasActuatorWriteID - 4)))
+		else if((*(ptrMsg + 1) == 0x10) && (Adr >= 7) && ((Adr - 7) == (LasActuatorWriteID - 4)))
 		{
 			// ho ricevuto la risposta da un pinch
 			//pinchActuator[Adr - 7].dataReady = DATA_READY_TRUE;
@@ -1651,7 +1763,7 @@ void Manage_and_Storage_ModBus_Actuator_Data(void)
 		if (slvAddr == 6)
         	slvAddr= 7;
 
-		CountErrorModbusMSG[slvAddr]++;
+		CountErrorModbusMSG[slvAddr - 2]++;
 
         /*chiamo la funzione col corretto number of address dipendentemente dall'attuatore (pump/pinch)*/
 		if (slvAddr <= LAST_PUMP)
@@ -1808,7 +1920,7 @@ void StorageModbusData(unsigned char LastActuatslvAddr)
 			/*azzero per quello slave il contatore di messaggi
 			 * che onn hano avuto risposta in modo da contare
 			 * le mancate risposte consecutive*/
-			CountErrorModbusMSG[Address-3] = 0;
+			CountErrorModbusMSG[Address-2] = 0;
 		}
 
 }

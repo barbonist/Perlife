@@ -280,6 +280,10 @@ void DebugStringPID()
 void DebugStringStr(char *s)
 {
 	static char stringPr[STR_DBG_LENGHT];
+	if(strstr(s, "ABBANDONA"))
+	{
+		int ii = 0;
+	}
 	sprintf(stringPr, "\r %s;\r\n", s);
 
 	for(int i=0; i<STR_DBG_LENGHT; i++)
