@@ -626,6 +626,8 @@ void alarmEngineAlways(void)
 				manageAlarmDeltaTempRecVen();
 				manageAlarmCanBus();
 				manageAlarmBadPinchPos(); // controllo il posizionamento delle pinch prima di iniziare un trattamento
+				manageAlarmActuatorModbusNotRespond();
+				manageAlarmActuatorWRModbusNotRespond();
 				break;
 			}
 
@@ -1445,7 +1447,6 @@ void ClearModBusAlarm(void)
 	for (int j = 0; j<LAST_ACTUATOR; j++)
 		ActuatorWriteCnt[j] = 0;
 }
-
 
 void manageAlarmActuatorModbusNotRespond(void)
 {

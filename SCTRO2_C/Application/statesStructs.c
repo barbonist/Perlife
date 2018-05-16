@@ -136,8 +136,8 @@ struct machineChild stateChildAlarmEmpty[] =
 			{STATE_NULL, PARENT_NULL, CHILD_TREAT_ALARM_1_STOP_ALL_ACTUATOR, ACTION_ALWAYS,   &stateNull[0], &manageChildEmptyAlm1StAllActAlways},     /* 12 */
 
 			// gestisce un eventuale allarme generato quando non si riesce a comunicare su MODBUS in scrittura o lettura
-			{STATE_NULL, PARENT_NULL, CHILD_PRIM_ALARM_PUMPS_NOT_STILL,      ACTION_ON_ENTRY, &stateNull[0], &manageChildEmptyAlmPumpNotStillEntry},   /* 13 */
-			{STATE_NULL, PARENT_NULL, CHILD_PRIM_ALARM_PUMPS_NOT_STILL,      ACTION_ALWAYS,   &stateNull[0], &manageChildEmptyAlmPumpNotStillAlways},  /* 14 */
+			{STATE_NULL, PARENT_NULL, CHILD_EMPTY_ALARM_MOD_BUS,            ACTION_ON_ENTRY, &stateNull[0], &manageChildEmptyAlmPumpNotStillEntry},   /* 13 */
+			{STATE_NULL, PARENT_NULL, CHILD_EMPTY_ALARM_MOD_BUS,            ACTION_ALWAYS,   &stateNull[0], &manageChildEmptyAlmPumpNotStillAlways},  /* 14 */
 			{}
 		  };
 

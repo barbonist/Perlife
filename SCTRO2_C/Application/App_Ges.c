@@ -601,7 +601,8 @@ void manageStateTreatKidney1Always(void)
 	{
 		releaseGUIButton(BUTTON_STOP_OXYGEN_PUMP);
 		ActuatorWriteCnt[0] = 0;
-	}}
+	}
+}
 
 /*-----------------------------------------------------------*/
 /* This function manages the state empty disposable activity */
@@ -625,6 +626,19 @@ void manageStateEmptyDisp(void)
 void manageStateEmptyDispAlways(void)
 {
 	ParentEmptyDispStateMach();
+
+	// il codice che segue serve SOLO PER DEBUG E NELLA VERSIONE DEFINITIVA
+	// DEVE ESSERE CANCELLATO
+	if(buttonGUITreatment[BUTTON_START_OXYGEN_PUMP].state == GUI_BUTTON_RELEASED)
+	{
+		releaseGUIButton(BUTTON_START_OXYGEN_PUMP);
+		ActuatorWriteCnt[0] += 1;
+	}
+	else if(buttonGUITreatment[BUTTON_STOP_OXYGEN_PUMP].state == GUI_BUTTON_RELEASED)
+	{
+		releaseGUIButton(BUTTON_STOP_OXYGEN_PUMP);
+		ActuatorWriteCnt[0] = 0;
+	}
 }
 
 //------------------------------------------------------------------
@@ -2955,6 +2969,8 @@ void EmptyDispStateMach(void)
 				GlobalFlags.FlagsDef.EnablePressSensHighAlm = 1;
 				// abilito anche gli allarmi delle cover
 				GlobalFlags.FlagsDef.EnableCoversAlarm = 1;
+				// abilito gli allarmi su modbus
+				GlobalFlags.FlagsDef.EnableModbusNotRespAlm = 1;
 				EmptyDispRunAlwaysState = WAIT_FOR_1000ML;
 			}
 			else if(buttonGUITreatment[BUTTON_PRIMING_ABANDON].state == GUI_BUTTON_RELEASED)

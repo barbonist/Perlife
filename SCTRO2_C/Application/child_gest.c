@@ -998,7 +998,6 @@ void manageChildTreatAlmBadPinchPosAlways(void)
 }
 //--------------------------------------------------------------------------------------------------
 
-
 void manageChildTreatAlmModBusErrEntry(void)
 {
 	EN_Motor_Control(DISABLE);
@@ -1411,7 +1410,7 @@ void manageChildEmptyAlm1InitEntry(void)
     {
         ptrFutureChild = &stateChildAlarmEmpty[11];
     }
-    else if(currentGuard[GUARD_ALARM_PUMPS_NOT_STILL].guardValue == GUARD_VALUE_TRUE)
+    else if(currentGuard[GUARD_ALARM_MOD_BUS_ERROR].guardValue == GUARD_VALUE_TRUE)
 	{
 		/* si e' verificato un allarme di lettura o scrittira su modbus, fermo tutto */
 		ptrFutureChild = &stateChildAlarmEmpty[13];
@@ -1481,39 +1480,39 @@ void manageChildEmptyAlm1StAllActAlways(void)
 }
 
 
-//CHILD_PRIM_ALARM_PUMPS_NOT_STILL quando lo stato principale e' STATE_EMPTY_DISPOSABLE
+//CHILD_EMPTY_ALARM_MOD_BUS quando lo stato principale e' STATE_EMPTY_DISPOSABLE
 // allarme generato quando viene rilevata un errore nella lettura dello stato o scrittura sulle pompe
 // Devo fermare tutto. PROBABILMENTE, IN QUESTO CASO POTREBBE ESSERE MEGLIO TOGLIERE L'ENABLE ALLE POMPE
 void manageChildEmptyAlmPumpNotStillEntry(void)
 {
-	manageChildTreatAlm1StopAllActEntry();
-
-	// DOVREI USARE QUESTA INVECE DELLA PRECEDENTE
-	//EN_Motor_Control(DISABLE);
+//	manageChildTreatAlm1StopAllActEntry();
+	manageChildTreatAlmModBusErrEntry();
 }
 
 void manageChildEmptyAlmPumpNotStillAlways(void)
 {
-	// fermo tutte le pompe e metto le pinch in sicurezza
-	manageChildTreatAlm1StopAllActAlways();
+	manageChildTreatAlmModBusErrAlways();
 
-	if(buttonGUITreatment[BUTTON_RESET_ALARM].state == GUI_BUTTON_RELEASED)
-	{
-		EN_Motor_Control(ENABLE);
-		// in questo caso posso rilasciare il tasto BUTTON_RESET_ALARM perche' per uscire dallo stato
-		// di allarme PARENT_PRIMING_END_RECIRC_ALARM controllo solo
-		// currentGuard[GUARD_ALARM_ACTIVE].guardValue == GUARD_VALUE_FALSE e non mi aspetto un comando
-		// di reset
-		//releaseGUIButton(BUTTON_RESET_ALARM);
-		EnableNextAlarmFunc(); //EnableNextAlarm = TRUE;
-	}
-	else if(buttonGUITreatment[BUTTON_OVERRIDE_ALARM].state == GUI_BUTTON_RELEASED)
-	{
-		EN_Motor_Control(ENABLE);
-		ForceCurrentAlarmOff();
-		releaseGUIButton(BUTTON_OVERRIDE_ALARM);
-		EnableNextAlarmFunc(); //EnableNextAlarm = TRUE;
-	}
+//	// fermo tutte le pompe e metto le pinch in sicurezza
+//	manageChildTreatAlm1StopAllActAlways();
+//
+//	if(buttonGUITreatment[BUTTON_RESET_ALARM].state == GUI_BUTTON_RELEASED)
+//	{
+//		EN_Motor_Control(ENABLE);
+//		// in questo caso posso rilasciare il tasto BUTTON_RESET_ALARM perche' per uscire dallo stato
+//		// di allarme PARENT_PRIMING_END_RECIRC_ALARM controllo solo
+//		// currentGuard[GUARD_ALARM_ACTIVE].guardValue == GUARD_VALUE_FALSE e non mi aspetto un comando
+//		// di reset
+//		//releaseGUIButton(BUTTON_RESET_ALARM);
+//		EnableNextAlarmFunc(); //EnableNextAlarm = TRUE;
+//	}
+//	else if(buttonGUITreatment[BUTTON_OVERRIDE_ALARM].state == GUI_BUTTON_RELEASED)
+//	{
+//		EN_Motor_Control(ENABLE);
+//		ForceCurrentAlarmOff();
+//		releaseGUIButton(BUTTON_OVERRIDE_ALARM);
+//		EnableNextAlarmFunc(); //EnableNextAlarm = TRUE;
+//	}
 }
 
 bool IsDisposableEmptyWithAlm(void)
@@ -1614,12 +1613,12 @@ void ManageStateChildAlarmEmpty(void)
 			}
 			break;
 
-		case CHILD_PRIM_ALARM_PUMPS_NOT_STILL:
+		case CHILD_EMPTY_ALARM_MOD_BUS:
 			if(ptrCurrentChild->action == ACTION_ON_ENTRY)
 			{
 				ptrFutureChild = &stateChildAlarmEmpty[14];
 			}
-            else if( currentGuard[GUARD_ALARM_PUMPS_NOT_STILL].guardValue == GUARD_VALUE_FALSE )
+            else if( currentGuard[GUARD_ALARM_MOD_BUS_ERROR].guardValue == GUARD_VALUE_FALSE )
                 ptrFutureChild = &stateChildAlarmEmpty[9]; /* FM allarme chiuso */
 			else if(ptrCurrentChild->action == ACTION_ALWAYS){}
 			break;
