@@ -1849,6 +1849,10 @@ typedef enum
 	T_SET_PINCH_RESET_ALARM_CMD
 }TREAT_SET_PINCH_POS_CMD;
 //-------------------------------------------------------------------------------
+// Questa define deve essere attiva se voglio rilevare l'allarme della connessione con la protective
+#define ENABLE_PROTECTIVE_BOARD
+
+// flag per iniziare un periodo di allarme nullo da trasferire alla GUI
 
 unsigned char SuspendInvioAlarmCode;
 
