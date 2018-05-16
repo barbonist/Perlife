@@ -757,7 +757,9 @@ int main(void)
 	         // chiamare questa funzione
 	         UpdatePumpSpeed();
 
-	         if (!iflag_sbc_rx && !WriteActive);
+	         // L'if non serve basta il controllo WriteActive che viene fatto dentro
+	         // la Manage_and_Storage_ModBus_Actuator_Data
+	         //if (!iflag_sbc_rx && !WriteActive)
 	        	Manage_and_Storage_ModBus_Actuator_Data();
 
 
