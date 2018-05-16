@@ -77,7 +77,7 @@ struct alarm alarmList[] =
 		//Allarme per errore nella lettura e scrittura modbus. Se dopo 10 ripetizioni non ottengo risposta alla lettura o scrittura genero un allarme.
 		// Per questo allarme uso la stessa procedura per le pompe non ferme. (Dovrei tolgliere direttamente l'enable alle pompe.
 		//{CODE_ALARM_MODBUS_ACTUATOR_SEND,  PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_WAIT_CONFIRM,        PRIORITY_LOW,     0, 100, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull},	        /* 28 */
-		{CODE_ALARM_MODBUS_ACTUATOR_SEND,  PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_PUMPS_NOT_STILL,       PRIORITY_HIGH,    0, 500, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull},	        /* 28 */
+		{CODE_ALARM_MODBUS_ACTUATOR_SEND,  PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_MOD_BUS_ERROR,         PRIORITY_HIGH,    0, 500, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull},	        /* 28 */
 		{}
 };
 
@@ -409,7 +409,7 @@ void ShowAlarmStr(int i, char * str)
 			DebugStringStr(s);
 			break;
 		case CODE_ALARM_PRESS_OXYG_LOW:
-			strcpy(s, "AL_SFA_PRIM_AIR_DET");
+			strcpy(s, "AL_PRESS_OXYG_LOW");
 			strcat(s, str);
 			DebugStringStr(s);
 			break;
@@ -1436,6 +1436,17 @@ void manageAlarmIrTempSensNotDetected(void)
 	}
 }
 
+
+// elimina la condizione che ha generato l'allarme
+void ClearModBusAlarm(void)
+{
+	for (int j = 0; j<8; j++)
+		CountErrorModbusMSG[j] = 0;
+	for (int j = 0; j<LAST_ACTUATOR; j++)
+		ActuatorWriteCnt[j] = 0;
+}
+
+
 void manageAlarmActuatorModbusNotRespond(void)
 {
 	int i;
@@ -1498,7 +1509,7 @@ void manageAlarmActuatorWRModbusNotRespond(void)
 		{
 			alarmList[MODBUS_ACTUATOR_SEND].physic = PHYSIC_FALSE;
 
-			for (int j = 0; j<8; j++)
+			for (int j = 0; j<LAST_ACTUATOR; j++)
 				ActuatorWriteCnt[j] = 0;
 		}
 	}
@@ -1660,6 +1671,12 @@ void manageAlarmChildGuard(struct alarm * ptrAlarm){
 			currentGuard[GUARD_ALARM_SFA_PRIM_AIR_DET].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
 		else
 			currentGuard[GUARD_ALARM_SFA_PRIM_AIR_DET].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
+		break;
+	case SECURITY_MOD_BUS_ERROR:
+		if(myAlarmPointer->active == ACTIVE_TRUE)
+			currentGuard[GUARD_ALARM_MOD_BUS_ERROR].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+		else
+			currentGuard[GUARD_ALARM_MOD_BUS_ERROR].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
 		break;
 
 	default:

@@ -484,6 +484,8 @@ enum Child {
 	CHILD_PRIM_ALARM_BAD_PINCH_POS,
 	CHILD_PRIM_ALARM_SFA_AIR_DET,
 	CHILD_TREAT_ALARM_BAD_PINCH_POS,
+	CHILD_PRIM_ALARM_MOD_BUS,
+	CHILD_TREAT_ALARM_MOD_BUS_ERROR,
 	CHILD_END_NUMBER,
 };
 
@@ -623,6 +625,7 @@ enum MachineStateGuardId {
 
 
 	GUARD_ALARM_WAIT_CONFIRM,  // aspetto una conferma dall'operatore per rimuovere l'allarme non dovuto a cause fisiche
+	GUARD_ALARM_MOD_BUS_ERROR,
 	GUARD_FATAL_ERROR,
 	GUARD_END_NUMBER
 };

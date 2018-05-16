@@ -589,7 +589,19 @@ void manageStateTreatKidney1(void)
 void manageStateTreatKidney1Always(void)
 {
 	computeMachineStateGuardTreatment();
-}
+
+	// il codice che segue serve SOLO PER DEBUG E NELLA VERSIONE DEFINITIVA
+	// DEVE ESSERE CANCELLATO
+	if(buttonGUITreatment[BUTTON_START_OXYGEN_PUMP].state == GUI_BUTTON_RELEASED)
+	{
+		releaseGUIButton(BUTTON_START_OXYGEN_PUMP);
+		ActuatorWriteCnt[0] += 1;
+	}
+	else if(buttonGUITreatment[BUTTON_STOP_OXYGEN_PUMP].state == GUI_BUTTON_RELEASED)
+	{
+		releaseGUIButton(BUTTON_STOP_OXYGEN_PUMP);
+		ActuatorWriteCnt[0] = 0;
+	}}
 
 /*-----------------------------------------------------------*/
 /* This function manages the state empty disposable activity */
@@ -4629,6 +4641,11 @@ void processMachineState(void)
             	/* (FM) risolvo la situazione di allarme andando  a spegnere tutti gli attuatori */
                 ptrFutureChild = &stateChildAlarmPriming[21];
             }
+            else if(currentGuard[GUARD_ALARM_MOD_BUS_ERROR].guardValue == GUARD_VALUE_TRUE)
+            {
+            	/* (FM) risolvo la situazione di allarme andando  a spegnere tutti gli attuatori */
+                ptrFutureChild = &stateChildAlarmPriming[23];
+            }
 			break;
 
 		case CHILD_PRIMING_ALARM_STOP_PERFUSION:
@@ -4752,6 +4769,16 @@ void processMachineState(void)
 				ptrFutureChild = &stateChildAlarmPriming[22];
 			}
             else if( currentGuard[GUARD_ALARM_SFA_PRIM_AIR_DET].guardValue == GUARD_VALUE_FALSE )
+                ptrFutureChild = &stateChildAlarmPriming[13]; /* FM allarme chiuso */
+			else if(ptrCurrentChild->action == ACTION_ALWAYS){}
+			break;
+
+		case CHILD_PRIM_ALARM_MOD_BUS:
+			if(ptrCurrentChild->action == ACTION_ON_ENTRY)
+			{
+				ptrFutureChild = &stateChildAlarmPriming[24];
+			}
+            else if( currentGuard[GUARD_ALARM_MOD_BUS_ERROR].guardValue == GUARD_VALUE_FALSE )
                 ptrFutureChild = &stateChildAlarmPriming[13]; /* FM allarme chiuso */
 			else if(ptrCurrentChild->action == ACTION_ALWAYS){}
 			break;

@@ -16,6 +16,7 @@
 #include "ASerialLdd1.h"
 #include "Alarm_Con.h"
 #include "EEPROM.h"
+#include "string.h"
 
 
 extern int MyArrayIdx;

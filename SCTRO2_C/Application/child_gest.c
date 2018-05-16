@@ -373,6 +373,37 @@ void manageChildPrimAlmSFAAirDetAlways(void)
 	}
 }
 
+
+/* Manage CHILD_PRIM_ALARM_MOD_BUS always state */
+void manageChildPrimAlmModBusEntry(void)
+{
+	EN_Motor_Control(DISABLE);
+}
+
+void manageChildPrimAlmModBusAlways(void)
+{
+	if(buttonGUITreatment[BUTTON_RESET_ALARM].state == GUI_BUTTON_RELEASED)
+	{
+		EN_Motor_Control(ENABLE);
+		ClearModBusAlarm();
+		// in questo caso evito di rilasciare il tasto BUTTON_RESET_ALARM perche' per uscire dallo stato
+		// di allarme PARENT_PRIMING_TREAT_KIDNEY_1_ALARM controllo
+		// currentGuard[GUARD_ALARM_ACTIVE].guardValue == GUARD_VALUE_FALSE ma aspetto anche un comando
+		// di reset
+		//releaseGUIButton(BUTTON_RESET_ALARM);
+		//EnableNextAlarmFunc(); //EnableNextAlarm = TRUE;
+	}
+	else if(buttonGUITreatment[BUTTON_OVERRIDE_ALARM].state == GUI_BUTTON_RELEASED)
+	{
+		EN_Motor_Control(ENABLE);
+		ClearModBusAlarm();
+		ForceCurrentAlarmOff();
+		releaseGUIButton(BUTTON_OVERRIDE_ALARM);
+		EnableNextAlarmFunc(); //EnableNextAlarm = TRUE;
+	}
+
+}
+
 //--------------------------------------------------------------------------------------------------
 
 
@@ -426,6 +457,11 @@ void manageChildTreatAlm1InitAlways(void)
     {
     	/* (FM) risolvo la situazione di allarme andando  a spegnere tutti gli attuatori */
         ptrFutureChild = &stateChildAlarmTreat1[23];
+    }
+    else if(currentGuard[GUARD_ALARM_MOD_BUS_ERROR].guardValue == GUARD_VALUE_TRUE)
+    {
+    	/* (FM) risolvo la situazione di allarme andando  a togliere l'abilitazione alle pompe */
+        ptrFutureChild = &stateChildAlarmTreat1[25];
     }
 }
 
@@ -963,6 +999,36 @@ void manageChildTreatAlmBadPinchPosAlways(void)
 //--------------------------------------------------------------------------------------------------
 
 
+void manageChildTreatAlmModBusErrEntry(void)
+{
+	EN_Motor_Control(DISABLE);
+}
+
+/* Manage CHILD_TREAT_ALARM_MOD_BUS_ERROR always state */
+void manageChildTreatAlmModBusErrAlways(void)
+{
+	if(buttonGUITreatment[BUTTON_RESET_ALARM].state == GUI_BUTTON_RELEASED)
+	{
+		EN_Motor_Control(ENABLE);
+		ClearModBusAlarm();
+		// in questo caso evito di rilasciare il tasto BUTTON_RESET_ALARM perche' per uscire dallo stato
+		// di allarme PARENT_PRIMING_TREAT_KIDNEY_1_ALARM controllo
+		// currentGuard[GUARD_ALARM_ACTIVE].guardValue == GUARD_VALUE_FALSE ma aspetto anche un comando
+		// di reset
+		//releaseGUIButton(BUTTON_RESET_ALARM);
+		//EnableNextAlarmFunc(); //EnableNextAlarm = TRUE;
+	}
+	else if(buttonGUITreatment[BUTTON_OVERRIDE_ALARM].state == GUI_BUTTON_RELEASED)
+	{
+		EN_Motor_Control(ENABLE);
+		ClearModBusAlarm();
+		ForceCurrentAlarmOff();
+		releaseGUIButton(BUTTON_OVERRIDE_ALARM);
+		EnableNextAlarmFunc(); //EnableNextAlarm = TRUE;
+	}
+
+}
+
 // funzione che gestisce gli stati child (allarmi) nel caso di trattamento1 o kidney
 // deve essere chiamata dalla gestione del parent nello stato PARENT_TREAT_KIDNEY_1_ALARM
 void ManageStateChildAlarmTreat1(void)
@@ -1055,6 +1121,11 @@ void ManageStateChildAlarmTreat1(void)
             {
             	/* (FM) risolvo la situazione di allarme andando  a spegnere tutti gli attuatori */
                 ptrFutureChild = &stateChildAlarmTreat1[23];
+            }
+            else if(currentGuard[GUARD_ALARM_MOD_BUS_ERROR].guardValue == GUARD_VALUE_TRUE)
+            {
+            	/* (FM) risolvo la situazione di allarme andando  a spegnere tutti gli attuatori */
+                ptrFutureChild = &stateChildAlarmTreat1[25];
             }
 			break;
 
@@ -1187,6 +1258,18 @@ void ManageStateChildAlarmTreat1(void)
 				ptrFutureChild = &stateChildAlarmTreat1[24];
 			}
             else if( currentGuard[GUARD_ALARM_BAD_PINCH_POS].guardValue == GUARD_VALUE_FALSE )
+                ptrFutureChild = &stateChildAlarmTreat1[19]; /* FM allarme chiuso */
+			else if(ptrCurrentChild->action == ACTION_ALWAYS)
+			{
+			}
+			break;
+
+		case CHILD_TREAT_ALARM_MOD_BUS_ERROR:
+			if(ptrCurrentChild->action == ACTION_ON_ENTRY)
+			{
+				ptrFutureChild = &stateChildAlarmTreat1[26];
+			}
+            else if( currentGuard[GUARD_ALARM_MOD_BUS_ERROR].guardValue == GUARD_VALUE_FALSE )
                 ptrFutureChild = &stateChildAlarmTreat1[19]; /* FM allarme chiuso */
 			else if(ptrCurrentChild->action == ACTION_ALWAYS)
 			{

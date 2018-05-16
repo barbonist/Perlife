@@ -186,6 +186,10 @@ struct machineChild stateChildAlarmTreat1[] =
 			// gestisce un eventuale allarme generato quando la posizione delle pinch confrontata con quella delle protective non coincide
 			{STATE_NULL, PARENT_NULL, CHILD_TREAT_ALARM_BAD_PINCH_POS,       ACTION_ON_ENTRY, &stateNull[0], &manageChildTreatAlmBadPinchPosEntry},      /* 23 */
 			{STATE_NULL, PARENT_NULL, CHILD_TREAT_ALARM_BAD_PINCH_POS,       ACTION_ALWAYS,   &stateNull[0], &manageChildTreatAlmBadPinchPosAlways},     /* 24 */
+
+			// gestisce un eventuale allarme generato quando le ripetizioni di un comando su modbus superano un certo valore
+			{STATE_NULL, PARENT_NULL, CHILD_TREAT_ALARM_MOD_BUS_ERROR,       ACTION_ON_ENTRY, &stateNull[0], &manageChildTreatAlmModBusErrEntry},        /* 25 */
+			{STATE_NULL, PARENT_NULL, CHILD_TREAT_ALARM_MOD_BUS_ERROR,       ACTION_ALWAYS,   &stateNull[0], &manageChildTreatAlmModBusErrAlways},       /* 26 */
 			{}
 		  };
 
@@ -245,6 +249,10 @@ struct machineChild stateChildAlarmPriming[] ={
 		// gestisce un allarme generato dal pericolo di pompare aria nel filtro durante il priming
 		{STATE_NULL, PARENT_NULL, CHILD_PRIM_ALARM_SFA_AIR_DET,            ACTION_ON_ENTRY,    &stateNull[0], &manageChildPrimAlmSFAAirDetEntry},      /* 21 */
 		{STATE_NULL, PARENT_NULL, CHILD_PRIM_ALARM_SFA_AIR_DET,            ACTION_ALWAYS,      &stateNull[0], &manageChildPrimAlmSFAAirDetAlways},     /* 22 */
+
+		// gestisce un allarme generato da un errore grave nella comunicazione modbus
+		{STATE_NULL, PARENT_NULL, CHILD_PRIM_ALARM_MOD_BUS,                ACTION_ON_ENTRY,    &stateNull[0], &manageChildPrimAlmModBusEntry},         /* 23 */
+		{STATE_NULL, PARENT_NULL, CHILD_PRIM_ALARM_MOD_BUS,                ACTION_ALWAYS,      &stateNull[0], &manageChildPrimAlmModBusAlways},        /* 24 */
 		{}
 };
 
