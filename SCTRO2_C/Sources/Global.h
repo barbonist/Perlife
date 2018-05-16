@@ -295,6 +295,31 @@ struct machineChild * ptrFutureChild;
 unsigned short	actionFlag;
 /* Machine State Structure */
 
+/**/
+#define T1_TEST_OK  0xA5
+#define T1_TEST_KO	0x5A
+
+
+
+struct T1Test {
+	char result_T1_cfg_data;
+	char result_T1_24vbrk;
+	char result_T1_press;
+	char result_T1_tempIR;
+	char result_T1_level;
+	char result_T1_flwmtr;
+	char result_T1_air;
+	char result_T1_pinch;
+	char result_T1_pump;
+	char result_T1_termo;
+};
+
+struct T1Test T1TEST;
+struct T1Test * ptrT1Test;
+
+
+/**/
+
 // NB!!!!!   I NUOVI VALORI DEVONO ESSERE AGGIUNTI IN CODA SUBITO PRIMA
 // DI STATE_END_NUMBER
 /* Machine State Data */
@@ -1237,9 +1262,11 @@ word DipSwitch_2_ADC;		//Variabile globale col valore ADC del DIP_SWITCH_3
 #define DipSwitch_2_ADC_CHANNEL 	13
 
 word V24_P1_CHK_ADC;
-word V24_P1_CHK_VOLT;
+//word V24_P1_CHK_VOLT;
+float V24_P1_CHK_VOLT;
 word V24_P2_CHK_ADC;
-word V24_P2_CHK_VOLT;
+//word V24_P2_CHK_VOLT;
+float V24_P2_CHK_VOLT;
 
 /*V24_P1_CHK:	 to 24 Volt --> 49764 ADC count; to 22 Volt 45576 ADC count*/
 #define V24_P1_CHK_GAIN 		0.00047755492
@@ -1248,6 +1275,15 @@ word V24_P2_CHK_VOLT;
 /*V24_P2_CHK:	 to 24 Volt --> 49600 ADC count; to 22 Volt 45523 ADC count*/
 #define V24_P2_CHK_GAIN 		0.00049055678
 #define V24_P2_CHK_OFFSET		-0.33
+
+/* t1 test */
+#define T1_TEST_DIG_TO_VOLT			(float)(3300/4096)/1000 //digit to volt
+#define V24BRK_LOW_THRSLD			2.3 //volt
+#define V24BRK_HIGH_THRSLD			2.7 //volt
+#define T1_TEST_PRESS_LOW_THRSLD	-5 //mmHg
+#define T1_TEST_PRESS_HIGH_THRSLD	5 //mmHg
+#define T1_TEST_PRESS_TRKNG_THRSLD	5 //mmHg
+/* t1 test */
 
 #define V24_P2_CHK_ADC_CHANNEL 		10
 #define V24_P1_CHK_ADC_CHANNEL 		11

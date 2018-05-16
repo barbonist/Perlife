@@ -192,8 +192,11 @@ void Manage_UFlow_Sens()
 			}
 		}
 
-		if (sensor_UFLOW[Id_Buffer].Average_Flow_Val < 0)
-			sensor_UFLOW[Id_Buffer].Average_Flow_Val = 0;
+		//...e se un guasto del sensore lo fa derivare verso valori negativi? -->questo if deve essere assolutamente tolto
+		// e sostituito da un controllo sul valore del flusso negativo
+		//per verificare i t1 test la devo commentare
+		//if (sensor_UFLOW[Id_Buffer].Average_Flow_Val < 0)
+			//sensor_UFLOW[Id_Buffer].Average_Flow_Val = 0;
 	}
 	/***************FINE MEMORIZZAZIONE MESSAGGIO RICEVUTO*****************/
 }

@@ -125,10 +125,16 @@ void manageStatePriming_1_WaitAlways(void);
 /**************************************************************************************/
 /******-----------------------------T1 TEST NO DISP----------------------------********/
 /**************************************************************************************/
+void initT1Test(void);
 void manageParentT1InitEntry(void);
 void manageParentT1NoDispEntry(void);
 void manageParentT1NoDispAlways(void);
 void manageParentT1EndEntry(void);
+void manageParentChkConfig(void);
+void manageParentChk24Vbrk(void);
+void manageParentChkPress(void);
+void manageParentTempSensIR(void);
+void mangeParentUFlowSens(void);
 
 /**************************************************************************************/
 /******-----------------------------TREATMENT----------------------------------********/

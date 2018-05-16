@@ -16,6 +16,8 @@
 
 #include "MODBUS_COMM.h"
 #include "ASerialLdd1.h"
+#include "EEPROM.h"
+#include "IntFlashLdd1.h"
 
 #include "D_7S_DP.h"
 #include "D_7S_A.h"
@@ -920,8 +922,127 @@ void manageStatePriming_1_WaitAlways(void)
 /*-----------------------------------------------------------*/
 /*-----------------------------------------------------------*/
 
+/*----------------------------------------------------------------------------------------------------------------------------*/
+/*----------------------------------------INIZIO PARENT T1 TEST LEVEL FUNCTION -----------------------------------------------*/
+/*----------------------------------------------------------------------------------------------------------------------------*/
+void initT1Test(void){
+	ptrT1Test->result_T1_cfg_data = T1_TEST_KO;
+	ptrT1Test->result_T1_24vbrk = T1_TEST_KO;
+	ptrT1Test->result_T1_press = T1_TEST_KO;
+	ptrT1Test->result_T1_tempIR = T1_TEST_KO;
+	ptrT1Test->result_T1_level = T1_TEST_KO;
+	ptrT1Test->result_T1_flwmtr = T1_TEST_KO;
+	ptrT1Test->result_T1_air = T1_TEST_KO;
+	ptrT1Test->result_T1_pinch = T1_TEST_KO;
+	ptrT1Test->result_T1_pump = T1_TEST_KO;
+	ptrT1Test->result_T1_termo = T1_TEST_KO;
+}
 
+
+void manageParentChkConfig(void){
+	//leggo dati da eeprom
+	EEPROM_Read(START_ADDRESS_EEPROM, (EEPROM_TDataAddress)&config_data, sizeof(config_data));
+
+	unsigned char *ptr_EEPROM = (EEPROM_TDataAddress)&config_data;
+
+	/*Calcolo il CRC sui dati letti dalla EEPROM */
+	unsigned int Calc_CRC_EEPROM = ComputeChecksum(ptr_EEPROM, sizeof(config_data)-2);
+
+	/*Se il CRC calcolato non è uguale a quello letto o la revsione non è uguale a quella attesa
+			 vado in allarme t1 test */
+	if (config_data.EEPROM_CRC != Calc_CRC_EEPROM || config_data.EEPROM_Revision != EEPROM_REVISION)
+	{
+		ptrT1Test->result_T1_cfg_data = T1_TEST_KO;
+		currentGuard[GUARD_ENABLE_T1_ALARM].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+		DebugStringStr("alarm from chk config");
+	}
+	else{
+		ptrT1Test->result_T1_cfg_data = T1_TEST_OK;
+	}
+}
+
+void manageParentChk24Vbrk(void){
+	// attenzione ai guadagni e agli offset delle 24V, che scalate, diventano 2,5V; l'ad ha 4096 livelli non 65000
+	// modifiche necessarie in global.h
+	if(
+	   (V24_P1_CHK_VOLT <= V24BRK_LOW_THRSLD) ||
+	   (V24_P1_CHK_VOLT >= V24BRK_HIGH_THRSLD) ||
+	   (V24_P2_CHK_VOLT <= V24BRK_LOW_THRSLD) ||
+	   (V24_P2_CHK_VOLT >= V24BRK_HIGH_THRSLD)
+	   ){
+		ptrT1Test->result_T1_24vbrk = T1_TEST_KO;
+		currentGuard[GUARD_ENABLE_T1_ALARM].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+		DebugStringStr("alarm from chk 24vbrk");
+	}
+	else{
+		ptrT1Test->result_T1_24vbrk = T1_TEST_OK;
+	}
+}
+
+void manageParentChkPress(void){
+	if(
+		(PR_OXYG_mmHg_Filtered <= T1_TEST_PRESS_LOW_THRSLD)  	||
+		(PR_OXYG_mmHg_Filtered >= T1_TEST_PRESS_HIGH_THRSLD) 	||
+		(PR_LEVEL_mmHg_Filtered <= T1_TEST_PRESS_LOW_THRSLD) 	||
+		(PR_LEVEL_mmHg_Filtered >= T1_TEST_PRESS_HIGH_THRSLD) 	||
+		(PR_ADS_FLT_mmHg_Filtered <= T1_TEST_PRESS_LOW_THRSLD) 	||
+		(PR_ADS_FLT_mmHg_Filtered >= T1_TEST_PRESS_HIGH_THRSLD) ||
+		(PR_VEN_mmHg_Filtered <= T1_TEST_PRESS_LOW_THRSLD) 		||
+		(PR_VEN_mmHg_Filtered >= T1_TEST_PRESS_HIGH_THRSLD) 	||
+		(PR_ART_mmHg_Filtered <= T1_TEST_PRESS_LOW_THRSLD) 		||
+		(PR_ART_mmHg_Filtered >= T1_TEST_PRESS_HIGH_THRSLD)
+		){
+		ptrT1Test->result_T1_press = T1_TEST_KO;
+		currentGuard[GUARD_ENABLE_T1_ALARM].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+		DebugStringStr("alarm from chk press");
+	}
+	else{
+		ptrT1Test->result_T1_press = T1_TEST_OK;
+	}
+}
+
+void manageParentTempSensIR(void){
+
+	static unsigned char index = 0;
+
+	if(
+	   (sensorIR_TM[0].tempSensValue < 15) ||
+	   (sensorIR_TM[0].tempSensValue > 30) ||
+	   (sensorIR_TM[1].tempSensValue < 15) ||
+	   (sensorIR_TM[1].tempSensValue > 30) ||
+	   (sensorIR_TM[2].tempSensValue < 15) ||
+	   (sensorIR_TM[2].tempSensValue > 30)
+	   ){
+			ptrT1Test->result_T1_tempIR = T1_TEST_KO;
+			currentGuard[GUARD_ENABLE_T1_ALARM].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+			DebugStringStr("alarm from chk tempIR");
+	}
+	else{
+		ptrT1Test->result_T1_tempIR = T1_TEST_OK;
+	}
+
+}
+
+
+void mangeParentUFlowSens(void){
+	if(
+			(sensor_UFLOW[0].Average_Flow_Val > 20) ||
+			(sensor_UFLOW[0].Average_Flow_Val < -20) ||
+			(sensor_UFLOW[1].Average_Flow_Val > 20) ||
+			(sensor_UFLOW[1].Average_Flow_Val < -20)
+		){
+		ptrT1Test->result_T1_flwmtr = T1_TEST_KO;
+		currentGuard[GUARD_ENABLE_T1_ALARM].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+		DebugStringStr("alarm from chk flow");
+	}
+	else{
+		ptrT1Test->result_T1_flwmtr = T1_TEST_OK;
+	}
+}
+
+/*----------------------------------------------------------------------------------------------------------------------------*/
 /*----------------------------------------INIZIO PARENT PRIMING LEVEL FUNCTION -----------------------------------------------*/
+/*----------------------------------------------------------------------------------------------------------------------------*/
 
 void manageParentPrimingEntry(void){
 	if(pumpPerist[0].entry == 0)
