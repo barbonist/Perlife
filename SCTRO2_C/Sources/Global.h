@@ -1812,10 +1812,6 @@ typedef struct
 	unsigned char  free;
 }CANBUS_MSG_11;
 
-//-------------------------------------------------------------------------------
-
-//-------------------------------------------------------------------------------
-// strutture dati usate per lo scambio di messaggi su can bus tra protective e control
 typedef struct
 {
 	unsigned short SpeedPump1;
@@ -1823,6 +1819,22 @@ typedef struct
 	unsigned short SpeedPump3;
 	unsigned short SpeedPump4;
 }CANBUS_MSG_12;
+
+typedef struct
+{
+	unsigned short PressSensFilter;
+	unsigned short PressSensArt;
+	unsigned short PressSensVen;
+	unsigned short PressSensLevel;
+}CANBUS_MSG_9;
+
+typedef struct
+{
+	unsigned short PressSensOxyg;
+	unsigned short TempSensFluid;
+	unsigned short TempSensArt;
+	unsigned short TempSensVen;
+}CANBUS_MSG_10;
 
 //-------------------------------------------------------------------------------
 

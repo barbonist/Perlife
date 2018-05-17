@@ -33,7 +33,10 @@ bool BuzzStat = FALSE;
 bool BuzzCnt = 0;
 unsigned char TxCanMsg[8];
 unsigned char OldTxCanMsg1[8];
+CANBUS_MSG_9 CanBusMsg9;
+CANBUS_MSG_10 CanBusMsg10;
 CANBUS_MSG_11 CanBusMsg11;
+CANBUS_MSG_12 CanBusMsg12;
 
 
 void InitTest(void)
@@ -79,11 +82,25 @@ void RetriggerAlarm(void){
 	ActualErrNum = 0;
 }
 
+void onNewCanBusMsg9(CANBUS_MSG_9 ReceivedCanBusMsg9)
+{
+	CanBusMsg9 = ReceivedCanBusMsg9;
+}
 
+void onNewCanBusMsg10(CANBUS_MSG_10 ReceivedCanBusMsg10)
+{
+	CanBusMsg10 = ReceivedCanBusMsg10;
+}
 
 void onNewCanBusMsg11( CANBUS_MSG_11 ReceivedCanBusMsg11){
 	CanBusMsg11 = ReceivedCanBusMsg11;
 }
+
+void onNewCanBusMsg12(CANBUS_MSG_12 ReceivedCanBusMsg12)
+{
+	CanBusMsg12 = ReceivedCanBusMsg12;
+}
+
 
 bool IsPinchPosOk(unsigned char *pArrPinchPos)
 {
@@ -246,13 +263,61 @@ void NotifyPressSens(void)
 }
 
 
+void NotifyTempSens(void)
+{
+	if(GetTherapyType() == LiverTreat)
+	{
+		onNewSensTempVal(PR_OXYG_mmHg_Filtered,         // pressione ossigenatore
+				         sensorIR_TM[1].tempSensValue,  // temperatura recipiente * 10
+						 sensorIR_TM[0].tempSensValue,  // temperatura linea arteriosa
+						 sensorIR_TM[2].tempSensValue); // temperatura linea venosa
+	}
+	else
+	{
+		onNewSensTempVal(PR_OXYG_mmHg_Filtered,         // pressione ossigenatore
+				         sensorIR_TM[1].tempSensValue,  // temperatura recipiente * 10
+						 sensorIR_TM[1].tempSensValue,  // sensorIR_TM[0].tempSensValue, probabilmente,
+						                                // in questo caso, la temperatura della linea arteriosa coincide
+						                                // con quella del recipiente
+						 sensorIR_TM[2].tempSensValue); // temperatura ossigenatore
+	}
+}
+
+void NotifyPinchPos(void)
+{
+	if(GetTherapyType() == LiverTreat)
+	{
+		onNewPinchVal(Air_1_Status,                              // presenza aria sul filtro
+				      alarmCurrent.code,                         // allarme corrente sulla control
+					  (uint8_t)pinchActuator[0].pinchPosTarget,  // posizione della pinch sul filtro 2WPVF
+					  (uint8_t)pinchActuator[1].pinchPosTarget,  // posizione della pinch su linea arteriosa 2WPVA
+					  (uint8_t)pinchActuator[2].pinchPosTarget,  // posizione della pinch su linea venosa 2WPVV
+		              0,                                         // free1
+					  0);                                        // free2
+	}
+	else
+	{
+		onNewPinchVal(Air_1_Status,                              // presenza aria sul filtro
+				      alarmCurrent.code,                         // allarme corrente sulla control
+					  (uint8_t)pinchActuator[0].pinchPosTarget,  // posizione della pinch sul filtro 2WPVF
+					  (uint8_t)pinchActuator[1].pinchPosTarget,  // posizione della pinch su linea arteriosa 2WPVA
+					  (uint8_t)pinchActuator[2].pinchPosTarget,  // posizione della pinch su linea venosa 2WPVV
+		              0,                                         // free1
+					  0);                                        // free2
+	}
+}
+
+
+
 void ProtectiveTask(void)
 {
 	static unsigned short ProtTaskCnt = 0;
 
 	NotifyMachineStatus();
-	NotifyPumpsSpeed();
 	NotifyPressSens();
+	NotifyTempSens();
+	NotifyPinchPos();
+	NotifyPumpsSpeed();
 
 	if(ProtTaskCnt % 2)
 	{

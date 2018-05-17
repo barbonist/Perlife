@@ -181,6 +181,20 @@ void onNewSensPressVal(uint16_t PressFilt, uint16_t PressArt ,
 
 }
 
+void onNewSensTempVal(uint16_t PressOxyg, uint16_t TempRes,
+		               uint16_t TempArt, uint16_t TempVen)
+{
+
+}
+
+void onNewPinchVal(uint8_t AirFiltStat, uint16_t AlarmCode,
+		           uint8_t Pinch2WPVF, uint8_t Pinch2WPVA, uint8_t Pinch2WPVV,
+				   uint8_t free1, uint8_t free2)
+{
+
+}
+
+
 #else
 
 // incoming new press values
@@ -198,6 +212,37 @@ void onNewState( struct machineState* MSp, struct machineParent* MPp ,
 	TxCan0.STxCan0.Guard = Guard;
 }
 
+void onNewSensPressVal(uint16_t PressFilt, uint16_t PressArt,
+		               uint16_t PressVen, uint16_t PressLev)
+{
+	TxCan1.STxCan1.PressFilter = PressFilt;
+	TxCan1.STxCan1.PressArt = PressArt;
+	TxCan1.STxCan1.PressVen = PressVen;
+	TxCan1.STxCan1.PressLevelx100 = PressLev;
+}
+
+void onNewSensTempVal(uint16_t PressOxyg, uint16_t TempRes,
+		               uint16_t TempArt, uint16_t TempVen)
+{
+	TxCan2.STxCan2.PressOxy = PressOxyg;
+	TxCan2.STxCan2.TempFluidx10 = TempRes;
+	TxCan2.STxCan2.TempArtx10 = TempArt;
+	TxCan2.STxCan2.TempVenx10 = TempVen;
+}
+
+void onNewPinchVal(uint8_t AirFiltStat, uint16_t AlarmCode,
+		           uint8_t Pinch2WPVF, uint8_t Pinch2WPVA, uint8_t Pinch2WPVV,
+				   uint8_t free1, uint8_t free2)
+{
+	TxCan3.STxCan3.AirAlarm = AirFiltStat;
+	TxCan3.STxCan3.AlarmCode = AlarmCode;
+	TxCan3.STxCan3.FilterPinchPos = Pinch2WPVF;
+	TxCan3.STxCan3.ArtPinchPos = Pinch2WPVA;
+	TxCan3.STxCan3.OxygPinchPos = Pinch2WPVV;
+	TxCan3.STxCan3.Free1 = free1;
+	TxCan3.STxCan3.Free2 = free2;
+}
+
 void onNewPumpSpeed(uint16_t Pump0Speed, uint16_t Pump1Speed ,
 		            uint16_t Pump2Speed, uint16_t Pump3Speed)
 {
@@ -207,14 +252,6 @@ void onNewPumpSpeed(uint16_t Pump0Speed, uint16_t Pump1Speed ,
 	TxCan4.STxCan4.SpeedPump4Rpmx10 = Pump3Speed;
 }
 
-void onNewSensPressVal(uint16_t PressFilt, uint16_t PressArt ,
-		               uint16_t PressVen, uint16_t PressLev)
-{
-	TxCan1.STxCan1.PressFilter = PressFilt;
-	TxCan1.STxCan1.PressArt = PressArt;
-	TxCan1.STxCan1.PressVen = PressVen;
-	TxCan1.STxCan1.PressLevelx100 = PressLev;
-}
 
 
 #endif
@@ -281,9 +318,14 @@ union URxCan*	OldRxBuffCanP[8] =
 };
 
 void RetriggerAlarm(void);
+void onNewCanBusMsg9(CANBUS_MSG_9 ReceivedCanBusMsg9);
+void onNewCanBusMsg10(CANBUS_MSG_10 ReceivedCanBusMsg10);
 void onNewCanBusMsg11( CANBUS_MSG_11 ReceivedCanBusMsg11);
+void onNewCanBusMsg12(CANBUS_MSG_12 ReceivedCanBusMsg12);
 void ReceivedCanData(uint8_t *rxbuff, int rxlen, int RxChannel)
 {
+	CANBUS_MSG_9 TempCanBusMsg9;
+	CANBUS_MSG_10 TempCanBusMsg10;
 	CANBUS_MSG_11 TempCanBusMsg11;
 	CANBUS_MSG_12 TempCanBusMsg12;
 
@@ -293,15 +335,31 @@ void ReceivedCanData(uint8_t *rxbuff, int rxlen, int RxChannel)
 //		if(memcmp(RxBuffCanP[RxChannel - 8]->RawCanBuffer , OldRxBuffCanP[RxChannel - 8]->RawCanBuffer, SIZE_CAN_BUFFER) != 0){
 			// data changed --> trigger some action
 			memcpy(OldRxBuffCanP[RxChannel -8]->RawCanBuffer , RxBuffCanP[RxChannel - 8]->RawCanBuffer, SIZE_CAN_BUFFER);
+			if( RxChannel == 8)
+			{
+				TempCanBusMsg9.PressSensFilter = RxBuffCanP[RxChannel-8]->SRxCan0.PressFilter;
+				TempCanBusMsg9.PressSensArt = RxBuffCanP[RxChannel-8]->SRxCan0.PressArt;
+				TempCanBusMsg9.PressSensVen = RxBuffCanP[RxChannel-8]->SRxCan0.PressVen;
+				TempCanBusMsg9.PressSensLevel = RxBuffCanP[RxChannel-8]->SRxCan0.PressLevelx100;
+				onNewCanBusMsg9(TempCanBusMsg9);
+			}
+			if( RxChannel == 9)
+			{
+				TempCanBusMsg10.PressSensOxyg = RxBuffCanP[RxChannel-8]->SRxCan1.PressOxy;
+				TempCanBusMsg10.TempSensFluid = RxBuffCanP[RxChannel-8]->SRxCan1.TempFluidx10;
+				TempCanBusMsg10.TempSensArt = RxBuffCanP[RxChannel-8]->SRxCan1.TempArtx10;
+				TempCanBusMsg10.TempSensVen = RxBuffCanP[RxChannel-8]->SRxCan1.TempVenx10;
+				onNewCanBusMsg10(TempCanBusMsg10);
+			}
 			if( RxChannel == 10)
 			{
-				TempCanBusMsg11.FilterPinchPos = RxBuffCanP[RxChannel-8]->SRxCan2.FilterPinchPos;
-				TempCanBusMsg11.OxygPinchPos = RxBuffCanP[RxChannel-8]->SRxCan2.OxygPinchPos;
-				TempCanBusMsg11.ArtPinchPos = RxBuffCanP[RxChannel-8]->SRxCan2.ArtPinchPos;
 				TempCanBusMsg11.AirSensorFilter = RxBuffCanP[RxChannel-8]->SRxCan2.AirAlarm;
 				TempCanBusMsg11.AlarmCode = RxBuffCanP[RxChannel-8]->SRxCan2.AlarmCode;
 				TempCanBusMsg11.Consensus = RxBuffCanP[RxChannel-8]->SRxCan2.Consenso;
-				TempCanBusMsg11.free = 0;
+				TempCanBusMsg11.FilterPinchPos = RxBuffCanP[RxChannel-8]->SRxCan2.FilterPinchPos;
+				TempCanBusMsg11.ArtPinchPos = RxBuffCanP[RxChannel-8]->SRxCan2.ArtPinchPos;
+				TempCanBusMsg11.OxygPinchPos = RxBuffCanP[RxChannel-8]->SRxCan2.OxygPinchPos;
+				TempCanBusMsg11.free = RxBuffCanP[RxChannel-8]->SRxCan2.Free;
 				onNewCanBusMsg11(TempCanBusMsg11);
 			}
 			if( RxChannel == 11)
@@ -310,8 +368,9 @@ void ReceivedCanData(uint8_t *rxbuff, int rxlen, int RxChannel)
 				TempCanBusMsg12.SpeedPump2 = RxBuffCanP[RxChannel-8]->SRxCan3.SpeedPump2Rpmx10;
 				TempCanBusMsg12.SpeedPump3 = RxBuffCanP[RxChannel-8]->SRxCan3.SpeedPump3Rpmx10;
 				TempCanBusMsg12.SpeedPump4 = RxBuffCanP[RxChannel-8]->SRxCan3.SpeedPump4Rpmx10;
-				//onNewCanBusMsg11(TempCanBusMsg11);
+				onNewCanBusMsg12(TempCanBusMsg12);
 			}
+
 		//}
 	}
 }

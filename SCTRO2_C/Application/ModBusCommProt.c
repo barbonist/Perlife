@@ -900,7 +900,10 @@ void setPinchPosValue(unsigned char slaveAddr, int posValue){
 	wrAddr = 0x0000; /* pinch position */
 
 		if((slaveAddr >= 7) && (slaveAddr <= 9)) /* pinch */
+		{
 			myPinchPosValue = (unsigned int)posValue;
+			pinchActuator[slaveAddr - 7].pinchPosTarget = posValue;
+		}
 
 		valModBusArrayPtr = &myPinchPosValue;
 
@@ -1297,7 +1300,7 @@ void alwaysModBusActuator(void)
 		timerCounterModBusStartWr = 0;
 
 	}
-	else if(iflag_pmp1_rx == IFLAG_PMP1_BUSY)
+	else //if(iflag_pmp1_rx == IFLAG_PMP1_BUSY)
 	{
 		// sono in attesa della risposta da un attuatore pinch o pompa
 		if(timerCounterModBusStartWr && (msTick10_elapsed(timerCounterModBusStartWr) >= 3))
