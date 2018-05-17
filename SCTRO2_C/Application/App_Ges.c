@@ -941,6 +941,7 @@ void initT1Test(void){
 
 void manageParentChkConfig(void){
 	//leggo dati da eeprom
+	DebugStringStr("manage chk config");
 	EEPROM_Read(START_ADDRESS_EEPROM, (EEPROM_TDataAddress)&config_data, sizeof(config_data));
 
 	unsigned char *ptr_EEPROM = (EEPROM_TDataAddress)&config_data;
@@ -958,6 +959,7 @@ void manageParentChkConfig(void){
 	}
 	else{
 		ptrT1Test->result_T1_cfg_data = T1_TEST_OK;
+		DebugStringStr("test config ok");
 	}
 }
 
