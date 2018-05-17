@@ -1132,12 +1132,12 @@ enum paramWordSetFromSBC{
 	PAR_SET_PRESS_ART_TARGET = 0xB1,               // mmHg
 	PAR_SET_DESIRED_DURATION = 0xB3,
 	PAR_SET_MAX_FLOW_PERFUSION = 0xB7,             // ml/min
-	PAR_SET_PRESS_VEN_TARGET = 0xC2,
+	PAR_SET_PRESS_VEN_TARGET = 0xF1,               //0xC2,
 	PAR_SET_PURIF_FLOW_TARGET = 0xD3,
 	PAR_SET_PURIF_UF_FLOW_TARGET = 0xE4,
 	/*da qui in poi parametri non passati dal PC ma
 	 * define sul source code definiti con 0xFX*/
-	PAR_SET_VENOUS_PRESS_TARGET = 0xF1,
+	PAR_SET_VENOUS_PRESS_TARGET = 0xC2,            //0xF1,
 	PAR_SET_WORD_END_NUMBER = PAR_SET_VENOUS_PRESS_TARGET +1
 };
 
@@ -1863,7 +1863,10 @@ typedef enum
 }TREAT_SET_PINCH_POS_CMD;
 //-------------------------------------------------------------------------------
 // Questa define deve essere attiva se voglio rilevare l'allarme della connessione con la protective
+// Serve anche per poter entrare nel trattamento con la funzione di controllo del posizionamento delle pinch
 #define ENABLE_PROTECTIVE_BOARD
+// con questa define abilito il reset dell'allarme generato dalla protective tramite canbus della control
+//#define ENABLE_PROTECTIVE_ALARM_RESET
 
 // flag per iniziare un periodo di allarme nullo da trasferire alla GUI
 
@@ -1891,6 +1894,28 @@ char ActuatorWrRepeatCmd[LAST_ACTUATOR];
 
 // scommentare se si vuole usare il messaggio di stato costituito con gli indici dei campi
 //#define DEBUG_SBC
+
+#ifdef ENABLE_PROTECTIVE_ALARM_RESET
+
+uint16_t ProAlmCodeToreset;                       // codice dell'allarme protective da resettare (RxBuffCanP[2]->SRxCan2.AlarmCode).
+		                                          // 0 nessun allarme da resettare
+// stati del task HandleProtectiveAlarm
+typedef enum
+{
+	INIT_HNDLE_PROT_ALM,
+	WAIT_FOR_PROT_ALM,
+	ENTER_PROT_ALM,
+	WAIT_FOR_PROT_ALM_OFF,
+}HANDLE_PROTECTIVE_ALARM_STATE;
+
+// codice di inizio degli allarmi protective
+#define START_PROTECTIVE_ALARM_CODE 200
+
+// struttura usata per memorizzare gli allarmi della protective
+struct alarm ProtectiveAlarmStruct;
+
+#endif //ENABLE_PROTECTIVE_ALARM_RESET
+
 
 #endif /* SOURCES_GLOBAL_H_ */
 

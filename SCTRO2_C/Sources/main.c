@@ -186,6 +186,10 @@ extern unsigned char Released1;
 extern unsigned char Released2;
 extern unsigned char Released3;
 
+#ifdef ENABLE_PROTECTIVE_ALARM_RESET
+void HandleProtectiveAlarm(void);
+#endif
+
 /*lint -save  -e970 Disable MISRA rule (6.3) checking. */
 void TestPump(unsigned char Adr); //only for test
 void TestPinch(void);
@@ -520,6 +524,12 @@ int main(void)
    InitControlProtectiveInterface();
    SuspendInvioAlarmCode = 0;
    TimeoutAirEjection = 0;
+#ifdef ENABLE_PROTECTIVE_ALARM_RESET
+   ProAlmCodeToreset = 0;                       // codice dell'allarme protective da resettare (RxBuffCanP[2]->SRxCan2.AlarmCode).
+		                                          // 0 nessun allarme da resettare
+   memset(&ProtectiveAlarmStruct, 0, sizeof(struct alarm));
+#endif
+
 
   /**********MAIN LOOP START************/
   for(;;) {
@@ -548,6 +558,13 @@ int main(void)
 			  * Air_1_Status */
 
 			 Manage_Air_Sensor_1();
+
+#ifdef ENABLE_PROTECTIVE_ALARM_RESET
+			// Questo task serve solo per controllare gli allarmi della protective tramite l'interfaccia GUI
+			// della control. Nella versione finale del programma la protective avra' una seriale che la colleghera'
+			// direttamente alla GUI, per cui, questo non servira' piu'.
+	      	HandleProtectiveAlarm();
+#endif
 
 	         /*****MACHINE STATE UPDATE START****/
         	 if(timerCounterMState >= 1)
@@ -757,10 +774,7 @@ int main(void)
 	         // chiamare questa funzione
 	         UpdatePumpSpeed();
 
-	         // L'if non serve basta il controllo WriteActive che viene fatto dentro
-	         // la Manage_and_Storage_ModBus_Actuator_Data
-	         //if (!iflag_sbc_rx && !WriteActive)
-	        	Manage_and_Storage_ModBus_Actuator_Data();
+        	 Manage_and_Storage_ModBus_Actuator_Data();
 
 
 	         /*********PUMP*********/
@@ -773,6 +787,7 @@ int main(void)
 
 	      	// aggiorno il valore del flusso sul filtro
 	      	UpdateFilterFlowVal();
+
 
   }
   /**********MAIN LOOP END**************/

@@ -307,7 +307,21 @@ void NotifyPinchPos(void)
 	}
 }
 
-
+#ifdef ENABLE_PROTECTIVE_ALARM_RESET
+void NotifyAlmToResetMsg(void)
+{
+	if(GetTherapyType() == LiverTreat)
+	{
+		// codice dell'allarme protective da resettare.
+		onNewAlmToResetMsg(ProAlmCodeToreset);
+	}
+	else
+	{
+		// codice dell'allarme protective da resettare.
+		onNewAlmToResetMsg(ProAlmCodeToreset);
+	}
+}
+#endif
 
 void ProtectiveTask(void)
 {
@@ -318,6 +332,9 @@ void ProtectiveTask(void)
 	NotifyTempSens();
 	NotifyPinchPos();
 	NotifyPumpsSpeed();
+#ifdef ENABLE_PROTECTIVE_ALARM_RESET
+	NotifyAlmToResetMsg();
+#endif
 
 	if(ProtTaskCnt % 2)
 	{

@@ -223,4 +223,9 @@ void EnableNextAlarmFunc(void);
 bool IsDisposableEmptyNoAlarm(void);
 void ClearModBusAlarm(void);
 
+
+void StopAllCntrlAlarm();
+void RestoreAllCntrlAlarm();
+bool IsControlInAlarm(void);
+
 #endif /* APPLICATION_ALARM_CON_H_ */

@@ -1777,6 +1777,25 @@ bool IsDisposableEmptyNoAlarm(void)
 	return DispEmpty;
 }
 
+bool IsControlInAlarm(void)
+{
+	bool InAlarm = FALSE;
+	if(alarmCurrent.code)
+		InAlarm = TRUE;
+	return InAlarm;
+}
 
+GLOBAL_FLAGS gbf;
 
+// disabilito tutti gli allarmi
+void StopAllCntrlAlarm()
+{
+	gbf.FlagsVal = GlobalFlags.FlagsVal;
+	GlobalFlags.FlagsVal = 0;
+}
 
+// disabilito tutti gli allarmi
+void RestoreAllCntrlAlarm()
+{
+	GlobalFlags.FlagsVal = gbf.FlagsVal;
+}

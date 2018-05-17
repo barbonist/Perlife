@@ -12,6 +12,7 @@
 #include "SwTimer.h"
 #include "FlexCANWrapper_c.h"
 #include "Global.h"
+#include "Alarm_Con.h"
 
 
 #define VAL_JOLLY16	0x5A5A
@@ -41,9 +42,15 @@ union UTxCan {
 	struct {
 		uint16_t SpeedPump1Rpmx10;	uint16_t SpeedPump2Rpmx10;	uint16_t SpeedPump3Rpmx10;	uint16_t SpeedPump4Rpmx10;
 	} STxCan4;
+#ifdef ENABLE_PROTECTIVE_ALARM_RESET
+	struct {
+		uint16_t AlmCodeToreset;	uint8_t Free3;	uint8_t Free4;	uint8_t Free5;	uint8_t Free6;	uint8_t Free7;	uint8_t Free8;
+	} STxCan5;
+#else
 	struct {
 		uint8_t Free1;	uint8_t Free2;	uint8_t Free3;	uint8_t Free4;	uint8_t Free5;	uint8_t Free6;	uint8_t Free7;	uint8_t Free8;
 	} STxCan5;
+#endif
 	struct {
 		uint8_t Free1;	uint8_t Free2;	uint8_t Free3;	uint8_t Free4;	uint8_t Free5;	uint8_t Free6;	uint8_t Free7;	uint8_t Free8;
 	} STxCan6;
@@ -166,34 +173,34 @@ void onNewPressArt(uint16_t  Value)		{	 }
 void onNewState( struct machineState* MSp, struct machineParent* MPp ,
 				  struct machineChild* MCp, uint16_t Guard   )
 {
-
 }
 
 void onNewPumpSpeed(uint16_t Pump0Speed, uint16_t Pump1Speed ,
 		            uint16_t Pump2Speed, uint16_t Pump3Speed)
 {
-
 }
 
 void onNewSensPressVal(uint16_t PressFilt, uint16_t PressArt ,
 		               uint16_t PressVen, uint16_t PressLev)
 {
-
 }
 
 void onNewSensTempVal(uint16_t PressOxyg, uint16_t TempRes,
 		               uint16_t TempArt, uint16_t TempVen)
 {
-
 }
 
 void onNewPinchVal(uint8_t AirFiltStat, uint16_t AlarmCode,
 		           uint8_t Pinch2WPVF, uint8_t Pinch2WPVA, uint8_t Pinch2WPVV,
 				   uint8_t free1, uint8_t free2)
 {
-
 }
 
+#ifdef ENABLE_PROTECTIVE_ALARM_RESET
+void onNewAlmToResetMsg(uint16_t AlmCodeToreset)
+{
+}
+#endif
 
 #else
 
@@ -252,6 +259,18 @@ void onNewPumpSpeed(uint16_t Pump0Speed, uint16_t Pump1Speed ,
 	TxCan4.STxCan4.SpeedPump4Rpmx10 = Pump3Speed;
 }
 
+#ifdef ENABLE_PROTECTIVE_ALARM_RESET
+void onNewAlmToResetMsg(uint16_t AlmCodeToreset)
+{
+	TxCan5.STxCan5.AlmCodeToreset = AlmCodeToreset;
+	TxCan5.STxCan5.Free3 = 0;
+	TxCan5.STxCan5.Free4 = 0;
+	TxCan5.STxCan5.Free5 = 0;
+	TxCan5.STxCan5.Free6 = 0;
+	TxCan5.STxCan5.Free7 = 0;
+	TxCan5.STxCan5.Free8 = 0;
+}
+#endif
 
 
 #endif
@@ -403,3 +422,95 @@ void DebugFillTxBuffers(void)
     }
     seq_number++;
 }
+
+#ifdef ENABLE_PROTECTIVE_ALARM_RESET
+
+unsigned long msTick10_elapsed( unsigned long last );
+
+void HandleProtectiveAlarm(void)
+{
+	static uint16_t ProtectiveAlarm = 0;
+	static HANDLE_PROTECTIVE_ALARM_STATE HandleProtectiveAlarmState = INIT_HNDLE_PROT_ALM;
+	static uint32_t startTimeInterv = 0;
+
+
+	switch (HandleProtectiveAlarmState)
+	{
+		case INIT_HNDLE_PROT_ALM:
+			startTimeInterv = 0;
+			ProtectiveAlarm = 0;
+			ProAlmCodeToreset = 0;
+			HandleProtectiveAlarmState = WAIT_FOR_PROT_ALM;
+			break;
+		case WAIT_FOR_PROT_ALM:
+			if(!IsControlInAlarm())
+			{
+				uint16_t u16 = RxBuffCanP[2]->SRxCan2.AlarmCode;
+				if((u16 >= START_PROTECTIVE_ALARM_CODE) && (u16 == ProtectiveAlarm))
+				{
+					if(startTimeInterv && (msTick10_elapsed(startTimeInterv) >= 12))
+					{
+						// sono passati 120 msec e un allarme mi e' stato inviato dalla protective
+						// devo inviarlo alla GUI
+						StopAllCntrlAlarm();
+						ProtectiveAlarmStruct.code = ProtectiveAlarm; 			        /* alarm code */
+						ProtectiveAlarmStruct.physic = PHYSIC_TRUE;			            /* alarm physic condition */
+						ProtectiveAlarmStruct.active = ACTIVE_TRUE;			            /* alarm active condition */
+						ProtectiveAlarmStruct.type = ALARM_TYPE_PROTECTION;			    /* alarm type: control, protection */
+						ProtectiveAlarmStruct.secActType = SECURITY_STOP_ALL_ACTUATOR;	/* alarm security action: type of secuirty action required
+						                                                                  (FM modificato da char ad unsigned int perche' ho bisogno di piu'
+						                                                                  bit per distinguere i vari allarmi*/
+						ProtectiveAlarmStruct.priority = PRIORITY_HIGH;		            /* alarm priority: low, medium, right */
+						ProtectiveAlarmStruct.entryTime = 0;		                    /* entry time in ms */
+						ProtectiveAlarmStruct.exitTime = 0;		                        /* exit time in ms */
+						ProtectiveAlarmStruct.ovrdEnable = OVRD_NOT_ENABLED;		    /* override enable: alarm can be overridden when alarm condition is still present */
+						ProtectiveAlarmStruct.resettable = RESET_ALLOWED;		        /* reset property */
+						ProtectiveAlarmStruct.silence = SILENCE_ALLOWED;		        /* silence property: the alarm acoustic signal can be silenced for a limited period of time */
+						ProtectiveAlarmStruct.memo = MEMO_NOT_ALLOWED;			        /* memo property: the system remain in the alarm state even if the alarm condition is no longer present */
+						ProtectiveAlarmStruct.prySafetyActionFunc = 0;                  /* safety action: funzione che esegue la funzione di sicurezza in base alla priorità dell'allarme */
+
+						// faccio partire l'allarme alla GUI
+						alarmCurrent = ProtectiveAlarmStruct;
+						HandleProtectiveAlarmState = ENTER_PROT_ALM;
+					}
+				}
+				else if(u16 >= START_PROTECTIVE_ALARM_CODE)
+				{
+					startTimeInterv = FreeRunCnt10msec;
+					ProtectiveAlarm = u16;
+				}
+			}
+			break;
+		case ENTER_PROT_ALM:
+			// aspetto il reset dalla GUI
+			if(buttonGUITreatment[BUTTON_RESET].state == GUI_BUTTON_RELEASED)
+			{
+				ProAlmCodeToreset = alarmCurrent.code;
+				HandleProtectiveAlarmState = WAIT_FOR_PROT_ALM_OFF;
+				releaseGUIButton(BUTTON_RESET);
+				startTimeInterv = FreeRunCnt10msec;
+			}
+			break;
+		case WAIT_FOR_PROT_ALM_OFF:
+			// aspetto che la protective tolga la condizione di allarme
+			if(!RxBuffCanP[2]->SRxCan2.AlarmCode)
+			{
+				ProAlmCodeToreset = 0;
+				memset(&alarmCurrent, 0, sizeof(struct alarm));
+				RestoreAllCntrlAlarm();
+				// ritorno in attesa di un nuovo allarme
+				HandleProtectiveAlarmState = INIT_HNDLE_PROT_ALM;
+			}
+			else if(startTimeInterv && (msTick10_elapsed(startTimeInterv) >= 50))
+			{
+				// se entro 500 msec la condizione di allarme non e' stata rimossa ritorno
+				// nello stato di attesa reset e mantengo il codice di allarme inviato alla GUI
+				HandleProtectiveAlarmState = ENTER_PROT_ALM;
+			}
+			break;
+
+	}
+}
+
+#endif
+

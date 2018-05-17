@@ -969,6 +969,9 @@ void ShowParameterStr(struct parWordSetFromGUI *ParamGuiArray, unsigned char id)
 		case PAR_SET_PURIF_FLOW_TARGET:
 			sprintf(stringPr, "\rPurFlowTrgt=%d", ParamGuiArray[id].value );
 			break;
+		case PAR_SET_VENOUS_PRESS_TARGET:
+			sprintf(stringPr, "\rPressVenTrgt=%d", ParamGuiArray[id].value );
+			break;
 	}
 
 	for(int i=0; i<STR_DBG_LENGHT; i++)
