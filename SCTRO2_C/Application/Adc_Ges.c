@@ -311,7 +311,7 @@ void CalcArtSistDiastPress(word Press)
   static int CircPressArrIdx = 0;
   static unsigned char BufferFull = 0;
   word min = 0xffff;
-  word max = 0;
+  word max = 0,wd;
   int MAX_SAMPLE_FOR_SPEED = NUMB_OF_SAMPLES_ART;
   float Press_flow_extimated = 0.0;
 
@@ -390,7 +390,14 @@ void CalcArtSistDiastPress(word Press)
 	PR_ART_Sistolyc_mmHg_ORG  = PR_ART_Sistolyc_mmHg - Press_flow_extimated;
 	PR_ART_Med_mmHg_ORG		  = PR_ART_Med_mmHg - Press_flow_extimated;
 
-	perfusionParam.renalResistance = (word)((float)PR_ART_Med_mmHg_ORG /sensor_UFLOW[0].Average_Flow_Val * 100.0);
+	// RICHIESTO DA ANGELA 18_05_2018
+	//perfusionParam.renalResistance = (word)((float)PR_ART_Med_mmHg_ORG /sensor_UFLOW[0].Average_Flow_Val * 100.0);
+	wd = (int) ( 2 * PR_ART_Sistolyc_mmHg_ORG + PR_ART_Diastolyc_mmHg_ORG)/3;
+
+	if (sensor_UFLOW[0].Average_Flow_Val <= 0)
+		perfusionParam.renalResistance = 0;
+	else
+		perfusionParam.renalResistance = (word)((float)wd /sensor_UFLOW[0].Average_Flow_Val * 1000.0); // mmHg/(lt/min)
 
 	if (PR_ART_Diastolyc_mmHg_ORG < 0)
 		PR_ART_Diastolyc_mmHg_ORG = 0;
