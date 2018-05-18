@@ -353,7 +353,7 @@ void manageChildPrimAlmSFAAirDetEntry(void)
 	TreatAlm1SafAirFiltActive = TRUE;
 }
 
-/* Manage CHILD_TREAT_ALARM_1_SAF_AIR_FILT always state */
+/* Manage CHILD_PRIM_ALARM_SFA_AIR_DET always state */
 void manageChildPrimAlmSFAAirDetAlways(void)
 {
 	// apetto che tutte le pompe si siano fermate

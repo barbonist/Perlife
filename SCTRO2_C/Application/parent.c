@@ -112,11 +112,8 @@ void ParentFunc(void)
 //				}
 				LevelBuzzer = 2;
 			}
-			else
-			{
-				// per sicurezza resetto la flag di reset alarm premuto, nel caso mi fosse rimasto settato
-				releaseGUIButton(BUTTON_RESET_ALARM);
-			}
+			// per sicurezza resetto la flag di reset alarm premuto, nel caso mi fosse rimasto settato
+			releaseGUIButton(BUTTON_RESET_ALARM);
 			break;
 
 		case PARENT_PRIMING_TREAT_KIDNEY_1_RUN:
@@ -166,11 +163,9 @@ void ParentFunc(void)
 				currentGuard[GUARD_CHK_FOR_ALL_MOT_STOP].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
 				currentGuard[GUARD_CHK_FOR_ALL_MOT_STOP].guardValue = GUARD_VALUE_FALSE;
 			}
-			else
-			{
-				// per sicurezza resetto la flag di reset alarm premuto, nel caso mi fosse rimasto settato
-				releaseGUIButton(BUTTON_RESET_ALARM);
-			}			break;
+			// per sicurezza resetto la flag di reset alarm premuto, nel caso mi fosse rimasto settato
+			releaseGUIButton(BUTTON_RESET_ALARM);
+			break;
 
 		case PARENT_PRIMING_TREAT_KIDNEY_1_ALARM:
 			if(currentGuard[GUARD_ALARM_ACTIVE].guardValue == GUARD_VALUE_FALSE)
@@ -249,25 +244,21 @@ void ParentFunc(void)
 					LevelBuzzer = 0;
 				}
 			}
-//			else if(buttonGUITreatment[BUTTON_RESET_ALARM].state == GUI_BUTTON_RELEASED)
-//			{
-//				releaseGUIButton(BUTTON_RESET_ALARM);
-//				// potrei essere in allarme aria e, quindi devo far partire la pompa per buttarla via
-//				if(ptrAlarmCurrent->code == CODE_ALARM_SFA_PRIM_AIR_DET)
-//				{
-//					EnableNextAlarmFunc(); //EnableNextAlarm = TRUE;
-//					AirParentState = PARENT_TREAT_KIDNEY_1_AIR_FILT;
-//					StarTimeToRejAir = timerCounterModBus;
-//					TotalTimeToRejAir = 0;
-//					DisablePrimAirAlarm(TRUE); // forzo la chiusura dell'allarme aria
-//					// stato di gestione dell'aria nel filtro durante il priming
-//					// faccio girare la pompa per un po' poi ricomincio
-//					ptrFutureParent = &stateParentPrimingTreatKidney1[17];
-//					ptrFutureChild = ptrFutureParent->ptrChild;
-//				}
-//				LevelBuzzer = 0;
-//				break;
-//			}
+			else if(buttonGUITreatment[BUTTON_RESET_ALARM].state == GUI_BUTTON_RELEASED)
+			{
+				// ho ricevuto un reset allarme ma la condizione fisica di allarme non e' ancora andata via
+				//  se lo stato child non e' in SECURITY_STOP_ALL_ACTUATOR il tasto reset potrebbe servire a lui per
+				// disabilitare l'allarme.
+				if(!IsButtResUsedByChild())
+				{
+					releaseGUIButton(BUTTON_RESET_ALARM);
+					EnableNextAlarmFunc(); //EnableNextAlarm = TRUE;
+					ptrFutureParent = &stateParentPrimingTreatKidney1[3];
+					ptrFutureChild = ptrFutureParent->ptrChild;
+					LevelBuzzer = 0;
+				}
+				break;
+			}
 
 			if(ptrCurrentParent->action == ACTION_ON_ENTRY)
 			{
@@ -528,11 +519,9 @@ void ParentFunc(void)
 				currentGuard[GUARD_ENT_PAUSE_STATE_TREAT_KIDNEY_1_INIT].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
 				currentGuard[GUARD_ENT_PAUSE_STATE_TREAT_KIDNEY_1_INIT].guardValue = GUARD_VALUE_FALSE;
 			}
-			else
-			{
-				// per sicurezza resetto la flag di reset alarm premuto, nel caso mi fosse rimasto settato
-				releaseGUIButton(BUTTON_RESET_ALARM);
-			}			break;
+			// per sicurezza resetto la flag di reset alarm premuto, nel caso mi fosse rimasto settato
+			releaseGUIButton(BUTTON_RESET_ALARM);
+			break;
 
 		case PARENT_TREAT_KIDNEY_1_PUMP_ON:
 			if(ptrCurrentParent->action == ACTION_ON_ENTRY)
@@ -574,11 +563,9 @@ void ParentFunc(void)
 				currentGuard[GUARD_ENT_PAUSE_STATE_KIDNEY_1_PUMP_ON].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
 				currentGuard[GUARD_ENT_PAUSE_STATE_KIDNEY_1_PUMP_ON].guardValue = GUARD_VALUE_FALSE;
 			}
-			else
-			{
-				// per sicurezza resetto la flag di reset alarm premuto, nel caso mi fosse rimasto settato
-				releaseGUIButton(BUTTON_RESET_ALARM);
-			}			break;
+			// per sicurezza resetto la flag di reset alarm premuto, nel caso mi fosse rimasto settato
+			releaseGUIButton(BUTTON_RESET_ALARM);
+			break;
 
 		case PARENT_TREAT_KIDNEY_1_ALARM:
 			if(currentGuard[GUARD_ALARM_ACTIVE].guardValue == GUARD_VALUE_FALSE)
@@ -659,6 +646,21 @@ void ParentFunc(void)
 //						}
 					}
 				}
+			}
+			else if(buttonGUITreatment[BUTTON_RESET_ALARM].state == GUI_BUTTON_RELEASED)
+			{
+				// ho ricevuto un reset allarme ma la condizione fisica di allarme non e' ancora andata via
+				//  se lo stato child non e' in SECURITY_STOP_ALL_ACTUATOR il tasto reset potrebbe servire a lui per
+				// disabilitare l'allarme.
+				if(!IsButtResUsedByChild())
+				{
+					releaseGUIButton(BUTTON_RESET_ALARM);
+					EnableNextAlarmFunc(); //EnableNextAlarm = TRUE;
+					ptrFutureParent = &stateParentPrimingTreatKidney1[3];
+					ptrFutureChild = ptrFutureParent->ptrChild;
+					LevelBuzzer = 0;
+				}
+				break;
 			}
 
 			if(ptrCurrentParent->action == ACTION_ON_ENTRY)
@@ -1169,5 +1171,49 @@ void ParentFuncT1Test(void)
 #endif
 }
 
+bool AmJInAlarmState(void)
+{
+	bool InAlarmState = FALSE;
+	if((ptrCurrentParent->parent == PARENT_EMPTY_DISPOSABLE_ALARM) ||
+	   (ptrCurrentParent->parent == PARENT_TREAT_KIDNEY_1_ALM_AIR_REC) ||
+	   (ptrCurrentParent->parent == PARENT_TREAT_KIDNEY_1_ALARM) ||
+	   (ptrCurrentParent->parent == PARENT_PRIM_KIDNEY_1_ALM_AIR_REC) ||
+	   (ptrCurrentParent->parent == PARENT_PRIMING_END_RECIRC_ALARM) ||
+	   (ptrCurrentParent->parent == PARENT_PRIMING_TREAT_KIDNEY_1_ALARM))
+		InAlarmState = TRUE;
+	return InAlarmState;
+}
 
+// Se sono in uno stato non di allarme ma l'allarme verso la GUI e' diverso da 0, allora
+// forzo annullamento allarme perche' e' una situazione di errore.
+// Vuol dire che per un qualche motivo il reset dell'allarme non ha funzionato
+void CheckAlarmForGuiStateMsg(void)
+{
+	if(!AmJInAlarmState())
+	{
+		if(alarmCurrent.code)
+			memset(&alarmCurrent, 0, sizeof(struct alarm));
+	}
+}
+
+// ritorna TRUE se lo stato child ha bisogno del button reset per fare qualcosa
+bool IsButtResUsedByChild(void)
+{
+	if((ptrCurrentChild->child == CHILD_PRIM_ALARM_1_WAIT_CMD) ||
+	   (ptrCurrentChild->child == CHILD_PRIM_ALARM_PUMPS_NOT_STILL) ||
+	   (ptrCurrentChild->child == CHILD_PRIM_ALARM_BAD_PINCH_POS) ||
+	   (ptrCurrentChild->child == CHILD_PRIM_ALARM_SFA_AIR_DET) ||
+	   (ptrCurrentChild->child == CHILD_PRIM_ALARM_MOD_BUS) ||
+	   (ptrCurrentChild->child == CHILD_TREAT_ALARM_1_SAF_AIR_FILT) ||
+	   (ptrCurrentChild->child == CHILD_TREAT_ALARM_1_SFA_AIR) ||
+	   (ptrCurrentChild->child == CHILD_TREAT_ALARM_1_SFV_AIR) ||
+	   (ptrCurrentChild->child == CHILD_TREAT_ALARM_1_WAIT_CMD) ||
+	   (ptrCurrentChild->child == CHILD_TREAT_ALARM_BAD_PINCH_POS) ||
+	   (ptrCurrentChild->child == CHILD_TREAT_ALARM_MOD_BUS_ERROR) ||
+	   (ptrCurrentChild->child == CHILD_EMPTY_ALARM_MOD_BUS))
+	{
+
+	}
+
+}
 

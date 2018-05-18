@@ -417,12 +417,18 @@ void ShowAlarmStr(int i, char * str)
 	}
 }
 
-void alarmConInit(void){
-	ptrAlarmCurrent = &alarmList[0];
-}
-
+static int StrAlarmWritten = 0;
+static int IdxCurrAlarm = 0xff;
 int StartAlmArrIdx = 0;
 int i_al;
+
+void alarmConInit(void){
+	ptrAlarmCurrent = &alarmList[0];
+	StrAlarmWritten = 0;
+	IdxCurrAlarm = 0xff;
+	StartAlmArrIdx = 0;
+}
+
 
 void EnableNextAlarmFunc(void)
 {
@@ -441,8 +447,6 @@ void EnableNextAlarmFunc(void)
 void alarmEngineAlways(void)
 {
 //	static int CntTickDelay = 0;
-	static int StrAlarmWritten = 0;
-	static int IdxCurrAlarm = 0xff;
 
 //	CntTickDelay++;
 //	if((StartAlmArrIdx == 0) && (CntTickDelay <= 3))
@@ -1798,4 +1802,11 @@ void StopAllCntrlAlarm()
 void RestoreAllCntrlAlarm()
 {
 	GlobalFlags.FlagsVal = gbf.FlagsVal;
+}
+
+void ClearAlarmState(void)
+{
+	StrAlarmWritten = 0;
+	StartAlmArrIdx = 0;
+	memset(&alarmCurrent, 0, sizeof(struct alarm));
 }

@@ -194,6 +194,7 @@ void CallInIdleState(void)
 	DisablePumpNotStillAlmFunc();
 	DisableBadPinchPosAlmFunc();
 	DisablePrimAlmSFAAirDetAlmFunc();
+	ClearAlarmState();
 }
 
 
@@ -534,16 +535,16 @@ void managePrimingPh1Always(void)
 
 	// il codice che segue serve SOLO PER DEBUG E NELLA VERSIONE DEFINITIVA
 	// DEVE ESSERE CANCELLATO
-	if(buttonGUITreatment[BUTTON_START_OXYGEN_PUMP].state == GUI_BUTTON_RELEASED)
-	{
-		releaseGUIButton(BUTTON_START_OXYGEN_PUMP);
-		ActuatorWriteCnt[0] += 1;
-	}
-	else if(buttonGUITreatment[BUTTON_STOP_OXYGEN_PUMP].state == GUI_BUTTON_RELEASED)
-	{
-		releaseGUIButton(BUTTON_STOP_OXYGEN_PUMP);
-		ActuatorWriteCnt[0] = 0;
-	}
+//	if(buttonGUITreatment[BUTTON_START_OXYGEN_PUMP].state == GUI_BUTTON_RELEASED)
+//	{
+//		releaseGUIButton(BUTTON_START_OXYGEN_PUMP);
+//		ActuatorWriteCnt[0] += 1;
+//	}
+//	else if(buttonGUITreatment[BUTTON_STOP_OXYGEN_PUMP].state == GUI_BUTTON_RELEASED)
+//	{
+//		releaseGUIButton(BUTTON_STOP_OXYGEN_PUMP);
+//		ActuatorWriteCnt[0] = 0;
+//	}
 }
 
 /*--------------------------------------------------------------*/
@@ -592,16 +593,16 @@ void manageStateTreatKidney1Always(void)
 
 	// il codice che segue serve SOLO PER DEBUG E NELLA VERSIONE DEFINITIVA
 	// DEVE ESSERE CANCELLATO
-	if(buttonGUITreatment[BUTTON_START_OXYGEN_PUMP].state == GUI_BUTTON_RELEASED)
-	{
-		releaseGUIButton(BUTTON_START_OXYGEN_PUMP);
-		ActuatorWriteCnt[0] += 1;
-	}
-	else if(buttonGUITreatment[BUTTON_STOP_OXYGEN_PUMP].state == GUI_BUTTON_RELEASED)
-	{
-		releaseGUIButton(BUTTON_STOP_OXYGEN_PUMP);
-		ActuatorWriteCnt[0] = 0;
-	}
+//	if(buttonGUITreatment[BUTTON_START_OXYGEN_PUMP].state == GUI_BUTTON_RELEASED)
+//	{
+//		releaseGUIButton(BUTTON_START_OXYGEN_PUMP);
+//		ActuatorWriteCnt[0] += 1;
+//	}
+//	else if(buttonGUITreatment[BUTTON_STOP_OXYGEN_PUMP].state == GUI_BUTTON_RELEASED)
+//	{
+//		releaseGUIButton(BUTTON_STOP_OXYGEN_PUMP);
+//		ActuatorWriteCnt[0] = 0;
+//	}
 }
 
 /*-----------------------------------------------------------*/
@@ -629,16 +630,16 @@ void manageStateEmptyDispAlways(void)
 
 	// il codice che segue serve SOLO PER DEBUG E NELLA VERSIONE DEFINITIVA
 	// DEVE ESSERE CANCELLATO
-	if(buttonGUITreatment[BUTTON_START_OXYGEN_PUMP].state == GUI_BUTTON_RELEASED)
-	{
-		releaseGUIButton(BUTTON_START_OXYGEN_PUMP);
-		ActuatorWriteCnt[0] += 1;
-	}
-	else if(buttonGUITreatment[BUTTON_STOP_OXYGEN_PUMP].state == GUI_BUTTON_RELEASED)
-	{
-		releaseGUIButton(BUTTON_STOP_OXYGEN_PUMP);
-		ActuatorWriteCnt[0] = 0;
-	}
+//	if(buttonGUITreatment[BUTTON_START_OXYGEN_PUMP].state == GUI_BUTTON_RELEASED)
+//	{
+//		releaseGUIButton(BUTTON_START_OXYGEN_PUMP);
+//		ActuatorWriteCnt[0] += 1;
+//	}
+//	else if(buttonGUITreatment[BUTTON_STOP_OXYGEN_PUMP].state == GUI_BUTTON_RELEASED)
+//	{
+//		releaseGUIButton(BUTTON_STOP_OXYGEN_PUMP);
+//		ActuatorWriteCnt[0] = 0;
+//	}
 }
 
 //------------------------------------------------------------------
@@ -4011,11 +4012,19 @@ word GetTotalPrimingVolumePerf_new(int cmd)
 /*----------------------------------------------------------------------------*/
 void processMachineState(void)
 {
+	unsigned short Oldstate = 0;
 	if(buttonGUITreatment[BUTTON_SILENT_ALARM].state == GUI_BUTTON_RELEASED)
 	{
 		if(LevelBuzzer)
 			LevelBuzzer = 0;
 		releaseGUIButton(BUTTON_SILENT_ALARM);
+	}
+
+	if(ptrCurrentState->state != Oldstate)
+	{
+		// elimino un eventuale allarme pendente quando entro in un nuovo stato
+		ClearAlarmState();
+		Oldstate = ptrCurrentState->state;
 	}
 
 	/* process state structure --> in base alla guard si decide lo stato --> in base allo stato si eseguono certe funzioni in modalità init o always */
