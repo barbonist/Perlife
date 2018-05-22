@@ -2839,6 +2839,8 @@ void manageParentEntryAlways(void)
 word VolumeDischarged = 0;
 bool EmptyDisposStartOtherPump = FALSE;
 EMPTY_DISPOSABLE_STATE EmptyDispRunAlwaysState = INIT_EMPTY_DISPOSABLE;
+unsigned long EmptyWFLOATimeElapsed = 0;
+unsigned long EmptyWFLOATimeElapsed_Last;
 
 void CalcVolumeDischarged(void)
 {
@@ -2916,6 +2918,29 @@ void RestartPumpsEmptyState(void)
 			}
 			break;
 		case WAIT_FOR_LEVEL_OR_AMOUNT:
+			EmptyWFLOATimeElapsed = EmptyWFLOATimeElapsed_Last;
+			if(EmptyWFLOATimeElapsed < EMPTY_TIME_PUMPS_ON_AFTER_AIR)
+			{
+				if(GetTherapyType() == LiverTreat)
+				{
+					setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, LIVER_PPAR_EMPTY_SPEED);
+					setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, LIVER_PPAR_EMPTY_SPEED);
+					setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, LIVER_PPAR_EMPTY_SPEED);
+				}
+				else if(GetTherapyType() == KidneyTreat)
+				{
+					// nel caso del rene sono le pompe di ossigenazione che svuotano il recevoir
+					setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, KIDNEY_EMPTY_PPAR_SPEED);
+					setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, KIDNEY_EMPTY_PPAR_SPEED);
+				}
+			}
+			else
+			{
+				if(GetTherapyType() == LiverTreat)
+					setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, LIVER_PPAR_EMPTY_SPEED);
+				else if(GetTherapyType() == KidneyTreat)
+					setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, KIDNEY_EMPTY_PPAR_SPEED);
+			}
 			break;
 	}
 }
@@ -2934,7 +2959,9 @@ void RestartPumpsEmptyState(void)
 //        BUTTON_STOP_EMPTY_DISPOSABLE  per fermare momentaneamente tutte le pompe
 void EmptyDispStateMach(void)
 {
+	static unsigned long u32 = 0;
 	static bool PutPinchInSafetyPosFlag = FALSE;
+	static unsigned char EmptyPumpsStopped = 0;
 	THERAPY_TYPE TherType = GetTherapyType();
 	int StarEmptyDispButId;
 	int StopAllPumpButId;
@@ -2947,6 +2974,8 @@ void EmptyDispStateMach(void)
 	switch (EmptyDispRunAlwaysState)
 	{
 		case INIT_EMPTY_DISPOSABLE:
+			EmptyWFLOATimeElapsed_Last = 0;
+			EmptyWFLOATimeElapsed = 0;
 			if(buttonGUITreatment[StarEmptyDispButId].state == GUI_BUTTON_RELEASED)
 			{
 				// attivo la pompa per iniziare ko svuotamento
@@ -3048,17 +3077,23 @@ void EmptyDispStateMach(void)
 					// NON FERMO LE ALTRE POMPE MA LE FACCIO CONTINUARE FINO ALLA FINE
 					// ho rilevato una presenza aria nel circuito di perfusione arteriosa e venosa
 					// fermo le pompe e proseguo con lo svuotamento dall'ultimo liquido rimasto
-					setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
-					setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 0);
+//					setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
+//					setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 0);
+					u32 = timerCounterModBus;
 					EmptyDispRunAlwaysState = WAIT_FOR_LEVEL_OR_AMOUNT;
+					EmptyWFLOATimeElapsed = 0;
+					EmptyPumpsStopped = 0;
 				}
 				else if(TherType == KidneyTreat)
 				{
 					// NON FERMO LE ALTRE POMPE MA LE FACCIO CONTINUARE FINO ALLA FINE
 					// ho rilevato una presenza aria nel circuito di perfusione arteriosa
 					// fermo la pompa e proseguo con lo svuotamento dall'ultimo liquido rimasto
-					setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
+//					setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
+					u32 = timerCounterModBus;
 					EmptyDispRunAlwaysState = WAIT_FOR_LEVEL_OR_AMOUNT;
+					EmptyWFLOATimeElapsed = 0;
+					EmptyPumpsStopped = 0;
 				}
 			}
 			else if(buttonGUITreatment[StopAllPumpButId].state == GUI_BUTTON_RELEASED)
@@ -3113,6 +3148,24 @@ void EmptyDispStateMach(void)
 			}
 			break;
 		case WAIT_FOR_LEVEL_OR_AMOUNT:
+			EmptyWFLOATimeElapsed = msTick_elapsed(u32);
+			if((EmptyWFLOATimeElapsed >= EMPTY_TIME_PUMPS_ON_AFTER_AIR) && !EmptyPumpsStopped)
+			{
+				EmptyPumpsStopped = 1;
+				// scaduti i 10 secondi fermo le altre pompe e lascio solo quella di scarico se,
+				// nel frattempo, non ha raggiunto il volume stabilito da scaricare
+				if(TherType == LiverTreat)
+				{
+					// fermo le pompe e proseguo con lo svuotamento dall'ultimo liquido rimasto
+					setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
+					setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 0);
+				}
+				else if(TherType == KidneyTreat)
+				{
+					// fermo la pompa e proseguo con lo svuotamento dall'ultimo liquido rimasto
+					setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
+				}
+			}
 			// rimango in questo stato, il controllo sul fine livello nella funzione ParentEmptyDispStateMach
 			if(buttonGUITreatment[BUTTON_PRIMING_ABANDON].state == GUI_BUTTON_RELEASED)
 			{
@@ -3156,6 +3209,7 @@ void manageParentEmptyDisposInitEntry(void)
 	EmptyDisposStartOtherPump = FALSE;
 	EmptyDispRunAlwaysState = INIT_EMPTY_DISPOSABLE;
 	ChildEmptyFlags.FlagsVal = 0;
+	EmptyWFLOATimeElapsed = 0;
 }
 void manageParentEmptyDisposInitAlways(void)
 {
@@ -3830,6 +3884,7 @@ void ParentEmptyDispStateMach(void)
 				/* (FM) si e' verificato un allarme, passo alla sua gestione */
 				ptrFutureParent = &stateParentEmptyDisp[5];
 				ptrFutureChild = ptrFutureParent->ptrChild;
+				EmptyWFLOATimeElapsed_Last = EmptyWFLOATimeElapsed;
 				LevelBuzzer = 2;
 			}
 			break;
@@ -3875,6 +3930,7 @@ void ParentEmptyDispStateMach(void)
 				/* (FM) si e' verificato un allarme, passo alla sua gestione */
 				ptrFutureParent = &stateParentEmptyDisp[5];
 				ptrFutureChild = ptrFutureParent->ptrChild;
+				EmptyWFLOATimeElapsed_Last = EmptyWFLOATimeElapsed;
 				LevelBuzzer = 2;
 			}
 			break;
@@ -3886,7 +3942,7 @@ void ParentEmptyDispStateMach(void)
 				if(buttonGUITreatment[BUTTON_RESET_ALARM].state == GUI_BUTTON_RELEASED)
 					EnableNextAlarmFunc(); //EnableNextAlarm = TRUE;
 
-				// Il ritorno allo vuotamento viene fatto solo dopo la pressione del tasto BUTTON_RESET_ALARM
+				// Il ritorno allo svuotamento viene fatto solo dopo la pressione del tasto BUTTON_RESET_ALARM
 				releaseGUIButton(BUTTON_RESET_ALARM);
 				// faccio ripartire le pompe per lo svuotamento
 				RestartPumpsEmptyState();

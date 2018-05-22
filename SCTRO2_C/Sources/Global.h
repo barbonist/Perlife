@@ -1472,6 +1472,8 @@ Kd = Kp*Pu/8  = 0.01875
 #define KIDNEY_EMPTY_PPAR_SPEED 2000
 // numero di giri della pompa di ossigenazione durante lo scarico
 #define LIVER_PPAR_EMPTY_SPEED 2000
+// tempo in ticks da 50 msec che mantengo le pompe venose ad arteriosa attive dopo il rilevamento dell'aria
+#define EMPTY_TIME_PUMPS_ON_AFTER_AIR 200
 // definisce il valore massimo di giri che puo raggiungere la pompa arteriosa
 #define MAX_ART_RPM  60
 
