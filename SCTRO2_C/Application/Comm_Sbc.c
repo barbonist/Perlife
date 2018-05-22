@@ -1435,7 +1435,6 @@ void setGUIButton(unsigned char buttonId){
 	{
 		// dovro' uscire dalla condizione di allarme e quindi azzero subito l'allarme
 		// inviato alla gui
-		//memset(&alarmCurrent, 0, sizeof(struct alarm));
 		SuspendInvioAlarmCode = 1;
 	}
 }

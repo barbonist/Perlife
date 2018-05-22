@@ -560,9 +560,8 @@ int main(void)
 			 Manage_Air_Sensor_1();
 
 #ifdef ENABLE_PROTECTIVE_ALARM_RESET
-			// Questo task serve solo per controllare gli allarmi della protective tramite l'interfaccia GUI
-			// della control. Nella versione finale del programma la protective avra' una seriale che la colleghera'
-			// direttamente alla GUI, per cui, questo non servira' piu'.
+			// Controllo se e' attivo un allarme della protective e, nel caso, invio eventuali button reset
+			// su canbus
 	      	HandleProtectiveAlarm();
 #endif
 

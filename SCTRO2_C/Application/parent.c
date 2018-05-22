@@ -252,7 +252,8 @@ void ParentFunc(void)
 				if(!IsButtResUsedByChild())
 				{
 					releaseGUIButton(BUTTON_RESET_ALARM);
-					EnableNextAlarmFunc(); //EnableNextAlarm = TRUE;
+					// qui non serve perche' l'allarme non e' ancora terminato
+					//EnableNextAlarmFunc(); //EnableNextAlarm = TRUE;
 					ptrFutureParent = &stateParentPrimingTreatKidney1[3];
 					ptrFutureChild = ptrFutureParent->ptrChild;
 					LevelBuzzer = 0;
@@ -649,13 +650,14 @@ void ParentFunc(void)
 			}
 			else if(buttonGUITreatment[BUTTON_RESET_ALARM].state == GUI_BUTTON_RELEASED)
 			{
-				// ho ricevuto un reset allarme ma la condizione fisica di allarme non e' ancora andata via
-				//  se lo stato child non e' in SECURITY_STOP_ALL_ACTUATOR il tasto reset potrebbe servire a lui per
+				// ho ricevuto un reset allarme ma la condizione fisica di allarme non e' ancora andata via.
+				// Se lo stato child non e' in SECURITY_STOP_ALL_ACTUATOR il tasto reset potrebbe servire a lui per
 				// disabilitare l'allarme.
 				if(!IsButtResUsedByChild())
 				{
 					releaseGUIButton(BUTTON_RESET_ALARM);
-					EnableNextAlarmFunc(); //EnableNextAlarm = TRUE;
+					// qui non serve perche' l'allarme non e' ancora terminato
+					//EnableNextAlarmFunc(); //EnableNextAlarm = TRUE;
 					ptrFutureParent = &stateParentPrimingTreatKidney1[3];
 					ptrFutureChild = ptrFutureParent->ptrChild;
 					LevelBuzzer = 0;
@@ -1171,6 +1173,32 @@ void ParentFuncT1Test(void)
 #endif
 }
 
+// ritorna TRUE quando sono in uno stato dove la struttura parent prevede la gestione dell'allarme
+// QUESTA FUZIONE DOVREBBE ESSERE AGGIORNATA OGNI VOLTA CHE SI AGGIUNGE UN NUOVO STATO CHE PREVEDE
+// LA GESTIONE DEGLI ALLARMI
+bool AmJInAlarmHandledState(void)
+{
+	bool InAlarmState = FALSE;
+	if((ptrCurrentParent->parent == PARENT_EMPTY_DISPOSABLE_INIT) ||
+	   (ptrCurrentParent->parent == PARENT_EMPTY_DISPOSABLE_RUN) ||
+	   (ptrCurrentParent->parent == PARENT_PRIMING_TREAT_KIDNEY_1_INIT) ||
+	   (ptrCurrentParent->parent == PARENT_PRIMING_TREAT_KIDNEY_1_RUN) ||
+	   (ptrCurrentParent->parent == PARENT_PRIM_WAIT_MOT_STOP) ||
+	   (ptrCurrentParent->parent == PARENT_PRIM_WAIT_PINCH_CLOSE) ||
+	   (ptrCurrentParent->parent == PARENT_PRIM_KIDNEY_1_AIR_FILT) ||
+	   (ptrCurrentParent->parent == PARENT_TREAT_KIDNEY_1_INIT) ||
+	   (ptrCurrentParent->parent == PARENT_TREAT_KIDNEY_1_PUMP_ON) ||
+	   (ptrCurrentParent->parent == PARENT_TREAT_KIDNEY_1_AIR_FILT) ||
+	   (ptrCurrentParent->parent == PARENT_TREAT_KIDNEY_1_SFV) ||
+	   (ptrCurrentParent->parent == PARENT_TREAT_KIDNEY_1_SFA)
+	   )
+		InAlarmState = TRUE;
+	return InAlarmState;
+}
+
+// ritorna TRUE quando sono in uno stato di gestione allarme (le pompe e pinch sono gia' in sicurezza)
+// QUESTA FUZIONE DOVREBBE ESSERE AGGIORNATA OGNI VOLTA CHE SI AGGIUNGE UN NUOVO STATO PER LA GESTIONE
+// DI ALLARMI
 bool AmJInAlarmState(void)
 {
 	bool InAlarmState = FALSE;
@@ -1197,8 +1225,11 @@ void CheckAlarmForGuiStateMsg(void)
 }
 
 // ritorna TRUE se lo stato child ha bisogno del button reset per fare qualcosa
+// QUESTA FUZIONE DOVREBBE ESSERE AGGIORNATA OGNI VOLTA CHE SI AGGIUNGE UN NUOVO STATO PER LA GESTIONE
+// DI ALLARMI DOVE LO STATO CHILD HA BISOGNO DI UN BUTTON RESET
 bool IsButtResUsedByChild(void)
 {
+	bool ButtResUsedByChild = FALSE;
 	if((ptrCurrentChild->child == CHILD_PRIM_ALARM_1_WAIT_CMD) ||
 	   (ptrCurrentChild->child == CHILD_PRIM_ALARM_PUMPS_NOT_STILL) ||
 	   (ptrCurrentChild->child == CHILD_PRIM_ALARM_BAD_PINCH_POS) ||
@@ -1212,8 +1243,8 @@ bool IsButtResUsedByChild(void)
 	   (ptrCurrentChild->child == CHILD_TREAT_ALARM_MOD_BUS_ERROR) ||
 	   (ptrCurrentChild->child == CHILD_EMPTY_ALARM_MOD_BUS))
 	{
-
+		ButtResUsedByChild = TRUE;
 	}
-
+	return ButtResUsedByChild;
 }
 

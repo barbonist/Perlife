@@ -169,7 +169,8 @@ enum ALARM
 	 PRIM_AIR_ON_FILTER,
 	 PRESS_ADS_FILTER_LOW,
 	 PRESS_OXYG_LOW,
-	 MODBUS_ACTUATOR_SEND
+	 MODBUS_ACTUATOR_SEND,
+	 ALARM_FROM_PROTECTIVE
 };
 
 void alarmConInit(void);
@@ -181,7 +182,7 @@ void manageAlarmFlowSensNotDetected(void);
 void manageAlarmIrTempSensNotDetected(void);
 void manageAlarmActuatorModbusNotRespond(void);
 void manageAlarmActuatorWRModbusNotRespond(void);
-void manageAlarmActuatorWRModbusNotRespond(void);
+void manageAlarmFromProtective(void);
 
 void manageAlarmPhysicPressSensHigh(void);
 void manageAlarmPhysicPressSensLow(void);
@@ -227,9 +228,12 @@ bool IsDisposableEmptyNoAlarm(void);
 void ClearModBusAlarm(void);
 
 
-void StopAllCntrlAlarm();
-void RestoreAllCntrlAlarm();
+void StopAllCntrlAlarm(GLOBAL_FLAGS *gbf);
+void RestoreAllCntrlAlarm(GLOBAL_FLAGS *pgbf);
 bool IsControlInAlarm(void);
+bool IsProtectiveInAlarm(void);
 void ClearAlarmState(void);
+
+uint16_t ReadProtectiveAlarmCode(void);
 
 #endif /* APPLICATION_ALARM_CON_H_ */

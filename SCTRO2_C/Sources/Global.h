@@ -1645,6 +1645,7 @@ typedef struct
 	                                                // priming
 	unsigned int EnableModbusNotRespAlm     : 1;    // abilito l'allarme dovuto ad un cattivo funzionamento del modbus (almeno 10 richieste
 	                                                // di lettura o scrittura non hanno avuto risposta)
+	unsigned int EnableFromProtectiveAlm    : 1;    // abilita l'allarme generato dalla protective
 }FLAGS_DEF;
 
 typedef union
@@ -1866,7 +1867,7 @@ typedef enum
 // Serve anche per poter entrare nel trattamento con la funzione di controllo del posizionamento delle pinch
 #define ENABLE_PROTECTIVE_BOARD
 // con questa define abilito il reset dell'allarme generato dalla protective tramite canbus della control
-//#define ENABLE_PROTECTIVE_ALARM_RESET
+#define ENABLE_PROTECTIVE_ALARM_RESET
 
 // flag per iniziare un periodo di allarme nullo da trasferire alla GUI
 

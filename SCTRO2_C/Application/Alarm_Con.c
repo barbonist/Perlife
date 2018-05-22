@@ -79,8 +79,9 @@ struct alarm alarmList[] =
 		//{CODE_ALARM_MODBUS_ACTUATOR_SEND,  PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_WAIT_CONFIRM,        PRIORITY_LOW,     0, 100, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull},	        /* 28 */
 		{CODE_ALARM_MODBUS_ACTUATOR_SEND,  PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_MOD_BUS_ERROR,         PRIORITY_HIGH,    0, 500, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull},	        /* 28 */
 
-		// inizio allarmi provenienti dalla protective
-		{CODE_ALARM_PROT_START_VAL,        PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH,    0, 500, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull},	        /* 29 */
+		// allarmi provenienti dalla protective. Serve per fare in modo che quando la protective e' in allarme le pompe vengano fermate e le pinch
+		// messe in sicurezza
+		{CODE_ALARM_PROT_START_VAL,        PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_PROTECTION, SECURITY_STOP_ALL_ACTUATOR,  PRIORITY_HIGH,    0, 500, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull},	        /* 29 */
 		{}
 };
 
@@ -174,6 +175,7 @@ void SetAllAlarmEnableFlags(void)
 	GlobalFlags.FlagsDef.EnablePrimAlmSFAAirDetAlm = 0;   // viene attivato in un'altro momento
 
 	GlobalFlags.FlagsDef.EnableModbusNotRespAlm = 1;      // abilito l'allarme dovuto ad un cattivo funzionamento del modbus
+	GlobalFlags.FlagsDef.EnableFromProtectiveAlm = 0;
 }
 
 // Questa funzione serve per forzare ad off un eventuale allarme.
@@ -242,7 +244,10 @@ void ForceAlarmOff(unsigned char code)
 			GlobalFlags.FlagsDef.EnablePrimAlmSFAAirDetAlm = 0; // disabilito allarme aria su filtro durante il priming
 			break;
 		case CODE_ALARM_MODBUS_ACTUATOR_SEND:
-			GlobalFlags.FlagsDef.EnableModbusNotRespAlm = 0; // disabilito allarme modbus
+			GlobalFlags.FlagsDef.EnableModbusNotRespAlm = 0;    // disabilito allarme modbus
+			break;
+		case CODE_ALARM_PROT_START_VAL:
+			GlobalFlags.FlagsDef.EnableFromProtectiveAlm = 0;   // forzo allarme ricevuto dal protective off
 			break;
 
 	}
@@ -416,6 +421,11 @@ void ShowAlarmStr(int i, char * str)
 			strcat(s, str);
 			DebugStringStr(s);
 			break;
+		case CODE_ALARM_PROT_START_VAL:
+			strcpy(s, "AL_FROM_PROTECTIVE");
+			strcat(s, str);
+			DebugStringStr(s);
+			break;
 
 	}
 }
@@ -565,6 +575,7 @@ void alarmEngineAlways(void)
 				manageAlarmCanBus();
 				manageAlarmActuatorModbusNotRespond();
 				manageAlarmActuatorWRModbusNotRespond();
+				manageAlarmFromProtective();
 				break;
 			}
 
@@ -589,6 +600,7 @@ void alarmEngineAlways(void)
 				manageAlarmPrimSFAAirDet();
 				manageAlarmActuatorModbusNotRespond();
 				manageAlarmActuatorWRModbusNotRespond();
+				manageAlarmFromProtective();
 				break;
 			}
 
@@ -635,6 +647,7 @@ void alarmEngineAlways(void)
 				manageAlarmBadPinchPos(); // controllo il posizionamento delle pinch prima di iniziare un trattamento
 				manageAlarmActuatorModbusNotRespond();
 				manageAlarmActuatorWRModbusNotRespond();
+				manageAlarmFromProtective();
 				break;
 			}
 
@@ -664,6 +677,7 @@ void alarmEngineAlways(void)
 				manageAlarmPrimSFAAirDet();
 				manageAlarmActuatorModbusNotRespond();
 				manageAlarmActuatorWRModbusNotRespond();
+				manageAlarmFromProtective();
 				break;
 
 			case STATE_WAIT_TREATMENT:
@@ -712,6 +726,7 @@ void alarmEngineAlways(void)
 					manageAlarmCoversPumpKidney();
 				manageAlarmActuatorModbusNotRespond();
 				manageAlarmActuatorWRModbusNotRespond();
+				manageAlarmFromProtective();
 				break;
 			}
 
@@ -1523,6 +1538,29 @@ void manageAlarmActuatorWRModbusNotRespond(void)
 	}
 }
 
+
+
+void manageAlarmFromProtective(void)
+{
+	int i;
+	if(!GlobalFlags.FlagsDef.EnableFromProtectiveAlm)
+	{
+		alarmList[ALARM_FROM_PROTECTIVE].physic = PHYSIC_FALSE;
+	}
+	else
+	{
+		uint16_t u16 = ReadProtectiveAlarmCode();
+		if(u16 && (u16 >= CODE_ALARM_PROT_START_VAL))
+		{
+			alarmList[ALARM_FROM_PROTECTIVE].physic = PHYSIC_TRUE;
+		}
+		else
+		{
+			alarmList[ALARM_FROM_PROTECTIVE].physic = PHYSIC_FALSE;
+		}
+	}
+}
+
 //------------------------FINE FUNZIONI PER DETERMINARE LA CONDIZIONE DI ALLARME----------------------------------
 
 
@@ -1784,27 +1822,37 @@ bool IsDisposableEmptyNoAlarm(void)
 	return DispEmpty;
 }
 
+
+// usata nel task HandleProtectiveAlarm per la gestione dell'allarme generato dalla protective
 bool IsControlInAlarm(void)
 {
 	bool InAlarm = FALSE;
-	if(alarmCurrent.code)
+	if(alarmCurrent.code && alarmCurrent.type ==ALARM_TYPE_CONTROL)
 		InAlarm = TRUE;
 	return InAlarm;
 }
 
-GLOBAL_FLAGS gbf;
+
+bool IsProtectiveInAlarm(void)
+{
+	bool InAlarm = FALSE;
+	if(alarmCurrent.code && (alarmCurrent.type == ALARM_TYPE_PROTECTION) && (alarmCurrent.code >= CODE_ALARM_PROT_START_VAL))
+		InAlarm = TRUE;
+	return InAlarm;
+}
+
 
 // disabilito tutti gli allarmi
-void StopAllCntrlAlarm()
+void StopAllCntrlAlarm(GLOBAL_FLAGS *pgbf)
 {
-	gbf.FlagsVal = GlobalFlags.FlagsVal;
+	pgbf->FlagsVal = GlobalFlags.FlagsVal;
 	GlobalFlags.FlagsVal = 0;
 }
 
 // disabilito tutti gli allarmi
-void RestoreAllCntrlAlarm()
+void RestoreAllCntrlAlarm(GLOBAL_FLAGS *pgbf)
 {
-	GlobalFlags.FlagsVal = gbf.FlagsVal;
+	GlobalFlags.FlagsVal = pgbf->FlagsVal;
 }
 
 void ClearAlarmState(void)

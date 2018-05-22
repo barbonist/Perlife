@@ -13,6 +13,7 @@
 #include "FlexCANWrapper_c.h"
 #include "Global.h"
 #include "Alarm_Con.h"
+#include "App_Ges.h"
 
 
 #define VAL_JOLLY16	0x5A5A
@@ -423,15 +424,103 @@ void DebugFillTxBuffers(void)
     seq_number++;
 }
 
-#ifdef ENABLE_PROTECTIVE_ALARM_RESET
+uint16_t ReadProtectiveAlarmCode(void)
+{
+	uint16_t u16 = RxBuffCanP[2]->SRxCan2.AlarmCode;
+	return u16;
+}
 
+
+#ifdef ENABLE_PROTECTIVE_ALARM_RESET
 unsigned long msTick10_elapsed( unsigned long last );
 
+typedef enum
+{
+	INIT_PROT_ALM_ST,
+	WAIT_FOR_ALM_PROT_ALM_ST,
+	ALM_ON_PROT_ALM_ST,
+	WAIT_FOR_RES_ACK_FROM_PROT,
+	WAIT_FOR_RES_ACK_FROM_PROT_1
+}PROTECTIVE_ALARM_STATE;
+
+// Controllo se sono in allarme su protective
+// Se sono in allarme su protective invio su canbus il button reset in continuazione
+// fino a quando l'allarme non va via o con un timeout di 1 sec,
+// Una volta scaduto il timeout l'allarme ritorna
 void HandleProtectiveAlarm(void)
+{
+	static uint32_t startTimeInterv = 0;
+	static PROTECTIVE_ALARM_STATE ProtectiveAlarmState = INIT_PROT_ALM_ST;
+
+	switch (ProtectiveAlarmState)
+	{
+		case INIT_PROT_ALM_ST:
+			startTimeInterv = 0;
+			ProAlmCodeToreset = 0;
+			ProtectiveAlarmState = WAIT_FOR_ALM_PROT_ALM_ST;
+			break;
+		case WAIT_FOR_ALM_PROT_ALM_ST:
+			if(IsProtectiveInAlarm())
+			{
+				ProtectiveAlarmState = ALM_ON_PROT_ALM_ST;
+			}
+			break;
+		case ALM_ON_PROT_ALM_ST:
+			if(buttonGUITreatment[BUTTON_RESET].state == GUI_BUTTON_RELEASED)
+			{
+				// la scheda protective e' in allarme ed ho ricevuto un button reset per
+				// resettare l'allarme.
+				// lo invio su canbus
+				ProAlmCodeToreset = alarmCurrent.code;
+				startTimeInterv = FreeRunCnt10msec;
+				ProtectiveAlarmState = WAIT_FOR_RES_ACK_FROM_PROT;
+			}
+			break;
+		case WAIT_FOR_RES_ACK_FROM_PROT:
+			if(!RxBuffCanP[2]->SRxCan2.AlarmCode)
+			{
+				ProtectiveAlarmState = WAIT_FOR_RES_ACK_FROM_PROT_1;
+				startTimeInterv = FreeRunCnt10msec;
+			}
+			else if(startTimeInterv && (msTick10_elapsed(startTimeInterv) >= 100))
+			{
+				// dopo un secondo se l'allarme non e' andato via smetto di inviare reset
+				// perche' vuol dire che la condizione fisica di allarme non e' stata rimossa
+				ProtectiveAlarmState = INIT_PROT_ALM_ST;
+			}
+			break;
+		case WAIT_FOR_RES_ACK_FROM_PROT_1:
+			if(!RxBuffCanP[2]->SRxCan2.AlarmCode)
+			{
+				if(startTimeInterv && (msTick10_elapsed(startTimeInterv) >= 20))
+				{
+					// dopo 200 msec che l'allarme e' 0 torno in init
+					ProtectiveAlarmState = INIT_PROT_ALM_ST;
+				}
+			}
+			else
+			{
+				// dopo un secondo se l'allarme non e' andato via smetto di inviare reset
+				ProtectiveAlarmState = WAIT_FOR_RES_ACK_FROM_PROT;
+				startTimeInterv = FreeRunCnt10msec;
+			}
+			break;
+	}
+}
+
+
+
+
+// PER IL MOMENTO NON USO QUESTA FUNZIONE
+
+// Questo task fa partire gli allarmi in tutti gli stati anche in quelli dove, nello stato parent, non è prevista
+// la gestione degli interrupt in base alle strutture machineParent
+void HandleProtectiveAlarm_old(void)
 {
 	static uint16_t ProtectiveAlarm = 0;
 	static HANDLE_PROTECTIVE_ALARM_STATE HandleProtectiveAlarmState = INIT_HNDLE_PROT_ALM;
 	static uint32_t startTimeInterv = 0;
+	static GLOBAL_FLAGS gbf;
 
 
 	switch (HandleProtectiveAlarmState)
@@ -445,33 +534,42 @@ void HandleProtectiveAlarm(void)
 		case WAIT_FOR_PROT_ALM:
 			if(!IsControlInAlarm())
 			{
+				// NON C'E' UN ALLARME DELLA CONTROL
 				uint16_t u16 = RxBuffCanP[2]->SRxCan2.AlarmCode;
 				if((u16 >= START_PROTECTIVE_ALARM_CODE) && (u16 == ProtectiveAlarm))
 				{
-					if(startTimeInterv && (msTick10_elapsed(startTimeInterv) >= 12))
+					if(AmJInAlarmHandledState())
 					{
-						// sono passati 120 msec e un allarme mi e' stato inviato dalla protective
-						// devo inviarlo alla GUI
-						StopAllCntrlAlarm();
-						ProtectiveAlarmStruct.code = ProtectiveAlarm; 			        /* alarm code */
-						ProtectiveAlarmStruct.physic = PHYSIC_TRUE;			            /* alarm physic condition */
-						ProtectiveAlarmStruct.active = ACTIVE_TRUE;			            /* alarm active condition */
-						ProtectiveAlarmStruct.type = ALARM_TYPE_PROTECTION;			    /* alarm type: control, protection */
-						ProtectiveAlarmStruct.secActType = SECURITY_STOP_ALL_ACTUATOR;	/* alarm security action: type of secuirty action required
-						                                                                  (FM modificato da char ad unsigned int perche' ho bisogno di piu'
-						                                                                  bit per distinguere i vari allarmi*/
-						ProtectiveAlarmStruct.priority = PRIORITY_HIGH;		            /* alarm priority: low, medium, right */
-						ProtectiveAlarmStruct.entryTime = 0;		                    /* entry time in ms */
-						ProtectiveAlarmStruct.exitTime = 0;		                        /* exit time in ms */
-						ProtectiveAlarmStruct.ovrdEnable = OVRD_NOT_ENABLED;		    /* override enable: alarm can be overridden when alarm condition is still present */
-						ProtectiveAlarmStruct.resettable = RESET_ALLOWED;		        /* reset property */
-						ProtectiveAlarmStruct.silence = SILENCE_ALLOWED;		        /* silence property: the alarm acoustic signal can be silenced for a limited period of time */
-						ProtectiveAlarmStruct.memo = MEMO_NOT_ALLOWED;			        /* memo property: the system remain in the alarm state even if the alarm condition is no longer present */
-						ProtectiveAlarmStruct.prySafetyActionFunc = 0;                  /* safety action: funzione che esegue la funzione di sicurezza in base alla priorità dell'allarme */
+						// SONO IN UNO STATO IN CUI E' PREVISTA LA GENERAZIONE DELL'ALLARME IN BASE ALLA
+						// STRUTTURA PARENTMACHINE, QUINDI NON HO BISOGNO
+					}
+					else
+					{
+						if(startTimeInterv && (msTick10_elapsed(startTimeInterv) >= 12))
+						{
+							// sono passati 120 msec e un allarme mi e' stato inviato dalla protective
+							// devo inviarlo alla GUI
+							StopAllCntrlAlarm(&gbf);
+							ProtectiveAlarmStruct.code = ProtectiveAlarm; 			        /* alarm code */
+							ProtectiveAlarmStruct.physic = PHYSIC_TRUE;			            /* alarm physic condition */
+							ProtectiveAlarmStruct.active = ACTIVE_TRUE;			            /* alarm active condition */
+							ProtectiveAlarmStruct.type = ALARM_TYPE_PROTECTION;			    /* alarm type: control, protection */
+							ProtectiveAlarmStruct.secActType = SECURITY_STOP_ALL_ACTUATOR;	/* alarm security action: type of secuirty action required
+																							  (FM modificato da char ad unsigned int perche' ho bisogno di piu'
+																							  bit per distinguere i vari allarmi*/
+							ProtectiveAlarmStruct.priority = PRIORITY_HIGH;		            /* alarm priority: low, medium, right */
+							ProtectiveAlarmStruct.entryTime = 0;		                    /* entry time in ms */
+							ProtectiveAlarmStruct.exitTime = 0;		                        /* exit time in ms */
+							ProtectiveAlarmStruct.ovrdEnable = OVRD_NOT_ENABLED;		    /* override enable: alarm can be overridden when alarm condition is still present */
+							ProtectiveAlarmStruct.resettable = RESET_ALLOWED;		        /* reset property */
+							ProtectiveAlarmStruct.silence = SILENCE_ALLOWED;		        /* silence property: the alarm acoustic signal can be silenced for a limited period of time */
+							ProtectiveAlarmStruct.memo = MEMO_NOT_ALLOWED;			        /* memo property: the system remain in the alarm state even if the alarm condition is no longer present */
+							ProtectiveAlarmStruct.prySafetyActionFunc = 0;                  /* safety action: funzione che esegue la funzione di sicurezza in base alla priorità dell'allarme */
 
-						// faccio partire l'allarme alla GUI
-						alarmCurrent = ProtectiveAlarmStruct;
-						HandleProtectiveAlarmState = ENTER_PROT_ALM;
+							// faccio partire l'allarme alla GUI
+							alarmCurrent = ProtectiveAlarmStruct;
+							HandleProtectiveAlarmState = ENTER_PROT_ALM;
+						}
 					}
 				}
 				else if(u16 >= START_PROTECTIVE_ALARM_CODE)
@@ -497,7 +595,7 @@ void HandleProtectiveAlarm(void)
 			{
 				ProAlmCodeToreset = 0;
 				memset(&alarmCurrent, 0, sizeof(struct alarm));
-				RestoreAllCntrlAlarm();
+				RestoreAllCntrlAlarm(&gbf);
 				// ritorno in attesa di un nuovo allarme
 				HandleProtectiveAlarmState = INIT_HNDLE_PROT_ALM;
 			}

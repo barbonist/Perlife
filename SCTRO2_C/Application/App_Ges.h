@@ -262,6 +262,7 @@ void ParentFunc(void);
 void AirAlarmRecoveryStateMach(void);
 void SetAbandonGuard(void);
 
+bool AmJInAlarmHandledState(void);
 bool AmJInAlarmState(void);
 void CheckAlarmForGuiStateMsg(void);
 bool IsButtResUsedByChild(void);

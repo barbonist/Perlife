@@ -4012,7 +4012,7 @@ word GetTotalPrimingVolumePerf_new(int cmd)
 /*----------------------------------------------------------------------------*/
 void processMachineState(void)
 {
-	unsigned short Oldstate = 0;
+	static unsigned short Oldstate = 0;
 	if(buttonGUITreatment[BUTTON_SILENT_ALARM].state == GUI_BUTTON_RELEASED)
 	{
 		if(LevelBuzzer)
