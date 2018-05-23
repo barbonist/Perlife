@@ -468,6 +468,8 @@ void HandleProtectiveAlarm(void)
 		case ALM_ON_PROT_ALM_ST:
 			if(buttonGUITreatment[BUTTON_RESET].state == GUI_BUTTON_RELEASED)
 			{
+				// faccio il release, altrimenti verrebbe preso dalla scheda control
+				releaseGUIButton(BUTTON_RESET);
 				// la scheda protective e' in allarme ed ho ricevuto un button reset per
 				// resettare l'allarme.
 				// lo invio su canbus

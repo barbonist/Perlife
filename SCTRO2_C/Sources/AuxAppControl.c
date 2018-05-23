@@ -101,6 +101,10 @@ void onNewCanBusMsg12(CANBUS_MSG_12 ReceivedCanBusMsg12)
 	CanBusMsg12 = ReceivedCanBusMsg12;
 }
 
+// posizione delle pinch prima di collegare l'organo
+unsigned char PinchPos_ref1[3] = {0xff, MODBUS_PINCH_POS_CLOSED, MODBUS_PINCH_POS_CLOSED};
+// posizione delle pinch prima dello start trattamento
+unsigned char PinchPos_ref2[3] = {0xff, MODBUS_PINCH_LEFT_OPEN, MODBUS_PINCH_LEFT_OPEN};
 
 bool IsPinchPosOk(unsigned char *pArrPinchPos)
 {
@@ -113,6 +117,34 @@ bool IsPinchPosOk(unsigned char *pArrPinchPos)
 	if((pArrPinchPos[2] != 0xff) && (pArrPinchPos[2] != CanBusMsg11.OxygPinchPos))
 		PinchPosOk = FALSE;
 #endif
+
+	//-------------------------------------------------------------------------------
+	// codice aggiunto per il debug dell'allarme, da cancellare nella versione finale
+
+	if(ptrCurrentState->state == STATE_PRIMING_RICIRCOLO)
+	{
+		for(int i = 0; i < 3; i++)
+		{
+			if((PinchPos_ref1[i] != 0xff) && (pArrPinchPos[i] != PinchPos_ref1[i]))
+			{
+				PinchPosOk = FALSE;
+				break;
+			}
+		}
+	}
+	if(ptrCurrentState->state == STATE_TREATMENT_KIDNEY_1)
+	{
+		for(int i = 0; i < 3; i++)
+		{
+			if((PinchPos_ref2[i] != 0xff) && (pArrPinchPos[i] != PinchPos_ref2[i]))
+			{
+				PinchPosOk = FALSE;
+				break;
+			}
+		}
+	}
+	//-------------------------------------------------------------------------------
+
 	return PinchPosOk;
 }
 

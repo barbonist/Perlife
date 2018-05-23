@@ -1843,7 +1843,7 @@ typedef struct
 
 
 //-------------------------------------------------------------------------------
-// usati nella funzione TreatSetPinchPosTask per il controllo delle pompe ferme
+// usati nella funzione TreatSetPinchPosTask per il controllo del posizionamento delle pinch
 typedef enum
 {
 	T_SET_PINCH_IDLE,
@@ -1865,6 +1865,7 @@ typedef enum
 	T_SET_PINCH_RESET_ALARM_CMD
 }TREAT_SET_PINCH_POS_CMD;
 //-------------------------------------------------------------------------------
+
 // Questa define deve essere attiva se voglio rilevare l'allarme della connessione con la protective
 // Serve anche per poter entrare nel trattamento con la funzione di controllo del posizionamento delle pinch
 #define ENABLE_PROTECTIVE_BOARD

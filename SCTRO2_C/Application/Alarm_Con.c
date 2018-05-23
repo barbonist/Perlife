@@ -1289,7 +1289,7 @@ void manageAlarmPhysicUFlowSensVen(void)
 	{
 //		if((sensor_UFLOW[VENOUS_AIR_SENSOR].bubbleSize >= 25) ||
 //			(sensor_UFLOW[VENOUS_AIR_SENSOR].bubblePresence == MASK_ERROR_BUBBLE_ALARM))
-		if(((sensor_UFLOW[VENOUS_AIR_SENSOR].bubbleSize >= 50) ||
+		if(((sensor_UFLOW[VENOUS_AIR_SENSOR].bubbleSize >= 25) ||
 			(sensor_UFLOW[VENOUS_AIR_SENSOR].bubblePresence == MASK_ERROR_BUBBLE_ALARM)) &&
 			(sensor_UFLOW[VENOUS_AIR_SENSOR].bubbleSize != 255))
 		{
@@ -1316,7 +1316,7 @@ void manageAlarmPhysicUFlowSens(void){
 //			(sensor_UFLOW[ARTERIOUS_AIR_SENSOR].bubblePresence == MASK_ERROR_BUBBLE_ALARM)
 //			)
 		if(
-			((sensor_UFLOW[ARTERIOUS_AIR_SENSOR].bubbleSize >= 50) ||
+			((sensor_UFLOW[ARTERIOUS_AIR_SENSOR].bubbleSize >= 25) ||
 			(sensor_UFLOW[ARTERIOUS_AIR_SENSOR].bubblePresence == MASK_ERROR_BUBBLE_ALARM)) &&
 			(sensor_UFLOW[ARTERIOUS_AIR_SENSOR].bubbleSize != 255)
 			)

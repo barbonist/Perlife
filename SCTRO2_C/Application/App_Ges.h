@@ -149,6 +149,8 @@ void manageParentPrimAirFiltAlways(void);
 void manageParentPrimAirAlmRecEntry(void);
 void manageParentPrimAirAlmRecAlways(void);
 
+void manageParentPrimWaitPauseEntry(void);
+
 
 void manageParentPrimingAlarmEntry(void);
 void manageParentPrimingAlarmAlways(void);
@@ -192,7 +194,8 @@ void manageParentTreatAirAlmRecAlways(void);
 void manageParentTreatEndEntry(void);
 void manageParentTreatEndAlways(void);
 
-
+void manageParentTreatWaitPauseEntry(void);
+void manageParentTreatWaitStartEntry(void);
 
 /**************************************************************************************/
 /******-----------------------------TREATMENT----------------------------------********/

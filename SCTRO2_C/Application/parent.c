@@ -883,6 +883,8 @@ void ParentFunc(void)
 				// forzo anche una pressione del tasto TREATMENT START per fare in modo che
 				// il trattamento riprenda automaticamente
 				setGUIButton(BUTTON_START_TREATMENT);
+				// preparo la macchina a stati per il controllo delle pinch aperte nella posizione richiesta per lo stato di trattamento
+				TreatSetPinchPosTask((TREAT_SET_PINCH_POS_CMD)T_SET_PINCH_RESET_CMD);
 				currentGuard[GUARD_ENABLE_STATE_TREAT_KIDNEY_1_INIT].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
 				currentGuard[GUARD_ENABLE_STATE_TREAT_KIDNEY_1_INIT].guardValue = GUARD_VALUE_FALSE;
 				break;
@@ -907,6 +909,8 @@ void ParentFunc(void)
 				// forzo anche una pressione del tasto TREATMENT START per fare in modo che
 				// il trattamento riprenda automaticamente
 				setGUIButton(BUTTON_START_TREATMENT);
+				// preparo la macchina a stati per il controllo delle pinch aperte nella posizione richiesta per lo stato di trattamento
+				TreatSetPinchPosTask((TREAT_SET_PINCH_POS_CMD)T_SET_PINCH_RESET_CMD);
 				currentGuard[GUARD_ENABLE_STATE_KIDNEY_1_PUMP_ON].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
 				currentGuard[GUARD_ENABLE_STATE_KIDNEY_1_PUMP_ON].guardValue = GUARD_VALUE_FALSE;
 				break;

@@ -584,7 +584,7 @@ void manageStateTreatKidney1(void)
 		// se sono nel trattamento fegato fermo anche l'altro motore !!
 		setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, 0);
 	}
-
+	EnableBadPinchPosAlmFunc();
 }
 
 void manageStateTreatKidney1Always(void)
@@ -1766,6 +1766,8 @@ void manageParentPrimingAlways(void){
 		{
 			// devo fare il release altrimenti in questo posto ci passa piu' volte
 			releaseGUIButton(BUTTON_START_PRIMING);
+			// ripristino allarmi delle cover
+			GlobalFlags.FlagsDef.EnableCoversAlarm = 1;
 			currentGuard[GUARD_ENABLE_STATE_KIDNEY_1_PRIM_RUN].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
 			DebugStringStr("Start (prim)");
 		}
@@ -1780,6 +1782,8 @@ void manageParentPrimingAlways(void){
 			releaseGUIButton(BUTTON_PRIMING_ABANDON);
 			//currentGuard[GUARD_ABANDON_PRIMING].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
 			SetAbandonGuard();
+			// ripristino allarmi delle cover
+			GlobalFlags.FlagsDef.EnableCoversAlarm = 1;
 		}
 		CheckPumpStopTask((CHECK_PUMP_STOP_CMD)NO_CHECK_PUMP_STOP_CMD);
 		break;
@@ -1789,9 +1793,18 @@ void manageParentPrimingAlways(void){
 
 }
 
+// Chiamata all'entry dello stato PARENT_PRIM_WAIT_PAUSE
+void manageParentPrimWaitPauseEntry(void)
+{
+	// disabilito gli allarmi delle cover perche' quando entro in questo stato tutte le pompe si fermano
+	GlobalFlags.FlagsDef.EnableCoversAlarm = 0;
+}
+
+
+//-----------------------------------------------------------------------------------------------------
 unsigned short MotStopTicksElapsed;
 bool StopMotorTimeOut;
-// controllo che tutte le pompe siano ferme altrimenti do un allarme
+// controllo che tutte le pompe siano ferme altrimenti do un allarme (gestione dello stato PARENT_PRIM_WAIT_MOT_STOP)
 void manageParPrimWaitMotStopEntry(void)
 {
 	// abilito allarme di pompe non ferme
@@ -1835,7 +1848,9 @@ void manageParPrimWaitMotStopEntryAlways(void)
 		DisablePrimAlmSFAAirDetAlmFunc();
 	}
 }
+//-----------------------------------------------------------------------------------------------------
 
+//-----------------------------------------------------------------------------------------------------
 // conta il numero di volte che le pinch sono rilevate in una posizione non corretta
 int PinchCloseAlwaysCnt;
 int PinchClosedCnt;
@@ -1907,7 +1922,7 @@ void manageParPrimWaitPinchCloseAlways(void)
 		// le pinch sono chiuse posso passare al trattamento
 		currentGuard[GUARD_ENABLE_TREATMENT_KIDNEY_1].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
 		// preparo la macchina a stati per il controllo delle pinch aperte nella posizione richiesta per lo stato di trattamento
-		TreatSetPinchPosTask((TREAT_SET_PINCH_POS_CMD)T_SET_PINCH_RESET_CMD);
+		//TreatSetPinchPosTask((TREAT_SET_PINCH_POS_CMD)T_SET_PINCH_RESET_CMD);
 		// disabilito allarme di pinch non posizionate correttamente
 		DisableBadPinchPosAlmFunc();
 		DebugStringStr("PINCH CLOSED");
@@ -1944,23 +1959,21 @@ void manageParPrimWaitPinchCloseAlways(void)
 		DisableBadPinchPosAlmFunc();
 	}
 }
+//-----------------------------------------------------------------------------------------------------
 
+//-----------------------------------------------------------------------------------------------------
 // gestione allarmi alla fine del ricircolo ( negli stati parent PARENT_PRIM_WAIT_MOT_STOP e PARENT_PRIM_WAIT_PINCH_CLOSE
 void  manageParPrimEndRecAlarmEntry(void)
-{
-
-}
+{}
 void manageParPrimEndRecAlarmAlways(void)
-{
-
-}
+{}
+//-----------------------------------------------------------------------------------------------------
 
 
 // gestione dello stato parent  PARENT_PRIM_KIDNEY_1_AIR_FILT
 void manageParentPrimAirFiltEntry(void)
 {
 	AirAlarmRecoveryState = INIT_AIR_ALARM_RECOVERY;
-
 }
 void manageParentPrimAirFiltAlways(void)
 {
@@ -1970,11 +1983,9 @@ void manageParentPrimAirFiltAlways(void)
 // gestione dello stato parent  PARENT_PRIM_KIDNEY_1_ALM_AIR_REC
 void manageParentPrimAirAlmRecEntry(void)
 {
-
 }
 void manageParentPrimAirAlmRecAlways(void)
 {
-
 }
 
 void manageParentPrimingAlarmEntry(void)
@@ -2246,9 +2257,10 @@ void manageParentTreatAlways(void){
 		int speed = 0;
 		static int timerCopy = 0;
 
-		//if(ptrCurrentParent->parent == PARENT_TREAT_KIDNEY_1_INIT)
+		if(GlobalFlags.FlagsDef.EnableBadPinchPosAlm)
 		{
-			// l'operazione che segue, controll
+			// l'operazione che segue, controlla il posizionamento delle pinch confrontando
+			// con quelle rilevate dalla protective
 			TREAT_SET_PINCH_POS_TASK_STATE TreatSePinchPosTaskStat;
 			TreatSePinchPosTaskStat = TreatSetPinchPosTask((TREAT_SET_PINCH_POS_CMD)T_SET_PINCH_NO_CMD);
 			if((TreatSePinchPosTaskStat == T_SET_PINCH_ALARM) ||
@@ -2765,17 +2777,15 @@ void manageParentTreatAlways(void){
 			{
 				// devo fare il release altrimenti in questo posto ci passa piu' volte
 				releaseGUIButton(BUTTON_START_TREATMENT);
+				// ripristino allarmi delle cover
+				GlobalFlags.FlagsDef.EnableCoversAlarm = 1;
 				if(ptrCurrentParent->parent == PARENT_TREAT_WAIT_START)
 				{
-					// preparo la macchina a stati per il controllo delle pinch aperte nella posizione richiesta per lo stato di trattamento
-					TreatSetPinchPosTask((TREAT_SET_PINCH_POS_CMD)T_SET_PINCH_RESET_CMD);
 					currentGuard[GUARD_ENABLE_STATE_TREAT_KIDNEY_1_INIT].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
 					DebugStringStr("Start (init)");
 				}
 				else
 				{
-					// preparo la macchina a stati per il controllo delle pinch aperte nella posizione richiesta per lo stato di trattamento
-					TreatSetPinchPosTask((TREAT_SET_PINCH_POS_CMD)T_SET_PINCH_RESET_CMD);
 					currentGuard[GUARD_ENABLE_STATE_KIDNEY_1_PUMP_ON].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
 					DebugStringStr("Start (run)");
 				}
@@ -2791,6 +2801,8 @@ void manageParentTreatAlways(void){
 				releaseGUIButton(BUTTON_PRIMING_ABANDON);
 				//currentGuard[GUARD_ABANDON_PRIMING].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
 				SetAbandonGuard();
+				// ripristino allarmi delle cover
+				GlobalFlags.FlagsDef.EnableCoversAlarm = 1;
 			}
 
 			CheckPumpStopTask((CHECK_PUMP_STOP_CMD)NO_CHECK_PUMP_STOP_CMD);
@@ -3423,11 +3435,23 @@ void manageParentTreatAirAlmRecAlways(void)
 
 // procedura per gestire la fase entry nello stato PARENT_TREAT_KIDNEY_1_END
 void manageParentTreatEndEntry(void)
-{
-}
+{}
 // procedura per gestire la fase always nello stato PARENT_TREAT_KIDNEY_1_END
 void manageParentTreatEndAlways(void)
+{}
+
+// funzione entry dello stato PARENT_TREAT_WAIT_PAUSE
+void manageParentTreatWaitPauseEntry(void)
 {
+	// disabilito gli allarmi delle cover perche' quando entro in questo stato tutte le pompe si fermano
+	GlobalFlags.FlagsDef.EnableCoversAlarm = 0;
+}
+
+// funzione entry dello stato PARENT_TREAT_WAIT_START
+void manageParentTreatWaitStartEntry(void)
+{
+	// disabilito gli allarmi delle cover perche' quando entro in questo stato tutte le pompe si fermano
+	GlobalFlags.FlagsDef.EnableCoversAlarm = 0;
 }
 
 /*----------------------------------------FINE PARENT TREATMENTLEVEL FUNCTION -----------------------------------------------*/
