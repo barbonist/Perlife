@@ -1277,7 +1277,7 @@ float V24_P2_CHK_VOLT;
 #define V24_P2_CHK_OFFSET		-0.33
 
 /* t1 test */
-#define T1_TEST_DIG_TO_VOLT			(float)(3300/4096)/1000 //digit to volt
+#define T1_TEST_DIG_TO_VOLT			0.0008 //(float)(3300/4096)/1000 //digit to volt
 #define V24BRK_LOW_THRSLD			2.3 //volt
 #define V24BRK_HIGH_THRSLD			2.7 //volt
 #define T1_TEST_PRESS_LOW_THRSLD	-5 //mmHg

@@ -970,7 +970,7 @@ void ParentFuncT1Test(void)
 		ptrFutureParent = &stateParentT1TNoDisposable[4];
 		ptrFutureChild = ptrFutureParent->ptrChild;
 		}
-		else if((ptrCurrentParent->action == ACTION_ALWAYS) /*&& (ptrT1Test->result_T1_cfg_data == T1_TEST_OK)*/)
+		else if((ptrCurrentParent->action == ACTION_ALWAYS) && (ptrT1Test->result_T1_cfg_data == T1_TEST_OK))
 		{
 			currentGuard[GUARD_ENABLE_T1_24VBRK].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
 		}
