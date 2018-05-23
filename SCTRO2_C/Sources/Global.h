@@ -1921,5 +1921,28 @@ struct alarm ProtectiveAlarmStruct;
 #endif //ENABLE_PROTECTIVE_ALARM_RESET
 
 
+//--------------------------------------------------------------------------------------------------
+// usati dal task CheckCurrPinchPosTaskper il controllo del posizionamento delle pinch in continuo nei
+// vari stati di lavoro
+typedef enum
+{
+	CHK_PINCH_POS_IDLE,
+	CHK_PINCH_POS_INIT,  // inizializza la configurazione delle pinch
+	CHK_PINCH_POS_RUN,
+	CHK_PINCH_POS_RESTART,
+	CHK_PINCH_POS_ALARM,
+}CHECK_CURR_PINCH_POS_TASK_STATE;
+
+typedef enum
+{
+	CHECK_CURR_PINCH_POS_NO_CMD,           // esegue il controllo della posizione
+	CHECK_CURR_PINCH_POS_RESET_ALARM_CMD,  // fa ripartire il controllo se ero gia'in allarme
+	CHECK_CURR_PINCH_POS_DISABLE_CMD,      // disabilito il controllo del posizionamento delle pinch
+	CHECK_CURR_PINCH_POS_INIT_CMD,         // posiziona la macchina a stati nello stato di inizio controllo pinch
+	CHECK_CURR_PINCH_POS_READ_CMD          // ritorna lo stato corrente
+}CHECK_CURR_PINCH_POS_TASK_CMD;
+//--------------------------------------------------------------------------------------------------
+
+
 #endif /* SOURCES_GLOBAL_H_ */
 

@@ -257,8 +257,8 @@ void ClearPumpStopAlarm(void);
 bool AreAllPumpsStopped( void );
 CHECK_PUMP_STOP_STATE CheckPumpStopTask(CHECK_PUMP_STOP_CMD cmd);
 
-//bool IsPinchPosOk(void);
-//CHECK_PINCH_POS_STATE CheckPinchPosTask(CHECK_PINCH_CMD cmd);
+bool IsPinchPosOk(unsigned char *pArrPinchPos);
+
 
 void ParentFuncT1Test(void);
 void ParentFunc(void);
@@ -269,5 +269,10 @@ bool AmJInAlarmHandledState(void);
 bool AmJInAlarmState(void);
 void CheckAlarmForGuiStateMsg(void);
 bool IsButtResUsedByChild(void);
+
+CHECK_CURR_PINCH_POS_TASK_STATE CheckCurrPinchPosTask(CHECK_CURR_PINCH_POS_TASK_CMD cmd);
+bool IsTreatCurrPinchPosOk(void);
+void ResetTreatCurrPinchPosOk(void);
+
 
 #endif /* APPLICATION_APP_GES_H_ */

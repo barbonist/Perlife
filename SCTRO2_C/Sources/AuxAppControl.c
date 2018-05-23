@@ -120,26 +120,29 @@ bool IsPinchPosOk(unsigned char *pArrPinchPos)
 
 	//-------------------------------------------------------------------------------
 	// codice aggiunto per il debug dell'allarme, da cancellare nella versione finale
-
-	if(ptrCurrentState->state == STATE_PRIMING_RICIRCOLO)
+	// provo a forzare manualmente una pinch posizionata male
+	if(PinchPosOk == TRUE)
 	{
-		for(int i = 0; i < 3; i++)
+		if(ptrCurrentState->state == STATE_PRIMING_RICIRCOLO)
 		{
-			if((PinchPos_ref1[i] != 0xff) && (pArrPinchPos[i] != PinchPos_ref1[i]))
+			for(int i = 0; i < 3; i++)
 			{
-				PinchPosOk = FALSE;
-				break;
+				if((PinchPos_ref1[i] != 0xff) && (pArrPinchPos[i] != PinchPos_ref1[i]))
+				{
+					PinchPosOk = FALSE;
+					break;
+				}
 			}
 		}
-	}
-	if(ptrCurrentState->state == STATE_TREATMENT_KIDNEY_1)
-	{
-		for(int i = 0; i < 3; i++)
+		if(ptrCurrentState->state == STATE_TREATMENT_KIDNEY_1)
 		{
-			if((PinchPos_ref2[i] != 0xff) && (pArrPinchPos[i] != PinchPos_ref2[i]))
+			for(int i = 0; i < 3; i++)
 			{
-				PinchPosOk = FALSE;
-				break;
+				if((PinchPos_ref2[i] != 0xff) && (pArrPinchPos[i] != PinchPos_ref2[i]))
+				{
+					PinchPosOk = FALSE;
+					break;
+				}
 			}
 		}
 	}

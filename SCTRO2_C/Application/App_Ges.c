@@ -195,6 +195,8 @@ void CallInIdleState(void)
 	DisableBadPinchPosAlmFunc();
 	DisablePrimAlmSFAAirDetAlmFunc();
 	ClearAlarmState();
+	ResetPrimPinchAlm();
+	CheckCurrPinchPosTask(CHECK_CURR_PINCH_POS_DISABLE_CMD);
 }
 
 
@@ -1921,8 +1923,6 @@ void manageParPrimWaitPinchCloseAlways(void)
 	{
 		// le pinch sono chiuse posso passare al trattamento
 		currentGuard[GUARD_ENABLE_TREATMENT_KIDNEY_1].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
-		// preparo la macchina a stati per il controllo delle pinch aperte nella posizione richiesta per lo stato di trattamento
-		//TreatSetPinchPosTask((TREAT_SET_PINCH_POS_CMD)T_SET_PINCH_RESET_CMD);
 		// disabilito allarme di pinch non posizionate correttamente
 		DisableBadPinchPosAlmFunc();
 		DebugStringStr("PINCH CLOSED");
@@ -2007,13 +2007,10 @@ void manageParentPrimingAlarmAlways(void){
 /*----------------------------------------INIZIO PARENT TREATMENTLEVEL FUNCTION -----------------------------------------------*/
 
 void manageParentTreatAlarmEntry(void){
-
 }
 
 void manageParentTreatAlarmAlways(void){
-
 }
-
 
 // ritorna TRUE se l'allarme e' attivo
 bool IsTreatSetPinchPosTaskAlm(void)
@@ -2035,12 +2032,14 @@ void ResetTreatSetPinchPosTaskAlm(void)
 		TreatSetPinchPosTask((TREAT_SET_PINCH_POS_CMD)T_SET_PINCH_RESET_ALARM_CMD);
 }
 
-// questo task serve per posizionare le pinch e verificare il loro posizionamento
+// Questo task serve per posizionare le pinch e verificare il loro posizionamento
 // prima di iniziare il trattamento. Questo processo deve partire quando l'utente
 // preme il tasto BUTTON_START_TREATMENT.
 // E' stato fatto in questo modo per evitare di modificare l'interfaccia GUI che, attualmente
 // gestisce il bottone BUTTON_START_TREATMENT solo negli stati PARENT_TREAT_KIDNEY_1_INIT,PARENT_TREAT_KIDNEY_1_PUMP_ON,
-// PARENT_TREAT_WAIT_START, PARENT_TREAT_WAIT_PAUSE
+// PARENT_TREAT_WAIT_START, PARENT_TREAT_WAIT_PAUSE.
+// Se la generazione dell'allarme e' disabilitata invia solo i comandi di posizionamento delle pinch e
+// poi va nello stato T_SET_PINCH_END che indica la corretta fine del processo.
 TREAT_SET_PINCH_POS_TASK_STATE TreatSetPinchPosTask(TREAT_SET_PINCH_POS_CMD cmd)
 {
 	static TREAT_SET_PINCH_POS_TASK_STATE TreatSetPinchPosTaskState = T_SET_PINCH_IDLE;
@@ -2053,11 +2052,14 @@ TREAT_SET_PINCH_POS_TASK_STATE TreatSetPinchPosTask(TREAT_SET_PINCH_POS_CMD cmd)
 	THERAPY_TYPE TherType = GetTherapyType();
 	if( cmd == T_SET_PINCH_RESET_CMD)
 	{
+		// metto la macchina nella posizione di inizio controllo posizione pinch
 		TreatSetPinchPosTaskState = T_SET_PINCH_IDLE;
 		return TreatSetPinchPosTaskState;
 	}
 	else if( cmd == T_SET_PINCH_DISABLE_CMD)
 	{
+		// disabilito la macchina a stati che controlla il corretto posizionamento delle pinch
+		// prima di entrare in trattamento
 		TreatSetPinchPosTaskState = T_SET_PINCH_DISABLE;
 		return TreatSetPinchPosTaskState;
 	}
@@ -2071,7 +2073,8 @@ TREAT_SET_PINCH_POS_TASK_STATE TreatSetPinchPosTask(TREAT_SET_PINCH_POS_CMD cmd)
 		// vado nello stato di fine processo per proseguire nel trattamento
 		// il tasto BUTTON_START_TREATMENT lo ho gia' ricevuto, quindi, per il prossimo start
 		// devo forzarlo
-		setGUIButton(BUTTON_START_TREATMENT);		TreatSetPinchPosTaskState = T_SET_PINCH_END;
+		setGUIButton(BUTTON_START_TREATMENT);
+		TreatSetPinchPosTaskState = T_SET_PINCH_END;
 		return TreatSetPinchPosTaskState;
 	}
 
@@ -2131,15 +2134,24 @@ TREAT_SET_PINCH_POS_TASK_STATE TreatSetPinchPosTask(TREAT_SET_PINCH_POS_CMD cmd)
 			}
 			if(EndPositioning)
 			{
-				// posizionamento delle pinch completate, passo alla verifica con la protective
-				TreatSetPinchPosTaskState = T_SET_PINCH_CHECK_POS;
-				TreatSetPinchPosTaskPresc = 0;
-				CorrectPosCnt = 0;
-				WrongPosCnt = 0;
-				if(IsPinchPosOk(PinchPos))
-					CorrectPosCnt++;
+				if(!GlobalFlags.FlagsDef.EnableBadPinchPosAlm)
+				{
+					// la generazione dell'allarme e' disabilitata quindi vado direttamente alla
+					// fine del processo di posizionamento delle pinch
+					TreatSetPinchPosTaskState = T_SET_PINCH_CHECK_POS;
+				}
 				else
-					WrongPosCnt++;
+				{
+					// posizionamento delle pinch completate, passo alla verifica con la protective
+					TreatSetPinchPosTaskState = T_SET_PINCH_CHECK_POS;
+					TreatSetPinchPosTaskPresc = 0;
+					CorrectPosCnt = 0;
+					WrongPosCnt = 0;
+					if(IsPinchPosOk(PinchPos))
+						CorrectPosCnt++;
+					else
+						WrongPosCnt++;
+				}
 			}
 			break;
 		case T_SET_PINCH_CHECK_POS:
@@ -2157,7 +2169,8 @@ TREAT_SET_PINCH_POS_TASK_STATE TreatSetPinchPosTask(TREAT_SET_PINCH_POS_CMD cmd)
 						// la posizione e' identica a quella del protective per 3 volte consecutive, posso iniziare il trattamento
 						// il tasto BUTTON_START_TREATMENT lo ho gia' ricevuto, quindi, per il prossimo start
 						// devo forzarlo
-						setGUIButton(BUTTON_START_TREATMENT);						TreatSetPinchPosTaskState = T_SET_PINCH_END;
+						setGUIButton(BUTTON_START_TREATMENT);
+						TreatSetPinchPosTaskState = T_SET_PINCH_END;
 						DebugStringStr("PINCH TO ORGAN 1");
 					}
 				}
@@ -2249,6 +2262,9 @@ void manageParentTreatEntry(void){
 
 	// abilito allarme di pinch posizionate male
 	EnableBadPinchPosAlmFunc();
+
+	// inizializzo il controllo delle pinch fatto durante l'esecuzione del trattamento
+	CheckCurrPinchPosTask(CHECK_CURR_PINCH_POS_INIT_CMD);
 }
 
 void manageParentTreatAlways(void){
@@ -2257,10 +2273,11 @@ void manageParentTreatAlways(void){
 		int speed = 0;
 		static int timerCopy = 0;
 
-		if(GlobalFlags.FlagsDef.EnableBadPinchPosAlm)
+		//if(GlobalFlags.FlagsDef.EnableBadPinchPosAlm)
 		{
-			// l'operazione che segue, controlla il posizionamento delle pinch confrontando
-			// con quelle rilevate dalla protective
+			// l'operazione che segue, comanda il posizionamento delle pinch e controlla
+			// che sia corretto confrontandolo con quello rilevato dalla protective.
+			// Se sono uguali il trattamento inizia, altrimenti viene generato un allarme.
 			TREAT_SET_PINCH_POS_TASK_STATE TreatSePinchPosTaskStat;
 			TreatSePinchPosTaskStat = TreatSetPinchPosTask((TREAT_SET_PINCH_POS_CMD)T_SET_PINCH_NO_CMD);
 			if((TreatSePinchPosTaskStat == T_SET_PINCH_ALARM) ||
@@ -2399,6 +2416,7 @@ void manageParentTreatAlways(void){
 			}
 			//GlobalFlags.FlagsDef.EnableAllAlarms = 1;
 			SetAllAlarmEnableFlags();
+			EnableBadPinchPosAlmFunc();
 			// disabilito allarme di livello alto in trattamento (per ora)
 			GlobalFlags.FlagsDef.EnableLevHighAlarm = 0;
 			//GlobalFlags.FlagsDef.TankLevelHigh = 0;
@@ -2513,6 +2531,11 @@ void manageParentTreatAlways(void){
 				perfusionParam.treatVolAdsFilter +=  (word)((float)pumpPerist[3].actualSpeed * CONV_RPMMIN_TO_ML_PER_INTERVAL);
 			}
 		}
+
+		// Controllo continuo quando il trattamento e' in corso. Viene confrontata la posizione impostata delle
+		// pinch durante il trattamento con quella rilevata dalla protective.
+		// Se non coincidono viene generato un allarme
+		CheckCurrPinchPosTask(CHECK_CURR_PINCH_POS_NO_CMD);
 		break;
 
 		case PARENT_TREAT_KIDNEY_1_PUMP_ON:
@@ -2642,6 +2665,7 @@ void manageParentTreatAlways(void){
 					CheckDepurationSpeed(LastDepurationSpeed, TRUE, FALSE);				}
 				//GlobalFlags.FlagsDef.EnableAllAlarms = 1;
 				SetAllAlarmEnableFlags();
+				EnableBadPinchPosAlmFunc();
 				// disabilito allarme di livello alto in trattamento (per ora)
 				GlobalFlags.FlagsDef.EnableLevHighAlarm = 0;
 				//GlobalFlags.FlagsDef.TankLevelHigh = 0;
@@ -2761,6 +2785,11 @@ void manageParentTreatAlways(void){
 					//FilterFlowVal = CalcFilterFlow(pumpPerist[3].actualSpeed);
 				}
 			}
+
+			// Controllo continuo quando il trattamento e' in corso. Viene confrontata la posizione impostata delle
+			// pinch durante il trattamento con quella rilevata dalla protective.
+			// Se non coincidono viene generato un allarme
+			CheckCurrPinchPosTask(CHECK_CURR_PINCH_POS_NO_CMD);
 			break;
 
 		case PARENT_TREAT_KIDNEY_1_ALARM:

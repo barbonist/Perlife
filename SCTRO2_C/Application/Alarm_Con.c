@@ -869,7 +869,14 @@ void manageAlarmBadPinchPos(void)
 		alarmList[BAD_PINCH_POS].physic = PHYSIC_FALSE;
 	else
 	{
-		if(AreAllPinchClose() || IsTreatSetPinchPosTaskAlm())
+		// allarme generato se:
+		// -  sono a fine riciclo e le pinch arteriosa e venosa, dopo lo stop delle pompe,
+		//    non sono completamente chiuse
+		// -  allo start del trattamento il controllo delle pinch arteriosa e venosa non sono posizionate
+		//    correttamente per iniziare il trattamento
+		// -  durante l'esecuzione del trattamento nel caso, per un qualsiasi motivo, cambiasse la
+		//    configurazione delle pinch
+		if(AreAllPinchClose() || IsTreatSetPinchPosTaskAlm() || !IsTreatCurrPinchPosOk())
 		{
 			alarmList[BAD_PINCH_POS].physic = PHYSIC_TRUE;
 		}

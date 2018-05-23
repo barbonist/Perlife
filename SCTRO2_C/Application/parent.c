@@ -658,9 +658,16 @@ void ParentFunc(void)
 					releaseGUIButton(BUTTON_RESET_ALARM);
 					// qui non serve perche' l'allarme non e' ancora terminato
 					//EnableNextAlarmFunc(); //EnableNextAlarm = TRUE;
-					ptrFutureParent = &stateParentPrimingTreatKidney1[3];
+					ptrFutureParent = &stateParentTreatKidney1[1];
 					ptrFutureChild = ptrFutureParent->ptrChild;
 					LevelBuzzer = 0;
+
+					// preparo la macchina a stati per il controllo delle pinch aperte nella posizione richiesta
+					// per lo stato di trattamento
+					TreatSetPinchPosTask((TREAT_SET_PINCH_POS_CMD)T_SET_PINCH_RESET_CMD);
+					// forzo anche una pressione del tasto TREATMENT START per fare in modo che
+					// il trattamento riprenda automaticamente
+					setGUIButton(BUTTON_START_TREATMENT);
 				}
 				break;
 			}
@@ -1251,4 +1258,111 @@ bool IsButtResUsedByChild(void)
 	}
 	return ButtResUsedByChild;
 }
+
+
+
+extern bool FilterSelected;
+
+// controlla il posizionamento delle pinch nei vari stati
+CHECK_CURR_PINCH_POS_TASK_STATE CheckCurrPinchPosTask(CHECK_CURR_PINCH_POS_TASK_CMD cmd)
+{
+	static CHECK_CURR_PINCH_POS_TASK_STATE CheckCurrPinchPosTaskState = T_SET_PINCH_IDLE;
+	static unsigned char CorrectPosCnt = 0;
+	static unsigned char WrongPosCnt = 0;
+	static unsigned char PinchPos[3] = {0xff, 0xff, 0xff};
+	bool TreatCurrPinchPosOkFlag = TRUE;
+
+	if( cmd == CHECK_CURR_PINCH_POS_INIT_CMD)
+	{
+		// metto la macchina nella posizione di inizio controllo posizione pinch
+		CheckCurrPinchPosTaskState = CHK_PINCH_POS_INIT;
+	}
+	else if( cmd == CHECK_CURR_PINCH_POS_DISABLE_CMD)
+	{
+		// disabilito la macchina a stati che controlla il corretto posizionamento delle pinch
+		CheckCurrPinchPosTaskState = CHK_PINCH_POS_IDLE;
+		return CheckCurrPinchPosTaskState;
+	}
+	else if( cmd == CHECK_CURR_PINCH_POS_READ_CMD)
+	{
+		// ritorno lo stato in modo che posso vedere se sono in allarme
+		return CheckCurrPinchPosTaskState;
+	}
+	else if( cmd == CHECK_CURR_PINCH_POS_RESET_ALARM_CMD)
+	{
+		// se ero in allarme ripristino il controllo della posizione
+		if(CheckCurrPinchPosTaskState == CHK_PINCH_POS_ALARM)
+			CheckCurrPinchPosTaskState = CHK_PINCH_POS_INIT;
+		return CheckCurrPinchPosTaskState;
+	}
+
+	switch (CheckCurrPinchPosTaskState)
+	{
+		case CHK_PINCH_POS_IDLE:
+			break;
+		case CHK_PINCH_POS_INIT:
+			if((ptrCurrentParent->parent == PARENT_TREAT_KIDNEY_1_INIT) || (ptrCurrentParent->parent == PARENT_TREAT_KIDNEY_1_PUMP_ON))
+			{
+				PinchPos[0] = (FilterSelected) ? MODBUS_PINCH_RIGHT_OPEN : MODBUS_PINCH_LEFT_OPEN;
+				PinchPos[1] = MODBUS_PINCH_LEFT_OPEN;
+				PinchPos[2] = MODBUS_PINCH_LEFT_OPEN;
+				CheckCurrPinchPosTaskState = CHK_PINCH_POS_RUN;
+			}
+			break;
+		case CHK_PINCH_POS_RUN:
+			if(IsPinchPosOk(PinchPos))
+			{
+				WrongPosCnt = 0;
+				CorrectPosCnt++;
+				if(CorrectPosCnt >= 3)
+				{
+					// pinch posizionata correttamente
+					TreatCurrPinchPosOkFlag = TRUE;
+					CheckCurrPinchPosTaskState = CHK_PINCH_POS_RESTART;
+				}
+			}
+			else
+			{
+				CorrectPosCnt = 0;
+				WrongPosCnt++;
+				if(WrongPosCnt >= 3)
+				{
+					// pinch posizionata in modo errato
+					TreatCurrPinchPosOkFlag = FALSE;
+					CheckCurrPinchPosTaskState = CHK_PINCH_POS_ALARM;
+				}
+			}
+			break;
+		case CHK_PINCH_POS_RESTART:
+			WrongPosCnt = 0;
+			CorrectPosCnt = 0;
+			CheckCurrPinchPosTaskState = CHK_PINCH_POS_RUN;
+			break;
+		case CHK_PINCH_POS_ALARM:
+			break;
+	}
+	return TreatCurrPinchPosOkFlag;
+}
+
+// ritorna TRUE se la posizione e' corretta
+bool IsTreatCurrPinchPosOk(void)
+{
+	bool TreatCurrPinchPosOkFlag;
+	CHECK_CURR_PINCH_POS_TASK_STATE st = CheckCurrPinchPosTask((CHECK_CURR_PINCH_POS_TASK_CMD)CHECK_CURR_PINCH_POS_READ_CMD);
+	if(st == CHK_PINCH_POS_ALARM)
+		TreatCurrPinchPosOkFlag = FALSE;
+	else
+		TreatCurrPinchPosOkFlag = TRUE;
+	return TreatCurrPinchPosOkFlag;
+}
+
+// fa uscire la macchina a stati dalla posizione di allarme e la rimette nello
+// stato di controllo della posizione
+void ResetTreatCurrPinchPosOk(void)
+{
+	CHECK_CURR_PINCH_POS_TASK_STATE st = CheckCurrPinchPosTask((CHECK_CURR_PINCH_POS_TASK_CMD)CHECK_CURR_PINCH_POS_READ_CMD);
+	if(st == CHK_PINCH_POS_ALARM)
+		CheckCurrPinchPosTask((CHECK_CURR_PINCH_POS_TASK_CMD)CHECK_CURR_PINCH_POS_INIT_CMD);
+}
+
 

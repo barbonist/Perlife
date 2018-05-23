@@ -308,11 +308,13 @@ void manageChildPrimAlmPumpNotStillAlways(void)
 /* Manage CHILD_PRIM_ALARM_BAD_PINCH_POS entry state in priming*/
 void manageChildPrimAlmBadPinchPosEntry(void)
 {
+	manageChildTreatAlm1StopAllActEntry();
 }
 
 void ResetTreatSetPinchPosTaskAlm(void);
 void manageChildPrimAlmBadPinchPosAlways(void)
 {
+	manageChildTreatAlm1StopAllActAlways();
 	if(buttonGUITreatment[BUTTON_RESET_ALARM].state == GUI_BUTTON_RELEASED)
 	{
 		ResetPrimPinchAlm();
@@ -972,13 +974,18 @@ void manageChildAlmAndWaitCmdAlways(void)
 // CHILD_TREAT_ALARM_BAD_PINCH_POS state
 void manageChildTreatAlmBadPinchPosEntry(void)
 {
-
+	manageChildTreatAlm1StopAllActEntry();
 }
 void manageChildTreatAlmBadPinchPosAlways(void)
 {
+	manageChildTreatAlm1StopAllActAlways();
 	if(buttonGUITreatment[BUTTON_RESET_ALARM].state == GUI_BUTTON_RELEASED)
 	{
+		// se l'allarme era stato generato durante il posizionamento iniziale delle pinch prima di iniziare
+		// il trattamento (pompe ferme)
 		ResetTreatSetPinchPosTaskAlm();
+		// se l'allarme era stato generato da qualche problema quando il trattamento era gia' attivo (pompe in movimento)
+		ResetTreatCurrPinchPosOk();
 		// evito di fare la release perche' il comando mi servira' per uscire dallo stato PARENT_TREAT_KIDNEY_1_ALARM
 		//releaseGUIButton(BUTTON_RESET_ALARM);
 		EnableNextAlarmFunc(); //EnableNextAlarm = TRUE;
@@ -986,6 +993,7 @@ void manageChildTreatAlmBadPinchPosAlways(void)
 	else if(buttonGUITreatment[BUTTON_OVERRIDE_ALARM].state == GUI_BUTTON_RELEASED)
 	{
 		ResetTreatSetPinchPosTaskAlm();
+		ResetTreatCurrPinchPosOk();
 		ForceCurrentAlarmOff();
 		releaseGUIButton(BUTTON_OVERRIDE_ALARM);
 		EnableNextAlarmFunc(); //EnableNextAlarm = TRUE;
