@@ -1834,6 +1834,15 @@ bool IsDisposableEmptyNoAlarm(void)
 	return DispEmpty;
 }
 
+// ritorna true se c'e' un allarme attivo
+bool IsAlarmActive(void)
+{
+	if(alarmCurrent.code && (alarmCurrent.code == ptrAlarmCurrent->code) && (ptrAlarmCurrent->active == ACTIVE_TRUE))
+		return TRUE;
+	else
+		return FALSE;
+}
+
 
 // usata nel task HandleProtectiveAlarm per la gestione dell'allarme generato dalla protective
 bool IsControlInAlarm(void)

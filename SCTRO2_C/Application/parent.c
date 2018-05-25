@@ -60,7 +60,7 @@
 #include "pid.h"
 #include "Comm_Sbc.h"
 
-
+extern bool AtLeastoneButResRcvd;
 
 void ParentFunc(void)
 {
@@ -178,6 +178,7 @@ void ParentFunc(void)
 						releaseGUIButton(BUTTON_RESET_ALARM);
 						EnableNextAlarmFunc(); //EnableNextAlarm = TRUE;
 						LevelBuzzer = 0;
+						AtLeastoneButResRcvd = TRUE;
 					}
 					// ho ricevuto un BUTTON_RESET_ALARM e l'allarme era ancora attivo oppure
 					// ho ricevuto un BUTTON_RESET_ALARM dopo che l'allarme e' stato cancellato perche' la condizione
@@ -221,6 +222,7 @@ void ParentFunc(void)
 				{
 					// Il ritorno al priming viene fatto solo dopo la pressione del tasto BUTTON_RESET_ALARM
 					releaseGUIButton(BUTTON_RESET_ALARM);
+					AtLeastoneButResRcvd = TRUE;
 					EnableNextAlarmFunc(); //EnableNextAlarm = TRUE;
 //					if(GlobalFlags.FlagsDef.TankLevelHigh)
 //					{
@@ -243,9 +245,22 @@ void ParentFunc(void)
 					ptrFutureChild = ptrFutureParent->ptrChild;
 					LevelBuzzer = 0;
 				}
+				else if(!IsAlarmActive())
+				{
+					// in questa situazione ci posso finire per errore o per questioni di timing tra button reset
+					// e le guard
+					if(AtLeastoneButResRcvd)
+					{
+						ptrFutureParent = &stateParentPrimingTreatKidney1[3];
+						ptrFutureChild = ptrFutureParent->ptrChild;
+						LevelBuzzer = 0;
+						setGUIButton(BUTTON_START_PRIMING);
+					}
+				}
 			}
 			else if(buttonGUITreatment[BUTTON_RESET_ALARM].state == GUI_BUTTON_RELEASED)
 			{
+				AtLeastoneButResRcvd = TRUE;
 				// ho ricevuto un reset allarme ma la condizione fisica di allarme non e' ancora andata via
 				//  se lo stato child non e' in SECURITY_STOP_ALL_ACTUATOR il tasto reset potrebbe servire a lui per
 				// disabilitare l'allarme.
@@ -257,10 +272,24 @@ void ParentFunc(void)
 					ptrFutureParent = &stateParentPrimingTreatKidney1[3];
 					ptrFutureChild = ptrFutureParent->ptrChild;
 					LevelBuzzer = 0;
+					setGUIButton(BUTTON_START_PRIMING);
+					break;
+				}
+			}
+			else if(!IsAlarmActive())
+			{
+				// in questa situazione ci posso finire per errore o per questioni di timing tra button reset
+				// e le guard
+				if(AtLeastoneButResRcvd)
+				{
+					currentGuard[GUARD_ALARM_ACTIVE].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
+					ptrFutureParent = &stateParentPrimingTreatKidney1[3];
+					ptrFutureChild = ptrFutureParent->ptrChild;
+					LevelBuzzer = 0;
+					setGUIButton(BUTTON_START_PRIMING);
 				}
 				break;
 			}
-
 			if(ptrCurrentParent->action == ACTION_ON_ENTRY)
 			{
 				/* execute parent callback function */
@@ -580,6 +609,7 @@ void ParentFunc(void)
 					LevelBuzzer = 0;
 					// preparo la macchina a stati per il controllo delle pinch aperte nella posizione richiesta per lo stato di trattamento
 					TreatSetPinchPosTask((TREAT_SET_PINCH_POS_CMD)T_SET_PINCH_RESET_CMD);
+					AtLeastoneButResRcvd = TRUE;
 				}
 
 				if((currentGuard[GUARD_ALARM_AIR_FILT_RECOVERY].guardValue == GUARD_VALUE_TRUE) || (ButtonResetRcvd && TreatAlm1SafAirFiltActive))
@@ -646,6 +676,25 @@ void ParentFunc(void)
 							setGUIButton(BUTTON_START_TREATMENT);
 //						}
 					}
+					else if(!IsAlarmActive())
+					{
+						// in questa situazione ci posso finire per errore o per questioni di timing tra button reset
+						// e le guard. In realta' l'allarme no e' attivo.
+						if(AtLeastoneButResRcvd)
+						{
+							ptrFutureParent = &stateParentTreatKidney1[1];
+							ptrFutureChild = ptrFutureParent->ptrChild;
+							LevelBuzzer = 0;
+
+							// preparo la macchina a stati per il controllo delle pinch aperte nella posizione richiesta
+							// per lo stato di trattamento
+							TreatSetPinchPosTask((TREAT_SET_PINCH_POS_CMD)T_SET_PINCH_RESET_CMD);
+							// forzo anche una pressione del tasto TREATMENT START per fare in modo che
+							// il trattamento riprenda automaticamente
+							setGUIButton(BUTTON_START_TREATMENT);
+						}
+						break;
+					}
 				}
 			}
 			else if(buttonGUITreatment[BUTTON_RESET_ALARM].state == GUI_BUTTON_RELEASED)
@@ -653,11 +702,32 @@ void ParentFunc(void)
 				// ho ricevuto un reset allarme ma la condizione fisica di allarme non e' ancora andata via.
 				// Se lo stato child non e' in SECURITY_STOP_ALL_ACTUATOR il tasto reset potrebbe servire a lui per
 				// disabilitare l'allarme.
+				AtLeastoneButResRcvd = TRUE;
 				if(!IsButtResUsedByChild())
 				{
 					releaseGUIButton(BUTTON_RESET_ALARM);
 					// qui non serve perche' l'allarme non e' ancora terminato
 					//EnableNextAlarmFunc(); //EnableNextAlarm = TRUE;
+					ptrFutureParent = &stateParentTreatKidney1[1];
+					ptrFutureChild = ptrFutureParent->ptrChild;
+					LevelBuzzer = 0;
+
+					// preparo la macchina a stati per il controllo delle pinch aperte nella posizione richiesta
+					// per lo stato di trattamento
+					TreatSetPinchPosTask((TREAT_SET_PINCH_POS_CMD)T_SET_PINCH_RESET_CMD);
+					// forzo anche una pressione del tasto TREATMENT START per fare in modo che
+					// il trattamento riprenda automaticamente
+					setGUIButton(BUTTON_START_TREATMENT);
+					break;
+				}
+			}
+			else if(!IsAlarmActive())
+			{
+				// in questa situazione ci posso finire per errore o per questioni di timing tra button reset
+				// e le guard. In realta' l'allarme no e' attivo.
+				if(AtLeastoneButResRcvd)
+				{
+					currentGuard[GUARD_ALARM_ACTIVE].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
 					ptrFutureParent = &stateParentTreatKidney1[1];
 					ptrFutureChild = ptrFutureParent->ptrChild;
 					LevelBuzzer = 0;
@@ -709,6 +779,9 @@ void ParentFunc(void)
 				ptrFutureParent = &stateParentTreatKidney1[1];
 				ptrFutureChild = ptrFutureParent->ptrChild;
 
+				// preparo la macchina a stati per il posizionamento e controllo delle pinch aperte nella posizione richiesta
+				// per lo stato di trattamento
+				TreatSetPinchPosTask((TREAT_SET_PINCH_POS_CMD)T_SET_PINCH_RESET_CMD);
 				// forzo anche una pressione del tasto TREATMENT START per fare in modo che
 				// il trattamento riprenda automaticamente
 				setGUIButton(BUTTON_START_TREATMENT);
@@ -751,6 +824,9 @@ void ParentFunc(void)
 				ptrFutureParent = &stateParentTreatKidney1[1];
 				ptrFutureChild = ptrFutureParent->ptrChild;
 
+				// preparo la macchina a stati per il posizionamento e controllo delle pinch aperte nella posizione richiesta
+				// per lo stato di trattamento
+				TreatSetPinchPosTask((TREAT_SET_PINCH_POS_CMD)T_SET_PINCH_RESET_CMD);
 				// forzo anche una pressione del tasto TREATMENT START per fare in modo che
 				// il trattamento riprenda automaticamente
 				setGUIButton(BUTTON_START_TREATMENT);
@@ -793,6 +869,9 @@ void ParentFunc(void)
 				ptrFutureParent = &stateParentTreatKidney1[1];
 				ptrFutureChild = ptrFutureParent->ptrChild;
 
+				// preparo la macchina a stati per il posizionamento e controllo delle pinch aperte nella posizione richiesta
+				// per lo stato di trattamento
+				TreatSetPinchPosTask((TREAT_SET_PINCH_POS_CMD)T_SET_PINCH_RESET_CMD);
 				// forzo anche una pressione del tasto TREATMENT START per fare in modo che
 				// il trattamento riprenda automaticamente
 				setGUIButton(BUTTON_START_TREATMENT);
@@ -1184,185 +1263,5 @@ void ParentFuncT1Test(void)
 #endif
 }
 
-// ritorna TRUE quando sono in uno stato dove la struttura parent prevede la gestione dell'allarme
-// QUESTA FUZIONE DOVREBBE ESSERE AGGIORNATA OGNI VOLTA CHE SI AGGIUNGE UN NUOVO STATO CHE PREVEDE
-// LA GESTIONE DEGLI ALLARMI
-bool AmJInAlarmHandledState(void)
-{
-	bool InAlarmState = FALSE;
-	if((ptrCurrentParent->parent == PARENT_EMPTY_DISPOSABLE_INIT) ||
-	   (ptrCurrentParent->parent == PARENT_EMPTY_DISPOSABLE_RUN) ||
-	   (ptrCurrentParent->parent == PARENT_PRIMING_TREAT_KIDNEY_1_INIT) ||
-	   (ptrCurrentParent->parent == PARENT_PRIMING_TREAT_KIDNEY_1_RUN) ||
-	   (ptrCurrentParent->parent == PARENT_PRIM_WAIT_MOT_STOP) ||
-	   (ptrCurrentParent->parent == PARENT_PRIM_WAIT_PINCH_CLOSE) ||
-	   (ptrCurrentParent->parent == PARENT_PRIM_KIDNEY_1_AIR_FILT) ||
-	   (ptrCurrentParent->parent == PARENT_TREAT_KIDNEY_1_INIT) ||
-	   (ptrCurrentParent->parent == PARENT_TREAT_KIDNEY_1_PUMP_ON) ||
-	   (ptrCurrentParent->parent == PARENT_TREAT_KIDNEY_1_AIR_FILT) ||
-	   (ptrCurrentParent->parent == PARENT_TREAT_KIDNEY_1_SFV) ||
-	   (ptrCurrentParent->parent == PARENT_TREAT_KIDNEY_1_SFA)
-	   )
-		InAlarmState = TRUE;
-	return InAlarmState;
-}
-
-// ritorna TRUE quando sono in uno stato di gestione allarme (le pompe e pinch sono gia' in sicurezza)
-// QUESTA FUZIONE DOVREBBE ESSERE AGGIORNATA OGNI VOLTA CHE SI AGGIUNGE UN NUOVO STATO PER LA GESTIONE
-// DI ALLARMI
-bool AmJInAlarmState(void)
-{
-	bool InAlarmState = FALSE;
-	if((ptrCurrentParent->parent == PARENT_EMPTY_DISPOSABLE_ALARM) ||
-	   (ptrCurrentParent->parent == PARENT_TREAT_KIDNEY_1_ALM_AIR_REC) ||
-	   (ptrCurrentParent->parent == PARENT_TREAT_KIDNEY_1_ALARM) ||
-	   (ptrCurrentParent->parent == PARENT_PRIM_KIDNEY_1_ALM_AIR_REC) ||
-	   (ptrCurrentParent->parent == PARENT_PRIMING_END_RECIRC_ALARM) ||
-	   (ptrCurrentParent->parent == PARENT_PRIMING_TREAT_KIDNEY_1_ALARM))
-		InAlarmState = TRUE;
-	return InAlarmState;
-}
-
-// Se sono in uno stato non di allarme ma l'allarme verso la GUI e' diverso da 0, allora
-// forzo annullamento allarme perche' e' una situazione di errore.
-// Vuol dire che per un qualche motivo il reset dell'allarme non ha funzionato
-void CheckAlarmForGuiStateMsg(void)
-{
-	if(!AmJInAlarmState())
-	{
-		if(alarmCurrent.code)
-			memset(&alarmCurrent, 0, sizeof(struct alarm));
-	}
-}
-
-// ritorna TRUE se lo stato child ha bisogno del button reset per fare qualcosa
-// QUESTA FUZIONE DOVREBBE ESSERE AGGIORNATA OGNI VOLTA CHE SI AGGIUNGE UN NUOVO STATO PER LA GESTIONE
-// DI ALLARMI DOVE LO STATO CHILD HA BISOGNO DI UN BUTTON RESET
-bool IsButtResUsedByChild(void)
-{
-	bool ButtResUsedByChild = FALSE;
-	if((ptrCurrentChild->child == CHILD_PRIM_ALARM_1_WAIT_CMD) ||
-	   (ptrCurrentChild->child == CHILD_PRIM_ALARM_PUMPS_NOT_STILL) ||
-	   (ptrCurrentChild->child == CHILD_PRIM_ALARM_BAD_PINCH_POS) ||
-	   (ptrCurrentChild->child == CHILD_PRIM_ALARM_SFA_AIR_DET) ||
-	   (ptrCurrentChild->child == CHILD_PRIM_ALARM_MOD_BUS) ||
-	   (ptrCurrentChild->child == CHILD_TREAT_ALARM_1_SAF_AIR_FILT) ||
-	   (ptrCurrentChild->child == CHILD_TREAT_ALARM_1_SFA_AIR) ||
-	   (ptrCurrentChild->child == CHILD_TREAT_ALARM_1_SFV_AIR) ||
-	   (ptrCurrentChild->child == CHILD_TREAT_ALARM_1_WAIT_CMD) ||
-	   (ptrCurrentChild->child == CHILD_TREAT_ALARM_BAD_PINCH_POS) ||
-	   (ptrCurrentChild->child == CHILD_TREAT_ALARM_MOD_BUS_ERROR) ||
-	   (ptrCurrentChild->child == CHILD_EMPTY_ALARM_MOD_BUS))
-	{
-		ButtResUsedByChild = TRUE;
-	}
-	return ButtResUsedByChild;
-}
-
-
-
-extern bool FilterSelected;
-
-// controlla il posizionamento delle pinch nei vari stati
-CHECK_CURR_PINCH_POS_TASK_STATE CheckCurrPinchPosTask(CHECK_CURR_PINCH_POS_TASK_CMD cmd)
-{
-	static CHECK_CURR_PINCH_POS_TASK_STATE CheckCurrPinchPosTaskState = T_SET_PINCH_IDLE;
-	static unsigned char CorrectPosCnt = 0;
-	static unsigned char WrongPosCnt = 0;
-	static unsigned char PinchPos[3] = {0xff, 0xff, 0xff};
-	bool TreatCurrPinchPosOkFlag = TRUE;
-
-	if( cmd == CHECK_CURR_PINCH_POS_INIT_CMD)
-	{
-		// metto la macchina nella posizione di inizio controllo posizione pinch
-		CheckCurrPinchPosTaskState = CHK_PINCH_POS_INIT;
-	}
-	else if( cmd == CHECK_CURR_PINCH_POS_DISABLE_CMD)
-	{
-		// disabilito la macchina a stati che controlla il corretto posizionamento delle pinch
-		CheckCurrPinchPosTaskState = CHK_PINCH_POS_IDLE;
-		return CheckCurrPinchPosTaskState;
-	}
-	else if( cmd == CHECK_CURR_PINCH_POS_READ_CMD)
-	{
-		// ritorno lo stato in modo che posso vedere se sono in allarme
-		return CheckCurrPinchPosTaskState;
-	}
-	else if( cmd == CHECK_CURR_PINCH_POS_RESET_ALARM_CMD)
-	{
-		// se ero in allarme ripristino il controllo della posizione
-		if(CheckCurrPinchPosTaskState == CHK_PINCH_POS_ALARM)
-			CheckCurrPinchPosTaskState = CHK_PINCH_POS_INIT;
-		return CheckCurrPinchPosTaskState;
-	}
-
-	switch (CheckCurrPinchPosTaskState)
-	{
-		case CHK_PINCH_POS_IDLE:
-			break;
-		case CHK_PINCH_POS_INIT:
-			if((ptrCurrentParent->parent == PARENT_TREAT_KIDNEY_1_INIT) || (ptrCurrentParent->parent == PARENT_TREAT_KIDNEY_1_PUMP_ON))
-			{
-				PinchPos[0] = (FilterSelected) ? MODBUS_PINCH_RIGHT_OPEN : MODBUS_PINCH_LEFT_OPEN;
-				PinchPos[1] = MODBUS_PINCH_LEFT_OPEN;
-				PinchPos[2] = MODBUS_PINCH_LEFT_OPEN;
-				CheckCurrPinchPosTaskState = CHK_PINCH_POS_RUN;
-			}
-			break;
-		case CHK_PINCH_POS_RUN:
-			if(IsPinchPosOk(PinchPos))
-			{
-				WrongPosCnt = 0;
-				CorrectPosCnt++;
-				if(CorrectPosCnt >= 3)
-				{
-					// pinch posizionata correttamente
-					TreatCurrPinchPosOkFlag = TRUE;
-					CheckCurrPinchPosTaskState = CHK_PINCH_POS_RESTART;
-				}
-			}
-			else
-			{
-				CorrectPosCnt = 0;
-				WrongPosCnt++;
-				if(WrongPosCnt >= 3)
-				{
-					// pinch posizionata in modo errato
-					TreatCurrPinchPosOkFlag = FALSE;
-					CheckCurrPinchPosTaskState = CHK_PINCH_POS_ALARM;
-				}
-			}
-			break;
-		case CHK_PINCH_POS_RESTART:
-			WrongPosCnt = 0;
-			CorrectPosCnt = 0;
-			CheckCurrPinchPosTaskState = CHK_PINCH_POS_RUN;
-			break;
-		case CHK_PINCH_POS_ALARM:
-			break;
-	}
-	return TreatCurrPinchPosOkFlag;
-}
-
-// ritorna TRUE se la posizione e' corretta
-bool IsTreatCurrPinchPosOk(void)
-{
-	bool TreatCurrPinchPosOkFlag;
-	CHECK_CURR_PINCH_POS_TASK_STATE st = CheckCurrPinchPosTask((CHECK_CURR_PINCH_POS_TASK_CMD)CHECK_CURR_PINCH_POS_READ_CMD);
-	if(st == CHK_PINCH_POS_ALARM)
-		TreatCurrPinchPosOkFlag = FALSE;
-	else
-		TreatCurrPinchPosOkFlag = TRUE;
-	return TreatCurrPinchPosOkFlag;
-}
-
-// fa uscire la macchina a stati dalla posizione di allarme e la rimette nello
-// stato di controllo della posizione
-void ResetTreatCurrPinchPosOk(void)
-{
-	CHECK_CURR_PINCH_POS_TASK_STATE st = CheckCurrPinchPosTask((CHECK_CURR_PINCH_POS_TASK_CMD)CHECK_CURR_PINCH_POS_READ_CMD);
-	if(st == CHK_PINCH_POS_ALARM)
-		CheckCurrPinchPosTask((CHECK_CURR_PINCH_POS_TASK_CMD)CHECK_CURR_PINCH_POS_INIT_CMD);
-}
 
 

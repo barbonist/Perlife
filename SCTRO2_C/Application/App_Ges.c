@@ -109,6 +109,9 @@ bool AlarmInPrimingEntered = FALSE;
 // sono dovuto fermare. Alla ripartenza devo decidere se ripartire in alta velocita' o no.
 bool AlarmOrStopInRecircFlag = FALSE;
 
+// usato negli stati di allarme per ricordarmi di aver ricevuto almeno un BUTTON_RESET
+bool AtLeastoneButResRcvd = FALSE;
+
 
 void CallInIdleState(void)
 {
@@ -197,6 +200,7 @@ void CallInIdleState(void)
 	ClearAlarmState();
 	ResetPrimPinchAlm();
 	CheckCurrPinchPosTask(CHECK_CURR_PINCH_POS_DISABLE_CMD);
+	AtLeastoneButResRcvd = FALSE;
 }
 
 
@@ -1995,6 +1999,8 @@ void manageParentPrimingAlarmEntry(void)
 
 	if(ptrCurrentState->state == STATE_PRIMING_RICIRCOLO)
 		AlarmOrStopInRecircFlag = TRUE;
+
+	AtLeastoneButResRcvd = FALSE;
 }
 
 
@@ -2007,6 +2013,7 @@ void manageParentPrimingAlarmAlways(void){
 /*----------------------------------------INIZIO PARENT TREATMENTLEVEL FUNCTION -----------------------------------------------*/
 
 void manageParentTreatAlarmEntry(void){
+	AtLeastoneButResRcvd = FALSE;
 }
 
 void manageParentTreatAlarmAlways(void){
@@ -4132,7 +4139,7 @@ void processMachineState(void)
 	if(ptrCurrentState->state != Oldstate)
 	{
 		// elimino un eventuale allarme pendente quando entro in un nuovo stato
-		ClearAlarmState();
+		//ClearAlarmState();
 		Oldstate = ptrCurrentState->state;
 	}
 
@@ -5172,274 +5179,6 @@ void Manage_Panic_Button(void)
 }
 
 
-// Task di controllo della temperatura
-// Se supero di 1 grado la temperatura target spengo le Peltier e le riaccendo quando
-// la temperatura ha raggiunto di nuovo il target.
-// Questo avviene solo quando sono in trattamento
-void LiquidTempContrTask(LIQUID_TEMP_CONTR_CMD LiqTempContrCmd)
-{
-	static unsigned long TempOkTimeout;
-	static LIQUID_TEMP_CONTR_STATE LiquidTempContrState = INIT_LIQTEMPCONTR_STATE;
-	static LIQ_PELTIER_STATE PeltierState = UNDEF;
-	int CurrTemp;
-	int myTempValue;
-
-//	if(ptrCurrentState->state != STATE_TREATMENT_KIDNEY_1)
-//		return;
-
-	if(LiqTempContrCmd == RESET_LIQUID_TEMP_CONTR_CMD)
-	{
-		LiquidTempContrState = INIT_LIQTEMPCONTR_STATE;
-	}
-
-	CurrTemp = (int)(sensorIR_TM[1].tempSensValue * 10.0);
-	myTempValue = (int)parameterWordSetFromGUI[PAR_SET_PRIMING_TEMPERATURE_PERFUSION].value;
-	switch (LiquidTempContrState)
-	{
-		// controllo del mantenimento della temperatura precedentemente raggiunta
-		case INIT_LIQTEMPCONTR_STATE:
-			LiquidTempContrState = READ_LIQTEMPCONTR_STATE;
-			break;
-		case READ_LIQTEMPCONTR_STATE:
-			if(CurrTemp >= (myTempValue + DELTA_TEMP_TO_STOP_PELTIER))
-			{
-				if(PeltierState != OFF)
-				{
-					// le celle NON SONO SPENTE
-					// la temperatura del reservoir e' superiore a quella impostata di almeno un grado
-					// passo a controllare che questo si mantenga vero per un certo periodo di tempo
-					LiquidTempContrState = CHECK_TEMP_HIGH;
-					TempOkTimeout = timerCounterModBus;
-				}
-			}
-			else if(CurrTemp <= (myTempValue + DELTA_TEMP_TO_RESTART_PELTIER))
-			{
-				if(PeltierState != ON)
-				{
-					// le celle NON SONO ACCESE
-					// la temperatura e' ritornata vicino al valore target posso far ripartire le Peltier
-					LiquidTempContrState = CHECK_TEMP_LOW;
-					TempOkTimeout = timerCounterModBus;
-				}
-			}
-			break;
-		case CHECK_TEMP_HIGH:
-			// verifico che la temperatura si mantenga al di sopra del valore di controllo per un certo
-			// periodo di tempo
-			if(CurrTemp >= (myTempValue + DELTA_TEMP_TO_STOP_PELTIER))
-			{
-				// ho raggiunto la temperatura target
-				if(msTick_elapsed(TempOkTimeout) * 50L >= LIQUID_TEMP_CONTR_TASK_TIME)
-				{
-					// la temperatura del reservoir e' superiore a quella impostata di almeno mezzo grado
-					// fermo le Peltier e mi metto in attesa che si raffreddino
-					peltierCell.StopEnable = 1;
-					peltierCell2.StopEnable = 1;
-					PeltierState = OFF;
-					LiquidTempContrState = INIT_LIQTEMPCONTR_STATE;
-				}
-			}
-			else
-			{
-				LiquidTempContrState = READ_LIQTEMPCONTR_STATE;
-			}
-			break;
-		case CHECK_TEMP_LOW:
-			// verifico che la temperatura si mantenga al di sotto del valore di controllo per un certo
-			// periodo di tempo
-			if(CurrTemp <= (myTempValue + DELTA_TEMP_TO_RESTART_PELTIER))
-			{
-				// ho raggiunto la temperatura target
-				if(msTick_elapsed(TempOkTimeout) * 50L >= LIQUID_TEMP_CONTR_TASK_TIME)
-				{
-					// la temperatura e' ritornata vicino al valore target posso far ripartire le Peltier
-					// la differenza di 2 decimi di grado serve per poter far ripartire le peltier
-					peltierCell.readAlwaysEnable = 0;
-					peltierCell2.readAlwaysEnable = 0;
-					PeltierState = ON;
-					LiquidTempContrState = INIT_LIQTEMPCONTR_STATE;
-				}
-			}
-			else
-			{
-				LiquidTempContrState = READ_LIQTEMPCONTR_STATE;
-			}
-			break;
-	}
-}
-
-
-
-
-bool IsPumpStopAlarmActive(void)
-{
-	CHECK_PUMP_STOP_STATE st;
-	st = CheckPumpStopTask((CHECK_PUMP_STOP_CMD)NO_CHECK_PUMP_READ_ALM_CMD);
-	if((st == PUMP_WRITE_ALARM) || StopMotorTimeOut)
-		return TRUE;
-	else
-		return FALSE;
-}
-
-void ClearPumpStopAlarm(void)
-{
-	CheckPumpStopTask((CHECK_PUMP_STOP_CMD)RESET_ALARM);
-}
-
-// Ritorna TRUE se tutte le 4 pompe sono ferme
-bool AreAllPumpsStopped( void )
-{
-	if(PumpStoppedCnt >= 3)
-		return TRUE;
-	else
-		return FALSE;
-}
-
-int debugVal = 0;
-// cmd comando per eventuare riposizionamento della macchina a stati
-CHECK_PUMP_STOP_STATE CheckPumpStopTask(CHECK_PUMP_STOP_CMD cmd)
-{
-	static CHECK_PUMP_STOP_STATE CheckPumpStopTaskMach = CHECK_PUMP_STOP_IDLE;
-	static int Delay = 0;
-	static int CheckPumpStopCnt = 0;
-	char PompeInMovimento = 0;
-
-	if(cmd == INIT_CHECK_SEQ_CMD)
-	{
-		CheckPumpStopTaskMach = WAIT_FOR_NEW_READ;
-		Delay = 0;
-		CheckPumpStopCnt = 0;
-		DisableCheckPumpStopTask = 0;
-		PumpStoppedCnt = 0;
-		StopMotorTimeOut = FALSE;
-		return CheckPumpStopTaskMach;
-	}
-	else if(cmd == RESET_ALARM)
-	{
-		// lo metto in uno stato di inattivita'
-		CheckPumpStopTaskMach = CHECK_PUMP_STOP_IDLE;
-		StopMotorTimeOut = FALSE;
-		return CheckPumpStopTaskMach;
-	}
-	else if(cmd == NO_CHECK_PUMP_READ_ALM_CMD)
-	{
-		return CheckPumpStopTaskMach;
-	}
-
-	// dal momento in cui viene fatto un accesso alle pompe da service, questo task non viene piu'
-	// eseguito. Verra' ripristinato alla ricezione del primo comando INIT_CHECK_SEQ_CMD
-	if(DisableCheckPumpStopTask)
-		return CheckPumpStopTaskMach;
-
-	if(!( ((ptrCurrentState->state == STATE_TREATMENT_KIDNEY_1) &&
-	      ((ptrCurrentParent->parent == PARENT_TREAT_WAIT_START) || (ptrCurrentParent->parent == PARENT_TREAT_WAIT_PAUSE))) ||
-		  ((ptrCurrentState->state == STATE_PRIMING_RICIRCOLO) && (ptrCurrentParent->parent == PARENT_PRIM_WAIT_MOT_STOP)) ||
-		  (ptrCurrentState->state == STATE_IDLE) ||
-		  ((ptrCurrentState->state == STATE_PRIMING_PH_1) && (ptrCurrentParent->parent == PARENT_PRIM_WAIT_PAUSE)) ||
-		  ((ptrCurrentState->state == STATE_PRIMING_PH_2) && (ptrCurrentParent->parent == PARENT_PRIM_WAIT_PAUSE))
-		))
-	{
-		// se il task viene chiamato in uno stato non corretto
-		return CheckPumpStopTaskMach;
-	}
-
-	switch (CheckPumpStopTaskMach)
-	{
-		case CHECK_PUMP_STOP_IDLE:
-			break;
-
-		case WAIT_FOR_NEW_READ:
-			// in questo stato ci va all'inizio del priming ed in attesa di iniziare la fase di ricircolo
-			Delay++;
-			if(Delay > 20)
-			{
-				// aspetto 1 secondo poi vado a controllare le velocita' delle pompe
-				CheckPumpStopTaskMach = READ_PUMP_SPEED;
-				Delay = 0;
-			}
-			break;
-
-		case READ_PUMP_SPEED:
-			PompeInMovimento = 0;
-			if(GetTherapyType() == KidneyTreat)
-			{
-				for(int i = 0; i <= 3; i++)
-				{
-					if(i == 1)
-						continue;
-					if(modbusData[i][17] != 0)
-					{
-						// la pompa non e' ferma
-						PompeInMovimento = 1;
-						break;
-					}
-				}
-
-				if(PompeInMovimento)
-				{
-					setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, (int)0);
-					setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, (int)0);
-					//setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, (int)0);
-					CheckPumpStopCnt++;
-				}
-			}
-			else if((GetTherapyType() == LiverTreat))
-			{
-				for(int i = 0; i <= 3; i++)
-				{
-					if(modbusData[i][17] != 0)
-					{
-						// la pompa non e' ferma
-						PompeInMovimento = 1;
-						break;
-					}
-				}
-
-				if(PompeInMovimento)
-				{
-					// l'if che segue puo' essere inserito, insieme al codice alla linea 1606,
-					// solo se devo controllare in debug l'allarme di pompe che non si
-					// fermano alla fine del ricircolo
-					//if(debugVal) // solo per debug. DA TOGLIERE !!!!
-					{
-					setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, (int)0);
-					setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, (int)0);
-					setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, (int)0);
-					}
-					CheckPumpStopCnt++;
-				}
-			}
-			if(PompeInMovimento)
-			{
-				if(CheckPumpStopCnt >= 3)
-				{
-					// ho superato il numero massimo di tentativi senza successo, devo generare un allarme
-					CheckPumpStopTaskMach = PUMP_WRITE_ALARM;
-				}
-				else
-				{
-					CheckPumpStopTaskMach = WAIT_FOR_NEW_READ;
-					Delay = 0;
-				}
-				PumpStoppedCnt = 0;
-			}
-			else
-			{
-				CheckPumpStopTaskMach = WAIT_FOR_NEW_READ;
-				Delay = 0;
-				CheckPumpStopCnt = 0;
-				PumpStoppedCnt++;
-			}
-			break;
-
-		case PUMP_WRITE_ALARM:
-			break;
-
-		case END_PROCESS:
-			break;
-	}
-	return CheckPumpStopTaskMach;
-}
 
 void SetAbandonGuard(void)
 {

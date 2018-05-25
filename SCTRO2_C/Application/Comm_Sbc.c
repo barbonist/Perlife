@@ -19,6 +19,7 @@
 #include "SBC_COMM.h"
 #include "ASerialLdd5.h"
 #include "general_func.h"
+#include "Alarm_Con.h"
 
 extern word MedForArteriousPid;
 extern word MedForVenousPid;
@@ -1040,26 +1041,27 @@ void buildRDMachineStateResponseMsg(char code, char subcode)
 	/*12*/	sbc_tx_data[index++] = 0x00;
 	/*13*/	sbc_tx_data[index++] = 0x00;
 
-	if(SuspendInvioAlarmCode)
-	{
-		StatrespCnt++;
-		/* status parameters: alarm code */
-		/*14*/	sbc_tx_data[index++] = 0;
-		/*15*/	sbc_tx_data[index++] = 0;
-		/* status parameters: alarm physic */
-		/*16*/	sbc_tx_data[index++] = 0;
-		/*17*/	sbc_tx_data[index++] = 0;
-		/* status parameters: alarm type */
-		/*18*/	sbc_tx_data[index++] = 0;
-		/*19*/  sbc_tx_data[index++] = 0;
-		if(StatrespCnt >= 3)
-		{
-			StatrespCnt = 0;
-			SuspendInvioAlarmCode = 0;
-		}
-	}
-	else
-	{
+//	if(SuspendInvioAlarmCode)
+//	{
+//		StatrespCnt++;
+//		/* status parameters: alarm code */
+//		/*14*/	sbc_tx_data[index++] = 0;
+//		/*15*/	sbc_tx_data[index++] = 0;
+//		/* status parameters: alarm physic */
+//		/*16*/	sbc_tx_data[index++] = 0;
+//		/*17*/	sbc_tx_data[index++] = 0;
+//		/* status parameters: alarm type */
+//		/*18*/	sbc_tx_data[index++] = 0;
+//		/*19*/  sbc_tx_data[index++] = 0;
+//		if(StatrespCnt >= 3)
+//		{
+//			StatrespCnt = 0;
+//			SuspendInvioAlarmCode = 0;
+//		}
+//	}
+//	else
+//	{
+
 		/* status parameters: alarm code */
 		/*14*/	sbc_tx_data[index++] = (alarmCurrent.code >> 8 ) & 0xFF;
 		/*15*/	sbc_tx_data[index++] = (alarmCurrent.code 	    ) & 0xFF;
@@ -1069,7 +1071,7 @@ void buildRDMachineStateResponseMsg(char code, char subcode)
 		/* status parameters: alarm type */
 		/*18*/	sbc_tx_data[index++] = (alarmCurrent.type >> 8 ) & 0xFF;
 		/*19*/  sbc_tx_data[index++] = (alarmCurrent.type      ) & 0xFF;
-	}
+//	}
 
 	if(ptrCurrentState->state == STATE_WAIT_TREATMENT)
 		wd = 0;
