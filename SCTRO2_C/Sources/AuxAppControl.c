@@ -121,31 +121,43 @@ bool IsPinchPosOk(unsigned char *pArrPinchPos)
 	//-------------------------------------------------------------------------------
 	// codice aggiunto per il debug dell'allarme, da cancellare nella versione finale
 	// provo a forzare manualmente una pinch posizionata male
-	if(PinchPosOk == TRUE)
-	{
-		if(ptrCurrentState->state == STATE_PRIMING_RICIRCOLO)
-		{
-			for(int i = 0; i < 3; i++)
-			{
-				if((PinchPos_ref1[i] != 0xff) && (pArrPinchPos[i] != PinchPos_ref1[i]))
-				{
-					PinchPosOk = FALSE;
-					break;
-				}
-			}
-		}
-		if(ptrCurrentState->state == STATE_TREATMENT_KIDNEY_1)
-		{
-			for(int i = 0; i < 3; i++)
-			{
-				if((PinchPos_ref2[i] != 0xff) && (pArrPinchPos[i] != PinchPos_ref2[i]))
-				{
-					PinchPosOk = FALSE;
-					break;
-				}
-			}
-		}
-	}
+//	if(PinchPosOk == TRUE)
+//	{
+//		if(ptrCurrentState->state == STATE_PRIMING_RICIRCOLO && (ptrCurrentParent->parent == PARENT_PRIM_WAIT_PINCH_CLOSE))
+//		{
+//			for(int i = 0; i < 3; i++)
+//			{
+//				if((PinchPos_ref1[i] != 0xff) && (pArrPinchPos[i] != PinchPos_ref1[i]))
+//				{
+//					PinchPosOk = FALSE;
+//					break;
+//				}
+//			}
+//		}
+//		else if(ptrCurrentState->state == STATE_PRIMING_RICIRCOLO)
+//		{
+//			for(int i = 0; i < 3; i++)
+//			{
+//				if((PinchPos_ref1[i] != 0xff) && (pArrPinchPos[i] != PinchPos_ref2[i]))
+//				{
+//					PinchPosOk = FALSE;
+//					break;
+//				}
+//			}
+//		}
+//
+//		if(ptrCurrentState->state == STATE_TREATMENT_KIDNEY_1)
+//		{
+//			for(int i = 0; i < 3; i++)
+//			{
+//				if((PinchPos_ref2[i] != 0xff) && (pArrPinchPos[i] != PinchPos_ref2[i]))
+//				{
+//					PinchPosOk = FALSE;
+//					break;
+//				}
+//			}
+//		}
+//	}
 	//-------------------------------------------------------------------------------
 
 	return PinchPosOk;

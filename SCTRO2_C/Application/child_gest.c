@@ -50,6 +50,7 @@
 
 extern struct machineChild stateChildAlarmEmpty[];
 extern struct machineChild stateChildAlarmTreat1[];
+extern bool ResButInChildFlag;
 
 //-////////////////////////////////////////////////////////////////////////////////////////////////
 /* --------------------------------------------------------------------------------------------
@@ -251,8 +252,9 @@ void manageChildPrimAlmAndWaitCmdAlways(void)
 {
 	// apetto che tutte le pompe si siano fermate
 	manageChildTreatAlm1StopAllActAlways();
-	if((buttonGUITreatment[BUTTON_RESET_ALARM].state == GUI_BUTTON_RELEASED) && IsSecurityStateActive())
+	if(!ResButInChildFlag  && (buttonGUITreatment[BUTTON_RESET_ALARM].state == GUI_BUTTON_RELEASED) && IsSecurityStateActive())
 	{
+		ResButInChildFlag = TRUE;
 		// Questa tipologia di allarmi deve essere forzata in off dal software prima di poter riprendere il lavoro
 		ForceCurrentAlarmOff();
 		// setto la guard per fare in modo che quando l'allarme risultera' non attivo
@@ -279,8 +281,9 @@ void manageChildPrimAlmPumpNotStillEntry(void)
 void ClearPumpStopAlarm(void);
 void manageChildPrimAlmPumpNotStillAlways(void)
 {
-	if(buttonGUITreatment[BUTTON_RESET_ALARM].state == GUI_BUTTON_RELEASED)
+	if(!ResButInChildFlag && (buttonGUITreatment[BUTTON_RESET_ALARM].state == GUI_BUTTON_RELEASED))
 	{
+		ResButInChildFlag = TRUE;
 		EN_Motor_Control(ENABLE);
 		ClearPumpStopAlarm();
 		// in questo caso posso rilasciare il tasto BUTTON_RESET_ALARM perche' per uscire dallo stato
@@ -316,9 +319,13 @@ void ResetTreatSetPinchPosTaskAlm(void);
 void manageChildPrimAlmBadPinchPosAlways(void)
 {
 	manageChildTreatAlm1StopAllActAlways();
-	if(buttonGUITreatment[BUTTON_RESET_ALARM].state == GUI_BUTTON_RELEASED)
+	if(!ResButInChildFlag && (buttonGUITreatment[BUTTON_RESET_ALARM].state == GUI_BUTTON_RELEASED))
 	{
+		//ResButInChildFlag = TRUE;
 		ResetPrimPinchAlm();
+		// se l'allarme era stato generato da qualche problema quando il priming era gia' attivo (pompe in movimento)
+		ResetTreatCurrPinchPosOk();
+
 		// in questo caso posso rilasciare il tasto BUTTON_RESET_ALARM perche' per uscire dallo stato
 		// di allarme PARENT_PRIMING_END_RECIRC_ALARM controllo solo
 		// currentGuard[GUARD_ALARM_ACTIVE].guardValue == GUARD_VALUE_FALSE e non mi aspetto un comando
@@ -329,6 +336,8 @@ void manageChildPrimAlmBadPinchPosAlways(void)
 	else if(buttonGUITreatment[BUTTON_OVERRIDE_ALARM].state == GUI_BUTTON_RELEASED)
 	{
 		ResetPrimPinchAlm();
+		// se l'allarme era stato generato da qualche problema quando il priming era gia' attivo (pompe in movimento)
+		ResetTreatCurrPinchPosOk();
 		ForceCurrentAlarmOff();
 		releaseGUIButton(BUTTON_OVERRIDE_ALARM);
 		EnableNextAlarmFunc(); //EnableNextAlarm = TRUE;
@@ -362,8 +371,9 @@ void manageChildPrimAlmSFAAirDetAlways(void)
 	// apetto che tutte le pompe si siano fermate
 	manageChildTreatAlm1StopAllActAlways();
 	DisablePrimAirAlarm(TRUE); // forzo la chiusura dell'allarme aria
-	if((buttonGUITreatment[BUTTON_RESET_ALARM].state == GUI_BUTTON_RELEASED) && IsSecurityStateActive())
+	if(!ResButInChildFlag && (buttonGUITreatment[BUTTON_RESET_ALARM].state == GUI_BUTTON_RELEASED) && IsSecurityStateActive())
 	{
+		ResButInChildFlag = TRUE;
 		// IN QUESTO PUNTO CI PASSA SOLO SE IL TASK CHE GESTISCE GLI ALLARMI NON RIESCE A DISABILITARLI PRIMA DELL'ARRIVO
 		// DI BUTTON_RESET_ALARM (PROBABILMENTE NON CI PASSA MAI)
 		// setto la guard per fare in modo che quando l'allarme risultera' non attivo
@@ -385,8 +395,9 @@ void manageChildPrimAlmModBusEntry(void)
 
 void manageChildPrimAlmModBusAlways(void)
 {
-	if(buttonGUITreatment[BUTTON_RESET_ALARM].state == GUI_BUTTON_RELEASED)
+	if(!ResButInChildFlag && (buttonGUITreatment[BUTTON_RESET_ALARM].state == GUI_BUTTON_RELEASED))
 	{
+		ResButInChildFlag = TRUE;
 		EN_Motor_Control(ENABLE);
 		ClearModBusAlarm();
 		// in questo caso evito di rilasciare il tasto BUTTON_RESET_ALARM perche' per uscire dallo stato
@@ -846,8 +857,9 @@ void manageChildTreatAlm1SafAirFiltAlways(void)
 	// apetto che tutte le pompe si siano fermate
 	manageChildTreatAlm1StopAllActAlways();
 	DisableAllAirAlarm(TRUE); // forzo la chiusura dell'allarme aria
-	if((buttonGUITreatment[BUTTON_RESET_ALARM].state == GUI_BUTTON_RELEASED) && IsSecurityStateActive())
+	if(!ResButInChildFlag && (buttonGUITreatment[BUTTON_RESET_ALARM].state == GUI_BUTTON_RELEASED) && IsSecurityStateActive())
 	{
+		ResButInChildFlag = TRUE;
 		// setto la guard per fare in modo che quando l'allarme risultera' non attivo
 		// la macchina a stati parent vada nello stato di espulsione bolla aria
 		currentGuard[GUARD_ALARM_AIR_FILT_RECOVERY].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
@@ -887,8 +899,9 @@ void manageChildTreatAlm1SFVAlways(void)
 	// apetto che tutte le pompe si siano fermate
 	manageChildTreatAlm1StopAllActAlways();
 	DisableAllAirAlarm(TRUE); // forzo la chiusura dell'allarme aria
-	if((buttonGUITreatment[BUTTON_RESET_ALARM].state == GUI_BUTTON_RELEASED) && IsSecurityStateActive())
+	if(!ResButInChildFlag && (buttonGUITreatment[BUTTON_RESET_ALARM].state == GUI_BUTTON_RELEASED) && IsSecurityStateActive())
 	{
+		ResButInChildFlag = TRUE;
 		// setto la guard per fare in modo che quando l'allarme risultera' non attivo
 		// la macchina a stati parent vada nello stato di espulsione bolla aria
 		currentGuard[GUARD_ALARM_AIR_SFV_RECOVERY].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
@@ -920,8 +933,9 @@ void manageChildTreatAlm1SFAAlways(void)
 	// apetto che tutte le pompe si siano fermate
 	manageChildTreatAlm1StopAllActAlways();
 	DisableAllAirAlarm(TRUE); // forzo la chiusura dell'allarme aria
-	if((buttonGUITreatment[BUTTON_RESET_ALARM].state == GUI_BUTTON_RELEASED) && IsSecurityStateActive())
+	if(!ResButInChildFlag && (buttonGUITreatment[BUTTON_RESET_ALARM].state == GUI_BUTTON_RELEASED) && IsSecurityStateActive())
 	{
+		ResButInChildFlag = TRUE;
 		// setto la guard per fare in modo che quando l'allarme risultera' non attivo
 		// la macchina a stati parent vada nello stato di espulsione bolla aria
 		currentGuard[GUARD_ALARM_AIR_SFA_RECOVERY].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
@@ -955,8 +969,9 @@ void manageChildAlmAndWaitCmdAlways(void)
 {
 	// apetto che tutte le pompe si siano fermate
 	manageChildTreatAlm1StopAllActAlways();
-	if((buttonGUITreatment[BUTTON_RESET_ALARM].state == GUI_BUTTON_RELEASED) && IsSecurityStateActive())
+	if(!ResButInChildFlag && (buttonGUITreatment[BUTTON_RESET_ALARM].state == GUI_BUTTON_RELEASED) && IsSecurityStateActive())
 	{
+		ResButInChildFlag = TRUE;
 		// Questa tipologia di allarmi deve essere forzata in off dal software prima di poter riprendere il lavoro
 		ForceCurrentAlarmOff();
 		// setto la guard per fare in modo che quando l'allarme risultera' non attivo
@@ -980,8 +995,9 @@ void manageChildTreatAlmBadPinchPosEntry(void)
 void manageChildTreatAlmBadPinchPosAlways(void)
 {
 	manageChildTreatAlm1StopAllActAlways();
-	if(buttonGUITreatment[BUTTON_RESET_ALARM].state == GUI_BUTTON_RELEASED)
+	if(!ResButInChildFlag && (buttonGUITreatment[BUTTON_RESET_ALARM].state == GUI_BUTTON_RELEASED))
 	{
+		//ResButInChildFlag = TRUE;
 		// se l'allarme era stato generato durante il posizionamento iniziale delle pinch prima di iniziare
 		// il trattamento (pompe ferme)
 		ResetTreatSetPinchPosTaskAlm();
@@ -1015,8 +1031,9 @@ void manageChildTreatAlmModBusErrEntry(void)
 /* Manage CHILD_TREAT_ALARM_MOD_BUS_ERROR always state */
 void manageChildTreatAlmModBusErrAlways(void)
 {
-	if(buttonGUITreatment[BUTTON_RESET_ALARM].state == GUI_BUTTON_RELEASED)
+	if(!ResButInChildFlag && (buttonGUITreatment[BUTTON_RESET_ALARM].state == GUI_BUTTON_RELEASED))
 	{
+		ResButInChildFlag = TRUE;
 		EN_Motor_Control(ENABLE);
 		ClearModBusAlarm();
 		// in questo caso evito di rilasciare il tasto BUTTON_RESET_ALARM perche' per uscire dallo stato
@@ -1135,6 +1152,7 @@ void ManageStateChildAlarmTreat1(void)
             	/* (FM) risolvo la situazione di allarme andando  a spegnere tutti gli attuatori */
                 ptrFutureChild = &stateChildAlarmTreat1[25];
             }
+            ResButInChildFlag = FALSE;
 			break;
 
 		case CHILD_TREAT_ALARM_1_STOP_PERFUSION:
@@ -1424,6 +1442,7 @@ void manageChildEmptyAlm1InitEntry(void)
 		/* si e' verificato un allarme di lettura o scrittira su modbus, fermo tutto */
 		ptrFutureChild = &stateChildAlarmEmpty[13];
 	}
+    ResButInChildFlag = FALSE;
 }
 
 //CHILD_TREAT_ALARM_1_INIT quando lo stato principale e' STATE_EMPTY_DISPOSABLE

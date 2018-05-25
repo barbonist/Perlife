@@ -576,6 +576,7 @@ void alarmEngineAlways(void)
 				manageAlarmActuatorModbusNotRespond();
 				manageAlarmActuatorWRModbusNotRespond();
 				manageAlarmFromProtective();
+				manageAlarmBadPinchPos();   // allarme di pinch posizionate correttamente
 				break;
 			}
 
@@ -601,6 +602,7 @@ void alarmEngineAlways(void)
 				manageAlarmActuatorModbusNotRespond();
 				manageAlarmActuatorWRModbusNotRespond();
 				manageAlarmFromProtective();
+				manageAlarmBadPinchPos();   // allarme di pinch posizionate correttamente
 				break;
 			}
 

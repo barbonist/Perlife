@@ -413,6 +413,7 @@ CHECK_CURR_PINCH_POS_TASK_STATE CheckCurrPinchPosTask(CHECK_CURR_PINCH_POS_TASK_
 	static unsigned char CorrectPosCnt = 0;
 	static unsigned char WrongPosCnt = 0;
 	static unsigned char PinchPos[3] = {0xff, 0xff, 0xff};
+	static int DelayCnt = 0;
 	bool TreatCurrPinchPosOkFlag = TRUE;
 
 	if( cmd == CHECK_CURR_PINCH_POS_INIT_CMD)
@@ -446,26 +447,34 @@ CHECK_CURR_PINCH_POS_TASK_STATE CheckCurrPinchPosTask(CHECK_CURR_PINCH_POS_TASK_
 		case CHK_PINCH_POS_INIT:
 			if((ptrCurrentParent->parent == PARENT_TREAT_KIDNEY_1_INIT) || (ptrCurrentParent->parent == PARENT_TREAT_KIDNEY_1_PUMP_ON))
 			{
+				WrongPosCnt = 0;
+				CorrectPosCnt = 0;
 				PinchPos[0] = (FilterSelected) ? MODBUS_PINCH_RIGHT_OPEN : MODBUS_PINCH_LEFT_OPEN;
 				PinchPos[1] = MODBUS_PINCH_LEFT_OPEN;
 				PinchPos[2] = MODBUS_PINCH_LEFT_OPEN;
 				CheckCurrPinchPosTaskState = CHK_PINCH_POS_RUN;
 			}
 			else if(((ptrCurrentState->state == STATE_PRIMING_PH_1) || (ptrCurrentState->state == STATE_PRIMING_PH_2)) &&
-					(ptrCurrentParent->parent == PARENT_PRIMING_TREAT_KIDNEY_1_RUN))
+					((ptrCurrentParent->parent == PARENT_PRIMING_TREAT_KIDNEY_1_RUN) || (ptrCurrentParent->parent == PARENT_PRIMING_TREAT_KIDNEY_1_ALARM)))
 			{
+				WrongPosCnt = 0;
+				CorrectPosCnt = 0;
 				PinchPos[0] = (FilterSelected) ? MODBUS_PINCH_RIGHT_OPEN : MODBUS_PINCH_LEFT_OPEN;
 				PinchPos[1] = PRIM_PINCH_2WPVA_POS; // aperta a destra
 				PinchPos[2] = PRIM_PINCH_2WPVV_POS; // aperta a destra
-				CheckCurrPinchPosTaskState = CHK_PINCH_POS_RUN;
+				CheckCurrPinchPosTaskState = CHK_PINCH_POS_PRIM_DELAY;
+				DelayCnt = 0;
 			}
 			else if((ptrCurrentState->state == STATE_PRIMING_RICIRCOLO) &&
-					(ptrCurrentParent->parent == PARENT_PRIMING_TREAT_KIDNEY_1_RUN))
+					((ptrCurrentParent->parent == PARENT_PRIMING_TREAT_KIDNEY_1_RUN) || (ptrCurrentParent->parent == PARENT_PRIMING_TREAT_KIDNEY_1_ALARM)))
 			{
+				WrongPosCnt = 0;
+				CorrectPosCnt = 0;
 				PinchPos[0] = (FilterSelected) ? MODBUS_PINCH_RIGHT_OPEN : MODBUS_PINCH_LEFT_OPEN;
 				PinchPos[1] = MODBUS_PINCH_LEFT_OPEN; // aperta a sinistra
 				PinchPos[2] = MODBUS_PINCH_LEFT_OPEN; // aperta a sinistra
-				CheckCurrPinchPosTaskState = CHK_PINCH_POS_RUN;
+				CheckCurrPinchPosTaskState = CHK_PINCH_POS_PRIM_DELAY;
+				DelayCnt = 0;
 			}
 			break;
 		case CHK_PINCH_POS_RUN:
@@ -498,6 +507,18 @@ CHECK_CURR_PINCH_POS_TASK_STATE CheckCurrPinchPosTask(CHECK_CURR_PINCH_POS_TASK_
 			CheckCurrPinchPosTaskState = CHK_PINCH_POS_RUN;
 			break;
 		case CHK_PINCH_POS_ALARM:
+			break;
+		case CHK_PINCH_POS_PRIM_DELAY:
+			// aspetto un po' per dare il tempo alle pinch di posizionarsi prima
+			// iniziare a fare il controllo
+			DelayCnt++;
+			if(DelayCnt >= 40)
+			{
+				// sono passati 2 secondi le pinch dovrebbero aver terminato il posizionamento
+				// impostato con il comando start priming. Posso cominciare a fare
+				// il controllo con la protective
+				CheckCurrPinchPosTaskState = CHK_PINCH_POS_RUN;
+			}
 			break;
 	}
 	return TreatCurrPinchPosOkFlag;

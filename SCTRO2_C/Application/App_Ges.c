@@ -111,6 +111,8 @@ bool AlarmOrStopInRecircFlag = FALSE;
 
 // usato negli stati di allarme per ricordarmi di aver ricevuto almeno un BUTTON_RESET
 bool AtLeastoneButResRcvd = FALSE;
+// usato negli stati di allarme child per ricordarmi di aver ricevuto un BUTTON_RESET
+bool ResButInChildFlag = FALSE;
 
 
 void CallInIdleState(void)
@@ -201,6 +203,7 @@ void CallInIdleState(void)
 	ResetPrimPinchAlm();
 	CheckCurrPinchPosTask(CHECK_CURR_PINCH_POS_DISABLE_CMD);
 	AtLeastoneButResRcvd = FALSE;
+	ResButInChildFlag = FALSE;
 }
 
 
@@ -1029,7 +1032,7 @@ void manageParentPrimingEntry(void){
 		setGUIButton((unsigned char)BUTTON_START_PRIMING);
 
 	// inizializzo il controllo delle pinch fatto durante l'esecuzione del trattamento
-	CheckCurrPinchPosTask(CHECK_CURR_PINCH_POS_INIT_CMD);
+	//CheckCurrPinchPosTask(CHECK_CURR_PINCH_POS_INIT_CMD);
 }
 
 
@@ -1315,6 +1318,11 @@ void manageParentPrimingAlways(void){
 			// prendo il tempo di start del priming solo se il valore vale 0, cioe' sono partito da IDLE
 			StartPrimingTime = (unsigned long)timerCounterModBus;
 		}
+
+		// inizializzo il controllo delle pinch fatto durante l'esecuzione del trattamento
+		CheckCurrPinchPosTask(CHECK_CURR_PINCH_POS_INIT_CMD);
+		// abilito allarme di pinch posizionate male
+		EnableBadPinchPosAlmFunc();
 	}
 	else if(buttonGUITreatment[BUTTON_START_PERF_PUMP].state == GUI_BUTTON_RELEASED)
 	{
@@ -1389,6 +1397,8 @@ void manageParentPrimingAlways(void){
 		// faccio in modo che il conteggio riprenda al prossimo button_start_priming
 		StartPrimingTime = 0;
 		//FilterFlowVal = 0;
+		// disabilito allarme di pinch posizionate male
+		DisableBadPinchPosAlmFunc();
 	}
 	else if(buttonGUITreatment[BUTTON_STOP_OXYGEN_PUMP].state == GUI_BUTTON_RELEASED)
 	{
@@ -1521,6 +1531,11 @@ void manageParentPrimingAlways(void){
 					// prendo il tempo di start del priming solo se il valore vale 0, cioe' sono partito da IDLE
 					StartPrimingTime = (unsigned long)timerCounterModBus;
 				}
+
+				// inizializzo il controllo delle pinch fatto durante l'esecuzione del trattamento
+				CheckCurrPinchPosTask(CHECK_CURR_PINCH_POS_INIT_CMD);
+				// abilito allarme di pinch posizionate male
+				EnableBadPinchPosAlmFunc();
 			}
 			else if(buttonGUITreatment[BUTTON_START_PERF_PUMP].state == GUI_BUTTON_RELEASED)
 			{
@@ -1604,6 +1619,10 @@ void manageParentPrimingAlways(void){
 				CheckPumpStopTask((CHECK_PUMP_STOP_CMD)INIT_CHECK_SEQ_CMD);
 				DebugStringStr("Stop prim.");
 				//FilterFlowVal = 0;
+				// Disabilto il controllo delle pinch fino a quando non parte il riciclo
+				CheckCurrPinchPosTask(CHECK_CURR_PINCH_POS_DISABLE_CMD);
+				// disabilito allarme di pinch posizionate male
+				DisableBadPinchPosAlmFunc();
 			}
 #ifdef DEBUG_WITH_SERVICE_SBC
 			else if((ptrCurrentState->state == STATE_PRIMING_PH_1) &&
@@ -1655,6 +1674,9 @@ void manageParentPrimingAlways(void){
 				PrimingDuration = 0;
 				// faccio in modo che il conteggio riprenda al prossimo button_start_priming
 				StartPrimingTime = 0;
+
+				// Disabilto il controllo delle pinch fino a quando non parte il riciclo
+				CheckCurrPinchPosTask(CHECK_CURR_PINCH_POS_DISABLE_CMD);
 			}
 			else if(ptrCurrentState->state == STATE_PRIMING_RICIRCOLO)
 			{
@@ -4802,6 +4824,7 @@ void processMachineState(void)
             	/* (FM) risolvo la situazione di allarme andando  a spegnere tutti gli attuatori */
                 ptrFutureChild = &stateChildAlarmPriming[23];
             }
+            ResButInChildFlag = FALSE;
 			break;
 
 		case CHILD_PRIMING_ALARM_STOP_PERFUSION:
