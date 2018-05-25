@@ -451,6 +451,22 @@ CHECK_CURR_PINCH_POS_TASK_STATE CheckCurrPinchPosTask(CHECK_CURR_PINCH_POS_TASK_
 				PinchPos[2] = MODBUS_PINCH_LEFT_OPEN;
 				CheckCurrPinchPosTaskState = CHK_PINCH_POS_RUN;
 			}
+			else if(((ptrCurrentState->state == STATE_PRIMING_PH_1) || (ptrCurrentState->state == STATE_PRIMING_PH_2)) &&
+					(ptrCurrentParent->parent == PARENT_PRIMING_TREAT_KIDNEY_1_RUN))
+			{
+				PinchPos[0] = (FilterSelected) ? MODBUS_PINCH_RIGHT_OPEN : MODBUS_PINCH_LEFT_OPEN;
+				PinchPos[1] = PRIM_PINCH_2WPVA_POS; // aperta a destra
+				PinchPos[2] = PRIM_PINCH_2WPVV_POS; // aperta a destra
+				CheckCurrPinchPosTaskState = CHK_PINCH_POS_RUN;
+			}
+			else if((ptrCurrentState->state == STATE_PRIMING_RICIRCOLO) &&
+					(ptrCurrentParent->parent == PARENT_PRIMING_TREAT_KIDNEY_1_RUN))
+			{
+				PinchPos[0] = (FilterSelected) ? MODBUS_PINCH_RIGHT_OPEN : MODBUS_PINCH_LEFT_OPEN;
+				PinchPos[1] = MODBUS_PINCH_LEFT_OPEN; // aperta a sinistra
+				PinchPos[2] = MODBUS_PINCH_LEFT_OPEN; // aperta a sinistra
+				CheckCurrPinchPosTaskState = CHK_PINCH_POS_RUN;
+			}
 			break;
 		case CHK_PINCH_POS_RUN:
 			if(IsPinchPosOk(PinchPos))

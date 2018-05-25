@@ -1028,6 +1028,8 @@ void manageParentPrimingEntry(void){
 	if(!AlarmInPrimingEntered)
 		setGUIButton((unsigned char)BUTTON_START_PRIMING);
 
+	// inizializzo il controllo delle pinch fatto durante l'esecuzione del trattamento
+	CheckCurrPinchPosTask(CHECK_CURR_PINCH_POS_INIT_CMD);
 }
 
 
@@ -1222,6 +1224,10 @@ unsigned char TemperatureStateMach(int cmd)
 			PrimingDuration = 0;
 			// faccio in modo che il conteggio riprenda al prossimo button_start_priming
 			StartPrimingTime = 0;
+
+			// si chiude la fase di priming per entrare in quella di trattamento, disabilito il controllo
+			// delle pinch fatte in priming
+			CheckCurrPinchPosTask(CHECK_CURR_PINCH_POS_DISABLE_CMD);
 			break;
 	}
 	return TempReached;
@@ -1456,6 +1462,11 @@ void manageParentPrimingAlways(void){
 			//FilterFlowVal = CalcFilterFlow(pumpPerist[3].actualSpeed);
 		}
 	}
+
+	// Controllo continuo quando il trattamento e' in corso. Viene confrontata la posizione impostata delle
+	// pinch durante il trattamento con quella rilevata dalla protective.
+	// Se non coincidono viene generato un allarme
+	CheckCurrPinchPosTask(CHECK_CURR_PINCH_POS_NO_CMD);
 	break;
 
 	case PARENT_PRIMING_TREAT_KIDNEY_1_RUN:
@@ -1757,6 +1768,10 @@ void manageParentPrimingAlways(void){
 			}
 		}
 
+		// Controllo continuo quando il trattamento e' in corso. Viene confrontata la posizione impostata delle
+		// pinch durante il trattamento con quella rilevata dalla protective.
+		// Se non coincidono viene generato un allarme
+		CheckCurrPinchPosTask(CHECK_CURR_PINCH_POS_NO_CMD);
 		break;
 
 	case PARENT_PRIMING_TREAT_KIDNEY_1_ALARM:

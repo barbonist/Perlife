@@ -51,6 +51,7 @@
 extern struct machineChild stateChildAlarmEmpty[];
 extern struct machineChild stateChildAlarmTreat1[];
 
+//-////////////////////////////////////////////////////////////////////////////////////////////////
 /* --------------------------------------------------------------------------------------------
  * CHILD LEVEL FUNCTION FOR PRIMING 1 e 2
  * Per ora le funzioni per la sicurezza nel caso di allarme durante il trattamento sono le
@@ -410,7 +411,7 @@ void manageChildPrimAlmModBusAlways(void)
 
 
 
-
+//-////////////////////////////////////////////////////////////////////////////////////////////////
 /* --------------------------------------------------------------------------------------------
  * CHILD LEVEL FUNCTION FOR TREATMENT_1 (KIDNEY)
  * Per ora le funzioni per la sicurezza nel caso di allarme durante il trattamento sono le
@@ -1392,7 +1393,7 @@ bool PutPinchInSafetyPos(void)
 	return InSafetyPos;
 }
 
-
+//-////////////////////////////////////////////////////////////////////////////////////////////////
 //-----------------------------------------------SVUOTAMENTO DISPOSABLE----------------------------------------------------------
 // PER LA GESTIONE DEGLI ALLARMI ARIA E PRESSIONE NEL CASO DI SVUOTAMENTO DISPOSABLE
 
