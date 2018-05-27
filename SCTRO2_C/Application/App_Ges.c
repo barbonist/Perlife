@@ -357,55 +357,56 @@ void manageStateMountDispAlways(void)
 		// ho ricevuto tutti i parametri che dovevo ricevere, invio il comando che mi fa iniziare il priming
 		AllParametersReceived = 1;
 	}
-	else if(buttonGUITreatment[BUTTON_PINCH_2WPVF_RIGHT_OPEN].state == GUI_BUTTON_RELEASED)
+
+	if(buttonGUITreatment[BUTTON_PINCH_2WPVF_RIGHT_OPEN].state == GUI_BUTTON_RELEASED)
 	{
 		// pinch filter (pinch in basso aperto a destra)
 		releaseGUIButton(BUTTON_PINCH_2WPVF_RIGHT_OPEN);
 		HandlePinch(BUTTON_PINCH_2WPVF_RIGHT_OPEN);
 	}
-	else if(buttonGUITreatment[BUTTON_PINCH_2WPVF_LEFT_OPEN].state == GUI_BUTTON_RELEASED)
+	if(buttonGUITreatment[BUTTON_PINCH_2WPVF_LEFT_OPEN].state == GUI_BUTTON_RELEASED)
 	{
 		// pinch filter (pinch in basso aperto a sinistra)
 		releaseGUIButton(BUTTON_PINCH_2WPVF_LEFT_OPEN);
 		HandlePinch(BUTTON_PINCH_2WPVF_LEFT_OPEN);
 	}
-	else if(buttonGUITreatment[BUTTON_PINCH_2WPVF_BOTH_CLOSED].state == GUI_BUTTON_RELEASED)
+	if(buttonGUITreatment[BUTTON_PINCH_2WPVF_BOTH_CLOSED].state == GUI_BUTTON_RELEASED)
 	{
 		// pinch filter (pinch in basso entrambi chiusi)
 		releaseGUIButton(BUTTON_PINCH_2WPVF_BOTH_CLOSED);
 		HandlePinch(BUTTON_PINCH_2WPVF_BOTH_CLOSED);
 	}
-	else if(buttonGUITreatment[BUTTON_PINCH_2WPVA_RIGHT_OPEN].state == GUI_BUTTON_RELEASED)
+	if(buttonGUITreatment[BUTTON_PINCH_2WPVA_RIGHT_OPEN].state == GUI_BUTTON_RELEASED)
 	{
 		// pinch arterial (pinch di sinistra - aperto a destra)
 		releaseGUIButton(BUTTON_PINCH_2WPVA_RIGHT_OPEN);
 		HandlePinch(BUTTON_PINCH_2WPVA_RIGHT_OPEN);
 	}
-	else if(buttonGUITreatment[BUTTON_PINCH_2WPVA_LEFT_OPEN].state == GUI_BUTTON_RELEASED)
+	if(buttonGUITreatment[BUTTON_PINCH_2WPVA_LEFT_OPEN].state == GUI_BUTTON_RELEASED)
 	{
 		// pinch arterial (pinch di sinistra - aperto a sinistra)
 		releaseGUIButton(BUTTON_PINCH_2WPVA_LEFT_OPEN);
 		HandlePinch(BUTTON_PINCH_2WPVA_LEFT_OPEN);
 	}
-	else if(buttonGUITreatment[BUTTON_PINCH_2WPVA_BOTH_CLOSED].state == GUI_BUTTON_RELEASED)
+	if(buttonGUITreatment[BUTTON_PINCH_2WPVA_BOTH_CLOSED].state == GUI_BUTTON_RELEASED)
 	{
 		// pinch arterial (pinch di sinistra - entrambi chiusi)
 		releaseGUIButton(BUTTON_PINCH_2WPVA_BOTH_CLOSED);
 		HandlePinch(BUTTON_PINCH_2WPVA_BOTH_CLOSED);
 	}
-	else if(buttonGUITreatment[BUTTON_PINCH_2WPVV_RIGHT_OPEN].state == GUI_BUTTON_RELEASED)
+	if(buttonGUITreatment[BUTTON_PINCH_2WPVV_RIGHT_OPEN].state == GUI_BUTTON_RELEASED)
 	{
 		// pinch venous (pinch di destra - aperto a destra)
 		releaseGUIButton(BUTTON_PINCH_2WPVV_RIGHT_OPEN);
 		HandlePinch(BUTTON_PINCH_2WPVV_RIGHT_OPEN);
 	}
-	else if(buttonGUITreatment[BUTTON_PINCH_2WPVV_LEFT_OPEN].state == GUI_BUTTON_RELEASED)
+	if(buttonGUITreatment[BUTTON_PINCH_2WPVV_LEFT_OPEN].state == GUI_BUTTON_RELEASED)
 	{
 		// pinch venous (pinch di destra - aperto a sinistra)
 		releaseGUIButton(BUTTON_PINCH_2WPVV_LEFT_OPEN);
 		HandlePinch(BUTTON_PINCH_2WPVV_LEFT_OPEN);
 	}
-	else if(buttonGUITreatment[BUTTON_PINCH_2WPVV_BOTH_CLOSED].state == GUI_BUTTON_RELEASED)
+	if(buttonGUITreatment[BUTTON_PINCH_2WPVV_BOTH_CLOSED].state == GUI_BUTTON_RELEASED)
 	{
 		// pinch venous (pinch di destra - aperto a sinistra)
 		releaseGUIButton(BUTTON_PINCH_2WPVV_BOTH_CLOSED);
