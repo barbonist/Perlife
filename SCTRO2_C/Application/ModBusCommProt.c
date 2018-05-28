@@ -175,6 +175,77 @@ struct func10RetStruct * ModBusWriteRegisterReq(char slaveAddr,
 	return _func10RetValPtr;
 }
 
+#ifdef PUMP_EVER
+struct func10RetStruct * ModBusWriteRegisterReqEVER(char slaveAddr,
+		  	  	  	  	  	  	  	   char funcCode,
+									   unsigned int writeStartAddr,
+									   unsigned int numRegisterWrite,
+									   word * writeRegisterValue
+									  )
+{
+
+
+	/* Init frame - All frame byte equal to 0xFF */
+	FrameInitFunc10();
+
+	/*pos_0: slave address */
+	msgToSendFrame10[0] = slaveAddr;
+	/*pos_1: function code */
+	msgToSendFrame10[1] = funcCode;
+	/*pos_2: write start address - High */
+	msgToSendFrame10[2] = (writeStartAddr & 0xFF00)>>8;
+	/*pos_3: write start address - Low */
+	msgToSendFrame10[3] = (writeStartAddr & 0x00FF);
+	/*pos_4: number of register to write - High*/
+	msgToSendFrame10[4] = (numRegisterWrite & 0xFF00)>>8;
+	/*pos_5: number of register to write - Low*/
+	msgToSendFrame10[5] = (numRegisterWrite & 0x00FF);
+	/*pos_6: write byte count = 2 * num register to write */
+	mstreq_data_wr_byte_count = (2 * numRegisterWrite);
+	msgToSendFrame10[6] = mstreq_data_wr_byte_count;
+
+	for(int num_byte = 0; num_byte < (mstreq_data_wr_byte_count/2); num_byte++)
+	{
+		/*pos_6plus_numbyte: write value - High */
+		msgToSendFrame10[6+(1+2*num_byte)] = (writeRegisterValue[num_byte] & 0xFF00)>>8;
+		/*pos_7plus_numbyte: write value - Low */
+		msgToSendFrame10[6+(2+2*num_byte)] = (writeRegisterValue[num_byte] & 0x00FF);
+	}
+
+	msgToSendFrame10Ptr = &msgToSendFrame10[0];
+
+	mstreq_crc = ComputeChecksum(msgToSendFrame10Ptr, (6+mstreq_data_wr_byte_count+1));
+
+	/*pos_: crc Low*/
+	mstreq_crc_Low = (mstreq_crc & 0x00FF);
+	msgToSendFrame10[6+mstreq_data_wr_byte_count+1] = mstreq_crc_Low;
+	/*pos_: crc High*/
+	mstreq_crc_High = (mstreq_crc & 0xFF00)>>8;
+	msgToSendFrame10[6+mstreq_data_wr_byte_count+2] = mstreq_crc_High;
+
+
+
+	msgToSendFrame10Ptr = &msgToSendFrame10[0];
+	_func10RetVal.mstreqRetStructPtr = msgToSendFrame10Ptr;
+	_func10RetVal.mstreqRetStructNumByte = 6+mstreq_data_wr_byte_count+2+1;
+	_func10RetVal.slvresRetNumByte = 	1 + 							/* slave address */
+										1 +								/* function code */
+										1 +								/* write start address High */
+										1 +								/* write start address Low */
+										1 +								/* num reg written High */
+										1 +								/* num reg written Low */
+										1 + 							/* crc high */
+										1;								/* crc low */
+	msgToRecvFrame10Ptr = &msgToRecvFrame10[0];
+	_func10RetVal.slvresRetPtr = msgToRecvFrame10Ptr;
+	/* return the pointer to the struct: position 0 --> pointer to message; position 1: number of byte to send */
+	_func10RetValPtr = &_func10RetVal;
+
+	//return msgToSendFrame10Ptr;
+	return _func10RetValPtr;
+}
+#endif
+
 struct func17RetStruct * ModBusRWRegisterReq(char slaveAddr,
 	  	  	  	   	   	   	   	    char funcCode,
 									unsigned int readStartAddr,
@@ -658,6 +729,10 @@ void setPumpCurrentValue(unsigned char slaveAddr, int currValue){
 	 * funzione MODBUS_COMM_Enable() viene controllata la flag EnUser
 	 * che esegue l'abilitazione della serrtiale solo se essa è disabilitata*/
 	MODBUS_COMM_Enable();
+#ifdef PUMP_EVER
+	RX_ENABLE = FALSE;
+	RTS_MOTOR_SetVal();
+#endif
 	for(char k = 0; k < _funcRetVal.mstreqRetStructNumByte; k++)
 	{
 		MODBUS_COMM_SendChar(*(_funcRetVal.ptr_msg+k));
@@ -695,6 +770,10 @@ void setPumpAccelerationValue(unsigned char slaveAddr, int acc)
 	 * funzione MODBUS_COMM_Enable() viene controllata la flag EnUser
 	 * che esegue l'abilitazione della serrtiale solo se essa è disabilitata*/
 	MODBUS_COMM_Enable();
+#ifdef PUMP_EVER
+	RX_ENABLE = FALSE;
+	RTS_MOTOR_SetVal();
+#endif
 	for(char k = 0; k < _funcRetVal.mstreqRetStructNumByte; k++)
 	{
 		MODBUS_COMM_SendChar(*(_funcRetVal.ptr_msg+k));
@@ -743,11 +822,123 @@ void setPumpSpeedValue(unsigned char slaveAddr, int speedValue){
 	 * funzione MODBUS_COMM_Enable() viene controllata la flag EnUser
 	 * che esegue l'abilitazione della serrtiale solo se essa è disabilitata*/
 	MODBUS_COMM_Enable();
+#ifdef PUMP_EVER
+	RX_ENABLE = FALSE;
+	RTS_MOTOR_SetVal();
+#endif
 	for(char k = 0; k < _funcRetVal.mstreqRetStructNumByte; k++)
 	{
 		MODBUS_COMM_SendChar(*(_funcRetVal.ptr_msg+k));
 	}
 }
+#ifdef PUMP_EVER
+/*
+ le funzioni ad oggi di start stop della pompa saranno:
+  setPumpSpeedValueEVER(0x03,0, START);
+setPumpSpeedValueEVER(0x03,0, STOP);
+0x03 = Address
+0 (speed )NOT USED
+
+la funzione per cambiare velocità:
+
+setPumpSpeedValueEVER(0x03,1600, CHANGE_PORFILE_VELOCITY);
+0x03 = Address
+1600 (speed di esempio, 1600 Hz sarebbero 60 RPM)NOT USED
+
+prima di entrare nel main loop bisogna chiamare la funzione:
+
+setPumpSpeedValueEVER (0x03,0, INIT_PUMP); (scrive 5 indirizzi da 4101H a 4105H)
+0x03 = Address
+0 (speed )NOT USED
+*/
+void setPumpSpeedValueEVER(unsigned char slaveAddr, int speedValue,ActionPumpEver Action)
+{
+	word data[5];
+	word * valModBusArrayPtr;
+//	char	Address;
+	char	funcCode;
+	unsigned int	wrAddr;
+	unsigned int    numberRegister;
+
+	int StructId = SelectStruct(slaveAddr);
+    /*TODO la velocità cambia non solo se chiamo la funzione
+     * con CHANGE_PORIFILE_VELOCITY ma anche se poi hiamo la funzione
+     * con START, altriemnti la pompa non parte */
+	pumpPerist[StructId].pmpSpeed = speedValue;
+
+	for (int i=0; i<5; i++)
+	{
+		data[i] = 0;
+	}
+
+	//Address = slaveAddr;
+	funcCode = 0x10;
+
+	if (Action == STOP)
+	{
+		/*per fare uno stop devo scirvere il registro con cmd = 0 che nl mio caso sarebbe al speed value */
+		wrAddr = 0x4105; /* speed */
+		numberRegister = 0x0001;
+		data[0] = 0;
+	}
+	else if (Action == START)
+	{
+		/*per fare uno start devo scirvere il registro con cmd = 1 che nl mio caso sarebbe al speed value */
+		wrAddr = 0x4105; /* speed */
+		numberRegister = 0x0001;
+		data[0] = 1;
+	}
+	else if (Action == CHANGE_PORFILE_VELOCITY)
+	{
+		/*per fare una modofica di velocità devo scrivere il registro 1017*/
+		wrAddr = 0x1017; /* speed */
+		numberRegister = 0x0002;
+		data [0] = (word) speedValue >> 16;
+		data [1] = (word) speedValue;
+	}
+	else // if (Action == INIT_PUMP)
+	{
+		wrAddr = 0x4101; /* speed */
+		numberRegister = 0x0005;
+		for (int i = 0; i <5; i++)
+		{
+			if (i==4)
+				data[i]=1;
+			else
+				data[i] = 0;
+		}
+	}
+
+	valModBusArrayPtr = &data[0];
+
+	_funcRetValPtr = (struct funcRetStruct *)ModBusWriteRegisterReqEVER(slaveAddr,
+											                        funcCode,
+											                        wrAddr,
+																	numberRegister,
+											                        valModBusArrayPtr);
+	//send command to actuator
+	_funcRetVal.ptr_msg = _funcRetValPtr->ptr_msg;
+	_funcRetVal.mstreqRetStructNumByte = _funcRetValPtr->mstreqRetStructNumByte;
+	_funcRetVal.slvresRetPtr = _funcRetValPtr->slvresRetPtr;
+	_funcRetVal.slvresRetNumByte = _funcRetValPtr->slvresRetNumByte;
+
+	RX_ENABLE = FALSE;
+	RTS_MOTOR_SetVal();
+
+	MODBUS_COMM_ClearRxBuf();
+	/*prima di ogni spedizione abilito la seriale del modbus perchè
+	 * potrebbe essere stata disabilita da una non corretta ricezione
+	 * per resettare la perifericare e riallinearla; all'interno della
+	 * funzione MODBUS_COMM_Enable() viene controllata la flag EnUser
+	 * che esegue l'abilitazione della serrtiale solo se essa è disabilitata*/
+	MODBUS_COMM_Enable();
+
+	for(char k = 0; k < _funcRetVal.mstreqRetStructNumByte; k++)
+	{
+		MODBUS_COMM_SendChar(*(_funcRetVal.ptr_msg+k));
+	}
+}
+#endif
 
 void readPumpSpeedValue(unsigned char slaveAddr){
 	//char	slvAddr;
@@ -775,6 +966,10 @@ void readPumpSpeedValue(unsigned char slaveAddr){
 	 * funzione MODBUS_COMM_Enable() viene controllata la flag EnUser
 	 * che esegue l'abilitazione della serrtiale solo se essa è disabilitata*/
 	MODBUS_COMM_Enable();
+#ifdef PUMP_EVER
+	RX_ENABLE = FALSE;
+	RTS_MOTOR_SetVal();
+#endif
 	for(char k = 0; k < _funcRetVal.mstreqRetStructNumByte; k++)
 	{
 		MODBUS_COMM_SendChar(*(_funcRetVal.ptr_msg+k));
@@ -924,6 +1119,10 @@ void setPinchPosValue(unsigned char slaveAddr, int posValue){
 		 * funzione MODBUS_COMM_Enable() viene controllata la flag EnUser
 		 * che esegue l'abilitazione della serrtiale solo se essa è disabilitata*/
 		MODBUS_COMM_Enable();
+#ifdef PUMP_EVER
+	RX_ENABLE = FALSE;
+	RTS_MOTOR_SetVal();
+#endif
 		for(char k = 0; k < _funcRetVal.mstreqRetStructNumByte; k++)
 		{
 			MODBUS_COMM_SendChar(*(_funcRetVal.ptr_msg+k));
@@ -1720,7 +1919,10 @@ void Check_Actuator_Status (char slaveAddr,
 	 * funzione MODBUS_COMM_Enable() viene controllata la flag EnUser
 	 * che esegue l'abilitazione della serrtiale solo se essa è disabilitata*/
 	MODBUS_COMM_Enable();
-
+#ifdef PUMP_EVER
+	RX_ENABLE = FALSE;
+	RTS_MOTOR_SetVal();
+#endif
 	for(char k = 0; k < _funcRetVal.mstreqRetStructNumByte; k++)
 	{
 		MODBUS_COMM_SendChar(*(_funcRetVal.ptr_msg+k));

@@ -545,3 +545,25 @@ void ResetTreatCurrPinchPosOk(void)
 		CheckCurrPinchPosTask((CHECK_CURR_PINCH_POS_TASK_CMD)CHECK_CURR_PINCH_POS_INIT_CMD);
 }
 
+/*funzione che accende con una data potenza o spegne il frigo con potenza '0'
+ * power = 10 --> 200 Hz max
+ * power = 40 --> 50 Hz --> 25%*/
+void Start_Frigo_AMS(unsigned char power)
+{
+	if (power == 0)
+	{
+		Enable_AMS = FALSE;
+	    COMP_PWM_ClrVal();
+	}
+	else
+	{
+		Enable_AMS = TRUE;
+
+		Prescaler_Freq_Signal_AMS = power;
+		/* a power = 10 corrisponde la massima frequenza pari
+		 * a 200 Hz quindi non posso andare sotto 10*/
+		if (power <= 10)
+			power = 10;
+	}
+}
+

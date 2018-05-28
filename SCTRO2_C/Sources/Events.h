@@ -158,8 +158,6 @@
 extern "C" {
 #endif 
 
-unsigned char Prescaler_Freq_Signal_AMS;
-bool Enable_AMS;
 
 /*
 ** ===================================================================

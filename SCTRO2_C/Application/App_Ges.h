@@ -273,6 +273,7 @@ bool IsButtResUsedByChild(void);
 CHECK_CURR_PINCH_POS_TASK_STATE CheckCurrPinchPosTask(CHECK_CURR_PINCH_POS_TASK_CMD cmd);
 bool IsTreatCurrPinchPosOk(void);
 void ResetTreatCurrPinchPosOk(void);
+void Start_Frigo_AMS(unsigned char power);
 
 
 #endif /* APPLICATION_APP_GES_H_ */

@@ -340,11 +340,22 @@ int main(void)
   SBC_COMM_Enable();
   initCommSBC();
     /**/
+#ifndef PUMP_EVER
   /*abilito l'RTS per la trasmissionme verso i motori;
    * la lascio sempre attiva tanto ogni 50 msec al massimo
    *  sarò sempre io a fare la trasmisisone interrogando i driver*/
 
   RTS_MOTOR_SetVal();
+#else
+  /*diabilito l'RTS per la trasmissionme verso i motori;
+   * sarà attivato prima di effettuare una trasmissione e
+   * disattivato alla fine della stessa*/
+  RTS_MOTOR_ClrVal();
+  setPumpSpeedValueEVER (PPV1,0, INIT_PUMP);
+  /*il comando alla successiva virene dato in automatico
+   * poichè logicamente le due pompe ndi ossigenazione sono un unica pompa*/
+  //setPumpSpeedValueEVER (PPV2,0, INIT_PUMP);
+#endif
 
   static int index = 0;
   //ptrMsgSbcRx = &msg_sbc_rx[0];
@@ -594,27 +605,14 @@ int main(void)
 
 	         if(ReadKey1()) // per debug con la tastiera a bolle
 	         {
-	        	 Prescaler_Freq_Signal_AMS ++;
-	        	 if (Prescaler_Freq_Signal_AMS > 40)
-	        		 Prescaler_Freq_Signal_AMS = 40;
 	        	 Released1 = 1;
 	         }
 	         if(ReadKey2()) // per debug con la tastiera a bolle
 	         {
-	        	 Prescaler_Freq_Signal_AMS --;
-	        	 if (Prescaler_Freq_Signal_AMS < 10)
-	        		 Prescaler_Freq_Signal_AMS = 10;
 	        	 Released2 = 1;
 	         }
 	         if(ReadKey3()) // per debug con la tastiera a bolle
 	         {
-	        	if (!Enable_AMS)
-	        		Enable_AMS = TRUE;
-	        	else
-	        	{
-	        		Enable_AMS = FALSE;
-	        		COMP_PWM_ClrVal();
-	        	}
 	        	 Released3 = 1;
 	         }
 

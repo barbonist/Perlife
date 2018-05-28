@@ -1944,6 +1944,25 @@ typedef enum
 }CHECK_CURR_PINCH_POS_TASK_CMD;
 //--------------------------------------------------------------------------------------------------
 
+/*define di compilazione che abilita l'uso del frigo AMS al posto delle Peltier*/
+#define DEBUG_FRIGO_AMS
+
+unsigned char Prescaler_Freq_Signal_AMS;
+bool Enable_AMS;
+
+/*define di compilazione per utilizzo pompe EVER*/
+#define PUMP_EVER
+bool    RX_ENABLE;
+
+typedef enum
+{
+	START = 0,
+	STOP,
+	CHANGE_PORFILE_VELOCITY,
+	INIT_PUMP
+} ActionPumpEver;
+
+ActionPumpEver Action;
 
 #endif /* SOURCES_GLOBAL_H_ */
 

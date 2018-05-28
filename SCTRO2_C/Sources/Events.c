@@ -843,6 +843,7 @@ void MODBUS_COMM_OnRxChar(void)
 	static char byte_received =0; //lo faccio static così non lo inizializza ad ogni ingresso nell' interrupt
 
 
+#ifndef PUMP_EVER
 	//MODBUS_COMM_RecvChar(msg_pmp1_rx_ptr);
 	MODBUS_COMM_RecvChar(_funcRetVal.slvresRetPtr);
 
@@ -871,6 +872,61 @@ void MODBUS_COMM_OnRxChar(void)
 		iFlag_actuatorCheck = IFLAG_COMMAND_RECEIVED;
 		iFlag_modbusDataStorage = FALSE;
 	}
+#else
+	unsigned char Byte_NO_VALID;
+
+	static char byte_trasmitted = 0;
+	if (RX_ENABLE)
+	{
+		static char byte_received = 0; //lo faccio static così non lo inizializza ad ogni ingresso nell' interrupt
+
+
+		//MODBUS_COMM_RecvChar(msg_pmp1_rx_ptr);
+		MODBUS_COMM_RecvChar(_funcRetVal.slvresRetPtr);
+
+		//array [byte_received] = *_funcRetVal.slvresRetPtr; //used only for debug
+
+		byte_received++; // incremento pert sapere quantri byte ho ricevuto
+
+
+		_funcRetVal.slvresRetPtr = _funcRetVal.slvresRetPtr + 1;
+
+		#ifdef DEBUG_PUMP
+		//if(_funcRetVal.slvresRetNumByte > 0)
+			//PC_DEBUG_COMM_SendChar(*_funcRetVal.slvresRetPtr);
+		#endif
+
+		//msg_pmp1_rx_ptr = msg_pmp1_rx_ptr + 1;
+
+		_funcRetVal.slvresRetNumByte = _funcRetVal.slvresRetNumByte - 1;
+		//check when all expected response bytes have been received
+		if(_funcRetVal.slvresRetNumByte <= 0 && RX_ENABLE)
+		{
+			/* TODO è arrivata ttta la risposta, per le pompe EVER devo
+			 * interpretarla nel modo corretto*/
+			iflag_pmp1_rx = IFLAG_IDLE;
+			iflag_pmp1_rx |= IFLAG_PMP1_RX;
+			//_funcRetVal.slvresRetPtr = _funcRetVal.slvresRetPtr - byte_received;	//riporto il puntatore dei valori all'inizio
+			//byte_received=0;														//resetto byte_received così ad una prossima ricezione
+			iFlag_actuatorCheck = IFLAG_COMMAND_RECEIVED;
+			iFlag_modbusDataStorage = FALSE;
+		}
+	}
+	else
+	{
+		/*scarto una finta risposta che è in relatà la mia trasmissione*/
+		MODBUS_COMM_RecvChar(&Byte_NO_VALID);
+		byte_trasmitted++;
+		if (byte_trasmitted >= _funcRetVal.mstreqRetStructNumByte)
+		{
+			RX_ENABLE = TRUE;
+			byte_trasmitted = 0;
+			RTS_MOTOR_ClrVal();
+		}
+	}
+
+
+#endif
 }
 
 /*

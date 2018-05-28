@@ -169,6 +169,14 @@ struct func10RetStruct * ModBusWriteRegisterReq(char slaveAddr,
 									   unsigned int numRegisterWrite,
 									   unsigned int * writeRegisterValue
 									  );
+#ifdef PUMP_EVER
+struct func10RetStruct * ModBusWriteRegisterReqEVER(char slaveAddr,
+		  	  	  	  	  	  	  	   char funcCode,
+									   unsigned int writeStartAddr,
+									   unsigned int numRegisterWrite,
+									   word * writeRegisterValue
+									  );
+#endif
 
 /* Read and write function */
 struct func17RetStruct * ModBusRWRegisterReq(char slaveAddr,
@@ -236,5 +244,8 @@ void EN_24_M_C_Management(unsigned char action);
 void RTS_Motor_Management(unsigned char action);
 void EN_Clamp_Control (unsigned char action);
 void EN_Motor_Control(unsigned char action);
+#ifdef PUMP_EVER
+void setPumpSpeedValueEVER(unsigned char slaveAddr, int speedValue,ActionPumpEver Action);
+#endif
 
 #endif /* APPLICATION_MODBUSCOMMPROT_H_ */

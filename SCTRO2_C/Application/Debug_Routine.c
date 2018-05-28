@@ -27,6 +27,7 @@
 #include "string.h"
 #include "stdio.h"
 #include "stdlib.h"
+#include "RTS_MOTOR.h"
 
 extern int MyArrayIdx;
 
@@ -161,6 +162,10 @@ void Service_SBC(void){
 								 * funzione MODBUS_COMM_Enable() viene controllata la flag EnUser
 								 * che esegue l'abilitazione della serrtiale solo se essa è disabilitata*/
 								MODBUS_COMM_Enable();
+#ifdef PUMP_EVER
+								RX_ENABLE = FALSE;
+								RTS_MOTOR_SetVal();
+#endif
 								for(char k = 0; k < _funcRetVal.mstreqRetStructNumByte; k++)
 								{
 									MODBUS_COMM_SendChar(*(_funcRetVal.ptr_msg+k));
@@ -260,6 +265,10 @@ void Service_SBC(void){
 							 * che esegue l'abilitazione della serrtiale solo se essa è disabilitata*/
 					/*
 					MODBUS_COMM_Enable();
+#ifdef PUMP_EVER
+								RX_ENABLE = FALSE;
+								RTS_MOTOR_SetVal();
+#endif
 						for(char k = 0; k < _funcRetVal.mstreqRetStructNumByte; k++)
 						{
 							MODBUS_COMM_SendChar(*(_funcRetVal.ptr_msg+k));
