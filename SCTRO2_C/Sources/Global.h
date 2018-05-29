@@ -1348,8 +1348,8 @@ typedef enum{NOT_DEF = 0, NO = 1, YES = 2} PARAMETER_ACTIVE_TYPE;
 
 
 // percentuale del priming per l'inserimento del filtro
-//#define PERC_OF_PRIM_FOR_FILTER    95
-#define PERC_OF_PRIM_FOR_FILTER    50
+#define PERC_OF_PRIM_FOR_FILTER    95
+//#define PERC_OF_PRIM_FOR_FILTER    50
 
 // fattore di conversione del flusso in giri al minuto per le pompe dell'ossigenatore
 //#define OXYG_FLOW_TO_RPM_CONV 18.3
@@ -1944,25 +1944,29 @@ typedef enum
 }CHECK_CURR_PINCH_POS_TASK_CMD;
 //--------------------------------------------------------------------------------------------------
 
+
+//---------------------------------------------------------------------------------------
+//----------------------------Definizioni per la gestione delle nuove pompe--------------
 /*define di compilazione che abilita l'uso del frigo AMS al posto delle Peltier*/
-#define DEBUG_FRIGO_AMS
+//#define DEBUG_FRIGO_AMS
 
 unsigned char Prescaler_Freq_Signal_AMS;
 bool Enable_AMS;
 
 /*define di compilazione per utilizzo pompe EVER*/
-#define PUMP_EVER
+//#define PUMP_EVER
 bool    RX_ENABLE;
 
 typedef enum
 {
 	START = 0,
 	STOP,
-	CHANGE_PORFILE_VELOCITY,
+	CHANGE_PROFILE_VELOCITY,
 	INIT_PUMP
 } ActionPumpEver;
 
 ActionPumpEver Action;
+//---------------------------------------------------------------------------------------
 
 #endif /* SOURCES_GLOBAL_H_ */
 

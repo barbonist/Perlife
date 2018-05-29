@@ -841,7 +841,7 @@ setPumpSpeedValueEVER(0x03,0, STOP);
 
 la funzione per cambiare velocità:
 
-setPumpSpeedValueEVER(0x03,1600, CHANGE_PORFILE_VELOCITY);
+setPumpSpeedValueEVER(0x03,1600, CHANGE_PROFILE_VELOCITY);
 0x03 = Address
 1600 (speed di esempio, 1600 Hz sarebbero 60 RPM)NOT USED
 
@@ -888,7 +888,7 @@ void setPumpSpeedValueEVER(unsigned char slaveAddr, int speedValue,ActionPumpEve
 		numberRegister = 0x0001;
 		data[0] = 1;
 	}
-	else if (Action == CHANGE_PORFILE_VELOCITY)
+	else if (Action == CHANGE_PROFILE_VELOCITY)
 	{
 		/*per fare una modofica di velocità devo scrivere il registro 1017*/
 		wrAddr = 0x1017; /* speed */

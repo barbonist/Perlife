@@ -54,6 +54,7 @@
 #include "general_func.h"
 #include "pid.h"
 #include "Comm_Sbc.h"
+#include "COMP_PWM.h"
 
 
 extern bool StopMotorTimeOut;

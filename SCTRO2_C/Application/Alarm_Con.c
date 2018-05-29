@@ -654,12 +654,13 @@ void alarmEngineAlways(void)
 			}
 
 			case STATE_PRIMING_WAIT:
+				// in questo stato non sono gestiti gli allarmi, per ora
 				//verifica physic pressioni
-				manageAlarmPhysicPressSensHigh();
-				manageAlarmPhysicPressSensLow();
+				//manageAlarmPhysicPressSensHigh();
+				//manageAlarmPhysicPressSensLow();
 
 				//verifica physic ir temp sens
-				manageAlarmPhysicTempSens();
+				//manageAlarmPhysicTempSens();
 				break;
 
 			case STATE_PRIMING_RICIRCOLO:
@@ -1883,4 +1884,7 @@ void ClearAlarmState(void)
 	StrAlarmWritten = 0;
 	StartAlmArrIdx = 0;
 	memset(&alarmCurrent, 0, sizeof(struct alarm));
+	LevelBuzzer = 0;
+	//EnableNextAlarm = 1;
+	EnableNextAlarmFunc();
 }

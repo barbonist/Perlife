@@ -347,7 +347,7 @@ int main(void)
 
   RTS_MOTOR_SetVal();
 #else
-  /*diabilito l'RTS per la trasmissionme verso i motori;
+  /*disabilito l'RTS per la trasmissionme verso i motori;
    * sarà attivato prima di effettuare una trasmissione e
    * disattivato alla fine della stessa*/
   RTS_MOTOR_ClrVal();
@@ -436,6 +436,7 @@ int main(void)
   setPumpCurrentValue((unsigned char)3, (int)31);
   while (timerCounterCheckModBus < 1);
   timerCounterCheckModBus = 0;
+#ifndef PUMP_EVER
   setPumpCurrentValue((unsigned char)4, (int)31);    // imposto la CURRENT LEVEL a 24
   while (timerCounterCheckModBus < 1);
   timerCounterCheckModBus = 0;
@@ -447,7 +448,7 @@ int main(void)
   timerCounterCheckModBus = 0;
   setPumpAccelerationValue((unsigned char)5, (int)30);
   while (timerCounterCheckModBus < 1);
-
+#endif
 
   /*prima di entrare nel loop infinito chiedo i dati di targa agli attuatori
    * devo ricevere i dati di tutte le pompe in massimo un secondo;
@@ -464,7 +465,10 @@ int main(void)
 		  /*L'indirizzo slvAddr = 6 non è usato*/
 		  if (slvAddr == 6)
 				slvAddr= 7;
-
+#ifdef PUMP_EVER
+		  if (slvAddr == 4)
+				slvAddr= 7;
+#endif
 		/*chiamo la funzione col corretto number of address dipendentemente dall'attuatore (pump/pinch)*/
 		if (slvAddr <= LAST_PUMP)
 			/*funzione che mi legge lo stato delle pompe*/
@@ -499,19 +503,6 @@ int main(void)
   setPinchPosValue (PINCH_2WPVV, MODBUS_PINCH_POS_CLOSED);
   while (timerCounterCheckModBus < 1);
    timerCounterCheckModBus = 0;
-
-//   setPinchPositionHighLevel(BOTTOM_PINCH_ID, (int)MODBUS_PINCH_POS_CLOSED);
-//   setPinchPositionHighLevel(LEFT_PINCH_ID, (int)MODBUS_PINCH_POS_CLOSED);
-//   setPinchPositionHighLevel(RIGHT_PINCH_ID, (int)MODBUS_PINCH_POS_CLOSED);
-
-//#ifdef TUNING_PID_VEN_LIVER
-//   // attivo il pid sull'ossigenazione e perfusione venosa per provare i
-//   // coefficienti
-//	setPumpPressLoop(1, PRESS_LOOP_ON);
-//	pressSample1_Ven = 0;
-//	pressSample2_Ven = 0;
-//	FreeRunCnt10msecOld = 0;
-//#endif
 
    // abilito tutti gli allarmi previsti
    SetAllAlarmEnableFlags();

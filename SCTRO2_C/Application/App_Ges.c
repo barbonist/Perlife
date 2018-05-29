@@ -1676,6 +1676,9 @@ void manageParentPrimingAlways(void){
 				// faccio in modo che il conteggio riprenda al prossimo button_start_priming
 				StartPrimingTime = 0;
 
+				// dato che sono in un cambi
+				ClearAlarmState();
+
 				// Disabilto il controllo delle pinch fino a quando non parte il riciclo
 				CheckCurrPinchPosTask(CHECK_CURR_PINCH_POS_DISABLE_CMD);
 			}
@@ -3803,6 +3806,7 @@ static void computeMachineStateGuardTreatment(void)
 		{
 			// modificato il comando perche' ora devo andare in un'altro stato parent
 			//currentGuard[GUARD_ENABLE_DISPOSABLE_EMPTY].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+			ClearAlarmState();
 			currentGuard[GUARD_ENABLE_WAIT_TREATMENT].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
 			if (PeltierOn && (peltierCell.StopEnable == 0))
 			{
@@ -3823,6 +3827,7 @@ static void computeMachineStateGuardTreatment(void)
 				// se sono trascorsi 5 secondi dalla fine del trattamento e non sono ancora uscito.
 				// la forzo io
 				//currentGuard[GUARD_ENABLE_DISPOSABLE_EMPTY].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+				ClearAlarmState();
 				currentGuard[GUARD_ENABLE_WAIT_TREATMENT].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
 				if (PeltierOn && (peltierCell.StopEnable == 0))
 				{
