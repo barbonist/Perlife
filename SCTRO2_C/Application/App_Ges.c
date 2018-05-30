@@ -114,6 +114,9 @@ bool AtLeastoneButResRcvd = FALSE;
 // usato negli stati di allarme child per ricordarmi di aver ricevuto un BUTTON_RESET
 bool ResButInChildFlag = FALSE;
 
+// variabile usata dalla StopAllCntrlAlarm per salvare l'ultima configurazione delle flags prima di azzerarle
+GLOBAL_FLAGS AlarmEnableConf;
+
 
 void CallInIdleState(void)
 {
@@ -204,6 +207,8 @@ void CallInIdleState(void)
 	CheckCurrPinchPosTask(CHECK_CURR_PINCH_POS_DISABLE_CMD);
 	AtLeastoneButResRcvd = FALSE;
 	ResButInChildFlag = FALSE;
+	// default
+	parameterWordSetFromGUI[PAR_SET_DESIRED_DURATION].value = 0x0014; // 20 minuti
 }
 
 
@@ -1034,6 +1039,11 @@ void manageParentPrimingEntry(void){
 
 	// inizializzo il controllo delle pinch fatto durante l'esecuzione del trattamento
 	//CheckCurrPinchPosTask(CHECK_CURR_PINCH_POS_INIT_CMD);
+
+	// se non sono in allarme (dovrebbe essere sempre cosi') abilito la generazione del prossimo per sicurezza
+	if(!IsAlarmActive())
+		EnableNextAlarm = TRUE;
+
 }
 
 
@@ -2313,6 +2323,10 @@ void manageParentTreatEntry(void){
 
 	// inizializzo il controllo delle pinch fatto durante l'esecuzione del trattamento
 	CheckCurrPinchPosTask(CHECK_CURR_PINCH_POS_INIT_CMD);
+
+	// se non sono in allarme (dovrebbe essere sempre cosi') abilito la generazione del prossimo per sicurezza
+	if(!IsAlarmActive())
+		EnableNextAlarm = TRUE;
 }
 
 void manageParentTreatAlways(void){
@@ -3807,6 +3821,7 @@ static void computeMachineStateGuardTreatment(void)
 			// modificato il comando perche' ora devo andare in un'altro stato parent
 			//currentGuard[GUARD_ENABLE_DISPOSABLE_EMPTY].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
 			ClearAlarmState();
+			StopAllCntrlAlarm(&AlarmEnableConf);
 			currentGuard[GUARD_ENABLE_WAIT_TREATMENT].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
 			if (PeltierOn && (peltierCell.StopEnable == 0))
 			{
@@ -3828,6 +3843,7 @@ static void computeMachineStateGuardTreatment(void)
 				// la forzo io
 				//currentGuard[GUARD_ENABLE_DISPOSABLE_EMPTY].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
 				ClearAlarmState();
+				StopAllCntrlAlarm(&AlarmEnableConf);
 				currentGuard[GUARD_ENABLE_WAIT_TREATMENT].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
 				if (PeltierOn && (peltierCell.StopEnable == 0))
 				{
@@ -4617,6 +4633,8 @@ void processMachineState(void)
 					ptrFutureParent = ptrFutureState->ptrParent;
 					/* compute future child */
 					ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
+					// ripristino gli enable azzerati alla fine del trattamento
+					RestoreAllCntrlAlarm(&AlarmEnableConf);
 					DebugStringStr("STATE_EMPTY_DISPOSABLE");
 					break;
 				}
@@ -4630,6 +4648,8 @@ void processMachineState(void)
 					ptrFutureParent = ptrFutureState->ptrParent;
 					/* compute future child */
 					ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
+					// ripristino gli enable azzerati alla fine del trattamento
+					RestoreAllCntrlAlarm(&AlarmEnableConf);
 					DebugStringStr("STATE_TREATMENT");
 
 					// riparte come se fosse un nuovo trattamento

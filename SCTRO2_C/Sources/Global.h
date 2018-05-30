@@ -1421,8 +1421,13 @@ Kd = Kp*Pu/8  = 0.01875
 // di aggiornamento del pid di 450 msec
 // ku = 0.8, Pu = 12 sec
 #define parKITC_Ven 						0.16
-#define parKP_Ven 							0.48
-#define parKD_TC_Ven 						0.72
+// valori calcolati con ziegler-nichols
+//#define parKP_Ven 						0.48
+//#define parKD_TC_Ven 						0.72
+// valori aggiustati con le prove
+#define parKP_Ven 						    0.6384
+#define parKD_TC_Ven 						0.9576
+
 
 // parametri per il pid sulla arteriosa calcolati sul nuovo disposable (franco) e con il tempo
 // di aggiornamento del pid di 450 msec
@@ -1432,7 +1437,7 @@ Kd = Kp*Pu/8  = 0.01875
 //#define parKD_TC_Art 						0.1125
 #define parKITC_Art 						(0.2 / 3.0)
 #define parKP_Art 							(0.30 / 3.0)
-#define parKD_TC_Art 						(0.1125 * 2.0)
+#define parKD_TC_Art 						(0.1125 * 4.0)
 //------------------------------------------------------------------------------------------
 
 // parametri per il nuovo pid sulla arteriosa (calcolati con Vincenzo sul vecchio disposable)

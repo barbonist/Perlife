@@ -134,7 +134,7 @@
 //#define PR_VEN_LOW											40
 // modificato altrimenti viene sempre fuori allarme di pressione bassa
 #define PR_VEN_LOW											25
-#define PR_ADS_FILTER_HIGH									150
+#define PR_ADS_FILTER_HIGH									120
 #define PR_ADS_FILTER_LOW                                   10
 #define MAX_MSG_CONSECUTIVE_ACTUATOR_MODBUS_NOT_RESPOND 	10
 

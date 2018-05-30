@@ -168,7 +168,7 @@ int SpeedCostanteArt( int CurrSpeed)
 			SpeedCostanteState = 0;
 		else
 			Cnt++;
-		if(Cnt >= 12)
+		if(Cnt >= 6)
 		{
 			SpeedCostanteFlag = 1;
 			SpeedCostanteState = 0;
@@ -195,6 +195,8 @@ void alwaysPumpPressLoopArt(unsigned char pmpId, unsigned char *PidFirstTime)
 
 	/*blocco il numero di giri al massimo ammissibile per non perdere il passo*/
 	if (MAX_ART_RPM_Val > MAX_ART_RPM)
+		MAX_ART_RPM_Val = MAX_ART_RPM;
+	if(!MAX_ART_RPM_Val)
 		MAX_ART_RPM_Val = MAX_ART_RPM;
 
     if(*PidFirstTime == PRESS_LOOP_ON)
@@ -225,8 +227,12 @@ void alwaysPumpPressLoopArt(unsigned char pmpId, unsigned char *PidFirstTime)
 	 * vedere se trovo un equilibrio andando + forte e avvicindandomi al massimo flusso impostato*/
     if (SpeedCostanteArt((int)actualSpeed_Art) && (actualSpeed_Art <= MAX_ART_RPM_Val))
     {
-		//actualSpeed_Art += 2.0;
-		deltaSpeed_Art = 0.5;
+ 	   if((Target_PID_ART && (errPress > 0.0)) || (!Target_PID_ART && (errPress >= 0.0)))
+ 	   {
+ 		  // sono sotto la pressione massima quindi posso provare ad aumentare la velocita'
+ 		   //actualSpeed_Art += 2.0;
+ 		   deltaSpeed_Art = 0.5;
+ 	   }
 	//	MAX_ART_RPM_Val = MAX_ART_RPM_Val + 0.5;
     }
 	/*se misuro un flusso e ho una velocità >0 e sto misurando uin flusso superiore al limite impostato
@@ -1065,7 +1071,7 @@ int SpeedCostanteVen( int CurrSpeed)
 			SpeedCostanteState = 0;
 		else
 			Cnt++;
-		if(Cnt >= 12)
+		if(Cnt >= 6)
 		{
 			SpeedCostanteFlag = 1;
 			SpeedCostanteState = 0;
@@ -1191,7 +1197,7 @@ void alwaysPumpPressLoopVen(unsigned char pmpId, unsigned char *PidFirstTime){
 	float pressSample0_Ven = 0;
 
 	float errPress = 0;
-	float fl;
+	float fl, fl1, fl2;
 
 	static int Target_PID_VEN = 0;
 	float Pump_Gain = 0;
@@ -1205,6 +1211,8 @@ void alwaysPumpPressLoopVen(unsigned char pmpId, unsigned char *PidFirstTime){
 
 	/*blocco al massimo totale ammissibile per non perdere il passo il numero di giri*/
 	if (MAX_OXYG_RPM_Val > MAX_OXYG_RPM)
+		MAX_OXYG_RPM_Val = MAX_OXYG_RPM;
+	if (!MAX_OXYG_RPM_Val)
 		MAX_OXYG_RPM_Val = MAX_OXYG_RPM;
 
     if(*PidFirstTime == PRESS_LOOP_ON)
@@ -1231,7 +1239,11 @@ void alwaysPumpPressLoopVen(unsigned char pmpId, unsigned char *PidFirstTime){
 	   //(sensor_UFLOW[VENOUS_AIR_SENSOR].Average_Flow_Val < (float)parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value)
 	   )
    {
-		actualSpeed_Ven += 2.0;
+	   if((Target_PID_VEN && (errPress > 0.0)) || (!Target_PID_VEN && (errPress >= 0.0)))
+	   {
+		   // sono sotto la pressione massima quindi posso provare ad aumentare la velocita'
+		   actualSpeed_Ven += 2.0;
+	   }
    }
 
 //   deltaSpeed_Ven = kpForTuning_Ven * errPress;
@@ -1243,6 +1255,8 @@ void alwaysPumpPressLoopVen(unsigned char pmpId, unsigned char *PidFirstTime){
 	 * e il delta di velocità del pid non mi fa diminuire la velocità (deltaSpeed_Ven>0)
 	 * aggiorno la velocità al massimo flusso impostato */
 	fl = (float) parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value;
+	fl1 = fl - fl * 2.0 / 100.0;
+	fl2 = fl + fl * 2.0 / 100.0;
 	if((sensor_UFLOW[1].Average_Flow_Val > 0.0) &&
 	   (sensor_UFLOW[1].Average_Flow_Val > fl))
 	{
@@ -1256,7 +1270,8 @@ void alwaysPumpPressLoopVen(unsigned char pmpId, unsigned char *PidFirstTime){
 			deltaSpeed_Ven = -0.1;
 	}
 	else if ((sensor_UFLOW[1].Average_Flow_Val > 0.0) &&
-		     (sensor_UFLOW[1].Average_Flow_Val > (fl - fl * 8.0 / 100.0)) &&
+		     (sensor_UFLOW[1].Average_Flow_Val > fl1) &&
+			 (sensor_UFLOW[1].Average_Flow_Val < fl2) &&
 		     //(sensor_UFLOW[1].Average_Flow_Val > fl) &&
 		     (actualSpeed_Ven > 0.0) && (deltaSpeed_Ven > 0))
 	{

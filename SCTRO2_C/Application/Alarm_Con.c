@@ -685,11 +685,11 @@ void alarmEngineAlways(void)
 
 			case STATE_WAIT_TREATMENT:
 				//verifica physic pressioni
-				manageAlarmPhysicPressSensHigh();
-				manageAlarmPhysicPressSensLow();
+				//manageAlarmPhysicPressSensHigh();
+				//manageAlarmPhysicPressSensLow();
 
 				//verifica physic ir temp sens
-				manageAlarmPhysicTempSens();
+				//manageAlarmPhysicTempSens();
 				break;
 
 			/*case STATE_T1_WITH_DISPOSABLE:
@@ -1887,4 +1887,6 @@ void ClearAlarmState(void)
 	LevelBuzzer = 0;
 	//EnableNextAlarm = 1;
 	EnableNextAlarmFunc();
+	currentGuard[GUARD_ALARM_ACTIVE].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
+	currentGuard[GUARD_ALARM_ACTIVE].guardValue = GUARD_VALUE_FALSE;
 }
