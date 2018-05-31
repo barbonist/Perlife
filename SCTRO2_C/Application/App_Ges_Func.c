@@ -546,6 +546,8 @@ void ResetTreatCurrPinchPosOk(void)
 		CheckCurrPinchPosTask((CHECK_CURR_PINCH_POS_TASK_CMD)CHECK_CURR_PINCH_POS_INIT_CMD);
 }
 
+
+
 /*funzione che accende con una data potenza o spegne il frigo con potenza '0'
  * power = 10 --> 200 Hz max
  * power = 40 --> 50 Hz --> 25%*/
@@ -568,3 +570,48 @@ void Start_Frigo_AMS(unsigned char power)
 	}
 }
 
+
+
+// ritorna TRUE quando ha ricevuto la risposta da modbus e
+// mette *pOk a TRUE se la risposta e' corretta (CRC OK)
+bool WaitForModBusResponseTask(WAIT_FOR_MB_RESP_TASK_CMD WaitForMBRespTskCmd, unsigned char *pOk)
+{
+	static WAIT_FOR_MB_RESP_TASK_STATE WaitForModBusResponseTaskSt = WAIT_MB_RESP_TASK_IDLE;
+	static unsigned char *ptr_msg = 0;
+	static uint32_t startTimeInterv = 0;
+	word CRC_RX,CRC_CALC;
+	*pOk = MOD_BUS_ANSW_NO_ANSW;
+
+	if(WaitForMBRespTskCmd == WAIT_MB_RESP_TASK_INIT_3_CMD)
+	{
+		WaitForModBusResponseTaskSt = WAIT_MB_RESP_TASK_INIT_3;
+	}
+
+	switch (WaitForModBusResponseTaskSt)
+	{
+		case WAIT_MB_RESP_TASK_IDLE:
+			break;
+		case WAIT_MB_RESP_TASK_INIT_3:
+			iFlag_actuatorCheck = IFLAG_COMMAND_SENT;
+			WaitForModBusResponseTaskSt = WAIT_MB_RESP_TASK_RUN_3;
+			ptr_msg = &msgToRecvFrame3[0];
+			startTimeInterv = FreeRunCnt10msec;
+			break;
+		case WAIT_MB_RESP_TASK_RUN_3:
+			if(iFlag_actuatorCheck == IFLAG_COMMAND_RECEIVED)
+			{
+				// ho ricevuto la risposta su MODBUS
+				CRC_CALC = ComputeChecksum(ptr_msg, TOT_DATA_MODBUS_RECEIVED_PUMP -2);
+				CRC_RX = BYTES_TO_WORD(msgToRecvFrame3[10], msgToRecvFrame3[9]);
+				iFlag_actuatorCheck = IFLAG_IDLE;
+				WaitForModBusResponseTaskSt = WAIT_MB_RESP_TASK_IDLE;
+				*pOk = MOD_BUS_ANSW_OK;
+			}
+			else if(startTimeInterv && (msTick10_elapsed(startTimeInterv) >= 2))
+			{
+				// sono passati 20 msec e non ho avuto ancora risposta, restituisco errore
+				*pOk = MOD_BUS_ANSW_TOUT_ERR;
+			}
+			break;
+	}
+}

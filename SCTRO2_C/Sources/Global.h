@@ -1974,5 +1974,33 @@ typedef enum
 ActionPumpEver Action;
 //---------------------------------------------------------------------------------------
 
+
+//--------------------------------------------------------------------------------
+// definizioni per il task WaitForModBusResponseTask che controlla le risposte ai
+// comandi MODBUS
+typedef enum
+{
+	WAIT_MB_RESP_TASK_NO_CMD,
+	WAIT_MB_RESP_TASK_INIT_3_CMD,
+}WAIT_FOR_MB_RESP_TASK_CMD;
+
+typedef enum
+{
+	WAIT_MB_RESP_TASK_IDLE,
+	WAIT_MB_RESP_TASK_INIT_3,
+	WAIT_MB_RESP_TASK_RUN_3,
+}WAIT_FOR_MB_RESP_TASK_STATE;
+
+typedef enum
+{
+	MOD_BUS_ANSW_NO_ANSW,
+	MOD_BUS_ANSW_OK,
+	MOD_BUS_ANSW_NO_ERR,
+    MOD_BUS_ANSW_CRC_ERR,
+	MOD_BUS_ANSW_TOUT_ERR
+}MOD_BUS_RESPONSE;
+//--------------------------------------------------------------------------------
+
+
 #endif /* SOURCES_GLOBAL_H_ */
 
