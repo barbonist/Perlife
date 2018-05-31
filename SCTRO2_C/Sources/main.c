@@ -352,12 +352,13 @@ int main(void)
    * disattivato alla fine della stessa*/
   RTS_MOTOR_ClrVal();
   setPumpSpeedValueEVER (PPV1,0, INIT_PUMP);
-  /*il comando alla successiva virene dato in automatico
-   * poichè logicamente le due pompe ndi ossigenazione sono un unica pompa*/
+  // Se uso queste funzioni prima di andare avanti dovrei controllare la risposta e
+  // poi passare alla seconda pompa
+  /*il comando alla successiva viene dato in automatico
+   * poichè logicamente le due pompe di ossigenazione sono una unica pompa*/
   //setPumpSpeedValueEVER (PPV2,0, INIT_PUMP);
 #endif
 
-  static int index = 0;
   //ptrMsgSbcRx = &msg_sbc_rx[0];
   ptrMsgSbcRx = &sbc_rx_data[0];
   ptrSbcCountRx = 0;
@@ -378,8 +379,6 @@ int main(void)
   LDD_TDeviceData *MySPIPtr;
   LDD_TError Error;
   iflag_spi_rx = IFLAG_IDLE;
-
-  char dummy;
 
   //int timerCounterModBusOld = 0;
 
@@ -527,7 +526,7 @@ int main(void)
    SuspendInvioAlarmCode = 0;
    TimeoutAirEjection = 0;
 #ifdef ENABLE_PROTECTIVE_ALARM_RESET
-   ProAlmCodeToreset = 0;                       // codice dell'allarme protective da resettare (RxBuffCanP[2]->SRxCan2.AlarmCode).
+   ProAlmCodeToreset = 0;                         // codice dell'allarme protective da resettare (RxBuffCanP[2]->SRxCan2.AlarmCode).
 		                                          // 0 nessun allarme da resettare
    memset(&ProtectiveAlarmStruct, 0, sizeof(struct alarm));
 #endif

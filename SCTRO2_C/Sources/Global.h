@@ -1958,8 +1958,9 @@ typedef enum
 unsigned char Prescaler_Freq_Signal_AMS;
 bool Enable_AMS;
 
-/*define di compilazione per utilizzo pompe EVER*/
+/*define di compilazione per utilizzo pompe EVER (commentare PUMP_EVER se si usano le vecchie pompe)*/
 //#define PUMP_EVER
+#define TOT_DATA_MODBUS_RECEIVED_PUMP_EVER	15
 bool    RX_ENABLE;
 
 typedef enum

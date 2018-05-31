@@ -95,6 +95,63 @@ struct func3RetStruct * ModBusReadRegisterReq(char slaveAddr,
 	return _func3RetValPtr;
 }
 
+
+
+
+#ifdef PUMP_EVER
+struct func3RetStruct * ModBusReadRegisterReqEVER(char slaveAddr,
+									              char funcCode,
+									              unsigned int readStartAddr,
+									              unsigned int numRegisterRead
+									             )
+{
+	/* Init frame - All frame byte equal to 0xFF */
+	FrameInitFunc3();
+
+	/*pos_0: slave address */
+	msgToSendFrame3[0] = slaveAddr;
+	/*pos_1: function code */
+	msgToSendFrame3[1] = funcCode;
+	/*pos_2: read start address - High */
+	msgToSendFrame3[2] = (readStartAddr & 0xFF00)>>8;
+	/*pos_3: read start address - Low */
+	msgToSendFrame3[3] = (readStartAddr & 0x00FF);
+	/*pos_4: number of register to be read - High*/
+	msgToSendFrame3[4] = (numRegisterRead & 0xFF00)>>8;
+	/*pos_5: number of register to be read - Low*/
+	msgToSendFrame3[5] = (numRegisterRead & 0x00FF);
+
+	msgToSendFrame3Ptr =&msgToSendFrame3[0];
+
+	mstreq_crc = ComputeChecksum(msgToSendFrame3Ptr, 6);
+
+	/*pos_6: crc Low*/
+	mstreq_crc_Low = (mstreq_crc & 0x00FF);
+	msgToSendFrame3[6] = mstreq_crc_Low;
+	/*pos 7: crc High*/
+	mstreq_crc_High = (mstreq_crc & 0xFF00)>>8;
+	msgToSendFrame3[7] = mstreq_crc_High;
+
+	msgToSendFrame3Ptr =&msgToSendFrame3[0];
+	_func3RetVal.mstreqRetStructPtr = msgToSendFrame3Ptr;
+	_func3RetVal.mstreqRetStructNumByte = 8;
+	_func3RetVal.slvresRetNumByte = 1 + 							/* slave address */
+									1 +								/* function code */
+									1 +								/* byte read count */
+									(2*msgToSendFrame3[5]) +		/* data byte */
+									1 + 							/* crc low */
+									1;								/* crc high */
+	msgToRecvFrame3Ptr = &msgToRecvFrame3[0];
+	_func3RetVal.slvresRetPtr = msgToRecvFrame3Ptr;
+
+	/* return the pointer to the struct: position 0 --> pointer to message; position 1: number of byte to send */
+	_func3RetValPtr = &_func3RetVal;
+
+	//return msgToSendFrame3Ptr;
+	return _func3RetValPtr;
+}
+#endif
+
 struct func10RetStruct * ModBusWriteRegisterReq(char slaveAddr,
 		  	  	  	  	  	  	  	   char funcCode,
 									   unsigned int writeStartAddr,
@@ -1892,6 +1949,44 @@ bool CommandModBusPMPExecute(int SpeedPMP_0, int SpeedPMP_1_2, int SpeedPMP_3)
 		return(FALSE);
 }
 
+#ifdef PUMP_EVER
+/*funzione per controllare lo stato dei motori*/
+void Check_Actuator_Status_Ever (char slaveAddr,
+							     char funcCode,
+							     int readAddrStart,
+							     int numberOfAddress)
+{
+	word snd;
+
+	_funcRetValPtr = (struct funcRetStruct *)ModBusReadRegisterReqEVER(slaveAddr,
+										                               funcCode,
+										                               readAddrStart,
+										                               numberOfAddress);
+
+	_funcRetVal.ptr_msg = _funcRetValPtr->ptr_msg;
+	_funcRetVal.mstreqRetStructNumByte = _funcRetValPtr->mstreqRetStructNumByte;
+	_funcRetVal.slvresRetPtr = _funcRetValPtr->slvresRetPtr;
+	_funcRetVal.slvresRetNumByte = _funcRetValPtr->slvresRetNumByte;
+
+
+
+
+	/* prima di ogni spedizione abilito la seriale del modbus perchè
+	 * potrebbe essere stata disabilita da una non corretta ricezione
+	 * per resettare la perifericare e riallinearla; all'interno della
+	 * funzione MODBUS_COMM_Enable() viene controllata la flag EnUser
+	 * che esegue l'abilitazione della serrtiale solo se essa è disabilitata*/
+	MODBUS_COMM_Enable();
+	RX_ENABLE = FALSE;
+	RTS_MOTOR_SetVal();
+	for(char k = 0; k < _funcRetVal.mstreqRetStructNumByte; k++)
+	{
+		MODBUS_COMM_SendChar(*(_funcRetVal.ptr_msg+k));
+	}
+}
+#endif
+
+
 /*funzione per controllare lo stato dei motori*/
 void Check_Actuator_Status (char slaveAddr,
 							char funcCode,
@@ -1913,21 +2008,16 @@ void Check_Actuator_Status (char slaveAddr,
 
 
 
-	/*prima di ogni spedizione abilito la seriale del modbus perchè
+	/* prima di ogni spedizione abilito la seriale del modbus perchè
 	 * potrebbe essere stata disabilita da una non corretta ricezione
 	 * per resettare la perifericare e riallinearla; all'interno della
 	 * funzione MODBUS_COMM_Enable() viene controllata la flag EnUser
 	 * che esegue l'abilitazione della serrtiale solo se essa è disabilitata*/
 	MODBUS_COMM_Enable();
-#ifdef PUMP_EVER
-	RX_ENABLE = FALSE;
-	RTS_MOTOR_SetVal();
-#endif
 	for(char k = 0; k < _funcRetVal.mstreqRetStructNumByte; k++)
 	{
 		MODBUS_COMM_SendChar(*(_funcRetVal.ptr_msg+k));
 	}
-
 }
 
 void Manage_and_Storage_ModBus_Actuator_Data(void)
@@ -1937,6 +2027,11 @@ void Manage_and_Storage_ModBus_Actuator_Data(void)
 	  unsigned char numberOfAddressCheckPump	= 0x03;
 	  unsigned char numberOfAddressCheckPinch	= 0x02;
 	  unsigned char funcCode 					= 0x03;
+#ifdef PUMP_EVER
+	  unsigned char numberOfAddressCheckPumpEver = 0x03;
+	  word 			readAddrStartEver	 		 = 0x1008; // registro Current_actual_value di Ever
+	  unsigned char funcCodeEver				 = 0x05;
+#endif
 
 	 if(WriteActive == TRUE)
 	 {
@@ -1972,7 +2067,17 @@ void Manage_and_Storage_ModBus_Actuator_Data(void)
 		CountErrorModbusMSG[slvAddr - 2]++;
 
         /*chiamo la funzione col corretto number of address dipendentemente dall'attuatore (pump/pinch)*/
+#ifdef PUMP_EVER
+		if(slvAddr == (LAST_PUMP - 1) || slvAddr == LAST_PUMP)
+		{
+			/*funzione che mi legge lo stato delle pompe*/
+			Check_Actuator_Status_Ever (slvAddr, funcCodeEver, readAddrStartEver, numberOfAddressCheckPumpEver);
+			LastActuatslvAddr = slvAddr;
+		}
+		else if (slvAddr <= (LAST_PUMP - 2))
+#else
 		if (slvAddr <= LAST_PUMP)
+#endif
 		{
 			/*funzione che mi legge lo stato delle pompe*/
 			Check_Actuator_Status (slvAddr,funcCode,readAddrStart,numberOfAddressCheckPump);
@@ -2003,7 +2108,12 @@ void StorageModbusData(unsigned char LastActuatslvAddr)
 {
 	/*in questa funzione suppongo di usare sempre il msgToRecvFrame3 in quanto usata solo per messaggi di stato e non di impostazione
 	 * ecco perchè posso fare Address = msgToRecvFrame3[0] e funCode = msgToRecvFrame3[1]*/
-	unsigned char dataTemp[TOT_DATA_MODBUS_RECEIVED_PUMP],i,Address = msgToRecvFrame3[0],funCode = msgToRecvFrame3[1];
+#ifdef PUMP_EVER
+	unsigned char dataTemp[TOT_DATA_MODBUS_RECEIVED_PUMP_EVER];
+#else
+	unsigned char dataTemp[TOT_DATA_MODBUS_RECEIVED_PUMP];
+#endif
+	unsigned char i,Address = msgToRecvFrame3[0],funCode = msgToRecvFrame3[1];
 	unsigned int  Pump_Average_Current	= 0,
 				  Pump_Speed_Status		= 0,
 				  Pump_Status			= 0,
@@ -2027,9 +2137,20 @@ void StorageModbusData(unsigned char LastActuatslvAddr)
 	}
 
 	ptr_msg =&msgToRecvFrame3[0];
-
+#ifdef PUMP_EVER
+	/*controllo i dati rievuti e calcolo il relativo CRC cofrontandolo con quello ricevuto*/
+	if(Address == (LAST_PUMP - 1) || Address == LAST_PUMP)
+	{
+		// ho letto lo stato delle pompe EVER
+		Tot_ModBus_Data_RX = TOT_DATA_MODBUS_RECEIVED_PUMP_EVER;
+		CRC_CALC = ComputeChecksum(ptr_msg, TOT_DATA_MODBUS_RECEIVED_PUMP_EVER - 2);
+		CRC_RX = BYTES_TO_WORD(msgToRecvFrame3[10], msgToRecvFrame3[9]);
+	}
+	else if (Address >= FIRST_ACTUATOR && Address <= (LAST_PUMP - 2))
+#else
 	/*controllo i dati rievuti e calcolo il relativo CRC cofrontandolo con quello ricevuto*/
 	if (Address >= FIRST_ACTUATOR && Address <= LAST_PUMP)
+#endif
 	{
 		Tot_ModBus_Data_RX = TOT_DATA_MODBUS_RECEIVED_PUMP;
 		CRC_CALC = ComputeChecksum(ptr_msg, TOT_DATA_MODBUS_RECEIVED_PUMP -2);
@@ -2079,7 +2200,18 @@ void StorageModbusData(unsigned char LastActuatslvAddr)
 	}
 
 	/*se ho l'indirizzo di una pompa*/
+#ifdef PUMP_EVER
+	if(Address == (LAST_PUMP - 1) || Address == LAST_PUMP)
+	{
+		/*devo trasfomare i dati ricevuti da byte in word*/
+		Pump_Average_Current = BYTES_TO_WORD(dataTemp[3], dataTemp[4]);
+		Pump_Speed_Status	 = BYTES_TO_WORD(dataTemp[5], dataTemp[6]);
+		Pump_Status 		 = 0; //BYTES_TO_WORD(dataTemp[7], dataTemp[8]);
+	}
+	else if (Address >= FIRST_ACTUATOR && Address <= (LAST_PUMP - 2))
+#else
 	if (Address >= FIRST_ACTUATOR && Address <= LAST_PUMP)
+#endif
 	{
 		/*devo trasfomare i dati ricevuti da byte in word*/
 		Pump_Average_Current = BYTES_TO_WORD(dataTemp[3], dataTemp[4]);
@@ -2102,11 +2234,25 @@ void StorageModbusData(unsigned char LastActuatslvAddr)
 		Pinch_Status	 	  = BYTES_TO_WORD(dataTemp[5], dataTemp[6]);
 	}
 
-	/*uso l Address come indice per la matrice
+	    /* uso l'Address come indice per la matrice
 		 * ma lo decremento di due in quanto pompa con
 		 * selettore '0' corrisposnde a indirizzo '2'*/
 		/*se ho l'indirizzo di una pompa*/
+#ifdef PUMP_EVER
+	if(Address == (LAST_PUMP - 1) || Address == LAST_PUMP)
+	{
+		modbusData[Address-2][16]= Pump_Average_Current;
+		modbusData[Address-2][17]= Pump_Speed_Status;
+		modbusData[Address-2][18]= Pump_Status;
+		/* azzero per quello slave il contatore di messaggi
+		 * che non hanno avuto risposta in modo da contare
+		 * le mancate risposte consecutive*/
+		CountErrorModbusMSG[Address-2] = 0;
+	}
+	else if (Address >= FIRST_ACTUATOR && Address <= (LAST_PUMP - 2))
+#else
 		if (Address >= FIRST_ACTUATOR && Address <= LAST_PUMP)
+#endif
 		{
 			modbusData[Address-2][16]= Pump_Average_Current;
 			modbusData[Address-2][17]= Pump_Speed_Status;
