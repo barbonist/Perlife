@@ -572,46 +572,190 @@ void Start_Frigo_AMS(unsigned char power)
 
 
 
+//--------------------------------------------------------------------------------
+// definizioni per il task WaitForModBusResponseTask che controlla le risposte ai
+// comandi MODBUS
+//typedef enum
+//{
+//	WAIT_MB_RESP_TASK_NO_CMD,
+//	WAIT_MB_RESP_TASK_INIT_3_CMD,
+//	WAIT_MB_RESP_TASK_INIT_EVER_3_CMD,
+//	WAIT_MB_RESP_TASK_INIT_GENERIC_CMD,
+//	WAIT_MB_RESP_TASK_INIT_10_CMD,
+//	WAIT_MB_RESP_TASK_INIT_EVER_10_CMD,
+//	WAIT_MB_RESP_TASK_RESET_CMD
+//}WAIT_FOR_MB_RESP_TASK_CMD;
+//
+//typedef enum
+//{
+//	WAIT_MB_RESP_TASK_IDLE,
+//	WAIT_MB_RESP_TASK_INIT_3,
+//	WAIT_MB_RESP_TASK_INIT_EVER_3,
+//	WAIT_MB_RESP_TASK_RUN_3,
+//	WAIT_MB_RESP_TASK_INIT_GENERIC,
+//	WAIT_MB_RESP_TASK_INIT_10,
+//	WAIT_MB_RESP_TASK_INIT_EVER_10
+//}WAIT_FOR_MB_RESP_TASK_STATE;
+//
+//typedef enum
+//{
+//	MOD_BUS_ANSW_NO_ANSW,
+//	MOD_BUS_ANSW_OK,
+//    MOD_BUS_ANSW_CRC_ERR,
+//	MOD_BUS_ANSW_TOUT_ERR
+//}MOD_BUS_RESPONSE;
+//--------------------------------------------------------------------------------
+
+
 // ritorna TRUE quando ha ricevuto la risposta da modbus e
 // mette *pOk a TRUE se la risposta e' corretta (CRC OK)
-bool WaitForModBusResponseTask(WAIT_FOR_MB_RESP_TASK_CMD WaitForMBRespTskCmd, unsigned char *pOk)
+//MOD_BUS_RESPONSE WaitForModBusResponseTask(WAIT_FOR_MB_RESP_TASK_CMD WaitForMBRespTskCmd)
+//{
+//	static WAIT_FOR_MB_RESP_TASK_STATE WaitForModBusResponseTaskSt = WAIT_MB_RESP_TASK_IDLE;
+//	static unsigned char *ptr_msg = 0;
+//	static uint32_t startTimeInterv = 0;
+//	static int CrcLen = 0;
+//	word CRC_RX,CRC_CALC;
+//	MOD_BUS_RESPONSE Ok = MOD_BUS_ANSW_NO_ANSW;
+//
+//	if(WaitForMBRespTskCmd == WAIT_MB_RESP_TASK_INIT_3_CMD)
+//	{
+//		// controllo la risposta del comando di lettura pompe lean
+//		WaitForModBusResponseTaskSt = WAIT_MB_RESP_TASK_INIT_3;
+//	}
+//	else if(WaitForMBRespTskCmd == WAIT_MB_RESP_TASK_INIT_EVER_3_CMD)
+//	{
+//		// controllo la risposta del comando di lettura ever
+//		WaitForModBusResponseTaskSt = WAIT_MB_RESP_TASK_INIT_EVER_3;
+//	}
+//	else if(WaitForMBRespTskCmd == WAIT_MB_RESP_TASK_INIT_GENERIC_CMD)
+//	{
+//		// controllo la risposta del comando di lettura ever
+//		WaitForModBusResponseTaskSt = WAIT_MB_RESP_TASK_INIT_GENERIC;
+//	}
+//	else if(WaitForMBRespTskCmd == WAIT_MB_RESP_TASK_INIT_10_CMD)
+//	{
+//		// controllo la risposta del comando di lettura pompe lean
+//		WaitForModBusResponseTaskSt = WAIT_MB_RESP_TASK_INIT_10;
+//	}
+//	else if(WaitForMBRespTskCmd == WAIT_MB_RESP_TASK_INIT_EVER_10_CMD)
+//	{
+//		// controllo la risposta del comando di lettura ever
+//		WaitForModBusResponseTaskSt = WAIT_MB_RESP_TASK_INIT_EVER_10;
+//	}
+//
+//	switch (WaitForModBusResponseTaskSt)
+//	{
+//		case WAIT_MB_RESP_TASK_IDLE:
+//			break;
+//		case WAIT_MB_RESP_TASK_INIT_GENERIC:
+//			iFlag_actuatorCheck = IFLAG_COMMAND_SENT;
+//			WaitForModBusResponseTaskSt = WAIT_MB_RESP_TASK_RUN_3;
+//			ptr_msg = _funcRetValPtr->ptr_msg;
+//			startTimeInterv = FreeRunCnt10msec;
+//			CrcLen = _funcRetValPtr->slvresRetNumByte;
+//			break;
+//		case WAIT_MB_RESP_TASK_INIT_EVER_3:
+//			iFlag_actuatorCheck = IFLAG_COMMAND_SENT;
+//			WaitForModBusResponseTaskSt = WAIT_MB_RESP_TASK_RUN_3;
+//			ptr_msg = &msgToRecvFrame3[0];
+//			startTimeInterv = FreeRunCnt10msec;
+//			CrcLen = TOT_DATA_MODBUS_RECEIVED_PUMP_EVER;
+//			break;
+//		case WAIT_MB_RESP_TASK_INIT_3:
+//			iFlag_actuatorCheck = IFLAG_COMMAND_SENT;
+//			WaitForModBusResponseTaskSt = WAIT_MB_RESP_TASK_RUN_3;
+//			ptr_msg = &msgToRecvFrame3[0];
+//			startTimeInterv = FreeRunCnt10msec;
+//			CrcLen = TOT_DATA_MODBUS_RECEIVED_PUMP;
+//			break;
+//
+//		case WAIT_MB_RESP_TASK_INIT_EVER_10:
+//			iFlag_actuatorCheck = IFLAG_COMMAND_SENT;
+//			WaitForModBusResponseTaskSt = WAIT_MB_RESP_TASK_RUN_3;
+//			ptr_msg = &msgToRecvFrame10[0];
+//			startTimeInterv = FreeRunCnt10msec;
+//			CrcLen = 8;
+//			break;
+//		case WAIT_MB_RESP_TASK_INIT_10:
+//			iFlag_actuatorCheck = IFLAG_COMMAND_SENT;
+//			WaitForModBusResponseTaskSt = WAIT_MB_RESP_TASK_RUN_3;
+//			ptr_msg = &msgToRecvFrame10[0];
+//			startTimeInterv = FreeRunCnt10msec;
+//			CrcLen = 8; //TOT_DATA_MODBUS_RECEIVED_PUMP;
+//			break;
+//
+//		case WAIT_MB_RESP_TASK_RUN_3:
+//			if(iFlag_actuatorCheck == IFLAG_COMMAND_RECEIVED)
+//			{
+//				// ho ricevuto la risposta su MODBUS
+//				CRC_CALC = ComputeChecksum(ptr_msg, CrcLen - 2);
+//				CRC_RX = BYTES_TO_WORD(ptr_msg[CrcLen - 1], ptr_msg[CrcLen - 2]);
+//				iFlag_actuatorCheck = IFLAG_IDLE;
+//				WaitForModBusResponseTaskSt = WAIT_MB_RESP_TASK_IDLE;
+//				if (CRC_RX != CRC_CALC)
+//					Ok = MOD_BUS_ANSW_CRC_ERR;
+//				else
+//					Ok = MOD_BUS_ANSW_OK;
+//			}
+//			else if(startTimeInterv && (msTick10_elapsed(startTimeInterv) >= 2))
+//			{
+//				// sono passati 20 msec e non ho avuto ancora risposta, restituisco errore
+//				Ok = MOD_BUS_ANSW_TOUT_ERR;
+//			}
+//			break;
+//	}
+//	return Ok;
+//}
+
+
+MOD_BUS_RESPONSE WaitForModBusResponseTask(WAIT_FOR_MB_RESP_TASK_CMD WaitForMBRespTskCmd)
 {
 	static WAIT_FOR_MB_RESP_TASK_STATE WaitForModBusResponseTaskSt = WAIT_MB_RESP_TASK_IDLE;
 	static unsigned char *ptr_msg = 0;
 	static uint32_t startTimeInterv = 0;
+	static int CrcLen = 0;
 	word CRC_RX,CRC_CALC;
-	*pOk = MOD_BUS_ANSW_NO_ANSW;
+	MOD_BUS_RESPONSE Ok = MOD_BUS_ANSW_NO_ANSW;
 
-	if(WaitForMBRespTskCmd == WAIT_MB_RESP_TASK_INIT_3_CMD)
+
+	if(WaitForMBRespTskCmd == WAIT_MB_RESP_TASK_RESET_CMD)
 	{
-		WaitForModBusResponseTaskSt = WAIT_MB_RESP_TASK_INIT_3;
+		// controllo la risposta del comando di lettura pompe lean
+		WaitForModBusResponseTaskSt = WAIT_MB_RESP_TASK_IDLE;
 	}
-
 	switch (WaitForModBusResponseTaskSt)
 	{
 		case WAIT_MB_RESP_TASK_IDLE:
+			WaitForModBusResponseTaskSt = WAIT_MB_RESP_TASK_INIT_GENERIC;
 			break;
-		case WAIT_MB_RESP_TASK_INIT_3:
+		case WAIT_MB_RESP_TASK_INIT_GENERIC:
 			iFlag_actuatorCheck = IFLAG_COMMAND_SENT;
 			WaitForModBusResponseTaskSt = WAIT_MB_RESP_TASK_RUN_3;
-			ptr_msg = &msgToRecvFrame3[0];
+			ptr_msg = _funcRetValPtr->slvresRetPtr;
 			startTimeInterv = FreeRunCnt10msec;
+			CrcLen = _funcRetValPtr->slvresRetNumByte;
 			break;
+
 		case WAIT_MB_RESP_TASK_RUN_3:
 			if(iFlag_actuatorCheck == IFLAG_COMMAND_RECEIVED)
 			{
 				// ho ricevuto la risposta su MODBUS
-				CRC_CALC = ComputeChecksum(ptr_msg, TOT_DATA_MODBUS_RECEIVED_PUMP -2);
-				CRC_RX = BYTES_TO_WORD(msgToRecvFrame3[10], msgToRecvFrame3[9]);
+				CRC_CALC = ComputeChecksum(ptr_msg, CrcLen - 2);
+				CRC_RX = BYTES_TO_WORD(ptr_msg[CrcLen - 1], ptr_msg[CrcLen - 2]);
 				iFlag_actuatorCheck = IFLAG_IDLE;
 				WaitForModBusResponseTaskSt = WAIT_MB_RESP_TASK_IDLE;
-				*pOk = MOD_BUS_ANSW_OK;
+				if (CRC_RX != CRC_CALC)
+					Ok = MOD_BUS_ANSW_CRC_ERR;
+				else
+					Ok = MOD_BUS_ANSW_OK;
 			}
 			else if(startTimeInterv && (msTick10_elapsed(startTimeInterv) >= 2))
 			{
 				// sono passati 20 msec e non ho avuto ancora risposta, restituisco errore
-				*pOk = MOD_BUS_ANSW_TOUT_ERR;
+				Ok = MOD_BUS_ANSW_TOUT_ERR;
 			}
 			break;
 	}
+	return Ok;
 }

@@ -1959,7 +1959,7 @@ unsigned char Prescaler_Freq_Signal_AMS;
 bool Enable_AMS;
 
 /*define di compilazione per utilizzo pompe EVER (commentare PUMP_EVER se si usano le vecchie pompe)*/
-//#define PUMP_EVER
+#define PUMP_EVER
 #define TOT_DATA_MODBUS_RECEIVED_PUMP_EVER	15
 bool    RX_ENABLE;
 
@@ -1981,21 +1981,20 @@ ActionPumpEver Action;
 typedef enum
 {
 	WAIT_MB_RESP_TASK_NO_CMD,
-	WAIT_MB_RESP_TASK_INIT_3_CMD,
+	WAIT_MB_RESP_TASK_RESET_CMD
 }WAIT_FOR_MB_RESP_TASK_CMD;
 
 typedef enum
 {
 	WAIT_MB_RESP_TASK_IDLE,
-	WAIT_MB_RESP_TASK_INIT_3,
 	WAIT_MB_RESP_TASK_RUN_3,
+	WAIT_MB_RESP_TASK_INIT_GENERIC,
 }WAIT_FOR_MB_RESP_TASK_STATE;
 
 typedef enum
 {
 	MOD_BUS_ANSW_NO_ANSW,
 	MOD_BUS_ANSW_OK,
-	MOD_BUS_ANSW_NO_ERR,
     MOD_BUS_ANSW_CRC_ERR,
 	MOD_BUS_ANSW_TOUT_ERR
 }MOD_BUS_RESPONSE;

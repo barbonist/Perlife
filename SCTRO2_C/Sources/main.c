@@ -351,12 +351,6 @@ int main(void)
    * sarà attivato prima di effettuare una trasmissione e
    * disattivato alla fine della stessa*/
   RTS_MOTOR_ClrVal();
-  setPumpSpeedValueEVER (PPV1,0, INIT_PUMP);
-  // Se uso queste funzioni prima di andare avanti dovrei controllare la risposta e
-  // poi passare alla seconda pompa
-  /*il comando alla successiva viene dato in automatico
-   * poichè logicamente le due pompe di ossigenazione sono una unica pompa*/
-  //setPumpSpeedValueEVER (PPV2,0, INIT_PUMP);
 #endif
 
   //ptrMsgSbcRx = &msg_sbc_rx[0];
@@ -425,6 +419,22 @@ int main(void)
 		  timerCounterCheckModBus = 0;
 	  }
   }
+#ifdef PUMP_EVER
+	MOD_BUS_RESPONSE result;
+	result = WaitForModBusResponseTask((WAIT_FOR_MB_RESP_TASK_CMD)WAIT_MB_RESP_TASK_RESET_CMD);
+	setPumpSpeedValueEVER (PPV1,0, INIT_PUMP);
+	//setPumpSpeedValue (PPV1, 1000);
+ 	while(result == MOD_BUS_ANSW_NO_ANSW)
+ 		result = WaitForModBusResponseTask((WAIT_FOR_MB_RESP_TASK_CMD)WAIT_MB_RESP_TASK_NO_CMD);
+
+  // Se uso queste funzioni prima di andare avanti dovrei controllare la risposta e
+  // poi passare alla seconda pompa
+	result = WaitForModBusResponseTask((WAIT_FOR_MB_RESP_TASK_CMD)WAIT_MB_RESP_TASK_RESET_CMD);
+	setPumpSpeedValueEVER (PPV2,0, INIT_PUMP);
+	//setPumpSpeedValue (PPV1, 0);
+ 	while(result == MOD_BUS_ANSW_NO_ANSW)
+ 		result = WaitForModBusResponseTask((WAIT_FOR_MB_RESP_TASK_CMD)WAIT_MB_RESP_TASK_NO_CMD);
+#endif
 
 //  QUESTO CODICE POTREBBE ESSERE NECESSARIO SCOMMENTARLO SE NON FOSSE SUFFICIENTE LA
 //  CORRENTE DI PILOTAGGIO DELLE POMPE
@@ -595,6 +605,12 @@ int main(void)
 
 	         if(ReadKey1()) // per debug con la tastiera a bolle
 	         {
+//	        	  MOD_BUS_RESPONSE result;
+//	        	  result = WaitForModBusResponseTask((WAIT_FOR_MB_RESP_TASK_CMD)WAIT_MB_RESP_TASK_INIT_3_CMD);
+//	        	  setPumpSpeedValue (PPV1, 1000);
+//	        	  while(result == MOD_BUS_ANSW_NO_ANSW)
+//	        		  result = WaitForModBusResponseTask((WAIT_FOR_MB_RESP_TASK_CMD)WAIT_MB_RESP_TASK_NO_CMD);
+//	        	  result = MOD_BUS_ANSW_NO_ANSW;
 	        	 Released1 = 1;
 	         }
 	         if(ReadKey2()) // per debug con la tastiera a bolle

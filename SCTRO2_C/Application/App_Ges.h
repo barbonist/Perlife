@@ -274,6 +274,6 @@ CHECK_CURR_PINCH_POS_TASK_STATE CheckCurrPinchPosTask(CHECK_CURR_PINCH_POS_TASK_
 bool IsTreatCurrPinchPosOk(void);
 void ResetTreatCurrPinchPosOk(void);
 void Start_Frigo_AMS(unsigned char power);
-
+MOD_BUS_RESPONSE WaitForModBusResponseTask(WAIT_FOR_MB_RESP_TASK_CMD WaitForMBRespTskCmd);
 
 #endif /* APPLICATION_APP_GES_H_ */
