@@ -17,6 +17,7 @@
 #include "Alarm_Con.h"
 #include "EEPROM.h"
 #include "string.h"
+#include "App_Ges.h"
 
 
 extern int MyArrayIdx;
@@ -953,7 +954,7 @@ void setPumpSpeedValueEVER(unsigned char slaveAddr, int speedValue,ActionPumpEve
 		data [0] = (word) speedValue >> 16;
 		data [1] = (word) speedValue;
 	}
-	else // if (Action == INIT_PUMP)
+	else  if (Action == INIT_PUMP)
 	{
 		wrAddr = 0x4101; /* speed */
 		numberRegister = 0x0005;
@@ -964,6 +965,28 @@ void setPumpSpeedValueEVER(unsigned char slaveAddr, int speedValue,ActionPumpEve
 			else
 				data[i] = 0;
 		}
+	}
+	else if (Action == CHANGE_VELOCITY)
+	{
+		wrAddr = 0x0000;
+		numberRegister = 0x0004;
+		if (speedValue > 0)
+		{
+			int i = 0;
+
+			data[i++] = 0;
+			data[i++] = 1;
+			data[i++] = 0; //assumiamo cone max velociutà 65535 ossia 655.35 RPM
+			data[i++] = (word) speedValue;
+
+		}
+		else
+		{
+			for (int i = 0; i <4; i++)
+				data[i] = 0;
+		}
+
+
 	}
 
 	valModBusArrayPtr = &data[0];
@@ -1301,7 +1324,11 @@ void alwaysModBusActuator(void)
 				iflag_pmp1_rx = IFLAG_PMP1_BUSY;
 				WriteActive = TRUE;
 				timerCounterModBusStartWr = FreeRunCnt10msec;  //timerCounterModBus;
+#ifdef PUMP_EVER
+				setPumpSpeedValueEVER(pumpPerist[1].pmpMySlaveAddress,pumpPerist[1].value, CHANGE_VELOCITY);
+#else
 				setPumpSpeedValue(pumpPerist[1].pmpMySlaveAddress, pumpPerist[1].value);
+#endif
 				LasActuatorWriteID = 1;
 			}
 			else if(
@@ -1343,7 +1370,11 @@ void alwaysModBusActuator(void)
 				iflag_pmp1_rx = IFLAG_PMP1_BUSY;
 				WriteActive = TRUE;
 				timerCounterModBusStartWr = FreeRunCnt10msec;  //timerCounterModBus;
+#ifdef PUMP_EVER
+				setPumpSpeedValueEVER(pumpPerist[2].pmpMySlaveAddress,pumpPerist[2].value, CHANGE_VELOCITY);
+#else
 				setPumpSpeedValue(pumpPerist[2].pmpMySlaveAddress, pumpPerist[2].value);
+#endif
 				LasActuatorWriteID = 2;
 			}
 			else if(

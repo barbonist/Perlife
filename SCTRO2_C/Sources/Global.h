@@ -1958,7 +1958,7 @@ typedef enum
 //----------------------------Definizioni per la gestione delle nuove pompe--------------
 
 /*define di compilazione per utilizzo pompe EVER (commentare PUMP_EVER se si usano le vecchie pompe)*/
-//#define PUMP_EVER
+#define PUMP_EVER
 #define TOT_DATA_MODBUS_RECEIVED_PUMP_EVER	15
 bool    RX_ENABLE;
 
@@ -1967,7 +1967,8 @@ typedef enum
 	START = 0,
 	STOP,
 	CHANGE_PROFILE_VELOCITY,
-	INIT_PUMP
+	INIT_PUMP,
+	CHANGE_VELOCITY			//command custom
 } ActionPumpEver;
 
 ActionPumpEver Action;
