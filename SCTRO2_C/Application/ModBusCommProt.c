@@ -2045,6 +2045,10 @@ void Check_Actuator_Status (char slaveAddr,
 	 * funzione MODBUS_COMM_Enable() viene controllata la flag EnUser
 	 * che esegue l'abilitazione della serrtiale solo se essa è disabilitata*/
 	MODBUS_COMM_Enable();
+#ifdef PUMP_EVER
+	RX_ENABLE = FALSE;
+	RTS_MOTOR_SetVal();
+#endif
 	for(char k = 0; k < _funcRetVal.mstreqRetStructNumByte; k++)
 	{
 		MODBUS_COMM_SendChar(*(_funcRetVal.ptr_msg+k));
@@ -2061,7 +2065,6 @@ void Manage_and_Storage_ModBus_Actuator_Data(void)
 #ifdef PUMP_EVER
 	  unsigned char numberOfAddressCheckPumpEver = 0x03;
 	  word 			readAddrStartEver	 		 = 0x1008; // registro Current_actual_value di Ever
-	  unsigned char funcCodeEver				 = 0x05;
 #endif
 
 	 if(WriteActive == TRUE)
@@ -2102,7 +2105,7 @@ void Manage_and_Storage_ModBus_Actuator_Data(void)
 		if(slvAddr == (LAST_PUMP - 1) || slvAddr == LAST_PUMP)
 		{
 			/*funzione che mi legge lo stato delle pompe*/
-			Check_Actuator_Status_Ever (slvAddr, funcCodeEver, readAddrStartEver, numberOfAddressCheckPumpEver);
+			Check_Actuator_Status_Ever (slvAddr, funcCode, readAddrStartEver, numberOfAddressCheckPumpEver);
 			LastActuatslvAddr = slvAddr;
 		}
 		else if (slvAddr <= (LAST_PUMP - 2))
@@ -2174,7 +2177,7 @@ void StorageModbusData(unsigned char LastActuatslvAddr)
 	{
 		// ho letto lo stato delle pompe EVER
 		Tot_ModBus_Data_RX = TOT_DATA_MODBUS_RECEIVED_PUMP_EVER;
-		CRC_CALC = ComputeChecksum(ptr_msg, TOT_DATA_MODBUS_RECEIVED_PUMP_EVER - 2);
+		CRC_CALC = ComputeChecksum(ptr_msg, TOT_DATA_MODBUS_RECEIVED_PUMP - 2);
 		CRC_RX = BYTES_TO_WORD(msgToRecvFrame3[10], msgToRecvFrame3[9]);
 	}
 	else if (Address >= FIRST_ACTUATOR && Address <= (LAST_PUMP - 2))
@@ -2236,7 +2239,8 @@ void StorageModbusData(unsigned char LastActuatslvAddr)
 	{
 		/*devo trasfomare i dati ricevuti da byte in word*/
 		Pump_Average_Current = BYTES_TO_WORD(dataTemp[3], dataTemp[4]);
-		Pump_Speed_Status	 = BYTES_TO_WORD(dataTemp[5], dataTemp[6]);
+		Pump_Speed_Status	 = BYTES_TO_WORD(dataTemp[7], dataTemp[8]);
+		Pump_Speed_Status = (Pump_Speed_Status * 60)/1600 ;
 		Pump_Status 		 = 0; //BYTES_TO_WORD(dataTemp[7], dataTemp[8]);
 	}
 	else if (Address >= FIRST_ACTUATOR && Address <= (LAST_PUMP - 2))
