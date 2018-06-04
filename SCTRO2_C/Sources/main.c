@@ -541,6 +541,10 @@ int main(void)
    memset(&ProtectiveAlarmStruct, 0, sizeof(struct alarm));
 #endif
 
+#ifdef DEBUG_FRIGO_AMS
+   T_PLATE_C_GRADI_CENT = 0.0;
+#endif
+
 
   /**********MAIN LOOP START************/
   for(;;) {

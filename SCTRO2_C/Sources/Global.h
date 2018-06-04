@@ -1904,10 +1904,13 @@ char ActuatorWrRepeatCmd[LAST_ACTUATOR];
 // scommentare se si vuole usare il messaggio di stato costituito con gli indici dei campi
 //#define DEBUG_SBC
 
+
+//-------------------------------------------------------------------------------------------------
+// definizioni usate nella parte di codice che resetta gli allarmi della protective mediante CANBUS
 #ifdef ENABLE_PROTECTIVE_ALARM_RESET
 
-uint16_t ProAlmCodeToreset;                       // codice dell'allarme protective da resettare (RxBuffCanP[2]->SRxCan2.AlarmCode).
-		                                          // 0 nessun allarme da resettare
+uint16_t ProAlmCodeToreset;               // codice dell'allarme protective da resettare (RxBuffCanP[2]->SRxCan2.AlarmCode).
+		                                  // 0 nessun allarme da resettare
 // stati del task HandleProtectiveAlarm
 typedef enum
 {
@@ -1924,6 +1927,7 @@ typedef enum
 struct alarm ProtectiveAlarmStruct;
 
 #endif //ENABLE_PROTECTIVE_ALARM_RESET
+//-------------------------------------------------------------------------------------------------
 
 
 //--------------------------------------------------------------------------------------------------
@@ -1952,14 +1956,9 @@ typedef enum
 
 //---------------------------------------------------------------------------------------
 //----------------------------Definizioni per la gestione delle nuove pompe--------------
-/*define di compilazione che abilita l'uso del frigo AMS al posto delle Peltier*/
-//#define DEBUG_FRIGO_AMS
-
-unsigned char Prescaler_Freq_Signal_AMS;
-bool Enable_AMS;
 
 /*define di compilazione per utilizzo pompe EVER (commentare PUMP_EVER se si usano le vecchie pompe)*/
-#define PUMP_EVER
+//#define PUMP_EVER
 #define TOT_DATA_MODBUS_RECEIVED_PUMP_EVER	15
 bool    RX_ENABLE;
 
@@ -1999,6 +1998,22 @@ typedef enum
 	MOD_BUS_ANSW_TOUT_ERR
 }MOD_BUS_RESPONSE;
 //--------------------------------------------------------------------------------
+
+
+//---------------------------------------------------------------------------------------
+//-----------Definizioni per la gestione del frigo e resistenze riscaldanti--------------
+
+/*define di compilazione che abilita l'uso del frigo AMS al posto delle Peltier*/
+//#define DEBUG_FRIGO_AMS
+
+unsigned char Prescaler_Freq_Signal_AMS;
+bool Enable_AMS;
+
+// variabile globale per il valore in gradi centigradi della temperatura di piastra
+// letta dalla control
+float  T_PLATE_C_GRADI_CENT;
+//---------------------------------------------------------------------------------------
+
 
 
 #endif /* SOURCES_GLOBAL_H_ */
