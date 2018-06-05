@@ -405,6 +405,7 @@ bool IsButtResUsedByChild(void)
 
 
 
+//-------------------------------------------------------------------------------------------------------------------------
 extern bool FilterSelected;
 
 // controlla il posizionamento delle pinch nei vari stati
@@ -547,168 +548,13 @@ void ResetTreatCurrPinchPosOk(void)
 }
 
 
-
-/*funzione che accende con una data potenza o spegne il frigo con potenza '0'
- * power = 10 --> 200 Hz max
- * power = 40 --> 50 Hz --> 25%*/
-void Start_Frigo_AMS(unsigned char power)
-{
-	if (power == 0)
-	{
-		Enable_AMS = FALSE;
-	    COMP_PWM_ClrVal();
-	}
-	else
-	{
-		Enable_AMS = TRUE;
-
-		Prescaler_Freq_Signal_AMS = power;
-		/* a power = 10 corrisponde la massima frequenza pari
-		 * a 200 Hz quindi non posso andare sotto 10*/
-		if (power <= 10)
-			power = 10;
-	}
-}
-
-
-
-//--------------------------------------------------------------------------------
-// definizioni per il task WaitForModBusResponseTask che controlla le risposte ai
-// comandi MODBUS
-//typedef enum
-//{
-//	WAIT_MB_RESP_TASK_NO_CMD,
-//	WAIT_MB_RESP_TASK_INIT_3_CMD,
-//	WAIT_MB_RESP_TASK_INIT_EVER_3_CMD,
-//	WAIT_MB_RESP_TASK_INIT_GENERIC_CMD,
-//	WAIT_MB_RESP_TASK_INIT_10_CMD,
-//	WAIT_MB_RESP_TASK_INIT_EVER_10_CMD,
-//	WAIT_MB_RESP_TASK_RESET_CMD
-//}WAIT_FOR_MB_RESP_TASK_CMD;
-//
-//typedef enum
-//{
-//	WAIT_MB_RESP_TASK_IDLE,
-//	WAIT_MB_RESP_TASK_INIT_3,
-//	WAIT_MB_RESP_TASK_INIT_EVER_3,
-//	WAIT_MB_RESP_TASK_RUN_3,
-//	WAIT_MB_RESP_TASK_INIT_GENERIC,
-//	WAIT_MB_RESP_TASK_INIT_10,
-//	WAIT_MB_RESP_TASK_INIT_EVER_10
-//}WAIT_FOR_MB_RESP_TASK_STATE;
-//
-//typedef enum
-//{
-//	MOD_BUS_ANSW_NO_ANSW,
-//	MOD_BUS_ANSW_OK,
-//    MOD_BUS_ANSW_CRC_ERR,
-//	MOD_BUS_ANSW_TOUT_ERR
-//}MOD_BUS_RESPONSE;
-//--------------------------------------------------------------------------------
-
-
-// ritorna TRUE quando ha ricevuto la risposta da modbus e
-// mette *pOk a TRUE se la risposta e' corretta (CRC OK)
-//MOD_BUS_RESPONSE WaitForModBusResponseTask(WAIT_FOR_MB_RESP_TASK_CMD WaitForMBRespTskCmd)
-//{
-//	static WAIT_FOR_MB_RESP_TASK_STATE WaitForModBusResponseTaskSt = WAIT_MB_RESP_TASK_IDLE;
-//	static unsigned char *ptr_msg = 0;
-//	static uint32_t startTimeInterv = 0;
-//	static int CrcLen = 0;
-//	word CRC_RX,CRC_CALC;
-//	MOD_BUS_RESPONSE Ok = MOD_BUS_ANSW_NO_ANSW;
-//
-//	if(WaitForMBRespTskCmd == WAIT_MB_RESP_TASK_INIT_3_CMD)
-//	{
-//		// controllo la risposta del comando di lettura pompe lean
-//		WaitForModBusResponseTaskSt = WAIT_MB_RESP_TASK_INIT_3;
-//	}
-//	else if(WaitForMBRespTskCmd == WAIT_MB_RESP_TASK_INIT_EVER_3_CMD)
-//	{
-//		// controllo la risposta del comando di lettura ever
-//		WaitForModBusResponseTaskSt = WAIT_MB_RESP_TASK_INIT_EVER_3;
-//	}
-//	else if(WaitForMBRespTskCmd == WAIT_MB_RESP_TASK_INIT_GENERIC_CMD)
-//	{
-//		// controllo la risposta del comando di lettura ever
-//		WaitForModBusResponseTaskSt = WAIT_MB_RESP_TASK_INIT_GENERIC;
-//	}
-//	else if(WaitForMBRespTskCmd == WAIT_MB_RESP_TASK_INIT_10_CMD)
-//	{
-//		// controllo la risposta del comando di lettura pompe lean
-//		WaitForModBusResponseTaskSt = WAIT_MB_RESP_TASK_INIT_10;
-//	}
-//	else if(WaitForMBRespTskCmd == WAIT_MB_RESP_TASK_INIT_EVER_10_CMD)
-//	{
-//		// controllo la risposta del comando di lettura ever
-//		WaitForModBusResponseTaskSt = WAIT_MB_RESP_TASK_INIT_EVER_10;
-//	}
-//
-//	switch (WaitForModBusResponseTaskSt)
-//	{
-//		case WAIT_MB_RESP_TASK_IDLE:
-//			break;
-//		case WAIT_MB_RESP_TASK_INIT_GENERIC:
-//			iFlag_actuatorCheck = IFLAG_COMMAND_SENT;
-//			WaitForModBusResponseTaskSt = WAIT_MB_RESP_TASK_RUN_3;
-//			ptr_msg = _funcRetValPtr->ptr_msg;
-//			startTimeInterv = FreeRunCnt10msec;
-//			CrcLen = _funcRetValPtr->slvresRetNumByte;
-//			break;
-//		case WAIT_MB_RESP_TASK_INIT_EVER_3:
-//			iFlag_actuatorCheck = IFLAG_COMMAND_SENT;
-//			WaitForModBusResponseTaskSt = WAIT_MB_RESP_TASK_RUN_3;
-//			ptr_msg = &msgToRecvFrame3[0];
-//			startTimeInterv = FreeRunCnt10msec;
-//			CrcLen = TOT_DATA_MODBUS_RECEIVED_PUMP_EVER;
-//			break;
-//		case WAIT_MB_RESP_TASK_INIT_3:
-//			iFlag_actuatorCheck = IFLAG_COMMAND_SENT;
-//			WaitForModBusResponseTaskSt = WAIT_MB_RESP_TASK_RUN_3;
-//			ptr_msg = &msgToRecvFrame3[0];
-//			startTimeInterv = FreeRunCnt10msec;
-//			CrcLen = TOT_DATA_MODBUS_RECEIVED_PUMP;
-//			break;
-//
-//		case WAIT_MB_RESP_TASK_INIT_EVER_10:
-//			iFlag_actuatorCheck = IFLAG_COMMAND_SENT;
-//			WaitForModBusResponseTaskSt = WAIT_MB_RESP_TASK_RUN_3;
-//			ptr_msg = &msgToRecvFrame10[0];
-//			startTimeInterv = FreeRunCnt10msec;
-//			CrcLen = 8;
-//			break;
-//		case WAIT_MB_RESP_TASK_INIT_10:
-//			iFlag_actuatorCheck = IFLAG_COMMAND_SENT;
-//			WaitForModBusResponseTaskSt = WAIT_MB_RESP_TASK_RUN_3;
-//			ptr_msg = &msgToRecvFrame10[0];
-//			startTimeInterv = FreeRunCnt10msec;
-//			CrcLen = 8; //TOT_DATA_MODBUS_RECEIVED_PUMP;
-//			break;
-//
-//		case WAIT_MB_RESP_TASK_RUN_3:
-//			if(iFlag_actuatorCheck == IFLAG_COMMAND_RECEIVED)
-//			{
-//				// ho ricevuto la risposta su MODBUS
-//				CRC_CALC = ComputeChecksum(ptr_msg, CrcLen - 2);
-//				CRC_RX = BYTES_TO_WORD(ptr_msg[CrcLen - 1], ptr_msg[CrcLen - 2]);
-//				iFlag_actuatorCheck = IFLAG_IDLE;
-//				WaitForModBusResponseTaskSt = WAIT_MB_RESP_TASK_IDLE;
-//				if (CRC_RX != CRC_CALC)
-//					Ok = MOD_BUS_ANSW_CRC_ERR;
-//				else
-//					Ok = MOD_BUS_ANSW_OK;
-//			}
-//			else if(startTimeInterv && (msTick10_elapsed(startTimeInterv) >= 2))
-//			{
-//				// sono passati 20 msec e non ho avuto ancora risposta, restituisco errore
-//				Ok = MOD_BUS_ANSW_TOUT_ERR;
-//			}
-//			break;
-//	}
-//	return Ok;
-//}
-
-
+//-------------------------------------------------------------------------------------------------------------------------
+// Questo task puo' essere usato per controllare la risposta su modbus.
+// Viene ritornato uno dei valori:
+// 	MOD_BUS_ANSW_NO_ANSW  = risposta non ancora completa
+//  MOD_BUS_ANSW_OK       = risposta completa e corretta (anche il CRC)
+//  MOD_BUS_ANSW_CRC_ERR  = risposta completa ma CRC errato
+//  MOD_BUS_ANSW_TOUT_ERR = risposta non completa entro 20 msec
 MOD_BUS_RESPONSE WaitForModBusResponseTask(WAIT_FOR_MB_RESP_TASK_CMD WaitForMBRespTskCmd)
 {
 	static WAIT_FOR_MB_RESP_TASK_STATE WaitForModBusResponseTaskSt = WAIT_MB_RESP_TASK_IDLE;
@@ -759,3 +605,120 @@ MOD_BUS_RESPONSE WaitForModBusResponseTask(WAIT_FOR_MB_RESP_TASK_CMD WaitForMBRe
 	}
 	return Ok;
 }
+
+
+//-------------------------------------------------------------------------------------------------------------------------
+
+/*funzione che accende con una data potenza o spegne il frigo con potenza '0'
+ * power = 10 --> 200 Hz max
+ * power = 40 --> 50 Hz --> 25%*/
+void Start_Frigo_AMS(unsigned char power)
+{
+	if (power == 0)
+	{
+		Enable_AMS = FALSE;
+	    COMP_PWM_ClrVal();
+	}
+	else
+	{
+		Enable_AMS = TRUE;
+
+		Prescaler_Freq_Signal_AMS = power;
+		/* a power = 10 corrisponde la massima frequenza pari
+		 * a 200 Hz quindi non posso andare sotto 10*/
+		if (power <= 10)
+			power = 10;
+	}
+}
+
+void StartHeating(void)
+{
+	// fa partire le resistenze riscaldanti
+}
+
+// task di controllo della temperatura del liquido mediante frigo e resistenze riscaldanti
+void LiquidTempControlTask(LIQ_TEMP_CONTR_TASK_CMD LiqTempContrTaskCmd)
+{
+	static LIQ_TEMP_CONTR_TASK_STATE LiqTempContrTaskSt = LIQ_T_CONTR_IDLE;
+	static unsigned long timeInterval10 = 0;
+
+	float tmpr, MaxThrsh, MinThrsh;
+	word tmpr_trgt;
+	// temperatura raggiunta dal reservoir
+	tmpr = ((int)(sensorIR_TM[1].tempSensValue*10));
+	// temperatura da raggiungere moltiplicata per 10
+	tmpr_trgt = parameterWordSetFromGUI[PAR_SET_PRIMING_TEMPERATURE_PERFUSION].value;
+
+	switch (LiqTempContrTaskSt)
+	{
+		case LIQ_T_CONTR_IDLE:
+			LiqTempContrTaskSt = LIQ_T_CONTR_DETECT_LIQ_IN_DISP;
+			break;
+		case LIQ_T_CONTR_DETECT_LIQ_IN_DISP:
+			// aspetto presenza del liquido nel disposable
+			if(Air_1_Status == LIQUID)
+			{
+				LiqTempContrTaskSt = LIQ_T_CONTR_DET_LIQ_IN_DISP_DELAY;
+				timeInterval10 = FreeRunCnt10msec;
+			}
+			break;
+		case LIQ_T_CONTR_DET_LIQ_IN_DISP_DELAY:
+			// presenza del liquido nel disposable per un certo tempo
+			if(Air_1_Status == LIQUID)
+			{
+				if(timeInterval10 && (msTick10_elapsed(timeInterval10) >= 300))
+				{
+					// sono passati 3 secondi con rilevazione continua di liquido
+					LiqTempContrTaskSt = LIQ_T_CONTR_WAIT_FOR_START_CNTR;
+					timeInterval10 = FreeRunCnt10msec;
+				}
+			}
+			else
+				LiqTempContrTaskSt = LIQ_T_CONTR_DETECT_LIQ_IN_DISP;
+			break;
+		case LIQ_T_CONTR_WAIT_FOR_START_CNTR:
+			// ritardo dopo il rilevamento del liquido nel disposable
+			// prima di attivare frigo o resistenze riscaldanti
+			if(timeInterval10 && (msTick10_elapsed(timeInterval10) >= DELAY_FOR_START_T_CONTROL))
+			{
+				// e' trascorso del tempo da quando ho rilevato la presenza del liquido
+				LiqTempContrTaskSt = LIQ_T_CONTR_RUN;
+			}
+			break;
+		case LIQ_T_CONTR_RUN:
+			if(((float)tmpr_trgt - tmpr) >= DELTA_TEMP_FOR_FRIGO)
+			{
+				// temperatura oltre la soglia superiore posso accendere il frigo
+				LiqTempContrTaskSt = LIQ_T_CONTR_RUN_FRIGO;
+				timeInterval10 = FreeRunCnt10msec;
+			}
+			else if((tmpr - (float)tmpr_trgt) >= DELTA_TEMP_FOR_RESISTOR)
+			{
+				LiqTempContrTaskSt = LIQ_T_CONTR_RUN_HEATING;
+			}
+			break;
+		case LIQ_T_CONTR_RUN_FRIGO:
+			MaxThrsh = (float)tmpr_trgt - tmpr;
+			if(MaxThrsh >= DELTA_TEMP_FOR_FRIGO)
+			{
+				if(timeInterval10 && (msTick10_elapsed(timeInterval10) >= FRIGO_DELAY))
+				{
+					// faccio partire il raffreddamento
+					Start_Frigo_AMS(10);
+				}
+			}
+			break;
+		case LIQ_T_CONTR_RUN_HEATING:
+			MinThrsh = tmpr - (float)tmpr_trgt;
+			if(MinThrsh >= DELTA_TEMP_FOR_RESISTOR)
+			{
+				if(timeInterval10 && (msTick10_elapsed(timeInterval10) >= HEATING_DELAY))
+				{
+					// faccio partire il riscaldamento
+					StartHeating();
+				}
+			}
+			break;
+	}
+}
+

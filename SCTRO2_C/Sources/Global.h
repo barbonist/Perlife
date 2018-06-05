@@ -2013,6 +2013,40 @@ bool Enable_AMS;
 // variabile globale per il valore in gradi centigradi della temperatura di piastra
 // letta dalla control
 float  T_PLATE_C_GRADI_CENT;
+
+typedef enum
+{
+	LIQ_T_CONTR_TASK_NO_CMD,
+	LIQ_T_CONTR_TASK_RESET_CMD
+}LIQ_TEMP_CONTR_TASK_CMD;
+
+typedef enum
+{
+	LIQ_T_CONTR_IDLE,
+	LIQ_T_CONTR_RUN,
+	LIQ_T_CONTR_DETECT_LIQ_IN_DISP,
+	LIQ_T_CONTR_DET_LIQ_IN_DISP_DELAY,
+	LIQ_T_CONTR_WAIT_FOR_START_CNTR,
+	LIQ_T_CONTR_RUN_FRIGO,
+	LIQ_T_CONTR_RUN_HEATING
+}LIQ_TEMP_CONTR_TASK_STATE;
+
+// delay in intervalli da 10 msec prima di iniziare il controllo della temperatura
+#define DELAY_FOR_START_T_CONTROL 2000
+
+// differenza di temperatura tra target e corrente al di sopra della quale viene acceso il frigo
+// per riportarla al target (espressa in decimi di grado)
+#define DELTA_TEMP_FOR_FRIGO 3
+// differenza di temperatura tra target e corrente al di sopra della quale viene acceso la
+// resistenza riscaldante per riportarla al target  (espressa in decimi di grado)
+#define DELTA_TEMP_FOR_RESISTOR 1
+
+// intervallo di tempo in cui la temperatura deve mantenersi al di sopra  della soglia massima
+// prima iniziare il raffreddamento (in tick da 10msec)
+#define FRIGO_DELAY 300
+// intervallo di tempo in cui la temperatura deve mantenersi al di sotto della soglia minima
+// prima iniziare il riscaldamento (in tick da 10msec)
+#define HEATING_DELAY 300
 //---------------------------------------------------------------------------------------
 
 
