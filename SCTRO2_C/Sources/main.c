@@ -247,7 +247,7 @@ int main(void)
   GlobalFlags.FlagsVal = 0;
   Prescaler_Freq_Signal_AMS = 10;
   Enable_AMS = 0;
-  ptrT1Test = & T1TEST;
+  ptrT1Test = &T1TEST;
 
   CoversState = 4; // all covers chiusi
   ArteriousPumpGainForPid = DEFAULT_ART_PUMP_GAIN;

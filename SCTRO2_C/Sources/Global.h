@@ -296,22 +296,57 @@ unsigned short	actionFlag;
 /* Machine State Structure */
 
 /**/
-#define T1_TEST_OK  0xA5
-#define T1_TEST_KO	0x5A
+#define T1_TEST_OK  0x05
+#define T1_TEST_KO	0x50
+#define T1TEST_PUMP_SPEED 2000
+
+typedef enum{
+	PINCH_IDLE,
+	PINCH_CLOSE,
+	PINCH_LEFT,
+	PINCH_RIGHT,
+	PINCH_END,
+} T1TEST_PINCH_STATE;
+
+T1TEST_PINCH_STATE t1Test_pinch_state;
+
+typedef enum{
+	CMD_PINCH_TOSEND,
+	CMD_PINCH_RUNNING,
+} T1TEST_PINCH_CMD;
+
+T1TEST_PINCH_CMD t1Test_pinch_cmd;
+
+typedef enum{
+	PUMP_IDLE,
+	PUMP_RAMP,
+	PUMP_RUNNING,
+	PUMP_STOP,
+	PUMP_END,
+} T1TEST_PUMP_STATE;
+
+T1TEST_PUMP_STATE t1Test_pump_state;
+
+typedef enum{
+	CMD_PUMP_TOSEND,
+	CMD_PUMP_RUNNING,
+} T1TEST_PUMP_CMD;
+
+T1TEST_PUMP_CMD t1Test_pump_cmd;
 
 
 
 struct T1Test {
-	char result_T1_cfg_data;
-	char result_T1_24vbrk;
-	char result_T1_press;
-	char result_T1_tempIR;
-	char result_T1_level;
-	char result_T1_flwmtr;
-	char result_T1_air;
-	char result_T1_pinch;
-	char result_T1_pump;
-	char result_T1_termo;
+	unsigned char result_T1_cfg_data;
+	unsigned char result_T1_24vbrk;
+	unsigned char result_T1_press;
+	unsigned char result_T1_tempIR;
+	unsigned char result_T1_level;
+	unsigned char result_T1_flwmtr;
+	unsigned char result_T1_air;
+	unsigned char result_T1_pinch;
+	unsigned char result_T1_pump;
+	unsigned char result_T1_termo;
 };
 
 struct T1Test T1TEST;
@@ -1244,6 +1279,7 @@ int timerCounterCheckTempIRSens;
 int timerCounterLedBoard;
 int timerCounterUpdateTargetPressurePid;
 int timerCounterUpdateTargetPressPidArt;
+int timerCounterT1Test;
 
 /************************************************************************/
 /* 					STRUTTURA VOLUMI TRATTAMENTO 						*/
@@ -1277,7 +1313,7 @@ float V24_P2_CHK_VOLT;
 #define V24_P2_CHK_OFFSET		-0.33
 
 /* t1 test */
-#define T1_TEST_DIG_TO_VOLT			0.0008 //(float)(3300/4096)/1000 //digit to volt
+#define T1_TEST_DIG_TO_VOLT			0.00005 // (3300/65536)/1000 (float)(3300/4096)/1000 //digit to volt
 #define V24BRK_LOW_THRSLD			2.3 //volt
 #define V24BRK_HIGH_THRSLD			2.7 //volt
 #define T1_TEST_PRESS_LOW_THRSLD	-5 //mmHg

@@ -11,6 +11,11 @@
 #include "ModBusCommProt.h"
 #include "App_Ges.h"
 #include "Peltier_Module.h"
+#include "ControlProtectiveInterface_C.h"
+#include "VOLTAGE_B_CHK.h"
+#include "BitIoLdd36.h"
+#include "VOLTAGE_M_CHK.h"
+#include "BitIoLdd37.h"
 
 #include "Pins1.h"
 
@@ -61,6 +66,7 @@
 #include "general_func.h"
 #include "pid.h"
 #include "Comm_Sbc.h"
+
 
 bool IsPinchPosOk(unsigned char *pArrPinchPos);
 
@@ -946,6 +952,7 @@ void manageParentChkConfig(void){
 
 	unsigned char *ptr_EEPROM = (EEPROM_TDataAddress)&config_data;
 
+<<<<<<< .mine
 	/*Calcolo il CRC sui dati letti dalla EEPROM */
 	unsigned int Calc_CRC_EEPROM = ComputeChecksum(ptr_EEPROM, sizeof(config_data)-2);
 
@@ -1046,6 +1053,510 @@ void mangeParentUFlowSens(void){
 /*----------------------------------------INIZIO PARENT PRIMING LEVEL FUNCTION -----------------------------------------------*/
 /*----------------------------------------------------------------------------------------------------------------------------*/
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+=======
+	/*Calcolo il CRC sui dati letti dalla EEPROM */
+	unsigned int Calc_CRC_EEPROM = ComputeChecksum(ptr_EEPROM, sizeof(config_data)-2);
+
+	/*Se il CRC calcolato non è uguale a quello letto o la revsione non è uguale a quella attesa
+			 vado in allarme t1 test */
+	if (config_data.EEPROM_CRC != Calc_CRC_EEPROM || config_data.EEPROM_Revision != EEPROM_REVISION)
+	{
+		ptrT1Test->result_T1_cfg_data = T1_TEST_KO;
+		currentGuard[GUARD_ENABLE_T1_ALARM].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+		DebugStringStr("alarm from chk config");
+	}
+	else{
+		ptrT1Test->result_T1_cfg_data = T1_TEST_OK;
+		DebugStringStr("test config ok");
+	}
+}
+
+void manageParentChk24Vbrk(void){
+	// attenzione ai guadagni e agli offset delle 24V, che scalate, diventano 2,5V;
+	// modifiche necessarie in global.h
+
+	unsigned char voltageBoard, voltageMotor;
+
+	voltageBoard = VOLTAGE_B_CHK_GetVal();
+	voltageMotor = VOLTAGE_M_CHK_GetVal();
+
+	if(
+	   (V24_P1_CHK_VOLT <= V24BRK_LOW_THRSLD) ||
+	   (V24_P1_CHK_VOLT >= V24BRK_HIGH_THRSLD) ||
+	   (V24_P2_CHK_VOLT <= V24BRK_LOW_THRSLD) ||
+	   (V24_P2_CHK_VOLT >= V24BRK_HIGH_THRSLD) ||
+	   (voltageBoard != 0x01) ||
+	   (voltageMotor != 0x01)
+	   ){
+		ptrT1Test->result_T1_24vbrk = T1_TEST_KO;
+		currentGuard[GUARD_ENABLE_T1_ALARM].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+		DebugStringStr("alarm from chk 24vbrk");
+	}
+	else{
+		ptrT1Test->result_T1_24vbrk = T1_TEST_OK;
+	}
+}
+
+void manageParentChkPress(void){
+	if(
+		(PR_OXYG_mmHg_Filtered <= T1_TEST_PRESS_LOW_THRSLD)  	||
+		(PR_OXYG_mmHg_Filtered >= T1_TEST_PRESS_HIGH_THRSLD) 	||
+		(PR_LEVEL_mmHg_Filtered <= T1_TEST_PRESS_LOW_THRSLD) 	||
+		(PR_LEVEL_mmHg_Filtered >= T1_TEST_PRESS_HIGH_THRSLD) 	||
+		(PR_ADS_FLT_mmHg_Filtered <= T1_TEST_PRESS_LOW_THRSLD) 	||
+		(PR_ADS_FLT_mmHg_Filtered >= T1_TEST_PRESS_HIGH_THRSLD) ||
+		(PR_VEN_mmHg_Filtered <= T1_TEST_PRESS_LOW_THRSLD) 		||
+		(PR_VEN_mmHg_Filtered >= T1_TEST_PRESS_HIGH_THRSLD) 	||
+		(PR_ART_mmHg_Filtered <= T1_TEST_PRESS_LOW_THRSLD) 		||
+		(PR_ART_mmHg_Filtered >= T1_TEST_PRESS_HIGH_THRSLD)
+		){
+		ptrT1Test->result_T1_press = T1_TEST_KO;
+		currentGuard[GUARD_ENABLE_T1_ALARM].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+		DebugStringStr("alarm from chk press");
+	}
+	else{
+		ptrT1Test->result_T1_press = T1_TEST_OK;
+	}
+}
+
+void manageParentTempSensIR(void){
+
+	static unsigned char index = 0;
+
+	if(
+	   (sensorIR_TM[0].tempSensValue < 15) ||
+	   (sensorIR_TM[0].tempSensValue > 30) ||
+	   (sensorIR_TM[1].tempSensValue < 15) ||
+	   (sensorIR_TM[1].tempSensValue > 30) ||
+	   (sensorIR_TM[2].tempSensValue < 15) ||
+	   (sensorIR_TM[2].tempSensValue > 30)
+	   ){
+			ptrT1Test->result_T1_tempIR = T1_TEST_KO;
+			currentGuard[GUARD_ENABLE_T1_ALARM].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+			DebugStringStr("alarm from chk tempIR");
+	}
+	else{
+		ptrT1Test->result_T1_tempIR = T1_TEST_OK;
+	}
+
+}
+
+
+void mangeParentUFlowSens(void){
+	if(
+			(sensor_UFLOW[0].Average_Flow_Val > 100) ||
+			(sensor_UFLOW[0].Average_Flow_Val < -100) ||
+			(sensor_UFLOW[1].Average_Flow_Val > 100) ||
+			(sensor_UFLOW[1].Average_Flow_Val < -100)
+		){
+		ptrT1Test->result_T1_flwmtr = T1_TEST_KO;
+		currentGuard[GUARD_ENABLE_T1_ALARM].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+		DebugStringStr("alarm from chk flow");
+	}
+	else{
+		ptrT1Test->result_T1_flwmtr = T1_TEST_OK;
+	}
+}
+
+void manageParentAir(void){
+
+}
+
+void manageParenT1PinchInit(void){
+	t1Test_pinch_state = 0;
+	t1Test_pinch_cmd = 0;
+	timerCounterT1Test = 0;
+}
+
+void manageParenT1Pinch(void){
+	switch(t1Test_pinch_state)
+	{
+	case 0: //idle
+		t1Test_pinch_state = 1;
+		break;
+
+	case 1: //close
+		if(t1Test_pinch_cmd == 0){
+		setPinchPositionHighLevel(PINCH_2WPVF, MODBUS_PINCH_POS_CLOSED); //7: pinch filtro
+		setPinchPositionHighLevel(PINCH_2WPVA, MODBUS_PINCH_POS_CLOSED); //8: pinch art
+		setPinchPositionHighLevel(PINCH_2WPVV, MODBUS_PINCH_POS_CLOSED); //9: pinch ven
+		t1Test_pinch_cmd = 1;
+		}
+
+		if(
+			(*FilterPinchPos == MODBUS_PINCH_POS_CLOSED) &&
+			(*ArtPinchPos == MODBUS_PINCH_POS_CLOSED) &&
+			(*OxygPinchPos == MODBUS_PINCH_POS_CLOSED) &&
+			(timerCounterT1Test > 200)
+			)
+		{ //200*10ms equal 2 sec
+			t1Test_pinch_state = 2;
+			t1Test_pinch_cmd = 0;
+			timerCounterT1Test = 0;
+		}
+		else if(timerCounterT1Test > 500)
+		{
+			timerCounterT1Test = 0;
+			currentGuard[GUARD_ENABLE_T1_ALARM].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+			DebugStringStr("alarm from chk pinch_c");
+		}
+		else{
+
+		}
+		break;
+
+	case 2: //left
+		if(t1Test_pinch_cmd == 0){
+			setPinchPositionHighLevel(PINCH_2WPVF, MODBUS_PINCH_LEFT_OPEN); //7: pinch filtro
+			setPinchPositionHighLevel(PINCH_2WPVA, MODBUS_PINCH_LEFT_OPEN); //8: pinch art
+			setPinchPositionHighLevel(PINCH_2WPVV, MODBUS_PINCH_LEFT_OPEN); //9: pinch ven
+			t1Test_pinch_cmd = 1;
+		}
+
+		if(
+			(*FilterPinchPos == MODBUS_PINCH_LEFT_OPEN) &&
+			(*ArtPinchPos == MODBUS_PINCH_LEFT_OPEN) &&
+			(*OxygPinchPos == MODBUS_PINCH_LEFT_OPEN) &&
+			(timerCounterT1Test > 200)
+			)
+		{ //200*10ms equal 2 sec
+			t1Test_pinch_state = 3;
+			t1Test_pinch_cmd = 0;
+			timerCounterT1Test = 0;
+		}
+		else if(timerCounterT1Test > 500){
+			timerCounterT1Test = 0;
+			currentGuard[GUARD_ENABLE_T1_ALARM].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+			DebugStringStr("alarm from chk pinch_l");
+		}
+		else{
+
+		}
+		break;
+
+	case 3: //right
+		if(t1Test_pinch_cmd == 0){
+		setPinchPositionHighLevel(PINCH_2WPVF, MODBUS_PINCH_RIGHT_OPEN); //7: pinch filtro
+		setPinchPositionHighLevel(PINCH_2WPVA, MODBUS_PINCH_RIGHT_OPEN); //8: pinch art
+		setPinchPositionHighLevel(PINCH_2WPVV, MODBUS_PINCH_RIGHT_OPEN); //9: pinch ven
+		t1Test_pinch_cmd = 1;
+		}
+
+		if(
+			(*FilterPinchPos == MODBUS_PINCH_RIGHT_OPEN) &&
+			(*ArtPinchPos == MODBUS_PINCH_RIGHT_OPEN) &&
+			(*OxygPinchPos == MODBUS_PINCH_RIGHT_OPEN) &&
+			(timerCounterT1Test > 200)
+			){ //200*10ms equal 2 sec
+			t1Test_pinch_state = 4;
+			t1Test_pinch_cmd = 0;
+			timerCounterT1Test = 0;
+		}
+		else if(timerCounterT1Test > 500){
+			timerCounterT1Test = 0;
+			currentGuard[GUARD_ENABLE_T1_ALARM].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+			DebugStringStr("alarm from chk pinch_r");
+		}
+		else{
+
+		}
+		break;
+
+	case 4:
+		//fine test positivo
+		break;
+
+	default:
+		break;
+	}
+}
+
+void manageParentT1PumpInit(void){
+	t1Test_pump_state = 0;
+	t1Test_pump_cmd = 0;
+	timerCounterT1Test = 0;
+}
+
+void manageParentT1Pump(void){
+	//setPumpSpeedValueHighLevel
+	switch(t1Test_pump_state){
+	case 0: //idle
+		t1Test_pump_state = 1;
+		break;
+
+	case 1: //ramp
+		if(t1Test_pump_cmd == 0){
+			setPumpSpeedValueHighLevel(PPAR, T1TEST_PUMP_SPEED);
+			setPumpSpeedValueHighLevel(PPAF, T1TEST_PUMP_SPEED);
+			setPumpSpeedValueHighLevel(PPV1, T1TEST_PUMP_SPEED);
+			setPumpSpeedValueHighLevel(PPV2, T1TEST_PUMP_SPEED);
+			t1Test_pump_cmd = 1;
+		}
+
+		if(timerCounterT1Test > 300){
+			t1Test_pump_state = 2;
+			timerCounterT1Test = 0;
+		}
+
+		break;
+
+	case 2: //running
+		if(
+			(*SpeedPump1Rpmx10 >= (T1TEST_PUMP_SPEED - 500) ) &&
+			(*SpeedPump1Rpmx10 <= (T1TEST_PUMP_SPEED + 500) ) &&
+			(*SpeedPump2Rpmx10 >= (T1TEST_PUMP_SPEED - 500) ) &&
+			(*SpeedPump2Rpmx10 <= (T1TEST_PUMP_SPEED + 500) ) &&
+			(*SpeedPump3Rpmx10 >= (T1TEST_PUMP_SPEED - 500) ) &&
+			(*SpeedPump3Rpmx10 <= (T1TEST_PUMP_SPEED + 500) ) &&
+			(*SpeedPump4Rpmx10 >= (T1TEST_PUMP_SPEED - 500) ) &&
+			(*SpeedPump4Rpmx10 <= (T1TEST_PUMP_SPEED + 500) ) &&
+			(timerCounterT1Test > 200)
+			)
+		{
+			t1Test_pump_state = 3;
+			t1Test_pump_cmd = 0;
+			timerCounterT1Test = 0;
+		}
+		else if(timerCounterT1Test > 500){
+			setPumpSpeedValueHighLevel(PPAR, 0);
+			setPumpSpeedValueHighLevel(PPAF, 0);
+			setPumpSpeedValueHighLevel(PPV1, 0);
+			setPumpSpeedValueHighLevel(PPV2, 0);
+			timerCounterT1Test = 0;
+			currentGuard[GUARD_ENABLE_T1_ALARM].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+			DebugStringStr("alarm from chk pump");
+		}
+		else{
+
+		}
+		break;
+
+	case 3: //stop
+		if(t1Test_pump_cmd == 0){
+			setPumpSpeedValueHighLevel(PPAR, 0);
+			setPumpSpeedValueHighLevel(PPAF, 0);
+			setPumpSpeedValueHighLevel(PPV1, 0);
+			setPumpSpeedValueHighLevel(PPV2, 0);
+			t1Test_pump_cmd = 1;
+			t1Test_pump_state = 4;
+		}
+		break;
+
+	case 4: //end
+		break;
+
+	default:
+		break;
+	}
+}
+
+
+/*----------------------------------------------------------------------------------------------------------------------------*/
+/*----------------------------------------INIZIO PARENT PRIMING LEVEL FUNCTION -----------------------------------------------*/
+/*----------------------------------------------------------------------------------------------------------------------------*/
+
+>>>>>>> .theirs
 void manageParentPrimingEntry(void){
 	if(pumpPerist[0].entry == 0)
 	{
@@ -4992,6 +5503,14 @@ void Cover_Sensor_GetVal()
 	CoverM4 = COVER_M4_GetVal();
 	CoverM5 = COVER_M5_GetVal();
 
+}
+
+void Voltage_BM_Chk()
+{
+	unsigned char voltageBoard, voltageMotor;
+
+	voltageBoard = VOLTAGE_B_CHK_GetVal();
+	voltageMotor = VOLTAGE_M_CHK_GetVal();
 }
 
 

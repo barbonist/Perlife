@@ -1218,6 +1218,8 @@ void System_Tick_OnInterrupt(void)
 
 	  timerCounterLedBoard++;
 
+	  timerCounterT1Test++;
+
 	  timerCounterUpdateTargetPressurePid++;
 	  timerCounterUpdateTargetPressPidArt++;
 

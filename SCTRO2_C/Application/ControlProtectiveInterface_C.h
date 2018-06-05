@@ -14,5 +14,14 @@ void onNewState( struct machineState* MSp, struct machineParent* MPp ,
 				  struct machineChild* MCp, uint16_t Guard   );
 void InitControlProtectiveInterface(void);
 
+extern uint8_t *FilterPinchPos;
+extern uint8_t *ArtPinchPos;
+extern uint8_t *OxygPinchPos;
+
+extern uint16_t *SpeedPump1Rpmx10;
+extern uint16_t *SpeedPump2Rpmx10;
+extern uint16_t *SpeedPump3Rpmx10;
+extern uint16_t *SpeedPump4Rpmx10;
+
 
 #endif /* CONTROLPROTECTIVEINTERFACE_H_ */

@@ -310,10 +310,10 @@ struct machineParent stateParentT1TNoDisposable[] =
 		 {STATE_NULL, PARENT_T1_NO_DISP_CHECK_FLWMTR, CHILD_IDLE, ACTION_ALWAYS,   &stateChildIdle[1], &manageNull}, /* 14 */ /* t1 chk flowmeter sensor */
 	     {STATE_NULL, PARENT_T1_NO_DISP_CHEK_AIR,     CHILD_IDLE, ACTION_ON_ENTRY, &stateChildIdle[1], &manageNull}, /* 15 */ /* t1 chk air sensor */
 		 {STATE_NULL, PARENT_T1_NO_DISP_CHEK_AIR,     CHILD_IDLE, ACTION_ALWAYS,   &stateChildIdle[1], &manageNull}, /* 16 */ /* t1 chk air sensor */
-		 {STATE_NULL, PARENT_T1_NO_DISP_CHEK_PINCH,   CHILD_IDLE, ACTION_ON_ENTRY, &stateChildIdle[1], &manageNull}, /* 17 */ /* t1 chk pinch */
-		 {STATE_NULL, PARENT_T1_NO_DISP_CHEK_PINCH,   CHILD_IDLE, ACTION_ALWAYS,   &stateChildIdle[1], &manageNull}, /* 18 */ /* t1 chk pinch */
-		 {STATE_NULL, PARENT_T1_NO_DISP_CHEK_PUMP,    CHILD_IDLE, ACTION_ON_ENTRY, &stateChildIdle[1], &manageNull}, /* 19 */ /* t1 chk pump */
-		 {STATE_NULL, PARENT_T1_NO_DISP_CHEK_PUMP,    CHILD_IDLE, ACTION_ALWAYS,   &stateChildIdle[1], &manageNull}, /* 20 */ /* t1 chk pump */
+		 {STATE_NULL, PARENT_T1_NO_DISP_CHEK_PINCH,   CHILD_IDLE, ACTION_ON_ENTRY, &stateChildIdle[1], &manageParenT1PinchInit}, /* 17 */ /* t1 chk pinch */
+		 {STATE_NULL, PARENT_T1_NO_DISP_CHEK_PINCH,   CHILD_IDLE, ACTION_ALWAYS,   &stateChildIdle[1], &manageParenT1Pinch}, /* 18 */ /* t1 chk pinch */
+		 {STATE_NULL, PARENT_T1_NO_DISP_CHEK_PUMP,    CHILD_IDLE, ACTION_ON_ENTRY, &stateChildIdle[1], &manageParentT1PumpInit}, /* 19 */ /* t1 chk pump */
+		 {STATE_NULL, PARENT_T1_NO_DISP_CHEK_PUMP,    CHILD_IDLE, ACTION_ALWAYS,   &stateChildIdle[1], &manageParentT1Pump}, /* 20 */ /* t1 chk pump */
 		 {STATE_NULL, PARENT_T1_NO_DISP_CHEK_PELTIER, CHILD_IDLE, ACTION_ON_ENTRY, &stateChildIdle[1], &manageNull}, /* 21 */ /* t1 chk Peltier */
 		 {STATE_NULL, PARENT_T1_NO_DISP_CHEK_PELTIER, CHILD_IDLE, ACTION_ALWAYS,   &stateChildIdle[1], &manageNull}, /* 22 */ /* t1 chk Peltier */
 		 {STATE_NULL, PARENT_T1_NO_DISP_END,          CHILD_IDLE, ACTION_ON_ENTRY, &stateChildIdle[1], &manageNull}, /* 23 */ /* t1 test end */
