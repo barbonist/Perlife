@@ -25,4 +25,13 @@ void onNewPinchVal(uint8_t AirFiltStat, uint16_t AlarmCode,
 void onNewAlmToResetMsg(uint16_t AlmCodeToreset);
 #endif
 
+extern uint8_t *FilterPinchPos;
+extern uint8_t *ArtPinchPos;
+extern uint8_t *OxygPinchPos;
+extern uint16_t *SpeedPump1Rpmx10;
+extern uint16_t *SpeedPump2Rpmx10;
+extern uint16_t *SpeedPump3Rpmx10;
+extern uint16_t *SpeedPump4Rpmx10;
+
+
 #endif /* CONTROLPROTECTIVEINTERFACE_H_ */

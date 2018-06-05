@@ -125,10 +125,21 @@ void manageStatePriming_1_WaitAlways(void);
 /**************************************************************************************/
 /******-----------------------------T1 TEST NO DISP----------------------------********/
 /**************************************************************************************/
+void initT1Test(void);
 void manageParentT1InitEntry(void);
 void manageParentT1NoDispEntry(void);
 void manageParentT1NoDispAlways(void);
 void manageParentT1EndEntry(void);
+void manageParentChkConfig(void);
+void manageParentChk24Vbrk(void);
+void manageParentChkPress(void);
+void manageParentTempSensIR(void);
+void mangeParentUFlowSens(void);
+void manageParentAir(void);
+void manageParenT1PinchInit(void);
+void manageParenT1Pinch(void);
+void manageParentT1PumpInit(void);
+void manageParentT1Pump(void);
 
 /**************************************************************************************/
 /******-----------------------------TREATMENT----------------------------------********/
@@ -227,6 +238,7 @@ void releaseGUIButton(unsigned char buttonId);
 /**************************************************************************************/
 void Display_7S_Management();
 void Cover_Sensor_GetVal();
+void Voltage_BM_Chk(void);
 
 void EEPROM_Read(LDD_FLASH_TAddress Source, LDD_TData *Dest, LDD_FLASH_TDataSize Count);
 void Set_Data_EEPROM_Default(void);

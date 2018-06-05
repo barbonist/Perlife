@@ -1053,6 +1053,278 @@ void ParentFuncT1Test(void)
 		DebugStringStr("parent chk 24vbrk");
 		break;
 		}
+		else if(currentGuard[GUARD_ENABLE_T1_ALARM].guardValue == GUARD_VALUE_TRUE){
+			ptrFutureParent = &stateParentT1TNoDisposable[25]; //alarm
+			ptrFutureChild = ptrFutureParent->ptrChild;
+			DebugStringStr("alarm t1 test");
+			break;
+		}
+
+		if(ptrCurrentParent->action == ACTION_ON_ENTRY)
+		{
+		ptrFutureParent = &stateParentT1TNoDisposable[4];
+		ptrFutureChild = ptrFutureParent->ptrChild;
+		}
+		else if((ptrCurrentParent->action == ACTION_ALWAYS) && (ptrT1Test->result_T1_cfg_data == T1_TEST_OK))
+		{
+			currentGuard[GUARD_ENABLE_T1_24VBRK].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+		}
+		break;
+
+	case PARENT_T1_NO_DISP_CHK_24VBRK:
+		if(currentGuard[GUARD_ENABLE_T1_PRESS].guardValue == GUARD_VALUE_TRUE)
+		{
+		ptrFutureParent = &stateParentT1TNoDisposable[7];
+		ptrFutureChild = ptrFutureParent->ptrChild;
+		DebugStringStr("parent chk press");
+		break;
+		}
+		else if(currentGuard[GUARD_ENABLE_T1_ALARM].guardValue == GUARD_VALUE_TRUE){
+			ptrFutureParent = &stateParentT1TNoDisposable[25]; //alarm
+			ptrFutureChild = ptrFutureParent->ptrChild;
+			DebugStringStr("alarm t1 test");
+			break;
+		}
+
+		if(ptrCurrentParent->action == ACTION_ON_ENTRY)
+		{
+		ptrFutureParent = &stateParentT1TNoDisposable[6];
+		ptrFutureChild = ptrFutureParent->ptrChild;
+		}
+		else if((ptrCurrentParent->action == ACTION_ALWAYS) && (ptrT1Test->result_T1_24vbrk == T1_TEST_OK))
+		{
+			currentGuard[GUARD_ENABLE_T1_PRESS].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+		}
+		break;
+
+	case PARENT_T1_NO_DISP_CHECK_PRESS:
+		if(currentGuard[GUARD_ENABLE_T1_TEMPIR].guardValue == GUARD_VALUE_TRUE)
+		{
+		ptrFutureParent = &stateParentT1TNoDisposable[9];
+		ptrFutureChild = ptrFutureParent->ptrChild;
+		DebugStringStr("parent chk temp");
+		break;
+		}
+		else if(currentGuard[GUARD_ENABLE_T1_ALARM].guardValue == GUARD_VALUE_TRUE){
+		ptrFutureParent = &stateParentT1TNoDisposable[25]; //alarm
+		ptrFutureChild = ptrFutureParent->ptrChild;
+		DebugStringStr("alarm t1 test");
+		break;
+		}
+
+		if(ptrCurrentParent->action == ACTION_ON_ENTRY)
+		{
+		ptrFutureParent = &stateParentT1TNoDisposable[8];
+		ptrFutureChild = ptrFutureParent->ptrChild;
+		}
+		else if((ptrCurrentParent->action == ACTION_ALWAYS) && (ptrT1Test->result_T1_press == T1_TEST_OK))
+		{
+			currentGuard[GUARD_ENABLE_T1_TEMPIR].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+		}
+		break;
+
+	case PARENT_T1_NO_DISP_CHECK_TEMP:
+		if(currentGuard[GUARD_ENABLE_T1_LEVEL].guardValue == GUARD_VALUE_TRUE)
+		{
+		ptrFutureParent = &stateParentT1TNoDisposable[11];
+		ptrFutureChild = ptrFutureParent->ptrChild;
+		DebugStringStr("parent chk level");
+		break;
+		}
+		else if(currentGuard[GUARD_ENABLE_T1_ALARM].guardValue == GUARD_VALUE_TRUE){
+		ptrFutureParent = &stateParentT1TNoDisposable[25]; //alarm
+		ptrFutureChild = ptrFutureParent->ptrChild;
+		DebugStringStr("alarm t1 test");
+		break;
+		}
+
+		if(ptrCurrentParent->action == ACTION_ON_ENTRY)
+		{
+		ptrFutureParent = &stateParentT1TNoDisposable[10];
+		ptrFutureChild = ptrFutureParent->ptrChild;
+		}
+		else if((ptrCurrentParent->action == ACTION_ALWAYS) && (ptrT1Test->result_T1_tempIR == T1_TEST_OK))
+		{
+			currentGuard[GUARD_ENABLE_T1_LEVEL].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+		}
+		break;
+
+	case PARENT_T1_NO_DISP_CHECK_LEVEL:
+		if(currentGuard[GUARD_ENABLE_T1_FLOWMTR].guardValue == GUARD_VALUE_TRUE)
+		{
+		ptrFutureParent = &stateParentT1TNoDisposable[13];
+		ptrFutureChild = ptrFutureParent->ptrChild;
+		DebugStringStr("parent chk flwmtr");
+		break;
+		}
+
+		if(ptrCurrentParent->action == ACTION_ON_ENTRY)
+		{
+		ptrFutureParent = &stateParentT1TNoDisposable[12];
+		ptrFutureChild = ptrFutureParent->ptrChild;
+		}
+		else if(ptrCurrentParent->action == ACTION_ALWAYS)
+		{
+			currentGuard[GUARD_ENABLE_T1_FLOWMTR].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+		}
+		break;
+
+	case PARENT_T1_NO_DISP_CHECK_FLWMTR:
+		if(currentGuard[GUARD_ENABLE_T1_AIRSENS].guardValue == GUARD_VALUE_TRUE)
+		{
+		ptrFutureParent = &stateParentT1TNoDisposable[15];
+		ptrFutureChild = ptrFutureParent->ptrChild;
+		DebugStringStr("parent chk air");
+		break;
+		}
+		else if(currentGuard[GUARD_ENABLE_T1_ALARM].guardValue == GUARD_VALUE_TRUE){
+		ptrFutureParent = &stateParentT1TNoDisposable[25]; //alarm
+		ptrFutureChild = ptrFutureParent->ptrChild;
+		DebugStringStr("alarm t1 test");
+		break;
+		}
+
+		if(ptrCurrentParent->action == ACTION_ON_ENTRY)
+		{
+		ptrFutureParent = &stateParentT1TNoDisposable[14];
+		ptrFutureChild = ptrFutureParent->ptrChild;
+		}
+		else if((ptrCurrentParent->action == ACTION_ALWAYS) && (ptrT1Test->result_T1_flwmtr == T1_TEST_OK))
+		{
+			currentGuard[GUARD_ENABLE_T1_AIRSENS].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+		}
+		break;
+
+	case PARENT_T1_NO_DISP_CHEK_AIR:
+		if(currentGuard[GUARD_ENABLE_T1_PINCH].guardValue == GUARD_VALUE_TRUE)
+		{
+		ptrFutureParent = &stateParentT1TNoDisposable[17];
+		ptrFutureChild = ptrFutureParent->ptrChild;
+		DebugStringStr("parent chk pinch");
+		break;
+		}
+
+		if(ptrCurrentParent->action == ACTION_ON_ENTRY)
+		{
+		ptrFutureParent = &stateParentT1TNoDisposable[16];
+		ptrFutureChild = ptrFutureParent->ptrChild;
+		}
+		else if(ptrCurrentParent->action == ACTION_ALWAYS)
+		{
+			currentGuard[GUARD_ENABLE_T1_PINCH].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+		}
+		break;
+
+	case PARENT_T1_NO_DISP_CHEK_PINCH:
+		if(currentGuard[GUARD_ENABLE_T1_PUMP].guardValue == GUARD_VALUE_TRUE)
+		{
+		ptrFutureParent = &stateParentT1TNoDisposable[19];
+		ptrFutureChild = ptrFutureParent->ptrChild;
+		DebugStringStr("parent chk pump");
+		break;
+		}
+
+		if(ptrCurrentParent->action == ACTION_ON_ENTRY)
+		{
+		ptrFutureParent = &stateParentT1TNoDisposable[18];
+		ptrFutureChild = ptrFutureParent->ptrChild;
+		}
+		else if((ptrCurrentParent->action == ACTION_ALWAYS) && (t1Test_pinch_state == 4))
+		{
+			currentGuard[GUARD_ENABLE_T1_PUMP].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+		}
+		break;
+
+	case PARENT_T1_NO_DISP_CHEK_PUMP:
+		if(currentGuard[GUARD_ENABLE_T1_TERMO].guardValue == GUARD_VALUE_TRUE)
+		{
+		ptrFutureParent = &stateParentT1TNoDisposable[21];
+		ptrFutureChild = ptrFutureParent->ptrChild;
+		DebugStringStr("parent chk termo");
+		break;
+		}
+
+		if(ptrCurrentParent->action == ACTION_ON_ENTRY)
+		{
+		ptrFutureParent = &stateParentT1TNoDisposable[20];
+		ptrFutureChild = ptrFutureParent->ptrChild;
+		}
+		else if((ptrCurrentParent->action == ACTION_ALWAYS) && (t1Test_pump_state == 4))
+		{
+			currentGuard[GUARD_ENABLE_T1_TERMO].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+		}
+		break;
+
+	case PARENT_T1_NO_DISP_CHEK_PELTIER:
+		if(currentGuard[GUARD_ENABLE_T1_END].guardValue == GUARD_VALUE_TRUE)
+		{
+		ptrFutureParent = &stateParentT1TNoDisposable[23];
+		ptrFutureChild = ptrFutureParent->ptrChild;
+		DebugStringStr("parent to end");
+		break;
+		}
+
+		if(ptrCurrentParent->action == ACTION_ON_ENTRY)
+		{
+		ptrFutureParent = &stateParentT1TNoDisposable[22];
+		ptrFutureChild = ptrFutureParent->ptrChild;
+		}
+		else if(ptrCurrentParent->action == ACTION_ALWAYS)
+		{
+			currentGuard[GUARD_ENABLE_T1_END].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+		}
+		break;
+
+	case PARENT_T1_NO_DISP_END:
+		currentGuard[GUARD_HW_T1T_DONE].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+		currentGuard[GUARD_COMM_ENABLED].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+		DebugStringStr("parent to idle state");
+		break;
+
+	case PARENT_T1_NO_DISP_ALARM:
+		break;
+
+	case PARENT_T1_NO_DISP_FATAL_ERROR:
+		break;
+
+	default:
+		break;
+	}
+#else
+	case PARENT_T1_NO_DISP_INIT:
+		if(currentGuard[GUARD_ENABLE_T1_CONFIG].guardValue == GUARD_VALUE_TRUE)
+		{
+		ptrFutureParent = &stateParentT1TNoDisposable[3];
+		ptrFutureChild = ptrFutureParent->ptrChild;
+		DebugStringStr("parent chk config");
+		break;
+		}
+
+		if(ptrCurrentParent->action == ACTION_ON_ENTRY)
+		{
+		ptrFutureParent = &stateParentT1TNoDisposable[2];
+		ptrFutureChild = ptrFutureParent->ptrChild;
+		}
+		else if(ptrCurrentParent->action == ACTION_ALWAYS)
+		{
+			currentGuard[GUARD_ENABLE_T1_CONFIG].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+		}
+		break;
+
+	case PARENT_T1_NO_DISP_CHK_CONFG:
+		if(currentGuard[GUARD_ENABLE_T1_24VBRK].guardValue == GUARD_VALUE_TRUE)
+		{
+		ptrFutureParent = &stateParentT1TNoDisposable[5];
+		ptrFutureChild = ptrFutureParent->ptrChild;
+		DebugStringStr("parent chk 24vbrk");
+		break;
+		}
+		else if(currentGuard[GUARD_ENABLE_T1_ALARM].guardValue == GUARD_VALUE_TRUE){
+			ptrFutureParent = &stateParentT1TNoDisposable[25]; //alarm
+			ptrFutureChild = ptrFutureParent->ptrChild;
+			DebugStringStr("alarm t1 test");
+			break;
+		}
 
 		if(ptrCurrentParent->action == ACTION_ON_ENTRY)
 		{
@@ -1072,6 +1344,12 @@ void ParentFuncT1Test(void)
 		ptrFutureChild = ptrFutureParent->ptrChild;
 		DebugStringStr("parent chk press");
 		break;
+		}
+		else if(currentGuard[GUARD_ENABLE_T1_ALARM].guardValue == GUARD_VALUE_TRUE){
+			ptrFutureParent = &stateParentT1TNoDisposable[25]; //alarm
+			ptrFutureChild = ptrFutureParent->ptrChild;
+			DebugStringStr("alarm t1 test");
+			break;
 		}
 
 		if(ptrCurrentParent->action == ACTION_ON_ENTRY)
@@ -1093,6 +1371,12 @@ void ParentFuncT1Test(void)
 		DebugStringStr("parent chk temp");
 		break;
 		}
+		else if(currentGuard[GUARD_ENABLE_T1_ALARM].guardValue == GUARD_VALUE_TRUE){
+		ptrFutureParent = &stateParentT1TNoDisposable[25]; //alarm
+		ptrFutureChild = ptrFutureParent->ptrChild;
+		DebugStringStr("alarm t1 test");
+		break;
+		}
 
 		if(ptrCurrentParent->action == ACTION_ON_ENTRY)
 		{
@@ -1111,6 +1395,12 @@ void ParentFuncT1Test(void)
 		ptrFutureParent = &stateParentT1TNoDisposable[11];
 		ptrFutureChild = ptrFutureParent->ptrChild;
 		DebugStringStr("parent chk level");
+		break;
+		}
+		else if(currentGuard[GUARD_ENABLE_T1_ALARM].guardValue == GUARD_VALUE_TRUE){
+		ptrFutureParent = &stateParentT1TNoDisposable[25]; //alarm
+		ptrFutureChild = ptrFutureParent->ptrChild;
+		DebugStringStr("alarm t1 test");
 		break;
 		}
 
@@ -1151,6 +1441,12 @@ void ParentFuncT1Test(void)
 		ptrFutureParent = &stateParentT1TNoDisposable[15];
 		ptrFutureChild = ptrFutureParent->ptrChild;
 		DebugStringStr("parent chk air");
+		break;
+		}
+		else if(currentGuard[GUARD_ENABLE_T1_ALARM].guardValue == GUARD_VALUE_TRUE){
+		ptrFutureParent = &stateParentT1TNoDisposable[25]; //alarm
+		ptrFutureChild = ptrFutureParent->ptrChild;
+		DebugStringStr("alarm t1 test");
 		break;
 		}
 
@@ -1259,7 +1555,6 @@ void ParentFuncT1Test(void)
 
 	default:
 		break;
-	}
 #endif
 }
 

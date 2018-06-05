@@ -308,24 +308,24 @@ struct machineParent stateParentT1TNoDisposable[] =
 		 {STATE_NULL, PARENT_NULL,                    CHILD_NULL, ACTION_NULL,     &stateChildIdle[0], &manageNull}, /* 0 */
 		 {STATE_NULL, PARENT_T1_NO_DISP_INIT,         CHILD_IDLE, ACTION_ON_ENTRY, &stateChildIdle[1], &manageNull}, /* 1 */ /* init */
 		 {STATE_NULL, PARENT_T1_NO_DISP_INIT,         CHILD_IDLE, ACTION_ALWAYS,   &stateChildIdle[1], &manageNull}, /* 2 */ /* init */
-		 {STATE_NULL, PARENT_T1_NO_DISP_CHK_CONFG,    CHILD_IDLE, ACTION_ON_ENTRY, &stateChildIdle[1], &manageNull}, /* 3 */ /* t1 check confg data */
+		 {STATE_NULL, PARENT_T1_NO_DISP_CHK_CONFG,    CHILD_IDLE, ACTION_ON_ENTRY, &stateChildIdle[1], &manageParentChkConfig}, /* 3 */ /* t1 check confg data */
 		 {STATE_NULL, PARENT_T1_NO_DISP_CHK_CONFG,    CHILD_IDLE, ACTION_ALWAYS,   &stateChildIdle[1], &manageNull}, /* 4 */ /* t1 check confg data */
-		 {STATE_NULL, PARENT_T1_NO_DISP_CHK_24VBRK,   CHILD_IDLE, ACTION_ON_ENTRY, &stateChildIdle[1], &manageNull}, /* 5 */ /* t1 check 24VBRK */
+		 {STATE_NULL, PARENT_T1_NO_DISP_CHK_24VBRK,   CHILD_IDLE, ACTION_ON_ENTRY, &stateChildIdle[1], &manageParentChk24Vbrk}, /* 5 */ /* t1 check 24VBRK */
 		 {STATE_NULL, PARENT_T1_NO_DISP_CHK_24VBRK,   CHILD_IDLE, ACTION_ALWAYS,   &stateChildIdle[1], &manageNull}, /* 6 */ /* t1 check 24VBRK */
-		 {STATE_NULL, PARENT_T1_NO_DISP_CHECK_PRESS,  CHILD_IDLE, ACTION_ON_ENTRY, &stateChildIdle[1], &manageNull}, /* 7 */ /* t1 chk press. sensor */
+		 {STATE_NULL, PARENT_T1_NO_DISP_CHECK_PRESS,  CHILD_IDLE, ACTION_ON_ENTRY, &stateChildIdle[1], &manageParentChkPress}, /* 7 */ /* t1 chk press. sensor */
 		 {STATE_NULL, PARENT_T1_NO_DISP_CHECK_PRESS,  CHILD_IDLE, ACTION_ALWAYS,   &stateChildIdle[1], &manageNull}, /* 8 */ /* t1 chk press. sensor */
-		 {STATE_NULL, PARENT_T1_NO_DISP_CHECK_TEMP,   CHILD_IDLE, ACTION_ON_ENTRY, &stateChildIdle[1], &manageNull}, /* 9 */ /* t1 chk temp. sensor */
+		 {STATE_NULL, PARENT_T1_NO_DISP_CHECK_TEMP,   CHILD_IDLE, ACTION_ON_ENTRY, &stateChildIdle[1], &manageParentTempSensIR}, /* 9 */ /* t1 chk temp. sensor */
 		 {STATE_NULL, PARENT_T1_NO_DISP_CHECK_TEMP,   CHILD_IDLE, ACTION_ALWAYS,   &stateChildIdle[1], &manageNull}, /* 10 */ /* t1 chk temp. sensor */
 		 {STATE_NULL, PARENT_T1_NO_DISP_CHECK_LEVEL,  CHILD_IDLE, ACTION_ON_ENTRY, &stateChildIdle[1], &manageNull}, /* 11 */ /* t1 chk level sensor */
 		 {STATE_NULL, PARENT_T1_NO_DISP_CHECK_LEVEL,  CHILD_IDLE, ACTION_ALWAYS,   &stateChildIdle[1], &manageNull}, /* 12 */ /* t1 chk level sensor */
-		 {STATE_NULL, PARENT_T1_NO_DISP_CHECK_FLWMTR, CHILD_IDLE, ACTION_ON_ENTRY, &stateChildIdle[1], &manageNull}, /* 13 */ /* t1 chk flowmeter sensor */
+		 {STATE_NULL, PARENT_T1_NO_DISP_CHECK_FLWMTR, CHILD_IDLE, ACTION_ON_ENTRY, &stateChildIdle[1], &mangeParentUFlowSens}, /* 13 */ /* t1 chk flowmeter sensor */
 		 {STATE_NULL, PARENT_T1_NO_DISP_CHECK_FLWMTR, CHILD_IDLE, ACTION_ALWAYS,   &stateChildIdle[1], &manageNull}, /* 14 */ /* t1 chk flowmeter sensor */
 	     {STATE_NULL, PARENT_T1_NO_DISP_CHEK_AIR,     CHILD_IDLE, ACTION_ON_ENTRY, &stateChildIdle[1], &manageNull}, /* 15 */ /* t1 chk air sensor */
 		 {STATE_NULL, PARENT_T1_NO_DISP_CHEK_AIR,     CHILD_IDLE, ACTION_ALWAYS,   &stateChildIdle[1], &manageNull}, /* 16 */ /* t1 chk air sensor */
-		 {STATE_NULL, PARENT_T1_NO_DISP_CHEK_PINCH,   CHILD_IDLE, ACTION_ON_ENTRY, &stateChildIdle[1], &manageNull}, /* 17 */ /* t1 chk pinch */
-		 {STATE_NULL, PARENT_T1_NO_DISP_CHEK_PINCH,   CHILD_IDLE, ACTION_ALWAYS,   &stateChildIdle[1], &manageNull}, /* 18 */ /* t1 chk pinch */
-		 {STATE_NULL, PARENT_T1_NO_DISP_CHEK_PUMP,    CHILD_IDLE, ACTION_ON_ENTRY, &stateChildIdle[1], &manageNull}, /* 19 */ /* t1 chk pump */
-		 {STATE_NULL, PARENT_T1_NO_DISP_CHEK_PUMP,    CHILD_IDLE, ACTION_ALWAYS,   &stateChildIdle[1], &manageNull}, /* 20 */ /* t1 chk pump */
+		 {STATE_NULL, PARENT_T1_NO_DISP_CHEK_PINCH,   CHILD_IDLE, ACTION_ON_ENTRY, &stateChildIdle[1], &manageParenT1PinchInit}, /* 17 */ /* t1 chk pinch */
+		 {STATE_NULL, PARENT_T1_NO_DISP_CHEK_PINCH,   CHILD_IDLE, ACTION_ALWAYS,   &stateChildIdle[1], &manageParenT1Pinch}, /* 18 */ /* t1 chk pinch */
+		 {STATE_NULL, PARENT_T1_NO_DISP_CHEK_PUMP,    CHILD_IDLE, ACTION_ON_ENTRY, &stateChildIdle[1], &manageParentT1PumpInit}, /* 19 */ /* t1 chk pump */
+		 {STATE_NULL, PARENT_T1_NO_DISP_CHEK_PUMP,    CHILD_IDLE, ACTION_ALWAYS,   &stateChildIdle[1], &manageParentT1Pump}, /* 20 */ /* t1 chk pump */
 		 {STATE_NULL, PARENT_T1_NO_DISP_CHEK_PELTIER, CHILD_IDLE, ACTION_ON_ENTRY, &stateChildIdle[1], &manageNull}, /* 21 */ /* t1 chk Peltier */
 		 {STATE_NULL, PARENT_T1_NO_DISP_CHEK_PELTIER, CHILD_IDLE, ACTION_ALWAYS,   &stateChildIdle[1], &manageNull}, /* 22 */ /* t1 chk Peltier */
 		 {STATE_NULL, PARENT_T1_NO_DISP_END,          CHILD_IDLE, ACTION_ON_ENTRY, &stateChildIdle[1], &manageNull}, /* 23 */ /* t1 test end */

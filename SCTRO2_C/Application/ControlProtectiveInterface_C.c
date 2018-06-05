@@ -106,6 +106,17 @@ union URxCan  RxCan5,  OldRxCan5;
 union URxCan  RxCan6,  OldRxCan6;
 union URxCan  RxCan7,  OldRxCan7;
 
+uint8_t *FilterPinchPos = &(RxCan2.SRxCan2.FilterPinchPos);
+uint8_t *ArtPinchPos = &(RxCan2.SRxCan2.ArtPinchPos);
+uint8_t *OxygPinchPos = &(RxCan2.SRxCan2.OxygPinchPos);
+
+uint16_t *SpeedPump1Rpmx10 = &(RxCan3.SRxCan3.SpeedPump1Rpmx10);
+uint16_t *SpeedPump2Rpmx10 = &(RxCan3.SRxCan3.SpeedPump2Rpmx10);
+uint16_t *SpeedPump3Rpmx10 = &(RxCan3.SRxCan3.SpeedPump3Rpmx10);
+uint16_t *SpeedPump4Rpmx10 = &(RxCan3.SRxCan3.SpeedPump4Rpmx10);
+
+
+
 
 //#define CAN_DEBUG 1
 
