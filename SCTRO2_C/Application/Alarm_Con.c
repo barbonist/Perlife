@@ -494,8 +494,8 @@ void alarmEngineAlways(void)
 			case STATE_NULL:
 			{
 				/* DA DEBUGGARE*/
-				manageAlarmFlowSensNotDetected();
-				manageAlarmIrTempSensNotDetected();
+				//manageAlarmFlowSensNotDetected();
+				//manageAlarmIrTempSensNotDetected();
 
 				break;
 			}
@@ -503,8 +503,8 @@ void alarmEngineAlways(void)
 			case STATE_ENTRY:
 			{
 				/* DA DEBUGGARE*/
-				manageAlarmFlowSensNotDetected();
-				manageAlarmIrTempSensNotDetected();
+				//manageAlarmFlowSensNotDetected();
+				//manageAlarmIrTempSensNotDetected();
 
 				break;
 			}
@@ -512,8 +512,8 @@ void alarmEngineAlways(void)
 			case STATE_IDLE:
 			{
 				/* DA DEBUGGARE*/
-				manageAlarmFlowSensNotDetected();
-				manageAlarmIrTempSensNotDetected();
+				//manageAlarmFlowSensNotDetected();
+				//manageAlarmIrTempSensNotDetected();
 
 				break;
 			}
@@ -521,8 +521,8 @@ void alarmEngineAlways(void)
 			case STATE_SELECT_TREAT:
 			{
 				/* DA DEBUGGARE*/
-				manageAlarmFlowSensNotDetected();
-				manageAlarmIrTempSensNotDetected();
+				//manageAlarmFlowSensNotDetected();
+				//manageAlarmIrTempSensNotDetected();
 
 				break;
 			}
@@ -530,8 +530,8 @@ void alarmEngineAlways(void)
 			case STATE_T1_NO_DISPOSABLE:
 			{
 				/* DA DEBUGGARE*/
-				manageAlarmFlowSensNotDetected();
-				manageAlarmIrTempSensNotDetected();
+				//manageAlarmFlowSensNotDetected();
+				//manageAlarmIrTempSensNotDetected();
 
 				break;
 			}
@@ -539,8 +539,8 @@ void alarmEngineAlways(void)
 			case STATE_MOUNTING_DISP:
 			{
 				/* DA DEBUGGARE*/
-				manageAlarmFlowSensNotDetected();
-				manageAlarmIrTempSensNotDetected();
+				//manageAlarmFlowSensNotDetected();
+				//manageAlarmIrTempSensNotDetected();
 
 				break;
 			}
@@ -548,8 +548,8 @@ void alarmEngineAlways(void)
 			case STATE_TANK_FILL:
 			{
 				/* DA DEBUGGARE*/
-				manageAlarmFlowSensNotDetected();
-				manageAlarmIrTempSensNotDetected();
+				//manageAlarmFlowSensNotDetected();
+				//manageAlarmIrTempSensNotDetected();
 
 				break;
 			}
@@ -736,8 +736,8 @@ void alarmEngineAlways(void)
 			case STATE_EMPTY_DISPOSABLE_2:
 			{
 				/* DA DEBUGGARE*/
-				manageAlarmFlowSensNotDetected();
-				manageAlarmIrTempSensNotDetected();
+				//manageAlarmFlowSensNotDetected();
+				//manageAlarmIrTempSensNotDetected();
 				break;
 			}
 
@@ -750,8 +750,8 @@ void alarmEngineAlways(void)
 			case STATE_WASHING:
 			{
 				/* DA DEBUGGARE*/
-				manageAlarmFlowSensNotDetected();
-				manageAlarmIrTempSensNotDetected();
+				//manageAlarmFlowSensNotDetected();
+				//manageAlarmIrTempSensNotDetected();
 
 				break;
 			}
