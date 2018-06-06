@@ -21,6 +21,7 @@
 #include "general_func.h"
 #include "Alarm_Con.h"
 
+extern int PinchFilterCurrValue;
 extern word MedForArteriousPid;
 extern word MedForVenousPid;
 
@@ -1266,22 +1267,22 @@ void buildRDMachineStateResponseMsg(char code, char subcode)
 	wd = 0;
 	/*122*/  sbc_tx_data[index++] = (TimeoutAirEjection >> 8) & 0xFF;  // flag di timeout nell'espulsione dell'aria
 	/*123*/  sbc_tx_data[index++] = (TimeoutAirEjection     ) & 0xFF;
-	/* free 1*/
-	/*124*/  sbc_tx_data[index++] = (wd >> 8) & 0xFF;
+	wd = (word)PinchFilterCurrValue;
+	/*124*/  sbc_tx_data[index++] = (wd >> 8) & 0xFF;                  // posizione corrente della pinch del filtro
 	/*125*/  sbc_tx_data[index++] = (wd     ) & 0xFF;
-	/* free 2*/
-	/*126*/  sbc_tx_data[index++] = (wd >> 8) & 0xFF;
+	wd = (word)OxygenFlowRpm;
+	/*126*/  sbc_tx_data[index++] = (wd >> 8) & 0xFF;                  // flusso ossigenazione calcolato in base a rpm
 	/*127*/  sbc_tx_data[index++] = (wd     ) & 0xFF;
-	/* free 3*/
+	/* free 1*/
 	/*128*/  sbc_tx_data[index++] = (wd >> 8) & 0xFF;
 	/*129*/  sbc_tx_data[index++] = (wd     ) & 0xFF;
-	/* free 4*/
+	/* free 2*/
 	/*130*/  sbc_tx_data[index++] = (wd >> 8) & 0xFF;
 	/*131*/  sbc_tx_data[index++] = (wd     ) & 0xFF;
-	/* free 5*/
+	/* free 3*/
 	/*132*/  sbc_tx_data[index++] = (wd >> 8) & 0xFF;
 	/*133*/  sbc_tx_data[index++] = (wd     ) & 0xFF;
-	/* free 6*/
+	/* free 4*/
 	/*134*/  sbc_tx_data[index++] = (wd >> 8) & 0xFF;
 	/*135*/  sbc_tx_data[index++] = (wd     ) & 0xFF;
 
@@ -1825,6 +1826,18 @@ int CalcFilterFlow(unsigned char PumpSpeed)
 	return (int)mlpermin;
 }
 
+int CalcOxygenatorFlow(unsigned char PumpSpeed)
+{
+	float pump_speed;
+	float mlpersec;
+	float mlpermin;
+
+	pump_speed = (float)PumpSpeed;
+	mlpersec = pump_speed * CONV_RPMMIN_TO_ML_PER_SEC_OXYG * 2;
+	mlpermin = mlpersec * 60.0 + 0.5;
+	return (int)mlpermin;
+}
+
 void UpdateFilterFlowVal(void)
 {
 	static unsigned long u32 = 0;
@@ -1838,8 +1851,9 @@ void UpdateFilterFlowVal(void)
 		}
 		else if(GetTherapyType() == LiverTreat)
 		{
-			FilterFlowVal = CalcFilterFlow((unsigned char)(modbusData[pumpPerist[3].pmpMySlaveAddress-2][17] / 100));
+			FilterFlowVal = CalcFilterFlow((unsigned char)((float)modbusData[pumpPerist[3].pmpMySlaveAddress-2][17] / 100.0 +0.5));
 		}
+		OxygenFlowRpm = CalcOxygenatorFlow((unsigned char)((float)modbusData[pumpPerist[0].pmpMySlaveAddress-2][17] / 100.0 + 0.5));
 	}
 }
 

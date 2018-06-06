@@ -1744,7 +1744,7 @@ void manageAlarmChildGuard(struct alarm * ptrAlarm){
 // ritorna il numero di intervalli di 50 msec trascorsi dal valore last
 unsigned long msTick_elapsed( unsigned long last )
 {
-	int elapsed = timerCounterModBus;
+	unsigned long elapsed = (unsigned long)timerCounterModBus;
 	if ( elapsed >= last )
 		elapsed -= last;
 	else
@@ -1756,7 +1756,7 @@ unsigned long msTick_elapsed( unsigned long last )
 // ritorna il numero di intervalli di 10 msec trascorsi dal valore last
 unsigned long msTick10_elapsed( unsigned long last )
 {
-	int elapsed = FreeRunCnt10msec;
+	unsigned long elapsed = (unsigned long)FreeRunCnt10msec;
 	if ( elapsed >= last )
 		elapsed -= last;
 	else
@@ -1841,6 +1841,15 @@ bool IsDisposableEmptyNoAlarm(void)
 bool IsAlarmActive(void)
 {
 	if(alarmCurrent.code && (alarmCurrent.code == ptrAlarmCurrent->code) && (ptrAlarmCurrent->active == ACTIVE_TRUE))
+		return TRUE;
+	else
+		return FALSE;
+}
+
+// ritorna true se l'allarme code e' attivo
+bool IsAlarmCodeActive(unsigned char code)
+{
+	if(alarmCurrent.code && (alarmCurrent.code == code) && (ptrAlarmCurrent->active == ACTIVE_TRUE))
 		return TRUE;
 	else
 		return FALSE;

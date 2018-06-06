@@ -49,7 +49,7 @@ char    iFlag_modbusDataStorage;
 #define DEBUG_PUMP				0x02
 #define DEBUG_CENTRIF_PUMP		0x03
 #define DEBUG_PELTIER			0x04
-#define DEBUG_T1_TEST			0x05
+//#define DEBUG_T1_TEST			0x05
 
 #define DEBUG_MACHINE_STATE		0x06
 #define DEBUG_CONTROL			0xA5
@@ -1867,6 +1867,8 @@ word PrimDurUntilOxyStart;
 
 // valore del flusso nel filtro (e' diverso da 0 solo se il filtro e' montato)
 int FilterFlowVal;
+// valore del flusso nelle pompe di ossigenazione (viene usato solo nel kidney)
+int OxygenFlowRpm;
 
 #define PRIM_PINCH_2WPVA_POS MODBUS_PINCH_RIGHT_OPEN
 #define PRIM_PINCH_2WPVV_POS MODBUS_PINCH_RIGHT_OPEN
@@ -1945,9 +1947,9 @@ typedef enum
 
 // Questa define deve essere attiva se voglio rilevare l'allarme della connessione con la protective
 // Serve anche per poter entrare nel trattamento con la funzione di controllo del posizionamento delle pinch
-#define ENABLE_PROTECTIVE_BOARD
+//#define ENABLE_PROTECTIVE_BOARD
 // con questa define abilito il reset dell'allarme generato dalla protective tramite canbus della control
-#define ENABLE_PROTECTIVE_ALARM_RESET
+//#define ENABLE_PROTECTIVE_ALARM_RESET
 
 // flag per iniziare un periodo di allarme nullo da trasferire alla GUI
 
@@ -2071,6 +2073,53 @@ typedef enum
 	MOD_BUS_ANSW_TOUT_ERR
 }MOD_BUS_RESPONSE;
 //--------------------------------------------------------------------------------
+
+
+
+
+//---------------------------------------------------------------------------------------
+//----Definizioni per la gestione dell'abilitazione degli allarmi di temperatura---------
+typedef enum
+{
+	PUMP_STATE_UNDEF,
+	PUMP_MOVING,
+	PUMP_STOPPED
+}PUMP_STATE;
+
+typedef enum
+{
+	CHK_PUMP_SPEED_IDLE,
+	CHK_PUMP_SPEED,
+	CHK_PUMP_SPEED_ON,
+	CHK_PUMP_SPEED_OFF,
+}CHECK_PUMP_STATE;
+
+typedef enum
+{
+	T_AL_EN_NO_CMD,
+	T_AL_EN_RESET_CMD
+}TEMP_ALARM_EN_TASK_CMD;
+
+typedef enum
+{
+	T_AL_EN_IDLE,
+	T_AL_EN_TREAT_DELAY,
+	T_AL_EN_RUN,
+	T_AL_EN_WAIT_TARGET,
+	T_AL_EN_WAIT_TARGET_1,
+	T_AL_EN_WAIT_INTERVAL
+}TEMP_ALARM_EN_TASK_STATE;
+
+// numero di ticks da 10 msec di attesa prima di iniziare il controllo per
+// l'abilitazione degli allarmi di temperatura
+#define DELAY_FOR_START_TEMP_AL_CHECK 200
+// numero di ticks da 10 msec di attesa prima di riabilitare l'allarme di temperatura
+// (1 minuto)
+#define DIS_TEMP_ALM_TIME_AFTER_RESET 6000
+// delta di temperatura rispetto al target prima di ripristinare l'allarme di temperatura
+// espressa in decimi di grado
+#define DELTA_TEMP_TARGET 10
+//---------------------------------------------------------------------------------------
 
 
 //---------------------------------------------------------------------------------------

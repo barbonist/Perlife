@@ -534,6 +534,7 @@ int main(void)
    LiquidTempContrTask(RESET_LIQUID_TEMP_CONTR_CMD);
    ExpectedPrimDuration = 0;
    FilterFlowVal = 0;
+   OxygenFlowRpm = 0;
    PumpStoppedCnt = 0;
    InitControlProtectiveInterface();
    SuspendInvioAlarmCode = 0;

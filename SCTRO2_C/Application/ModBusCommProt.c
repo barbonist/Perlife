@@ -30,6 +30,8 @@ unsigned char CoverOpenCnt[4] = {0, 0, 0, 0};
 unsigned char CoverCloseCnt[4] = {0, 0, 0, 0};
 unsigned char CoverState[4] = {0, 0, 0, 0};   // 0 chiuse 1 aperte
 unsigned char CoverPresc = 0;
+int PinchFilterCurrValue;
+unsigned char DisableReadModBus = 0;
 
 extern int timerCounterModBusOld;
 
@@ -627,6 +629,9 @@ void modBusPinchInit(void)
 	pinchActuator[3].pinchNumeRegWrite = 0x0001;
 	pinchActuator[3].pinchNumRegRead = 0x0001;
 	pinchActuator[3].pinchWriteRegValuePtr = 0;
+
+	// inizialmente tutte le pinch sono chiuse
+	PinchFilterCurrValue = MODBUS_PINCH_POS_CLOSED;
 }
 void modbusDataInit (void)
 {
@@ -644,7 +649,7 @@ void modbusDataInit (void)
 	LasActuatorWriteID = 0;      // id dell'attuatore modbus con scrittura in corso
 	memset(ActuatorWriteCnt, 0, LAST_ACTUATOR);
 	memset(ActuatorWrRepeatCmd, 0, LAST_ACTUATOR);
-
+	DisableReadModBus = 0;
 }
 
 int SelectStruct(unsigned char slaveAddr)
@@ -986,7 +991,7 @@ void setPumpSpeedValueEVER(unsigned char slaveAddr, int speedValue,ActionPumpEve
 			data[i++] = 0;
 			data[i++] = 1;
 			data[i++] = 0; //assumiamo cone max velociutà 65535 ossia 655.35 RPM
-			data[i++] = (word) speedValue;
+			data[i++] = (word)speedValue;
 
 		}
 		else
@@ -1332,6 +1337,10 @@ void alwaysModBusActuator(void)
 				//pumpPerist[1].reqType = REQ_TYPE_IDLE;
 				iflag_pmp1_rx = IFLAG_PMP1_BUSY;
 				WriteActive = TRUE;
+				if(!DisableReadModBus)
+					DisableReadModBus = 1;
+				else
+					DisableReadModBus++;
 				timerCounterModBusStartWr = FreeRunCnt10msec;  //timerCounterModBus;
 #ifdef PUMP_EVER
 				setPumpSpeedValueEVER(pumpPerist[1].pmpMySlaveAddress,pumpPerist[1].value, CHANGE_VELOCITY);
@@ -1378,6 +1387,10 @@ void alwaysModBusActuator(void)
 				//pumpPerist[2].reqType = REQ_TYPE_IDLE;
 				iflag_pmp1_rx = IFLAG_PMP1_BUSY;
 				WriteActive = TRUE;
+				if(!DisableReadModBus)
+					DisableReadModBus = 1;
+				else
+					DisableReadModBus++;
 				timerCounterModBusStartWr = FreeRunCnt10msec;  //timerCounterModBus;
 #ifdef PUMP_EVER
 				setPumpSpeedValueEVER(pumpPerist[2].pmpMySlaveAddress,pumpPerist[2].value, CHANGE_VELOCITY);
@@ -1531,6 +1544,11 @@ void alwaysModBusActuator(void)
 			pinchActuator[Adr - 7].reqType = REQ_TYPE_IDLE;
 			ActuatorWriteCnt[LasActuatorWriteID] = 0;  // reset del contatore di errore
 			ActuatorWrRepeatCmd[LasActuatorWriteID] = 0;
+			if(LasActuatorWriteID == 4)
+			{
+				// salvo la posizione corrente della pinch del filtro
+				PinchFilterCurrValue = pinchActuator[0].value;
+			}
 		}
 		else if((*(ptrMsg + 1) == 0x10) && (GetActuatorPhysAddr(LasActuatorWriteID) == Adr))
 		{
@@ -1540,6 +1558,12 @@ void alwaysModBusActuator(void)
 			pumpPerist[LasActuatorWriteID].reqType = REQ_TYPE_IDLE;
 			ActuatorWriteCnt[LasActuatorWriteID] = 0; // reset del contatore di errore
 			ActuatorWrRepeatCmd[LasActuatorWriteID] = 0;
+			if((LasActuatorWriteID == 2) || (LasActuatorWriteID == 1))
+			{
+				// ho completato la scrittura della seconda pompa
+				if(DisableReadModBus == 2)
+					DisableReadModBus = 0;
+			}
 		}
 //		if((*(ptrMsg + 1) == 0x10) && (Adr > 7) && ((Adr - 7) == (LasActuatorWriteID - 4)))
 //		{
@@ -1564,7 +1588,15 @@ void alwaysModBusActuator(void)
 			{
 				// termino la sequenza di scritture e posso generare un allarme
 				if(LasActuatorWriteID <= 3)
+				{
 					pumpPerist[LasActuatorWriteID].reqType = REQ_TYPE_IDLE;
+					if((LasActuatorWriteID == 2) || (LasActuatorWriteID == 1))
+					{
+						// ho completato la scrittura della seconda pompa
+						if(DisableReadModBus == 2)
+							DisableReadModBus = 0;
+					}
+				}
 				else if(LasActuatorWriteID <= 6)
 					pinchActuator[LasActuatorWriteID - 4].reqType = REQ_TYPE_IDLE;
 			}
@@ -1579,6 +1611,12 @@ void alwaysModBusActuator(void)
 					ActuatorWrRepeatCmd[LasActuatorWriteID] = 0;
 					//pumpPerist[LasActuatorWriteID].dataReady = DATA_READY_TRUE;
 					//pumpPerist[LasActuatorWriteID].reqType = REQ_TYPE_IDLE;
+					if((LasActuatorWriteID == 2) || (LasActuatorWriteID == 1))
+					{
+						// ho completato la scrittura della seconda pompa
+						if(DisableReadModBus == 2)
+							DisableReadModBus = 0;
+					}
 				}
 				else if(LasActuatorWriteID <= 6)
 				{
@@ -1612,7 +1650,15 @@ void alwaysModBusActuator(void)
 			{
 				// termino la sequenza di scritture e posso generare un allarme
 				if(LasActuatorWriteID <= 3)
+				{
 					pumpPerist[LasActuatorWriteID].reqType = REQ_TYPE_IDLE;
+					if((LasActuatorWriteID == 2) || (LasActuatorWriteID == 1))
+					{
+						// ho completato la scrittura della seconda pompa
+						if(DisableReadModBus == 2)
+							DisableReadModBus = 0;
+					}
+				}
 				else if(LasActuatorWriteID <= 6)
 					pinchActuator[LasActuatorWriteID - 4].reqType = REQ_TYPE_IDLE;
 			}
@@ -1625,6 +1671,12 @@ void alwaysModBusActuator(void)
 					ActuatorWrRepeatCmd[LasActuatorWriteID] = 1;
 					setPumpSpeedValueHighLevel(pumpPerist[LasActuatorWriteID].pmpMySlaveAddress, pumpPerist[LasActuatorWriteID].value);
 					ActuatorWrRepeatCmd[LasActuatorWriteID] = 0;
+					if((LasActuatorWriteID == 2) || (LasActuatorWriteID == 1))
+					{
+						// ho completato la scrittura della seconda pompa
+						if(DisableReadModBus == 2)
+							DisableReadModBus = 0;
+					}
 				}
 				else if(LasActuatorWriteID <= 6)
 				{
@@ -1761,13 +1813,17 @@ void Manage_and_Storage_ModBus_Actuator_Data(void)
  		iflag_pmp1_rx = IFLAG_IDLE; //libero la flafg di ricezione per la alwaysModBusActuator
  	}
  	/*chiamo la funzione ogni 50 msec*/
- 	if (timerCounterCheckModBus >= 1)
+ 	//if (timerCounterCheckModBus >= 1)
+ 	if ((timerCounterCheckModBus >= 1) && !DisableReadModBus)
     {
-        ReadActive = TRUE;
      	if (iFlag_actuatorCheck != IFLAG_COMMAND_RECEIVED )
      	{
      		//TODO aggiungere controllo mancata risposta
+     		//ReadActive = FALSE;
+     		//iFlag_actuatorCheck = IFLAG_COMMAND_RECEIVED;
+     		//return;
      	}
+        ReadActive = TRUE;
 
      	iFlag_actuatorCheck = IFLAG_COMMAND_SENT;
      	iFlag_modbusDataStorage = FALSE;

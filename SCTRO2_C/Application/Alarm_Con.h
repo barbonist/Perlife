@@ -236,5 +236,6 @@ void ClearAlarmState(void);
 
 uint16_t ReadProtectiveAlarmCode(void);
 bool IsAlarmActive(void);
+bool IsAlarmCodeActive(unsigned char code);
 
 #endif /* APPLICATION_ALARM_CON_H_ */

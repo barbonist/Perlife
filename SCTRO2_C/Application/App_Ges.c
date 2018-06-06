@@ -205,6 +205,7 @@ void CallInIdleState(void)
 	LiquidTempContrTask(RESET_LIQUID_TEMP_CONTR_CMD);
 	PrimDurUntilOxyStart = 0;
 	FilterFlowVal = 0;
+	OxygenFlowRpm = 0;
 	LastDepurationSpeed = 0;
 	TreatSetPinchPosTask((TREAT_SET_PINCH_POS_CMD)T_SET_PINCH_DISABLE_CMD);
 	DisablePumpNotStillAlmFunc();
@@ -1421,7 +1422,7 @@ unsigned char TemperatureStateMach(int cmd)
 	float tmpr;
 	word tmpr_trgt;
 	// temperatura raggiunta dal reservoir
-	tmpr = ((int)(sensorIR_TM[0].tempSensValue*10));
+	tmpr = ((int)(sensorIR_TM[1].tempSensValue*10));
 	// temperatura da raggiungere moltiplicata per 10
 	tmpr_trgt = parameterWordSetFromGUI[PAR_SET_PRIMING_TEMPERATURE_PERFUSION].value;
 
@@ -2751,10 +2752,9 @@ void manageParentTreatAlways(void){
 		else if(buttonGUITreatment[BUTTON_STOP_OXYGEN_PUMP].state == GUI_BUTTON_RELEASED)
 		{
 			releaseGUIButton(BUTTON_STOP_OXYGEN_PUMP);
-			setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 0);
+			if(GetTherapyType() == KidneyTreat)
+				setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 0);
 			iflag_perf = 0;
-			if(GetTherapyType() == LiverTreat)
-				setPumpPressLoop(1, PRESS_LOOP_OFF); // pid venoso off
 		}
 		else if(buttonGUITreatment[BUTTON_START_TREATMENT].state == GUI_BUTTON_RELEASED)
 		{
@@ -2996,11 +2996,8 @@ void manageParentTreatAlways(void){
 			{
 				releaseGUIButton(BUTTON_STOP_OXYGEN_PUMP);
 
-				setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 0);
-				if(GetTherapyType() == LiverTreat)
-				{
-					setPumpPressLoop(1, PRESS_LOOP_OFF); // pid venoso off
-				}
+				if(GetTherapyType() == KidneyTreat)
+					setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 0);
 				iflag_perf = 0;
 			}
 			else if(buttonGUITreatment[BUTTON_START_TREATMENT].state == GUI_BUTTON_RELEASED)

@@ -1023,8 +1023,9 @@ void ParentFunc(void)
 
 void ParentFuncT1Test(void)
 {
+	switch(ptrCurrentParent->parent)
 #ifdef DEBUG_T1_TEST
-	switch(ptrCurrentParent->parent){
+	{
 	case PARENT_T1_NO_DISP_INIT:
 		if(currentGuard[GUARD_ENABLE_T1_CONFIG].guardValue == GUARD_VALUE_TRUE)
 		{
@@ -1291,6 +1292,7 @@ void ParentFuncT1Test(void)
 		break;
 	}
 #else
+	{
 	case PARENT_T1_NO_DISP_INIT:
 		if(currentGuard[GUARD_ENABLE_T1_CONFIG].guardValue == GUARD_VALUE_TRUE)
 		{
@@ -1555,6 +1557,7 @@ void ParentFuncT1Test(void)
 
 	default:
 		break;
+	}
 #endif
 }
 
