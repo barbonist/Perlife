@@ -28,7 +28,10 @@
 #include "stdio.h"
 #include "stdlib.h"
 #include "RTS_MOTOR.h"
+#include "App_Ges.h"
 
+extern bool WriteActive;
+extern bool ReadActive;
 extern int MyArrayIdx;
 
 void Service_SBC(void){
@@ -114,9 +117,10 @@ void Service_SBC(void){
 					{
 						/*mando il messaggio ricevuto dall SBC alle pompe/pinch solo se il buffer è libero
 						 * ovvero se ho avuto l'ultima ricezione*/
-						if(iFlag_actuatorCheck == IFLAG_COMMAND_RECEIVED)
+						//if(iFlag_actuatorCheck == IFLAG_COMMAND_RECEIVED)
+						if( !WriteActive && !ReadActive)
 						{
-							iFlag_actuatorCheck = IFLAG_COMMAND_SENT;
+							//iFlag_actuatorCheck = IFLAG_COMMAND_SENT;
 
 							//build command for actuator
 							byte slvAddr = sbc_rx_data[7];
@@ -139,12 +143,14 @@ void Service_SBC(void){
 							}
 							else
 							{
+								MOD_BUS_RESPONSE result;
 								for(int i = 0 ; i < numberOfAddress ; i++)
 								{
 									valModBusArray[i] = (sbc_rx_data[12+2*i] << 8)  + sbc_rx_data[13+2*i];
 								}
 								valModBusArrayPtr = &valModBusArray[0];
 
+								result = WaitForModBusResponseTask((WAIT_FOR_MB_RESP_TASK_CMD)WAIT_MB_RESP_TASK_RESET_CMD);
 								_funcRetValPtr = (struct funcRetStruct *) ModBusWriteRegisterReq(slvAddr,
 																		funcCode,
 																		wrAddrStart,
@@ -170,7 +176,9 @@ void Service_SBC(void){
 								{
 									MODBUS_COMM_SendChar(*(_funcRetVal.ptr_msg+k));
 								}
-
+								// aspetto la risposta su modbus poi proseguo
+							 	while(result == MOD_BUS_ANSW_NO_ANSW)
+							 		result = WaitForModBusResponseTask((WAIT_FOR_MB_RESP_TASK_CMD)WAIT_MB_RESP_TASK_NO_CMD);
 
 							}
 							//send answer to sbc

@@ -1788,6 +1788,8 @@ void Check_Actuator_Status (char slaveAddr,
 
 void Manage_and_Storage_ModBus_Actuator_Data(void)
 {
+	  static int timerCounterModBusReadOld = 0;
+	  static unsigned long timerCounterModBusReadDur = 0;
 	  static unsigned char LastActuatslvAddr = 0;  // indirizzo dell'ultima pompa o pinch  che ho usato in Check_Actuator_Status
 	  word 			readAddrStart		 		= 0x0010;
 	  unsigned char numberOfAddressCheckPump	= 0x03;
@@ -1807,21 +1809,24 @@ void Manage_and_Storage_ModBus_Actuator_Data(void)
  	/*se ho ricevuto un dato me lo vado a memorizzare nella mia struttura globale: 'modbusData'*/
  	if (iFlag_actuatorCheck == IFLAG_COMMAND_RECEIVED && iFlag_modbusDataStorage == FALSE)
  	{
+ 		timerCounterModBusReadDur = 0;
  		StorageModbusData(LastActuatslvAddr);
  		iFlag_modbusDataStorage = TRUE;
  		ReadActive = FALSE;
  		iflag_pmp1_rx = IFLAG_IDLE; //libero la flafg di ricezione per la alwaysModBusActuator
  	}
+
+
  	/*chiamo la funzione ogni 50 msec*/
  	//if (timerCounterCheckModBus >= 1)
- 	if ((timerCounterCheckModBus >= 1) && !DisableReadModBus)
+ 	//if ((timerCounterCheckModBus >= 1) && !DisableReadModBus)
+    if(timerCounterModBus != timerCounterModBusReadOld)
     {
+		timerCounterModBusReadOld = timerCounterModBus;
+		timerCounterModBusReadDur = FreeRunCnt10msec;
      	if (iFlag_actuatorCheck != IFLAG_COMMAND_RECEIVED )
      	{
      		//TODO aggiungere controllo mancata risposta
-     		//ReadActive = FALSE;
-     		//iFlag_actuatorCheck = IFLAG_COMMAND_RECEIVED;
-     		//return;
      	}
         ReadActive = TRUE;
 
@@ -1867,6 +1872,18 @@ void Manage_and_Storage_ModBus_Actuator_Data(void)
         if (slvAddr > LAST_ACTUATOR)
 			slvAddr = FIRST_ACTUATOR;
     }
+    else if (ReadActive )
+ 	{
+    	if(timerCounterModBusReadDur && (msTick10_elapsed(timerCounterModBusReadDur) >= 2))
+    	{
+    		// sono passati 20 msec e non ho ancoraricevuto una risposta
+    		// interrompo la fase di lettura per timeout
+			ReadActive = FALSE;
+			iFlag_actuatorCheck = IFLAG_COMMAND_RECEIVED;
+			timerCounterModBusReadDur = 0;
+    	}
+ 	}
+
 }
 
 //char st[STR_DBG_LENGHT];
