@@ -1817,10 +1817,21 @@ void Manage_and_Storage_ModBus_Actuator_Data(void)
  	}
 
 
+    if (ReadActive )
+ 	{
+    	if(timerCounterModBusReadDur && (msTick10_elapsed(timerCounterModBusReadDur) >= 2))
+    	{
+    		// sono passati 20 msec e non ho ancoraricevuto una risposta
+    		// interrompo la fase di lettura per timeout
+			ReadActive = FALSE;
+			iFlag_actuatorCheck = IFLAG_COMMAND_RECEIVED;
+			timerCounterModBusReadDur = 0;
+    	}
+ 	}
  	/*chiamo la funzione ogni 50 msec*/
  	//if (timerCounterCheckModBus >= 1)
  	//if ((timerCounterCheckModBus >= 1) && !DisableReadModBus)
-    if(timerCounterModBus != timerCounterModBusReadOld)
+    else if(timerCounterModBus != timerCounterModBusReadOld)
     {
 		timerCounterModBusReadOld = timerCounterModBus;
 		timerCounterModBusReadDur = FreeRunCnt10msec;
@@ -1872,17 +1883,6 @@ void Manage_and_Storage_ModBus_Actuator_Data(void)
         if (slvAddr > LAST_ACTUATOR)
 			slvAddr = FIRST_ACTUATOR;
     }
-    else if (ReadActive )
- 	{
-    	if(timerCounterModBusReadDur && (msTick10_elapsed(timerCounterModBusReadDur) >= 2))
-    	{
-    		// sono passati 20 msec e non ho ancoraricevuto una risposta
-    		// interrompo la fase di lettura per timeout
-			ReadActive = FALSE;
-			iFlag_actuatorCheck = IFLAG_COMMAND_RECEIVED;
-			timerCounterModBusReadDur = 0;
-    	}
- 	}
 
 }
 

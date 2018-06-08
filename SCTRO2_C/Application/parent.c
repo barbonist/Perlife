@@ -1294,6 +1294,9 @@ void ParentFuncT1Test(void)
 #else
 	{
 	case PARENT_T1_NO_DISP_INIT:
+
+		ptrFutureParent = &stateParentT1TNoDisposable[23];
+		break;
 		if(currentGuard[GUARD_ENABLE_T1_CONFIG].guardValue == GUARD_VALUE_TRUE)
 		{
 		ptrFutureParent = &stateParentT1TNoDisposable[3];

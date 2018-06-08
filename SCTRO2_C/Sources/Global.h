@@ -1364,7 +1364,7 @@ unsigned char CHANGE_ADDRESS_IR_SENS;
 #define PR_ART_OFFSET_DEFAULT		-127.287
 
 /*valore di gain e offset del sensore di flusso venoso calcolati sperimentalmente con prove di flusso con la bilancia*/
-#define GAIN_FLOW_SENS_VEN		0.7722f
+#define GAIN_FLOW_SENS_VEN		0.891219f
 #define OFFSET_FLOW_SENS_VEN		25
 #define GAIN_FLOW_SENS_ART      0.7678f
 #define OFFSET_FLOW_SENS_ART		56
@@ -1544,7 +1544,7 @@ Kd = Kp*Pu/8  = 0.01875
 // velocita' con cui faccio partire, per ora, la pompa di ossigenazione e perfusione venosa nel caso di priming
 #define LIVER_PRIMING_PMP_OXYG_SPEED 2000
 // definisce il valore massimo di giri che possono raggiungere le pompe di ossigenazione
-#define MAX_OXYG_RPM  110
+#define MAX_OXYG_RPM  105
 // numero di giri della pompa arteriosa durante lo scarico
 #define KIDNEY_EMPTY_PPAR_SPEED 2000
 // numero di giri della pompa di ossigenazione durante lo scarico
@@ -2144,23 +2144,32 @@ typedef enum
 typedef enum
 {
 	LIQ_T_CONTR_IDLE,
-	LIQ_T_CONTR_RUN,
 	LIQ_T_CONTR_DETECT_LIQ_IN_DISP,
-	LIQ_T_CONTR_DET_LIQ_IN_DISP_DELAY,
 	LIQ_T_CONTR_WAIT_FOR_START_CNTR,
+	LIQ_T_CONTR_CHECK_TEMP,
 	LIQ_T_CONTR_RUN_FRIGO,
-	LIQ_T_CONTR_RUN_HEATING
+	LIQ_T_CONTR_WAIT_STOP_FRIGO,
+	LIQ_T_CONTR_RUN_HEATING,
+	LIQ_T_CONTR_WAIT_STOP_HEATING
 }LIQ_TEMP_CONTR_TASK_STATE;
 
 // delay in intervalli da 10 msec prima di iniziare il controllo della temperatura
 #define DELAY_FOR_START_T_CONTROL 2000
 
-// differenza di temperatura tra target e corrente al di sopra della quale viene acceso il frigo
+// differenza (valore intero con segno) di temperatura tra corrente e target al di sopra della quale viene acceso il frigo
 // per riportarla al target (espressa in decimi di grado)
-#define DELTA_TEMP_FOR_FRIGO 3
-// differenza di temperatura tra target e corrente al di sopra della quale viene acceso la
+#define DELTA_TEMP_FOR_FRIGO_ON 3
+// differenza (valore intero con segno) di temperatura tra corrente e target al di sopra della quale viene acceso la
 // resistenza riscaldante per riportarla al target  (espressa in decimi di grado)
-#define DELTA_TEMP_FOR_RESISTOR 1
+#define DELTA_TEMP_FOR_RESISTOR_ON -1
+
+// differenza di temperatura rispetto al target (valore intero con segno).
+// al di sopra di temperatura_target + DELTA_TEMP_FOR_RESISTOR_OFF si spegne il riscaldamento
+#define DELTA_TEMP_FOR_RESISTOR_OFF 3
+// differenza di temperatura rispetto al target (valore intero con segno).
+// al di sotto di temperatura_target + DELTA_TEMP_FOR_FRIGO_OFF si spegne il raffreddamento
+#define DELTA_TEMP_FOR_FRIGO_OFF 1
+
 
 // intervallo di tempo in cui la temperatura deve mantenersi al di sopra  della soglia massima
 // prima iniziare il raffreddamento (in tick da 10msec)
@@ -2168,6 +2177,14 @@ typedef enum
 // intervallo di tempo in cui la temperatura deve mantenersi al di sotto della soglia minima
 // prima iniziare il riscaldamento (in tick da 10msec)
 #define HEATING_DELAY 300
+
+// massima temperatura raggiungibile nella base riscaldante (al di sopra spengo
+// le resistenze riscaldanti)
+#define MAX_PLATE_TEMP  70
+// massima temperatura raggiungibile nella base riscaldante (al di sotto spengo
+// il frigo)
+#define MIN_PLATE_TEMP  -5
+
 //---------------------------------------------------------------------------------------
 
 

@@ -799,7 +799,8 @@ int main(void)
 	      	// aggiorno il valore del flusso sul filtro
 	      	UpdateFilterFlowVal();
 
-
+	      	// task di controllo della temperatura del liquido nel reservoir
+	      	FrigoResTempControlTask((LIQ_TEMP_CONTR_TASK_CMD)LIQ_T_CONTR_TASK_NO_CMD);
   }
   /**********MAIN LOOP END**************/
 

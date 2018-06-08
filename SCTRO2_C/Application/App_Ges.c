@@ -2739,7 +2739,8 @@ void manageParentTreatAlways(void){
 			{
 				// blocco aggiornamento della pompa di ossigenazione
 				CheckDepurationSpeed(LastDepurationSpeed, FALSE, TRUE);
-			}		}
+			}
+		}
 		else if(buttonGUITreatment[BUTTON_STOP_PERF_PUMP].state == GUI_BUTTON_RELEASED)
 		{
 			releaseGUIButton(BUTTON_STOP_PERF_PUMP);

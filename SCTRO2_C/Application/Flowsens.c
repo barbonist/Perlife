@@ -146,11 +146,6 @@ void Manage_UFlow_Sens()
 
 			if (Check_IEEE_Number != 0xFF)
 			{
-				/*se sul flusso ricevo un valore neativo lo metto a zero
-				 * in quanto il sensore di flusso ha un verso e non
-				 * può leggere flussi negativi*/
-				if (numFloatUFlow_Val.numFormatFloat_Val < 0)
-					numFloatUFlow_Val.numFormatFloat_Val = 0;
 
 				sensor_UFLOW[Id_Buffer].Inst_Flow_Value = numFloatUFlow_Val.numFormatFloat_Val;
 				//sensor_UFLOW[Id_Buffer].Average_Flow_Val = Average_Flow_Value(Id_Buffer, numFloatUFlow_Val.numFormatFloat_Val);
@@ -160,6 +155,12 @@ void Manage_UFlow_Sens()
 					sensor_UFLOW[Id_Buffer].Average_Flow_Val = sensor_UFLOW[Id_Buffer].Average_Flow_Val * config_data.FlowSensor_Ven_Gain - config_data.FlowSensor_Ven_Offset;
 				else //if (Id_Buffer == 0)
 					sensor_UFLOW[Id_Buffer].Average_Flow_Val = sensor_UFLOW[Id_Buffer].Average_Flow_Val * config_data.FlowSensor_Art_Gain - config_data.FlowSensor_Art_Offset;
+
+				/*se sul flusso ricevo un valore neativo lo metto a zero
+				 * in quanto il sensore di flusso ha un verso e non
+				 * può leggere flussi negativi*/
+				if (sensor_UFLOW[Id_Buffer].Average_Flow_Val < 0)
+					sensor_UFLOW[Id_Buffer].Average_Flow_Val = 0;
 
 				/*decremento il contatore dei messaggi inviati per quel sensore*/
 				sensor_UFLOW[Id_Buffer].RequestMsgProcessed = 0;

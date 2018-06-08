@@ -196,7 +196,7 @@ void Service_SBC(void){
 					case 0x16:
 					{
 
-						iFlag_actuatorCheck = IFLAG_COMMAND_SENT;
+						//iFlag_actuatorCheck = IFLAG_COMMAND_SENT;
 
 						byte slvAddr = sbc_rx_data[7];
 						byte funcCode = 0x03;
