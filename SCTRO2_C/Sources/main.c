@@ -280,6 +280,7 @@ int main(void)
   Dip_Switch_ADC_Init();
   Voltage_Peltier_ADC_Init();
   PR_Sens_ADC_Init();
+  T_PLATE_P_Init();
 
   /* Write your code here */
 

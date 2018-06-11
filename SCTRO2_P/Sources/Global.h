@@ -498,8 +498,15 @@ unsigned char Air_1_Status;				//variabile globale per vedere lo stato del senso
  * 										 per avere la risoluzione del decimo di grado
  * con una pt100 montata e una temp misurata con termometro esterno pari a 25.6 si è visto
  * che era necessario ridurre l'offset di altri 2.6 °C (da -743.8  a -769.8)							 */
-#define GAIN_T_PLATE_SENS			0.016864
-#define OFFSET_T_PLATE_SENS			-384.935
+//#define GAIN_T_PLATE_SENS			0.016864
+//#define OFFSET_T_PLATE_SENS			-384.935
+
+/*valori di GAIN e OFFSET calcolati con: R1 = 931  ohm  = -10.8°C a cui corrispondono 17535 ADC
+ * 										 R2 = 1238 ohm = 26.6 °C   a cui corrispondono 40927 ADC
+ * 										 le temperature le ho considerate tutte moltiplicate per 10
+ * 										 per avere la risoluzione del decimo di grado							 */
+#define GAIN_T_PLATE_SENS			0.015988
+#define OFFSET_T_PLATE_SENS			-388.3496
 
 #define AIR							0x00
 #define LIQUID						0x01

@@ -115,6 +115,14 @@ char    iFlag_modbusDataStorage;
 #define TOT_DATA_MODBUS_RECEIVED_PUMP	11
 #define TOT_DATA_MODBUS_RECEIVED_PINCH	9
 #define MAX_DATA_MODBUS_RX 		    67 //64byte di dati + 3 byte iniziali con slv Addr, fun code and byte Read Count
+
+/*valori di GAIN e OFFSET calcolati con: R1 = 931  ohm  = -10.8°C a cui corrispondono 17535 ADC
+ * 										 R2 = 1238 ohm = 26.6 °C   a cui corrispondono 40927 ADC
+ * 										 le temperature le ho considerate tutte moltiplicate per 10
+ * 										 per avere la risoluzione del decimo di grado							 */
+#define GAIN_T_PLATE_SENS			0.015988
+#define OFFSET_T_PLATE_SENS			-388.3496
+
 #define AIR							0x00
 #define LIQUID						0x01
 
@@ -964,6 +972,8 @@ struct ParSaveTO_EEPROM
 	float  FlowSensor_Ven_Offset;
 	float  FlowSensor_Art_Gain;
 	float  FlowSensor_Art_Offset;
+	float  T_Plate_Sensor_Gain;
+	float  T_Plate_Sensor_Offset;
 	unsigned char EEPROM_Revision;
 	word EEPROM_CRC;
 };
@@ -1009,6 +1019,8 @@ word  PR_ART_ADC_Filtered;  	//variabile globale per il valore ADC del sensore d
 word  PR_ART_Diastolyc_mmHg;	//variabile globale per il valore diastolico  in mmHg del sensore di pressione arteriosa
 word  PR_ART_Sistolyc_mmHg;	    //variabile globale per il valore sistolico  in mmHg del sensore di pressione arteriosa
 word  PR_ART_Med_mmHg;			//variabile globale per il valore medio in mmHg del sensore di pressione arteriosa calcolato come (2 *PR_OXYG_Sistolyc_mmHg + PR_OXYG_Diastolyc_mmHg)/3
+word  T_PLATE_P_ADC;			// variabile globale per il valore in ADC della temperatura di piastra letta dalla protective
+float  T_PLATE_P_GRADI_CENT;		// variabile globale per il valore in gradi centigradi della temperatura di piastra letta dalla protective
 int   PR_ART_Diastolyc_mmHg_ORG; //variabile globale per il valore diastolico  in mmHg del sensore di pressione arteriosa
 int   PR_ART_Sistolyc_mmHg_ORG;	 //variabile globale per il valore sistolico  in mmHg del sensore di pressione arteriosa
 int   PR_ART_Med_mmHg_ORG;		 //variabile globale per il valore medio in mmHg del sensore di pressione arteriosa calcolato come (2 *PR_OXYG_Sistolyc_mmHg + PR_OXYG_Diastolyc_mmHg)/3
@@ -1299,6 +1311,7 @@ word DipSwitch_2_ADC;		//Variabile globale col valore ADC del DIP_SWITCH_3
 
 #define DipSwitch_0_ADC_CHANNEL 	4
 #define DipSwitch_1_ADC_CHANNEL 	5
+#define T_PLATE_P_ADC_CHANNEL		6
 #define DipSwitch_2_ADC_CHANNEL 	13
 
 word V24_P1_CHK_ADC;
@@ -2158,7 +2171,7 @@ typedef enum
 
 // differenza (valore intero con segno) di temperatura tra corrente e target al di sopra della quale viene acceso il frigo
 // per riportarla al target (espressa in decimi di grado)
-#define DELTA_TEMP_FOR_FRIGO_ON 3
+#define DELTA_TEMP_FOR_FRIGO_ON 1
 // differenza (valore intero con segno) di temperatura tra corrente e target al di sopra della quale viene acceso la
 // resistenza riscaldante per riportarla al target  (espressa in decimi di grado)
 #define DELTA_TEMP_FOR_RESISTOR_ON -1
@@ -2168,7 +2181,7 @@ typedef enum
 #define DELTA_TEMP_FOR_RESISTOR_OFF 3
 // differenza di temperatura rispetto al target (valore intero con segno).
 // al di sotto di temperatura_target + DELTA_TEMP_FOR_FRIGO_OFF si spegne il raffreddamento
-#define DELTA_TEMP_FOR_FRIGO_OFF 1
+#define DELTA_TEMP_FOR_FRIGO_OFF -3
 
 
 // intervallo di tempo in cui la temperatura deve mantenersi al di sopra  della soglia massima
@@ -2177,6 +2190,10 @@ typedef enum
 // intervallo di tempo in cui la temperatura deve mantenersi al di sotto della soglia minima
 // prima iniziare il riscaldamento (in tick da 10msec)
 #define HEATING_DELAY 300
+// tempo di attesa massimo per lo start frigo o heating.
+// trascorso questo tempo se non ho avuto nessuno start frigo o riscaldamento vado a ricontrollare il
+// il tipo di azione da fare
+#define MAX_TEMP_CNTRL_DELAY 30000
 
 // massima temperatura raggiungibile nella base riscaldante (al di sopra spengo
 // le resistenze riscaldanti)
