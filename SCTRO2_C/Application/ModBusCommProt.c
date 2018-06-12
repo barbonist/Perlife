@@ -1824,7 +1824,7 @@ void Manage_and_Storage_ModBus_Actuator_Data(void)
     		// sono passati 20 msec e non ho ancoraricevuto una risposta
     		// interrompo la fase di lettura per timeout
 			ReadActive = FALSE;
-			iFlag_actuatorCheck = IFLAG_COMMAND_RECEIVED;
+			iFlag_actuatorCheck = IFLAG_IDLE;
 			timerCounterModBusReadDur = 0;
     	}
  	}

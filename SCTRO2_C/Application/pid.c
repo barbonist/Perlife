@@ -202,7 +202,7 @@ void alwaysPumpPressLoopArt(unsigned char pmpId, unsigned char *PidFirstTime)
     if(*PidFirstTime == PRESS_LOOP_ON)
     {
     	*PidFirstTime = PRESS_LOOP_OFF;
-    	actualSpeed_Art = (float)pumpPerist[pmpId].actualSpeed;
+    	actualSpeed_Art = 0.0; //(float)pumpPerist[pmpId].actualSpeed;  lo faccio sempre partire da fermo
     	// forzo a 0 il valore old per fare in modo che la prima scrittura venga sempre fatta
     	pumpPerist[pmpId].actualSpeedOld = 0;
     }
@@ -1218,7 +1218,7 @@ void alwaysPumpPressLoopVen(unsigned char pmpId, unsigned char *PidFirstTime){
     if(*PidFirstTime == PRESS_LOOP_ON)
     {
     	*PidFirstTime = PRESS_LOOP_OFF;
-    	actualSpeed_Ven = (float)pumpPerist[pmpId].actualSpeed;
+    	actualSpeed_Ven = 0.0; // (float)pumpPerist[pmpId].actualSpeed; lo faccio sempre partire da fermo
     	// forzo a 0 il valore old per fare in modo che la prima scrittura venga sempre fatta
     	pumpPerist[pmpId].actualSpeedOld = 0;
     }
@@ -1234,15 +1234,13 @@ void alwaysPumpPressLoopVen(unsigned char pmpId, unsigned char *PidFirstTime){
 	/*se la veilocità resta costante ed inferiore alla masisma, sono in equilibrio, provo ad aumentarla per
 	 * vedere se trovo un equilibrio andando + forte e avvicindandomi al massimo flusso impostato*/
    if (SpeedCostanteVen((int)actualSpeed_Ven) &&
-	((actualSpeed_Ven <= MAX_OXYG_RPM_Val) || (sensor_UFLOW[VENOUS_AIR_SENSOR].Average_Flow_Val < (float)parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value))
-	   //(actualSpeed_Ven <= MAX_OXYG_RPM_Val)
-	   //(sensor_UFLOW[VENOUS_AIR_SENSOR].Average_Flow_Val < (float)parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value)
+	   (actualSpeed_Ven <= MAX_OXYG_RPM_Val) && (sensor_UFLOW[VENOUS_AIR_SENSOR].Average_Flow_Val < (float)parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value)
 	   )
    {
 	   if((Target_PID_VEN && (errPress > 0.0)) || (!Target_PID_VEN && (errPress >= 0.0)))
 	   {
 		   // sono sotto la pressione massima quindi posso provare ad aumentare la velocita'
-		   actualSpeed_Ven += 2.0;
+		   actualSpeed_Ven += 1.0;
 	   }
    }
 
@@ -1264,10 +1262,10 @@ void alwaysPumpPressLoopVen(unsigned char pmpId, unsigned char *PidFirstTime){
 		if((sensor_UFLOW[1].Average_Flow_Val - fl) > 200.0)
 		{
 			// probabilmente mi e' stato ridotto il flusso target da utente
-			deltaSpeed_Ven = -0.5;
+			deltaSpeed_Ven = -0.7;
 		}
 		else
-			deltaSpeed_Ven = -0.1;
+			deltaSpeed_Ven = -0.3;
 	}
 	else if ((sensor_UFLOW[1].Average_Flow_Val > 0.0) &&
 		     (sensor_UFLOW[1].Average_Flow_Val > fl1) &&

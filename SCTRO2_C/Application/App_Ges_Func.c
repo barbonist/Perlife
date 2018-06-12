@@ -832,6 +832,7 @@ void StartHeating(unsigned char powerPerc)
 	// fa partire le resistenze riscaldanti
 	if(!EnableHeating)
 		return;
+	HEAT_ON_C_SetVal();
 }
 
 // spengo il riscaldatore
@@ -931,6 +932,8 @@ void FrigoResTempControlTask(LIQ_TEMP_CONTR_TASK_CMD LiqTempContrTaskCmd)
 	static LIQ_TEMP_CONTR_TASK_STATE LiqTempContrTaskSt = LIQ_T_CONTR_IDLE;
 	static unsigned long timeInterval10 = 0;
 	static unsigned long timeInterval10_r = 0;
+	static unsigned long timeInterval10_max = 0;
+	static word OldTargetTemp = 0;
 
 	float tmpr, MaxThrsh, MinThrsh;
 	word tmpr_trgt;
@@ -940,6 +943,12 @@ void FrigoResTempControlTask(LIQ_TEMP_CONTR_TASK_CMD LiqTempContrTaskCmd)
 	tmpr_trgt = parameterWordSetFromGUI[PAR_SET_PRIMING_TEMPERATURE_PERFUSION].value;
 
 	//return;    // per ora
+	if(OldTargetTemp != tmpr_trgt)
+	{
+		OldTargetTemp = tmpr_trgt;
+		// forzo di nuovo il controllo frigo o riscaldatore
+		LiqTempContrTaskSt = LIQ_T_CONTR_CHECK_TEMP;
+	}
 
 	switch (LiqTempContrTaskSt)
 	{
@@ -947,11 +956,12 @@ void FrigoResTempControlTask(LIQ_TEMP_CONTR_TASK_CMD LiqTempContrTaskCmd)
 			LiqTempContrTaskSt = LIQ_T_CONTR_DETECT_LIQ_IN_DISP;
 			EnableFrigo = FALSE;
 			EnableHeating = FALSE;
+			timeInterval10 = FreeRunCnt10msec;
 			break;
 
 		// rilevo la presenza del liquido nel disposable
 		case LIQ_T_CONTR_DETECT_LIQ_IN_DISP:
-			if(Air_1_Status == LIQUID)
+			if((Air_1_Status == LIQUID) && (ptrCurrentState->state >= STATE_PRIMING_PH_1))
 			{
 				if(timeInterval10 && (msTick10_elapsed(timeInterval10) >= 300))
 				{
@@ -984,6 +994,8 @@ void FrigoResTempControlTask(LIQ_TEMP_CONTR_TASK_CMD LiqTempContrTaskCmd)
 				{
 					// temperatura superiore al target usero' sempre il frigo
 					LiqTempContrTaskSt = LIQ_T_CONTR_RUN_FRIGO;
+					timeInterval10 = FreeRunCnt10msec;
+					timeInterval10_max = FreeRunCnt10msec;
 				}
 			}
 			else
@@ -995,6 +1007,7 @@ void FrigoResTempControlTask(LIQ_TEMP_CONTR_TASK_CMD LiqTempContrTaskCmd)
 					// temperatura inferiore al target usero' sempre il riscaldatore
 					LiqTempContrTaskSt = LIQ_T_CONTR_RUN_HEATING;
 					timeInterval10_r = FreeRunCnt10msec;
+					timeInterval10_max = FreeRunCnt10msec;
 				}
 			}
 			else
@@ -1009,18 +1022,19 @@ void FrigoResTempControlTask(LIQ_TEMP_CONTR_TASK_CMD LiqTempContrTaskCmd)
 				{
 					Start_Frigo_AMS(10);
 					LiqTempContrTaskSt = LIQ_T_CONTR_WAIT_STOP_FRIGO;
-				}
-				else if(timeInterval10 && (msTick10_elapsed(timeInterval10) >= MAX_TEMP_CNTRL_DELAY))
-				{
-					// E' trascorso troppo tempo senza una ripartenza del frigo vado a controllare se la
-					// selezione del frigo e' corretta
-					LiqTempContrTaskSt = LIQ_T_CONTR_CHECK_TEMP;
 					timeInterval10 = FreeRunCnt10msec;
-					timeInterval10_r = FreeRunCnt10msec;
 				}
 			}
 			else
 				timeInterval10 = FreeRunCnt10msec;
+			if(timeInterval10_max && (msTick10_elapsed(timeInterval10_max) >= MAX_TEMP_CNTRL_DELAY))
+			{
+				// E' trascorso troppo tempo senza una ripartenza del frigo vado a controllare se la
+				// selezione del frigo e' corretta
+				LiqTempContrTaskSt = LIQ_T_CONTR_CHECK_TEMP;
+				timeInterval10 = FreeRunCnt10msec;
+				timeInterval10_r = FreeRunCnt10msec;
+			}
 			PlateStateFrigo();
 			break;
 		case LIQ_T_CONTR_WAIT_STOP_FRIGO:
@@ -1031,6 +1045,7 @@ void FrigoResTempControlTask(LIQ_TEMP_CONTR_TASK_CMD LiqTempContrTaskCmd)
 					// fermo il raffreddamento
 					StopFrigo();
 					LiqTempContrTaskSt = LIQ_T_CONTR_RUN_FRIGO;
+					timeInterval10_max = FreeRunCnt10msec;
 				}
 			}
 			else
@@ -1050,17 +1065,17 @@ void FrigoResTempControlTask(LIQ_TEMP_CONTR_TASK_CMD LiqTempContrTaskCmd)
 					LiqTempContrTaskSt = LIQ_T_CONTR_WAIT_STOP_HEATING;
 					timeInterval10_r = FreeRunCnt10msec;
 				}
-				else if(timeInterval10_r && (msTick10_elapsed(timeInterval10_r) >= MAX_TEMP_CNTRL_DELAY))
-				{
-					// E' trascorso troppo tempo senza una ripartenza del riscaldatore vado a controllare se la
-					// selezione del frigo e' corretta
-					LiqTempContrTaskSt = LIQ_T_CONTR_CHECK_TEMP;
-					timeInterval10 = FreeRunCnt10msec;
-					timeInterval10_r = FreeRunCnt10msec;
-				}
 			}
 			else
 				timeInterval10_r = FreeRunCnt10msec;
+			if(timeInterval10_max && (msTick10_elapsed(timeInterval10_max) >= MAX_TEMP_CNTRL_DELAY))
+			{
+				// E' trascorso troppo tempo senza una ripartenza del riscaldatore vado a controllare se la
+				// selezione del frigo e' corretta
+				LiqTempContrTaskSt = LIQ_T_CONTR_CHECK_TEMP;
+				timeInterval10 = FreeRunCnt10msec;
+				timeInterval10_r = FreeRunCnt10msec;
+			}
 			PlateStateHeating();
 			break;
 		case LIQ_T_CONTR_WAIT_STOP_HEATING:
@@ -1071,6 +1086,7 @@ void FrigoResTempControlTask(LIQ_TEMP_CONTR_TASK_CMD LiqTempContrTaskCmd)
 					// fermo il riscaldamento
 					StopHeating();
 					LiqTempContrTaskSt = LIQ_T_CONTR_RUN_HEATING;
+					timeInterval10_max = FreeRunCnt10msec;
 				}
 			}
 			else
