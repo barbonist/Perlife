@@ -2202,6 +2202,33 @@ typedef enum
 // il frigo)
 #define MIN_PLATE_TEMP  -5
 
+// stati per gestire il pilotaggio delle resistenze di riscaldamento
+typedef enum
+{
+	HEAT_PWM_ALWAYS_OFF,
+	HEAT_PWM_IDLE,
+	HEAT_PWM_ON,
+	HEAT_PWM_OFF,
+	HEAT_PWM_ALWAYS_ON
+}HEAT_PWM_STATE;
+
+// stati per abilitazione/disabilitazione raffreddamento del plate
+typedef enum
+{
+	PLATE_STATE_IDLE,
+	PLATE_STATE_DIS_FRIGO,
+	PLATE_STATE_EN_FRIGO
+}PLATE_STATE;
+
+// stati per abilitazione/disabilitazione riscaldamento del plate
+typedef enum
+{
+	PLATE_HEAT_IDLE,
+	PLATE_HEAT_DIS,
+	PLATE_HEAT_EN
+}PLATE_HEAT_STATE;
+
+
 //---------------------------------------------------------------------------------------
 
 

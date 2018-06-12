@@ -651,74 +651,55 @@ int main(void)
 			if(timerCounterPeltier >= 2)
 			{
 	        	 timerCounterPeltier = 0;
+
+	        	 /*  Scommentare per reinserire il controllo della temperatura tramite le peltier
 		         if(PeltierStarted && (peltierCell.readAlwaysEnable == 1) && (peltierCell2.readAlwaysEnable == 1))
 	        	 {
         			 LiquidTempContrTask(NO_LIQUID_TEMP_CONTR_CMD);
 	        	 }
-/*
-	        	 //if(PeltierOn && (peltierCell.readAlwaysEnable == 1) && (peltierCell2.readAlwaysEnable == 1))
-		         if(PeltierStarted && (peltierCell.readAlwaysEnable == 1) && (peltierCell2.readAlwaysEnable == 1))
-	        	 {
-	        		 // il controllo della temperatura lo faccio solo se le peltier sono accese ed un eventuale comando
-	        		 // precedente e' terminato
-	        		 CheckTemperatureSet();
-	        		 if((peltierCell.readAlwaysEnable == 1) && (peltierCell2.readAlwaysEnable == 1))
-	        		 {
-	        			 // l'utente non ha cambiato il target di temperatura, quindi, se trovo
-	        			 // la temperatura del recipiente piu' alta fermo le peltier
-	        			 LiquidTempContrTask(NO_LIQUID_TEMP_CONTR_CMD);
-	        		 }
-	        		 else
-	        		 {
-	        			 // vuol dire che la temperatura e' stata cambiata, quindi, devo
-	        			 // aspettare che il nuovo target e' raggiunto prima di iniziare a
-	        			 // monitorare il mantenimento della temperatura
-	        			 LiquidTempContrTask(WAIT_FOR_NEW_TARGET_T);
-	        		 }
-	        	 }
-*/
 
-	        	 /*********************DISATTIVAZIONE PELTIER SE NON RISPONDONO **************************/
-	        	 /*messo qui soloper debug, dopo sarà da gestire con un allarme specifco
-	        	  * Nel Test, se mando 50 msg senza avere una loro risposta corretta (quindi 5 secondi), disabilitp la 24 Volt e le spengo*/
+	        	 // *********************DISATTIVAZIONE PELTIER SE NON RISPONDONO **************************
+	        	 // messo qui soloper debug, dopo sarà da gestire con un allarme specifco
+	        	 // Nel Test, se mando 50 msg senza avere una loro risposta corretta (quindi 5 secondi), disabilitp la 24 Volt e le spengo
 	        	 if (peltierCell.countMsgSent > 50)
 	        		  EN_P_1_C_ClrVal();
 
 	        	 if (peltierCell2.countMsgSent > 50)
 	        		  EN_P_2_C_ClrVal();
-	        	 /*********************DISATTIVAZIONE PELTIER SE NON RISPONDONO END **************************/
+	        	 // *********************DISATTIVAZIONE PELTIER SE NON RISPONDONO END **************************
 
 				 if(peltierCell.readAlwaysEnable == 0)
 				 {
-					/*funzione che gestisce tutta la comunicazione, serve solo una volta
-					 * per impostare i parametri sui driver delle peltier*/
-					 //	 alwaysPeltierActuator();
+					 // funzione che gestisce tutta la comunicazione, serve solo una volta
+					 // per impostare i parametri sui driver delle peltier
+					 // alwaysPeltierActuator();
 
-					 /*funzione che serve a impostare un nuovo valore di temp, e gestire
-					  * lo start se non è stato fattio e l'abilitazione delle ventole
-					  * sulla cella di peltier*/
+					 // funzione che serve a impostare un nuovo valore di temp, e gestire
+					 // lo start se non è stato fattio e l'abilitazione delle ventole
+					 // sulla cella di peltier
 					 ManagePeltierActuator();
 				 }
 
 				 if(peltierCell2.readAlwaysEnable == 0)
 				 {
-					/*funzione che gestisce tutta la comunicazione, serve solo una volta
-					 * per impostare i parametri sui driver delle peltier*/
-				//	 alwaysPeltier2Actuator();
+					// funzione che gestisce tutta la comunicazione, serve solo una volta
+					// per impostare i parametri sui driver delle peltier
+				    // alwaysPeltier2Actuator();
 
-					 /*funzione che serve a impostare un nuovo valore di temp, e gestire
-					  * lo start se non è stato fattio e l'abilitazione delle ventole
-					  * sulla cella di peltier*/
+					 // funzione che serve a impostare un nuovo valore di temp, e gestire
+					 // lo start se non è stato fattio e l'abilitazione delle ventole
+					 // sulla cella di peltier
 					 ManagePeltier2Actuator();
 				 }
 
-				 /*funzione cher gestiscer lo stop della cella di peltier 1*/
+				 //funzione cher gestiscer lo stop della cella di peltier 1
 				 if (peltierCell.StopEnable == 1)
 					 stopPeltierActuator();
 
-				 /*funzione cher gestiscer lo stop della cella di peltier 1*/
+				 //funzione cher gestiscer lo stop della cella di peltier 1
 				 if (peltierCell2.StopEnable == 1)
 					 stopPeltier2Actuator();
+				 */
 
 				 //if(ptrCurrentState->state == STATE_TREATMENT_KIDNEY_1)
 					 perfusionParam.pulsatility = (word)pumpPerist[0].actualSpeed * 2;
@@ -801,7 +782,7 @@ int main(void)
 	      	UpdateFilterFlowVal();
 
 	      	// task di controllo della temperatura del liquido nel reservoir
-	      	FrigoResTempControlTask((LIQ_TEMP_CONTR_TASK_CMD)LIQ_T_CONTR_TASK_NO_CMD);
+	      	FrigoHeatTempControlTask((LIQ_TEMP_CONTR_TASK_CMD)LIQ_T_CONTR_TASK_NO_CMD);
   }
   /**********MAIN LOOP END**************/
 
