@@ -285,9 +285,10 @@ bool IsButtResUsedByChild(void);
 CHECK_CURR_PINCH_POS_TASK_STATE CheckCurrPinchPosTask(CHECK_CURR_PINCH_POS_TASK_CMD cmd);
 bool IsTreatCurrPinchPosOk(void);
 void ResetTreatCurrPinchPosOk(void);
-void Start_Frigo_AMS(float DeltaT);
+bool Start_Frigo_AMS(float DeltaT);
 MOD_BUS_RESPONSE WaitForModBusResponseTask(WAIT_FOR_MB_RESP_TASK_CMD WaitForMBRespTskCmd);
 void LiquidTempControlTask(LIQ_TEMP_CONTR_TASK_CMD LiqTempContrTaskCmd);
 void FrigoHeatTempControlTask(LIQ_TEMP_CONTR_TASK_CMD LiqTempContrTaskCmd);
+bool StartHeating(float DeltaT);
 
 #endif /* APPLICATION_APP_GES_H_ */

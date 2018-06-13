@@ -1482,6 +1482,7 @@ void ClearModBusAlarm(void)
 
 void manageAlarmActuatorModbusNotRespond(void)
 {
+	static int CntErrModbusMSGAlmActive = 0;
 	int i;
 	if(!GlobalFlags.FlagsDef.EnableModbusNotRespAlm)
 	{
@@ -1495,6 +1496,7 @@ void manageAlarmActuatorModbusNotRespond(void)
 			/*se non ricevo 10 msg consecutivi da un sensore di temperatura ossia il sensore non risposnde per 6 secondi consecutivi vado in allarme*/
 			if (CountErrorModbusMSG[i] > MAX_MSG_CONSECUTIVE_ACTUATOR_MODBUS_NOT_RESPOND)
 			{
+				CntErrModbusMSGAlmActive = 1;
 				alarmList[MODBUS_ACTUATOR_SEND].physic = PHYSIC_TRUE;
 				//CountErrorModbusMSG[i] = 0;
 
@@ -1504,8 +1506,9 @@ void manageAlarmActuatorModbusNotRespond(void)
 		}
 
 		//se ho ciclato tutto il for senza trovare allarmi e precedentemente era stato attivato un allarme
-		if(i == 8 && alarmList[MODBUS_ACTUATOR_SEND].physic == PHYSIC_TRUE)
+		if((i == 8) && (alarmList[MODBUS_ACTUATOR_SEND].physic == PHYSIC_TRUE) && CntErrModbusMSGAlmActive)
 		{
+			CntErrModbusMSGAlmActive = 0;
 			alarmList[MODBUS_ACTUATOR_SEND].physic = PHYSIC_FALSE;
 
 			for (int j = 0; j<8; j++)
@@ -1517,6 +1520,7 @@ void manageAlarmActuatorModbusNotRespond(void)
 // errore su modbus durante le operazioni di scrittura
 void manageAlarmActuatorWRModbusNotRespond(void)
 {
+	static int ActWriteCntAlmActive = 0;
 	int i;
 	if(!GlobalFlags.FlagsDef.EnableModbusNotRespAlm)
 	{
@@ -1530,6 +1534,7 @@ void manageAlarmActuatorWRModbusNotRespond(void)
 			/*se non ricevo 10 msg consecutivi da un sensore di temperatura ossia il sensore non risposnde per 6 secondi consecutivi vado in allarme*/
 			if (ActuatorWriteCnt[i] > MAX_MSG_CONSECUTIVE_ACTUATOR_MODBUS_NOT_RESPOND)
 			{
+				ActWriteCntAlmActive = 1;
 				alarmList[MODBUS_ACTUATOR_SEND].physic = PHYSIC_TRUE;
 
 				/*in questo caso bisogna comunicarlo all'SBC che metterà a video un pop up per le possibili soluzioni*/
@@ -1538,8 +1543,9 @@ void manageAlarmActuatorWRModbusNotRespond(void)
 		}
 
 		//se ho ciclato tutto il for senza trovare allarmi e precedentemente era stato attivato un allarme
-		if(i == LAST_ACTUATOR && alarmList[MODBUS_ACTUATOR_SEND].physic == PHYSIC_TRUE)
+		if((i == LAST_ACTUATOR) && (alarmList[MODBUS_ACTUATOR_SEND].physic == PHYSIC_TRUE) && ActWriteCntAlmActive)
 		{
+			ActWriteCntAlmActive = 0;
 			alarmList[MODBUS_ACTUATOR_SEND].physic = PHYSIC_FALSE;
 
 			for (int j = 0; j<LAST_ACTUATOR; j++)
