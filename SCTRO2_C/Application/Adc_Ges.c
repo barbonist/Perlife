@@ -69,8 +69,8 @@ void Voltage_Peltier_ADC_Init(void)
 
 void T_PLATE_P_Init(void)
 {
-	T_PLATE_P_ADC		 = 0;
-	T_PLATE_P_GRADI_CENT = 0;
+	T_PLATE_C_ADC		 = 0;
+	T_PLATE_C_GRADI_CENT = 0;
 }
 void Manange_ADC0(void)
 {
@@ -85,7 +85,7 @@ void Manange_ADC0(void)
 		/*DP_SW1 sta su AD0 channel 5; passando l'indirizzo della variabile, la valorizzo*/
 		AD0_GetChanValue16(DipSwitch_1_ADC_CHANNEL, &DipSwitch_1_ADC);
 		/*T_PLATE_P sta su AD0 channel 6; passando l'indirizzo della variabile, la valorizzo*/
-		AD0_GetChanValue16(T_PLATE_P_ADC_CHANNEL, &T_PLATE_P_ADC);
+		AD0_GetChanValue16(T_PLATE_P_ADC_CHANNEL, &T_PLATE_C_ADC);
 
 		/*converte il valori ADC in gradi centigradi del sensor di temperatura della piastra*/
 		Coversion_From_ADC_To_degree_T_PLATE_Sensor();
@@ -135,8 +135,8 @@ void Manange_ADC1(void)
 
 void Coversion_From_ADC_To_degree_T_PLATE_Sensor()
 {
-	T_PLATE_P_GRADI_CENT = config_data.T_Plate_Sensor_Gain * T_PLATE_P_ADC + config_data.T_Plate_Sensor_Offset;
-	T_PLATE_P_GRADI_CENT /= 10;
+	T_PLATE_C_GRADI_CENT = config_data.T_Plate_Sensor_Gain * T_PLATE_C_ADC + config_data.T_Plate_Sensor_Offset;
+	T_PLATE_C_GRADI_CENT /= 10;
 
 }
 void Coversion_From_ADC_To_mmHg_Pressure_Sensor()

@@ -543,6 +543,40 @@ unsigned char ReadKey3(void)
 	return Released;
 }
 
+unsigned char ReadKey4(void)
+{
+	static int Counter = 0;
+	static unsigned char state = 0;
+	unsigned char Released = 0;
+	unsigned char key;
+
+	key = Bubble_Keyboard_GetVal(BUTTON_4);
+	if (key && (state == 0))
+	{
+		Counter++;
+		if( Counter > 100)
+		{
+			Counter = 0;
+			state = 1; // tasto premuto
+			Released = 0;
+		}
+	}
+	else if (!key && (state == 1))
+	{
+		Counter++;
+		if( Counter > 100)
+		{
+			state = 0;  // tasto rilasciato
+			Counter = 0;
+			Released = 1;
+		}
+	}
+	else
+	{
+		Counter = 0;
+	}
+	return Released;
+}
 
 unsigned char Released1;
 unsigned char Released2;

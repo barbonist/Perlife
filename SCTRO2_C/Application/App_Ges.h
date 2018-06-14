@@ -286,9 +286,20 @@ CHECK_CURR_PINCH_POS_TASK_STATE CheckCurrPinchPosTask(CHECK_CURR_PINCH_POS_TASK_
 bool IsTreatCurrPinchPosOk(void);
 void ResetTreatCurrPinchPosOk(void);
 bool Start_Frigo_AMS(float DeltaT);
+void StopFrigo(void);
 MOD_BUS_RESPONSE WaitForModBusResponseTask(WAIT_FOR_MB_RESP_TASK_CMD WaitForMBRespTskCmd);
 void LiquidTempControlTask(LIQ_TEMP_CONTR_TASK_CMD LiqTempContrTaskCmd);
-void FrigoHeatTempControlTask(LIQ_TEMP_CONTR_TASK_CMD LiqTempContrTaskCmd);
+LIQ_TEMP_CONTR_TASK_STATE FrigoHeatTempControlTask(LIQ_TEMP_CONTR_TASK_CMD LiqTempContrTaskCmd);
 bool StartHeating(float DeltaT);
+
+bool IsHeating(void);
+bool EnableHeating(void);
+bool DisableHeating(void);
+bool IsFrigo();
+bool EnableFrigo(void);
+bool DisableFrigo(void);
+bool StartHeating(float DeltaT);
+void StopHeating(void);
+
 
 #endif /* APPLICATION_APP_GES_H_ */

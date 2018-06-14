@@ -793,6 +793,7 @@ void TempAlarmEnableTask(TEMP_ALARM_EN_TASK_CMD cmd)
 
 
 //-------------------------------------------------------------------------------------------------------------------------
+#ifdef	 DEBUG_FRIGO_AMS
 
 // abilitazione all'accensione del riscaldatore da parte del task di controllo
 // della temperatura massima del piatto
@@ -802,6 +803,43 @@ bool EnableHeatingFromControl = FALSE;
 bool EnableFrigoFromPlate = FALSE;
 bool EnableFrigoFromControl = FALSE;
 int HeatingPwmPerc = 0;
+
+
+// ritorna TRUE se e' selezionato il frigo
+bool IsFrigo()
+{
+	bool IsFrigoFlag = FALSE;
+	LIQ_TEMP_CONTR_TASK_STATE ltcts;
+	ltcts = FrigoHeatTempControlTask((LIQ_TEMP_CONTR_TASK_CMD)READ_STATE_CMD);
+	if((ltcts == LIQ_T_CONTR_RUN_FRIGO) || (ltcts == LIQ_T_CONTR_WAIT_STOP_FRIGO))
+		IsFrigoFlag = TRUE;
+	return IsFrigoFlag ;
+}
+
+// ritorna TRUE se il processo di raffreddamento e' partito
+bool EnableFrigo(void)
+{
+	bool EnableFrigoFlag = FALSE;
+
+	EnableFrigoFromControl = TRUE;
+	if(FrigoHeatTempControlTask((LIQ_TEMP_CONTR_TASK_CMD)FRIGO_STARTING_CMD) == LIQ_T_CONTR_RUN_FRIGO)
+		EnableFrigoFlag = TRUE;
+	return EnableFrigoFlag;
+}
+
+// ritorna TRUE se il processo di raffreddamento e' stato stoppato
+bool DisableFrigo(void)
+{
+	bool DisableFrigoFlag = FALSE;
+	LIQ_TEMP_CONTR_TASK_STATE ltcts;
+	ltcts = FrigoHeatTempControlTask((LIQ_TEMP_CONTR_TASK_CMD)READ_STATE_CMD);
+	if((ltcts == LIQ_T_CONTR_RUN_FRIGO) || (ltcts == LIQ_T_CONTR_WAIT_STOP_FRIGO))
+	{
+		if(FrigoHeatTempControlTask((LIQ_TEMP_CONTR_TASK_CMD)FRIGO_STOP_CMD) == LIQ_T_CONTR_FRIGO_STOPPED)
+			DisableFrigoFlag = TRUE;
+	}
+	return DisableFrigoFlag;
+}
 
 /*funzione che accende con una data potenza o spegne il frigo con potenza '0'
  * power = 10 --> 200 Hz max
@@ -813,8 +851,12 @@ bool Start_Frigo_AMS(float DeltaT)
 	unsigned char power = 10;
 	bool StartFlag = FALSE;
 
-	if(!(EnableFrigoFromPlate && EnableFrigoFromControl))
+	if(!EnableFrigoFromPlate || !EnableFrigoFromControl)
+	{
+		Enable_AMS = FALSE;
+	    COMP_PWM_ClrVal();  // per sicurezza
 		return StartFlag;
+	}
 
 	if(DeltaT < 0.0)
 	{
@@ -856,12 +898,11 @@ bool Start_Frigo_AMS(float DeltaT)
 	else
 	{
 		Enable_AMS = TRUE;
-
-		Prescaler_Freq_Signal_AMS = power;
 		/* a power = 10 corrisponde la massima frequenza pari
 		 * a 200 Hz quindi non posso andare sotto 10*/
 		if (power <= 10)
 			power = 10;
+		Prescaler_Freq_Signal_AMS = power;
 		StartFlag = TRUE;
 	}
 	return StartFlag;
@@ -882,8 +923,11 @@ void HeatingPwm(int Perc)
 	static unsigned long timeIntervalHeating = 0;
 	static HEAT_PWM_STATE HeatingPwmState = HEAT_PWM_ALWAYS_OFF;
 
-	if(!(EnableHeatingFromPlate && EnableHeatingFromControl))
+	if(!EnableHeatingFromPlate || !EnableHeatingFromControl)
+	{
+		HEAT_ON_C_ClrVal();  // per sicurezza
 		return;
+	}
 
 	if(OldPerc != Perc)
 	{
@@ -939,6 +983,43 @@ void HeatingPwm(int Perc)
 	}
 }
 
+// ritorna TRUE se e' selezionato il riscaldamento
+bool IsHeating(void)
+{
+	bool IsHeatingFlag = FALSE;
+	LIQ_TEMP_CONTR_TASK_STATE ltcts;
+	ltcts = FrigoHeatTempControlTask((LIQ_TEMP_CONTR_TASK_CMD)READ_STATE_CMD);
+	if((ltcts == LIQ_T_CONTR_RUN_HEATING) || (ltcts == LIQ_T_CONTR_WAIT_STOP_HEATING))
+		IsHeatingFlag = TRUE;
+	return IsHeatingFlag;
+}
+
+// ritorna TRUE se il processo di riscaldamento e' partito
+bool EnableHeating(void)
+{
+	bool EnableHeatingFlag = FALSE;
+
+	EnableHeatingFromControl = TRUE;
+	if(FrigoHeatTempControlTask((LIQ_TEMP_CONTR_TASK_CMD)HEAT_STARTING_CMD) == LIQ_T_CONTR_RUN_HEATING)
+		EnableHeatingFlag = TRUE;
+	return EnableHeatingFlag;
+}
+
+// ritorna TRUE se il processo di riscaldamento e' stato stoppato
+bool DisableHeating(void)
+{
+	bool DisableHeatingFlag = FALSE;
+	LIQ_TEMP_CONTR_TASK_STATE ltcts;
+	ltcts = FrigoHeatTempControlTask((LIQ_TEMP_CONTR_TASK_CMD)READ_STATE_CMD);
+	if((ltcts == LIQ_T_CONTR_RUN_HEATING) || (ltcts == LIQ_T_CONTR_WAIT_STOP_HEATING))
+	{
+		if(FrigoHeatTempControlTask((LIQ_TEMP_CONTR_TASK_CMD)HEAT_STOP_CMD) == LIQ_T_CONTR_HEATING_STOPPED)
+			DisableHeatingFlag = TRUE;
+	}
+	return DisableHeatingFlag;
+}
+
+
 // percentuale di potenza con cui faccio partire il riscaldatore
 // temperatura corrente - temperatura target in decimi di grado
 // ritorna TRUE se il riscaldatore e' partito
@@ -948,8 +1029,11 @@ bool StartHeating(float DeltaT)
 	int DeltaTInt;
 
 	// fa partire le resistenze riscaldanti
-	if(!(EnableHeatingFromPlate && EnableHeatingFromControl))
+	if(!EnableHeatingFromPlate || !EnableHeatingFromControl)
+	{
+		HEAT_ON_C_ClrVal();  // per sicurezza
 		return StartHeatingFlag;
+	}
 
 	if(DeltaT > 0.0)
 	{
@@ -1011,11 +1095,11 @@ void PlateStateFrigo(void)
 		case PLATE_STATE_IDLE:
 			timeIntervalPlate10 = FreeRunCnt10msec;
 			EnableFrigoFromPlate = TRUE;
-			PlateState = PLATE_STATE_DIS_FRIGO;
+			PlateState = PLATE_STATE_EN_FRIGO;
 			break;
 		case PLATE_STATE_DIS_FRIGO:
 			// controllo disabilitazione raffreddamento
-			if(T_PLATE_C_GRADI_CENT < MIN_PLATE_TEMP)
+			if(T_PLATE_C_GRADI_CENT < (float)MIN_PLATE_TEMP)
 			{
 				if(timeIntervalPlate10 && (msTick10_elapsed(timeIntervalPlate10) >= 300))
 				{
@@ -1030,7 +1114,7 @@ void PlateStateFrigo(void)
 			break;
 		case PLATE_STATE_EN_FRIGO:
 			// controllo abilitazione raffreddamento
-			if(T_PLATE_C_GRADI_CENT > MIN_PLATE_TEMP)
+			if(T_PLATE_C_GRADI_CENT > (float)MIN_PLATE_TEMP)
 			{
 				if(timeIntervalPlate10 && (msTick10_elapsed(timeIntervalPlate10) >= 300))
 				{
@@ -1054,12 +1138,12 @@ void PlateStateHeating(void)
 	{
 		case PLATE_HEAT_IDLE:
 			timeIntervalPlate10_r = FreeRunCnt10msec;
-			PlateStateHeating = PLATE_HEAT_DIS;
+			PlateStateHeating = PLATE_HEAT_EN;
 			EnableHeatingFromPlate = TRUE;
 			break;
 		case PLATE_HEAT_DIS:
 			// controllo disabilitazione riscaldamento, raffreddamento
-			if(T_PLATE_C_GRADI_CENT > MAX_PLATE_TEMP)
+			if(T_PLATE_C_GRADI_CENT > (float)MAX_PLATE_TEMP)
 			{
 				if(timeIntervalPlate10_r && (msTick10_elapsed(timeIntervalPlate10_r) >= 300))
 				{
@@ -1074,7 +1158,7 @@ void PlateStateHeating(void)
 			break;
 		case PLATE_HEAT_EN:
 			// controllo abilitazione riscaldamento, raffreddamento
-			if(T_PLATE_C_GRADI_CENT < MAX_PLATE_TEMP)
+			if(T_PLATE_C_GRADI_CENT < (float)MAX_PLATE_TEMP)
 			{
 				if(timeIntervalPlate10_r && (msTick10_elapsed(timeIntervalPlate10_r) >= 300))
 				{
@@ -1092,9 +1176,10 @@ void PlateStateHeating(void)
 // mi consente di inserire o disinserire il controllo della temperatura in runtime per passare
 // da riscaldamento a frigo
 bool EnableRunTimeCheckTemp = FALSE;
+extern word TempLiquidoDecimi;
 
 // task di controllo della temperatura del liquido mediante frigo e resistenze riscaldanti
-void FrigoHeatTempControlTask(LIQ_TEMP_CONTR_TASK_CMD LiqTempContrTaskCmd)
+LIQ_TEMP_CONTR_TASK_STATE FrigoHeatTempControlTask(LIQ_TEMP_CONTR_TASK_CMD LiqTempContrTaskCmd)
 {
 	static LIQ_TEMP_CONTR_TASK_STATE LiqTempContrTaskSt = LIQ_T_CONTR_IDLE;
 	static unsigned long timeInterval10 = 0;
@@ -1105,7 +1190,13 @@ void FrigoHeatTempControlTask(LIQ_TEMP_CONTR_TASK_CMD LiqTempContrTaskCmd)
 	float tmpr, MaxThrsh, MinThrsh;
 	word tmpr_trgt;
 	// temperatura raggiunta dal reservoir
-	tmpr = ((int)(sensorIR_TM[1].tempSensValue*10));
+	//tmpr = ((int)(sensorIR_TM[1].tempSensValue*10));
+
+	//----------------------------------------------------------------------
+	// ---------------------SOLO PER DEBUG----------------------------------
+	tmpr = TempLiquidoDecimi;
+	//-----------------------------------------------------------------------
+
 	// temperatura da raggiungere moltiplicata per 10
 	tmpr_trgt = parameterWordSetFromGUI[PAR_SET_PRIMING_TEMPERATURE_PERFUSION].value;
 
@@ -1115,7 +1206,65 @@ void FrigoHeatTempControlTask(LIQ_TEMP_CONTR_TASK_CMD LiqTempContrTaskCmd)
 	// se e' abilitata
 	HeatingPwm(HeatingPwmPerc);
 
-	//return;    // per ora
+	if(LiqTempContrTaskCmd == LIQ_T_CONTR_TASK_RESET_CMD)
+	{
+		LiqTempContrTaskSt = LIQ_T_CONTR_CHECK_TEMP;
+		timeInterval10 = FreeRunCnt10msec;
+		timeInterval10_r = FreeRunCnt10msec;
+	}
+	else if(LiqTempContrTaskCmd == READ_STATE_CMD)
+	{
+		return LiqTempContrTaskSt;
+	}
+	else if(LiqTempContrTaskCmd == FRIGO_STARTING_CMD)
+	{
+		LiqTempContrTaskSt = LIQ_T_CONTR_RUN_FRIGO;
+		timeInterval10 = FreeRunCnt10msec;
+		timeInterval10_max = FreeRunCnt10msec;
+	}
+	else if(LiqTempContrTaskCmd == HEAT_STARTING_CMD)
+	{
+		LiqTempContrTaskSt = LIQ_T_CONTR_RUN_HEATING;
+		timeInterval10_r = FreeRunCnt10msec;
+		timeInterval10_max = FreeRunCnt10msec;
+	}
+	else if(LiqTempContrTaskCmd == FRIGO_STOP_CMD)
+	{
+		if((LiqTempContrTaskSt == LIQ_T_CONTR_RUN_FRIGO) || (LiqTempContrTaskSt == LIQ_T_CONTR_WAIT_STOP_FRIGO))
+		{
+			LiqTempContrTaskSt = LIQ_T_CONTR_FRIGO_STOPPED;
+			EnableFrigoFromControl = FALSE;
+			Enable_AMS = FALSE;
+			COMP_PWM_ClrVal();
+		}
+	}
+	else if(LiqTempContrTaskCmd == HEAT_STOP_CMD)
+	{
+		if((LiqTempContrTaskSt == LIQ_T_CONTR_RUN_HEATING) || (LiqTempContrTaskSt == LIQ_T_CONTR_WAIT_STOP_HEATING))
+		{
+			LiqTempContrTaskSt = LIQ_T_CONTR_HEATING_STOPPED;
+			EnableHeatingFromControl = FALSE;
+			HEAT_ON_C_ClrVal();
+		}
+	}
+	else if(LiqTempContrTaskCmd == TEMP_MANAGER_STOPPED_CMD)
+	{
+		if((LiqTempContrTaskSt == LIQ_T_CONTR_RUN_FRIGO) || (LiqTempContrTaskSt == LIQ_T_CONTR_WAIT_STOP_FRIGO))
+		{
+			LiqTempContrTaskSt = LIQ_T_CONTR_FRIGO_STOPPED;
+			EnableFrigoFromControl = FALSE;
+			Enable_AMS = FALSE;
+			COMP_PWM_ClrVal();
+		}
+		if((LiqTempContrTaskSt == LIQ_T_CONTR_RUN_HEATING) || (LiqTempContrTaskSt == LIQ_T_CONTR_WAIT_STOP_HEATING))
+		{
+			LiqTempContrTaskSt = LIQ_T_CONTR_HEATING_STOPPED;
+			EnableHeatingFromControl = FALSE;
+			HEAT_ON_C_ClrVal();
+		}
+		LiqTempContrTaskSt = LIQ_T_CONTR_TEMP_MNG_STOPPED;
+	}
+
 	if(OldTargetTemp != tmpr_trgt)
 	{
 		// se il target di temperatura cambia mi riporto nello stato di
@@ -1274,7 +1423,7 @@ void FrigoHeatTempControlTask(LIQ_TEMP_CONTR_TASK_CMD LiqTempContrTaskCmd)
 				if(timeInterval10_max && (msTick10_elapsed(timeInterval10_max) >= MAX_TEMP_CNTRL_DELAY))
 				{
 					// E' trascorso troppo tempo senza una ripartenza del riscaldatore vado a controllare se la
-					// selezione del frigo e' corretta
+					// selezione del riscaldatore e' corretta
 					LiqTempContrTaskSt = LIQ_T_CONTR_CHECK_TEMP;
 					timeInterval10 = FreeRunCnt10msec;
 					timeInterval10_r = FreeRunCnt10msec;
@@ -1295,6 +1444,13 @@ void FrigoHeatTempControlTask(LIQ_TEMP_CONTR_TASK_CMD LiqTempContrTaskCmd)
 			else
 				timeInterval10_r = FreeRunCnt10msec;
 			break;
+		case LIQ_T_CONTR_FRIGO_STOPPED:
+			break;
+		case LIQ_T_CONTR_HEATING_STOPPED:
+			break;
+		case LIQ_T_CONTR_TEMP_MNG_STOPPED:
+			break;
 	}
+	return LiqTempContrTaskSt;
 }
-
+#endif

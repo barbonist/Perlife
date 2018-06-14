@@ -13,6 +13,7 @@
 unsigned char ReadKey1(void);
 unsigned char ReadKey2(void);
 unsigned char ReadKey3(void);
+unsigned char ReadKey4(void);
 
 void GenEvntParentPrim(void);
 void GenEvntParentTreat(void);

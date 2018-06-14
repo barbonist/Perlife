@@ -1019,8 +1019,8 @@ word  PR_ART_ADC_Filtered;  	//variabile globale per il valore ADC del sensore d
 word  PR_ART_Diastolyc_mmHg;	//variabile globale per il valore diastolico  in mmHg del sensore di pressione arteriosa
 word  PR_ART_Sistolyc_mmHg;	    //variabile globale per il valore sistolico  in mmHg del sensore di pressione arteriosa
 word  PR_ART_Med_mmHg;			//variabile globale per il valore medio in mmHg del sensore di pressione arteriosa calcolato come (2 *PR_OXYG_Sistolyc_mmHg + PR_OXYG_Diastolyc_mmHg)/3
-word  T_PLATE_P_ADC;			// variabile globale per il valore in ADC della temperatura di piastra letta dalla protective
-float  T_PLATE_P_GRADI_CENT;		// variabile globale per il valore in gradi centigradi della temperatura di piastra letta dalla protective
+word  T_PLATE_C_ADC;			// variabile globale per il valore in ADC della temperatura di piastra letta dalla protective
+float T_PLATE_C_GRADI_CENT;	     // variabile globale per il valore in gradi centigradi della temperatura di piastra letta dalla protective
 int   PR_ART_Diastolyc_mmHg_ORG; //variabile globale per il valore diastolico  in mmHg del sensore di pressione arteriosa
 int   PR_ART_Sistolyc_mmHg_ORG;	 //variabile globale per il valore sistolico  in mmHg del sensore di pressione arteriosa
 int   PR_ART_Med_mmHg_ORG;		 //variabile globale per il valore medio in mmHg del sensore di pressione arteriosa calcolato come (2 *PR_OXYG_Sistolyc_mmHg + PR_OXYG_Diastolyc_mmHg)/3
@@ -2139,7 +2139,7 @@ typedef enum
 //-----------Definizioni per la gestione del frigo e resistenze riscaldanti--------------
 
 /*define di compilazione che abilita l'uso del frigo AMS al posto delle Peltier*/
-//#define DEBUG_FRIGO_AMS
+#define DEBUG_FRIGO_AMS
 
 unsigned char Prescaler_Freq_Signal_AMS;
 bool Enable_AMS;
@@ -2151,7 +2151,13 @@ float  T_PLATE_C_GRADI_CENT;
 typedef enum
 {
 	LIQ_T_CONTR_TASK_NO_CMD,
-	LIQ_T_CONTR_TASK_RESET_CMD
+	LIQ_T_CONTR_TASK_RESET_CMD,
+	READ_STATE_CMD,
+	FRIGO_STARTING_CMD,
+	FRIGO_STOP_CMD,
+	HEAT_STARTING_CMD,
+	HEAT_STOP_CMD,
+	TEMP_MANAGER_STOPPED_CMD
 }LIQ_TEMP_CONTR_TASK_CMD;
 
 typedef enum
@@ -2163,7 +2169,10 @@ typedef enum
 	LIQ_T_CONTR_RUN_FRIGO,
 	LIQ_T_CONTR_WAIT_STOP_FRIGO,
 	LIQ_T_CONTR_RUN_HEATING,
-	LIQ_T_CONTR_WAIT_STOP_HEATING
+	LIQ_T_CONTR_WAIT_STOP_HEATING,
+	LIQ_T_CONTR_FRIGO_STOPPED,
+	LIQ_T_CONTR_HEATING_STOPPED,
+	LIQ_T_CONTR_TEMP_MNG_STOPPED
 }LIQ_TEMP_CONTR_TASK_STATE;
 
 // delay in intervalli da 10 msec prima di iniziare il controllo della temperatura

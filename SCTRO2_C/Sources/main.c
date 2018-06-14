@@ -178,6 +178,8 @@
 #include "SevenSeg.h"
 #include "ControlProtectiveInterface_C.h"
 
+extern bool EnableFrigoFromPlate;
+extern bool EnableFrigoFromControl;
 extern unsigned char PidFirstTime[4];
 extern float pressSample1_Ven;
 extern float pressSample2_Ven;
@@ -228,6 +230,11 @@ void Manage_Debug_led(bool Status)
 }
 
 
+#ifdef DEBUG_FRIGO_AMS
+word TempPerfVal;    // per debug
+word TempLiquido;
+word TempLiquidoDecimi;
+#endif
 
 int main(void)
 /*lint -restore Enable MISRA rule (6.3) checking. */
@@ -548,6 +555,9 @@ int main(void)
 
 #ifdef DEBUG_FRIGO_AMS
    T_PLATE_C_GRADI_CENT = 0.0;
+   TempPerfVal = 25;    // per debug
+   TempLiquido = 25;
+   TempLiquidoDecimi = 250;
 #endif
 
 
@@ -620,14 +630,38 @@ int main(void)
 //	        	  while(result == MOD_BUS_ANSW_NO_ANSW)
 //	        		  result = WaitForModBusResponseTask((WAIT_FOR_MB_RESP_TASK_CMD)WAIT_MB_RESP_TASK_NO_CMD);
 //	        	  result = MOD_BUS_ANSW_NO_ANSW;
+#ifdef DEBUG_FRIGO_AMS
+//	        	 TempPerfVal++;
+//	        	 parameterWordSetFromGUI[PAR_SET_PRIMING_TEMPERATURE_PERFUSION].value = TempPerfVal * 10;
+	        	 EnableFrigoFromPlate = TRUE;
+	        	 EnableFrigoFromControl = TRUE;
+	        	 Start_Frigo_AMS((float)13 * 10);
+#endif
 	        	 Released1 = 1;
 	         }
 	         if(ReadKey2()) // per debug con la tastiera a bolle
 	         {
+#ifdef DEBUG_FRIGO_AMS
+//	        	 TempLiquido++;
+//	        	 TempLiquidoDecimi = TempLiquido * 10;
+	        	 StopFrigo();
+#endif
 	        	 Released2 = 1;
 	         }
 	         if(ReadKey3()) // per debug con la tastiera a bolle
 	         {
+#ifdef DEBUG_FRIGO_AMS
+	        	 TempLiquidoDecimi++;
+				Air_1_Status = LIQUID;
+				ptrCurrentState->state = STATE_TREATMENT_2;
+#endif
+	        	 Released3 = 1;
+	         }
+	         if(ReadKey4()) // per debug con la tastiera a bolle
+	         {
+#ifdef DEBUG_FRIGO_AMS
+	        	 TempLiquidoDecimi--;
+#endif
 	        	 Released3 = 1;
 	         }
 
@@ -652,7 +686,8 @@ int main(void)
 			{
 	        	 timerCounterPeltier = 0;
 
-	        	 /*  Scommentare per reinserire il controllo della temperatura tramite le peltier
+#ifndef	 DEBUG_FRIGO_AMS
+	        	 // per il controllo della temperatura tramite le peltier
 		         if(PeltierStarted && (peltierCell.readAlwaysEnable == 1) && (peltierCell2.readAlwaysEnable == 1))
 	        	 {
         			 LiquidTempContrTask(NO_LIQUID_TEMP_CONTR_CMD);
@@ -699,7 +734,7 @@ int main(void)
 				 //funzione cher gestiscer lo stop della cella di peltier 1
 				 if (peltierCell2.StopEnable == 1)
 					 stopPeltier2Actuator();
-				 */
+#endif
 
 				 //if(ptrCurrentState->state == STATE_TREATMENT_KIDNEY_1)
 					 perfusionParam.pulsatility = (word)pumpPerist[0].actualSpeed * 2;
@@ -781,8 +816,12 @@ int main(void)
 	      	// aggiorno il valore del flusso sul filtro
 	      	UpdateFilterFlowVal();
 
+#ifdef	 DEBUG_FRIGO_AMS
 	      	// task di controllo della temperatura del liquido nel reservoir
+	      	// non posso mettere questo codice al posto di quello delle peltier perche' non
+	      	// lavorerebbe bene il pwm del riscaldatore
 	      	FrigoHeatTempControlTask((LIQ_TEMP_CONTR_TASK_CMD)LIQ_T_CONTR_TASK_NO_CMD);
+#endif
   }
   /**********MAIN LOOP END**************/
 
