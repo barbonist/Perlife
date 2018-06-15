@@ -300,6 +300,6 @@ bool EnableFrigo(void);
 bool DisableFrigo(void);
 bool StartHeating(float DeltaT);
 void StopHeating(void);
-
+void SetFan(bool On);
 
 #endif /* APPLICATION_APP_GES_H_ */

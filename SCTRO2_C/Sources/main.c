@@ -178,6 +178,7 @@
 #include "SevenSeg.h"
 #include "ControlProtectiveInterface_C.h"
 
+extern bool EnableHeatingFromControl;
 extern bool EnableFrigoFromPlate;
 extern bool EnableFrigoFromControl;
 extern unsigned char PidFirstTime[4];
@@ -400,8 +401,13 @@ int main(void)
   EN_Motor_Control(ENABLE);
   IR_TM_COMM_Enable();
 
-  /*abilitp la 24 V sui driver delle celle di peltier*/
+  /*NEL VECCHIO HW abilitava la 24 V sui driver delle celle di peltier.
+   * CON LE MODIFICHE HW PER LE EVER ORA DIVENTA L'ENABLE AL 48 PER LE POMPE EVER*/
   EN_P_1_C_SetVal();
+  // questo servirebbe solo con le celle di peltier. Ora con le modifiche hw per le
+  // EVER non servirebbe piu' ma, io lo abilito lo stesso. Con le modifiche hw (48 V)
+  // fatte per le ever non e' piu' possibile far funzionare di nuovo le peltier solo
+  // ripristinando il sw.
   EN_P_2_C_SetVal();
 
   /*leggo tutta la struttura dati salvata nella parte di flash usata come EEPROM (ci saranno ad esmepio i coefficienti di claibrazione)*/
@@ -631,11 +637,17 @@ int main(void)
 //	        		  result = WaitForModBusResponseTask((WAIT_FOR_MB_RESP_TASK_CMD)WAIT_MB_RESP_TASK_NO_CMD);
 //	        	  result = MOD_BUS_ANSW_NO_ANSW;
 #ifdef DEBUG_FRIGO_AMS
-//	        	 TempPerfVal++;
-//	        	 parameterWordSetFromGUI[PAR_SET_PRIMING_TEMPERATURE_PERFUSION].value = TempPerfVal * 10;
+	        	 TempPerfVal++;
+	        	 parameterWordSetFromGUI[PAR_SET_PRIMING_TEMPERATURE_PERFUSION].value = TempPerfVal * 10;
+
 	        	 EnableFrigoFromPlate = TRUE;
 	        	 EnableFrigoFromControl = TRUE;
-	        	 Start_Frigo_AMS((float)13 * 10);
+	        	 //Start_Frigo_AMS((float)13 * 10);
+	        	 // temperatura corrente - temperatura target
+	        	 //Start_Frigo_AMS((float)(25 - TempPerfVal) * 10.0);
+	        	 EnableHeatingFromControl = TRUE;
+	        	 // temperatura corrente - temperatura target
+	        	 StartHeating((float)(TempLiquido - TempPerfVal) * 10.0);
 #endif
 	        	 Released1 = 1;
 	         }
@@ -644,7 +656,10 @@ int main(void)
 #ifdef DEBUG_FRIGO_AMS
 //	        	 TempLiquido++;
 //	        	 TempLiquidoDecimi = TempLiquido * 10;
-	        	 StopFrigo();
+
+	        	 //StopFrigo();
+	        	 StopHeating();
+	        	 TempPerfVal = TempLiquido;
 #endif
 	        	 Released2 = 1;
 	         }

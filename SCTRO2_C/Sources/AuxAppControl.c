@@ -330,11 +330,20 @@ void NotifyTempSens(void)
 	}
 }
 
+extern bool HeaterOn;
+extern bool FrigoOn;
+
 void NotifyPinchPos(void)
 {
+	uint8_t u8;
+
+	u8 = (Air_1_Status) ? 1 : 0;
+	u8 |= (HeaterOn) ? 2 : 0;
+	u8 |= (FrigoOn) ? 4 : 0;
+
 	if(GetTherapyType() == LiverTreat)
 	{
-		onNewPinchVal(Air_1_Status,                              // presenza aria sul filtro
+		onNewPinchVal(u8,                                        // presenza aria sul filtro
 				      alarmCurrent.code,                         // allarme corrente sulla control
 					  (uint8_t)pinchActuator[0].pinchPosTarget,  // posizione della pinch sul filtro 2WPVF
 					  (uint8_t)pinchActuator[1].pinchPosTarget,  // posizione della pinch su linea arteriosa 2WPVA
@@ -344,7 +353,7 @@ void NotifyPinchPos(void)
 	}
 	else
 	{
-		onNewPinchVal(Air_1_Status,                              // presenza aria sul filtro
+		onNewPinchVal(u8,                                        // presenza aria sul filtro
 				      alarmCurrent.code,                         // allarme corrente sulla control
 					  (uint8_t)pinchActuator[0].pinchPosTarget,  // posizione della pinch sul filtro 2WPVF
 					  (uint8_t)pinchActuator[1].pinchPosTarget,  // posizione della pinch su linea arteriosa 2WPVA

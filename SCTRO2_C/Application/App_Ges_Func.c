@@ -803,7 +803,17 @@ bool EnableHeatingFromControl = FALSE;
 bool EnableFrigoFromPlate = FALSE;
 bool EnableFrigoFromControl = FALSE;
 int HeatingPwmPerc = 0;
+bool HeaterOn = FALSE;
+bool FrigoOn = FALSE;
 
+
+void SetFan(bool On)
+{
+	if(On)
+		LAMP_LOW_SetVal();
+	else
+		LAMP_LOW_ClrVal();
+}
 
 // ritorna TRUE se e' selezionato il frigo
 bool IsFrigo()
@@ -855,6 +865,8 @@ bool Start_Frigo_AMS(float DeltaT)
 	{
 		Enable_AMS = FALSE;
 	    COMP_PWM_ClrVal();  // per sicurezza
+	    FrigoOn = 0;
+	    SetFan(FALSE);
 		return StartFlag;
 	}
 
@@ -894,6 +906,8 @@ bool Start_Frigo_AMS(float DeltaT)
 		Enable_AMS = FALSE;
 	    COMP_PWM_ClrVal();
 	    StartFlag = FALSE;
+	    FrigoOn = 0;
+	    SetFan(FALSE);
 	}
 	else
 	{
@@ -904,6 +918,8 @@ bool Start_Frigo_AMS(float DeltaT)
 			power = 10;
 		Prescaler_Freq_Signal_AMS = power;
 		StartFlag = TRUE;
+	    FrigoOn = 1;
+	    SetFan(TRUE);
 	}
 	return StartFlag;
 }
@@ -940,6 +956,7 @@ void HeatingPwm(int Perc)
 		else if(Perc == 0)
 		{
 			HEAT_ON_C_ClrVal();
+			HeatingPwmPerc = 0;
 			HeatingPwmState = HEAT_PWM_ALWAYS_OFF;
 		}
 		else
@@ -954,11 +971,13 @@ void HeatingPwm(int Perc)
 	switch (HeatingPwmState)
 	{
 		case HEAT_PWM_ALWAYS_OFF:
+		    HeaterOn = 0;
 			break;
 		case HEAT_PWM_IDLE:
 			timeIntervalHeating = FreeRunCnt10msec;
 			HeatingPwmState = HEAT_PWM_ON;
 			HEAT_ON_C_SetVal();
+		    HeaterOn = 1;
 			break;
 		case HEAT_PWM_ON:
 			// On
@@ -979,6 +998,7 @@ void HeatingPwm(int Perc)
 			}
 			break;
 		case HEAT_PWM_ALWAYS_ON:
+		    HeaterOn = 1;
 			break;
 	}
 }
@@ -1031,7 +1051,7 @@ bool StartHeating(float DeltaT)
 	// fa partire le resistenze riscaldanti
 	if(!EnableHeatingFromPlate || !EnableHeatingFromControl)
 	{
-		HEAT_ON_C_ClrVal();  // per sicurezza
+		StopHeating(); // per sicurezza
 		return StartHeatingFlag;
 	}
 
@@ -1071,8 +1091,8 @@ bool StartHeating(float DeltaT)
 			HeatingPwmPerc = 20; // 20%
 		else
 			HeatingPwmPerc = 10; // 10%
-		HeatingPwmPerc = 10;
-		HeatingPwm((int)10); // 10 %
+		//HeatingPwmPerc = 10;
+		//HeatingPwm((int)10); // 10 % non serve qui questo
 		StartHeatingFlag = TRUE;
 	}
 	return StartHeatingFlag;
@@ -1081,7 +1101,8 @@ bool StartHeating(float DeltaT)
 // spengo il riscaldatore
 void StopHeating(void)
 {
-	HEAT_ON_C_ClrVal();
+	// fermo il mio pwm che gestisce le resistenze riscaldanti
+	HeatingPwm((int)0);
 }
 
 
@@ -1244,7 +1265,7 @@ LIQ_TEMP_CONTR_TASK_STATE FrigoHeatTempControlTask(LIQ_TEMP_CONTR_TASK_CMD LiqTe
 		{
 			LiqTempContrTaskSt = LIQ_T_CONTR_HEATING_STOPPED;
 			EnableHeatingFromControl = FALSE;
-			HEAT_ON_C_ClrVal();
+			HeatingPwm((int)0);
 		}
 	}
 	else if(LiqTempContrTaskCmd == TEMP_MANAGER_STOPPED_CMD)
@@ -1260,7 +1281,7 @@ LIQ_TEMP_CONTR_TASK_STATE FrigoHeatTempControlTask(LIQ_TEMP_CONTR_TASK_CMD LiqTe
 		{
 			LiqTempContrTaskSt = LIQ_T_CONTR_HEATING_STOPPED;
 			EnableHeatingFromControl = FALSE;
-			HEAT_ON_C_ClrVal();
+			HeatingPwm((int)0);
 		}
 		LiqTempContrTaskSt = LIQ_T_CONTR_TEMP_MNG_STOPPED;
 	}
@@ -1411,9 +1432,11 @@ LIQ_TEMP_CONTR_TASK_STATE FrigoHeatTempControlTask(LIQ_TEMP_CONTR_TASK_CMD LiqTe
 				if(timeInterval10_r && (msTick10_elapsed(timeInterval10_r) >= HEATING_DELAY))
 				{
 					// faccio partire il riscaldamento
-					StartHeating(tmpr - (float)tmpr_trgt);
-					LiqTempContrTaskSt = LIQ_T_CONTR_WAIT_STOP_HEATING;
-					timeInterval10_r = FreeRunCnt10msec;
+					if(StartHeating(tmpr - (float)tmpr_trgt))
+					{
+						LiqTempContrTaskSt = LIQ_T_CONTR_WAIT_STOP_HEATING;
+						timeInterval10_r = FreeRunCnt10msec;
+					}
 				}
 			}
 			else
@@ -1453,4 +1476,5 @@ LIQ_TEMP_CONTR_TASK_STATE FrigoHeatTempControlTask(LIQ_TEMP_CONTR_TASK_CMD LiqTe
 	}
 	return LiqTempContrTaskSt;
 }
+
 #endif
