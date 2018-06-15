@@ -8,6 +8,7 @@
 #ifndef SOURCES_GLOBAL_H_
 #define SOURCES_GLOBAL_H_
 
+#include "PE_Types.h"
 typedef unsigned short	word;
 
 /* Syncronization flag */
@@ -638,5 +639,17 @@ unsigned int timerCounterADC1;
 #define START_ADDRESS_EEPROM		0xFF000
 //stop addres FLASH used as EEPROM
 #define STOP_ADDRESS_EEPROM			0xFFFFF
+
+
+void Enable_Power_EVER_PUMP(bool status);
+void Enable_Power_Motor(bool status);
+void Enable_Pump_filter(bool status);
+void Enable_Pump_Art_Livcer(bool status);
+void Enable_Pump_OXY(bool status);
+void Enable_Pinch_Filter(bool status);
+void Enable_Pinch_Arterial(bool status);
+void Enable_Pinch_Venous(bool status);
+void Enable_Heat(bool status);
+void Enable_Frigo (bool status);
 
 #endif /* SOURCES_GLOBAL_H_ */

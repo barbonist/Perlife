@@ -372,7 +372,9 @@ void NewDataRxChannel2(void) {
 void NewDataRxChannel3(void) {
 	// air alarm
 	if (RxCan3.SRxCan3.AirAlarm != OldRxCan3.SRxCan3.AirAlarm) {
-		VerifyRxAirAlarm(RxCan3.SRxCan3.AirAlarm);
+		VerifyRxAirAlarm(RxCan3.SRxCan3.AirAlarm & 0x01);
+		VerifyRxHeaterON(RxCan3.SRxCan3.AirAlarm & 0x02);
+		VerifyRxFrigoON(RxCan3.SRxCan3.AirAlarm & 0x04);
 	}
 
 	// Alarm code

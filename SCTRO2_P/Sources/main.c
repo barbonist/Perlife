@@ -204,6 +204,103 @@
 
 void InitTest(void);
 /*lint -save  -e970 Disable MISRA rule (6.3) checking. */
+
+/*Funtion to enable power and actuation of teh actuator*/
+void Enable_Power_EVER_PUMP(bool status)
+{
+	if (status && !EN_P_1_C_GetVal())
+	{
+		EN_P_1_C_SetVal();
+		EN_P_2_C_SetVal();
+	}
+
+	if (!status && EN_P_1_C_GetVal())
+	{
+		EN_P_1_C_ClrVal();
+		EN_P_2_C_ClrVal();
+	}
+}
+void Enable_Power_Motor(bool status)
+{
+	if (status && !EN_24_M_P_GetVal())
+		EN_24_M_P_SetVal();
+
+	if (!status && EN_24_M_P_GetVal())
+		EN_24_M_P_ClrVal();
+}
+void Enable_Pump_filter(bool status)
+{
+	if (status && !EN_MOTOR_P_1_GetVal())
+		EN_MOTOR_P_1_SetVal();
+
+	if (!status && EN_MOTOR_P_1_GetVal())
+		EN_MOTOR_P_1_ClrVal();
+}
+void Enable_Pump_Art_Livcer(bool status)
+{
+	if (status && !EN_MOTOR_P_2_GetVal())
+		EN_MOTOR_P_2_SetVal();
+
+	if (!status && EN_MOTOR_P_2_GetVal())
+		EN_MOTOR_P_2_ClrVal();
+}
+void Enable_Pump_OXY(bool status)
+{
+	if (status && !EN_MOTOR_P_3_GetVal())
+		EN_MOTOR_P_3_SetVal();
+
+	if (status && !EN_MOTOR_P_4_GetVal())
+		EN_MOTOR_P_4_SetVal();
+
+	if (!status && EN_MOTOR_P_3_GetVal())
+		EN_MOTOR_P_3_ClrVal();
+
+	if (!status && EN_MOTOR_P_4_GetVal())
+		EN_MOTOR_P_4_ClrVal();
+}
+void Enable_Pinch_Filter(bool status)
+{
+	if (status && !EN_CLAMP_P_1_GetVal())
+		EN_CLAMP_P_1_SetVal();
+
+	if (!status && EN_CLAMP_P_1_GetVal())
+		EN_CLAMP_P_1_ClrVal();
+}
+void Enable_Pinch_Arterial(bool status)
+{
+	if (status && !EN_CLAMP_P_2_GetVal())
+		EN_CLAMP_P_2_SetVal();
+
+	if (!status && EN_CLAMP_P_2_GetVal())
+		EN_CLAMP_P_2_ClrVal();
+}
+void Enable_Pinch_Venous(bool status)
+{
+	if (status && !EN_CLAMP_P_3_GetVal())
+		EN_CLAMP_P_3_SetVal();
+
+	if (!status && EN_CLAMP_P_3_GetVal())
+		EN_CLAMP_P_3_ClrVal();
+}
+
+void Enable_Heat(bool status)
+{
+	if (status && !HEAT_ON_P_GetVal())
+		HEAT_ON_P_SetVal();
+
+	if (!status && HEAT_ON_P_GetVal())
+		HEAT_ON_P_ClrVal();
+}
+
+void Enable_Frigo (bool status)
+{
+	if (status && !COMP_ENABLE_GetVal())
+		COMP_ENABLE_SetVal();
+
+	if (!status && COMP_ENABLE_GetVal())
+		COMP_ENABLE_ClrVal();
+}
+
 int main(void)
 /*lint -restore Enable MISRA rule (6.3) checking. */
 {
@@ -231,6 +328,17 @@ int main(void)
   Dip_Switch_ADC_Init();
   PR_Sens_ADC_Init();
   T_PLATE_P_Init();
+
+  Enable_Power_EVER_PUMP(TRUE);
+  Enable_Power_Motor(TRUE);
+  Enable_Pump_filter(TRUE);
+  Enable_Pump_Art_Livcer(TRUE);
+  Enable_Pump_OXY(TRUE);
+  Enable_Pinch_Filter(TRUE);
+  Enable_Pinch_Arterial(TRUE);
+  Enable_Pinch_Venous(TRUE);
+  Enable_Heat(FALSE);
+  Enable_Frigo(FALSE);
 
   /*leggo tutta la struttura dati salvata nella parte di flash usata come EEPROM (ci saranno ad esmepio i coefficienti di claibrazione)*/
    EEPROM_Read(START_ADDRESS_EEPROM, (EEPROM_TDataAddress)&config_data, sizeof(config_data));
