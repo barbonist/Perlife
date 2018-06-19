@@ -13,7 +13,7 @@
 //#define CODE_ALARM0		0x00
 //#define CODE_ALARM1		0x01
 //#define CODE_ALARM2		0x02
-#define ALARM_ACTIVE_IN_STRUCT					30
+#define ALARM_ACTIVE_IN_STRUCT					31
 #define CODE_ALARM_PRESS_ART_HIGH				0X01
 #define CODE_ALARM_PRESS_ART_LOW				0X02
 #define CODE_ALARM_PRESS_VEN_HIGH				0X03
@@ -76,6 +76,9 @@
 // fissato a 200 ed e' il codice di errore di partenza degli allarmi protective
 #define CODE_ALARM_PROT_START_VAL               0xc8
 
+// da qui in avanti i codici delle warning
+#define CODE_ALARM_PRESS_ADS_FILTER_WARN		0X105
+
 
 #define	PHYSIC_TRUE		0xA5
 #define PHYSIC_FALSE	0x5A
@@ -134,10 +137,11 @@
 //#define PR_VEN_LOW											40
 // modificato altrimenti viene sempre fuori allarme di pressione bassa
 #define PR_VEN_LOW											25
-#define PR_ADS_FILTER_HIGH									120
+#define PR_ADS_FILTER_HIGH									250
 #define PR_ADS_FILTER_LOW                                   10
 #define MAX_MSG_CONSECUTIVE_ACTUATOR_MODBUS_NOT_RESPOND 	10
 
+#define PR_ADS_FILTER_WARN									100
 
 enum ALARM
 {
@@ -170,7 +174,10 @@ enum ALARM
 	 PRESS_ADS_FILTER_LOW,
 	 PRESS_OXYG_LOW,
 	 MODBUS_ACTUATOR_SEND,
-	 ALARM_FROM_PROTECTIVE
+	 ALARM_FROM_PROTECTIVE,
+
+	 // da qui in avanti i codici delle warning
+	 PRESS_ADS_FILTER_WARN
 };
 
 void alarmConInit(void);
@@ -206,7 +213,7 @@ void manageAlarmDeltaTempRecVen(void);
 
 void SetAllAlarmEnableFlags(void);
 
-void ForceAlarmOff(unsigned char code);
+void ForceAlarmOff(uint16_t code);
 void ForceCurrentAlarmOff(void);
 void DisableAllAlarm();
 void DisableAllAirAlarm(bool dis);
@@ -236,6 +243,11 @@ void ClearAlarmState(void);
 
 uint16_t ReadProtectiveAlarmCode(void);
 bool IsAlarmActive(void);
-bool IsAlarmCodeActive(unsigned char code);
+bool IsAlarmCodeActive(uint16_t code);
+
+void warningConInit(void);
+void EnableNextWarningFunc(void);
+void warningsEngineAlways(void);
+void warningManageNull(void);
 
 #endif /* APPLICATION_ALARM_CON_H_ */

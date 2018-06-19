@@ -30,6 +30,12 @@
 #include "RTS_MOTOR.h"
 #include "App_Ges.h"
 
+extern bool EnableFrigoFromControl;
+extern bool EnableFrigoFromPlate;
+extern bool EnableHeatingFromPlate;
+extern bool EnableHeatingFromControl;
+
+
 extern bool WriteActive;
 extern bool ReadActive;
 extern int MyArrayIdx;
@@ -480,6 +486,14 @@ void Service_SBC(void){
 					// Peltier start
 					case 0x20:
 					{
+						EnableFrigoFromPlate = TRUE;
+						EnableFrigoFromControl = TRUE;
+						Start_Frigo_AMS((float)10.0);  // potenza minima
+
+//						EnableHeatingFromPlate = TRUE;
+//						EnableHeatingFromControl = TRUE;
+//						StartHeating((float)(-100.0));
+/*
 						static int incr = 0;
 
 						peltierCell2.readAlwaysEnable = 0;
@@ -520,18 +534,23 @@ void Service_SBC(void){
 							peltierCell.mySet = -4.0;
 							peltierCell2.mySet = -4.0;
 						}
-
+*/
 
 						word snd;
 						ptrMsgSbcRx = &sbc_rx_data[0];
-						buildPeltierStartResponseMsg(ptrMsgSbcRx);
+				//		buildPeltierStartResponseMsg(ptrMsgSbcRx);
 						ptrMsgSbcTx = &sbc_tx_data[0];
 						SBC_COMM_SendBlock(ptrMsgSbcTx,myCommunicatorToSBC.numByteToSend,&snd);
+
 					}
 					break;
 					// Peltier stop
 					case 0x21:
 					{
+						Start_Frigo_AMS((float)0.0);
+//						StopHeating();
+
+						/*
 						peltierCell.StopEnable  = 1;
 						peltierCell2.StopEnable = 1;
 
@@ -540,6 +559,7 @@ void Service_SBC(void){
 						buildPeltierStopResponseMsg(ptrMsgSbcRx);
 						ptrMsgSbcTx = &sbc_tx_data[0];
 						SBC_COMM_SendBlock(ptrMsgSbcTx,myCommunicatorToSBC.numByteToSend,&snd);
+						*/
 					}
 					break;
 					// Peltier write ee

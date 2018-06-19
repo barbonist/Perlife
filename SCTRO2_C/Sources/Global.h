@@ -120,8 +120,8 @@ char    iFlag_modbusDataStorage;
  * 										 R2 = 1238 ohm = 26.6 °C   a cui corrispondono 40927 ADC
  * 										 le temperature le ho considerate tutte moltiplicate per 10
  * 										 per avere la risoluzione del decimo di grado							 */
-#define GAIN_T_PLATE_SENS			0.015988
-#define OFFSET_T_PLATE_SENS			-388.3496
+#define GAIN_T_PLATE_SENS			0.03065134
+#define OFFSET_T_PLATE_SENS			-1020
 
 #define AIR							0x00
 #define LIQUID						0x01
@@ -731,7 +731,7 @@ enum MachineStateGuardEntry
 
 /* alarm */
 struct alarm {
-	unsigned char 	code; 			/* alarm code */
+	uint16_t 	    code; 		    /* alarm code */
 	unsigned char	physic;			/* alarm physic condition */
 	unsigned char	active;			/* alarm active condition */
 	unsigned char	type;			/* alarm type: control, protection */
@@ -747,9 +747,13 @@ struct alarm {
 	void (*prySafetyActionFunc)(void); /* safety action: funzione che esegue la funzione di sicurezza in base alla priorità dell'allarme */
 };
 
+/* alarm */
 struct alarm	alarmCurrent;
 struct alarm * ptrAlarmCurrent;
-/* alarm */
+
+/* warning */
+struct alarm	warningCurrent;
+struct alarm * ptrWarningCurrent;
 
 /* sensors values */
 typedef unsigned short	word;
@@ -1862,6 +1866,8 @@ bool EnableNextAlarm;
 // viene settato nel momento in cui viene dato lo start alle Peltier la prima volta (nel priming)
 bool PeltierStarted;
 
+// quando e' TRUE viene abilitata la visualizzazione della warning successiva
+bool EnableNextWarning;
 
 
 // Quantita' di liquido pompata nell'intervallo di 1 sec. alla velocita' 1 rpm
@@ -2187,9 +2193,11 @@ typedef enum
 
 // differenza di temperatura rispetto al target (valore intero con segno).
 // al di sopra di temperatura_target + DELTA_TEMP_FOR_RESISTOR_OFF si spegne il riscaldamento
+// (espressa in decimi di grado)
 #define DELTA_TEMP_FOR_RESISTOR_OFF 3
 // differenza di temperatura rispetto al target (valore intero con segno).
 // al di sotto di temperatura_target + DELTA_TEMP_FOR_FRIGO_OFF si spegne il raffreddamento
+// (espressa in decimi di grado)
 #define DELTA_TEMP_FOR_FRIGO_OFF -3
 
 
@@ -2201,14 +2209,15 @@ typedef enum
 #define HEATING_DELAY 300
 // tempo di attesa massimo per lo start frigo o heating.
 // trascorso questo tempo se non ho avuto nessuno start frigo o riscaldamento vado a ricontrollare il
-// il tipo di azione da fare
+// il tipo di azione da fare (in tick da 10msec)
 #define MAX_TEMP_CNTRL_DELAY 30000
 
 // massima temperatura raggiungibile nella base riscaldante (al di sopra spengo
-// le resistenze riscaldanti)
-#define MAX_PLATE_TEMP  70
+// le resistenze riscaldanti) in gradi C
+//#define MAX_PLATE_TEMP  70
+#define MAX_PLATE_TEMP  50
 // massima temperatura raggiungibile nella base riscaldante (al di sotto spengo
-// il frigo)
+// il frigo) in gradi C
 #define MIN_PLATE_TEMP  -5
 
 // stati per gestire il pilotaggio delle resistenze di riscaldamento

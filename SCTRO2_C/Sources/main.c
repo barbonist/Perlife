@@ -313,6 +313,7 @@ int main(void)
   initT1Test();
 
   alarmConInit();
+  warningConInit();
   initPerfusionParam();
   initPurifParam();
 
@@ -611,6 +612,7 @@ int main(void)
 	        	processMachineState();
 
 	        	alarmEngineAlways();
+	        	//warningsEngineAlways();
 		        GenerateSBCComm();
 		        ProtectiveTask();
 
@@ -637,28 +639,28 @@ int main(void)
 //	        		  result = WaitForModBusResponseTask((WAIT_FOR_MB_RESP_TASK_CMD)WAIT_MB_RESP_TASK_NO_CMD);
 //	        	  result = MOD_BUS_ANSW_NO_ANSW;
 #ifdef DEBUG_FRIGO_AMS
-	        	 TempPerfVal++;
+	        	 TempPerfVal--;
 	        	 parameterWordSetFromGUI[PAR_SET_PRIMING_TEMPERATURE_PERFUSION].value = TempPerfVal * 10;
 
 	        	 EnableFrigoFromPlate = TRUE;
-	        	 EnableFrigoFromControl = TRUE;
-	        	 //Start_Frigo_AMS((float)13 * 10);
-	        	 // temperatura corrente - temperatura target
-	        	 //Start_Frigo_AMS((float)(25 - TempPerfVal) * 10.0);
-	        	 EnableHeatingFromControl = TRUE;
-	        	 // temperatura corrente - temperatura target
-	        	 StartHeating((float)(TempLiquido - TempPerfVal) * 10.0);
+            	 EnableFrigoFromControl = TRUE;
+//	        	 //Start_Frigo_AMS((float)13 * 10);
+//	        	 // temperatura corrente - temperatura target
+//	        	 //Start_Frigo_AMS((float)(25 - TempPerfVal) * 10.0);
+//	        	 EnableHeatingFromControl = TRUE;
+//	        	 // temperatura corrente - temperatura target
+//	        	 StartHeating((float)(TempLiquido - TempPerfVal) * 10.0);
 #endif
 	        	 Released1 = 1;
 	         }
 	         if(ReadKey2()) // per debug con la tastiera a bolle
 	         {
 #ifdef DEBUG_FRIGO_AMS
-//	        	 TempLiquido++;
-//	        	 TempLiquidoDecimi = TempLiquido * 10;
+	        	 TempLiquido--;
+	        	 TempLiquidoDecimi = TempLiquido * 10;
 
 	        	 //StopFrigo();
-	        	 StopHeating();
+	        	 //StopHeating();
 	        	 TempPerfVal = TempLiquido;
 #endif
 	        	 Released2 = 1;

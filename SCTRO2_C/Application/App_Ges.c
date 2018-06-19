@@ -751,6 +751,9 @@ void manageStateWaitTreatmentAlways(void)
 		// prendo BUTTON_END_TREATMENT per andare in empty disposable
 		releaseGUIButton(BUTTON_END_TREATMENT);
 		currentGuard[GUARD_ENABLE_DISPOSABLE_EMPTY].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+
+		// fermo eventuale riscaldamento e raffreddamento
+		FrigoHeatTempControlTask((LIQ_TEMP_CONTR_TASK_CMD)TEMP_MANAGER_STOPPED_CMD);
 	}
 
 }

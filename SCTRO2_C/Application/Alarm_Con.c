@@ -82,6 +82,9 @@ struct alarm alarmList[] =
 		// allarmi provenienti dalla protective. Serve per fare in modo che quando la protective e' in allarme le pompe vengano fermate e le pinch
 		// messe in sicurezza
 		{CODE_ALARM_PROT_START_VAL,        PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_PROTECTION, SECURITY_STOP_ALL_ACTUATOR,  PRIORITY_HIGH,    0, 500, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull},	        /* 29 */
+
+		// da qui in avanti solo le warning
+		{CODE_ALARM_PRESS_ADS_FILTER_WARN, PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_LOW, 2000, 2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull},	        /* 30 esempio di warning*/
 		{}
 };
 
@@ -180,7 +183,7 @@ void SetAllAlarmEnableFlags(void)
 
 // Questa funzione serve per forzare ad off un eventuale allarme.
 // Per il momento la uso solo per il caso di CODE_ALARM_TANK_LEVEL_HIGH
-void ForceAlarmOff(unsigned char code)
+void ForceAlarmOff(uint16_t code)
 {
 	switch (code)
 	{
@@ -1853,7 +1856,7 @@ bool IsAlarmActive(void)
 }
 
 // ritorna true se l'allarme code e' attivo
-bool IsAlarmCodeActive(unsigned char code)
+bool IsAlarmCodeActive(uint16_t code)
 {
 	if(alarmCurrent.code && (alarmCurrent.code == code) && (ptrAlarmCurrent->active == ACTIVE_TRUE))
 		return TRUE;
@@ -1905,3 +1908,360 @@ void ClearAlarmState(void)
 	currentGuard[GUARD_ALARM_ACTIVE].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
 	currentGuard[GUARD_ALARM_ACTIVE].guardValue = GUARD_VALUE_FALSE;
 }
+
+
+//-----------------------------------------------------------------------------------------------
+//----------------------------GESTIONE DELLE WARNING---------------------------------------------
+
+void manageWarningPhysicPressSensHigh(void)
+{
+	// USO GLI STESSI ENABLE EDGLI ALLARMI, NON SO SE QUESTO E' GIUSTO
+	if(GlobalFlags.FlagsDef.EnablePressSensHighAlm)
+	{
+		if(PR_ADS_FLT_mmHg_Filtered > PR_ADS_FILTER_WARN)
+		{
+			alarmList[PRESS_ADS_FILTER_WARN].physic = PHYSIC_TRUE;
+		}
+		else
+		{
+			alarmList[PRESS_ADS_FILTER_WARN].physic = PHYSIC_FALSE;
+		}
+
+	}
+	else
+	{
+		alarmList[PRESS_ADS_FILTER_WARN].physic = PHYSIC_FALSE;
+	}
+}
+
+
+void CalcWarningActive(void)
+{
+	/*Faccio uno switch su tutta la macchina a stati in modo
+	 * gestire ogni allarme in funzioine dello stato in cui sono*/
+
+	switch(ptrCurrentState->state)
+	{
+		case STATE_NULL:
+		case STATE_ENTRY:
+		case STATE_IDLE:
+		case STATE_SELECT_TREAT:
+		case STATE_T1_NO_DISPOSABLE:
+		case STATE_MOUNTING_DISP:
+		case STATE_TANK_FILL:
+			break;
+
+		case STATE_PRIMING_PH_1:
+		{
+			manageWarningPhysicPressSensHigh();
+
+//			manageAlarmFlowSensNotDetected();
+//			manageAlarmIrTempSensNotDetected();
+//
+//			//verifica physic pressioni
+//			manageAlarmPhysicPressSensHigh();
+//			//manageAlarmPhysicPressSensLow(); non serve questo allarme in priming
+//
+//			//verifica physic ir temp sens
+//			manageAlarmPhysicTempSens();
+//
+//			manageAlarmLiquidLevelHigh();
+//			if(GetTherapyType() == LiverTreat)
+//				manageAlarmCoversPumpLiver();
+//			else if(GetTherapyType() == KidneyTreat)
+//				manageAlarmCoversPumpKidney();
+//
+//			manageAlarmCanBus();
+//			manageAlarmActuatorModbusNotRespond();
+//			manageAlarmActuatorWRModbusNotRespond();
+//			manageAlarmFromProtective();
+//			manageAlarmBadPinchPos();   // allarme di pinch posizionate correttamente
+			break;
+		}
+
+		case STATE_PRIMING_PH_2:
+		{
+			manageWarningPhysicPressSensHigh();
+
+//			manageAlarmFlowSensNotDetected();
+//			manageAlarmIrTempSensNotDetected();
+//
+//			//verifica physic pressioni
+//			manageAlarmPhysicPressSensHigh();
+//			//manageAlarmPhysicPressSensLow(); non serve questo allarme in priming
+//
+//			//verifica physic ir temp sens
+//			manageAlarmPhysicTempSens();
+//
+//			manageAlarmLiquidLevelHigh();
+//			if(GetTherapyType() == LiverTreat)
+//				manageAlarmCoversPumpLiver();
+//			else if(GetTherapyType() == KidneyTreat)
+//				manageAlarmCoversPumpKidney();
+//			manageAlarmCanBus();
+//			manageAlarmPrimSFAAirDet();
+//			manageAlarmActuatorModbusNotRespond();
+//			manageAlarmActuatorWRModbusNotRespond();
+//			manageAlarmFromProtective();
+//			manageAlarmBadPinchPos();   // allarme di pinch posizionate correttamente
+			break;
+		}
+
+		case STATE_TREATMENT_KIDNEY_1:
+		{
+			manageWarningPhysicPressSensHigh();
+
+//			//verifica physic pressioni
+//			manageAlarmPhysicPressSensHigh();
+//			manageAlarmPhysicPressSensLow();
+//
+//			//verifica physic flow sensor (presenza aria)
+//			manageAlarmPhysicUFlowSens();
+//			manageAlarmSAFAirSens();
+//			manageAlarmPhysicUFlowSensVen();
+//
+//
+//			//verifica physic ir temp sens
+//			manageAlarmPhysicTempSens();
+//
+//			//verifica physic flusso di perfusione arteriosa alto
+//			manageAlarmPhysicFlowPerfArtHigh();
+//
+//			//verifica  flusso  non rilevato
+//			manageAlarmFlowSensNotDetected();
+//
+//			//verifica temperatura noin rilevata
+//			manageAlarmIrTempSensNotDetected();
+//
+//			if(GetTherapyType() == LiverTreat)
+//				manageAlarmCoversPumpLiver();
+//			else if(GetTherapyType() == KidneyTreat)
+//				manageAlarmCoversPumpKidney();
+//
+//			// Questo allarme lo commento per ora, perche' bisogna avere un sensore di livello
+//			// che funziona bene e si e' sicuri del suo funzionamento
+//			//manageAlarmLiquidLevelLow();
+//			// i due allarmi che seguono devo essere gestiti attentamente perche' potrei avere delle
+//			// segnalazioni di allarme anche durante la fase di accelerazione e decelerazione del pid
+//			// Per ora li commento.
+//			//manageAlarmDeltaFlowArt();
+//			//manageAlarmDeltaFlowVen();
+//			manageAlarmDeltaTempRecArt();
+//			manageAlarmDeltaTempRecVen();
+//			manageAlarmCanBus();
+//			manageAlarmBadPinchPos(); // controllo il posizionamento delle pinch prima di iniziare un trattamento
+//			manageAlarmActuatorModbusNotRespond();
+//			manageAlarmActuatorWRModbusNotRespond();
+//			manageAlarmFromProtective();
+			break;
+		}
+
+		case STATE_PRIMING_WAIT:
+			// in questo stato non sono gestiti gli allarmi, per ora
+			break;
+
+		case STATE_PRIMING_RICIRCOLO:
+			manageWarningPhysicPressSensHigh();
+
+//			//verifica physic pressioni
+//			manageAlarmPhysicPressSensHigh();
+//			manageAlarmPhysicPressSensLow();
+//
+//			//verifica physic ir temp sens
+//			manageAlarmPhysicTempSens();
+//			if(GetTherapyType() == LiverTreat)
+//				manageAlarmCoversPumpLiver();
+//			else if(GetTherapyType() == KidneyTreat)
+//				manageAlarmCoversPumpKidney();
+//			manageAlarmCanBus();
+//			manageAlarmPumpNotStill();  // controllo allarme di pompe ferme alla fine del ricircolo
+//			manageAlarmBadPinchPos();   // allarme di pinch posizionate correttamente
+//			manageAlarmPrimSFAAirDet();
+//			manageAlarmActuatorModbusNotRespond();
+//			manageAlarmActuatorWRModbusNotRespond();
+//			manageAlarmFromProtective();
+			break;
+
+		case STATE_WAIT_TREATMENT:
+			break;
+
+		case STATE_EMPTY_DISPOSABLE:
+		case STATE_EMPTY_DISPOSABLE_1:
+		{
+			manageWarningPhysicPressSensHigh();
+
+//			manageAlarmFlowSensNotDetected();
+//			manageAlarmIrTempSensNotDetected();
+//
+//			manageAlarmPhysicPressSensHigh();
+//			manageAlarmPhysicUFlowSens();
+//			manageAlarmSAFAirSens();
+//			manageAlarmPhysicUFlowSensVen();
+//			if(GetTherapyType() == LiverTreat)
+//				manageAlarmCoversPumpLiver();
+//			else if(GetTherapyType() == KidneyTreat)
+//				manageAlarmCoversPumpKidney();
+//			manageAlarmActuatorModbusNotRespond();
+//			manageAlarmActuatorWRModbusNotRespond();
+//			manageAlarmFromProtective();
+			break;
+		}
+
+		case STATE_TREATMENT_2:
+		case STATE_EMPTY_DISPOSABLE_2:
+		case STATE_UNMOUNT_DISPOSABLE:
+		case STATE_WASHING:
+		case STATE_FATAL_ERROR:
+			break;
+
+		default:
+		{
+			break;
+		}
+	}
+}
+
+
+static int StrWarningWritten = 0;
+static int IdxCurrWarn = 0xff;
+int StartWrnArrIdx = 0;
+int i_wr;
+
+void warningConInit(void){
+	ptrWarningCurrent = &alarmList[0];
+	StrWarningWritten = 0;
+	IdxCurrWarn = 0xff;
+	StartWrnArrIdx = 0;
+}
+
+
+void EnableNextWarningFunc(void)
+{
+	EnableNextWarning = TRUE;
+
+	//if((ptrAlarmCurrent->active == ACTIVE_TRUE) && (ptrAlarmCurrent->code == alarmCurrent.code) && (ptrAlarmCurrent->physic == PHYSIC_TRUE))
+	if(ptrWarningCurrent->code == warningCurrent.code)
+	{
+		// FM la warning e' stata disattivata perche' non sono piu'
+		// verificate le condizioni fisiche che lo hanno generato
+		memset(&warningCurrent, 0, sizeof(struct alarm));
+	}
+}
+
+void warningsEngineAlways(void)
+{
+	if((StrWarningWritten == 0) && !EnableNextWarning)
+	{
+		// non ho ancora premuto il tasto button reset per resettare l'allarme corrente quindi non posso
+		// andare avanti.
+		// Se andassi avanti comunque avrei dei problemi nella gestione di due allarmi diversi e contemporanei
+		// come nel caso di livello alto e cover.
+		return;
+	}
+
+	CalcWarningActive();
+
+	for(i_wr=StartWrnArrIdx; i_wr<ALARM_ACTIVE_IN_STRUCT; i_wr++)
+	{
+		if(alarmList[i_wr].priority == PRIORITY_LOW)
+		{
+			// CONSIDERO WARNING SOLO GLI ALLARMI DI PRIORITA' BASSA
+			if((alarmList[i_wr].physic == PHYSIC_TRUE) && (alarmList[i_wr].active != ACTIVE_TRUE))
+			{
+				ptrWarningCurrent = &alarmList[i_wr];
+				alarmList[i_wr].prySafetyActionFunc();
+				StartWrnArrIdx = i_wr;
+				IdxCurrWarn = i_wr;
+				break;
+			}
+			else if((alarmList[i_wr].active == ACTIVE_TRUE) && (alarmList[i_wr].physic == PHYSIC_FALSE))
+			{
+				ptrWarningCurrent = &alarmList[i_wr];
+				alarmList[i_wr].prySafetyActionFunc();
+				break;
+			}
+			else
+			{
+				if(StrWarningWritten)
+				{
+					// allarme ancora in corso, sono in attesa di ACTIVE_FALSE
+					// quindi, per ora, non posso prendere in considerazione altri allarmi
+					break;
+				}
+			}
+		}
+	}
+
+	if( !StrWarningWritten && (StartWrnArrIdx < ALARM_ACTIVE_IN_STRUCT))
+	{
+		if(alarmList[IdxCurrWarn].active == ACTIVE_TRUE)
+			StrWarningWritten = 1;
+		else
+		{
+			// potrebbe essersi verificato un allarme molto breve che non e' riuscito
+			// ad attivarsi, forzo una ripartenza dall'inizio della tabella
+			StartWrnArrIdx = 0;
+			EnableNextWarning = TRUE;
+			memset(&alarmCurrent, 0, sizeof(struct alarm));
+		}
+	}
+	else if(StrWarningWritten == 1)
+	{
+		ShowAlarmStr((int)alarmList[IdxCurrWarn].code, " on");
+		StrWarningWritten = 2;
+		EnableNextWarning = FALSE;
+	}
+	else if(StrWarningWritten == 2)
+	{
+		if( alarmList[IdxCurrWarn].active == ACTIVE_FALSE)
+		{
+			// allarme terminato
+			StrWarningWritten = 0;
+			ShowAlarmStr((int)alarmList[IdxCurrWarn].code, " off");
+			StartWrnArrIdx = 0;
+		}
+	}
+}
+
+
+void warningManageNull(void)
+{
+	static unsigned char dummy = 0;
+	static unsigned short elapsedEntryTime = 0;
+	static unsigned short elapsedExitTime = 0;
+
+	elapsedEntryTime = elapsedEntryTime + 50;
+	elapsedExitTime = elapsedExitTime + 50;
+	if((ptrWarningCurrent->priority == PRIORITY_LOW) && (ptrWarningCurrent->active != ACTIVE_TRUE) && (elapsedEntryTime > ptrWarningCurrent->entryTime))
+	{
+		// entro nella gestione di un allarme che ha bisogno di azioni sugli attuatori
+		elapsedEntryTime = 0;
+		elapsedExitTime = 0;
+		ptrWarningCurrent->active = ACTIVE_TRUE;
+		//currentGuard[GUARD_ALARM_ACTIVE].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+
+		// FM ora AlarmCurrent contiene l'allarme attivo corrente che sara' inviato ad SBC
+		warningCurrent = *ptrWarningCurrent;
+	}
+	else if((ptrWarningCurrent->priority == PRIORITY_LOW) && (ptrWarningCurrent->active == ACTIVE_TRUE) && (elapsedExitTime > ptrWarningCurrent->exitTime))
+	{
+		// esco dalla gestione di un allarme che ha bisogno di azioni sugli attuatori
+		elapsedEntryTime = 0;
+		elapsedExitTime = 0;
+		ptrWarningCurrent->active = ACTIVE_FALSE;
+		//currentGuard[GUARD_ALARM_ACTIVE].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
+
+		StartWrnArrIdx = 0;
+	}
+	dummy = dummy + 1;
+}
+
+// ritorna su 16 bit il codice di allarme e quello dello warning
+uint16_t GetAlarmAndWarnCode(void)
+{
+	uint16_t u16;
+	u16 = alarmCurrent.code;
+	u16 |= (warningCurrent.code << 8);
+	return u16;
+}
+
