@@ -165,7 +165,7 @@ void DebugString()
 		sprintf(stringPr, "\r %i; %i; %i; %i; %x; %d; %d;",
 								(int) (sensorIR_TM[0].tempSensValue*10),
 								(int) LiquidAmount, //sensor_UFLOW[VENOUS_AIR_SENSOR].bubbleSize,
-								(int) CoversState,  //sensor_UFLOW[ARTERIOUS_AIR_SENSOR].bubbleSize,
+								(int) (T_PLATE_C_GRADI_CENT * 10.0),  //sensor_UFLOW[ARTERIOUS_AIR_SENSOR].bubbleSize,
 								(int) (sensorIR_TM[1].tempSensValue * 10),  // temp. recevoir
 								(int) modbusData[2][18] & 0x0200, //alarmList[AIR_PRES_ART].physic,
 								(int) pumpPerist[0].actualSpeed,

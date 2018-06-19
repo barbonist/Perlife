@@ -2214,11 +2214,10 @@ typedef enum
 
 // massima temperatura raggiungibile nella base riscaldante (al di sopra spengo
 // le resistenze riscaldanti) in gradi C
-//#define MAX_PLATE_TEMP  70
-#define MAX_PLATE_TEMP  50
+#define MAX_PLATE_TEMP  70
 // massima temperatura raggiungibile nella base riscaldante (al di sotto spengo
 // il frigo) in gradi C
-#define MIN_PLATE_TEMP  -5
+#define MIN_PLATE_TEMP  -16
 
 // stati per gestire il pilotaggio delle resistenze di riscaldamento
 typedef enum
