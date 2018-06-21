@@ -832,8 +832,11 @@ void Set_Data_EEPROM_Default(void)
 		 config_data.sensor_PRx[ART].prSensGain       = PR_ART_GAIN_DEFAULT;
 		 config_data.sensor_PRx[ART].prSensOffset     = PR_ART_OFFSET_DEFAULT;
 
-		 config_data.T_Plate_Sensor_Gain              = GAIN_T_PLATE_SENS;
-		 config_data.T_Plate_Sensor_Offset            = OFFSET_T_PLATE_SENS;
+		 config_data.T_Plate_Sensor_Gain_heat         = GAIN_T_PLATE_SENS_HEAT;
+		 config_data.T_Plate_Sensor_Offset_heat       = OFFSET_T_PLATE_SENS_HEAT;
+
+		 config_data.T_Plate_Sensor_Gain_cold         = GAIN_T_PLATE_SENS_COLD;
+ 		 config_data.T_Plate_Sensor_Offset_cold       = OFFSET_T_PLATE_SENS_COLD;
 
 		 //revsione della EEPROM
 		 config_data.EEPROM_Revision 				  = EEPROM_REVISION;

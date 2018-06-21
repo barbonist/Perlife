@@ -5521,8 +5521,11 @@ void Set_Data_EEPROM_Default(void)
 		 config_data.sensor_PRx[ART].prSensGain       = PR_ART_GAIN_DEFAULT;
 		 config_data.sensor_PRx[ART].prSensOffset     = PR_ART_OFFSET_DEFAULT;
 
-		 config_data.T_Plate_Sensor_Gain              = GAIN_T_PLATE_SENS;
-		 config_data.T_Plate_Sensor_Offset            = OFFSET_T_PLATE_SENS;
+		 config_data.T_Plate_Sensor_Gain_Heat         = GAIN_T_PLATE_SENS_HEAT;
+		 config_data.T_Plate_Sensor_Offset_Heat       = OFFSET_T_PLATE_SENS_HEAT;
+
+		 config_data.T_Plate_Sensor_Gain_Cold         = GAIN_T_PLATE_SENS_COLD;
+		 config_data.T_Plate_Sensor_Offset_Cold       = OFFSET_T_PLATE_SENS_COLD;
 
 		 config_data.FlowSensor_Ven_Gain              = GAIN_FLOW_SENS_VEN;
 		 config_data.FlowSensor_Ven_Offset            = OFFSET_FLOW_SENS_VEN;

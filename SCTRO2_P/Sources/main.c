@@ -286,19 +286,31 @@ void Enable_Pinch_Venous(bool status)
 void Enable_Heat(bool status)
 {
 	if (status && !HEAT_ON_P_GetVal())
+	{
 		HEAT_ON_P_SetVal();
+		Heat_ON = TRUE;
+	}
 
 	if (!status && HEAT_ON_P_GetVal())
+	{
 		HEAT_ON_P_ClrVal();
+		Heat_ON = FALSE;
+	}
 }
 
 void Enable_Frigo (bool status)
 {
 	if (status && !COMP_ENABLE_GetVal())
+	{
 		COMP_ENABLE_SetVal();
+		Frigo_ON = TRUE;
+	}
 
 	if (!status && COMP_ENABLE_GetVal())
+	{
 		COMP_ENABLE_ClrVal();
+		Frigo_ON = FALSE;
+	}
 }
 
 int main(void)
@@ -339,6 +351,8 @@ int main(void)
   Enable_Pinch_Venous(TRUE);
   Enable_Heat(FALSE);
   Enable_Frigo(FALSE);
+  Heat_ON = FALSE;
+  Frigo_ON = FALSE;
 
   /*leggo tutta la struttura dati salvata nella parte di flash usata come EEPROM (ci saranno ad esmepio i coefficienti di claibrazione)*/
    EEPROM_Read(START_ADDRESS_EEPROM, (EEPROM_TDataAddress)&config_data, sizeof(config_data));

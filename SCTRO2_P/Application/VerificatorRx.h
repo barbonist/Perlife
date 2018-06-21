@@ -21,6 +21,5 @@ void VerifyRxPumpsRpm(uint16_t SpeedPump0Rpmx100, uint16_t SpeedPump1Rpmx100,
 		uint16_t SpeedPump2Rpmx100, uint16_t SpeedPump3Rpmx100);
 void ManageRxAlarmCode(uint16_t AlarmCode);
 void NotifyCanOnline(bool Online);
-void VerifyRxHeaterON( uint8_t RxAirAlarm );
-void VerifyRxFrigoON( uint8_t RxAirAlarm );
+
 #endif /* APPLICATION_VERIFICATORRX_H_ */

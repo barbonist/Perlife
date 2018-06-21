@@ -14,6 +14,8 @@
 #include "Global.h"
 #include "ShowAlarm.h"
 #include "VerificatorRx.h"
+#include "COMP_ENABLE.h"
+#include "HEAT_ON_P.h"
 
 #define VAL_JOLLY16	0x5A5A
 #define VAL_JOLLY8	0x5A
@@ -176,19 +178,24 @@ void onNewPressArt(uint16_t  Value)		{	TxCan0.STxCan0.PressArt = Value; }
 #endif
 
 
+/* 6 RPM is the minimum speed value calculate by protective */
 void onNewPumpRPM(int16_t Value, int PumpIndex) {
 #ifndef CAN_DEBUG
 	switch (PumpIndex) {
 	case 0:
+		/*Pump filter--art kidney*/
 		TxCan3.STxCan3.SpeedPump0Rpmx100 = Value;
 		break;
 	case 1:
+		/*pump art liver--not used in kidney*/
 		TxCan3.STxCan3.SpeedPump1Rpmx100 = Value;
 		break;
 	case 2:
+		/*pump oxy first*/
 		TxCan3.STxCan3.SpeedPump2Rpmx100 = Value;
 		break;
 	case 3:
+		/*pump oxy second*/
 		TxCan3.STxCan3.SpeedPump3Rpmx100 = Value;
 		break;
 	}
@@ -373,8 +380,33 @@ void NewDataRxChannel3(void) {
 	// air alarm
 	if (RxCan3.SRxCan3.AirAlarm != OldRxCan3.SRxCan3.AirAlarm) {
 		VerifyRxAirAlarm(RxCan3.SRxCan3.AirAlarm & 0x01);
-		VerifyRxHeaterON(RxCan3.SRxCan3.AirAlarm & 0x02);
-		VerifyRxFrigoON(RxCan3.SRxCan3.AirAlarm & 0x04);
+
+		if ( (RxCan3.SRxCan3.AirAlarm & 0x02) && !(RxCan3.SRxCan3.AirAlarm & 0x04) )
+		{
+			//aziono il relè del riscaldatore
+			if (!COMP_ENABLE_GetVal())
+			{
+				Enable_Heat(TRUE);
+				Enable_Frigo(FALSE);
+			}
+		}
+		else if ( !(RxCan3.SRxCan3.AirAlarm & 0x02) && (RxCan3.SRxCan3.AirAlarm & 0x04) )
+		{
+			//aziono il relè del frigo
+			if (!HEAT_ON_P_GetVal())
+			{
+				Enable_Frigo(TRUE);
+				Enable_Heat(FALSE);
+			}
+		}
+		else if ( (RxCan3.SRxCan3.AirAlarm & 0x02) && (RxCan3.SRxCan3.AirAlarm & 0x04) )
+		{
+			//vado in allarme e spengo entrambi i relè perchè
+			//la control mi chiede di attivarli entrambi, cosa non corretta
+			Enable_Heat(FALSE);
+			Enable_Frigo(FALSE);
+		}
+
 	}
 
 	// Alarm code

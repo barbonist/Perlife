@@ -337,6 +337,9 @@ int main(void)
   FreeRunCnt10msec = 0;
   Service = FALSE;
 
+  Frigo_ON = FALSE;
+  Heat_ON  = FALSE;
+
   iFlag_actuatorCheck = IFLAG_IDLE;
   iFlag_modbusDataStorage = FALSE;
 

@@ -135,7 +135,11 @@ void Manange_ADC1(void)
 
 void Coversion_From_ADC_To_degree_T_PLATE_Sensor()
 {
-	T_PLATE_C_GRADI_CENT = config_data.T_Plate_Sensor_Gain * T_PLATE_C_ADC + config_data.T_Plate_Sensor_Offset;
+	if (Frigo_ON)
+		T_PLATE_C_GRADI_CENT = config_data.T_Plate_Sensor_Gain_Cold * T_PLATE_C_ADC + config_data.T_Plate_Sensor_Offset_Cold;
+	else
+		T_PLATE_C_GRADI_CENT = config_data.T_Plate_Sensor_Gain_Heat * T_PLATE_C_ADC + config_data.T_Plate_Sensor_Offset_Heat;
+
 	T_PLATE_C_GRADI_CENT /= 10;
 
 }

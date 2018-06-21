@@ -503,11 +503,25 @@ unsigned char Air_1_Status;				//variabile globale per vedere lo stato del senso
 //#define OFFSET_T_PLATE_SENS			-384.935
 
 /*valori di GAIN e OFFSET calcolati con: R1 = 931  ohm  = -10.8°C a cui corrispondono 17535 ADC
- * 										 R2 = 1238 ohm = 26.6 °C   a cui corrispondono 40927 ADC
+ * 										 R2 = 1102.5 ohm = 26.6 °C   a cui corrispondono 40927 ADC
  * 										 le temperature le ho considerate tutte moltiplicate per 10
  * 										 per avere la risoluzione del decimo di grado							 */
-#define GAIN_T_PLATE_SENS			0.015988
-#define OFFSET_T_PLATE_SENS			-388.3496
+
+#define GAIN_T_PLATE_SENS_COLD			0.015988
+#define OFFSET_T_PLATE_SENS_COLD		-388.3496
+
+bool Heat_ON;	//variabile globale che mi dice se è partito il riscaldatore
+
+/*valori di GAIN e OFFSET ricalcolati con in data 19-6-2018 con pt100 in classe A poggiata sulla piastra:
+ * 				 R1 = 1131  ohm  = 34°C a cui corrispondono 43637 ADC
+ * 				 R2 = 1171  ohm  = 44.4 °C   a cui corrispondono 46752 ADC
+ * 				 le temperature le ho considerate tutte moltiplicate per 10
+ * 				 per avere la risoluzione del decimo di grado							 */
+
+bool Frigo_ON;	//variabile globale che mi dice se è partito il firgo
+
+#define GAIN_T_PLATE_SENS_HEAT			0.033386838
+#define OFFSET_T_PLATE_SENS_HEAT			-1117
 
 #define AIR							0x00
 #define LIQUID						0x01
@@ -527,8 +541,10 @@ struct pressureSensor{
 struct ParSaveTO_EEPROM
 {
 	struct pressureSensor sensor_PRx[5];
-	float  T_Plate_Sensor_Gain;
-	float  T_Plate_Sensor_Offset;
+	float  T_Plate_Sensor_Gain_cold;
+	float  T_Plate_Sensor_Offset_cold;
+	float  T_Plate_Sensor_Gain_heat;
+	float  T_Plate_Sensor_Offset_heat;
 	unsigned char EEPROM_Revision;
 	word EEPROM_CRC;
 };

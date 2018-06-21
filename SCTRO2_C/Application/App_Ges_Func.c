@@ -864,6 +864,7 @@ bool Start_Frigo_AMS(float DeltaT)
 {
 	int DeltaTInt;
 	unsigned char power = 10;
+	static unsigned char power_old = 0;
 	bool StartFlag = FALSE;
 
 	if(!EnableFrigoFromPlate || !EnableFrigoFromControl)
@@ -889,6 +890,8 @@ bool Start_Frigo_AMS(float DeltaT)
 	{
 		// la temperatura  da raggiungere e' inferiore a quella corrente, quindi
 		// devo accendere il frigo con una potenza che dipende dal DeltaT
+		Frigo_ON = TRUE;
+		Heat_ON  = FALSE;
 		DeltaTInt = DeltaT / 10.0 + 0.5;
 		if(DeltaTInt >= 12)
 			power = 10;           // massima potenza
@@ -914,7 +917,7 @@ bool Start_Frigo_AMS(float DeltaT)
 	    FrigoOn = 0;
 	    SetFan(FALSE);
 	}
-	else
+	else if (power != power_old)
 	{
 		Enable_AMS = TRUE;
 		/* a power = 10 corrisponde la massima frequenza pari
@@ -926,6 +929,8 @@ bool Start_Frigo_AMS(float DeltaT)
 	    FrigoOn = 1;
 	    SetFan(TRUE);
 	}
+	power_old = power;
+
 	return StartFlag;
 }
 
@@ -1080,6 +1085,8 @@ bool StartHeating(float DeltaT)
 		// la temperatura  da raggiungere e' superiore a quella corrente, quindi
 		// devo accendere il riscaldatore con un pwm che dipende dal DeltaT
 		// DeltaT in questo caso e' sicuramente negativa
+		Frigo_ON = FALSE;
+		Heat_ON  = TRUE;
 		DeltaT = -DeltaT;
 		DeltaTInt = DeltaT / 10.0 + 0.5;
 		if(DeltaTInt >= 9)

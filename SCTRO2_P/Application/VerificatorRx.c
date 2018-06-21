@@ -112,32 +112,7 @@ void VerifyRxAirAlarm( uint8_t RxAirAlarm )
 	// air alarm , don't know what to do since we have no dedicated air alarm input
 }
 
-void VerifyRxHeaterON( uint8_t RxAirAlarm )
-{
-	/*mi occupo del riscaldatore solo se il frigo è spento*/
-	if (!COMP_ENABLE_GetVal())
-	{
-		if (RxAirAlarm)
-			Enable_Heat(TRUE);
-		else
-			Enable_Heat(FALSE);
-	}
-	else /* se il frigo è acceso, spengo comunque il riscaldatore*/
-		Enable_Heat(FALSE);
-}
-void VerifyRxFrigoON( uint8_t RxAirAlarm )
-{
-	/*mi occupo del frigo solo se il riscaldatore è spento*/
-	if (!HEAT_ON_P_GetVal())
-	{
-		if (RxAirAlarm)
-			Enable_Frigo(TRUE);
-		else
-			Enable_Frigo(FALSE);
-	}
-	else /* se il riscaldatore è acceso, spengo comunque il frigo*/
-		Enable_Frigo(FALSE);
-}
+
 void VerifyRxPinchPos( uint8_t Pinch0Pos , uint8_t Pinch1Pos ,  uint8_t Pinch2Pos)
 {
 
