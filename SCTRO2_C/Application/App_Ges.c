@@ -1548,7 +1548,9 @@ unsigned char TemperatureStateMach(int cmd)
 			}
 			break;
 		case TEMP_CHECK_DURATION_STATE:
-			if((tmpr >= (float)(tmpr_trgt - 10)) && (tmpr <= (float)(tmpr_trgt + 10)))
+			//if((tmpr >= (float)(tmpr_trgt - 10)) && (tmpr <= (float)(tmpr_trgt + 10)))
+			/*temperatura all'interno del range di 0.4 °C e non + di 1 °C*/
+			if((tmpr >= (float)(tmpr_trgt - 4)) && (tmpr <= (float)(tmpr_trgt + 4)))
 			{
 				// ho raggiunto la temperatura target
 				if(msTick_elapsed(RicircTimeout) * 50L >= TIMEOUT_TEMPERATURE_RICIRC)

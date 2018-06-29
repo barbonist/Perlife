@@ -92,6 +92,7 @@ void onNewKey(char Key)
 	}
 }
 
+
 void VerifyRxState(uint16_t State, uint16_t Parent, uint16_t Child,
 		uint16_t Guard) {
 
@@ -146,6 +147,15 @@ void ManageRxAlarmCode(uint16_t AlarmCode)
 void NotifyCanOnline(bool Online)
 {
 	CanOfflineAlarmTimer.AlarmConditionPending = !Online;
+	/* le tre righe di codice sotto servono a far si che
+	 * se la PRO ha perso la comunicazione CAN e va in allarme,
+	 * ma successivamente riprende la comunicaizone, allora l'allarme
+	 * viene rimosso automaticamente senza intervento dell'operatore.
+	 * Se si cambia gestione e si vuole l'intervento di un reset
+	 * dell'operatore allora vanno rimosse*/
+	CanOfflineAlarmTimer.AlarmCounter = 0;
+	CanOfflineAlarmTimer.AlarmActive = false;
+	ShowNewAlarmError(CODE_ALARM_NO_ERROR);
 }
 
 bool ValueIsInRangePerc(uint16_t RefValue, uint16_t Val2Test, uint16_t IPercent) {

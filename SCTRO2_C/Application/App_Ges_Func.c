@@ -890,23 +890,31 @@ bool Start_Frigo_AMS(float DeltaT)
 	{
 		// la temperatura  da raggiungere e' inferiore a quella corrente, quindi
 		// devo accendere il frigo con una potenza che dipende dal DeltaT
-		Frigo_ON = TRUE;
-		Heat_ON  = FALSE;
+
 		DeltaTInt = DeltaT / 10.0 + 0.5;
 		if(DeltaTInt >= 12)
 			power = 10;           // massima potenza
-		else if(DeltaTInt >= 10)
-			power = 15;           // 66 % della potenza
 		else if(DeltaTInt >= 8)
-			power = 20;           // 50 %
+			//power = 15;           // 66 % della potenza
+			power = 11;           // 90 % della potenza
 		else if(DeltaTInt >= 6)
-			power = 25;           // 40 %
+			//power = 20;           // 50 %
+			power = 12;           // 83 %
 		else if(DeltaTInt >= 4)
-			power = 30;           // 33 %
+		//	power = 25;           // 40 %
+			power = 13;           // 77 %
 		else if(DeltaTInt >= 2)
-			power = 35;           // 28 %
+			//power = 30;           // 33 %
+			power = 14;           // 71 %
+//		else if(DeltaTInt >= 2)
+//			//power = 35;           // 28 %
+//			power = 19;           // 52 %
 		else
-			power = 40;           // 25 % minima potenza
+			//power = 40;           // 25 % minima potenza
+			power = 15;           // 66 % minima potenza
+
+//		/*se posso accendere il frigo lo mando sempre alla masima potenza*/
+//		power = 10;
 	}
 
 	if (power == 0)
@@ -1089,24 +1097,28 @@ bool StartHeating(float DeltaT)
 		Heat_ON  = TRUE;
 		DeltaT = -DeltaT;
 		DeltaTInt = DeltaT / 10.0 + 0.5;
-		if(DeltaTInt >= 9)
-			HeatingPwmPerc = 90; // 90%
-		else if(DeltaTInt >= 8)
-			HeatingPwmPerc = 80; // 80%
-		else if(DeltaTInt >= 7)
-			HeatingPwmPerc = 70; // 70%
-		else if(DeltaTInt >= 6)
-			HeatingPwmPerc = 60; // 60%
-		else if(DeltaTInt >= 5)
-			HeatingPwmPerc = 50; // 50%
-		else if(DeltaTInt >= 4)
-			HeatingPwmPerc = 40; // 40%
-		else if(DeltaTInt >= 3)
-			HeatingPwmPerc = 30; // 30%
-		else if(DeltaTInt >= 2)
-			HeatingPwmPerc = 20; // 20%
+		if (DeltaTInt <= 2)
+			HeatingPwmPerc = 70;
 		else
-			HeatingPwmPerc = 10; // 10%
+			HeatingPwmPerc = 100;
+//		if(DeltaTInt >= 9)
+//			HeatingPwmPerc = 90; // 90%
+//		else if(DeltaTInt >= 8)
+//			HeatingPwmPerc = 80; // 80%
+//		else if(DeltaTInt >= 7)
+//			HeatingPwmPerc = 70; // 70%
+//		else if(DeltaTInt >= 6)
+//			HeatingPwmPerc = 60; // 60%
+//		else if(DeltaTInt >= 5)
+//			HeatingPwmPerc = 50; // 50%
+//		else if(DeltaTInt >= 4)
+//			HeatingPwmPerc = 40; // 40%
+//		else if(DeltaTInt >= 3)
+//			HeatingPwmPerc = 30; // 30%
+//		else if(DeltaTInt >= 2)
+//			HeatingPwmPerc = 20; // 20%
+//		else
+//			HeatingPwmPerc = 10; // 10%
 		//HeatingPwmPerc = 10;
 		//HeatingPwm((int)10); // 10 % non serve qui questo
 		StartHeatingFlag = TRUE;
@@ -1372,6 +1384,11 @@ LIQ_TEMP_CONTR_TASK_STATE FrigoHeatTempControlTask(LIQ_TEMP_CONTR_TASK_CMD LiqTe
 			{
 				if(timeInterval10 && (msTick10_elapsed(timeInterval10) >= FRIGO_DELAY))
 				{
+					/*da ora in avanto uso il frigo quindi setto le variabili globali
+					 * che identificano frigo SI riscaldatore NO per decidere i coefficienti di calibrazione
+					 * della pt 100 di piastra*/
+					Frigo_ON = TRUE;
+					Heat_ON  = FALSE;
 					// temperatura superiore al target usero' sempre il frigo
 					LiqTempContrTaskSt = LIQ_T_CONTR_RUN_FRIGO;
 					timeInterval10 = FreeRunCnt10msec;

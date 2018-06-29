@@ -815,6 +815,8 @@ struct perfParam{
 	word renalResistance;
 	word pulsatility;
 	word pressDropAdsFilter;
+	word renalResistanceVenous;
+	word pulsatilityVenous;
 };
 
 struct perfParam	perfusionParam;
@@ -1471,7 +1473,7 @@ typedef enum{NOT_DEF = 0, NO = 1, YES = 2} PARAMETER_ACTIVE_TYPE;
 //#define CONV_RPMMIN_TO_ML_PER_INTERVAL  (float)0.00775
 // intervallo di tempo in msec per cui devo vedere la temperatura di ricircolo raggiunta prima di chiudere lo stato
 // e passare  all trattamento
-#define TIMEOUT_TEMPERATURE_RICIRC 2000L
+#define TIMEOUT_TEMPERATURE_RICIRC 60000 //2000L passo da 2 seocndi a 60 secondi
 
 /*
  *  * -----------------CON SPEZZONI POMPA DEL DISPOSABLE ORIGINALI
@@ -1573,9 +1575,9 @@ Kd = Kp*Pu/8  = 0.01875
 #define MAX_LIQUID_AMOUNT 2500
 
 // velocita' con cui faccio partire, per ora, la pompa di depurazione
-#define LIVER_PPAR_SPEED 2000
+#define LIVER_PPAR_SPEED 4000//2000 only for test
 // velocita' con cui faccio partire, per ora, la pompa di ossigenazione e perfusione venosa nel caso di priming
-#define LIVER_PRIMING_PMP_OXYG_SPEED 2000
+#define LIVER_PRIMING_PMP_OXYG_SPEED 6000//2000 only for test
 // definisce il valore massimo di giri che possono raggiungere le pompe di ossigenazione
 #define MAX_OXYG_RPM  105
 // numero di giri della pompa arteriosa durante lo scarico
@@ -1699,9 +1701,13 @@ typedef enum
 #define HIGH_PUMP_SPEED_DURATION 60000L
 
 // velocita' delle pompe per la fase del ricircolo ad alta velocita'
+/*
 #define RECIRC_PUMP_HIGH_SPEED 4000
 #define RECIRC_PUMP_HIGH_SPEED_ART 2000
-
+*/
+//only for test
+#define RECIRC_PUMP_HIGH_SPEED 5000
+#define RECIRC_PUMP_HIGH_SPEED_ART 5000
 
 // GESTIONE PRIMING AGGIUNTIVO DA DEBUGGARE
 typedef enum
@@ -2231,9 +2237,9 @@ typedef enum
 // massima temperatura raggiungibile nella base riscaldante (al di sopra spengo
 // le resistenze riscaldanti) in gradi C
 #define MAX_PLATE_TEMP  70
-// massima temperatura raggiungibile nella base riscaldante (al di sotto spengo
+// minima temperatura raggiungibile nella base riscaldante (al di sotto spengo
 // il frigo) in gradi C
-#define MIN_PLATE_TEMP  -16
+#define MIN_PLATE_TEMP  -5//-16 la metto a -5 per evitare la formazione di ghiaccio
 
 // stati per gestire il pilotaggio delle resistenze di riscaldamento
 typedef enum
