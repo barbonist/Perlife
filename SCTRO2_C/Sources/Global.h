@@ -1150,8 +1150,8 @@ struct ultrsndFlowSens * ptrMsg_UFLOW; 	   /* puntatore utilizzato per spedire i
 #define GUI_BUTTON_RELEASED		0x01
 
 enum buttonGUIEnum{
-	BUTTON_PINCH_2WPVF_RIGHT_OPEN = 0xA0,   // pinch filter (pinch in basso aperto a destra)
-	BUTTON_PINCH_2WPVF_LEFT_OPEN = 0xA1,    // pinch filter (pinch in basso aperto a sinistra)
+	BUTTON_PINCH_2WPVF_RIGHT_OPEN = 0xA1,   // pinch filter (pinch in basso aperto a destra)
+	BUTTON_PINCH_2WPVF_LEFT_OPEN = 0xA0,    // pinch filter (pinch in basso aperto a sinistra)
 	BUTTON_PINCH_2WPVF_BOTH_CLOSED = 0xA2,  // pinch filter (pinch in basso entrambi chiusi)
 	BUTTON_PINCH_2WPVA_RIGHT_OPEN = 0xA3,   // pinch arterial (pinch di sinistra - aperto a destra)
 	BUTTON_PINCH_2WPVA_LEFT_OPEN = 0xA4,    // pinch arterial (pinch di sinistra - aperto a sinistra)
@@ -1587,7 +1587,7 @@ Kd = Kp*Pu/8  = 0.01875
 // tempo in ticks da 50 msec che mantengo le pompe venose ad arteriosa attive dopo il rilevamento dell'aria
 #define EMPTY_TIME_PUMPS_ON_AFTER_AIR 200
 // definisce il valore massimo di giri che puo raggiungere la pompa arteriosa
-#define MAX_ART_RPM  60
+#define MAX_ART_RPM  70
 
 
 // velocita' con cui faccio partire, per ora, la pompa per l'espulsione dell'aria

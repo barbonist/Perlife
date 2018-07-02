@@ -328,10 +328,10 @@ void HandlePinch( int cmd)
 {
 	switch (cmd)
 	{
-		case BUTTON_PINCH_2WPVF_RIGHT_OPEN:   //= 0xA0,   // pinch filter (pinch in basso aperto a destra)
+		case BUTTON_PINCH_2WPVF_RIGHT_OPEN:   //= 0xA1,   // pinch filter (pinch in basso aperto a destra)
 			setPinchPositionHighLevel(PINCH_2WPVF, MODBUS_PINCH_RIGHT_OPEN);
 			break;
-		case BUTTON_PINCH_2WPVF_LEFT_OPEN:    //= 0xA1,    // pinch filter (pinch in basso aperto a sinistra)
+		case BUTTON_PINCH_2WPVF_LEFT_OPEN:    //= 0xA0,    // pinch filter (pinch in basso aperto a sinistra)
 			setPinchPositionHighLevel(PINCH_2WPVF, MODBUS_PINCH_LEFT_OPEN);
 			break;
 		case BUTTON_PINCH_2WPVF_BOTH_CLOSED:  //= 0xA2,  // pinch filter (pinch in basso entrambi chiusi)
@@ -4210,6 +4210,24 @@ static void computeMachineStateGuardTreatment(void)
 				// aggiorno la velocita' della pompa di depurazione
 				CheckDepurationSpeed(LastDepurationSpeed, FALSE, FALSE);
 			}
+		}
+
+		/*controllo se mi arriva un comando per spostare la pinch Filter
+		 * mentre la terapia sta andando*/
+
+		if(buttonGUITreatment[BUTTON_PINCH_2WPVF_RIGHT_OPEN].state == GUI_BUTTON_RELEASED &&
+				parameterWordSetFromGUI[PAR_SET_DEPURATION_ACTIVE].value == YES)
+		{
+			// pinch filter (pinch in basso aperto a destra)
+			releaseGUIButton(BUTTON_PINCH_2WPVF_RIGHT_OPEN);
+			HandlePinch(BUTTON_PINCH_2WPVF_RIGHT_OPEN);
+		}
+		if(buttonGUITreatment[BUTTON_PINCH_2WPVF_LEFT_OPEN].state == GUI_BUTTON_RELEASED &&
+				parameterWordSetFromGUI[PAR_SET_DEPURATION_ACTIVE].value == YES)
+		{
+			// pinch filter (pinch in basso aperto a sinistra)
+			releaseGUIButton(BUTTON_PINCH_2WPVF_LEFT_OPEN);
+			HandlePinch(BUTTON_PINCH_2WPVF_LEFT_OPEN);
 		}
 	}
 
