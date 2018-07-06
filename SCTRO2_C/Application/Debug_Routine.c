@@ -356,7 +356,7 @@ void Service_SBC(void){
 					}
 					break;
 
-					// Read ADC and mmHg temperature IR values
+					// Read temperature IR values
 					case 0x40:
 					{
 						word snd;
@@ -393,15 +393,30 @@ void Service_SBC(void){
 						ptrMsgSbcTx = &sbc_tx_data[0];
 						SBC_COMM_SendBlock(ptrMsgSbcTx,myCommunicatorToSBC.numByteToSend,&snd);
 
+
 						/*resetto l'indirzzo*/
-						buildCmdWriteTempSensIR(OldAddress, (RAM_ACCESS_COMMAND | SD_SMBUS_E2_ADDRESS), 0x0000);
+						buildCmdWriteTempSensIR(OldAddress, (EEPROM_ACCESS_COMMAND | SD_SMBUS_E2_ADDRESS), 0x0000);
 
-		         		int wait = timerCounter;
-		         	    /*attendo 200 msec*/
-		         		while ( timerCounter - wait < 4);
+						int wait = timerCounter;
+						/*attendo 250 msec*/
+						while ( timerCounter - wait < 6);
 
-		         		/*scrivo il nuovo indirizzo*/
-		         	    buildCmdWriteTempSensIR(OldAddress, (RAM_ACCESS_COMMAND | SD_SMBUS_E2_ADDRESS), NewAddress);
+						/*scrivo il nuovo indirizzo*/
+						buildCmdWriteTempSensIR(OldAddress, (EEPROM_ACCESS_COMMAND | SD_SMBUS_E2_ADDRESS), NewAddress);
+
+						wait = timerCounter;
+						/*attendo 250 msec*/
+						while ( timerCounter - wait < 6);
+
+//						/*resetto l'indirzzo*/
+//						buildCmdWriteTempSensIR(OldAddress, (RAM_ACCESS_COMMAND | SD_SMBUS_E2_ADDRESS), 0x0000);
+//
+//		         		int wait = timerCounter;
+//		         	    /*attendo 200 msec*/
+//		         		while ( timerCounter - wait < 4);
+//
+//		         		/*scrivo il nuovo indirizzo*/
+//		         	    buildCmdWriteTempSensIR(OldAddress, (RAM_ACCESS_COMMAND | SD_SMBUS_E2_ADDRESS), NewAddress);
 
 		         	    /*successivamente dovrò disalimentare il sensore altrimenti il nuovo indirizzo non viene memorizzato*/
 					}
