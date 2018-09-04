@@ -152,6 +152,7 @@ char	data_pmp1[252];			/* pmp1 data field */
 #define		MODBUS_PINCH_RIGHT_OPEN		0x0004
 #define		MODBUS_PINCH_LEFT_OPEN		0x0002
 
+#define 	ACCELERATION_EVER_DEFAULT   0x00C8 //200 Dec RPM/sec
 
 /* Public interface function */
 
@@ -245,7 +246,7 @@ void RTS_Motor_Management(unsigned char action);
 void EN_Clamp_Control (unsigned char action);
 void EN_Motor_Control(unsigned char action);
 #ifdef PUMP_EVER
-void setPumpSpeedValueEVER(unsigned char slaveAddr, int speedValue,ActionPumpEver Action);
+void setPumpSpeedValueEVER(unsigned char slaveAddr, int speedValue, int acceleration, ActionPumpEver Action);
 #endif
 
 #endif /* APPLICATION_MODBUSCOMMPROT_H_ */

@@ -2083,7 +2083,8 @@ typedef enum
 	STOP,
 	CHANGE_PROFILE_VELOCITY,
 	INIT_PUMP,
-	CHANGE_VELOCITY			//command custom
+	CHANGE_VELOCITY,			//command custom
+	RESET_ALARM_DRIVER
 } ActionPumpEver;
 
 ActionPumpEver Action;
@@ -2181,7 +2182,7 @@ typedef enum
 	LIQ_T_CONTR_TASK_NO_CMD,
 	LIQ_T_CONTR_TASK_RESET_CMD,
 	READ_STATE_CMD,
-	FRIGO_STARTING_CMD,
+	FRIGO_STARTING_CMD, //flag per far ripartire il frigo
 	FRIGO_STOP_CMD,
 	HEAT_STARTING_CMD,
 	HEAT_STOP_CMD,

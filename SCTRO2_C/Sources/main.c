@@ -443,7 +443,7 @@ int main(void)
 #ifdef PUMP_EVER
 	MOD_BUS_RESPONSE result;
 	result = WaitForModBusResponseTask((WAIT_FOR_MB_RESP_TASK_CMD)WAIT_MB_RESP_TASK_RESET_CMD);
-	setPumpSpeedValueEVER (PPV1,0, INIT_PUMP);
+	setPumpSpeedValueEVER (PPV1,0,0, INIT_PUMP);
 	//setPumpSpeedValue (PPV1, 1000);
  	while(result == MOD_BUS_ANSW_NO_ANSW)
  		result = WaitForModBusResponseTask((WAIT_FOR_MB_RESP_TASK_CMD)WAIT_MB_RESP_TASK_NO_CMD);
@@ -451,7 +451,7 @@ int main(void)
   // Se uso queste funzioni prima di andare avanti dovrei controllare la risposta e
   // poi passare alla seconda pompa
 	result = WaitForModBusResponseTask((WAIT_FOR_MB_RESP_TASK_CMD)WAIT_MB_RESP_TASK_RESET_CMD);
-	setPumpSpeedValueEVER (PPV2,0, INIT_PUMP);
+	setPumpSpeedValueEVER (PPV2,0,0, INIT_PUMP);
 	//setPumpSpeedValue (PPV1, 0);
  	while(result == MOD_BUS_ANSW_NO_ANSW)
  		result = WaitForModBusResponseTask((WAIT_FOR_MB_RESP_TASK_CMD)WAIT_MB_RESP_TASK_NO_CMD);
@@ -571,6 +571,9 @@ int main(void)
 #endif
 
 
+
+
+
   /**********MAIN LOOP START************/
   for(;;) {
 
@@ -635,47 +638,57 @@ int main(void)
 
 	         if(ReadKey1()) // per debug con la tastiera a bolle
 	         {
-//	        	  MOD_BUS_RESPONSE result;
-//	        	  result = WaitForModBusResponseTask((WAIT_FOR_MB_RESP_TASK_CMD)WAIT_MB_RESP_TASK_INIT_3_CMD);
-//	        	  setPumpSpeedValue (PPV1, 1000);
-//	        	  while(result == MOD_BUS_ANSW_NO_ANSW)
-//	        		  result = WaitForModBusResponseTask((WAIT_FOR_MB_RESP_TASK_CMD)WAIT_MB_RESP_TASK_NO_CMD);
-//	        	  result = MOD_BUS_ANSW_NO_ANSW;
-#ifdef DEBUG_FRIGO_AMS
-	        	 TempPerfVal--;
-	        	 parameterWordSetFromGUI[PAR_SET_PRIMING_TEMPERATURE_PERFUSION].value = TempPerfVal * 10;
-
-	        	 EnableFrigoFromPlate = TRUE;
-            	 EnableFrigoFromControl = TRUE;
-//	        	 //Start_Frigo_AMS((float)13 * 10);
-//	        	 // temperatura corrente - temperatura target
-//	        	 //Start_Frigo_AMS((float)(25 - TempPerfVal) * 10.0);
-//	        	 EnableHeatingFromControl = TRUE;
-//	        	 // temperatura corrente - temperatura target
-//	        	 StartHeating((float)(TempLiquido - TempPerfVal) * 10.0);
-#endif
-	        	 Released1 = 1;
+//				CHANGE_ADDRESS_IR_SENS = TRUE;
+//				unsigned char OldAddress = 0x5A;
+//
+//				word NewAddress = 0x01;//0x02;//0x03;
+//
+//				/*resetto l'indirzzo*/
+//				buildCmdWriteTempSensIR(OldAddress, (RAM_ACCESS_COMMAND | SD_SMBUS_E2_ADDRESS), 0x0000);
+//
+//				int wait = timerCounter;
+//				/*attendo 200 msec*/
+//				while ( timerCounter - wait < 4);
+//
+//				/*scrivo il nuovo indirizzo*/
+//				buildCmdWriteTempSensIR(OldAddress, (RAM_ACCESS_COMMAND | SD_SMBUS_E2_ADDRESS), NewAddress);
+	        	Released1 = 1;
 	         }
 	         if(ReadKey2()) // per debug con la tastiera a bolle
 	         {
-#ifdef DEBUG_FRIGO_AMS
-	        	 TempLiquido--;
-	        	 TempLiquidoDecimi = TempLiquido * 10;
-
-	        	 //StopFrigo();
-	        	 //StopHeating();
-	        	 TempPerfVal = TempLiquido;
-#endif
-	        	 Released2 = 1;
+//				CHANGE_ADDRESS_IR_SENS = TRUE;
+//				unsigned char OldAddress = 0x5A;
+//
+//				word NewAddress = 0x02;
+//
+//				/*resetto l'indirzzo*/
+//				buildCmdWriteTempSensIR(OldAddress, (RAM_ACCESS_COMMAND | SD_SMBUS_E2_ADDRESS), 0x0000);
+//
+//				int wait = timerCounter;
+//				/*attendo 200 msec*/
+//				while ( timerCounter - wait < 4);
+//
+//				/*scrivo il nuovo indirizzo*/
+//				buildCmdWriteTempSensIR(OldAddress, (RAM_ACCESS_COMMAND | SD_SMBUS_E2_ADDRESS), NewAddress);
+	        	Released2 = 1;
 	         }
 	         if(ReadKey3()) // per debug con la tastiera a bolle
 	         {
-#ifdef DEBUG_FRIGO_AMS
-	        	 TempLiquidoDecimi++;
-				Air_1_Status = LIQUID;
-				ptrCurrentState->state = STATE_TREATMENT_2;
-#endif
-	        	 Released3 = 1;
+//				CHANGE_ADDRESS_IR_SENS = TRUE;
+//				unsigned char OldAddress = 0x5A;
+//
+//				word NewAddress = 0x03;
+//
+//				/*resetto l'indirzzo*/
+//				buildCmdWriteTempSensIR(OldAddress, (RAM_ACCESS_COMMAND | SD_SMBUS_E2_ADDRESS), 0x0000);
+//
+//				int wait = timerCounter;
+//				/*attendo 200 msec*/
+//				while ( timerCounter - wait < 4);
+//
+//				/*scrivo il nuovo indirizzo*/
+//				buildCmdWriteTempSensIR(OldAddress, (RAM_ACCESS_COMMAND | SD_SMBUS_E2_ADDRESS), NewAddress);
+	        	Released3 = 1;
 	         }
 	         if(ReadKey4()) // per debug con la tastiera a bolle
 	         {

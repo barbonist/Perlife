@@ -923,7 +923,8 @@ setPumpSpeedValueEVER (0x03,0, INIT_PUMP); (scrive 5 indirizzi da 4101H a 4105H)
 0x03 = Address
 0 (speed )NOT USED
 */
-void setPumpSpeedValueEVER(unsigned char slaveAddr, int speedValue,ActionPumpEver Action)
+/*if acceleration = 0 --> acceleration remain with previous value*/
+void setPumpSpeedValueEVER(unsigned char slaveAddr, int speedValue, int acceleration, ActionPumpEver Action)
 {
 	word data[5];
 	word * valModBusArrayPtr;
@@ -983,24 +984,47 @@ void setPumpSpeedValueEVER(unsigned char slaveAddr, int speedValue,ActionPumpEve
 	else if (Action == CHANGE_VELOCITY)
 	{
 		wrAddr = 0x0000;
-		numberRegister = 0x0004;
+		numberRegister = 0x0006;
+		int i = 0;
 		if (speedValue > 0)
 		{
-			int i = 0;
-
 			data[i++] = 0;
-			data[i++] = 1;
+			/* bit 0 per azionare lo start, 0x0001
+			 * bit 7 per resettare eventuali allarmi 0x0080
+			 * bit 11 e 12 per identificare nodo 4 e 5 (da bit 8 a bit 12 abbiamo i nodi da 1 a 5) 0x1800
+			 */
+			data[i++] = 0x1881;
 			data[i++] = 0; //assumiamo cone max velociutà 65535 ossia 655.35 RPM
 			data[i++] = (word)speedValue;
 
 		}
 		else
 		{
-			for (int i = 0; i <4; i++)
+			for (i = 0; i <4; i++)
 				data[i] = 0;
 		}
 
+		if (acceleration > 0)
+		{
+			data[i++] = 0;
+			data[i++] = (word)acceleration;
+		}
 
+		/*se ho zero di accelerazione, scrivo zero e il driver manterrà la precedente*/
+		else
+		{
+			data[i++] = 0;
+			data[i++] = 0;
+		}
+	}
+	/*qui do solo il comando di reset di allarmi del driver*/
+	else if (Action == RESET_ALARM_DRIVER)
+	{
+		wrAddr = 0x0000;
+		numberRegister = 0x0002;
+		int i = 0;
+		data[i++] = 0;
+		data[i++] = 0x80; //bit 7 a 1 per reset allarmi
 	}
 
 	valModBusArrayPtr = &data[0];
@@ -1343,7 +1367,7 @@ void alwaysModBusActuator(void)
 					DisableReadModBus++;
 				timerCounterModBusStartWr = FreeRunCnt10msec;  //timerCounterModBus;
 #ifdef PUMP_EVER
-				setPumpSpeedValueEVER(pumpPerist[1].pmpMySlaveAddress,pumpPerist[1].value, CHANGE_VELOCITY);
+				setPumpSpeedValueEVER(pumpPerist[1].pmpMySlaveAddress,pumpPerist[1].value,0, CHANGE_VELOCITY);
 #else
 				setPumpSpeedValue(pumpPerist[1].pmpMySlaveAddress, pumpPerist[1].value);
 #endif
@@ -1393,7 +1417,7 @@ void alwaysModBusActuator(void)
 					DisableReadModBus++;
 				timerCounterModBusStartWr = FreeRunCnt10msec;  //timerCounterModBus;
 #ifdef PUMP_EVER
-				setPumpSpeedValueEVER(pumpPerist[2].pmpMySlaveAddress,pumpPerist[2].value, CHANGE_VELOCITY);
+				setPumpSpeedValueEVER(pumpPerist[2].pmpMySlaveAddress,pumpPerist[2].value,0, CHANGE_VELOCITY);
 #else
 				setPumpSpeedValue(pumpPerist[2].pmpMySlaveAddress, pumpPerist[2].value);
 #endif
@@ -1796,8 +1820,8 @@ void Manage_and_Storage_ModBus_Actuator_Data(void)
 	  unsigned char numberOfAddressCheckPinch	= 0x02;
 	  unsigned char funcCode 					= 0x03;
 #ifdef PUMP_EVER
-	  unsigned char numberOfAddressCheckPumpEver = 0x03;
-	  word 			readAddrStartEver	 		 = 0x1008; // registro Current_actual_value di Ever
+	  unsigned char numberOfAddressCheckPumpEver = 0x05;//0x03;
+	  word 			readAddrStartEver	 		 = 0x0014;//0x1008; // registro Current_actual_value di Ever
 #endif
 
 	 if(WriteActive == TRUE)
@@ -1900,11 +1924,13 @@ void StorageModbusData(unsigned char LastActuatslvAddr)
 	unsigned char dataTemp[TOT_DATA_MODBUS_RECEIVED_PUMP];
 #endif
 	unsigned char i,Address = msgToRecvFrame3[0],funCode = msgToRecvFrame3[1];
-	unsigned int  Pump_Average_Current	= 0,
-				  Pump_Speed_Status		= 0,
-				  Pump_Status			= 0,
-				  Pinch_Average_Current = 0,
-				  Pinch_Status			= 0;
+	unsigned int  Pump_Average_Current	 = 0,
+				  Pump_Speed_Status		 = 0,
+				  Pump_Status			 = 0,
+				  Pinch_Average_Current  = 0,
+				  Pinch_Status			 = 0,
+				  Pump_Ever_Acceleration = 0,
+				  Pump_Ever_Error        = 0;
 
 	int Tot_ModBus_Data_RX = 0;
 	word CRC_RX,CRC_CALC;
@@ -1924,7 +1950,7 @@ void StorageModbusData(unsigned char LastActuatslvAddr)
 
 	ptr_msg =&msgToRecvFrame3[0];
 #ifdef PUMP_EVER
-	/*controllo i dati rievuti e calcolo il relativo CRC cofrontandolo con quello ricevuto*/
+	/*controllo i dati rievuti e calcolo il relativo CRC confrontandolo con quello ricevuto*/
 	if(Address == (LAST_PUMP - 1) || Address == LAST_PUMP)
 	{
 		// ho letto lo stato delle pompe EVER
@@ -1990,10 +2016,13 @@ void StorageModbusData(unsigned char LastActuatslvAddr)
 	if(Address == (LAST_PUMP - 1) || Address == LAST_PUMP)
 	{
 		/*devo trasfomare i dati ricevuti da byte in word*/
-		Pump_Average_Current = BYTES_TO_WORD(dataTemp[3], dataTemp[4]);
-		Pump_Speed_Status	 = BYTES_TO_WORD(dataTemp[7], dataTemp[8]);
-		Pump_Speed_Status = (Pump_Speed_Status * 60)/1600 ;
-		Pump_Status 		 = 0; //BYTES_TO_WORD(dataTemp[7], dataTemp[8]);
+		Pump_Status /*Pump_Average_Current*/ = BYTES_TO_WORD(dataTemp[3], dataTemp[4]);
+		Pump_Speed_Status	 = BYTES_TO_WORD(dataTemp[6], dataTemp[6]);/*BYTES_TO_WORD(dataTemp[7], dataTemp[8]);*/
+		//Pump_Speed_Status = (Pump_Speed_Status * 60)/1600 ;
+		//Pump_Status 		 = 0; //BYTES_TO_WORD(dataTemp[7], dataTemp[8]);
+		Pump_Average_Current = BYTES_TO_WORD(dataTemp[7], dataTemp[8]);
+		Pump_Ever_Acceleration = BYTES_TO_WORD(dataTemp[9], dataTemp[10]);
+		Pump_Ever_Error = BYTES_TO_WORD(dataTemp[11], dataTemp[12]);
 	}
 	else if (Address >= FIRST_ACTUATOR && Address <= (LAST_PUMP - 2))
 #else
