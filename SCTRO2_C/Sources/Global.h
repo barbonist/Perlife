@@ -1424,7 +1424,16 @@ unsigned char codeDBG;
 unsigned char subcodeDBG;
 bool Service;
 
+/*variabile globale per il tasto di emergenza; diventa TRUE se tasto premuto*/
 bool PANIC_BUTTON_ACTIVATION;
+/*variabile globale per il sensore di cover 1; diventa TRUE se cover aperto*/
+bool FRONTAL_COVER_1_STATUS;
+/*variabile globale per il sensore di cover 2; diventa TRUE se cover aperto*/
+bool FRONTAL_COVER_2_STATUS;
+/*variabile globale per il sensore di gancio 1; diventa TRUE se gancio aperto*/
+bool HOOK_SENSOR_1_STATUS;
+/*variabile globale per il sensore di gancio 2; diventa TRUE se gancio aperto*/
+bool HOOK_SENSOR_2_STATUS;
 
 // durata globale del trattamento in secondi
 unsigned long TreatDuration;

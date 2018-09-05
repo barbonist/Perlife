@@ -42,15 +42,15 @@
 #include "BitIoLdd7.h"
 #include "EN_24_M_C.h"
 #include "BitIoLdd8.h"
-#include "COVER_M1.h"
+#include "EMERGENCY_BUTTON.h"
 #include "BitIoLdd9.h"
-#include "COVER_M2.h"
+#include "FRONTAL_COVER_1.h"
 #include "BitIoLdd10.h"
-#include "COVER_M3.h"
+#include "FRONTAL_COVER_2.h"
 #include "BitIoLdd12.h"
-#include "COVER_M4.h"
+#include "HOOK_SENSOR_1.h"
 #include "BitIoLdd11.h"
-#include "COVER_M5.h"
+#include "HOOK_SENSOR_2.h"
 #include "BitIoLdd13.h"
 #include "PC_DEBUG_COMM.h"
 #include "ASerialLdd2.h"
@@ -764,6 +764,16 @@ int main(void)
 	         /*          PANIC BUTTON        */
 	         /********************************/
 			 Manage_Panic_Button();
+
+	         /********************************/
+	         /*          FRONTAL COVER       */
+	         /********************************/
+			 Manage_Frontal_Cover();
+
+			 /********************************/
+			 /*          HOOK SENSORS        */
+			 /********************************/
+			 Manage_Hook_Sensors();
 
 	         /********************************/
 	         /*             I2C	             */
