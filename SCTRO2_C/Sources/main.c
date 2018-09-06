@@ -262,6 +262,9 @@ int main(void)
   Enable_AMS = 0;
   ptrT1Test = &T1TEST;
 
+  // Filippo - inizializzo il flag di test del frigo e riscaldatore
+  testT1HeatFridge=0;
+
   CoversState = 4; // all covers chiusi
   ArteriousPumpGainForPid = DEFAULT_ART_PUMP_GAIN;
   VenousPumpGainForPid = DEFAULT_VEN_PUMP_GAIN;

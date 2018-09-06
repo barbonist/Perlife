@@ -83,6 +83,9 @@ struct alarm alarmList[] =
 		// messe in sicurezza
 		{CODE_ALARM_PROT_START_VAL,        PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_PROTECTION, SECURITY_STOP_ALL_ACTUATOR,  PRIORITY_HIGH,    0, 500, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull},	        /* 29 */
 
+		// Filippo - inserito allarme per il tasto di stop
+		{CODE_ALARM_PANIC_BUTTON, PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH, 0, 500, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_ALLOWED, &alarmManageNull},	        /* 31 allarme tasto di stop*/
+
 		// da qui in avanti solo le warning
 		{CODE_ALARM_PRESS_ADS_FILTER_WARN, PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_LOW, 2000, 2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull},	        /* 30 esempio di warning*/
 		{}
@@ -179,6 +182,8 @@ void SetAllAlarmEnableFlags(void)
 
 	GlobalFlags.FlagsDef.EnableModbusNotRespAlm = 1;      // abilito l'allarme dovuto ad un cattivo funzionamento del modbus
 	GlobalFlags.FlagsDef.EnableFromProtectiveAlm = 0;
+	// Filippo - abilito l'allarme di stop button
+	GlobalFlags.FlagsDef.EnableStopButton=1;
 }
 
 // Questa funzione serve per forzare ad off un eventuale allarme.
@@ -490,6 +495,7 @@ void alarmEngineAlways(void)
 /*Faccio uno switch su tutta la macchina a stati in modo
  * gestire ogni allarme in funzioine dello stato in cui sono*/
 
+
 	//if(GlobalFlags.FlagsDef.EnableAllAlarms)
 	{
 		switch(ptrCurrentState->state)
@@ -517,6 +523,8 @@ void alarmEngineAlways(void)
 				/* DA DEBUGGARE*/
 				//manageAlarmFlowSensNotDetected();
 				//manageAlarmIrTempSensNotDetected();
+				// Filippo - aggiungo la gestione del tasto di stop come allarme
+				manageAlarmStopButtonPressed();
 
 				break;
 			}
@@ -580,6 +588,8 @@ void alarmEngineAlways(void)
 				manageAlarmActuatorWRModbusNotRespond();
 				manageAlarmFromProtective();
 				manageAlarmBadPinchPos();   // allarme di pinch posizionate correttamente
+				// Filippo - aggiungo la gestione del tasto di stop come allarme
+				manageAlarmStopButtonPressed();
 				break;
 			}
 
@@ -606,6 +616,8 @@ void alarmEngineAlways(void)
 				manageAlarmActuatorWRModbusNotRespond();
 				manageAlarmFromProtective();
 				manageAlarmBadPinchPos();   // allarme di pinch posizionate correttamente
+				// Filippo - aggiungo la gestione del tasto di stop come allarme
+				manageAlarmStopButtonPressed();
 				break;
 			}
 
@@ -653,6 +665,8 @@ void alarmEngineAlways(void)
 				manageAlarmActuatorModbusNotRespond();
 				manageAlarmActuatorWRModbusNotRespond();
 				manageAlarmFromProtective();
+				// Filippo - aggiungo la gestione del tasto di stop come allarme
+				manageAlarmStopButtonPressed();
 				break;
 			}
 
@@ -684,6 +698,8 @@ void alarmEngineAlways(void)
 				manageAlarmActuatorModbusNotRespond();
 				manageAlarmActuatorWRModbusNotRespond();
 				manageAlarmFromProtective();
+				// Filippo - aggiungo la gestione del tasto di stop come allarme
+				manageAlarmStopButtonPressed();
 				break;
 
 			case STATE_WAIT_TREATMENT:
@@ -733,6 +749,8 @@ void alarmEngineAlways(void)
 				manageAlarmActuatorModbusNotRespond();
 				manageAlarmActuatorWRModbusNotRespond();
 				manageAlarmFromProtective();
+				// Filippo - aggiungo la gestione del tasto di stop come allarme
+				manageAlarmStopButtonPressed();
 				break;
 			}
 
@@ -1420,6 +1438,25 @@ void manageAlarmPhysicFlowPerfArtHigh(void)
 
 }
 
+// Filippo - funzione che gestisce l'allarme di pressione del tasto di stop
+void manageAlarmStopButtonPressed(void)
+{
+	if(!GlobalFlags.FlagsDef.EnableStopButton)
+		alarmList[ALARM_STOP_BUTTON].physic = PHYSIC_FALSE;
+	else
+	{
+		if(PANIC_BUTTON_ACTIVATION)
+		{
+			alarmList[ALARM_STOP_BUTTON].physic = PHYSIC_TRUE;
+			PANIC_BUTTON_ACTIVATION=FALSE;
+		}
+		else
+		{
+			alarmList[ALARM_STOP_BUTTON].physic = PHYSIC_FALSE;
+		}
+	}
+
+}
 
 void manageAlarmFlowSensNotDetected(void)
 {

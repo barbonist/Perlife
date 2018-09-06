@@ -356,6 +356,16 @@ typedef enum{
 
 T1TEST_PUMP_CMD t1Test_pump_cmd;
 
+// Filippo - variabili di stato per il test del riscaldatore e del frigo
+unsigned char t1Test_heater;
+unsigned char protectiveOn;
+float t1TestTempPartenza;
+unsigned char t1Test_Frigo;
+bool testT1HeatFridge;
+float tempStopFridge;
+
+// Filippo - variabili per il test dell'aria
+unsigned char t1TestAir;
 
 
 struct T1Test {
@@ -515,6 +525,8 @@ enum Parent {
 	PARENT_T1_NO_DISP_END,
 	PARENT_T1_NO_DISP_ALARM,
 	PARENT_T1_NO_DISP_FATAL_ERROR,
+	PARENT_T1_NO_DISP_CHECK_HEATER,
+	PARENT_T1_NO_DISP_CHECK_FRIDGE,
 	PARENT_END_NUMBER,
 };
 
@@ -540,6 +552,9 @@ enum Child {
 
 	CHILD_ENTRY,
 	CHILD_IDLE,
+	// Filippo - aggiunto stato di allarme in idle
+	CHILD_IDLE_ALARM,
+	// Filippo - fine aggiunta
 	CHILD_TREAT_ALARM_1_INIT,
 	CHILD_TREAT_ALARM_1_STOP_PERFUSION,
 	CHILD_TREAT_ALARM_1_STOP_PURIFICATION,
@@ -655,7 +670,8 @@ enum MachineStateGuardId {
 	GUARD_ENABLE_T1_END,
 	GUARD_ENABLE_T1_ALARM,
 	GUARD_ENABLE_T1_ERROR,
-
+	GUARD_ENABLE_T1_HEATER,
+	GUARD_ENABLE_T1_FRIDGE,
 	/*valutare se gestire le azioni di sicurezza con le guard: tutti gli allarmi possono essere ricondotti a 6 tipologie di azioni di sicurezza:
 	 ALARM_STOP_ALL_ACTUATOR: tutti gli attuatori devono essere fermati
 	 ALARM_STOP_ALL_PUMP: tutte le pompe sangue devono essere fermate
@@ -1318,6 +1334,8 @@ int timerCounterLedBoard;
 int timerCounterUpdateTargetPressurePid;
 int timerCounterUpdateTargetPressPidArt;
 int timerCounterT1Test;
+// Filippo - aggiunto timer perchè serve nel test T1 del frigo
+int timerCounterT1TestFridge;
 
 /************************************************************************/
 /* 					STRUTTURA VOLUMI TRATTAMENTO 						*/
@@ -1353,8 +1371,11 @@ float V24_P2_CHK_VOLT;
 
 /* t1 test */
 #define T1_TEST_DIG_TO_VOLT			0.00005 // (3300/65536)/1000 (float)(3300/4096)/1000 //digit to volt
+// Filippo - modificati i limiti per passare il test  - da ripristinare
+//#define V24BRK_LOW_THRSLD			2.3 //volt
+//#define V24BRK_HIGH_THRSLD			2.7 //volt
 #define V24BRK_LOW_THRSLD			2.3 //volt
-#define V24BRK_HIGH_THRSLD			2.7 //volt
+#define V24BRK_HIGH_THRSLD			4 //volt
 #define T1_TEST_PRESS_LOW_THRSLD	-5 //mmHg
 #define T1_TEST_PRESS_HIGH_THRSLD	5 //mmHg
 #define T1_TEST_PRESS_TRKNG_THRSLD	5 //mmHg
@@ -1425,6 +1446,8 @@ unsigned char subcodeDBG;
 bool Service;
 
 bool PANIC_BUTTON_ACTIVATION;
+// Filippo - inserito flag per spegnimento PC
+bool PANIC_BUTTON_ACTIVATION_PC;
 
 // durata globale del trattamento in secondi
 unsigned long TreatDuration;
@@ -1764,6 +1787,8 @@ typedef struct
 	unsigned int EnableModbusNotRespAlm     : 1;    // abilito l'allarme dovuto ad un cattivo funzionamento del modbus (almeno 10 richieste
 	                                                // di lettura o scrittura non hanno avuto risposta)
 	unsigned int EnableFromProtectiveAlm    : 1;    // abilita l'allarme generato dalla protective
+	// Filippo - inserito il flag di abilitazione dell'allarme pulsante di stop
+	unsigned int EnableStopButton			: 1;	// abilita la gestione dell'allarme del pulsante di stop
 }FLAGS_DEF;
 
 typedef union

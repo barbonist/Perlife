@@ -23,6 +23,12 @@
 // campioni gia' mediati dopo la conversione
 #define NUMB_OF_SAMPLES_VEN     500
 
+// Filippo - definizione della tabella di conversione PT1000
+typedef struct
+{
+	float resistenza;
+	float temperatura;
+} TABELLA_PT1000;
 
 word * ReadAdcPr1(void);
 word * ReadAdcPr2(void);

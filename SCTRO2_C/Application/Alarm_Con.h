@@ -13,7 +13,9 @@
 //#define CODE_ALARM0		0x00
 //#define CODE_ALARM1		0x01
 //#define CODE_ALARM2		0x02
-#define ALARM_ACTIVE_IN_STRUCT					31
+//#define ALARM_ACTIVE_IN_STRUCT					31
+// Filippo - aggiunto allarme tasto di stop
+#define ALARM_ACTIVE_IN_STRUCT					32
 #define CODE_ALARM_PRESS_ART_HIGH				0X01
 #define CODE_ALARM_PRESS_ART_LOW				0X02
 #define CODE_ALARM_PRESS_VEN_HIGH				0X03
@@ -72,6 +74,9 @@
 #define CODE_ALARM_MODBUS_ACTUATOR_SEND         0x90
 #define CODE_ALARM_CAN_BUS_ERROR                0x91
 #define CODE_ALARM_BAD_PINCH_POS                0x92
+
+// Filippo - definisco codice allarme per il tasto di stop
+#define CODE_ALARM_PANIC_BUTTON  				0x93
 
 // fissato a 200 ed e' il codice di errore di partenza degli allarmi protective
 #define CODE_ALARM_PROT_START_VAL               0xc8
@@ -176,6 +181,9 @@ enum ALARM
 	 MODBUS_ACTUATOR_SEND,
 	 ALARM_FROM_PROTECTIVE,
 
+	 // Filippo - inserisco il codice di allarme
+	 ALARM_STOP_BUTTON,
+
 	 // da qui in avanti i codici delle warning
 	 PRESS_ADS_FILTER_WARN
 };
@@ -249,5 +257,8 @@ void warningConInit(void);
 void EnableNextWarningFunc(void);
 void warningsEngineAlways(void);
 void warningManageNull(void);
+// Filippo - aggiunta gestione dell'allarme del tasto di stop
+void manageAlarmStopButtonPressed(void);
+
 
 #endif /* APPLICATION_ALARM_CON_H_ */

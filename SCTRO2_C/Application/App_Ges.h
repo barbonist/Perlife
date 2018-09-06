@@ -20,7 +20,9 @@
 #define DELTA_PRESSURE						30
 #define GAIN_PRESSURE						1
 
-#define TIMER_PANIC_BUTTON					40 //2 secondi di pressione consecutiva per il PANIC_BUTTON
+#define TIMER_PANIC_BUTTON_ALARM			10 //2 secondi di pressione consecutiva per il PANIC_BUTTON
+// Filippo - inserito timeout per allarme e timeout per spegnimento PC
+#define TIMER_PANIC_BUTTON					60 //2 secondi di pressione consecutiva per il PANIC_BUTTON
 /* MACHINE STATE FUNCTION */
 void manageNull(void);
 void manageStateLevel(void);
@@ -49,6 +51,8 @@ void manageStateEntryAlways(void);
 
 void manageStateIdle(void);
 void manageStateIdleAlways(void);
+// Filippo - funzione per la gestione degli allarmi in idle
+void manageIdleAlarm(void);
 
 void manageStateSelTreat(void);
 void manageStateSelTreatAlways(void);
@@ -140,6 +144,15 @@ void manageParenT1PinchInit(void);
 void manageParenT1Pinch(void);
 void manageParentT1PumpInit(void);
 void manageParentT1Pump(void);
+// Filippo - funzioni di test aggiuntive
+void manageLevelSensorTest(void);
+void manageParentT1HeaterInit(void);
+void manageParentT1Heater(void);
+void manageParentT1FridgeInit(void);
+void manageParentT1Fridge(void);
+void manageParentAirInit(void);
+
+
 
 /**************************************************************************************/
 /******-----------------------------TREATMENT----------------------------------********/

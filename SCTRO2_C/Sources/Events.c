@@ -1275,6 +1275,8 @@ void System_Tick_OnInterrupt(void)
 	  timerCounterLedBoard++;
 
 	  timerCounterT1Test++;
+	  // Filippo - timer per gestire test T1 del frigo
+	  timerCounterT1TestFridge++;
 
 	  timerCounterUpdateTargetPressurePid++;
 	  timerCounterUpdateTargetPressPidArt++;

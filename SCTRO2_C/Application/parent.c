@@ -72,7 +72,37 @@ void ParentFunc(void)
 	   RELATIVI AL PRIMING E CHIAMARLA SEMPRE NEI CASE STATE_PRIMING_PH_1, STATE_PRIMING_PH_2 DELLO SWITCH PRECEDENTE
 	   L'ALTRA FUNZIONE, ANALOGAMENTE POTRA' ESSERE CHIAMATA stateParentTreatKidney1_func, CONTERRA' TUTTI I CASE DAL PARENT_TREAT_KIDNEY_1_INIT
 	   IN POI. LA FUNZIONE CREATA DOVRA' ESSERE CHIAMATA NEL CASE STATE_TREATMENT_KIDNEY_1. */
-	switch(ptrCurrentParent->parent){
+	switch(ptrCurrentParent->parent)
+	{
+		// Filippo - inserito caso per poter gestire l'allarme stop button anche in idle
+		case PARENT_IDLE:
+			// si è verificato un allarme lo attivo
+			if(currentGuard[GUARD_ALARM_ACTIVE].guardValue == GUARD_VALUE_TRUE)
+			{
+				// ho premuto il tasto di stop - gestisco l'allarme
+				ptrFutureParent = &stateParentIdle[2];
+				ptrFutureChild = ptrFutureParent->ptrChild;
+				LevelBuzzer = 2;
+			}
+			releaseGUIButton(BUTTON_RESET_ALARM);
+			break;
+		// Filippo - aggiunto il caso perchè devo gestire l'allarme in idle
+		case PARENT_IDLE_ALARM:
+			if(currentGuard[GUARD_ALARM_ACTIVE].guardValue == GUARD_VALUE_FALSE)
+			{
+				// se hanno resettato l'allarme torno indietro
+				if(buttonGUITreatment[BUTTON_RESET_ALARM].state == GUI_BUTTON_RELEASED)
+				{
+					releaseGUIButton(BUTTON_RESET_ALARM);
+					EnableNextAlarmFunc(); //EnableNextAlarm = TRUE;
+					LevelBuzzer = 0;
+					ptrFutureParent = &stateParentIdle[1];
+					ptrFutureChild = ptrFutureParent->ptrChild;
+					currentGuard[GUARD_ALARM_ACTIVE].guardValue = GUARD_VALUE_FALSE;
+				}
+			}
+
+			break;
 		case PARENT_PRIMING_TREAT_KIDNEY_1_INIT:
 			if(buttonGUITreatment[BUTTON_CONFIRM].state == GUI_BUTTON_RELEASED)
 			{
@@ -1023,6 +1053,9 @@ void ParentFunc(void)
 
 void ParentFuncT1Test(void)
 {
+	// Filippo - togliere
+	int pippo;
+
 	switch(ptrCurrentParent->parent)
 #ifdef DEBUG_T1_TEST
 	{
@@ -1294,9 +1327,13 @@ void ParentFuncT1Test(void)
 #else
 	{
 	case PARENT_T1_NO_DISP_INIT:
-
-		ptrFutureParent = &stateParentT1TNoDisposable[23];
+///* Filippo - tolto per fargli eseguire il T1 test
+//		ptrFutureParent = &stateParentT1TNoDisposable[23];
+		// lo mando al test dell'heater
+//		ptrFutureParent = &stateParentT1TNoDisposable[29];
+		ptrFutureParent = &stateParentT1TNoDisposable[3];	// lo mando al test della EEPROM
 		break;
+//*/
 		if(currentGuard[GUARD_ENABLE_T1_CONFIG].guardValue == GUARD_VALUE_TRUE)
 		{
 		ptrFutureParent = &stateParentT1TNoDisposable[3];
@@ -1469,20 +1506,23 @@ void ParentFuncT1Test(void)
 	case PARENT_T1_NO_DISP_CHEK_AIR:
 		if(currentGuard[GUARD_ENABLE_T1_PINCH].guardValue == GUARD_VALUE_TRUE)
 		{
-		ptrFutureParent = &stateParentT1TNoDisposable[17];
-		ptrFutureChild = ptrFutureParent->ptrChild;
-		DebugStringStr("parent chk pinch");
-		break;
+			ptrFutureParent = &stateParentT1TNoDisposable[17];
+			ptrFutureChild = ptrFutureParent->ptrChild;
+			DebugStringStr("parent chk pinch");
+			break;
 		}
 
 		if(ptrCurrentParent->action == ACTION_ON_ENTRY)
 		{
-		ptrFutureParent = &stateParentT1TNoDisposable[16];
-		ptrFutureChild = ptrFutureParent->ptrChild;
+			ptrFutureParent = &stateParentT1TNoDisposable[16];
+			ptrFutureChild = ptrFutureParent->ptrChild;
 		}
 		else if(ptrCurrentParent->action == ACTION_ALWAYS)
 		{
-			currentGuard[GUARD_ENABLE_T1_PINCH].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+//			if (t1TestAir==3)
+//			{
+				currentGuard[GUARD_ENABLE_T1_PINCH].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+//			}
 		}
 		break;
 
@@ -1502,7 +1542,11 @@ void ParentFuncT1Test(void)
 		}
 		else if(ptrCurrentParent->action == ACTION_ALWAYS)
 		{
-			currentGuard[GUARD_ENABLE_T1_PUMP].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+			// Filippo - il test deve terminare con successo, altrimenti allarme!!!!
+			if (t1Test_pinch_state==4)
+			{
+				currentGuard[GUARD_ENABLE_T1_PUMP].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+			}
 		}
 		break;
 
@@ -1522,17 +1566,22 @@ void ParentFuncT1Test(void)
 		}
 		else if(ptrCurrentParent->action == ACTION_ALWAYS)
 		{
-			currentGuard[GUARD_ENABLE_T1_TERMO].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+			// Filippo - messo il controllo per la fine del test pompe
+			if (t1Test_pump_state==4)
+			{
+				currentGuard[GUARD_ENABLE_T1_TERMO].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+			}
 		}
 		break;
 
 	case PARENT_T1_NO_DISP_CHEK_PELTIER:
-		if(currentGuard[GUARD_ENABLE_T1_END].guardValue == GUARD_VALUE_TRUE)
+		if(currentGuard[GUARD_ENABLE_T1_HEATER].guardValue == GUARD_VALUE_TRUE)
 		{
-		ptrFutureParent = &stateParentT1TNoDisposable[23];
-		ptrFutureChild = ptrFutureParent->ptrChild;
-		DebugStringStr("parent to end");
-		break;
+			ptrFutureParent = &stateParentT1TNoDisposable[29];
+//		ptrFutureParent = &stateParentT1TNoDisposable[23];
+			ptrFutureChild = ptrFutureParent->ptrChild;
+			DebugStringStr("parent to chk heater");
+			break;
 		}
 
 		if(ptrCurrentParent->action == ACTION_ON_ENTRY)
@@ -1542,7 +1591,7 @@ void ParentFuncT1Test(void)
 		}
 		else if(ptrCurrentParent->action == ACTION_ALWAYS)
 		{
-			currentGuard[GUARD_ENABLE_T1_END].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+			currentGuard[GUARD_ENABLE_T1_HEATER].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
 		}
 		break;
 
@@ -1553,11 +1602,84 @@ void ParentFuncT1Test(void)
 		break;
 
 	case PARENT_T1_NO_DISP_ALARM:
+		// Filippo - togliere
+
+		pippo=0;
+		pippo++;
+
 		break;
 
 	case PARENT_T1_NO_DISP_FATAL_ERROR:
 		break;
+	// Filippo - casistica aggiunta per inserire il test del riscaldatore
+	case PARENT_T1_NO_DISP_CHECK_HEATER:
+		// adesso metto l'end, però man mano che aggiungo test potrebbe cambiare
+		if(currentGuard[GUARD_ENABLE_T1_FRIDGE].guardValue == GUARD_VALUE_TRUE)
+		{
+//			ptrFutureParent = &stateParentT1TNoDisposable[23];	// finisco il test
+			ptrFutureParent = &stateParentT1TNoDisposable[31];	// finisco il test
+			ptrFutureChild = ptrFutureParent->ptrChild;
+			DebugStringStr("parent chk fridge");
+			break;
+		}
+		else if (currentGuard[GUARD_ENABLE_T1_ALARM].guardValue == GUARD_VALUE_TRUE)
+		{
+			ptrFutureParent = &stateParentT1TNoDisposable[25]; //alarm
+			ptrFutureChild = ptrFutureParent->ptrChild;
+			DebugStringStr("alarm t1 test");
+			break;
+		}
 
+		if(ptrCurrentParent->action == ACTION_ON_ENTRY)
+		{
+			ptrFutureParent = &stateParentT1TNoDisposable[30];
+			ptrFutureChild = ptrFutureParent->ptrChild;
+		}
+		else if(ptrCurrentParent->action == ACTION_ALWAYS)
+		{
+			// Filippo - messo il controllo per la fine del test pompe
+			if (t1Test_heater==9)
+			{
+				// per adesso metto l'end ma poi dovrò aggiungere altri test
+				currentGuard[GUARD_ENABLE_T1_FRIDGE].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+			}
+		}
+
+		break;
+	// Filippo - casistica aggiunta per inserire il test del riscaldatore
+	case PARENT_T1_NO_DISP_CHECK_FRIDGE:
+		// adesso metto l'end, però man mano che aggiungo test potrebbe cambiare
+		if(currentGuard[GUARD_ENABLE_T1_END].guardValue == GUARD_VALUE_TRUE)
+		{
+			ptrFutureParent = &stateParentT1TNoDisposable[23];	// finisco il test
+			ptrFutureChild = ptrFutureParent->ptrChild;
+			DebugStringStr("parent to end");
+			break;
+		}
+		else if (currentGuard[GUARD_ENABLE_T1_ALARM].guardValue == GUARD_VALUE_TRUE)
+		{
+			ptrFutureParent = &stateParentT1TNoDisposable[25]; //alarm
+			ptrFutureChild = ptrFutureParent->ptrChild;
+			DebugStringStr("alarm t1 test");
+			break;
+		}
+
+		if(ptrCurrentParent->action == ACTION_ON_ENTRY)
+		{
+			ptrFutureParent = &stateParentT1TNoDisposable[32];
+			ptrFutureChild = ptrFutureParent->ptrChild;
+		}
+		else if(ptrCurrentParent->action == ACTION_ALWAYS)
+		{
+			// Filippo - messo il controllo per la fine del test pompe
+			if (t1Test_Frigo==9)
+			{
+				// per adesso metto l'end ma poi dovrò aggiungere altri test
+				currentGuard[GUARD_ENABLE_T1_END].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+			}
+		}
+
+		break;
 	default:
 		break;
 	}

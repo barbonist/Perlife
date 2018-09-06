@@ -338,8 +338,29 @@ void NotifyPinchPos(void)
 	uint8_t u8;
 
 	u8 = (Air_1_Status) ? 1 : 0;
-	u8 |= (HeaterOn) ? 2 : 0;
-	u8 |= (FrigoOn) ? 4 : 0;
+	if (testT1HeatFridge)
+	{
+		if (protectiveOn)
+		{
+			u8 |= (HeaterOn) ? 2 : 0;
+		}
+	}
+	else
+	{
+		u8 |= (HeaterOn) ? 2 : 0;
+	}
+
+	if (testT1HeatFridge)
+	{
+		if (protectiveOn)
+		{
+			u8 |= (FrigoOn) ? 4 : 0;
+		}
+	}
+	else
+	{
+		u8 |= (FrigoOn) ? 4 : 0;
+	}
 
 	if(GetTherapyType() == LiverTreat)
 	{

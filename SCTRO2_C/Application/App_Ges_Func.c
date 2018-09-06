@@ -949,6 +949,7 @@ void StopFrigo(void)
 
 
 // Perc  0..100
+// Filippo - aggiunto parametro alla funzione per gestire il test T1 del riscaldatore
 void HeatingPwm(int Perc)
 {
 	static int OldPerc = 0;
@@ -995,7 +996,8 @@ void HeatingPwm(int Perc)
 			timeIntervalHeating = FreeRunCnt10msec;
 			HeatingPwmState = HEAT_PWM_ON;
 			HEAT_ON_C_SetVal();
-		    HeaterOn = 1;
+			HeaterOn = 1;
+
 			break;
 		case HEAT_PWM_ON:
 			// On
@@ -1016,7 +1018,7 @@ void HeatingPwm(int Perc)
 			}
 			break;
 		case HEAT_PWM_ALWAYS_ON:
-		    HeaterOn = 1;
+			HeaterOn = 1;
 			break;
 	}
 }
@@ -1239,7 +1241,15 @@ LIQ_TEMP_CONTR_TASK_STATE FrigoHeatTempControlTask(LIQ_TEMP_CONTR_TASK_CMD LiqTe
 	float tmpr, MaxThrsh, MinThrsh;
 	word tmpr_trgt;
 	// temperatura raggiunta dal reservoir
-	tmpr = ((int)(sensorIR_TM[1].tempSensValue*10));
+	// Filippo - se sono in test devo fare l'algoritmo sulla temperatura piastra
+	if (testT1HeatFridge)
+	{
+		tmpr = ((int)(T_PLATE_C_GRADI_CENT*10));
+	}
+	else
+	{
+		tmpr = ((int)(sensorIR_TM[1].tempSensValue*10));
+	}
 
 	//----------------------------------------------------------------------
 	// ---------------------SOLO PER DEBUG----------------------------------
@@ -1292,6 +1302,8 @@ LIQ_TEMP_CONTR_TASK_STATE FrigoHeatTempControlTask(LIQ_TEMP_CONTR_TASK_CMD LiqTe
 		if((LiqTempContrTaskSt == LIQ_T_CONTR_RUN_HEATING) || (LiqTempContrTaskSt == LIQ_T_CONTR_WAIT_STOP_HEATING))
 		{
 			LiqTempContrTaskSt = LIQ_T_CONTR_HEATING_STOPPED;
+			// Filippo - cambiata sequenza di spegnimento altrimenti non mi aggiorna correttamente i flag via can bus alla protective
+			HeatingPwm((int)0);
 			EnableHeatingFromControl = FALSE;
 			HeatingPwm((int)0);
 		}
@@ -1329,7 +1341,7 @@ LIQ_TEMP_CONTR_TASK_STATE FrigoHeatTempControlTask(LIQ_TEMP_CONTR_TASK_CMD LiqTe
 
 	// Se sto per iniziare una nuova fase di priming mi metto in attesa di rilevare la presenza del liquido
 	// nel disposable
-	if((ptrCurrentState->state < STATE_PRIMING_PH_1) && (LiqTempContrTaskSt != LIQ_T_CONTR_DETECT_LIQ_IN_DISP))
+	if((ptrCurrentState->state < STATE_PRIMING_PH_1) && (LiqTempContrTaskSt != LIQ_T_CONTR_DETECT_LIQ_IN_DISP) && (ptrCurrentState->state!=STATE_T1_NO_DISPOSABLE))
 		LiqTempContrTaskSt = LIQ_T_CONTR_IDLE;
 
 	switch (LiqTempContrTaskSt)

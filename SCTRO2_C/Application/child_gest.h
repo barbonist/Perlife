@@ -38,6 +38,10 @@ void manageChildPrimAlmSFAAirDetAlways(void);
 void manageChildPrimAlmModBusEntry(void);
 void manageChildPrimAlmModBusAlways(void);
 
+// Filippo - funzione per gestire l'allarme stop button
+void manageChildIdleAlarm(void);
+void manageChildIdleAlm1StAllActEntry(void);
+void manageChildIdleAlm1StAllActAlways(void);
 
 
 /* --------------------------------------------------------------------------------------------
@@ -120,6 +124,9 @@ void manageChildEmptyAlm1StAllActEntry(void);
 void manageChildEmptyAlm1StAllActAlways(void);
 void manageChildEmptyAlmPumpNotStillEntry(void);
 void manageChildEmptyAlmPumpNotStillAlways(void);
+
+// Filippo - funzione che gestisce il passaggio dell'allarme per lo stato idle
+void manageStateChildAlarmIdle(void);
 
 
 #endif /* APPLICATION_CHILD_GEST_H_ */

@@ -1418,6 +1418,20 @@ bool PutPinchInSafetyPos(void)
 // Flags usati nel processo di svuotamento
 CHILD_EMPTY_FLAGS ChildEmptyFlags;
 
+// Filippo - funzione che gestisce l'allarme in idle
+void manageChildIdleAlarm(void)
+{
+	// devo fermare tutti gli attuatori
+	if (currentGuard[GUARD_ALARM_ACTIVE].guardValue==GUARD_VALUE_TRUE)
+	{
+
+
+
+
+
+	}
+}
+
 //CHILD_TREAT_ALARM_1_INIT quando lo stato principale e' STATE_EMPTY_DISPOSABLE
 void manageChildEmptyAlm1InitEntry(void)
 {
@@ -1493,6 +1507,18 @@ void manageChildEmptyAlm1SFAAlways(void)
 	manageChildTreatAlm1StopAllActAlways();
 }
 
+void manageChildIdleAlm1StAllActEntry(void)
+{
+	manageChildTreatAlm1StopAllActEntry();
+}
+
+void manageChildIdleAlm1StAllActAlways(void)
+{
+	// fermo tutte le pompe e metto le pinch in sicurezza
+	manageChildTreatAlm1StopAllActAlways();
+}
+
+
 //CHILD_TREAT_ALARM_1_STOP_ALL_ACTUATOR quando lo stato principale e' STATE_EMPTY_DISPOSABLE
 // allarme generato quando viene rilevata una pressione eccessiva su almeno 1
 // dei 4 sensori
@@ -1557,6 +1583,18 @@ bool IsDisposableEmptyWithAlm(void)
 			DispEmpty = TRUE;
 	}
 	return DispEmpty;
+}
+
+// Filippo - funzione che gestisce il passaggio dell'allarme per lo stato idle
+void manageStateChildAlarmIdle(void)
+{
+	if (ptrCurrentChild->child==CHILD_TREAT_ALARM_1_STOP_ALL_ACTUATOR)
+	{
+		if (ptrCurrentChild->action==ACTION_ON_ENTRY)
+		{
+			ptrFutureChild=&stateChildAlarmIdle[3];
+		}
+	}
 }
 
 // Funzione che gestisce gli allarmi nel processo di svuotamento disposable
