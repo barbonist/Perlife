@@ -42,15 +42,15 @@
 #include "BitIoLdd7.h"
 #include "EN_24_M_C.h"
 #include "BitIoLdd8.h"
-#include "COVER_M1.h"
+#include "EMERGENCY_BUTTON.h"
 #include "BitIoLdd9.h"
-#include "COVER_M2.h"
+#include "FRONTAL_COVER_1.h"
 #include "BitIoLdd10.h"
-#include "COVER_M3.h"
+#include "FRONTAL_COVER_2.h"
 #include "BitIoLdd12.h"
-#include "COVER_M4.h"
+#include "HOOK_SENSOR_1.h"
 #include "BitIoLdd11.h"
-#include "COVER_M5.h"
+#include "HOOK_SENSOR_2.h"
 #include "BitIoLdd13.h"
 #include "PC_DEBUG_COMM.h"
 #include "ASerialLdd2.h"
@@ -571,9 +571,6 @@ int main(void)
 #endif
 
 
-
-
-
   /**********MAIN LOOP START************/
   for(;;) {
 
@@ -638,57 +635,47 @@ int main(void)
 
 	         if(ReadKey1()) // per debug con la tastiera a bolle
 	         {
-//				CHANGE_ADDRESS_IR_SENS = TRUE;
-//				unsigned char OldAddress = 0x5A;
-//
-//				word NewAddress = 0x01;//0x02;//0x03;
-//
-//				/*resetto l'indirzzo*/
-//				buildCmdWriteTempSensIR(OldAddress, (RAM_ACCESS_COMMAND | SD_SMBUS_E2_ADDRESS), 0x0000);
-//
-//				int wait = timerCounter;
-//				/*attendo 200 msec*/
-//				while ( timerCounter - wait < 4);
-//
-//				/*scrivo il nuovo indirizzo*/
-//				buildCmdWriteTempSensIR(OldAddress, (RAM_ACCESS_COMMAND | SD_SMBUS_E2_ADDRESS), NewAddress);
-	        	Released1 = 1;
+//	        	  MOD_BUS_RESPONSE result;
+//	        	  result = WaitForModBusResponseTask((WAIT_FOR_MB_RESP_TASK_CMD)WAIT_MB_RESP_TASK_INIT_3_CMD);
+//	        	  setPumpSpeedValue (PPV1, 1000);
+//	        	  while(result == MOD_BUS_ANSW_NO_ANSW)
+//	        		  result = WaitForModBusResponseTask((WAIT_FOR_MB_RESP_TASK_CMD)WAIT_MB_RESP_TASK_NO_CMD);
+//	        	  result = MOD_BUS_ANSW_NO_ANSW;
+#ifdef DEBUG_FRIGO_AMS
+	        	 TempPerfVal--;
+	        	 parameterWordSetFromGUI[PAR_SET_PRIMING_TEMPERATURE_PERFUSION].value = TempPerfVal * 10;
+
+	        	 EnableFrigoFromPlate = TRUE;
+            	 EnableFrigoFromControl = TRUE;
+//	        	 //Start_Frigo_AMS((float)13 * 10);
+//	        	 // temperatura corrente - temperatura target
+//	        	 //Start_Frigo_AMS((float)(25 - TempPerfVal) * 10.0);
+//	        	 EnableHeatingFromControl = TRUE;
+//	        	 // temperatura corrente - temperatura target
+//	        	 StartHeating((float)(TempLiquido - TempPerfVal) * 10.0);
+#endif
+	        	 Released1 = 1;
 	         }
 	         if(ReadKey2()) // per debug con la tastiera a bolle
 	         {
-//				CHANGE_ADDRESS_IR_SENS = TRUE;
-//				unsigned char OldAddress = 0x5A;
-//
-//				word NewAddress = 0x02;
-//
-//				/*resetto l'indirzzo*/
-//				buildCmdWriteTempSensIR(OldAddress, (RAM_ACCESS_COMMAND | SD_SMBUS_E2_ADDRESS), 0x0000);
-//
-//				int wait = timerCounter;
-//				/*attendo 200 msec*/
-//				while ( timerCounter - wait < 4);
-//
-//				/*scrivo il nuovo indirizzo*/
-//				buildCmdWriteTempSensIR(OldAddress, (RAM_ACCESS_COMMAND | SD_SMBUS_E2_ADDRESS), NewAddress);
-	        	Released2 = 1;
+#ifdef DEBUG_FRIGO_AMS
+	        	 TempLiquido--;
+	        	 TempLiquidoDecimi = TempLiquido * 10;
+
+	        	 //StopFrigo();
+	        	 //StopHeating();
+	        	 TempPerfVal = TempLiquido;
+#endif
+	        	 Released2 = 1;
 	         }
 	         if(ReadKey3()) // per debug con la tastiera a bolle
 	         {
-//				CHANGE_ADDRESS_IR_SENS = TRUE;
-//				unsigned char OldAddress = 0x5A;
-//
-//				word NewAddress = 0x03;
-//
-//				/*resetto l'indirzzo*/
-//				buildCmdWriteTempSensIR(OldAddress, (RAM_ACCESS_COMMAND | SD_SMBUS_E2_ADDRESS), 0x0000);
-//
-//				int wait = timerCounter;
-//				/*attendo 200 msec*/
-//				while ( timerCounter - wait < 4);
-//
-//				/*scrivo il nuovo indirizzo*/
-//				buildCmdWriteTempSensIR(OldAddress, (RAM_ACCESS_COMMAND | SD_SMBUS_E2_ADDRESS), NewAddress);
-	        	Released3 = 1;
+#ifdef DEBUG_FRIGO_AMS
+	        	 TempLiquidoDecimi++;
+				Air_1_Status = LIQUID;
+				ptrCurrentState->state = STATE_TREATMENT_2;
+#endif
+	        	 Released3 = 1;
 	         }
 	         if(ReadKey4()) // per debug con la tastiera a bolle
 	         {
@@ -777,6 +764,16 @@ int main(void)
 	         /*          PANIC BUTTON        */
 	         /********************************/
 			 Manage_Panic_Button();
+
+	         /********************************/
+	         /*          FRONTAL COVER       */
+	         /********************************/
+			 Manage_Frontal_Cover();
+
+			 /********************************/
+			 /*          HOOK SENSORS        */
+			 /********************************/
+			 Manage_Hook_Sensors();
 
 	         /********************************/
 	         /*             I2C	             */

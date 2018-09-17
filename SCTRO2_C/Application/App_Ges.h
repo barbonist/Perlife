@@ -301,5 +301,7 @@ bool DisableFrigo(void);
 bool StartHeating(float DeltaT);
 void StopHeating(void);
 void SetFan(bool On);
+void Manage_Frontal_Cover(void);
+void Manage_Hook_Sensors(void);
 
 #endif /* APPLICATION_APP_GES_H_ */

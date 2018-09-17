@@ -33,11 +33,11 @@
 #include "D_7S_F.h"
 #include "D_7S_G.h"
 
-#include "COVER_M1.h"
-#include "COVER_M2.h"
-#include "COVER_M3.h"
-#include "COVER_M4.h"
-#include "COVER_M5.h"
+#include "EMERGENCY_BUTTON.h"
+#include "FRONTAL_COVER_1.h"
+#include "FRONTAL_COVER_2.h"
+#include "HOOK_SENSOR_1.h"
+#include "HOOK_SENSOR_2.h"
 
 #include "BUBBLE_KEYBOARD_BUTTON1.h"
 #include "BUBBLE_KEYBOARD_BUTTON2.h"
@@ -5473,17 +5473,17 @@ void Display_7S_Management()
 	// D_7S_DP_ClrVal(); //accende puntino led
 }
 
-void Cover_Sensor_GetVal()
-{
-	unsigned char CoverM1,CoverM2,CoverM3,CoverM4,CoverM5;
-
-	CoverM1 = COVER_M1_GetVal();
-	CoverM2 = COVER_M2_GetVal();
-	CoverM3 = COVER_M3_GetVal();
-	CoverM4 = COVER_M4_GetVal();
-	CoverM5 = COVER_M5_GetVal();
-
-}
+//void Cover_Sensor_GetVal()
+//{
+//	unsigned char CoverM1,CoverM2,CoverM3,CoverM4,CoverM5;
+//
+//	CoverM1 = COVER_M1_GetVal();
+//	CoverM2 = COVER_M2_GetVal();
+//	CoverM3 = COVER_M3_GetVal();
+//	CoverM4 = COVER_M4_GetVal();
+//	CoverM5 = COVER_M5_GetVal();
+//
+//}
 
 void Voltage_BM_Chk()
 {
@@ -5581,7 +5581,7 @@ void Manage_Panic_Button(void)
 	switch (Status_Panic_Button)
 	{
 		case 0:
-			if (PANIC_BUTTON_INPUT_GetVal() )
+			if (/*PANIC_BUTTON_INPUT_GetVal()*/ EMERGENCY_BUTTON_GetVal())
 			{
 				timer_button = timerCounterModBus;
 				Status_Panic_Button = 1;
@@ -5590,7 +5590,7 @@ void Manage_Panic_Button(void)
 			break;
 
 		case 1:
-			if (!PANIC_BUTTON_INPUT_GetVal())
+			if (/*!PANIC_BUTTON_INPUT_GetVal()*/!EMERGENCY_BUTTON_GetVal())
 			{
 				Status_Panic_Button = 0;
 				PANIC_BUTTON_ACTIVATION = FALSE;
@@ -5607,6 +5607,31 @@ void Manage_Panic_Button(void)
 }
 
 
+void Manage_Frontal_Cover(void)
+{
+	if (FRONTAL_COVER_1_GetVal())
+		FRONTAL_COVER_1_STATUS = TRUE; // cover left opened
+	else
+		FRONTAL_COVER_1_STATUS = FALSE; // cover left closed
+
+	if (FRONTAL_COVER_2_GetVal())
+		FRONTAL_COVER_2_STATUS = TRUE; // cover right opened
+	else
+		FRONTAL_COVER_2_STATUS = FALSE; // cover right closed
+
+}
+void Manage_Hook_Sensors(void)
+{
+	if (HOOK_SENSOR_1_GetVal())
+		HOOK_SENSOR_1_STATUS = TRUE; // vaschetta a destra non inserita
+	else
+		HOOK_SENSOR_1_STATUS = FALSE; // vaschetta a destra inserita
+
+	if (HOOK_SENSOR_2_GetVal())
+		HOOK_SENSOR_2_STATUS = TRUE; // vaschetta a sinistra non inserita
+	else
+		HOOK_SENSOR_2_STATUS = FALSE; // vaschetta a sinistra inserita
+}
 
 void SetAbandonGuard(void)
 {
