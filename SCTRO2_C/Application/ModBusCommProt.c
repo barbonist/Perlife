@@ -1955,8 +1955,8 @@ void StorageModbusData(unsigned char LastActuatslvAddr)
 	{
 		// ho letto lo stato delle pompe EVER
 		Tot_ModBus_Data_RX = TOT_DATA_MODBUS_RECEIVED_PUMP_EVER;
-		CRC_CALC = ComputeChecksum(ptr_msg, TOT_DATA_MODBUS_RECEIVED_PUMP - 2);
-		CRC_RX = BYTES_TO_WORD(msgToRecvFrame3[10], msgToRecvFrame3[9]);
+		CRC_CALC = ComputeChecksum(ptr_msg, TOT_DATA_MODBUS_RECEIVED_PUMP_EVER - 2);
+		CRC_RX = BYTES_TO_WORD(msgToRecvFrame3[14], msgToRecvFrame3[13]);
 	}
 	else if (Address >= FIRST_ACTUATOR && Address <= (LAST_PUMP - 2))
 #else
