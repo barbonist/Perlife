@@ -21,11 +21,11 @@
 #include "D_7S_F.h"
 #include "D_7S_G.h"
 
-#include "COVER_M1.h"
-#include "COVER_M2.h"
-#include "COVER_M3.h"
-#include "COVER_M4.h"
-#include "COVER_M5.h"
+#include "EMERGENCY_BUTTON.h"
+#include "FRONTAL_COVER_1.h"
+#include "FRONTAL_COVER_2.h"
+#include "HOOK_SENSOR_1.h"
+#include "HOOK_SENSOR_2.h"
 
 #include "BUBBLE_KEYBOARD_BUTTON1.h"
 #include "BUBBLE_KEYBOARD_BUTTON2.h"

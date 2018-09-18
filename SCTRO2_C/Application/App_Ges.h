@@ -256,6 +256,8 @@ void Voltage_BM_Chk(void);
 void EEPROM_Read(LDD_FLASH_TAddress Source, LDD_TData *Dest, LDD_FLASH_TDataSize Count);
 void Set_Data_EEPROM_Default(void);
 void Manage_Panic_Button(void);
+void Manage_Frontal_Cover();
+void Manage_Hook_Sensors();
 
 #include "EEPROM.h"
 byte EEPROM_GetFlash(LDD_FLASH_TAddress Source, LDD_TData *Dest, LDD_FLASH_TDataSize Count);

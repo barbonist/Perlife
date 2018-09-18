@@ -1455,17 +1455,30 @@ unsigned char codeDBG;
 unsigned char subcodeDBG;
 bool Service;
 
+/*variabile globale per il tasto di emergenza; diventa TRUE se tasto premuto*/
 bool PANIC_BUTTON_ACTIVATION;
 // Filippo - inserito flag per spegnimento PC
+
 bool PANIC_BUTTON_ACTIVATION_PC;
 // Filippo - inserito un flag per sapere quando sono in allarme T1Test
+
 bool allarmeTestT1Attivo;
 // Filippo - inserito un flag per sapere quando c'è l'allarme del test sensore aria
 bool airSensorTestKO;
 
-// durata globale del trattamento in secondi
-unsigned long TreatDuration;
+// durata globale del trattamento in 
+bool FRONTAL_COVER_1_STATUS;
+/*variabile globale per il sensore di cover 2; diventa TRUE se cover aperto*/
+
+bool FRONTAL_COVER_2_STATUS;
+/*variabile globale per il sensore di gancio 1; diventa TRUE se gancio aperto*/
+bool HOOK_SENSOR_1_STATUS;
+/*variabile globale per il sensore di gancio 2; diventa TRUE se gancio aperto*/
+bool HOOK_SENSOR_2_STATUS;
+
+// durata globale del trattamento in secounsigned long TreatDuration;
 unsigned long TotalTreatDuration;
+unsigned long TreatDuration;
 // durata globale del prtiming in secondi
 unsigned long PrimingDuration;
 unsigned long TotalPrimingDuration;
