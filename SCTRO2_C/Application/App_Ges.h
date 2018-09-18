@@ -303,16 +303,33 @@ void StopFrigo(void);
 MOD_BUS_RESPONSE WaitForModBusResponseTask(WAIT_FOR_MB_RESP_TASK_CMD WaitForMBRespTskCmd);
 void LiquidTempControlTask(LIQ_TEMP_CONTR_TASK_CMD LiqTempContrTaskCmd);
 LIQ_TEMP_CONTR_TASK_STATE FrigoHeatTempControlTask(LIQ_TEMP_CONTR_TASK_CMD LiqTempContrTaskCmd);
+// Filippo - utilizzo una nuova funzione per poter gestire il PID nuovo che usa insieme il frigo e il riscaldatore
+LIQ_TEMP_CONTR_TASK_STATE FrigoHeatTempControlTaskNewPID(LIQ_TEMP_CONTR_TASK_CMD LiqTempContrTaskCmd);
 bool StartHeating(float DeltaT);
 
 bool IsHeating(void);
 bool EnableHeating(void);
 bool DisableHeating(void);
 bool IsFrigo();
+// Filippo - inserito funzione per gestire stop attuatori a pompe ferme
+bool IsFrigoStoppedInAlarm();
 bool EnableFrigo(void);
 bool DisableFrigo(void);
 bool StartHeating(float DeltaT);
 void StopHeating(void);
 void SetFan(bool On);
+
+// Filippo - gestione della ricezione del messaggio CAN dalla protective contenente il valore di temperatura del piatto come letto
+// dalla protective stessa
+float getValTempPlateProt(void);
+// Filippo - devo verificare che le temperature piatto lette dalla control e dalla protective siano le stesse
+void verificaTempPlate(void);
+// Filippo - funzione per eseguire il test del sensore aria
+void airSensorTest(void);
+// Filippo - aggiungo una nuova funzione di stop per il frigo per gestire il nuovo PID che utilizza insieme frigo e riscaldatore
+void StopFrigoNewPID(unsigned char spegniFrigo);
+// Filippo - Definisco questa nuova funzione per gestire il nuovo PID che utilizza sia frigo che riscaldatore e non deve sempre
+// staccare l'alimentazione al frigo
+bool Start_Frigo_AMSNewPID(float DeltaT,unsigned char spegniFrigo);
 
 #endif /* APPLICATION_APP_GES_H_ */

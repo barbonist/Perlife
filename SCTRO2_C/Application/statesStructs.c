@@ -120,6 +120,17 @@ struct machineChild stateChildAlarmIdle[] =
 		  	{}
 		  };
 
+
+// Filippo - aggiunto stato di allarme in idle
+struct machineChild stateChildAlarmT1[] =
+		  {
+		  	{STATE_NULL, PARENT_NULL, CHILD_IDLE_ALARM, ACTION_ON_ENTRY, &stateNull[0], &manageChildIdleAlarm},
+			{STATE_NULL, PARENT_NULL, CHILD_IDLE_ALARM, ACTION_ALWAYS, &stateNull[0], &manageNull},
+			{STATE_NULL, PARENT_NULL, CHILD_TREAT_ALARM_1_STOP_ALL_ACTUATOR, ACTION_ON_ENTRY, &stateNull[0], &manageChildT1Alm1StAllActEntry},      /* 11 */
+			{STATE_NULL, PARENT_NULL, CHILD_TREAT_ALARM_1_STOP_ALL_ACTUATOR, ACTION_ALWAYS,   &stateNull[0], &manageChildT1Alm1StAllActAlways},     /* 12 */
+		  	{}
+		  };
+
 struct machineChild stateChildAlarmEmpty[] =
 		  {
 			{STATE_NULL, PARENT_NULL, CHILD_NULL,                            ACTION_NULL,     &stateNull[0], &manageNull},                             /* 0 */
@@ -343,7 +354,7 @@ struct machineParent stateParentT1TNoDisposable[] =
 		 {STATE_NULL, PARENT_T1_NO_DISP_END,          CHILD_IDLE, ACTION_ON_ENTRY, &stateChildIdle[1], &manageNull}, /* 23 */ /* t1 test end */
 		 {STATE_NULL, PARENT_T1_NO_DISP_END,          CHILD_IDLE, ACTION_ALWAYS,   &stateChildIdle[1], &manageNull}, /* 24 */ /* t1 test end */
 		 {STATE_NULL, PARENT_T1_NO_DISP_ALARM,        CHILD_IDLE, ACTION_ON_ENTRY, &stateChildIdle[1], &manageNull}, /* 25 */ /* t1 test alarm */
-		 {STATE_NULL, PARENT_T1_NO_DISP_ALARM,        CHILD_IDLE, ACTION_ALWAYS,   &stateChildIdle[1], &manageNull}, /* 26 */ /* t1 test alarm */
+		 {STATE_NULL, PARENT_T1_NO_DISP_ALARM,        CHILD_IDLE, ACTION_ALWAYS,   &stateChildAlarmT1[2], &manageNull}, /* 26 */ /* t1 test alarm */
 		 {STATE_NULL, PARENT_T1_NO_DISP_FATAL_ERROR,  CHILD_IDLE, ACTION_ON_ENTRY, &stateChildIdle[1], &manageNull}, /* 27 */ /* t1 test error */
 		 {STATE_NULL, PARENT_T1_NO_DISP_FATAL_ERROR,  CHILD_IDLE, ACTION_ALWAYS,   &stateChildIdle[1], &manageNull}, /* 28 */ /* t1 test error */
 		 {STATE_NULL, PARENT_T1_NO_DISP_CHECK_HEATER, CHILD_IDLE, ACTION_ON_ENTRY, &stateChildIdle[1], &manageParentT1HeaterInit}, /* 29 */ /* t1 chk pump */

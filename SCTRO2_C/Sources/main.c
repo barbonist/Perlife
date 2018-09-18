@@ -264,6 +264,7 @@ int main(void)
 
   // Filippo - inizializzo il flag di test del frigo e riscaldatore
   testT1HeatFridge=0;
+  airSensorTestKO=FALSE;
 
   CoversState = 4; // all covers chiusi
   ArteriousPumpGainForPid = DEFAULT_ART_PUMP_GAIN;
@@ -339,6 +340,11 @@ int main(void)
   Prescaler_Tick_TEST=0;
   FreeRunCnt10msec = 0;
   Service = FALSE;
+  // Filippo - timer per gestire l'eventuale riaccensione del frigo
+  timerCounterFrigoOn=ATTESA_FRIGO_OFF_NEW_PID;	// forzo il timer già scaduto perchè alla prima accensione deve partire subito
+
+  // Filippo - inizializzo l'allarme del T1 test
+  allarmeTestT1Attivo=FALSE;
 
   Frigo_ON = FALSE;
   Heat_ON  = FALSE;
@@ -621,6 +627,8 @@ int main(void)
 	        	//warningsEngineAlways();
 		        GenerateSBCComm();
 		        ProtectiveTask();
+		        // Filippo - devo verificare che le temperature piatto lette dalla control e dalla protective siano le stesse
+		        verificaTempPlate();
 
 				/********************************/
 				/*      CHECK COVER PUMP        */
@@ -843,7 +851,9 @@ int main(void)
 	      	// task di controllo della temperatura del liquido nel reservoir
 	      	// non posso mettere questo codice al posto di quello delle peltier perche' non
 	      	// lavorerebbe bene il pwm del riscaldatore
-	      	FrigoHeatTempControlTask((LIQ_TEMP_CONTR_TASK_CMD)LIQ_T_CONTR_TASK_NO_CMD);
+	      	// Filippo - cambio funzione per gestire nuovo PID che usa frigo e riscaldatore insieme
+//	      	FrigoHeatTempControlTask((LIQ_TEMP_CONTR_TASK_CMD)LIQ_T_CONTR_TASK_NO_CMD);
+	      	FrigoHeatTempControlTaskNewPID((LIQ_TEMP_CONTR_TASK_CMD)LIQ_T_CONTR_TASK_NO_CMD);
 #endif
   }
   /**********MAIN LOOP END**************/

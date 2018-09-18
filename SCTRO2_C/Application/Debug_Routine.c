@@ -421,6 +421,41 @@ void Service_SBC(void){
 		         	    /*successivamente dovrò disalimentare il sensore altrimenti il nuovo indirizzo non viene memorizzato*/
 					}
 					break;
+					// Filippo - comando di taratura per il sensore PT1000 sul piatto
+					case 0x43:
+					{
+						word snd1;
+						ptrMsgSbcRx = &sbc_rx_data[0];
+
+						/*gli ID dei sensori delle GUI partono da 1, mentre i miei partono da 0 quindi sottraggo 1*/
+						//il valore mi arriva su due byte moltiplicato per dieci
+						float value = BYTES_TO_WORD(sbc_rx_data[7], sbc_rx_data[8]);
+						value = value /10;
+						unsigned char point = 0;
+
+						Plate_Temp_Sensor_Calibration(value);
+
+						buildPT1000CalibResponseMsg(ptrMsgSbcRx);
+
+						ptrMsgSbcTx = &sbc_tx_data[0];
+						SBC_COMM_SendBlock(ptrMsgSbcTx,myCommunicatorToSBC.numByteToSend,&snd1);
+
+
+						break;
+					}
+					// Filippo - comando di lettura dell'offset di calibrazione per il sensore PT1000 sul piatto
+					case 0x44:
+					{
+						word snd;
+						ptrMsgSbcRx = &sbc_rx_data[0];
+						buildPT1000SensReadParamResponseMsg(ptrMsgSbcRx);
+						ptrMsgSbcTx = &sbc_tx_data[0];
+						SBC_COMM_SendBlock(ptrMsgSbcTx,myCommunicatorToSBC.numByteToSend,&snd);
+					}
+
+
+						break;
+
 					// Flow sensor read values
 					case 0x50:
 					{

@@ -29,6 +29,10 @@ void buildPeltierWriteIntResponseMsg(char *ptrMsgSbcRx);
 void buildPeltierStartResponseMsg(char *ptrMsgSbcRx);
 void buildPeltierStopResponseMsg(char *ptrMsgSbcRx);
 void buildPeltierWriteEEResponseMsg(char *ptrMsgSbcRx);
+// Filippo - costruisco la risposta al comando di calibrazione sonda PT1000
+void buildPT1000CalibResponseMsg(char *ptrMsgSbcRx);
+// Filippo - funzione che risponde al comando di lettura parametro di calibrazione per il sensore PT1000
+void buildPT1000SensReadParamResponseMsg(char *ptrMsgSbcRx);
 
 //void buildPeltierResponseMsg(char code);
 //void buildWriteTempSensResponseMsg(char code, char tempSensId);

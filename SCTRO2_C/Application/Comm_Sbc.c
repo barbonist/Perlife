@@ -249,6 +249,82 @@ void buildPressSensReadParamResponseMsg(char *ptrMsgSbcRx)
 	myCommunicatorToSBC.numByteToSend = index;
 }
 
+// Filippo - costruisco la risposta al comando di calibrazione sonda PT1000
+void buildPT1000CalibResponseMsg(char *ptrMsgSbcRx)
+{
+    byte index = 0;
+    byte i;
+
+    word wd;
+
+	sbc_tx_data[index++] = 0xA5;
+	sbc_tx_data[index++] = 0xAA;
+	sbc_tx_data[index++] = 0x55;
+	sbc_tx_data[index++] = 0x00;
+	sbc_tx_data[index++] = 0x05;
+	sbc_tx_data[index++] = ptrMsgSbcRx[5];
+	sbc_tx_data[index++] = ptrMsgSbcRx[6];
+	sbc_tx_data[index++] = 0x66;
+
+	for (i=0;i<5;i++)
+	{
+		sbc_tx_data[index++]=0x55;	// valore inutile per raggiungere la dimensione di 16 byte
+	}
+
+	wd = ComputeChecksum(sbc_tx_data, index);
+
+	/*  CRC H */
+	sbc_tx_data[index++] = (wd >> 8) & 0xFF;
+	/*  CRC L */
+	sbc_tx_data[index++] = (wd     ) & 0xFF;
+	sbc_tx_data[index++] = 0x5A;
+
+	myCommunicatorToSBC.numByteToSend = index;
+
+}
+
+// Filippo - funzione che risponde al comando di lettura parametro di calibrazione per il sensore PT1000
+void buildPT1000SensReadParamResponseMsg(char *ptrMsgSbcRx)
+{
+	word wd;
+    byte index = 0;
+	int32 leggiOffset;
+
+	sbc_tx_data[index++] = 0xA5;
+	sbc_tx_data[index++] = 0xAA;
+	sbc_tx_data[index++] = 0x55;
+	sbc_tx_data[index++] = 0x00;
+	sbc_tx_data[index++] = 0x29;
+	sbc_tx_data[index++] = ptrMsgSbcRx[5];
+	sbc_tx_data[index++] = ptrMsgSbcRx[6];
+	sbc_tx_data[index++] = 0x66;
+
+	leggiOffset=(int32)(config_data.T_Plate_Sensor_Offset_Heat*10);
+
+	sbc_tx_data[index++] = 0;
+	if (leggiOffset<0)
+	{
+		sbc_tx_data[index++] = 1;
+		leggiOffset=-leggiOffset;
+	}
+	else
+	{
+		sbc_tx_data[index++] = 0;
+	}
+	sbc_tx_data[index++] = (unsigned char)((leggiOffset >> 8) & 0x000000FF);
+	sbc_tx_data[index++] = (unsigned char)(leggiOffset & 0x000000FF);
+
+	wd = ComputeChecksum(sbc_tx_data, index);
+
+	/*  CRC H */
+	sbc_tx_data[index++] = (wd >> 8) & 0xFF;
+	/*  CRC L */
+	sbc_tx_data[index++] = (wd     ) & 0xFF;
+	sbc_tx_data[index++] = 0x5A;
+
+	myCommunicatorToSBC.numByteToSend = index;
+
+}
 
 void buildPressSensCalibResponseMsg(char *ptrMsgSbcRx)
 {
@@ -340,6 +416,10 @@ void buildTempIRSensReadValuesResponseMsg(char *ptrMsgSbcRx)
 		sbc_tx_data[index++] = (value >> 8) & 0xFF;
 		sbc_tx_data[index++] = (value     ) & 0xFF;
 	}
+
+	value=(word)(T_PLATE_C_GRADI_CENT*10);
+	sbc_tx_data[index++] = (value >> 8) & 0xFF;
+	sbc_tx_data[index++] = (value     ) & 0xFF;
 
 	wd = ComputeChecksum(sbc_tx_data, index);
 
@@ -1585,8 +1665,8 @@ void setParamWordFromGUI(unsigned char parId, int value)
 	}
 
 	// TODO DA RIMUOVERE SOLO PER DEBUG GUI !!!!
-//parameterWordSetFromGUI[PAR_SET_DESIRED_DURATION].value = 0x00; // due ore
-	//parameterWordSetFromGUI[PAR_SET_DESIRED_DURATION].value = 0x003; // 20 minuti
+	parameterWordSetFromGUI[PAR_SET_DESIRED_DURATION].value = 0x00; // due ore
+	parameterWordSetFromGUI[PAR_SET_DESIRED_DURATION].value = 0x003; // 20 minuti
 }
 
 void resetParamWordFromGUI(unsigned char parId){

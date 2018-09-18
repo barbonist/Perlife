@@ -26,5 +26,6 @@ extern struct machineParent stateParentTreatKidney1[];
 extern struct machineParent stateParentEmptyDisp[];
 extern struct machineState stateState[];
 extern struct machineChild stateChildAlarmIdle[];
+extern struct machineChild stateChildAlarmT1[];
 
 #endif /* APPLICATION_STATESSTRUCTS_H_ */

@@ -123,7 +123,9 @@ char    iFlag_modbusDataStorage;
  * 				 per avere la risoluzione del decimo di grado							 */
 
 #define GAIN_T_PLATE_SENS_HEAT			0.03065134
-#define OFFSET_T_PLATE_SENS_HEAT			-1020
+// Filippo - messo a 0 l'offset perchè adesso la PT1000 sul piatto la leggiamo in modo diverso
+//#define OFFSET_T_PLATE_SENS_HEAT			-1020
+#define OFFSET_T_PLATE_SENS_HEAT			0
 
 bool Frigo_ON;
 
@@ -133,7 +135,9 @@ bool Frigo_ON;
  * 										 per avere la risoluzione del decimo di grado							 */
 
 #define GAIN_T_PLATE_SENS_COLD			0.015988
-#define OFFSET_T_PLATE_SENS_COLD		-388.3496
+// Filippo - messo a 0 l'offset perchè adesso la PT1000 sul piatto la leggiamo in modo diverso
+//#define OFFSET_T_PLATE_SENS_COLD		-388.3496
+#define OFFSET_T_PLATE_SENS_COLD		0
 
 bool Heat_ON;
 
@@ -363,6 +367,7 @@ float t1TestTempPartenza;
 unsigned char t1Test_Frigo;
 bool testT1HeatFridge;
 float tempStopFridge;
+unsigned char primoPassaggio;	// variabile che serve solo per il debug
 
 // Filippo - variabili per il test dell'aria
 unsigned char t1TestAir;
@@ -1336,6 +1341,11 @@ int timerCounterUpdateTargetPressPidArt;
 int timerCounterT1Test;
 // Filippo - aggiunto timer perchè serve nel test T1 del frigo
 int timerCounterT1TestFridge;
+// Filippo - timer per decidere quando attivare il test del sensore aria
+int timerCounterTestAirSensor;
+// Filippo - timer per gestire l'accensione del frigo non oltre i 5 minuti di tempo
+int timerCounterFrigoOn;
+
 
 /************************************************************************/
 /* 					STRUTTURA VOLUMI TRATTAMENTO 						*/
@@ -1448,6 +1458,10 @@ bool Service;
 bool PANIC_BUTTON_ACTIVATION;
 // Filippo - inserito flag per spegnimento PC
 bool PANIC_BUTTON_ACTIVATION_PC;
+// Filippo - inserito un flag per sapere quando sono in allarme T1Test
+bool allarmeTestT1Attivo;
+// Filippo - inserito un flag per sapere quando c'è l'allarme del test sensore aria
+bool airSensorTestKO;
 
 // durata globale del trattamento in secondi
 unsigned long TreatDuration;
@@ -1789,6 +1803,8 @@ typedef struct
 	unsigned int EnableFromProtectiveAlm    : 1;    // abilita l'allarme generato dalla protective
 	// Filippo - inserito il flag di abilitazione dell'allarme pulsante di stop
 	unsigned int EnableStopButton			: 1;	// abilita la gestione dell'allarme del pulsante di stop
+	// Filippo - inserito il flag di abilitazione dell'allarme T1 test
+	unsigned int EnableT1TestAlarm			: 1;	// abilita la gestione dell'allarme nel T1 test
 }FLAGS_DEF;
 
 typedef union
@@ -1983,6 +1999,18 @@ typedef struct
 	unsigned short TempSensArt;
 	unsigned short TempSensVen;
 }CANBUS_MSG_10;
+
+// Filippo - definita struttura per la ricezione del messaggio 13
+typedef struct
+{
+	unsigned char  free1;
+	unsigned char  free2;
+	int16_t	tempPlateP;
+	unsigned char  free3;
+	unsigned char  free4;
+	unsigned char  free5;
+	unsigned char  free6;
+}CANBUS_MSG_13;
 
 //-------------------------------------------------------------------------------
 
@@ -2210,7 +2238,9 @@ typedef enum
 	FRIGO_STOP_CMD,
 	HEAT_STARTING_CMD,
 	HEAT_STOP_CMD,
-	TEMP_MANAGER_STOPPED_CMD
+	TEMP_MANAGER_STOPPED_CMD,
+	TEMP_STOP_BECAUSE_OF_ALM_CMD,
+	TEMP_MANAGER_SUSPEND_CMD
 }LIQ_TEMP_CONTR_TASK_CMD;
 
 typedef enum
@@ -2225,7 +2255,14 @@ typedef enum
 	LIQ_T_CONTR_WAIT_STOP_HEATING,
 	LIQ_T_CONTR_FRIGO_STOPPED,
 	LIQ_T_CONTR_HEATING_STOPPED,
-	LIQ_T_CONTR_TEMP_MNG_STOPPED
+	LIQ_T_CONTR_TEMP_MNG_STOPPED,
+	LIQ_T_CONTR_ATTIVA_HEAT_SPOT,
+	LIQ_T_CONTR_WAIT_HEAT_STOP_SPOT,
+	LIQ_T_CONTR_ATTIVA_FRIGO_SPOT,
+	LIQ_T_CONTR_WAIT_FRIGO_STOP_SPOT,
+	LIQ_T_CONTR_STOPPED_BY_ALM,
+	LIQ_T_CONTR_SUSPENDED
+
 }LIQ_TEMP_CONTR_TASK_STATE;
 
 // delay in intervalli da 10 msec prima di iniziare il controllo della temperatura
@@ -2257,14 +2294,31 @@ typedef enum
 // tempo di attesa massimo per lo start frigo o heating.
 // trascorso questo tempo se non ho avuto nessuno start frigo o riscaldamento vado a ricontrollare il
 // il tipo di azione da fare (in tick da 10msec)
-#define MAX_TEMP_CNTRL_DELAY 30000
+// Filippo - modifico questo ritardo per gestire in modo più rapido l'attivazione del riscaldatore e del frigo quando è il momento
+//#define MAX_TEMP_CNTRL_DELAY 30000
+#define MAX_TEMP_CNTRL_DELAY 2000
 
 // massima temperatura raggiungibile nella base riscaldante (al di sopra spengo
 // le resistenze riscaldanti) in gradi C
 #define MAX_PLATE_TEMP  70
 // minima temperatura raggiungibile nella base riscaldante (al di sotto spengo
 // il frigo) in gradi C
-#define MIN_PLATE_TEMP  -5//-16 la metto a -5 per evitare la formazione di ghiaccio
+//#define MIN_PLATE_TEMP  -5//-16 la metto a -5 per evitare la formazione di ghiaccio
+// minima temperatura raggiungibile nella base riscaldante (al di sotto spengo
+// il frigo) in gradi C
+// Filippo - ridefinito il minimo di piastra per non far staccare subito il frigo
+#define MIN_PLATE_TEMP  -10//-16 la metto a -5 per evitare la formazione di ghiaccio
+
+
+// Filippo - intervallo di tempo in cui il riscaldatore rimane accesso durante il nuovo PID che usa il frigo e il riscaldatore
+// insieme (in tick da 10msec)
+#define ATTESA_HEAT_OFF_NEW_PID 2000
+// Filippo - intervallo di tempo in cui il frigo rimane accesso durante il nuovo PID che usa il frigo e il riscaldatore
+// insieme (in tick da 50msec)
+#define ATTESA_FRIGO_OFF_NEW_PID 6000
+
+// Filippo - attesa per lo spegnimento del frigo quando lo uso spot per raffreddare il riscaldatore (tick da 10ms)
+#define ATTESA_FRIGO_OFF_SPOT 6000
 
 // stati per gestire il pilotaggio delle resistenze di riscaldamento
 typedef enum

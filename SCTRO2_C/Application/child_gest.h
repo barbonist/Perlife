@@ -42,6 +42,8 @@ void manageChildPrimAlmModBusAlways(void);
 void manageChildIdleAlarm(void);
 void manageChildIdleAlm1StAllActEntry(void);
 void manageChildIdleAlm1StAllActAlways(void);
+void manageChildT1Alm1StAllActEntry(void);
+void manageChildT1Alm1StAllActAlways(void);
 
 
 /* --------------------------------------------------------------------------------------------
@@ -89,6 +91,10 @@ bool PinchWriteTerminated(int idx);
 bool IsSecurityStateActive(void);
 bool PutPinchInSafetyPos(void);
 
+// Filippo - gestite in modo diverso le funzioni di stop attuatori in T1 test
+void manageChildTreatAlmT1StopAllActEntry(void);
+void manageChildTreatAlmT1StopAllActAlways(void);
+
 /* --------------------------------------------------------------------------------------------
    CHILD LEVEL FUNCTION FOR EMPTY STATE
  * --------------------------------------------------------------------------------------------*/
@@ -127,6 +133,7 @@ void manageChildEmptyAlmPumpNotStillAlways(void);
 
 // Filippo - funzione che gestisce il passaggio dell'allarme per lo stato idle
 void manageStateChildAlarmIdle(void);
+void manageStateChildAlarmT1(void);
 
 
 #endif /* APPLICATION_CHILD_GEST_H_ */

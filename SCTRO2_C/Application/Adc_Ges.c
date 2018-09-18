@@ -208,6 +208,8 @@ void Coversion_From_ADC_To_degree_T_PLATE_Sensor()
 		T_PLATE_C_GRADI_CENT=tabellaPT1000[13].temperatura;
 	}
 
+//	T_PLATE_C_GRADI_CENT+=config_data.T_Plate_Sensor_Offset_Heat;
+
 }
 void Coversion_From_ADC_To_mmHg_Pressure_Sensor()
 {
@@ -217,6 +219,7 @@ void Coversion_From_ADC_To_mmHg_Pressure_Sensor()
 	PR_ADS_FLT_mmHg = config_data.sensor_PRx[ADS_FLT].prSensGain * PR_ADS_FLT_ADC + config_data.sensor_PRx[ADS_FLT].prSensOffset;
 	PR_VEN_mmHg 	= config_data.sensor_PRx[VEN].prSensGain     * PR_VEN_ADC     + config_data.sensor_PRx[VEN].prSensOffset;
 	PR_ART_mmHg 	= config_data.sensor_PRx[ART].prSensGain     * PR_ART_ADC     + config_data.sensor_PRx[ART].prSensOffset;
+
 }
 
 void Pressure_sensor_Fltered ()
@@ -517,6 +520,21 @@ void Coversion_From_ADC_To_Voltage()
 	V24_P1_CHK_VOLT=V24_P2_CHK_VOLT;
 //	V24_P2_CHK_VOLT = (float)(V24_P2_CHK_ADC * T1_TEST_DIG_TO_VOLT);
 }
+
+// Filippo - funzione per la calibrazione del sensore PT1000
+void Plate_Temp_Sensor_Calibration(float value)
+{
+	unsigned char *ptr_EEPROM = (EEPROM_TDataAddress)&config_data;
+
+	config_data.T_Plate_Sensor_Offset_Heat=value-T_PLATE_C_GRADI_CENT;
+
+	config_data.EEPROM_CRC = ComputeChecksum(ptr_EEPROM, sizeof(config_data)-2);
+
+	/*finita la calibrazione di un sensore la vado subito a salvare in EEPROM*/
+	EEPROM_write((EEPROM_TDataAddress)&config_data, START_ADDRESS_EEPROM, sizeof(config_data));
+}
+
+
 
 /*---FUNZIONE DI CALIBRAZIONE DEI SENSORI DI PRESSIONE
  * NAME: Pressure_Sensor_Calibration

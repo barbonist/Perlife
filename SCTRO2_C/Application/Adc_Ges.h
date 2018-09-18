@@ -57,4 +57,7 @@ void CalcArtSistDiastPress(word Press);
 void T_PLATE_P_Init(void);
 void Coversion_From_ADC_To_degree_T_PLATE_Sensor();
 
+// Filippo - funzione per la calibrazione del sensore PT1000
+void Plate_Temp_Sensor_Calibration(float value);
+
 #endif /* APPLICATION_ADC_GES_H_ */

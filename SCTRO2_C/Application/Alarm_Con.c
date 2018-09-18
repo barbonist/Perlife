@@ -86,6 +86,11 @@ struct alarm alarmList[] =
 		// Filippo - inserito allarme per il tasto di stop
 		{CODE_ALARM_PANIC_BUTTON, PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH, 0, 500, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_ALLOWED, &alarmManageNull},	        /* 31 allarme tasto di stop*/
 
+		// Filippo - inserito allarme per test T1
+		{CODE_ALARM_TEST_T1, PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH, 0, 500, OVRD_NOT_ENABLED, RESET_NOT_ALLOWED, SILENCE_ALLOWED, MEMO_ALLOWED, &alarmManageNull},	        /* 32 allarme tasto di stop*/
+		// Filippo - inserito allarme per test sensore aria fallito
+		{CODE_ALARM_AIR_SENSOR_TEST_KO,PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,PRIORITY_HIGH, 0, 2000, OVRD_NOT_ENABLED, RESET_NOT_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull}, 		/* 12 */
+
 		// da qui in avanti solo le warning
 		{CODE_ALARM_PRESS_ADS_FILTER_WARN, PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_LOW, 2000, 2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull},	        /* 30 esempio di warning*/
 		{}
@@ -162,6 +167,8 @@ void SetAllAlarmEnableFlags(void)
 	GlobalFlags.FlagsDef.EnableLevLowAlarm = 1;           // Abilito allarme di livello troppo basso
 	GlobalFlags.FlagsDef.EnableCoversAlarm = 1;           // Abilito allarme di cover
 	GlobalFlags.FlagsDef.EnablePressSensLowAlm = 1;       // abilito allarme pressione bassa
+	// Filippo - da riabilitare
+//	GlobalFlags.FlagsDef.EnablePressSensLowAlm = 0;       // abilito allarme pressione bassa
 	GlobalFlags.FlagsDef.EnablePressSensHighAlm = 1;      // abilito allarme pressione alta
 	GlobalFlags.FlagsDef.EnableTempArtHighAlm = 1;        // abilito allarme temperatura alta
 	GlobalFlags.FlagsDef.EnableDeltaFlowArtAlarm = 1;     // abilito allarme delta flusso arterioso troppo alto
@@ -184,6 +191,8 @@ void SetAllAlarmEnableFlags(void)
 	GlobalFlags.FlagsDef.EnableFromProtectiveAlm = 0;
 	// Filippo - abilito l'allarme di stop button
 	GlobalFlags.FlagsDef.EnableStopButton=1;
+	// Filippo - abilito l'allarme di T1 test
+	GlobalFlags.FlagsDef.EnableT1TestAlarm=1;
 }
 
 // Questa funzione serve per forzare ad off un eventuale allarme.
@@ -543,7 +552,8 @@ void alarmEngineAlways(void)
 				/* DA DEBUGGARE*/
 				//manageAlarmFlowSensNotDetected();
 				//manageAlarmIrTempSensNotDetected();
-
+				manageAlarmStopButtonPressed();
+				manageAlarmT1Test();
 				break;
 			}
 
@@ -667,6 +677,9 @@ void alarmEngineAlways(void)
 				manageAlarmFromProtective();
 				// Filippo - aggiungo la gestione del tasto di stop come allarme
 				manageAlarmStopButtonPressed();
+
+				// Filippo - aggiunto allarme per test sensore aria sbagliato
+				manageAlarmAirSensorTestKO();
 				break;
 			}
 
@@ -1458,6 +1471,26 @@ void manageAlarmStopButtonPressed(void)
 
 }
 
+// Filippo - funzione che gestisce l'allarme di pressione del tasto di stop
+void manageAlarmT1Test(void)
+{
+	if(!GlobalFlags.FlagsDef.EnableT1TestAlarm)
+		alarmList[ALARM_T1_TEST].physic = PHYSIC_FALSE;
+	else
+	{
+		if(allarmeTestT1Attivo)
+		{
+			alarmList[ALARM_T1_TEST].physic = PHYSIC_TRUE;
+			allarmeTestT1Attivo=FALSE;
+		}
+		else
+		{
+			alarmList[ALARM_T1_TEST].physic = PHYSIC_FALSE;
+		}
+	}
+
+}
+
 void manageAlarmFlowSensNotDetected(void)
 {
 	int i;
@@ -1482,6 +1515,21 @@ void manageAlarmFlowSensNotDetected(void)
 		for (int j = 0; j<2; j++)
 			sensor_UFLOW[i].RequestMsgProcessed = 0;
 	}
+}
+
+// Filippo - funzione che gestisce l'allarme per il fallimento del test del sensore aria
+void manageAlarmAirSensorTestKO(void)
+{
+	if (airSensorTestKO)
+	{
+		alarmList[ALARM_AIR_SENSOR_TEST_KO].physic=PHYSIC_TRUE;
+	}
+	else
+	{
+		alarmList[ALARM_AIR_SENSOR_TEST_KO].physic=PHYSIC_FALSE;
+	}
+
+
 }
 
 void manageAlarmIrTempSensNotDetected(void)
