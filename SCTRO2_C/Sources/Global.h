@@ -1436,8 +1436,7 @@ bool HOOK_SENSOR_1_STATUS;
 bool HOOK_SENSOR_2_STATUS;
 
 
-// durata globale del trattamento in secondi
-unsigned long TreatDuration;
+// durata globale del trattamento in secondiunsigned long TreatDuration;
 unsigned long TotalTreatDuration;
 // durata globale del prtiming in secondi
 unsigned long PrimingDuration;
