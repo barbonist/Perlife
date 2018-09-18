@@ -1820,7 +1820,7 @@ void Manage_and_Storage_ModBus_Actuator_Data(void)
 	  unsigned char numberOfAddressCheckPinch	= 0x02;
 	  unsigned char funcCode 					= 0x03;
 #ifdef PUMP_EVER
-	  unsigned char numberOfAddressCheckPumpEver = 0x05;//0x03;
+	  unsigned char numberOfAddressCheckPumpEver = 0x0A;//0x05;//0x03;
 	  word 			readAddrStartEver	 		 = 0x0014;//0x1008; // registro Current_actual_value di Ever
 #endif
 
@@ -1956,7 +1956,7 @@ void StorageModbusData(unsigned char LastActuatslvAddr)
 		// ho letto lo stato delle pompe EVER
 		Tot_ModBus_Data_RX = TOT_DATA_MODBUS_RECEIVED_PUMP_EVER;
 		CRC_CALC = ComputeChecksum(ptr_msg, TOT_DATA_MODBUS_RECEIVED_PUMP_EVER - 2);
-		CRC_RX = BYTES_TO_WORD(msgToRecvFrame3[14], msgToRecvFrame3[13]);
+		CRC_RX = BYTES_TO_WORD(msgToRecvFrame3[TOT_DATA_MODBUS_RECEIVED_PUMP_EVER-1], msgToRecvFrame3[TOT_DATA_MODBUS_RECEIVED_PUMP_EVER-2]);
 	}
 	else if (Address >= FIRST_ACTUATOR && Address <= (LAST_PUMP - 2))
 #else
@@ -2016,13 +2016,11 @@ void StorageModbusData(unsigned char LastActuatslvAddr)
 	if(Address == (LAST_PUMP - 1) || Address == LAST_PUMP)
 	{
 		/*devo trasfomare i dati ricevuti da byte in word*/
-		Pump_Status /*Pump_Average_Current*/ = BYTES_TO_WORD(dataTemp[3], dataTemp[4]);
-		Pump_Speed_Status	 = BYTES_TO_WORD(dataTemp[6], dataTemp[6]);/*BYTES_TO_WORD(dataTemp[7], dataTemp[8]);*/
-		//Pump_Speed_Status = (Pump_Speed_Status * 60)/1600 ;
-		//Pump_Status 		 = 0; //BYTES_TO_WORD(dataTemp[7], dataTemp[8]);
-		Pump_Average_Current = BYTES_TO_WORD(dataTemp[7], dataTemp[8]);
-		Pump_Ever_Acceleration = BYTES_TO_WORD(dataTemp[9], dataTemp[10]);
-		Pump_Ever_Error = BYTES_TO_WORD(dataTemp[11], dataTemp[12]);
+		Pump_Status 		 	= BYTES_TO_WORD(dataTemp[5], dataTemp[6]);		/*STATUS*/
+		Pump_Speed_Status	 	= BYTES_TO_WORD(dataTemp[9], dataTemp[10]);		/*Actual Speed 0.01 RPM*/
+		Pump_Average_Current 	= BYTES_TO_WORD(dataTemp[13], dataTemp[14]);	/*Actual current mA*/
+		Pump_Ever_Acceleration	= BYTES_TO_WORD(dataTemp[17], dataTemp[18]);	/*Actual Acceleration ms*/
+		Pump_Ever_Error 		= BYTES_TO_WORD(dataTemp[21], dataTemp[22]);	/* ERROR REGISTER */
 	}
 	else if (Address >= FIRST_ACTUATOR && Address <= (LAST_PUMP - 2))
 #else

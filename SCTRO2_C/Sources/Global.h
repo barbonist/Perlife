@@ -1438,6 +1438,7 @@ bool HOOK_SENSOR_2_STATUS;
 
 // durata globale del trattamento in secondiunsigned long TreatDuration;
 unsigned long TotalTreatDuration;
+unsigned long TreatDuration;
 // durata globale del prtiming in secondi
 unsigned long PrimingDuration;
 unsigned long TotalPrimingDuration;
@@ -2083,7 +2084,7 @@ typedef enum
 
 /*define di compilazione per utilizzo pompe EVER (commentare PUMP_EVER se si usano le vecchie pompe)*/
 #define PUMP_EVER
-#define TOT_DATA_MODBUS_RECEIVED_PUMP_EVER	15
+#define TOT_DATA_MODBUS_RECEIVED_PUMP_EVER	25//15
 bool    RX_ENABLE;
 
 typedef enum
