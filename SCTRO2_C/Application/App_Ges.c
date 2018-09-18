@@ -5598,17 +5598,17 @@ void Display_7S_Management()
 	// D_7S_DP_ClrVal(); //accende puntino led
 }
 
-void Cover_Sensor_GetVal()
-{
-	unsigned char CoverM1,CoverM2,CoverM3,CoverM4,CoverM5;
-
-	CoverM1 = COVER_M1_GetVal();
-	CoverM2 = COVER_M2_GetVal();
-	CoverM3 = COVER_M3_GetVal();
-	CoverM4 = COVER_M4_GetVal();
-	CoverM5 = COVER_M5_GetVal();
-
-}
+//void Cover_Sensor_GetVal()
+//{
+//	unsigned char CoverM1,CoverM2,CoverM3,CoverM4,CoverM5;
+//
+//	CoverM1 = COVER_M1_GetVal();
+//	CoverM2 = COVER_M2_GetVal();
+//	CoverM3 = COVER_M3_GetVal();
+//	CoverM4 = COVER_M4_GetVal();
+//	CoverM5 = COVER_M5_GetVal();
+//
+//}
 
 void Voltage_BM_Chk()
 {
@@ -6421,7 +6421,33 @@ void airSensorTest(void)
 			}
 		}
 	}
+}
 
+void Manage_Frontal_Cover(void)
+{
+	if (FRONTAL_COVER_1_GetVal())
+		FRONTAL_COVER_1_STATUS = TRUE; // cover left opened
+	else
+		FRONTAL_COVER_1_STATUS = FALSE; // cover left closed
+
+	if (FRONTAL_COVER_2_GetVal())
+		FRONTAL_COVER_2_STATUS = TRUE; // cover right opened
+	else
+		FRONTAL_COVER_2_STATUS = FALSE; // cover right closed
+
+}
+
+void Manage_Hook_Sensors(void)
+{
+	if (HOOK_SENSOR_1_GetVal())
+		HOOK_SENSOR_1_STATUS = TRUE; // vaschetta a destra non inserita
+	else
+		HOOK_SENSOR_1_STATUS = FALSE; // vaschetta a destra inserita
+
+	if (HOOK_SENSOR_2_GetVal())
+		HOOK_SENSOR_2_STATUS = TRUE; // vaschetta a sinistra non inserita
+	else
+		HOOK_SENSOR_2_STATUS = FALSE; // vaschetta a sinistra inserita
 }
 
 
