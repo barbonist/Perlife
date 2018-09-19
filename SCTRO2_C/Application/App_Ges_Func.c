@@ -821,12 +821,25 @@ bool IsFrigo()
 {
 	bool IsFrigoFlag = FALSE;
 	LIQ_TEMP_CONTR_TASK_STATE ltcts;
-	ltcts = FrigoHeatTempControlTask((LIQ_TEMP_CONTR_TASK_CMD)READ_STATE_CMD);
+//	ltcts = FrigoHeatTempControlTask((LIQ_TEMP_CONTR_TASK_CMD)READ_STATE_CMD);
+	// Filippo - uso un nuovo PID per gestire il frigo e il riscaldatore insieme
+	ltcts = FrigoHeatTempControlTaskNewPID((LIQ_TEMP_CONTR_TASK_CMD)READ_STATE_CMD);
 	if((ltcts == LIQ_T_CONTR_RUN_FRIGO) || (ltcts == LIQ_T_CONTR_WAIT_STOP_FRIGO))
 		IsFrigoFlag = TRUE;
 	return IsFrigoFlag ;
 }
 
+// ritorna TRUE se e' selezionato il frigo
+// Filippo - nuova funzione inserita per gestire stop attuatori quando pompe ferme
+bool IsFrigoStoppedInAlarm()
+{
+	bool IsFrigoFlag = FALSE;
+	LIQ_TEMP_CONTR_TASK_STATE ltcts;
+	ltcts = FrigoHeatTempControlTask((LIQ_TEMP_CONTR_TASK_CMD)READ_STATE_CMD);
+	if((ltcts == LIQ_T_CONTR_STOPPED_BY_ALM))
+		IsFrigoFlag = TRUE;
+	return IsFrigoFlag ;
+}
 // ritorna TRUE se il processo di raffreddamento e' partito
 // Questo comando serve per riabilitare il frigo.
 // AL MOMENTO NON E' USATO MA POTREBBE VERIFICARSI LA NECESSITA' DI RIABILITARE IL FRIGO
@@ -835,7 +848,9 @@ bool EnableFrigo(void)
 	bool EnableFrigoFlag = FALSE;
 
 	EnableFrigoFromControl = TRUE;
-	if(FrigoHeatTempControlTask((LIQ_TEMP_CONTR_TASK_CMD)FRIGO_STARTING_CMD) == LIQ_T_CONTR_RUN_FRIGO)
+//	if(FrigoHeatTempControlTask((LIQ_TEMP_CONTR_TASK_CMD)FRIGO_STARTING_CMD) == LIQ_T_CONTR_RUN_FRIGO)
+	// Filippo - utilizzo un nuovo PID per gestire insieme il frigo e il riscaldatore
+	if(FrigoHeatTempControlTaskNewPID((LIQ_TEMP_CONTR_TASK_CMD)FRIGO_STARTING_CMD) == LIQ_T_CONTR_RUN_FRIGO)
 		EnableFrigoFlag = TRUE;
 	return EnableFrigoFlag;
 }
@@ -847,10 +862,14 @@ bool DisableFrigo(void)
 {
 	bool DisableFrigoFlag = FALSE;
 	LIQ_TEMP_CONTR_TASK_STATE ltcts;
-	ltcts = FrigoHeatTempControlTask((LIQ_TEMP_CONTR_TASK_CMD)READ_STATE_CMD);
+//	ltcts = FrigoHeatTempControlTask((LIQ_TEMP_CONTR_TASK_CMD)READ_STATE_CMD);
+	// Filippo - cambio funzione per utilizzare il nuovo PID che usa insieme frigo e riscaldatore
+	ltcts = FrigoHeatTempControlTaskNewPID((LIQ_TEMP_CONTR_TASK_CMD)READ_STATE_CMD);
 	if((ltcts == LIQ_T_CONTR_RUN_FRIGO) || (ltcts == LIQ_T_CONTR_WAIT_STOP_FRIGO))
 	{
-		if(FrigoHeatTempControlTask((LIQ_TEMP_CONTR_TASK_CMD)FRIGO_STOP_CMD) == LIQ_T_CONTR_FRIGO_STOPPED)
+//		if(FrigoHeatTempControlTask((LIQ_TEMP_CONTR_TASK_CMD)FRIGO_STOP_CMD) == LIQ_T_CONTR_FRIGO_STOPPED)
+		// Filippo - cambio funzione per usare un nuovo PID per usare insieme il frigo e il riscaldatore
+		if(FrigoHeatTempControlTaskNewPID((LIQ_TEMP_CONTR_TASK_CMD)FRIGO_STOP_CMD) == LIQ_T_CONTR_FRIGO_STOPPED)
 			DisableFrigoFlag = TRUE;
 	}
 	return DisableFrigoFlag;
@@ -873,6 +892,8 @@ bool Start_Frigo_AMS(float DeltaT)
 	    COMP_PWM_ClrVal();  // per sicurezza
 	    FrigoOn = 0;
 	    SetFan(FALSE);
+	    // Filippo - aggiunto per ovviare ad una mancata accensione del frigo se la potenza necessaria è uguale all'ultima usata nell'accensione precedente
+	    power_old=0;
 		return StartFlag;
 	}
 
@@ -947,8 +968,109 @@ void StopFrigo(void)
 	Start_Frigo_AMS((float)0.0);
 }
 
+// Filippo - Definisco questa nuova funzione per gestire il nuovo PID che utilizza sia frigo che riscaldatore e non deve sempre
+// staccare l'alimentazione al frigo
+bool Start_Frigo_AMSNewPID(float DeltaT,unsigned char spegniFrigo)
+{
+	int DeltaTInt;
+	unsigned char power = 10;
+	static unsigned char power_old = 0;
+	bool StartFlag = FALSE;
+
+	if(!EnableFrigoFromPlate || !EnableFrigoFromControl)
+	{
+		Enable_AMS = FALSE;
+	    COMP_PWM_ClrVal();  // per sicurezza
+	    if (spegniFrigo)
+	    {
+	    	FrigoOn = 0;
+	    }
+
+	    SetFan(FALSE);
+	    // Filippo - aggiunto per ovviare ad una mancata accensione del frigo se la potenza necessaria è uguale all'ultima usata nell'accensione precedente
+	    power_old=0;
+		return StartFlag;
+	}
+
+	if(DeltaT < 0.0)
+	{
+		// la temperatura da corrente e' inferiore a quella target
+		// Impossibile con il raffreddamento
+		power = 0;
+	}
+	else if(DeltaT == 0.0)
+	{
+		power = 0;  // spento
+	}
+	else
+	{
+		// la temperatura  da raggiungere e' inferiore a quella corrente, quindi
+		// devo accendere il frigo con una potenza che dipende dal DeltaT
+
+		DeltaTInt = DeltaT / 10.0 + 0.5;
+		if(DeltaTInt >= 12)
+			power = 10;           // massima potenza
+		else if(DeltaTInt >= 8)
+			//power = 15;           // 66 % della potenza
+			power = 11;           // 90 % della potenza
+		else if(DeltaTInt >= 6)
+			//power = 20;           // 50 %
+			power = 12;           // 83 %
+		else if(DeltaTInt >= 4)
+		//	power = 25;           // 40 %
+			power = 13;           // 77 %
+		else if(DeltaTInt >= 2)
+			//power = 30;           // 33 %
+			power = 14;           // 71 %
+//		else if(DeltaTInt >= 2)
+//			//power = 35;           // 28 %
+//			power = 19;           // 52 %
+		else
+			//power = 40;           // 25 % minima potenza
+			power = 15;           // 66 % minima potenza
+
+//		/*se posso accendere il frigo lo mando sempre alla masima potenza*/
+//		power = 10;
+	}
+
+	if (power == 0)
+	{
+		Enable_AMS = FALSE;
+	    COMP_PWM_ClrVal();
+	    StartFlag = FALSE;
+	    if (spegniFrigo)
+	    {
+	    	FrigoOn = 0;
+	    }
+	    SetFan(FALSE);
+	}
+	else if (power != power_old)
+	{
+		Enable_AMS = TRUE;
+		/* a power = 10 corrisponde la massima frequenza pari
+		 * a 200 Hz quindi non posso andare sotto 10*/
+		if (power <= 10)
+			power = 10;
+		Prescaler_Freq_Signal_AMS = power;
+		StartFlag = TRUE;
+	    FrigoOn = 1;
+	    SetFan(TRUE);
+	}
+
+	power_old = power;
+
+	return StartFlag;
+}
+
+// Filippo - aggiungo una nuova funzione di stop per il frigo per gestire il nuovo PID che utilizza insieme frigo e riscaldatore
+void StopFrigoNewPID(unsigned char spegniFrigo)
+{
+	Start_Frigo_AMSNewPID((float)0.0,spegniFrigo);
+}
+
 
 // Perc  0..100
+// Filippo - aggiunto parametro alla funzione per gestire il test T1 del riscaldatore
 void HeatingPwm(int Perc)
 {
 	static int OldPerc = 0;
@@ -995,7 +1117,8 @@ void HeatingPwm(int Perc)
 			timeIntervalHeating = FreeRunCnt10msec;
 			HeatingPwmState = HEAT_PWM_ON;
 			HEAT_ON_C_SetVal();
-		    HeaterOn = 1;
+			HeaterOn = 1;
+
 			break;
 		case HEAT_PWM_ON:
 			// On
@@ -1016,7 +1139,7 @@ void HeatingPwm(int Perc)
 			}
 			break;
 		case HEAT_PWM_ALWAYS_ON:
-		    HeaterOn = 1;
+			HeaterOn = 1;
 			break;
 	}
 }
@@ -1026,7 +1149,9 @@ bool IsHeating(void)
 {
 	bool IsHeatingFlag = FALSE;
 	LIQ_TEMP_CONTR_TASK_STATE ltcts;
-	ltcts = FrigoHeatTempControlTask((LIQ_TEMP_CONTR_TASK_CMD)READ_STATE_CMD);
+//	ltcts = FrigoHeatTempControlTask((LIQ_TEMP_CONTR_TASK_CMD)READ_STATE_CMD);
+	// Filippo - cambio funzione per nuovo PID per usare insieme frigo e riscaldatore
+	ltcts = FrigoHeatTempControlTaskNewPID((LIQ_TEMP_CONTR_TASK_CMD)READ_STATE_CMD);
 	if((ltcts == LIQ_T_CONTR_RUN_HEATING) || (ltcts == LIQ_T_CONTR_WAIT_STOP_HEATING))
 		IsHeatingFlag = TRUE;
 	return IsHeatingFlag;
@@ -1040,7 +1165,9 @@ bool EnableHeating(void)
 	bool EnableHeatingFlag = FALSE;
 
 	EnableHeatingFromControl = TRUE;
-	if(FrigoHeatTempControlTask((LIQ_TEMP_CONTR_TASK_CMD)HEAT_STARTING_CMD) == LIQ_T_CONTR_RUN_HEATING)
+//	if(FrigoHeatTempControlTask((LIQ_TEMP_CONTR_TASK_CMD)HEAT_STARTING_CMD) == LIQ_T_CONTR_RUN_HEATING)
+	// Filippo cambiato funzione per usare nuovo PID per usare frigo e riscaldatore insieme
+	if(FrigoHeatTempControlTaskNewPID((LIQ_TEMP_CONTR_TASK_CMD)HEAT_STARTING_CMD) == LIQ_T_CONTR_RUN_HEATING)
 		EnableHeatingFlag = TRUE;
 	return EnableHeatingFlag;
 }
@@ -1052,10 +1179,14 @@ bool DisableHeating(void)
 {
 	bool DisableHeatingFlag = FALSE;
 	LIQ_TEMP_CONTR_TASK_STATE ltcts;
-	ltcts = FrigoHeatTempControlTask((LIQ_TEMP_CONTR_TASK_CMD)READ_STATE_CMD);
+//	ltcts = FrigoHeatTempControlTask((LIQ_TEMP_CONTR_TASK_CMD)READ_STATE_CMD);
+	// Filippo - cambiato funzione per usare nuovo PID che usa frigo e riscaldatore insieme
+	ltcts = FrigoHeatTempControlTaskNewPID((LIQ_TEMP_CONTR_TASK_CMD)READ_STATE_CMD);
 	if((ltcts == LIQ_T_CONTR_RUN_HEATING) || (ltcts == LIQ_T_CONTR_WAIT_STOP_HEATING))
 	{
-		if(FrigoHeatTempControlTask((LIQ_TEMP_CONTR_TASK_CMD)HEAT_STOP_CMD) == LIQ_T_CONTR_HEATING_STOPPED)
+//		if(FrigoHeatTempControlTask((LIQ_TEMP_CONTR_TASK_CMD)HEAT_STOP_CMD) == LIQ_T_CONTR_HEATING_STOPPED)
+		// Filippo - cambiato funzione per gestire nuovo PID che usa frigo e riscaldatore insieme
+		if(FrigoHeatTempControlTaskNewPID((LIQ_TEMP_CONTR_TASK_CMD)HEAT_STOP_CMD) == LIQ_T_CONTR_HEATING_STOPPED)
 			DisableHeatingFlag = TRUE;
 	}
 	return DisableHeatingFlag;
@@ -1152,7 +1283,9 @@ void PlateStateFrigo(void)
 			{
 				if(timeIntervalPlate10 && (msTick10_elapsed(timeIntervalPlate10) >= 300))
 				{
-					StopFrigo();
+//					StopFrigo();
+					// Filippo - cambio funzione per gestire nuovo PID che usa frigo e riscaldatore insieme
+					StopFrigoNewPID(0);
 					EnableFrigoFromPlate = FALSE;
 					PlateState = PLATE_STATE_EN_FRIGO;
 					timeIntervalPlate10 = FreeRunCnt10msec;
@@ -1239,7 +1372,15 @@ LIQ_TEMP_CONTR_TASK_STATE FrigoHeatTempControlTask(LIQ_TEMP_CONTR_TASK_CMD LiqTe
 	float tmpr, MaxThrsh, MinThrsh;
 	word tmpr_trgt;
 	// temperatura raggiunta dal reservoir
-	tmpr = ((int)(sensorIR_TM[1].tempSensValue*10));
+	// Filippo - se sono in test devo fare l'algoritmo sulla temperatura piastra
+	if (testT1HeatFridge)
+	{
+		tmpr = ((int)(T_PLATE_C_GRADI_CENT*10));
+	}
+	else
+	{
+		tmpr = ((int)(sensorIR_TM[1].tempSensValue*10));
+	}
 
 	//----------------------------------------------------------------------
 	// ---------------------SOLO PER DEBUG----------------------------------
@@ -1287,11 +1428,28 @@ LIQ_TEMP_CONTR_TASK_STATE FrigoHeatTempControlTask(LIQ_TEMP_CONTR_TASK_CMD LiqTe
 			COMP_PWM_ClrVal();
 		}
 	}
+	else if(LiqTempContrTaskCmd == TEMP_STOP_BECAUSE_OF_ALM_CMD)
+	{
+		if((LiqTempContrTaskSt == LIQ_T_CONTR_RUN_FRIGO) || (LiqTempContrTaskSt == LIQ_T_CONTR_WAIT_STOP_FRIGO))
+		{
+			EnableFrigoFromControl = FALSE;
+			Enable_AMS = FALSE;
+			COMP_PWM_ClrVal();
+		}
+		if((LiqTempContrTaskSt == LIQ_T_CONTR_RUN_HEATING) || (LiqTempContrTaskSt == LIQ_T_CONTR_WAIT_STOP_HEATING))
+		{
+			EnableHeatingFromControl = FALSE;
+			HeatingPwm((int)0);
+		}
+		LiqTempContrTaskSt = LIQ_T_CONTR_STOPPED_BY_ALM;
+	}
 	else if(LiqTempContrTaskCmd == HEAT_STOP_CMD)
 	{
 		if((LiqTempContrTaskSt == LIQ_T_CONTR_RUN_HEATING) || (LiqTempContrTaskSt == LIQ_T_CONTR_WAIT_STOP_HEATING))
 		{
 			LiqTempContrTaskSt = LIQ_T_CONTR_HEATING_STOPPED;
+			// Filippo - cambiata sequenza di spegnimento altrimenti non mi aggiorna correttamente i flag via can bus alla protective
+			HeatingPwm((int)0);
 			EnableHeatingFromControl = FALSE;
 			HeatingPwm((int)0);
 		}
@@ -1329,7 +1487,7 @@ LIQ_TEMP_CONTR_TASK_STATE FrigoHeatTempControlTask(LIQ_TEMP_CONTR_TASK_CMD LiqTe
 
 	// Se sto per iniziare una nuova fase di priming mi metto in attesa di rilevare la presenza del liquido
 	// nel disposable
-	if((ptrCurrentState->state < STATE_PRIMING_PH_1) && (LiqTempContrTaskSt != LIQ_T_CONTR_DETECT_LIQ_IN_DISP))
+	if((ptrCurrentState->state < STATE_PRIMING_PH_1) && (LiqTempContrTaskSt != LIQ_T_CONTR_DETECT_LIQ_IN_DISP) && (ptrCurrentState->state!=STATE_T1_NO_DISPOSABLE))
 		LiqTempContrTaskSt = LIQ_T_CONTR_IDLE;
 
 	switch (LiqTempContrTaskSt)
@@ -1525,6 +1683,9 @@ LIQ_TEMP_CONTR_TASK_STATE FrigoHeatTempControlTask(LIQ_TEMP_CONTR_TASK_CMD LiqTe
 			// in questo stato ci va se ricevo un comando di stop del frigo (DisableFrigo)
 			// Qui rimane indefinitamente fino a quando non do alla macchina a stati un comando LIQ_T_CONTR_TASK_RESET_CMD.
 			break;
+		case LIQ_T_CONTR_STOPPED_BY_ALM:
+			// in questo stato ci va se ricevo un comando di stop del controllo di temperatura a causa di un allarme
+			break;
 		case LIQ_T_CONTR_HEATING_STOPPED:
 			// in questo stato ci va se ricevo un comando di stop del riscaldatore (DisableHeating)
 			// Qui rimane indefinitamente fino a quando non do alla macchina a stati un comando LIQ_T_CONTR_TASK_RESET_CMD.
@@ -1536,5 +1697,529 @@ LIQ_TEMP_CONTR_TASK_STATE FrigoHeatTempControlTask(LIQ_TEMP_CONTR_TASK_CMD LiqTe
 	}
 	return LiqTempContrTaskSt;
 }
+
+// Filippo - rifaccio alcune funzioni per gestire il PID che usa contemporaneamente il riscaldatore e il frigo
+LIQ_TEMP_CONTR_TASK_STATE FrigoHeatTempControlTaskNewPID(LIQ_TEMP_CONTR_TASK_CMD LiqTempContrTaskCmd)
+{
+	static LIQ_TEMP_CONTR_TASK_STATE LiqTempContrTaskSt = LIQ_T_CONTR_IDLE;
+	static unsigned long timeInterval10 = 0;
+	static unsigned long timeInterval10_r = 0;
+	static unsigned long timeInterval10_max = 0;
+	static word OldTargetTemp = 0;
+
+	float tmpr, MaxThrsh, MinThrsh;
+	word tmpr_trgt;
+	// temperatura raggiunta dal reservoir
+	// Filippo - se sono in test devo fare l'algoritmo sulla temperatura piastra
+	if (testT1HeatFridge)
+	{
+		tmpr = ((int)(T_PLATE_C_GRADI_CENT*10));
+	}
+	else
+	{
+		tmpr = ((int)(sensorIR_TM[1].tempSensValue*10));
+	}
+
+	//----------------------------------------------------------------------
+	// ---------------------SOLO PER DEBUG----------------------------------
+	//tmpr = TempLiquidoDecimi;
+	//-----------------------------------------------------------------------
+
+	// temperatura da raggiungere moltiplicata per 10
+	tmpr_trgt = parameterWordSetFromGUI[PAR_SET_PRIMING_TEMPERATURE_PERFUSION].value;
+
+	PlateStateHeating();
+	PlateStateFrigo();
+	// gestisco accensione e spegnimento alimentazione resistenza di riscaldamento
+	// se e' abilitata
+	HeatingPwm(HeatingPwmPerc);
+
+	if(LiqTempContrTaskCmd == LIQ_T_CONTR_TASK_RESET_CMD)
+	{
+		LiqTempContrTaskSt = LIQ_T_CONTR_CHECK_TEMP;
+		timeInterval10 = FreeRunCnt10msec;
+		timeInterval10_r = FreeRunCnt10msec;
+	}
+	else if(LiqTempContrTaskCmd == READ_STATE_CMD)
+	{
+		return LiqTempContrTaskSt;
+	}
+	else if(LiqTempContrTaskCmd == FRIGO_STARTING_CMD)
+	{
+		LiqTempContrTaskSt = LIQ_T_CONTR_RUN_FRIGO;
+		timeInterval10 = FreeRunCnt10msec;
+		timeInterval10_max = FreeRunCnt10msec;
+	}
+	else if(LiqTempContrTaskCmd == HEAT_STARTING_CMD)
+	{
+		LiqTempContrTaskSt = LIQ_T_CONTR_RUN_HEATING;
+		timeInterval10_r = FreeRunCnt10msec;
+		timeInterval10_max = FreeRunCnt10msec;
+	}
+	else if(LiqTempContrTaskCmd == FRIGO_STOP_CMD)
+	{
+		if((LiqTempContrTaskSt == LIQ_T_CONTR_RUN_FRIGO) || (LiqTempContrTaskSt == LIQ_T_CONTR_WAIT_STOP_FRIGO))
+		{
+			LiqTempContrTaskSt = LIQ_T_CONTR_FRIGO_STOPPED;
+			EnableFrigoFromControl = FALSE;
+			Enable_AMS = FALSE;
+			COMP_PWM_ClrVal();
+		}
+	}
+	else if(LiqTempContrTaskCmd == HEAT_STOP_CMD)
+	{
+		if((LiqTempContrTaskSt == LIQ_T_CONTR_RUN_HEATING) || (LiqTempContrTaskSt == LIQ_T_CONTR_WAIT_STOP_HEATING))
+		{
+			LiqTempContrTaskSt = LIQ_T_CONTR_HEATING_STOPPED;
+			// Filippo - cambiata sequenza di spegnimento altrimenti non mi aggiorna correttamente i flag via can bus alla protective
+			HeatingPwm((int)0);
+			EnableHeatingFromControl = FALSE;
+			HeatingPwm((int)0);
+		}
+	}
+	else if(LiqTempContrTaskCmd == TEMP_MANAGER_STOPPED_CMD)
+	{
+		if((LiqTempContrTaskSt == LIQ_T_CONTR_RUN_FRIGO) || (LiqTempContrTaskSt == LIQ_T_CONTR_WAIT_STOP_FRIGO))
+		{
+			// Filippo - fermo il frigo
+			StopFrigoNewPID(1);
+			EnableFrigoFromControl = FALSE;
+			Enable_AMS = FALSE;
+			COMP_PWM_ClrVal();
+		}
+		if((LiqTempContrTaskSt == LIQ_T_CONTR_RUN_HEATING) || (LiqTempContrTaskSt == LIQ_T_CONTR_WAIT_STOP_HEATING))
+		{
+			// Filippo - fermo il riscaldatore
+			StopHeating();
+			EnableHeatingFromControl = FALSE;
+			HeatingPwm((int)0);
+		}
+		LiqTempContrTaskSt = LIQ_T_CONTR_TEMP_MNG_STOPPED;
+	}
+	// Filippo - aggiunto un comando per sospendere il PID durante l'inizializzazione del trattamento
+	else if (LiqTempContrTaskCmd == TEMP_MANAGER_SUSPEND_CMD)
+	{
+		// devo sospendere il PID, vale a dire chiudo il riscaldatore e spengo il frigo ma senza togliere la 220
+		if((LiqTempContrTaskSt == LIQ_T_CONTR_RUN_FRIGO) || (LiqTempContrTaskSt == LIQ_T_CONTR_WAIT_STOP_FRIGO))
+		{
+			// Filippo - fermo il frigo
+			StopFrigoNewPID(0);
+			EnableFrigoFromControl = FALSE;
+			Enable_AMS = FALSE;
+			COMP_PWM_ClrVal();
+			timerCounterFrigoOn=ATTESA_FRIGO_OFF_NEW_PID;	// in questo modo il frigo riparte subito
+		}
+		if((LiqTempContrTaskSt == LIQ_T_CONTR_RUN_HEATING) || (LiqTempContrTaskSt == LIQ_T_CONTR_WAIT_STOP_HEATING))
+		{
+			// Filippo - fermo il riscaldatore
+			StopHeating();
+			EnableHeatingFromControl = FALSE;
+			HeatingPwm((int)0);
+		}
+		LiqTempContrTaskSt = LIQ_T_CONTR_SUSPENDED;
+
+	}
+
+	if(OldTargetTemp != tmpr_trgt)
+	{
+		// se il target di temperatura cambia mi riporto nello stato di
+		// scelta tra frigo o riscaldamento
+		OldTargetTemp = tmpr_trgt;
+		if (((LiqTempContrTaskSt>=LIQ_T_CONTR_RUN_FRIGO) && (LiqTempContrTaskSt<=LIQ_T_CONTR_WAIT_STOP_HEATING))
+			|| ((LiqTempContrTaskSt>=LIQ_T_CONTR_ATTIVA_HEAT_SPOT) && (LiqTempContrTaskSt<=LIQ_T_CONTR_WAIT_FRIGO_STOP_SPOT)))
+		{
+			// Filippo - se sto utilizzando il nuovo PID, quando mi cambia il target io mi rimentto a controllare la temperatura
+			// per decidere se devo o meno cambiare la gestione passando dalla gestione riscaldatore alla gestione frigo o viceversa
+			LiqTempContrTaskSt = LIQ_T_CONTR_CHECK_TEMP;
+			timeInterval10 = FreeRunCnt10msec;
+			timeInterval10_r = FreeRunCnt10msec;
+		}
+
+		if(EnableRunTimeCheckTemp)
+		{
+			if(LiqTempContrTaskSt > LIQ_T_CONTR_CHECK_TEMP)
+			{
+				// forzo di nuovo il controllo frigo o riscaldatore
+				LiqTempContrTaskSt = LIQ_T_CONTR_CHECK_TEMP;
+			}
+		}
+	}
+
+	// Se sto per iniziare una nuova fase di priming mi metto in attesa di rilevare la presenza del liquido
+	// nel disposable
+	if((ptrCurrentState->state < STATE_PRIMING_PH_1) && (LiqTempContrTaskSt != LIQ_T_CONTR_DETECT_LIQ_IN_DISP) && (ptrCurrentState->state!=STATE_T1_NO_DISPOSABLE))
+		LiqTempContrTaskSt = LIQ_T_CONTR_IDLE;
+
+	switch (LiqTempContrTaskSt)
+	{
+		case LIQ_T_CONTR_IDLE:
+			LiqTempContrTaskSt = LIQ_T_CONTR_DETECT_LIQ_IN_DISP;
+			timeInterval10 = FreeRunCnt10msec;
+			EnableHeatingFromPlate = FALSE;
+			EnableHeatingFromControl = FALSE;
+			EnableFrigoFromControl = FALSE;
+			EnableFrigoFromPlate = FALSE;
+			HeatingPwmPerc = 0;
+			StopHeating();
+//			StopFrigo();
+			// Filippo - cambio funzione per gestire nuovo PID che usa riscaldatore e frigo insieme
+			StopFrigoNewPID(1);
+			break;
+
+		// rilevo la presenza del liquido nel disposable
+		case LIQ_T_CONTR_DETECT_LIQ_IN_DISP:
+			if((Air_1_Status == LIQUID) && (ptrCurrentState->state >= STATE_PRIMING_PH_1))
+			{
+				if(timeInterval10 && (msTick10_elapsed(timeInterval10) >= 300))
+				{
+					// sono passati 3 secondi con rilevazione continua di liquido
+					LiqTempContrTaskSt = LIQ_T_CONTR_WAIT_FOR_START_CNTR;
+					timeInterval10 = FreeRunCnt10msec;
+					break;
+				}
+			}
+			else
+				timeInterval10 = FreeRunCnt10msec;
+			break;
+
+		// ritardo dopo il rilevamento del liquido nel disposable prima di attivare
+		// la fase di controllo della temperatura del reservoir
+		case LIQ_T_CONTR_WAIT_FOR_START_CNTR:
+			if(timeInterval10 && (msTick10_elapsed(timeInterval10) >= DELAY_FOR_START_T_CONTROL))
+			{
+				// e' trascorso del tempo da quando ho rilevato la presenza del liquido
+				LiqTempContrTaskSt = LIQ_T_CONTR_CHECK_TEMP;
+				timeInterval10 = FreeRunCnt10msec;
+				timeInterval10_r = FreeRunCnt10msec;
+			}
+			break;
+
+		// controllo la temperatura attuale per decidere riscaldamento o raffreddamento
+		case LIQ_T_CONTR_CHECK_TEMP:
+			EnableHeatingFromControl = FALSE;
+			EnableFrigoFromControl = FALSE;
+			HeaterOn=FALSE;	// Filippo - lo metto perchè in questa fase devo per forza spegnere il riscaldatore con la protective
+			StopHeating();
+			// Filippo - cambio funzione per gestire il nuovo PID che usa il frigo e il riscaldatore insieme
+//			StopFrigo();
+			StopFrigoNewPID(0);
+
+			if(tmpr > (float)tmpr_trgt)
+			{
+				if(timeInterval10 && (msTick10_elapsed(timeInterval10) >= FRIGO_DELAY))
+				{
+					/*da ora in avanto uso il frigo quindi setto le variabili globali
+					 * che identificano frigo SI riscaldatore NO per decidere i coefficienti di calibrazione
+					 * della pt 100 di piastra*/
+					if (!Frigo_ON)
+					{
+						// temperatura superiore al target usero' sempre il frigo
+						if (timerCounterFrigoOn>=ATTESA_FRIGO_OFF_NEW_PID)
+						{
+							Frigo_ON = TRUE;
+							Heat_ON  = FALSE;
+							LiqTempContrTaskSt = LIQ_T_CONTR_RUN_FRIGO;
+							timeInterval10 = FreeRunCnt10msec;
+							timeInterval10_max = FreeRunCnt10msec;
+							EnableFrigoFromControl = TRUE;
+							break;
+						}
+					}
+					else
+					{
+						// se il frigo era già acceso continuo a farlo andare
+						Frigo_ON = TRUE;
+						Heat_ON  = FALSE;
+						LiqTempContrTaskSt = LIQ_T_CONTR_RUN_FRIGO;
+						timeInterval10 = FreeRunCnt10msec;
+						timeInterval10_max = FreeRunCnt10msec;
+						EnableFrigoFromControl = TRUE;
+
+					}
+				}
+			}
+			else
+				timeInterval10 = FreeRunCnt10msec;
+			if(tmpr < (float)tmpr_trgt)
+			{
+				if(timeInterval10_r && (msTick10_elapsed(timeInterval10_r) >= FRIGO_DELAY))
+				{
+					// temperatura inferiore al target usero' sempre il riscaldatore
+					// Filippo - devo accendere il riscaldatore - se per caso il frigo era stato acceso allora devo spegnerlo del tutto e quando lo dovrò riaccendere
+					// dovrò aspettare i 5 minuti
+					if (Frigo_ON)
+					{
+						StopFrigoNewPID(1);
+						timerCounterFrigoOn=0;
+					}
+					LiqTempContrTaskSt = LIQ_T_CONTR_RUN_HEATING;
+					timeInterval10_r = FreeRunCnt10msec;
+					timeInterval10_max = FreeRunCnt10msec;
+					EnableHeatingFromControl = TRUE;
+					break;
+				}
+			}
+			else
+				timeInterval10_r = FreeRunCnt10msec;
+			break;
+
+		// stati di controllo del frigo
+		case LIQ_T_CONTR_RUN_FRIGO:
+			// Filippo - timer per gestire l'eventuale riaccensione del frigo
+			timerCounterFrigoOn=0;
+			if(tmpr >= ((float)tmpr_trgt + (float)DELTA_TEMP_FOR_FRIGO_ON))
+			{
+				// Sono al di sopra del target di DELTA_TEMP_FOR_FRIGO_ON (e' positivo) decimi di grado.
+				// Posso far partire il frigo.
+				if(timeInterval10 && (msTick10_elapsed(timeInterval10) >= FRIGO_DELAY))
+				{
+					// Filippo - cambio funzione per gestire il nuovo PID che usa il frigo e il riscaldatore insieme
+//					if(Start_Frigo_AMS(tmpr - (float)tmpr_trgt))
+					if(Start_Frigo_AMSNewPID(tmpr - (float)tmpr_trgt,0))
+					{
+						LiqTempContrTaskSt = LIQ_T_CONTR_WAIT_STOP_FRIGO;
+						timeInterval10 = FreeRunCnt10msec;
+						break;
+					}
+				}
+			}
+			else
+				timeInterval10 = FreeRunCnt10msec;
+
+			// Filippo - gestiamo il funzionamento del PID in modo diverso. Se la temperatura rimane inferiore al target meno 1 grado per 1 minuto allora
+			// passo ad attirare il riscaldatore facendo il ciclo riscaldatore
+			if (tmpr<((float)tmpr_trgt))
+			{
+				if (timeInterval10_max && (msTick10_elapsed(timeInterval10_max) >= MAX_TEMP_CNTRL_DELAY))
+				{
+					LiqTempContrTaskSt = LIQ_T_CONTR_CHECK_TEMP;
+					timeInterval10 = FreeRunCnt10msec;
+					timeInterval10_r = FreeRunCnt10msec;
+					break;
+				}
+			}
+			else
+				timeInterval10_max = FreeRunCnt10msec;
+
+
+			if(EnableRunTimeCheckTemp)
+			{
+				if(timeInterval10_max && (msTick10_elapsed(timeInterval10_max) >= MAX_TEMP_CNTRL_DELAY))
+				{
+					// E' trascorso troppo tempo senza una ripartenza del frigo vado a controllare se la
+					// selezione del frigo e' corretta
+					LiqTempContrTaskSt = LIQ_T_CONTR_CHECK_TEMP;
+					timeInterval10 = FreeRunCnt10msec;
+					timeInterval10_r = FreeRunCnt10msec;
+				}
+			}
+			break;
+		case LIQ_T_CONTR_WAIT_STOP_FRIGO:
+			// Filippo - timer per gestire l'eventuale riaccensione del frigo
+			timerCounterFrigoOn=0;
+			if(tmpr <= ((float)tmpr_trgt + (float)DELTA_TEMP_FOR_FRIGO_OFF))
+			{
+				// Sono al di sotto del target di DELTA_TEMP_FOR_FRIGO_OFF (e' negativo) decimi di grado.
+				// Posso fermare il frigo.
+				if(timeInterval10 && (msTick10_elapsed(timeInterval10) >= HEATING_DELAY))
+				{
+					// fermo il raffreddamento
+//					StopFrigo();
+					// Filippo - cambio funzione per gestire il nuovo PID che usa il frigo e il riscaldatore insieme
+					StopFrigoNewPID(0);	// non tolgo l'alimentazione al frigo
+					LiqTempContrTaskSt = LIQ_T_CONTR_RUN_FRIGO;
+					// Filippo - sono andato sotto al target - fermo il frigo e faccio partire il riscaldatore per 20 sec (TBD) per
+					// fermare il raffreddamento
+//					LiqTempContrTaskSt = LIQ_T_CONTR_ATTIVA_HEAT_SPOT;
+					timeInterval10_max = FreeRunCnt10msec;
+					timeInterval10 = FreeRunCnt10msec;
+					break;
+				}
+			}
+			else
+				timeInterval10 = FreeRunCnt10msec;
+
+			// Mentre mi avvicino al target aggiorno la potenza in base al delta di temperatura.
+			// Questo è giusto farlo quando il delta di partenza e' grande. Forse, quando sono gia'
+			// nell'intorno del target potrebbe essere piu' giusto non farla.
+			Start_Frigo_AMSNewPID(tmpr - (float)tmpr_trgt,0);
+			break;
+
+
+		// stati di controllo del riscaldamento
+		case LIQ_T_CONTR_RUN_HEATING:
+			if(tmpr <= ((float)tmpr_trgt  + (float)DELTA_TEMP_FOR_RESISTOR_ON))
+			{
+				// Sono al di sotto del target di DELTA_TEMP_FOR_RESISTOR_ON (e' negativo) decimi di grado
+				// Posso far partire il riscaldamento.
+				if(timeInterval10_r && (msTick10_elapsed(timeInterval10_r) >= HEATING_DELAY))
+				{
+					// faccio partire il riscaldamento
+					if(StartHeating(tmpr - (float)tmpr_trgt))
+					{
+						LiqTempContrTaskSt = LIQ_T_CONTR_WAIT_STOP_HEATING;
+						timeInterval10_r = FreeRunCnt10msec;
+						break;
+					}
+				}
+			}
+			else
+				timeInterval10_r = FreeRunCnt10msec;
+
+			// Filippo - se per troppo tempo rimango qui e la temperatura non scende devo attivare il ciclo di frigorifero per fare in modo che la temperatura
+			// scenda più rapidamente
+			if (tmpr>((float)tmpr_trgt+1))
+			{
+				if (timeInterval10_max && (msTick10_elapsed(timeInterval10_max) >= MAX_TEMP_CNTRL_DELAY))
+				{
+					// devo far partire il frigo perchè la temperatura non scende
+					LiqTempContrTaskSt = LIQ_T_CONTR_CHECK_TEMP;
+					timeInterval10 = FreeRunCnt10msec;
+					timeInterval10_r = FreeRunCnt10msec;
+					break;
+				}
+			}
+			else
+				timeInterval10_max = FreeRunCnt10msec;
+
+			if(EnableRunTimeCheckTemp)
+			{
+				if(timeInterval10_max && (msTick10_elapsed(timeInterval10_max) >= MAX_TEMP_CNTRL_DELAY))
+				{
+					// E' trascorso troppo tempo senza una ripartenza del riscaldatore vado a controllare se la
+					// selezione del riscaldatore e' corretta
+					LiqTempContrTaskSt = LIQ_T_CONTR_CHECK_TEMP;
+					timeInterval10 = FreeRunCnt10msec;
+					timeInterval10_r = FreeRunCnt10msec;
+				}
+			}
+			break;
+		case LIQ_T_CONTR_WAIT_STOP_HEATING:
+			if(tmpr >= ((float)tmpr_trgt  + (float)DELTA_TEMP_FOR_RESISTOR_OFF))
+			{
+				//  sono al di sopra  del target di DELTA_TEMP_FOR_RESISTOR_OFF (e' positivo) decimi di grado
+				//  Posso fermare il riscaldamento ed andare in attesa che la temperatura si abbassi da sola.
+				if(timeInterval10_r && (msTick10_elapsed(timeInterval10_r) >= HEATING_DELAY))
+				{
+					// fermo il riscaldamento
+					StopHeating();
+					LiqTempContrTaskSt = LIQ_T_CONTR_RUN_HEATING;
+					// Filippo - gestisco il nuovo PID che dopo aver attivato il riscaldatore da un colpo con il frigo per
+					// stabilizzare prima la temperatura
+//					LiqTempContrTaskSt = LIQ_T_CONTR_ATTIVA_FRIGO_SPOT;
+					timeInterval10_r = FreeRunCnt10msec;
+
+					timeInterval10_max = FreeRunCnt10msec;
+					break;
+				}
+			}
+			else
+				timeInterval10_r = FreeRunCnt10msec;
+
+			// aggiorno il pwm in base al delta di temperatura
+			StartHeating(tmpr - (float)tmpr_trgt);
+			break;
+		case LIQ_T_CONTR_FRIGO_STOPPED:
+			// in questo stato ci va se ricevo un comando di stop del frigo (DisableFrigo)
+			// Qui rimane indefinitamente fino a quando non do alla macchina a stati un comando LIQ_T_CONTR_TASK_RESET_CMD.
+			break;
+		case LIQ_T_CONTR_HEATING_STOPPED:
+			// in questo stato ci va se ricevo un comando di stop del riscaldatore (DisableHeating)
+			// Qui rimane indefinitamente fino a quando non do alla macchina a stati un comando LIQ_T_CONTR_TASK_RESET_CMD.
+			break;
+		case LIQ_T_CONTR_SUSPENDED:
+			// in questo stato ci va se ricevo un comando di stop del riscaldatore (DisableHeating)
+			// Qui rimane indefinitamente fino a quando non do alla macchina a stati un comando LIQ_T_CONTR_TASK_RESET_CMD.
+			break;
+		case LIQ_T_CONTR_TEMP_MNG_STOPPED:
+			// in questo stato ci va se ricevo un comando di stop del riscaldatore o frigo TEMP_MANAGER_STOPPED_CMD (DisableHeating o DisableFrigo)
+			// Qui rimane indefinitamente fino a quando non do alla macchina a stati un comando LIQ_T_CONTR_TASK_RESET_CMD.
+			break;
+		case LIQ_T_CONTR_STOPPED_BY_ALM:
+			// in questo stato ci va se ricevo un comando di stop del controllo di temperatura a causa di un allarme
+			break;
+		case LIQ_T_CONTR_ATTIVA_HEAT_SPOT:
+			// qui devo far partire il riscaldatore e poi andare allo stato LIQ_T_CONTR_WAIT_HEAT_STOP_SPOT
+			if(timeInterval10 && (msTick10_elapsed(timeInterval10) >= HEATING_DELAY))
+			{
+				// faccio partire il riscaldamento
+				if(StartHeating(tmpr - (float)tmpr_trgt))
+				{
+					LiqTempContrTaskSt = LIQ_T_CONTR_WAIT_HEAT_STOP_SPOT;
+					timeInterval10 = FreeRunCnt10msec;
+					break;
+				}
+			}
+
+			break;
+		case LIQ_T_CONTR_WAIT_HEAT_STOP_SPOT:
+			//  per tot secondi e poi aspettare che i secondi scadano per spegnere il riscaldamento e poi vado nello stato LIQ_T_CONTR_RUN_FRIGO
+			if(timeInterval10 && (msTick10_elapsed(timeInterval10) >= ATTESA_HEAT_OFF_NEW_PID))
+			{
+				// fermo il riscaldamento
+				StopHeating();
+				LiqTempContrTaskSt = LIQ_T_CONTR_RUN_FRIGO;
+				timeInterval10_max = FreeRunCnt10msec;
+				timeInterval10 = FreeRunCnt10msec;
+				break;
+			}
+
+			break;
+		case LIQ_T_CONTR_ATTIVA_FRIGO_SPOT:
+			// qui attivo il frigo poi passo allo stato LIQ_T_CONTR_WAIT_FRIGO_STOP_SPOT
+			if(timeInterval10_r && (msTick10_elapsed(timeInterval10_r) >= FRIGO_DELAY) && (timerCounterFrigoOn>=ATTESA_FRIGO_OFF_NEW_PID))
+			{
+				// Filippo - cambio funzione per gestire il nuovo PID che usa il frigo e il riscaldatore insieme
+//					if(Start_Frigo_AMS(tmpr - (float)tmpr_trgt))
+				EnableFrigoFromControl = TRUE;
+				if(Start_Frigo_AMSNewPID(tmpr+10 - (float)tmpr_trgt,0))
+				{
+					LiqTempContrTaskSt = LIQ_T_CONTR_WAIT_FRIGO_STOP_SPOT;
+					timeInterval10_r = FreeRunCnt10msec;
+					break;
+				}
+			}
+
+			break;
+		case LIQ_T_CONTR_WAIT_FRIGO_STOP_SPOT:
+			// in questo stato devo aspettare un certo numero di secondi (TBD) e poi devo spegnere il frigo e ricominciare ad aspettare
+			// il momento di accendere il riscaldatore
+			timerCounterFrigoOn=0;
+			if(tmpr <= ((float)tmpr_trgt  + (float)DELTA_TEMP_FOR_RESISTOR_ON))
+			{
+				// se la temperatura scende sotto il limite spengo il frigo e riparto
+				StopFrigoNewPID(1);	// tolgo l'alimentazione al frigo
+				// Filippo - sono andato sotto al target - fermo il frigo e faccio partire il riscaldatore per 20 sec (TBD) per
+				// fermare il raffreddamento
+				LiqTempContrTaskSt = LIQ_T_CONTR_RUN_HEATING;
+				timeInterval10_max = FreeRunCnt10msec;
+				timeInterval10_r = FreeRunCnt10msec;
+				break;
+			}
+
+			if(timeInterval10_r && (msTick10_elapsed(timeInterval10_r) >= ATTESA_FRIGO_OFF_SPOT))
+			{
+				// fermo il raffreddamento
+//					StopFrigo();
+				// Filippo - cambio funzione per gestire il nuovo PID che usa il frigo e il riscaldatore insieme
+				StopFrigoNewPID(1);	// tolgo l'alimentazione al frigo
+//					LiqTempContrTaskSt = LIQ_T_CONTR_RUN_FRIGO;
+				// Filippo - sono andato sotto al target - fermo il frigo e faccio partire il riscaldatore per 20 sec (TBD) per
+				// fermare il raffreddamento
+				LiqTempContrTaskSt = LIQ_T_CONTR_RUN_HEATING;
+				timeInterval10_max = FreeRunCnt10msec;
+				timeInterval10_r = FreeRunCnt10msec;
+				break;
+			}
+
+
+
+			break;
+
+	}
+	return LiqTempContrTaskSt;
+}
+
+
 
 #endif

@@ -110,6 +110,27 @@ struct machineChild stateChildIdle[] =
 		  	{}
 		  };
 
+// Filippo - aggiunto stato di allarme in idle
+struct machineChild stateChildAlarmIdle[] =
+		  {
+		  	{STATE_NULL, PARENT_NULL, CHILD_IDLE_ALARM, ACTION_ON_ENTRY, &stateNull[0], &manageChildIdleAlarm},
+			{STATE_NULL, PARENT_NULL, CHILD_IDLE_ALARM, ACTION_ALWAYS, &stateNull[0], &manageNull},
+			{STATE_NULL, PARENT_NULL, CHILD_TREAT_ALARM_1_STOP_ALL_ACTUATOR, ACTION_ON_ENTRY, &stateNull[0], &manageChildIdleAlm1StAllActEntry},      /* 11 */
+			{STATE_NULL, PARENT_NULL, CHILD_TREAT_ALARM_1_STOP_ALL_ACTUATOR, ACTION_ALWAYS,   &stateNull[0], &manageChildIdleAlm1StAllActAlways},     /* 12 */
+		  	{}
+		  };
+
+
+// Filippo - aggiunto stato di allarme in idle
+struct machineChild stateChildAlarmT1[] =
+		  {
+		  	{STATE_NULL, PARENT_NULL, CHILD_IDLE_ALARM, ACTION_ON_ENTRY, &stateNull[0], &manageChildIdleAlarm},
+			{STATE_NULL, PARENT_NULL, CHILD_IDLE_ALARM, ACTION_ALWAYS, &stateNull[0], &manageNull},
+			{STATE_NULL, PARENT_NULL, CHILD_TREAT_ALARM_1_STOP_ALL_ACTUATOR, ACTION_ON_ENTRY, &stateNull[0], &manageChildT1Alm1StAllActEntry},      /* 11 */
+			{STATE_NULL, PARENT_NULL, CHILD_TREAT_ALARM_1_STOP_ALL_ACTUATOR, ACTION_ALWAYS,   &stateNull[0], &manageChildT1Alm1StAllActAlways},     /* 12 */
+		  	{}
+		  };
+
 struct machineChild stateChildAlarmEmpty[] =
 		  {
 			{STATE_NULL, PARENT_NULL, CHILD_NULL,                            ACTION_NULL,     &stateNull[0], &manageNull},                             /* 0 */
@@ -298,9 +319,11 @@ struct machineParent stateParentEntry[] =
 
 struct machineParent stateParentIdle[] =
 		{
-		 {STATE_NULL, PARENT_NULL, CHILD_NULL, ACTION_NULL, &stateChildIdle[0], &manageNull},
+		 {STATE_NULL, PARENT_IDLE, CHILD_IDLE, ACTION_NULL, &stateChildIdle[0], &manageNull},
 		 {STATE_NULL, PARENT_IDLE, CHILD_IDLE, ACTION_NULL, &stateChildIdle[1], &manageNull},
-		 {}
+		 // Filippo - aggiunto stato per gestire l'allarme in IDLE
+		 {STATE_NULL, PARENT_IDLE_ALARM, CHILD_IDLE, ACTION_NULL, &stateChildAlarmIdle[2], &manageNull},
+ 		 {}
 		};
 
 struct machineParent stateParentT1TNoDisposable[] =
@@ -316,7 +339,7 @@ struct machineParent stateParentT1TNoDisposable[] =
 		 {STATE_NULL, PARENT_T1_NO_DISP_CHECK_PRESS,  CHILD_IDLE, ACTION_ALWAYS,   &stateChildIdle[1], &manageNull}, /* 8 */ /* t1 chk press. sensor */
 		 {STATE_NULL, PARENT_T1_NO_DISP_CHECK_TEMP,   CHILD_IDLE, ACTION_ON_ENTRY, &stateChildIdle[1], &manageParentTempSensIR}, /* 9 */ /* t1 chk temp. sensor */
 		 {STATE_NULL, PARENT_T1_NO_DISP_CHECK_TEMP,   CHILD_IDLE, ACTION_ALWAYS,   &stateChildIdle[1], &manageNull}, /* 10 */ /* t1 chk temp. sensor */
-		 {STATE_NULL, PARENT_T1_NO_DISP_CHECK_LEVEL,  CHILD_IDLE, ACTION_ON_ENTRY, &stateChildIdle[1], &manageNull}, /* 11 */ /* t1 chk level sensor */
+		 {STATE_NULL, PARENT_T1_NO_DISP_CHECK_LEVEL,  CHILD_IDLE, ACTION_ON_ENTRY, &stateChildIdle[1], &manageLevelSensorTest}, /* 11 */ /* t1 chk level sensor */
 		 {STATE_NULL, PARENT_T1_NO_DISP_CHECK_LEVEL,  CHILD_IDLE, ACTION_ALWAYS,   &stateChildIdle[1], &manageNull}, /* 12 */ /* t1 chk level sensor */
 		 {STATE_NULL, PARENT_T1_NO_DISP_CHECK_FLWMTR, CHILD_IDLE, ACTION_ON_ENTRY, &stateChildIdle[1], &mangeParentUFlowSens}, /* 13 */ /* t1 chk flowmeter sensor */
 		 {STATE_NULL, PARENT_T1_NO_DISP_CHECK_FLWMTR, CHILD_IDLE, ACTION_ALWAYS,   &stateChildIdle[1], &manageNull}, /* 14 */ /* t1 chk flowmeter sensor */
@@ -331,9 +354,14 @@ struct machineParent stateParentT1TNoDisposable[] =
 		 {STATE_NULL, PARENT_T1_NO_DISP_END,          CHILD_IDLE, ACTION_ON_ENTRY, &stateChildIdle[1], &manageNull}, /* 23 */ /* t1 test end */
 		 {STATE_NULL, PARENT_T1_NO_DISP_END,          CHILD_IDLE, ACTION_ALWAYS,   &stateChildIdle[1], &manageNull}, /* 24 */ /* t1 test end */
 		 {STATE_NULL, PARENT_T1_NO_DISP_ALARM,        CHILD_IDLE, ACTION_ON_ENTRY, &stateChildIdle[1], &manageNull}, /* 25 */ /* t1 test alarm */
-		 {STATE_NULL, PARENT_T1_NO_DISP_ALARM,        CHILD_IDLE, ACTION_ALWAYS,   &stateChildIdle[1], &manageNull}, /* 26 */ /* t1 test alarm */
+		 {STATE_NULL, PARENT_T1_NO_DISP_ALARM,        CHILD_IDLE, ACTION_ALWAYS,   &stateChildAlarmT1[2], &manageNull}, /* 26 */ /* t1 test alarm */
 		 {STATE_NULL, PARENT_T1_NO_DISP_FATAL_ERROR,  CHILD_IDLE, ACTION_ON_ENTRY, &stateChildIdle[1], &manageNull}, /* 27 */ /* t1 test error */
 		 {STATE_NULL, PARENT_T1_NO_DISP_FATAL_ERROR,  CHILD_IDLE, ACTION_ALWAYS,   &stateChildIdle[1], &manageNull}, /* 28 */ /* t1 test error */
+		 {STATE_NULL, PARENT_T1_NO_DISP_CHECK_HEATER, CHILD_IDLE, ACTION_ON_ENTRY, &stateChildIdle[1], &manageParentT1HeaterInit}, /* 29 */ /* t1 chk pump */
+		 {STATE_NULL, PARENT_T1_NO_DISP_CHECK_HEATER, CHILD_IDLE, ACTION_ALWAYS,   &stateChildIdle[1], &manageParentT1Heater}, /* 30 */ /* t1 chk pump */
+		 {STATE_NULL, PARENT_T1_NO_DISP_CHECK_FRIDGE, CHILD_IDLE, ACTION_ON_ENTRY, &stateChildIdle[1], &manageParentT1FridgeInit}, /* 29 */ /* t1 chk pump */
+		 {STATE_NULL, PARENT_T1_NO_DISP_CHECK_FRIDGE, CHILD_IDLE, ACTION_ALWAYS,   &stateChildIdle[1], &manageParentT1Fridge}, /* 30 */ /* t1 chk pump */
+
 		 {}
 		};
 
@@ -483,8 +511,8 @@ struct machineState stateState[] =
 		{STATE_ENTRY,              PARENT_NULL, CHILD_NULL, ACTION_ON_ENTRY,                &stateParentEntry[1],               &manageStateEntry},				/* 1 */
 		{STATE_ENTRY,              PARENT_NULL, CHILD_NULL, ACTION_ALWAYS,                  &stateParentEntry[2],               &manageStateEntryAlways},		/* 2 */
 
-		{STATE_IDLE,               PARENT_NULL, CHILD_NULL, ACTION_ON_ENTRY,                &stateParentNull[0],                &manageStateIdle},				/* 3 */
-		{STATE_IDLE,               PARENT_NULL, CHILD_NULL, ACTION_ALWAYS,                  &stateParentNull[0],                &manageStateIdleAlways},		/* 4 */
+		{STATE_IDLE,               PARENT_NULL, CHILD_NULL, ACTION_ON_ENTRY,                &stateParentIdle[1],                &manageStateIdle},				/* 3 */
+		{STATE_IDLE,               PARENT_NULL, CHILD_NULL, ACTION_ALWAYS,                  &stateParentIdle[1],                &manageStateIdleAlways},		/* 4 */
 
 		{STATE_SELECT_TREAT,       PARENT_NULL, CHILD_NULL, ACTION_ON_ENTRY,                &stateParentNull[0],                &manageStateSelTreat},			/* 5 */
 		{STATE_SELECT_TREAT,       PARENT_NULL, CHILD_NULL, ACTION_ALWAYS,                  &stateParentNull[0],                &manageStateSelTreatAlways},	/* 6 */

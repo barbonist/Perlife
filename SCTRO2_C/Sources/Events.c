@@ -1275,9 +1275,21 @@ void System_Tick_OnInterrupt(void)
 	  timerCounterLedBoard++;
 
 	  timerCounterT1Test++;
+	  // Filippo - timer per gestire test T1 del frigo
+	  timerCounterT1TestFridge++;
+
+	  // Filippo - timer per decidere quando eseguire il test
+	  timerCounterTestAirSensor++;
+
+	  // Filippo - timer per verificare la riaccensione del frigo
+	  if (timerCounterFrigoOn<32767)
+	  {
+		  timerCounterFrigoOn++;
+	  }
 
 	  timerCounterUpdateTargetPressurePid++;
 	  timerCounterUpdateTargetPressPidArt++;
+
 
 	}
 }

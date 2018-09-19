@@ -526,6 +526,27 @@ bool Frigo_ON;	//variabile globale che mi dice se è partito il firgo
 #define AIR							0x00
 #define LIQUID						0x01
 
+bool Service;
+
+unsigned char *ptrSBC;
+unsigned char ptrSBCCount;
+char *ptrMsgSbcRx;
+char *ptrMsgSbcTx;
+unsigned char	ptrSbcCountRx;
+char	iflag_sbc_rx;
+char	iflag_sbc_tx;
+#define IFLAG_SBC_RX				0x01 /* new data from sbc */
+#define IFLAG_SBC_TX				0x01 /* new data to sbc */
+unsigned char	sbc_rx_data[256];				/* received byte from sbc */
+unsigned char	sbc_tx_data[256];				/* transmitted byte to sbc */
+
+struct communicatorToSBC{
+	unsigned short dataPressSensReadyFlag;
+	unsigned short dataIRTempSensReadyFlag;
+	unsigned short numByteToSend;
+};
+struct communicatorToSBC myCommunicatorToSBC;
+
 struct pressureSensor{
 	float prSensOffset;
 //	float prSensOffsetVal;
@@ -650,6 +671,13 @@ struct tempIRSensor sensorIR_TM5A;
 int timerCounterCheckTempIRSens;
 unsigned int timerCounterADC0;
 unsigned int timerCounterADC1;
+
+// Filippo - variabili aggiunte
+float tempPlateControl;	// serve a verificare che le temperature di piatto lette dalle PT1000 sulla protective e sulla
+						// control siano uguali
+int timerConfrontaTempPlate;
+// Filippo - aggiunto timer per gestire comando di service
+int timerCounter;
 
 //start addres FLASH used as EEPROM
 #define START_ADDRESS_EEPROM		0xFF000

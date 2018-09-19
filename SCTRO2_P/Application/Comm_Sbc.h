@@ -30,6 +30,12 @@ void buildPeltierStartResponseMsg(char *ptrMsgSbcRx);
 void buildPeltierStopResponseMsg(char *ptrMsgSbcRx);
 void buildPeltierWriteEEResponseMsg(char *ptrMsgSbcRx);
 
+// Filippo - funzione che risponde al comando di lettura parametro di calibrazione per il sensore PT1000
+void buildPT1000SensReadParamResponseMsg(char *ptrMsgSbcRx);
+void buildTempIRSensReadValuesResponseMsg(char *ptrMsgSbcRx);
+void buildTempIRSensReadRegResponseMsg(char *ptrMsgSbcRx);
+void buildTempIRSensWriteRegResponseMsg(char *ptrMsgSbcRx);
+
 //void buildPeltierResponseMsg(char code);
 //void buildWriteTempSensResponseMsg(char code, char tempSensId);
 //void buildReadTempSensResponseMsg(char code, char tempSensId);
@@ -52,6 +58,8 @@ void initSetParamInSourceCode(void);
 void setParamWordFromGUI(unsigned char parId, int value);
 void resetParamWordFromGUI(unsigned char parId);
 word ConvertMMHgToMl( word mmhg);
+// Filippo - costruisco la risposta al comando di calibrazione sonda PT1000
+void buildPT1000CalibResponseMsg(char *ptrMsgSbcRx);
 
 /*******************/
 /******* TREATMENT - SBC COMM. FUNCTION *********/

@@ -20,7 +20,9 @@
 #define DELTA_PRESSURE						30
 #define GAIN_PRESSURE						1
 
-#define TIMER_PANIC_BUTTON					40 //2 secondi di pressione consecutiva per il PANIC_BUTTON
+#define TIMER_PANIC_BUTTON_ALARM			10 //2 secondi di pressione consecutiva per il PANIC_BUTTON
+// Filippo - inserito timeout per allarme e timeout per spegnimento PC
+#define TIMER_PANIC_BUTTON					60 //2 secondi di pressione consecutiva per il PANIC_BUTTON
 /* MACHINE STATE FUNCTION */
 void manageNull(void);
 void manageStateLevel(void);
@@ -49,6 +51,8 @@ void manageStateEntryAlways(void);
 
 void manageStateIdle(void);
 void manageStateIdleAlways(void);
+// Filippo - funzione per la gestione degli allarmi in idle
+void manageIdleAlarm(void);
 
 void manageStateSelTreat(void);
 void manageStateSelTreatAlways(void);
@@ -140,6 +144,15 @@ void manageParenT1PinchInit(void);
 void manageParenT1Pinch(void);
 void manageParentT1PumpInit(void);
 void manageParentT1Pump(void);
+// Filippo - funzioni di test aggiuntive
+void manageLevelSensorTest(void);
+void manageParentT1HeaterInit(void);
+void manageParentT1Heater(void);
+void manageParentT1FridgeInit(void);
+void manageParentT1Fridge(void);
+void manageParentAirInit(void);
+
+
 
 /**************************************************************************************/
 /******-----------------------------TREATMENT----------------------------------********/
@@ -292,12 +305,16 @@ void StopFrigo(void);
 MOD_BUS_RESPONSE WaitForModBusResponseTask(WAIT_FOR_MB_RESP_TASK_CMD WaitForMBRespTskCmd);
 void LiquidTempControlTask(LIQ_TEMP_CONTR_TASK_CMD LiqTempContrTaskCmd);
 LIQ_TEMP_CONTR_TASK_STATE FrigoHeatTempControlTask(LIQ_TEMP_CONTR_TASK_CMD LiqTempContrTaskCmd);
+// Filippo - utilizzo una nuova funzione per poter gestire il PID nuovo che usa insieme il frigo e il riscaldatore
+LIQ_TEMP_CONTR_TASK_STATE FrigoHeatTempControlTaskNewPID(LIQ_TEMP_CONTR_TASK_CMD LiqTempContrTaskCmd);
 bool StartHeating(float DeltaT);
 
 bool IsHeating(void);
 bool EnableHeating(void);
 bool DisableHeating(void);
 bool IsFrigo();
+// Filippo - inserito funzione per gestire stop attuatori a pompe ferme
+bool IsFrigoStoppedInAlarm();
 bool EnableFrigo(void);
 bool DisableFrigo(void);
 bool StartHeating(float DeltaT);
@@ -305,5 +322,18 @@ void StopHeating(void);
 void SetFan(bool On);
 void Manage_Frontal_Cover(void);
 void Manage_Hook_Sensors(void);
+
+// Filippo - gestione della ricezione del messaggio CAN dalla protective contenente il valore di temperatura del piatto come letto
+// dalla protective stessa
+float getValTempPlateProt(void);
+// Filippo - devo verificare che le temperature piatto lette dalla control e dalla protective siano le stesse
+void verificaTempPlate(void);
+// Filippo - funzione per eseguire il test del sensore aria
+void airSensorTest(void);
+// Filippo - aggiungo una nuova funzione di stop per il frigo per gestire il nuovo PID che utilizza insieme frigo e riscaldatore
+void StopFrigoNewPID(unsigned char spegniFrigo);
+// Filippo - Definisco questa nuova funzione per gestire il nuovo PID che utilizza sia frigo che riscaldatore e non deve sempre
+// staccare l'alimentazione al frigo
+bool Start_Frigo_AMSNewPID(float DeltaT,unsigned char spegniFrigo);
 
 #endif /* APPLICATION_APP_GES_H_ */

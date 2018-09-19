@@ -80,9 +80,15 @@ LDD_TError  SendCAN(uint8_t *txbuff, int txsize, LDD_CAN_TMBIndex ChIndex)
 
 uint8_t RxBuff004[10];
 void ReceivedCanData(uint8_t *rxbuff, int rxlen, int RxChannel);
-void TestReceiveCan( LDD_CAN_TMBIndex BufferIdx ){
+void TestReceiveCan( LDD_CAN_TMBIndex BufferIdx )
+{
+	int i;
 
-	CAN_C_P_ReadFrame(pUserData, BufferIdx, &RxFrame);
+	if (CAN_C_P_ReadFrame(pUserData, BufferIdx, &RxFrame)!=ERR_OK)
+	{
+		// Filippo - serve per il debug
+		i=0;
+	}
 	uint8_t LenData = RxFrame.Length;
 	memcpy(RxBuff004,RxFrame.Data,LenData);
 	ReceivedCanData(RxBuff004, LenData, BufferIdx);

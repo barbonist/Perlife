@@ -664,6 +664,185 @@ void manageChildTreatAlm1StopPeltAlways(void)
 	stopPeltier2Actuator();
 }
 
+// Filippo gestisco lo stop attuatori in modo diverso nel caso di allarme in test T1
+/* Manage CHILD_TREAT_ALARM_1_STOP_ALL_ACTUATOR entry state */
+void manageChildTreatAlmT1StopAllActEntry(void)
+{
+	int speed = 0;
+	int timerCopy = 0;
+
+	//gestisco gli attuatori in allarme solo se ho impostato una terapia valida
+	THERAPY_TYPE TherType = GetTherapyType();
+
+	if (TherType != Undef)
+	{
+		if(pumpPerist[0].dataReady == DATA_READY_FALSE)
+		{
+			setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
+			if(getPumpPressLoop(0) == PRESS_LOOP_ON)
+				setPumpPressLoop(0, PRESS_LOOP_OFF);
+		}
+		if(pumpPerist[1].dataReady == DATA_READY_FALSE)
+		{
+			setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 0);
+			if(getPumpPressLoop(1) == PRESS_LOOP_ON)
+				setPumpPressLoop(1, PRESS_LOOP_OFF);
+		}
+		/*viene comandata direttamente col comando di quella sopra*/
+//		if(pumpPerist[2].dataReady == DATA_READY_FALSE)
+//		{
+//			setPumpSpeedValueHighLevel(pumpPerist[2].pmpMySlaveAddress, 0);
+//		}
+		if((GetTherapyType() == LiverTreat) && (pumpPerist[3].dataReady == DATA_READY_FALSE))
+		{
+			setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, 0);
+		}
+
+
+		// bypasso il filtro
+		setPinchPositionHighLevel(PINCH_2WPVF, MODBUS_PINCH_LEFT_OPEN);   // old MODBUS_PINCH_LEFT_OPEN
+		// pich arteriosa collegata al recipiente
+		setPinchPositionHighLevel(PINCH_2WPVA, MODBUS_PINCH_RIGHT_OPEN);   // old MODBUS_PINCH_LEFT_OPEN
+
+		if (TherType == LiverTreat)
+		{
+			// ho selezionato il fegato, quindi devo interrompere anche il circuito venoso e lo collego
+			// direttamente al recipiente
+			setPinchPositionHighLevel(PINCH_2WPVV, MODBUS_PINCH_RIGHT_OPEN);
+		}
+		else if (TherType == KidneyTreat)
+		{
+			//in TherapyType == KidneyTreat non è usata quindi preferisco non muoverla
+		}
+
+//		stopPeltierActuator();
+//		stopPeltier2Actuator();
+	}
+
+	if((timerCounterModBus%9) == 8)
+	{
+		if(timerCounterModBus != 0)
+			timerCopy = timerCounterModBus;
+		timerCounter = 0;
+
+		readPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress);
+		readPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress);
+		if(GetTherapyType() == LiverTreat)
+			readPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress);
+	}
+
+	if(pumpPerist[0].dataReady == DATA_READY_TRUE)
+	{
+		//speed = ((BYTES_TO_WORD_SIGN(msgToRecvFrame3[3], msgToRecvFrame3[4]))/100)*(timerCopy);
+		// la velocita' ora posso leggerla direttamente dall'array di registry modbus
+		speed = modbusData[pumpPerist[0].pmpMySlaveAddress-2][17];
+		pumpPerist[0].actualSpeed = speed;
+		pumpPerist[0].dataReady = DATA_READY_FALSE;
+	}
+
+	if(pumpPerist[1].dataReady == DATA_READY_TRUE)
+	{
+		// la velocita' ora posso leggerla direttamente dall'array di registry modbus
+		speed = modbusData[pumpPerist[1].pmpMySlaveAddress-2][17];
+		pumpPerist[1].actualSpeed = speed;
+		pumpPerist[1].dataReady = DATA_READY_FALSE;
+	}
+
+	if((GetTherapyType() == LiverTreat) && (pumpPerist[3].dataReady == DATA_READY_TRUE))
+	{
+		// la velocita' ora posso leggerla direttamente dall'array di registry modbus
+		speed = modbusData[pumpPerist[3].pmpMySlaveAddress-2][17];
+		pumpPerist[3].actualSpeed = speed;
+		pumpPerist[3].dataReady = DATA_READY_FALSE;
+	}
+	pumpPerist[0].entry = 0;
+	pumpPerist[1].entry = 0;
+	pumpPerist[2].entry = 0;
+	pumpPerist[3].entry = 0;
+
+	// Filippo - devo fermare heater e frigo
+	DisableHeating();
+	DisableFrigo();
+//  	FrigoHeatTempControlTask((LIQ_TEMP_CONTR_TASK_CMD)LIQ_T_CONTR_TASK_RESET_CMD);
+
+}
+
+// Filippo - gestisco lo stop attuatori se allarme nel test T1 in modo differente
+/* Manage CHILD_TREAT_ALARM_1_STOP_ALL_ACTUATOR always state */
+void manageChildTreatAlmT1StopAllActAlways(void)
+{
+	static int timerCopy = 0;
+	THERAPY_TYPE TherType = GetTherapyType();
+
+	//gestisco gli attuatori in allarme solo se ho impostato una terapia valida
+	if (TherType != Undef)
+	{
+		if(pumpPerist[0].dataReady == DATA_READY_FALSE && (pumpPerist[0].actualSpeed != 0))
+		{
+			setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
+		}
+		if(pumpPerist[1].dataReady == DATA_READY_FALSE  && ( (pumpPerist[1].actualSpeed != 0) || (pumpPerist[2].actualSpeed != 0)) )
+		{
+			setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 0);
+		}
+		/*viene comandata direttamente col comando di quella sopra*/
+//		if(pumpPerist[2].dataReady == DATA_READY_FALSE  && (pumpPerist[2].actualSpeed != 0))
+//		{
+//			setPumpSpeedValueHighLevel(pumpPerist[2].pmpMySlaveAddress, 0);
+//		}
+		if((TherType == LiverTreat) && (pumpPerist[3].dataReady == DATA_READY_FALSE)  && (pumpPerist[3].actualSpeed != 0))
+		{
+			setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, 0);
+		}
+
+		//if (modbusData[PINCH_2WPVF-3][17] != MODBUS_PINCH_LEFT_OPEN)
+		if (PinchWriteTerminated(0) && (modbusData[PINCH_2WPVF-3][17] != 0xaa))
+		{
+			// metto in bypass il filtro per sicurezza
+			setPinchPositionHighLevel(PINCH_2WPVF, MODBUS_PINCH_LEFT_OPEN);
+		}
+
+		//if (modbusData[PINCH_2WPVA-3][17] != MODBUS_PINCH_RIGHT_OPEN)
+		if (PinchWriteTerminated(1) && (modbusData[PINCH_2WPVA-3][17] != 0xaa))
+		{
+			setPinchPositionHighLevel(PINCH_2WPVA, MODBUS_PINCH_RIGHT_OPEN);
+		}
+		/*
+		if ( modbusData[PINCH_2WPVV-3][17] != MODBUS_PINCH_RIGHT_OPEN && TherType == LiverTreat)
+		{
+			setPinchPositionHighLevel(PINCH_2WPVV, MODBUS_PINCH_RIGHT_OPEN);
+		}
+		else if (modbusData[PINCH_2WPVV-3][17] != MODBUS_PINCH_LEFT_OPEN && TherType == KidneyTreat)
+		{
+			//in TherapyType == KidneyTreat non è usata quindi preferisco non muoverla
+		}
+		*/
+		if (PinchWriteTerminated(2) && (modbusData[PINCH_2WPVV-3][17] != 0xaa) && (TherType == LiverTreat))
+		{
+			setPinchPositionHighLevel(PINCH_2WPVV, MODBUS_PINCH_RIGHT_OPEN);
+		}
+		else if (PinchWriteTerminated(2) && (modbusData[PINCH_2WPVV-3][17] != 0xaa) && (TherType == KidneyTreat))
+		{
+			//in TherapyType == KidneyTreat non è usata quindi preferisco non muoverla
+		}
+//		stopPeltierActuator();
+//		stopPeltier2Actuator();
+	}
+
+//	if((timerCounterModBus%9) == 8)
+//	{
+//		if(timerCounterModBus != 0)
+//			timerCopy = timerCounterModBus;
+//		timerCounter = 0;
+//		readPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress);
+//	}
+
+	pumpPerist[0].actualSpeed =  modbusData[pumpPerist[0].pmpMySlaveAddress-2][17];
+	pumpPerist[1].actualSpeed = modbusData[pumpPerist[1].pmpMySlaveAddress-2][17];
+	pumpPerist[2].actualSpeed = modbusData[pumpPerist[2].pmpMySlaveAddress-2][17];
+	pumpPerist[3].actualSpeed = modbusData[pumpPerist[3].pmpMySlaveAddress-2][17];
+}
+
 
 /* Manage CHILD_TREAT_ALARM_1_STOP_ALL_ACTUATOR entry state */
 void manageChildTreatAlm1StopAllActEntry(void)
@@ -759,6 +938,11 @@ void manageChildTreatAlm1StopAllActEntry(void)
 	pumpPerist[1].entry = 0;
 	pumpPerist[2].entry = 0;
 	pumpPerist[3].entry = 0;
+
+	// Filippo - devo fermare heater e frigo
+	DisableHeating();
+	DisableFrigo();
+
 }
 
 /* Manage CHILD_TREAT_ALARM_1_STOP_ALL_ACTUATOR always state */
@@ -1418,6 +1602,20 @@ bool PutPinchInSafetyPos(void)
 // Flags usati nel processo di svuotamento
 CHILD_EMPTY_FLAGS ChildEmptyFlags;
 
+// Filippo - funzione che gestisce l'allarme in idle
+void manageChildIdleAlarm(void)
+{
+	// devo fermare tutti gli attuatori
+	if (currentGuard[GUARD_ALARM_ACTIVE].guardValue==GUARD_VALUE_TRUE)
+	{
+
+
+
+
+
+	}
+}
+
 //CHILD_TREAT_ALARM_1_INIT quando lo stato principale e' STATE_EMPTY_DISPOSABLE
 void manageChildEmptyAlm1InitEntry(void)
 {
@@ -1493,6 +1691,30 @@ void manageChildEmptyAlm1SFAAlways(void)
 	manageChildTreatAlm1StopAllActAlways();
 }
 
+// Filippo - gestisco lo stop di tutti gli attuatori in modo diverso nel caso di allarme in T1 test
+void manageChildT1Alm1StAllActEntry(void)
+{
+	manageChildTreatAlmT1StopAllActEntry();
+}
+
+void manageChildT1Alm1StAllActAlways(void)
+{
+	// fermo tutte le pompe e metto le pinch in sicurezza
+	manageChildTreatAlmT1StopAllActAlways();
+}
+
+void manageChildIdleAlm1StAllActEntry(void)
+{
+	manageChildTreatAlm1StopAllActEntry();
+}
+
+void manageChildIdleAlm1StAllActAlways(void)
+{
+	// fermo tutte le pompe e metto le pinch in sicurezza
+	manageChildTreatAlm1StopAllActAlways();
+}
+
+
 //CHILD_TREAT_ALARM_1_STOP_ALL_ACTUATOR quando lo stato principale e' STATE_EMPTY_DISPOSABLE
 // allarme generato quando viene rilevata una pressione eccessiva su almeno 1
 // dei 4 sensori
@@ -1557,6 +1779,30 @@ bool IsDisposableEmptyWithAlm(void)
 			DispEmpty = TRUE;
 	}
 	return DispEmpty;
+}
+
+// Filippo - funzione che gestisce il passaggio dell'allarme per lo stato idle
+void manageStateChildAlarmIdle(void)
+{
+	if (ptrCurrentChild->child==CHILD_TREAT_ALARM_1_STOP_ALL_ACTUATOR)
+	{
+		if (ptrCurrentChild->action==ACTION_ON_ENTRY)
+		{
+			ptrFutureChild=&stateChildAlarmT1[3];
+		}
+	}
+}
+
+// Filippo - funzione che gestisce il passaggio dell'allarme per lo stato idle
+void manageStateChildAlarmT1(void)
+{
+	if (ptrCurrentChild->child==CHILD_TREAT_ALARM_1_STOP_ALL_ACTUATOR)
+	{
+		if (ptrCurrentChild->action==ACTION_ON_ENTRY)
+		{
+			ptrFutureChild=&stateChildAlarmIdle[3];
+		}
+	}
 }
 
 // Funzione che gestisce gli allarmi nel processo di svuotamento disposable

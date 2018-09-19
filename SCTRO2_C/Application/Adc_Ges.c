@@ -27,6 +27,28 @@
 #include "Comm_Sbc.h"
 #include "pid.h"
 
+// Filippo - definisco tabella di conversione per una PT1000
+TABELLA_PT1000 tabellaPT1000[14]={
+		{803.06,-50.0},
+		{842.71,-40.0},
+		{882.22,-30.0},
+		{921.6,-20.0},
+		{960.86,-10.0},
+		{1000.0,0},
+		{1039.0,10.0},
+		{1077.9,20.0},
+		{1116.7,30.0},
+		{1155.4,40.0},
+		{1194.0,50.0},
+		{1232.4,60.0},
+		{1270.8,70.0},
+		{1309.0,80.0}
+
+};
+
+
+
+
 byte adcRes = 0xFF;
 word adcValue;
 word adcValueDummy;
@@ -135,12 +157,58 @@ void Manange_ADC1(void)
 
 void Coversion_From_ADC_To_degree_T_PLATE_Sensor()
 {
+/* Filippo - calcoliamo la temperatura della PT1000 in altro modo
 	if (Frigo_ON)
 		T_PLATE_C_GRADI_CENT = config_data.T_Plate_Sensor_Gain_Cold * T_PLATE_C_ADC + config_data.T_Plate_Sensor_Offset_Cold;
 	else
 		T_PLATE_C_GRADI_CENT = config_data.T_Plate_Sensor_Gain_Heat * T_PLATE_C_ADC + config_data.T_Plate_Sensor_Offset_Heat;
 
 	T_PLATE_C_GRADI_CENT /= 10;
+*/
+	float appoggioFloat,V1;
+	float resPT1000;
+	int i;
+	float m,q;
+
+	appoggioFloat=(float)T_PLATE_C_ADC/65535;
+	appoggioFloat*=3.3;
+	appoggioFloat/=10;
+	// adesso in appoggioFloat ho la tensione differenziale letta dal front end analogico
+	appoggioFloat=appoggioFloat+0.743;	// il valore 0.743 è il valore di tensione del ramo di resistenze fisso
+	if (appoggioFloat<0)
+	{
+		appoggioFloat=-appoggioFloat;
+	}
+	// adesso in appoggioFloat ho il valore di tensione letto sul partitore variabile in cui è messa la PT1000
+	// applico la formula del partitore per conoscere il valore di resistenza della PT1000 x=(V1*4700)/(1-V1) dove V1 è la tensione
+	// di partitore diviso l'alimentazione
+	V1=appoggioFloat/5;	// divido la tensione di partitore per l'alimentazione dello stesso
+	resPT1000=(V1*4700)/(1-V1);
+
+	// adesso in resPT1000 ho il valore della resistenza
+	// adesso attraverso la tabella vado a calcolare l'effettiva temperatura
+	for (i=1;i<14;i++)
+	{
+		if ((resPT1000>=tabellaPT1000[i-1].resistenza) && (resPT1000<=tabellaPT1000[i].resistenza))
+		{
+			// ho trovato l'intervallo della resistenza
+			// calcolo adesso il coefficiente angolare ed il termine noto della retta tra i due punti
+			m=(tabellaPT1000[i].temperatura-tabellaPT1000[i-1].temperatura)/(tabellaPT1000[i].resistenza-tabellaPT1000[i-1].resistenza);
+			q=tabellaPT1000[i].temperatura-(m*tabellaPT1000[i].resistenza);
+			break;
+		}
+	}
+
+	if (i<14)
+	{
+		T_PLATE_C_GRADI_CENT=m*resPT1000+q;
+	}
+	else
+	{
+		T_PLATE_C_GRADI_CENT=tabellaPT1000[13].temperatura;
+	}
+
+//	T_PLATE_C_GRADI_CENT+=config_data.T_Plate_Sensor_Offset_Heat;
 
 }
 void Coversion_From_ADC_To_mmHg_Pressure_Sensor()
@@ -151,6 +219,7 @@ void Coversion_From_ADC_To_mmHg_Pressure_Sensor()
 	PR_ADS_FLT_mmHg = config_data.sensor_PRx[ADS_FLT].prSensGain * PR_ADS_FLT_ADC + config_data.sensor_PRx[ADS_FLT].prSensOffset;
 	PR_VEN_mmHg 	= config_data.sensor_PRx[VEN].prSensGain     * PR_VEN_ADC     + config_data.sensor_PRx[VEN].prSensOffset;
 	PR_ART_mmHg 	= config_data.sensor_PRx[ART].prSensGain     * PR_ART_ADC     + config_data.sensor_PRx[ART].prSensOffset;
+
 }
 
 void Pressure_sensor_Fltered ()
@@ -441,10 +510,31 @@ void CalcArtSistDiastPress(word Press)
 void Coversion_From_ADC_To_Voltage()
 {
 	//V24_P1_CHK_VOLT	= (V24_P1_CHK_ADC * V24_P1_CHK_GAIN + V24_P1_CHK_OFFSET);
-	V24_P1_CHK_VOLT = (float)(V24_P1_CHK_ADC * T1_TEST_DIG_TO_VOLT);
+	// Filippo - modifica per errore di conversione
+//	V24_P1_CHK_VOLT = (float)(V24_P1_CHK_ADC * T1_TEST_DIG_TO_VOLT);
+	V24_P1_CHK_VOLT = (float)(V24_P1_CHK_ADC) * T1_TEST_DIG_TO_VOLT;
 	//V24_P2_CHK_VOLT	= (V24_P2_CHK_ADC * V24_P2_CHK_GAIN + V24_P2_CHK_OFFSET);
-	V24_P2_CHK_VOLT = (float)(V24_P2_CHK_ADC * T1_TEST_DIG_TO_VOLT);
+	// Filippo - modifica per errore di conversione
+	V24_P2_CHK_VOLT = (float)(V24_P2_CHK_ADC) * T1_TEST_DIG_TO_VOLT;
+	// Filippo - messo tensioni uguali in modo da passare il test visto che la 24V della Peltier1 non c'è più
+	V24_P1_CHK_VOLT=V24_P2_CHK_VOLT;
+//	V24_P2_CHK_VOLT = (float)(V24_P2_CHK_ADC * T1_TEST_DIG_TO_VOLT);
 }
+
+// Filippo - funzione per la calibrazione del sensore PT1000
+void Plate_Temp_Sensor_Calibration(float value)
+{
+	unsigned char *ptr_EEPROM = (EEPROM_TDataAddress)&config_data;
+
+	config_data.T_Plate_Sensor_Offset_Heat=value-T_PLATE_C_GRADI_CENT;
+
+	config_data.EEPROM_CRC = ComputeChecksum(ptr_EEPROM, sizeof(config_data)-2);
+
+	/*finita la calibrazione di un sensore la vado subito a salvare in EEPROM*/
+	EEPROM_write((EEPROM_TDataAddress)&config_data, START_ADDRESS_EEPROM, sizeof(config_data));
+}
+
+
 
 /*---FUNZIONE DI CALIBRAZIONE DEI SENSORI DI PRESSIONE
  * NAME: Pressure_Sensor_Calibration

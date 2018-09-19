@@ -43,13 +43,15 @@ union UTxCan {
 	struct {
 		uint16_t SpeedPump1Rpmx10;	uint16_t SpeedPump2Rpmx10;	uint16_t SpeedPump3Rpmx10;	uint16_t SpeedPump4Rpmx10;
 	} STxCan4;
+
 #ifdef ENABLE_PROTECTIVE_ALARM_RESET
 	struct {
 		uint16_t AlmCodeToreset;	uint8_t Free3;	uint8_t Free4;	uint8_t Free5;	uint8_t Free6;	uint8_t Free7;	uint8_t Free8;
 	} STxCan5;
 #else
+	// Filippo - messo campo per lo scambio della temperatura di piatto
 	struct {
-		uint8_t Free1;	uint8_t Free2;	uint8_t Free3;	uint8_t Free4;	uint8_t Free5;	uint8_t Free6;	uint8_t Free7;	uint8_t Free8;
+		uint8_t Free1;	uint8_t Free2;	int16_t tempPlateC;	uint8_t Free5;	uint8_t Free6;	uint8_t Free7;	uint8_t Free8;
 	} STxCan5;
 #endif
 	struct {
@@ -74,11 +76,12 @@ union URxCan {
 	struct {
 		uint16_t SpeedPump1Rpmx10;	uint16_t SpeedPump2Rpmx10;	uint16_t SpeedPump3Rpmx10;	uint16_t SpeedPump4Rpmx10;
 	} SRxCan3;
+	// Filippo - messo campo per lo scambio della temperatura di piatto
 	struct {
 		uint8_t Free1;	uint8_t Free2;	uint8_t Free3;	uint8_t Free4;	uint8_t Free5;	uint8_t Free6;	uint8_t Free7;	uint8_t Free8;
 	} SRxCan4;
 	struct {
-		uint8_t Free1;	uint8_t Free2;	uint8_t Free3;	uint8_t Free4;	uint8_t Free5;	uint8_t Free6;	uint8_t Free7;	uint8_t Free8;
+		uint8_t Free1;	uint8_t Free2;	int16_t tempPlateP;	uint8_t Free5;	uint8_t Free6;	uint8_t Free7;	uint8_t Free8;
 	} SRxCan5;
 	struct {
 		uint8_t Free1;	uint8_t Free2;	uint8_t Free3;	uint8_t Free4;	uint8_t Free5;	uint8_t Free6;	uint8_t Free7;	uint8_t Free8;
@@ -353,12 +356,17 @@ void onNewCanBusMsg9(CANBUS_MSG_9 ReceivedCanBusMsg9);
 void onNewCanBusMsg10(CANBUS_MSG_10 ReceivedCanBusMsg10);
 void onNewCanBusMsg11( CANBUS_MSG_11 ReceivedCanBusMsg11);
 void onNewCanBusMsg12(CANBUS_MSG_12 ReceivedCanBusMsg12);
+// Filippo - gestione della ricezione del messaggio CAN dalla protective contenente il valore di temperatura del piatto come letto
+// dalla protective stessa
+void onNewCanBusMsg13(CANBUS_MSG_13 ReceivedCanBusMsg13);
+
 void ReceivedCanData(uint8_t *rxbuff, int rxlen, int RxChannel)
 {
 	CANBUS_MSG_9 TempCanBusMsg9;
 	CANBUS_MSG_10 TempCanBusMsg10;
 	CANBUS_MSG_11 TempCanBusMsg11;
 	CANBUS_MSG_12 TempCanBusMsg12;
+	CANBUS_MSG_13 TempCanBusMsg13;
 
 	RetriggerAlarm();
 	if(( rxlen <= 8 ) && (RxChannel >= 8) /*>= 8) && (RxChannel <= 15)*/){
@@ -400,6 +408,18 @@ void ReceivedCanData(uint8_t *rxbuff, int rxlen, int RxChannel)
 				TempCanBusMsg12.SpeedPump3 = RxBuffCanP[RxChannel-8]->SRxCan3.SpeedPump3Rpmx10;
 				TempCanBusMsg12.SpeedPump4 = RxBuffCanP[RxChannel-8]->SRxCan3.SpeedPump4Rpmx10;
 				onNewCanBusMsg12(TempCanBusMsg12);
+			}
+			// Filippo gestita la ricezione del messaggio CAN che mi da il valore della temperatura letta sul piatto dalla protective
+			if( RxChannel == 13)
+			{
+				TempCanBusMsg13.free1 = RxBuffCanP[RxChannel-8]->SRxCan5.Free1;
+				TempCanBusMsg13.free2 = RxBuffCanP[RxChannel-8]->SRxCan5.Free2;
+				TempCanBusMsg13.tempPlateP = RxBuffCanP[RxChannel-8]->SRxCan5.tempPlateP;
+				TempCanBusMsg13.free3 = RxBuffCanP[RxChannel-8]->SRxCan5.Free5;
+				TempCanBusMsg13.free4 = RxBuffCanP[RxChannel-8]->SRxCan5.Free6;
+				TempCanBusMsg13.free5 = RxBuffCanP[RxChannel-8]->SRxCan5.Free7;
+				TempCanBusMsg13.free6 = RxBuffCanP[RxChannel-8]->SRxCan5.Free8;
+				onNewCanBusMsg13(TempCanBusMsg13);
 			}
 
 		//}

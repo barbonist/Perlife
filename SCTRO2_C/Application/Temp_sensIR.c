@@ -360,6 +360,14 @@ unsigned char * buildCmdReadTempSensIR(unsigned char  tempSensAddress,
 	/* Start + slave address + write command */
 	IR_TM_COMM_SelectSlave(tempSensAddress);
 	err = IR_TM_COMM_SendChar(command);
+	// Filippo - in caso di errore provo a resettare la periferica
+	if (err!=ERR_OK)
+	{
+		IR_TM_COMM_Disable();
+
+		IR_TM_COMM_Enable();
+	}
+
 	/* Restart + slave address + received data */
 	//IR_TM_COMM_SelectSlave(tempSensAddress);
 	//if(err == ERR_OK)

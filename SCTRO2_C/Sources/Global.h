@@ -123,7 +123,9 @@ char    iFlag_modbusDataStorage;
  * 				 per avere la risoluzione del decimo di grado							 */
 
 #define GAIN_T_PLATE_SENS_HEAT			0.03065134
-#define OFFSET_T_PLATE_SENS_HEAT			-1020
+
+//#define OFFSET_T_PLATE_SENS_HEAT			-1020
+#define OFFSET_T_PLATE_SENS_HEAT			0
 
 bool Frigo_ON;
 
@@ -133,7 +135,9 @@ bool Frigo_ON;
  * 										 per avere la risoluzione del decimo di grado							 */
 
 #define GAIN_T_PLATE_SENS_COLD			0.015988
-#define OFFSET_T_PLATE_SENS_COLD		-388.3496
+
+//#define OFFSET_T_PLATE_SENS_COLD		-388.3496
+#define OFFSET_T_PLATE_SENS_COLD		0
 
 bool Heat_ON;
 
@@ -357,6 +361,17 @@ typedef enum{
 T1TEST_PUMP_CMD t1Test_pump_cmd;
 
 
+unsigned char t1Test_heater;
+unsigned char protectiveOn;
+float t1TestTempPartenza;
+unsigned char t1Test_Frigo;
+bool testT1HeatFridge;
+float tempStopFridge;
+unsigned char primoPassaggio;	// variabile che serve solo per il debug
+
+// Filippo - variabili per il test dell'aria
+unsigned char t1TestAir;
+
 
 struct T1Test {
 	unsigned char result_T1_cfg_data;
@@ -515,6 +530,8 @@ enum Parent {
 	PARENT_T1_NO_DISP_END,
 	PARENT_T1_NO_DISP_ALARM,
 	PARENT_T1_NO_DISP_FATAL_ERROR,
+	PARENT_T1_NO_DISP_CHECK_HEATER,
+	PARENT_T1_NO_DISP_CHECK_FRIDGE,
 	PARENT_END_NUMBER,
 };
 
@@ -540,6 +557,9 @@ enum Child {
 
 	CHILD_ENTRY,
 	CHILD_IDLE,
+	// Filippo - aggiunto stato di allarme in idle
+	CHILD_IDLE_ALARM,
+	// Filippo - fine aggiunta
 	CHILD_TREAT_ALARM_1_INIT,
 	CHILD_TREAT_ALARM_1_STOP_PERFUSION,
 	CHILD_TREAT_ALARM_1_STOP_PURIFICATION,
@@ -655,7 +675,8 @@ enum MachineStateGuardId {
 	GUARD_ENABLE_T1_END,
 	GUARD_ENABLE_T1_ALARM,
 	GUARD_ENABLE_T1_ERROR,
-
+	GUARD_ENABLE_T1_HEATER,
+	GUARD_ENABLE_T1_FRIDGE,
 	/*valutare se gestire le azioni di sicurezza con le guard: tutti gli allarmi possono essere ricondotti a 6 tipologie di azioni di sicurezza:
 	 ALARM_STOP_ALL_ACTUATOR: tutti gli attuatori devono essere fermati
 	 ALARM_STOP_ALL_PUMP: tutte le pompe sangue devono essere fermate
@@ -1319,8 +1340,15 @@ int timerCounterUpdateTargetPressurePid;
 int timerCounterUpdateTargetPressPidArt;
 int timerCounterT1Test;
 
+int timerCounterT1TestFridge;
 /************************************************************************/
+int timerCounterTestAirSensor;
 /* 					STRUTTURA VOLUMI TRATTAMENTO 						*/
+int timerCounterFrigoOn;
+/************************************************************************/
+
+/************************************************************************/
+/* 					VARIABILI CANALI ADC		 						*/
 /************************************************************************/
 
 /************************************************************************/
@@ -1353,8 +1381,11 @@ float V24_P2_CHK_VOLT;
 
 /* t1 test */
 #define T1_TEST_DIG_TO_VOLT			0.00005 // (3300/65536)/1000 (float)(3300/4096)/1000 //digit to volt
+// Filippo - modificati i limiti per passare il test  - da ripristinare
+//#define V24BRK_LOW_THRSLD			2.3 //volt
+//#define V24BRK_HIGH_THRSLD			2.7 //volt
 #define V24BRK_LOW_THRSLD			2.3 //volt
-#define V24BRK_HIGH_THRSLD			2.7 //volt
+#define V24BRK_HIGH_THRSLD			4 //volt
 #define T1_TEST_PRESS_LOW_THRSLD	-5 //mmHg
 #define T1_TEST_PRESS_HIGH_THRSLD	5 //mmHg
 #define T1_TEST_PRESS_TRKNG_THRSLD	5 //mmHg
@@ -1427,17 +1458,27 @@ bool Service;
 /*variabile globale per il tasto di emergenza; diventa TRUE se tasto premuto*/
 bool PANIC_BUTTON_ACTIVATION;
 /*variabile globale per il sensore di cover 1; diventa TRUE se cover aperto*/
+
+bool PANIC_BUTTON_ACTIVATION_PC;
+// Filippo - inserito un flag per sapere quando sono in allarme T1Test
+
+bool allarmeTestT1Attivo;
+// Filippo - inserito un flag per sapere quando c'è l'allarme del test sensore aria
+bool airSensorTestKO;
+
+// durata globale del trattamento in 
 bool FRONTAL_COVER_1_STATUS;
 /*variabile globale per il sensore di cover 2; diventa TRUE se cover aperto*/
+
 bool FRONTAL_COVER_2_STATUS;
 /*variabile globale per il sensore di gancio 1; diventa TRUE se gancio aperto*/
 bool HOOK_SENSOR_1_STATUS;
 /*variabile globale per il sensore di gancio 2; diventa TRUE se gancio aperto*/
 bool HOOK_SENSOR_2_STATUS;
 
-
 // durata globale del trattamento in secondiunsigned long TreatDuration;
 unsigned long TotalTreatDuration;
+unsigned long TreatDuration;
 unsigned long TreatDuration;
 // durata globale del prtiming in secondi
 unsigned long PrimingDuration;
@@ -1774,6 +1815,10 @@ typedef struct
 	unsigned int EnableModbusNotRespAlm     : 1;    // abilito l'allarme dovuto ad un cattivo funzionamento del modbus (almeno 10 richieste
 	                                                // di lettura o scrittura non hanno avuto risposta)
 	unsigned int EnableFromProtectiveAlm    : 1;    // abilita l'allarme generato dalla protective
+	// Filippo - inserito il flag di abilitazione dell'allarme pulsante di stop
+	unsigned int EnableStopButton			: 1;	// abilita la gestione dell'allarme del pulsante di stop
+	// Filippo - inserito il flag di abilitazione dell'allarme T1 test
+	unsigned int EnableT1TestAlarm			: 1;	// abilita la gestione dell'allarme nel T1 test
 }FLAGS_DEF;
 
 typedef union
@@ -1970,8 +2015,20 @@ typedef struct
 }CANBUS_MSG_10;
 
 //-------------------------------------------------------------------------------
+typedef struct
+{
+	unsigned char  free1;
+	unsigned char  free2;
+	int16_t	tempPlateP;
+	unsigned char  free3;
+	unsigned char  free4;
+	unsigned char  free5;
+	unsigned char  free6;
+}CANBUS_MSG_13;
 
 
+//-------------------------------------------------------------------------------
+// usati nella funzione TreatSetPinchPosTask per il controllo del posizionamento delle pinch
 //-------------------------------------------------------------------------------
 // usati nella funzione TreatSetPinchPosTask per il controllo del posizionamento delle pinch
 typedef enum
@@ -2196,7 +2253,9 @@ typedef enum
 	FRIGO_STOP_CMD,
 	HEAT_STARTING_CMD,
 	HEAT_STOP_CMD,
-	TEMP_MANAGER_STOPPED_CMD
+	TEMP_MANAGER_STOPPED_CMD,
+	TEMP_STOP_BECAUSE_OF_ALM_CMD,
+	TEMP_MANAGER_SUSPEND_CMD
 }LIQ_TEMP_CONTR_TASK_CMD;
 
 typedef enum
@@ -2211,7 +2270,14 @@ typedef enum
 	LIQ_T_CONTR_WAIT_STOP_HEATING,
 	LIQ_T_CONTR_FRIGO_STOPPED,
 	LIQ_T_CONTR_HEATING_STOPPED,
-	LIQ_T_CONTR_TEMP_MNG_STOPPED
+	LIQ_T_CONTR_TEMP_MNG_STOPPED,
+	LIQ_T_CONTR_ATTIVA_HEAT_SPOT,
+	LIQ_T_CONTR_WAIT_HEAT_STOP_SPOT,
+	LIQ_T_CONTR_ATTIVA_FRIGO_SPOT,
+	LIQ_T_CONTR_WAIT_FRIGO_STOP_SPOT,
+	LIQ_T_CONTR_STOPPED_BY_ALM,
+	LIQ_T_CONTR_SUSPENDED
+
 }LIQ_TEMP_CONTR_TASK_STATE;
 
 // delay in intervalli da 10 msec prima di iniziare il controllo della temperatura
@@ -2243,14 +2309,31 @@ typedef enum
 // tempo di attesa massimo per lo start frigo o heating.
 // trascorso questo tempo se non ho avuto nessuno start frigo o riscaldamento vado a ricontrollare il
 // il tipo di azione da fare (in tick da 10msec)
-#define MAX_TEMP_CNTRL_DELAY 30000
 
+// massima temperatura raggiungibile nella base riscaldante (al di sopra spengo
+#define MAX_TEMP_CNTRL_DELAY 2000
+// le resistenze riscaldanti) in gradi C
 // massima temperatura raggiungibile nella base riscaldante (al di sopra spengo
 // le resistenze riscaldanti) in gradi C
 #define MAX_PLATE_TEMP  70
 // minima temperatura raggiungibile nella base riscaldante (al di sotto spengo
 // il frigo) in gradi C
-#define MIN_PLATE_TEMP  -5//-16 la metto a -5 per evitare la formazione di ghiaccio
+
+// stati per gestire il pilotaggio delle resistenze di riscaldamento
+// il frigo) in gradi C
+// Filippo - ridefinito il minimo di piastra per non far staccare subito il frigo
+#define MIN_PLATE_TEMP  -10//-16 la metto a -5 per evitare la formazione di ghiaccio
+
+
+// Filippo - intervallo di tempo in cui il riscaldatore rimane accesso durante il nuovo PID che usa il frigo e il riscaldatore
+// insieme (in tick da 10msec)
+#define ATTESA_HEAT_OFF_NEW_PID 2000
+// Filippo - intervallo di tempo in cui il frigo rimane accesso durante il nuovo PID che usa il frigo e il riscaldatore
+// insieme (in tick da 50msec)
+#define ATTESA_FRIGO_OFF_NEW_PID 6000
+
+// Filippo - attesa per lo spegnimento del frigo quando lo uso spot per raffreddare il riscaldatore (tick da 10ms)
+#define ATTESA_FRIGO_OFF_SPOT 6000
 
 // stati per gestire il pilotaggio delle resistenze di riscaldamento
 typedef enum

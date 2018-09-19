@@ -37,6 +37,8 @@ CANBUS_MSG_9 CanBusMsg9;
 CANBUS_MSG_10 CanBusMsg10;
 CANBUS_MSG_11 CanBusMsg11;
 CANBUS_MSG_12 CanBusMsg12;
+// Filippo - gestione della ricezione del messaggio CAN che trasmette il valore della temperatura di piatto come letto dalla protective
+CANBUS_MSG_13 CanBusMsg13;
 
 
 void InitTest(void)
@@ -99,6 +101,20 @@ void onNewCanBusMsg11( CANBUS_MSG_11 ReceivedCanBusMsg11){
 void onNewCanBusMsg12(CANBUS_MSG_12 ReceivedCanBusMsg12)
 {
 	CanBusMsg12 = ReceivedCanBusMsg12;
+}
+
+// Filippo - gestione della ricezione del messaggio CAN dalla protective contenente il valore di temperatura del piatto come letto
+// dalla protective stessa
+void onNewCanBusMsg13(CANBUS_MSG_13 ReceivedCanBusMsg13)
+{
+	CanBusMsg13 = ReceivedCanBusMsg13;
+}
+
+// Filippo - gestione della ricezione del messaggio CAN dalla protective contenente il valore di temperatura del piatto come letto
+// dalla protective stessa
+float getValTempPlateProt(void)
+{
+	return (float)CanBusMsg13.tempPlateP/10.0;
 }
 
 // posizione delle pinch prima di collegare l'organo
@@ -338,8 +354,29 @@ void NotifyPinchPos(void)
 	uint8_t u8;
 
 	u8 = (Air_1_Status) ? 1 : 0;
-	u8 |= (HeaterOn) ? 2 : 0;
-	u8 |= (FrigoOn) ? 4 : 0;
+	if (testT1HeatFridge)
+	{
+		if (protectiveOn)
+		{
+			u8 |= (HeaterOn) ? 2 : 0;
+		}
+	}
+	else
+	{
+		u8 |= (HeaterOn) ? 2 : 0;
+	}
+
+	if (testT1HeatFridge)
+	{
+		if (protectiveOn)
+		{
+			u8 |= (FrigoOn) ? 4 : 0;
+		}
+	}
+	else
+	{
+		u8 |= (FrigoOn) ? 4 : 0;
+	}
 
 	if(GetTherapyType() == LiverTreat)
 	{
