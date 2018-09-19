@@ -926,7 +926,7 @@ setPumpSpeedValueEVER (0x03,0, INIT_PUMP); (scrive 5 indirizzi da 4101H a 4105H)
 /*if acceleration = 0 --> acceleration remain with previous value*/
 void setPumpSpeedValueEVER(unsigned char slaveAddr, int speedValue, int acceleration, ActionPumpEver Action)
 {
-	word data[5];
+	word data[6];
 	word * valModBusArrayPtr;
 //	char	Address;
 	char	funcCode;
@@ -988,34 +988,37 @@ void setPumpSpeedValueEVER(unsigned char slaveAddr, int speedValue, int accelera
 		int i = 0;
 		if (speedValue > 0)
 		{
-			data[i++] = 0;
+			/*bit da 31 a 16 tutti a 0*/
+			data[i++] = 0x0000;
 			/* bit 0 per azionare lo start, 0x0001
 			 * bit 7 per resettare eventuali allarmi 0x0080
 			 * bit 11 e 12 per identificare nodo 4 e 5 (da bit 8 a bit 12 abbiamo i nodi da 1 a 5) 0x1800
 			 */
 			data[i++] = 0x1881;
-			data[i++] = 0; //assumiamo cone max velociutà 65535 ossia 655.35 RPM
+
+			data[i++] = 0; //assumiamo cone max velocità 65535 ossia 655.35 RPM
 			data[i++] = (word)speedValue;
+
+			if (acceleration > 0)
+			{
+				data[i++] = 0;
+				data[i++] = (word)acceleration;
+			}
+
+			/*se ho zero di accelerazione, scrivo zero e il driver manterrà la precedente*/
+			else
+			{
+				data[i++] = 0;
+				data[i++] = 0;
+			}
 
 		}
 		else
 		{
-			for (i = 0; i <4; i++)
+			for (i = 0; i <numberRegister; i++)
 				data[i] = 0;
 		}
 
-		if (acceleration > 0)
-		{
-			data[i++] = 0;
-			data[i++] = (word)acceleration;
-		}
-
-		/*se ho zero di accelerazione, scrivo zero e il driver manterrà la precedente*/
-		else
-		{
-			data[i++] = 0;
-			data[i++] = 0;
-		}
 	}
 	/*qui do solo il comando di reset di allarmi del driver*/
 	else if (Action == RESET_ALARM_DRIVER)
@@ -1023,8 +1026,8 @@ void setPumpSpeedValueEVER(unsigned char slaveAddr, int speedValue, int accelera
 		wrAddr = 0x0000;
 		numberRegister = 0x0002;
 		int i = 0;
-		data[i++] = 0;
-		data[i++] = 0x80; //bit 7 a 1 per reset allarmi
+		data[i++] = 0x0000;
+		data[i++] = 0x0080; //bit 7 a 1 per reset allarmi
 	}
 
 	valModBusArrayPtr = &data[0];
@@ -1367,7 +1370,8 @@ void alwaysModBusActuator(void)
 					DisableReadModBus++;
 				timerCounterModBusStartWr = FreeRunCnt10msec;  //timerCounterModBus;
 #ifdef PUMP_EVER
-				setPumpSpeedValueEVER(pumpPerist[1].pmpMySlaveAddress,pumpPerist[1].value,0, CHANGE_VELOCITY);
+				/*come acelerazione passo 500*/
+				setPumpSpeedValueEVER(pumpPerist[1].pmpMySlaveAddress,pumpPerist[1].value,500, CHANGE_VELOCITY);
 #else
 				setPumpSpeedValue(pumpPerist[1].pmpMySlaveAddress, pumpPerist[1].value);
 #endif
@@ -1417,7 +1421,8 @@ void alwaysModBusActuator(void)
 					DisableReadModBus++;
 				timerCounterModBusStartWr = FreeRunCnt10msec;  //timerCounterModBus;
 #ifdef PUMP_EVER
-				setPumpSpeedValueEVER(pumpPerist[2].pmpMySlaveAddress,pumpPerist[2].value,0, CHANGE_VELOCITY);
+				/*come accelerazione passo 500*/
+				setPumpSpeedValueEVER(pumpPerist[2].pmpMySlaveAddress,pumpPerist[2].value,500, CHANGE_VELOCITY);
 #else
 				setPumpSpeedValue(pumpPerist[2].pmpMySlaveAddress, pumpPerist[2].value);
 #endif
