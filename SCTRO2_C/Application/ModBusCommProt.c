@@ -2058,6 +2058,8 @@ void StorageModbusData(unsigned char LastActuatslvAddr)
 		modbusData[Address-2][16]= Pump_Average_Current;
 		modbusData[Address-2][17]= Pump_Speed_Status;
 		modbusData[Address-2][18]= Pump_Status;
+		modbusData[Address-2][19]= Pump_Ever_Acceleration;
+		modbusData[Address-2][20]= Pump_Ever_Error;
 		/* azzero per quello slave il contatore di messaggi
 		 * che non hanno avuto risposta in modo da contare
 		 * le mancate risposte consecutive*/
