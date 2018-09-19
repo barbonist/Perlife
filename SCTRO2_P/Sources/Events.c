@@ -186,6 +186,29 @@ void SBC_COMM_OnError(void)
 void SBC_COMM_OnRxChar(void)
 {
   /* Write your code here ... */
+	unsigned char ret;
+
+	ret=SBC_COMM_RecvChar(ptrMsgSbcRx);
+
+	if (ret==ERR_OK)
+	{
+		ptrSbcCountRx = ptrSbcCountRx + 1;
+		ptrMsgSbcRx = ptrMsgSbcRx + 1;
+
+		if((*(ptrMsgSbcRx-1)) == 0x5A)
+		{
+			iflag_sbc_rx |= IFLAG_SBC_RX;
+
+			if (sbc_rx_data[5] == 0xCA)
+				Service = TRUE;
+			else
+				Service = FALSE;
+
+			ptrSbcCountRx = 0;
+			//ptrMsgSbcRx = &msg_sbc_rx[0];
+			ptrMsgSbcRx = &sbc_rx_data[0];
+		}
+	}
 }
 
 /*
@@ -637,6 +660,7 @@ void TI1_10ms_OnInterrupt(void)
 	// calling sw timer to manage application specific timers (SB)
 	timerIsr_10ms();
 	timerCounterADC0++;
+	timerCounter++;
 }
 
 /*

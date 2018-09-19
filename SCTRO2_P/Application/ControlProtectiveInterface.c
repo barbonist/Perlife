@@ -41,8 +41,9 @@ union URxCan {
 	struct {
 		int16_t SpeedPump0Rpmx100;	int16_t SpeedPump1Rpmx100;	int16_t SpeedPump2Rpmx100;	int16_t SpeedPump3Rpmx100;
 	} SRxCan4;
+	// Filippo - messo campo per lo scambio del valore di temperatura piatto
 	struct {
-		uint8_t Free1;	uint8_t Free2;	uint8_t Free3;	uint8_t Free4;	uint8_t Free5;	uint8_t Free6;	uint8_t Free7;	uint8_t Free8;
+		uint8_t Free1;	uint8_t Free2;	int16_t tempPlateC;	uint8_t Free5;	uint8_t Free6;	uint8_t Free7;	uint8_t Free8;
 	} SRxCan5;
 	struct {
 		uint8_t Free1;	uint8_t Free2;	uint8_t Free3;	uint8_t Free4;	uint8_t Free5;	uint8_t Free6;	uint8_t Free7;	uint8_t Free8;
@@ -72,8 +73,9 @@ union UTxCan {
 	struct {
 		uint8_t Free1;	uint8_t Free2;	uint8_t Free3;	uint8_t Free4;	uint8_t Free5;	uint8_t Free6;	uint8_t Free7;	uint8_t Free8;
 	} STxCan4;
+	// Filippo - messo campo per lo scambio del valore di temperatura piatto
 	struct {
-		uint8_t Free1;	uint8_t Free2;	uint8_t Free3;	uint8_t Free4;	uint8_t Free5;	uint8_t Free6;	uint8_t Free7;	uint8_t Free8;
+		uint8_t Free1;	uint8_t Free2;	int16_t tempPlateP;	uint8_t Free5;	uint8_t Free6;	uint8_t Free7;	uint8_t Free8;
 	} STxCan5;
 	struct {
 		uint8_t Free1;	uint8_t Free2;	uint8_t Free3;	uint8_t Free4;	uint8_t Free5;	uint8_t Free6;	uint8_t Free7;	uint8_t Free8;
@@ -244,6 +246,11 @@ void onNewPinchStat(ActuatorHallStatus Ahs )
 #endif
 }
 
+// Filippo - questa funzione serve per aggiornare il messaggio CAN da spedire alla Control
+void onNewTempPlateValue(int16_t value)
+{
+	TxCan5.STxCan5.tempPlateP=value;
+}
 
 int TxBuffIndex = 0;
 
@@ -287,10 +294,17 @@ void ManageTxCan10ms(void)
 //
 void ManageTxCan100ms(void)
 {
-int ii ;//= 11;
+	int ii ;//= 11;
 
 	for( ii=8 ; ii<=LAST_INDEX_TXBUFF2SEND ; ii++)
-		SendCAN(TxBuffCanP[ii - 8]->RawCanBuffer, SIZE_CAN_BUFFER, ii);
+	{
+		if (SendCAN(TxBuffCanP[ii - 8]->RawCanBuffer, SIZE_CAN_BUFFER, ii)!=ERR_OK)
+		{
+			// Filippo - serve per il debug
+			ii++;
+			ii--;
+		}
+	}
 
 #ifdef CAN_DEBUG
 	DebugFillTxBuffers();
@@ -313,6 +327,8 @@ void NewDataRxChannel1(void);
 void NewDataRxChannel2(void);
 void NewDataRxChannel3(void);
 void NewDataRxChannel4(void);
+// Filippo - aggiunta funzione per gestire la lettura del buffer 5
+void NewDataRxChannel5(void);
 
 void ReceivedCanData(uint8_t *rxbuff, int rxlen, int RxChannel) {
 	if ((rxlen <= 8) && (RxChannel <= 7)) {
@@ -337,6 +353,10 @@ void ReceivedCanData(uint8_t *rxbuff, int rxlen, int RxChannel) {
 				break;
 			case 4:
 				NewDataRxChannel4();
+				break;
+			// Filippo - gestisco anche la ricezione del messaggio 5
+			case 5:
+				NewDataRxChannel5();
 				break;
 			}
 			// !! keep this statement after vals management
@@ -403,9 +423,19 @@ void NewDataRxChannel3(void) {
 		{
 			//vado in allarme e spengo entrambi i relè perchè
 			//la control mi chiede di attivarli entrambi, cosa non corretta
-			Enable_Heat(FALSE);
-			Enable_Frigo(FALSE);
+//			Enable_Heat(FALSE);
+//			Enable_Frigo(FALSE);
+			// Filippo - questa combinazione è consentita per gestire il nuovo PID che usa il frigo e il riscaldatore insieme
+			Enable_Heat(TRUE);
+			Enable_Frigo(TRUE);
 		}
+		else if ( !(RxCan3.SRxCan3.AirAlarm & 0x02) && !(RxCan3.SRxCan3.AirAlarm & 0x04) )
+		{
+			//aziono il relè del frigo
+			Enable_Frigo(FALSE);
+			Enable_Heat(FALSE);
+		}
+
 
 	}
 
@@ -430,6 +460,11 @@ void NewDataRxChannel4(void) {
 			RxCan4.SRxCan4.SpeedPump3Rpmx100);
 }
 
+void NewDataRxChannel5(void)
+{
+	// verifichiamo la temperatura di piatto
+	tempPlateControl=(float)RxCan5.SRxCan5.tempPlateC/10.0;
+}
 
 
 

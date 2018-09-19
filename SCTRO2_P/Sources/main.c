@@ -201,8 +201,10 @@
 #include "RPMGauge.h"
 #include "BubbleKeyboard.h"
 #include "Adc_Ges.h"
+#include "debug_routine.h"
 
 void InitTest(void);
+void verificaTempPlate(void);
 /*lint -save  -e970 Disable MISRA rule (6.3) checking. */
 
 /*Funtion to enable power and actuation of teh actuator*/
@@ -313,6 +315,35 @@ void Enable_Frigo (bool status)
 	}
 }
 
+void verificaTempPlate(void)
+{
+	float differenza;
+
+	if (timerConfrontaTempPlate>=100)
+	{
+		timerConfrontaTempPlate=0;
+		differenza=tempPlateControl - T_PLATE_P_GRADI_CENT;
+		if (differenza<0)
+		{
+			differenza=-differenza;
+		}
+
+		if (differenza>2)
+		{
+			// la differenza tra le due temperature lette è eccessiva - allarme
+			// per adesso non lo metto perchè la gestione degli allarmi protective la sta facendo Barboni
+
+
+		}
+	}
+
+	// nella stessa funzione metto anche l'aggiornamento del buffer con il valore di temperatura piatto letto
+	onNewTempPlateValue((int16_t)(T_PLATE_P_GRADI_CENT*10));
+
+
+
+}
+
 int main(void)
 /*lint -restore Enable MISRA rule (6.3) checking. */
 {
@@ -354,6 +385,10 @@ int main(void)
   Heat_ON = FALSE;
   Frigo_ON = FALSE;
 
+  ptrMsgSbcRx = &sbc_rx_data[0];
+  ptrSbcCountRx = 0;
+  timerCounter=0;
+
   /*leggo tutta la struttura dati salvata nella parte di flash usata come EEPROM (ci saranno ad esmepio i coefficienti di claibrazione)*/
    EEPROM_Read(START_ADDRESS_EEPROM, (EEPROM_TDataAddress)&config_data, sizeof(config_data));
 
@@ -364,8 +399,15 @@ int main(void)
    * dovrà essere fatta in modo simile per sovrascrivere i coefficienti*/
    Set_Data_EEPROM_Default();
 
+   // Filippo - inizializzo il timer per il confronto tra la temperatura di piatto letta dalla protective e la temperatura
+   // di piatto spedita dalla control
+   timerConfrontaTempPlate=0;
+
   for(;;)
   {
+  	  if (Service)
+  		 Service_SBC();
+
 	  ManageSwTimers();
 	  UpdateActuatorPosition();
 	  Manage_IR_Sens_Temp();
@@ -389,6 +431,8 @@ int main(void)
 		//ExitCritical();
 		AD1_Start();
 	 }
+
+	 verificaTempPlate();
   }
 
 

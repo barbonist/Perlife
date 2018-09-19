@@ -26,4 +26,7 @@ void onNewArtLiverPumpRPM( int16_t Value);
 void onNewOxy1PumpRPM( int16_t Value );
 void onNewOxy2PumpRPM( int16_t Value );
 
+// Filippo - questa funzione serve per aggiornare il messaggio CAN da spedire alla Control
+void onNewTempPlateValue(int16_t value);
+
 #endif /* CONTROLPROTECTIVEINTERFACE_H_ */

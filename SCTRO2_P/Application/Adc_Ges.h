@@ -23,6 +23,13 @@
 // campioni gia' mediati dopo la conversione
 #define NUMB_OF_SAMPLES_VEN     500
 
+// Filippo - definizione della tabella di conversione PT1000
+typedef struct
+{
+	float resistenza;
+	float temperatura;
+} TABELLA_PT1000;
+
 
 word * ReadAdcPr1(void);
 word * ReadAdcPr2(void);
@@ -50,5 +57,10 @@ void Pressure_Sensor_Calibration(Press_sens ID_sens, float value, unsigned char 
 
 void CalcVenSistDiastPress(word Press);
 void CalcArtSistDiastPress(word Press);
+
+// Filippo - funzione per la calibrazione del sensore PT1000
+void Plate_Temp_Sensor_Calibration(float value);
+//void Manage_Air_Sensor_1(void);
+
 
 #endif /* APPLICATION_ADC_GES_H_ */
