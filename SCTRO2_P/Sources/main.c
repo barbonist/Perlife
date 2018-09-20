@@ -73,15 +73,15 @@
 #include "AdcLdd1.h"
 #include "AD1.h"
 #include "AdcLdd2.h"
-#include "COVER_M1.h"
+#include "EMERGENCY_BUTTON.h"
 #include "BitIoLdd17.h"
-#include "COVER_M2.h"
+#include "FRONTAL_COVER_1.h"
 #include "BitIoLdd18.h"
-#include "COVER_M3.h"
+#include "FRONTAL_COVER_2.h"
 #include "BitIoLdd19.h"
-#include "COVER_M4.h"
+#include "HOOK_SENSOR_1.h"
 #include "BitIoLdd20.h"
-#include "COVER_M5.h"
+#include "HOOK_SENSOR_2.h"
 #include "BitIoLdd21.h"
 #include "FLOWSENS_COMM.h"
 #include "ASerialLdd2.h"
@@ -431,6 +431,16 @@ int main(void)
 		//ExitCritical();
 		AD1_Start();
 	 }
+
+     /********************************/
+     /*          FRONTAL COVER       */
+     /********************************/
+	 Manage_Frontal_Cover();
+
+	 /********************************/
+	 /*          HOOK SENSORS        */
+	 /********************************/
+	 Manage_Hook_Sensors();
 
 	 verificaTempPlate();
   }

@@ -92,6 +92,8 @@ void UpdateActuatorPosition();
 
 void Set_Data_EEPROM_Default(void);
 #include "EEPROM.h"
+void Manage_Frontal_Cover();
+void Manage_Hook_Sensors();
 byte EEPROM_GetFlash(LDD_FLASH_TAddress Source, LDD_TData *Dest, LDD_FLASH_TDataSize Count);
 byte EEPROM_SetFlash(EEPROM_TDataAddress Source, EEPROM_TAddress Dest, word Count);
 void EEPROM_write(EEPROM_TDataAddress Src, EEPROM_TAddress Dst, word Count);

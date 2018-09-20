@@ -646,46 +646,17 @@ int main(void)
 
 	         if(ReadKey1()) // per debug con la tastiera a bolle
 	         {
-//	        	  MOD_BUS_RESPONSE result;
-//	        	  result = WaitForModBusResponseTask((WAIT_FOR_MB_RESP_TASK_CMD)WAIT_MB_RESP_TASK_INIT_3_CMD);
-//	        	  setPumpSpeedValue (PPV1, 1000);
-//	        	  while(result == MOD_BUS_ANSW_NO_ANSW)
-//	        		  result = WaitForModBusResponseTask((WAIT_FOR_MB_RESP_TASK_CMD)WAIT_MB_RESP_TASK_NO_CMD);
-//	        	  result = MOD_BUS_ANSW_NO_ANSW;
-#ifdef DEBUG_FRIGO_AMS
-	        	 TempPerfVal--;
-	        	 parameterWordSetFromGUI[PAR_SET_PRIMING_TEMPERATURE_PERFUSION].value = TempPerfVal * 10;
-
-	        	 EnableFrigoFromPlate = TRUE;
-            	 EnableFrigoFromControl = TRUE;
-//	        	 //Start_Frigo_AMS((float)13 * 10);
-//	        	 // temperatura corrente - temperatura target
-//	        	 //Start_Frigo_AMS((float)(25 - TempPerfVal) * 10.0);
-//	        	 EnableHeatingFromControl = TRUE;
-//	        	 // temperatura corrente - temperatura target
-//	        	 StartHeating((float)(TempLiquido - TempPerfVal) * 10.0);
-#endif
+	        	 setPumpSpeedValueHighLevel(0x04,2000);
 	        	 Released1 = 1;
 	         }
 	         if(ReadKey2()) // per debug con la tastiera a bolle
 	         {
-#ifdef DEBUG_FRIGO_AMS
-	        	 TempLiquido--;
-	        	 TempLiquidoDecimi = TempLiquido * 10;
-
-	        	 //StopFrigo();
-	        	 //StopHeating();
-	        	 TempPerfVal = TempLiquido;
-#endif
+	        	 setPumpSpeedValueHighLevel(0x04,8000);
 	        	 Released2 = 1;
 	         }
 	         if(ReadKey3()) // per debug con la tastiera a bolle
 	         {
-#ifdef DEBUG_FRIGO_AMS
-	        	 TempLiquidoDecimi++;
-				Air_1_Status = LIQUID;
-				ptrCurrentState->state = STATE_TREATMENT_2;
-#endif
+	        	 setPumpSpeedValueHighLevel(0x04,0);
 	        	 Released3 = 1;
 	         }
 	         if(ReadKey4()) // per debug con la tastiera a bolle

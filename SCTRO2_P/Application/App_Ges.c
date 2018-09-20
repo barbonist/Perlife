@@ -45,6 +45,10 @@
 #include "C3_HALL_R.h"
 #include "BitIoLdd61.h"
 #include "ControlProtectiveInterface.h"
+#include "FRONTAL_COVER_1.h"
+#include "FRONTAL_COVER_2.h"
+#include "HOOK_SENSOR_1.h"
+#include "HOOK_SENSOR_2.h"
 
 
 /********************************/
@@ -788,6 +792,34 @@ void UpdateActuatorPosition()
 	  onNewPinchStat(HallSens);
 
 }
+
+void Manage_Frontal_Cover(void)
+{
+	if (FRONTAL_COVER_1_GetVal())
+		FRONTAL_COVER_1_STATUS = TRUE; // cover left opened
+	else
+		FRONTAL_COVER_1_STATUS = FALSE; // cover left closed
+
+	if (FRONTAL_COVER_2_GetVal())
+		FRONTAL_COVER_2_STATUS = TRUE; // cover right opened
+	else
+		FRONTAL_COVER_2_STATUS = FALSE; // cover right closed
+
+}
+
+void Manage_Hook_Sensors(void)
+{
+	if (HOOK_SENSOR_1_GetVal())
+		HOOK_SENSOR_1_STATUS = TRUE; // vaschetta a destra non inserita
+	else
+		HOOK_SENSOR_1_STATUS = FALSE; // vaschetta a destra inserita
+
+	if (HOOK_SENSOR_2_GetVal())
+		HOOK_SENSOR_2_STATUS = TRUE; // vaschetta a sinistra non inserita
+	else
+		HOOK_SENSOR_2_STATUS = FALSE; // vaschetta a sinistra inserita
+}
+
 
 void EEPROM_Read(LDD_FLASH_TAddress Source, LDD_TData *Dest, LDD_FLASH_TDataSize Count)
 {

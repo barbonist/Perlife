@@ -684,6 +684,14 @@ int timerCounter;
 //stop addres FLASH used as EEPROM
 #define STOP_ADDRESS_EEPROM			0xFFFFF
 
+/*variabile globale per il sensore di cover 1; diventa TRUE se cover aperto*/
+bool FRONTAL_COVER_1_STATUS;
+/*variabile globale per il sensore di cover 2; diventa TRUE se cover aperto*/
+bool FRONTAL_COVER_2_STATUS;
+/*variabile globale per il sensore di gancio 1; diventa TRUE se gancio aperto*/
+bool HOOK_SENSOR_1_STATUS;
+/*variabile globale per il sensore di gancio 2; diventa TRUE se gancio aperto*/
+bool HOOK_SENSOR_2_STATUS;
 
 void Enable_Power_EVER_PUMP(bool status);
 void Enable_Power_Motor(bool status);
