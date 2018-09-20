@@ -2026,6 +2026,7 @@ void StorageModbusData(unsigned char LastActuatslvAddr)
 		Pump_Average_Current 	= BYTES_TO_WORD(dataTemp[13], dataTemp[14]);	/*Actual current mA*/
 		Pump_Ever_Acceleration	= BYTES_TO_WORD(dataTemp[17], dataTemp[18]);	/*Actual Acceleration ms*/
 		Pump_Ever_Error 		= BYTES_TO_WORD(dataTemp[21], dataTemp[22]);	/* ERROR REGISTER */
+
 	}
 	else if (Address >= FIRST_ACTUATOR && Address <= (LAST_PUMP - 2))
 #else
@@ -2215,27 +2216,39 @@ void StorageModbusDataInit(void)
 //}
 
 /* funzione che ritorna il numero della pompa con il
- * cover aperto oppure 4 se tutti i cover sono chiusi*/
+ * cover aperto oppure 4 se tutti i cover sono chiusi
+ * viene chimata dal main ogni 560 msec*/
 unsigned char CheckCoverPump()
 {
 	unsigned char MaxCoverNum = 4;
-#ifdef PUMP_EVER
-	// evito che con le nuove pompe ever venga controllato il segnale di cover che non c'e'
-	MaxCoverNum = 2;
-#endif
+//#ifdef PUMP_EVER
+//	// evito che con le nuove pompe ever venga controllato il segnale di cover che non c'e'
+//	MaxCoverNum = 2;
+//#endif
 	CoverPresc++;
-	if(CoverPresc >= 10)
+//	if(CoverPresc >= 10)
+	/*entriamo nell'if dopo due volte che la funzione
+	 * viene chiamata quindi ogni 100 msec*/
+	if(CoverPresc >= 2)
 	{
 		CoverPresc = 0;
 		for (unsigned char i= 0; i<MaxCoverNum; i++)
 		{
-			if (modbusData[i][18] & 0x0200)
+			int mask;
+			/*per le pompe Lean con confronto con 0x0200*/
+			if (i<=1)
+				mask = 0x0200;
+			/*per le pompe ever confronto con 0x0002*/
+			else
+				mask = 0x0002;
+
+			if (modbusData[i][18] & mask)
 			{
 				CoverOpenCnt[i]++;
 				if(CoverOpenCnt[i] >= 2)
 				{
 					CoverOpenCnt[i] = 3;
-					CoverState[i] = 1;
+					CoverState[i] = 1;		//questo identifica Cover aperta
 				}
 				CoverCloseCnt[i] = 0;
 			}
@@ -2244,8 +2257,8 @@ unsigned char CheckCoverPump()
 				CoverCloseCnt[i]++;
 				if(CoverCloseCnt[i] > 6)
 				{
-					CoverCloseCnt[i] = 3;
-					CoverState[i] = 0;
+					CoverCloseCnt[i] = 7;
+					CoverState[i] = 0;		//Cover Chiusa
 				}
 				CoverOpenCnt[i] = 0;
 			}

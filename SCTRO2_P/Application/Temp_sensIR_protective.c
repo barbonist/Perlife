@@ -261,34 +261,41 @@ unsigned char computeCRC8TempSens(unsigned char buffer[]) {
 		}
 	}
 
-	unsigned char * buildCmdReadTempSensIR(unsigned char  tempSensAddress,
-										   unsigned char  command,
-										   word dataWordTx)
-	{
-		unsigned char sensTempIRId;
-		unsigned char err;
-		unsigned char rcvData[NUM_BYTE_RCV];
-		unsigned char * ptrData;
-		word ret;
+unsigned char * buildCmdReadTempSensIR(unsigned char  tempSensAddress,
+									   unsigned char  command,
+									   word dataWordTx)
+{
+	unsigned char sensTempIRId;
+	unsigned char err;
+	unsigned char rcvData[NUM_BYTE_RCV];
+	unsigned char * ptrData;
+	word ret;
 
 
 //		if(tempSensAddress == 0x5A)
 //			sensTempIRId = sensorIR_TM[tempSensAddress-1].sensorId;
 
-		/* Start + slave address + write command */
-		IR_TM_COMM_SelectSlave(tempSensAddress);
-		err = IR_TM_COMM_SendChar(command);
-		/* Restart + slave address + received data */
-		//IR_TM_COMM_SelectSlave(tempSensAddress);
-		//if(err == ERR_OK)
-			//IR_TM_COMM_RecvBlock(&rcvData[0], NUM_BYTE_RCV, &ret);
-		//ptrData = &rcvData[0];
-		ptrData = &sensorIR_TM[0/*tempSensAddress-1*/].bufferReceived[0];
-		//IR_TM_COMM_RecvBlock(ptrData, 3, &ret);
+	/* Start + slave address + write command */
+	IR_TM_COMM_SelectSlave(tempSensAddress);
+	err = IR_TM_COMM_SendChar(command);
+	// Filippo - in caso di errore provo a resettare la periferica
+	if (err!=ERR_OK)
+	{
+		IR_TM_COMM_Disable();
 
-		return	ptrData;
-
+		IR_TM_COMM_Enable();
 	}
+	/* Restart + slave address + received data */
+	//IR_TM_COMM_SelectSlave(tempSensAddress);
+	//if(err == ERR_OK)
+		//IR_TM_COMM_RecvBlock(&rcvData[0], NUM_BYTE_RCV, &ret);
+	//ptrData = &rcvData[0];
+	ptrData = &sensorIR_TM[0/*tempSensAddress-1*/].bufferReceived[0];
+	//IR_TM_COMM_RecvBlock(ptrData, 3, &ret);
+
+	return	ptrData;
+
+}
 
 //	unsigned char * buildCmdReadTempSensIR(unsigned char tempSensAddress,
 //			unsigned char command, word dataWordTx) {
