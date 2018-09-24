@@ -1363,7 +1363,7 @@ void buildRDMachineStateResponseMsg(char code, char subcode)
 	/*131*/  sbc_tx_data[index++] = (wd     ) & 0xFF;
 	/* free 1*/
 	// Filippo - metto la necessità o meno di spegnere il PC
-	wd=(word)PANIC_BUTTON_ACTIVATION_PC;
+	wd=(word)EMERGENCY_BUTTON_ACTIVATION_PC;
 	/*132*/  sbc_tx_data[index++] = (wd >> 8) & 0xFF;
 	/*133*/  sbc_tx_data[index++] = (wd     ) & 0xFF;
 	/* free 2*/
@@ -1664,9 +1664,9 @@ void setParamWordFromGUI(unsigned char parId, int value)
 		ExpectedPrimDuration = CalcHoursMin(timesec);
 	}
 
-	// TODO DA RIMUOVERE SOLO PER DEBUG GUI !!!!
-	parameterWordSetFromGUI[PAR_SET_DESIRED_DURATION].value = 0x00; // due ore
-	parameterWordSetFromGUI[PAR_SET_DESIRED_DURATION].value = 0x003; // 20 minuti
+//	// TODO DA RIMUOVERE SOLO PER DEBUG GUI !!!!
+//	parameterWordSetFromGUI[PAR_SET_DESIRED_DURATION].value = 0x00; // due ore
+//	parameterWordSetFromGUI[PAR_SET_DESIRED_DURATION].value = 0x003; // 20 minuti
 }
 
 void resetParamWordFromGUI(unsigned char parId){

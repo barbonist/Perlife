@@ -431,7 +431,7 @@ void NewDataRxChannel3(void) {
 		}
 		else if ( !(RxCan3.SRxCan3.AirAlarm & 0x02) && !(RxCan3.SRxCan3.AirAlarm & 0x04) )
 		{
-			//aziono il relè del frigo
+			//disattivo i relè del frigo e del riscaldatore
 			Enable_Frigo(FALSE);
 			Enable_Heat(FALSE);
 		}

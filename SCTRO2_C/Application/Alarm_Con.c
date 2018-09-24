@@ -84,15 +84,16 @@ struct alarm alarmList[] =
 		{CODE_ALARM_PROT_START_VAL,        PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_PROTECTION, SECURITY_STOP_ALL_ACTUATOR,  PRIORITY_HIGH,    0, 500, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull},	        /* 29 */
 
 		// Filippo - inserito allarme per il tasto di stop
-		{CODE_ALARM_PANIC_BUTTON, PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH, 0, 500, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_ALLOWED, &alarmManageNull},	        /* 31 allarme tasto di stop*/
+		{CODE_ALARM_EMERGENCY_BUTTON, PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH, 0, 500, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_ALLOWED, &alarmManageNull},	        /* 30 allarme tasto di stop*/
 
 		// Filippo - inserito allarme per test T1
-		{CODE_ALARM_TEST_T1, PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH, 0, 500, OVRD_NOT_ENABLED, RESET_NOT_ALLOWED, SILENCE_ALLOWED, MEMO_ALLOWED, &alarmManageNull},	        /* 32 allarme tasto di stop*/
+		{CODE_ALARM_TEST_T1, PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH, 0, 500, OVRD_NOT_ENABLED, RESET_NOT_ALLOWED, SILENCE_ALLOWED, MEMO_ALLOWED, &alarmManageNull},	        /* 31 allarme tasto di stop*/
 		// Filippo - inserito allarme per test sensore aria fallito
-		{CODE_ALARM_AIR_SENSOR_TEST_KO,PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,PRIORITY_HIGH, 0, 2000, OVRD_NOT_ENABLED, RESET_NOT_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull}, 		/* 12 */
-
+		{CODE_ALARM_AIR_SENSOR_TEST_KO,PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,PRIORITY_HIGH, 0, 2000, OVRD_NOT_ENABLED, RESET_NOT_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull}, 		/* 32 */
+        {CODE_ALARM_MACHINE_COVERS,       PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH,    0,  100, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull},         /* 33 */
+        {CODE_ALARM_HOOKS_RESERVOIR,      PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH,    0,  100, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull},         /* 34 */
 		// da qui in avanti solo le warning
-		{CODE_ALARM_PRESS_ADS_FILTER_WARN, PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_LOW, 2000, 2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull},	        /* 30 esempio di warning*/
+		{CODE_ALARM_PRESS_ADS_FILTER_WARN, PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_LOW, 2000, 2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull},	        /* 35 esempio di warning*/
 		{}
 };
 
@@ -175,6 +176,8 @@ void SetAllAlarmEnableFlags(void)
 	GlobalFlags.FlagsDef.EnableDeltaFlowVenAlarm = 1;     // abilito allarme delta flusso venoso troppo alto
 	GlobalFlags.FlagsDef.EnableDeltaTempRecVenAlarm = 1;  // abilito allarme delta temperatura recipiente e line venosa troppo alta
 	GlobalFlags.FlagsDef.EnableDeltaTempRecArtAlarm = 1;  // abilito allarme delta temperatura recipiente e line arteriosa troppo alta
+	GlobalFlags.FlagsDef.EnableMachineCovers = 1;         // abilito allarmi Hall Machine Covers
+	GlobalFlags.FlagsDef.EnableHooksReservoir = 1;        // abilito allarmi Hall ganci contenitore organo
 	GlobalFlags.FlagsDef.EnableSAFAir = 1;
 	GlobalFlags.FlagsDef.EnableSFVAir = 1;
 	GlobalFlags.FlagsDef.EnableSFAAir = 1;
@@ -193,6 +196,8 @@ void SetAllAlarmEnableFlags(void)
 	GlobalFlags.FlagsDef.EnableStopButton=1;
 	// Filippo - abilito l'allarme di T1 test
 	GlobalFlags.FlagsDef.EnableT1TestAlarm=1;
+	GlobalFlags.FlagsDef.EnableHooksReservoir = 1;
+
 }
 
 // Questa funzione serve per forzare ad off un eventuale allarme.
@@ -266,6 +271,14 @@ void ForceAlarmOff(uint16_t code)
 		case CODE_ALARM_PROT_START_VAL:
 			GlobalFlags.FlagsDef.EnableFromProtectiveAlm = 0;   // forzo allarme ricevuto dal protective off
 			break;
+        case CODE_ALARM_MACHINE_COVERS:
+            GlobalFlags.FlagsDef.EnableMachineCovers = 0;   // forzo allarme machine covers a OFF
+            break;
+        case CODE_ALARM_HOOKS_RESERVOIR:
+            GlobalFlags.FlagsDef.EnableHooksReservoir = 0;   // forzo allarme hooks a OFF
+            break;
+
+
 
 	}
 }
@@ -577,6 +590,7 @@ void alarmEngineAlways(void)
 
 			case STATE_PRIMING_PH_1:
 			{
+				manageCover_Hook_Sensor();
 				manageAlarmFlowSensNotDetected();
 				manageAlarmIrTempSensNotDetected();
 
@@ -605,6 +619,7 @@ void alarmEngineAlways(void)
 
 			case STATE_PRIMING_PH_2:
 			{
+				manageCover_Hook_Sensor();
 				manageAlarmFlowSensNotDetected();
 				manageAlarmIrTempSensNotDetected();
 
@@ -633,6 +648,7 @@ void alarmEngineAlways(void)
 
 			case STATE_TREATMENT_KIDNEY_1:
 			{
+				manageCover_Hook_Sensor();
 				//verifica physic pressioni
 				manageAlarmPhysicPressSensHigh();
 				manageAlarmPhysicPressSensLow();
@@ -691,9 +707,12 @@ void alarmEngineAlways(void)
 
 				//verifica physic ir temp sens
 				//manageAlarmPhysicTempSens();
+				manageCover_Hook_Sensor();
 				break;
 
 			case STATE_PRIMING_RICIRCOLO:
+
+				manageCover_Hook_Sensor();
 				//verifica physic pressioni
 				manageAlarmPhysicPressSensHigh();
 				manageAlarmPhysicPressSensLow();
@@ -716,6 +735,7 @@ void alarmEngineAlways(void)
 				break;
 
 			case STATE_WAIT_TREATMENT:
+				manageCover_Hook_Sensor();
 				//verifica physic pressioni
 				//manageAlarmPhysicPressSensHigh();
 				//manageAlarmPhysicPressSensLow();
@@ -742,12 +762,14 @@ void alarmEngineAlways(void)
 
 			case STATE_TREATMENT_2:
 			{
+				manageCover_Hook_Sensor();
 				break;
 			}
 
 			case STATE_EMPTY_DISPOSABLE:
 			case STATE_EMPTY_DISPOSABLE_1:
 			{
+				manageCover_Hook_Sensor();
 				manageAlarmFlowSensNotDetected();
 				manageAlarmIrTempSensNotDetected();
 
@@ -772,6 +794,7 @@ void alarmEngineAlways(void)
 				/* DA DEBUGGARE*/
 				//manageAlarmFlowSensNotDetected();
 				//manageAlarmIrTempSensNotDetected();
+				manageCover_Hook_Sensor();
 				break;
 			}
 
@@ -1240,6 +1263,7 @@ void manageAlarmPhysicPressSensHigh(void)
 
 	if(GlobalFlags.FlagsDef.EnablePressSensHighAlm)
 	{
+
 		if(PR_ART_Sistolyc_mmHg > MaxPressArt)
 		{
 			alarmList[PRESS_ART_HIGH].physic = PHYSIC_TRUE;
@@ -1284,9 +1308,37 @@ void manageAlarmPhysicPressSensHigh(void)
 		alarmList[PRESS_VEN_HIGH].physic = PHYSIC_FALSE;
 		alarmList[PRESS_OXYG_HIGH].physic = PHYSIC_FALSE;
 	}
+
 }
 
 
+void manageCover_Hook_Sensor(void)
+{
+	if (GlobalFlags.FlagsDef.EnableHooksReservoir)
+	{
+	    if (HOOK_SENSOR_1_STATUS || HOOK_SENSOR_2_STATUS)
+	        alarmList[ALARM_HOOKS_RESERVOIR].physic = PHYSIC_TRUE;
+	    else
+	        alarmList[ALARM_HOOKS_RESERVOIR].physic = PHYSIC_FALSE;
+	}
+	else
+    {
+        alarmList[ALARM_HOOKS_RESERVOIR].physic = PHYSIC_FALSE;
+    }
+
+    if (GlobalFlags.FlagsDef.EnableMachineCovers)
+    {
+        if (0/*coverLizzi*/)
+        // if (FRONTAL_COVER_1_STATUS || FRONTAL_COVER_2_STATUS)
+            alarmList[ALARM_MACHINE_COVERS].physic = PHYSIC_TRUE;
+        else
+            alarmList[ALARM_MACHINE_COVERS].physic = PHYSIC_FALSE;
+    }
+    else
+    {
+        alarmList[ALARM_MACHINE_COVERS].physic = PHYSIC_FALSE;
+    }
+}
 void manageAlarmPhysicTempSens(void)
 {
 	if(GlobalFlags.FlagsDef.EnableTempArtHighAlm)
@@ -1458,10 +1510,10 @@ void manageAlarmStopButtonPressed(void)
 		alarmList[ALARM_STOP_BUTTON].physic = PHYSIC_FALSE;
 	else
 	{
-		if(PANIC_BUTTON_ACTIVATION)
+		if(EMERGENCY_BUTTON_ACTIVATION)
 		{
 			alarmList[ALARM_STOP_BUTTON].physic = PHYSIC_TRUE;
-			PANIC_BUTTON_ACTIVATION=FALSE;
+			EMERGENCY_BUTTON_ACTIVATION=FALSE;
 		}
 		else
 		{
@@ -1522,14 +1574,16 @@ void manageAlarmAirSensorTestKO(void)
 {
 	if (airSensorTestKO)
 	{
-		alarmList[ALARM_AIR_SENSOR_TEST_KO].physic=PHYSIC_TRUE;
+//		alarmList[ALARM_AIR_SENSOR_TEST_KO].physic=PHYSIC_TRUE;
 	}
 	else
 	{
-		alarmList[ALARM_AIR_SENSOR_TEST_KO].physic=PHYSIC_FALSE;
+	//	alarmList[ALARM_AIR_SENSOR_TEST_KO].physic=PHYSIC_FALSE;
 	}
 
-
+	/*SOLO PER TEST, DA RIMUOVERE*/
+	//alarmList[ALARM_AIR_SENSOR_TEST_KO].physic=PHYSIC_FALSE;
+	/*SOLO PER TEST, FINE*/
 }
 
 void manageAlarmIrTempSensNotDetected(void)

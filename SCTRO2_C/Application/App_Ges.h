@@ -20,9 +20,14 @@
 #define DELTA_PRESSURE						30
 #define GAIN_PRESSURE						1
 
-#define TIMER_PANIC_BUTTON_ALARM			10 //2 secondi di pressione consecutiva per il PANIC_BUTTON
+#define TIMER_EMERGENCY_BUTTON_ALARM		10 //2 secondi di pressione consecutiva per il PANIC_BUTTON
 // Filippo - inserito timeout per allarme e timeout per spegnimento PC
-#define TIMER_PANIC_BUTTON					60 //2 secondi di pressione consecutiva per il PANIC_BUTTON
+#define TIMER_EMERGENCY_BUTTON				60 //2 secondi di pressione consecutiva per il PANIC_BUTTON
+
+/*Vincenzo*/
+#define DELTA_TEMP_TERGET_FOR_STABILITY_PRIMING		5 //4	//range per identificare il raggungimento della tmeperatura target esperro in decimi di grado (es 4 = 0.4°C)
+#define TIMEOUT_TEMPERATURE_RICIRC					60000 //2000L passo da 2 seocndi a 60 secondi
+
 /* MACHINE STATE FUNCTION */
 void manageNull(void);
 void manageStateLevel(void);
@@ -255,7 +260,7 @@ void Voltage_BM_Chk(void);
 
 void EEPROM_Read(LDD_FLASH_TAddress Source, LDD_TData *Dest, LDD_FLASH_TDataSize Count);
 void Set_Data_EEPROM_Default(void);
-void Manage_Panic_Button(void);
+void Manage_Emergency_Button(void);
 void Manage_Frontal_Cover();
 void Manage_Hook_Sensors();
 

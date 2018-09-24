@@ -9,7 +9,7 @@
 
 #include "PE_Types.h"
 #include "Global.h"
-#include "PANIC_BUTTON_INPUT.h"
+//#include "PANIC_BUTTON_INPUT.h"
 #include "App_Ges.h"
 #include "ModBusCommProt.h"
 #include "Peltier_Module.h"
@@ -206,7 +206,7 @@ void alwaysPumpPressLoopArt(unsigned char pmpId, unsigned char *PidFirstTime)
     	// forzo a 0 il valore old per fare in modo che la prima scrittura venga sempre fatta
     	pumpPerist[pmpId].actualSpeedOld = 0;
     }
-	Target_PID_ART = parameterWordSetFromGUI[PAR_SET_PRESS_ART_TARGET].value + CalcolaPresArt_with_Flow(0);
+	Target_PID_ART = parameterWordSetFromGUI[PAR_SET_PRESS_ART_TARGET].value;// + CalcolaPresArt_with_Flow(0);
 
     //pressSample0_Art = PR_ART_mmHg_Filtered;
     //pressSample0_Art = MedForArteriousPid;
@@ -218,14 +218,11 @@ void alwaysPumpPressLoopArt(unsigned char pmpId, unsigned char *PidFirstTime)
 	errPress = Target_PID_ART - pressSample0_Art;
 
 
-
-//   deltaSpeed_Art = kpForTuning * errPress;
-	deltaSpeed_Art = (((float)parKITC_Art * errPress) -
-			         ((float)parKP_Art * (pressSample0_Art - pressSample1_Art)) -
-					 ((float)parKD_TC_Art * (pressSample0_Art - 2 * pressSample1_Art + pressSample2_Art)));
-	/*se la veilocità resta costante ed inferiore alla massima, sono in equilibrio, provo ad aumentarla per
+	/*se la velocità resta costante ed inferiore alla massima, sono in equilibrio, provo ad aumentarla per
 	 * vedere se trovo un equilibrio andando + forte e avvicindandomi al massimo flusso impostato*/
-    if (SpeedCostanteArt((int)actualSpeed_Art) && (actualSpeed_Art <= MAX_ART_RPM_Val))
+    if (SpeedCostanteArt((int)actualSpeed_Art) &&
+        (actualSpeed_Art <= MAX_ART_RPM_Val) && (sensor_UFLOW[ARTERIOUS_AIR_SENSOR].Average_Flow_Val < (float)parameterWordSetFromGUI[PAR_SET_MAX_FLOW_PERFUSION].value)
+		)
     {
  	   if((Target_PID_ART && (errPress > 0.0)) || (!Target_PID_ART && (errPress >= 0.0)))
  	   {
@@ -235,13 +232,35 @@ void alwaysPumpPressLoopArt(unsigned char pmpId, unsigned char *PidFirstTime)
  	   }
 	//	MAX_ART_RPM_Val = MAX_ART_RPM_Val + 0.5;
     }
+
+//   deltaSpeed_Art = kpForTuning * errPress;
+	deltaSpeed_Art = (((float)parKITC_Art * errPress) -
+			         ((float)parKP_Art * (pressSample0_Art - pressSample1_Art)) -
+					 ((float)parKD_TC_Art * (pressSample0_Art - 2 * pressSample1_Art + pressSample2_Art)));
+
 	/*se misuro un flusso e ho una velocità >0 e sto misurando uin flusso superiore al limite impostato
 	 * aggiorno la velocità al massimo flusso impostato */
-	if ((sensor_UFLOW[0].Average_Flow_Val > 0.0) &&
-		(sensor_UFLOW[0].Average_Flow_Val > ( parameterWordSetFromGUI[PAR_SET_MAX_FLOW_PERFUSION].value)) &&
+	if ((sensor_UFLOW[ARTERIOUS_AIR_SENSOR].Average_Flow_Val > 0.0) &&
+		(sensor_UFLOW[ARTERIOUS_AIR_SENSOR].Average_Flow_Val > ( parameterWordSetFromGUI[PAR_SET_MAX_FLOW_PERFUSION].value)) &&
 		(actualSpeed_Art > 0.0))
 	{
-		deltaSpeed_Art = -0.5;
+		/*Cerco di non avere sovraelongazioni rispetto al flusso target*/
+
+		/*se il flusso misurato supera quello impostato per oltre il 10% abbasso la velocità di 3 RPM*/
+		if (sensor_UFLOW[ARTERIOUS_AIR_SENSOR].Average_Flow_Val > parameterWordSetFromGUI[PAR_SET_MAX_FLOW_PERFUSION].value * 1.15)
+			deltaSpeed_Art = -2.5;
+		/*se il flusso misurato supera quello impostato per oltre il 5% abbasso la velocità di 2 RPM*/
+		else if (sensor_UFLOW[ARTERIOUS_AIR_SENSOR].Average_Flow_Val > parameterWordSetFromGUI[PAR_SET_MAX_FLOW_PERFUSION].value * 1.10)
+			deltaSpeed_Art = -1.5;
+		/*altrimenti la abbasso di mezzo RPM*/
+		else
+			deltaSpeed_Art = -0.8;
+	}
+	else if (sensor_UFLOW[ARTERIOUS_AIR_SENSOR].Average_Flow_Val == 0 && pressSample0_Art < 100)
+	{
+		// se il flusso e' 0 e la pressione e' al di sotto di 60 mmhg
+		// forzo una velocita' delle pompe != 0. Altrimenti si ferma in equilibrio a flusso 0;
+		deltaSpeed_Art = 1.0;
 	}
 
 	if((deltaSpeed_Art < -0.01) || (deltaSpeed_Art > 0.01))
@@ -254,9 +273,8 @@ void alwaysPumpPressLoopArt(unsigned char pmpId, unsigned char *PidFirstTime)
 		actualSpeed_Art = 0;
 
 	/*vincolo la velocità massima impostata dal pid al massimo valore che non mi fa perdere il passo*/
-	if(actualSpeed_Art > (float)MAX_ART_RPM_Val &&
-	   sensor_UFLOW[0].Average_Flow_Val > (float)parameterWordSetFromGUI[PAR_SET_MAX_FLOW_PERFUSION].value)
-		actualSpeed_Art = (float)MAX_ART_RPM_Val;
+	if(actualSpeed_Art > (float)MAX_ART_RPM /*&& sensor_UFLOW[0].Average_Flow_Val > (float)parameterWordSetFromGUI[PAR_SET_MAX_FLOW_PERFUSION].value*/)
+		actualSpeed_Art = (float)MAX_ART_RPM;
 
 	/*aggiorno la velocità se è diversa dalla precedente*/
 	if((actualSpeed_Art != pumpPerist[pmpId].actualSpeedOld) || (pumpPerist[pmpId].actualSpeedOld == 0.0))

@@ -2,7 +2,7 @@
 
 #include "PE_Types.h"
 #include "Global.h"
-#include "PANIC_BUTTON_INPUT.h"
+//#include "PANIC_BUTTON_INPUT.h"
 #include "ModBusCommProt.h"
 #include "App_Ges.h"
 #include "Peltier_Module.h"
@@ -372,14 +372,14 @@ bool AmJInAlarmState(void)
 // Se sono in uno stato non di allarme ma l'allarme verso la GUI e' diverso da 0, allora
 // forzo annullamento allarme perche' e' una situazione di errore.
 // Vuol dire che per un qualche motivo il reset dell'allarme non ha funzionato
-void CheckAlarmForGuiStateMsg(void)
-{
-	if(!AmJInAlarmState())
-	{
-		if(alarmCurrent.code)
-			memset(&alarmCurrent, 0, sizeof(struct alarm));
-	}
-}
+//void CheckAlarmForGuiStateMsg(void)
+//{
+//	if(!AmJInAlarmState())
+//	{
+//		if(alarmCurrent.code)
+//			memset(&alarmCurrent, 0, sizeof(struct alarm));
+//	}
+//}
 
 // ritorna TRUE se lo stato child ha bisogno del button reset per fare qualcosa
 // QUESTA FUZIONE DOVREBBE ESSERE AGGIORNATA OGNI VOLTA CHE SI AGGIUNGE UN NUOVO STATO PER LA GESTIONE
@@ -756,7 +756,7 @@ void TempAlarmEnableTask(TEMP_ALARM_EN_TASK_CMD cmd)
 		case T_AL_EN_WAIT_TARGET:
 			// aspetto che la temperatura nel reservoir raggiunga il nuovo target
 			// prima di riprendere il controllo di temperatura
-			if((tmpr >= (float)(temp_trgt - DELTA_TEMP_TARGET)) && (tmpr <= (float)(temp_trgt + DELTA_TEMP_TARGET)))
+			if((tmpr >= (float)(temp_trgt - DELTA_TEMP_TERGET_FOR_STABILITY_PRIMING)) && (tmpr <= (float)(temp_trgt + DELTA_TEMP_TERGET_FOR_STABILITY_PRIMING)))
 			{
 				// ho raggiunto la temperatura target
 				TempAlarmEnTaskSt = T_AL_EN_WAIT_TARGET_1;
@@ -765,7 +765,7 @@ void TempAlarmEnableTask(TEMP_ALARM_EN_TASK_CMD cmd)
 			break;
 
 		case T_AL_EN_WAIT_TARGET_1:
-			if((tmpr >= (float)(temp_trgt - DELTA_TEMP_TARGET)) && (tmpr <= (float)(temp_trgt + DELTA_TEMP_TARGET)))
+			if((tmpr >= (float)(temp_trgt - DELTA_TEMP_TERGET_FOR_STABILITY_PRIMING)) && (tmpr <= (float)(temp_trgt + DELTA_TEMP_TERGET_FOR_STABILITY_PRIMING)))
 			{
 				// nel reservoir ho raggiunto la temperatura target da 2 secondi
 				if(timeInterval10 && (msTick10_elapsed(timeInterval10) >= 200))

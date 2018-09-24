@@ -87,6 +87,7 @@
 #include "IntI2cLdd1.h"
 #include "TU1.h"
 #include "PANIC_BUTTON_INPUT.h"
+//#include "PANIC_BUTTON_INPUT.h"
 #include "BitIoLdd1.h"
 #include "PANIC_BUTTON_OUTPUT.h"
 #include "BitIoLdd2.h"
@@ -532,7 +533,7 @@ int main(void)
   timerCounterADC1 = 0;
 
 
-  // al reset metto tutti irami delle pich chiusi
+  // al reset metto tutti i rami delle pich chiusi
   setPinchPosValue (PINCH_2WPVF, MODBUS_PINCH_POS_CLOSED);
   while (timerCounterCheckModBus < 1);
   timerCounterCheckModBus = 0;
@@ -646,24 +647,25 @@ int main(void)
 
 	         if(ReadKey1()) // per debug con la tastiera a bolle
 	         {
-	        	 setPumpSpeedValueHighLevel(0x04,2000);
+	        //	 setPumpSpeedValueHighLevel(0x04,2000);
 	        	 Released1 = 1;
 	         }
 	         if(ReadKey2()) // per debug con la tastiera a bolle
 	         {
-	        	 setPumpSpeedValueHighLevel(0x04,8000);
+	        //	 setPumpSpeedValueHighLevel(0x04,8000);
 	        	 Released2 = 1;
 	         }
 	         if(ReadKey3()) // per debug con la tastiera a bolle
 	         {
-	        	 setPumpSpeedValueHighLevel(0x04,0);
+	        //	 EN_Motor_Control(DISABLE);
 	        	 Released3 = 1;
 	         }
 	         if(ReadKey4()) // per debug con la tastiera a bolle
 	         {
-#ifdef DEBUG_FRIGO_AMS
-	        	 TempLiquidoDecimi--;
-#endif
+//#ifdef DEBUG_FRIGO_AMS
+//	        	 TempLiquidoDecimi--;
+//#endif
+	        //	 EN_Motor_Control(ENABLE);
 	        	 Released3 = 1;
 	         }
 
@@ -743,9 +745,9 @@ int main(void)
 		     }
 
 	         /********************************/
-	         /*          PANIC BUTTON        */
+	         /*      EMERGENCY BUTTON        */
 	         /********************************/
-			 Manage_Panic_Button();
+			 Manage_Emergency_Button();
 
 	         /********************************/
 	         /*          FRONTAL COVER       */

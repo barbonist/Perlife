@@ -7,7 +7,7 @@
 
 #include "PE_Types.h"
 #include "Global.h"
-#include "PANIC_BUTTON_INPUT.h"
+//#include "PANIC_BUTTON_INPUT.h"
 #include "ModBusCommProt.h"
 #include "App_Ges.h"
 #include "Peltier_Module.h"
@@ -1326,12 +1326,13 @@ void ParentFuncT1Test(void)
 	}
 #else
 	{
+		/*Vincenzo gestione T1 TEST*/
 	case PARENT_T1_NO_DISP_INIT:
 		// Filippo - tolto per fargli eseguire il T1 test
-		ptrFutureParent = &stateParentT1TNoDisposable[23];
+		ptrFutureParent = &stateParentT1TNoDisposable[23]; //con il 23 salto di netto tutti i T1 TEST
 		// lo mando al test dell'heater
-//		ptrFutureParent = &stateParentT1TNoDisposable[29];
-//		ptrFutureParent = &stateParentT1TNoDisposable[3];	// lo mando al test della EEPROM
+//		ptrFutureParent = &stateParentT1TNoDisposable[29]; //con il 29 passo al T1 TEST dsel FRIGO
+//		ptrFutureParent = &stateParentT1TNoDisposable[3];	// lo mando al test della EEPROM quindi eseguo il T1 TEST
 		break;
 
 		if(currentGuard[GUARD_ENABLE_T1_CONFIG].guardValue == GUARD_VALUE_TRUE)

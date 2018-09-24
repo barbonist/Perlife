@@ -1456,10 +1456,10 @@ unsigned char subcodeDBG;
 bool Service;
 
 /*variabile globale per il tasto di emergenza; diventa TRUE se tasto premuto*/
-bool PANIC_BUTTON_ACTIVATION;
+bool EMERGENCY_BUTTON_ACTIVATION;
 /*variabile globale per il sensore di cover 1; diventa TRUE se cover aperto*/
 
-bool PANIC_BUTTON_ACTIVATION_PC;
+bool EMERGENCY_BUTTON_ACTIVATION_PC;
 // Filippo - inserito un flag per sapere quando sono in allarme T1Test
 
 bool allarmeTestT1Attivo;
@@ -1523,7 +1523,7 @@ typedef enum{NOT_DEF = 0, NO = 1, YES = 2} PARAMETER_ACTIVE_TYPE;
 //#define CONV_RPMMIN_TO_ML_PER_INTERVAL  (float)0.00775
 // intervallo di tempo in msec per cui devo vedere la temperatura di ricircolo raggiunta prima di chiudere lo stato
 // e passare  all trattamento
-#define TIMEOUT_TEMPERATURE_RICIRC 60000 //2000L passo da 2 seocndi a 60 secondi
+
 
 /*
  *  * -----------------CON SPEZZONI POMPA DEL DISPOSABLE ORIGINALI
@@ -1629,7 +1629,7 @@ Kd = Kp*Pu/8  = 0.01875
 // velocita' con cui faccio partire, per ora, la pompa di ossigenazione e perfusione venosa nel caso di priming
 #define LIVER_PRIMING_PMP_OXYG_SPEED 6000//2000 only for test
 // definisce il valore massimo di giri che possono raggiungere le pompe di ossigenazione
-#define MAX_OXYG_RPM  105
+#define MAX_OXYG_RPM  120//105
 // numero di giri della pompa arteriosa durante lo scarico
 #define KIDNEY_EMPTY_PPAR_SPEED 2000
 // numero di giri della pompa di ossigenazione durante lo scarico
@@ -1637,7 +1637,7 @@ Kd = Kp*Pu/8  = 0.01875
 // tempo in ticks da 50 msec che mantengo le pompe venose ad arteriosa attive dopo il rilevamento dell'aria
 #define EMPTY_TIME_PUMPS_ON_AFTER_AIR 200
 // definisce il valore massimo di giri che puo raggiungere la pompa arteriosa
-#define MAX_ART_RPM  70
+#define MAX_ART_RPM  85//70
 
 
 // velocita' con cui faccio partire, per ora, la pompa per l'espulsione dell'aria
@@ -1818,6 +1818,8 @@ typedef struct
 	unsigned int EnableStopButton			: 1;	// abilita la gestione dell'allarme del pulsante di stop
 	// Filippo - inserito il flag di abilitazione dell'allarme T1 test
 	unsigned int EnableT1TestAlarm			: 1;	// abilita la gestione dell'allarme nel T1 test
+	unsigned int EnableHooksReservoir       : 1;    // abilitazione allarme ganci reservoir
+	unsigned int EnableMachineCovers        : 1;    // abilitazione allarme sportelli macchina
 }FLAGS_DEF;
 
 typedef union

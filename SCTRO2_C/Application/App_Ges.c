@@ -7,7 +7,7 @@
 
 #include "PE_Types.h"
 #include "Global.h"
-#include "PANIC_BUTTON_INPUT.h"
+//#include "PANIC_BUTTON_INPUT.h"
 #include "ModBusCommProt.h"
 #include "App_Ges.h"
 #include "Peltier_Module.h"
@@ -70,6 +70,7 @@
 #include "AIR_T_2.h"
 #include "AIR_T_3.h"
 #include "AIR_SENSOR.h"
+#include "EMERGENCY_BUTTON.h"
 
 
 bool IsPinchPosOk(unsigned char *pArrPinchPos);
@@ -1582,7 +1583,7 @@ unsigned char TemperatureStateMach(int cmd)
 			break;
 
 		case TEMP_START_CHECK_STATE:
-			if((tmpr >= (float)(tmpr_trgt - 10)) && (tmpr <= (float)(tmpr_trgt + 10)))
+			if((tmpr >= (float)(tmpr_trgt - DELTA_TEMP_TERGET_FOR_STABILITY_PRIMING)) && (tmpr <= (float)(tmpr_trgt + DELTA_TEMP_TERGET_FOR_STABILITY_PRIMING)))
 			{
 				// ho raggiunto la temperatura target
 				TempStateMach = TEMP_CHECK_DURATION_STATE;
@@ -1590,14 +1591,12 @@ unsigned char TemperatureStateMach(int cmd)
 			}
 			break;
 		case TEMP_CHECK_DURATION_STATE:
-			if((tmpr >= (float)(tmpr_trgt - 10)) && (tmpr <= (float)(tmpr_trgt + 10)))
-			/*temperatura all'interno del range di 0.4 °C e non + di 1 °C*/
-			//if((tmpr >= (float)(tmpr_trgt - 4)) && (tmpr <= (float)(tmpr_trgt + 4)))
+			if((tmpr >= (float)(tmpr_trgt - DELTA_TEMP_TERGET_FOR_STABILITY_PRIMING)) && (tmpr <= (float)(tmpr_trgt + DELTA_TEMP_TERGET_FOR_STABILITY_PRIMING)))
 			{
 				// ho raggiunto la temperatura target
 				if(msTick_elapsed(RicircTimeout) * 50L >= TIMEOUT_TEMPERATURE_RICIRC)
 				{
-					// per almeno 2 secondi la temperatura si e' mantenuta nell'intorno del target,
+					// per almeno TIMEOUT_TEMPERATURE_RICIRC/1000 secondi la temperatura si e' mantenuta nell'intorno del target,
 					// posso uscire dalla fase di ricircolo
 					TempReached = 1;
 					TempStateMach = TEMP_ABANDONE_STATE;
@@ -4646,7 +4645,7 @@ void processMachineState(void)
 	}
 
 	// Filippo - se arriva il comando di spegnimento del PC mi metto in idle a prescindere
-	if (PANIC_BUTTON_ACTIVATION_PC)
+	if (EMERGENCY_BUTTON_ACTIVATION_PC)
 	{
 		if (ptrCurrentState->state!=STATE_IDLE)
 		{
@@ -5690,52 +5689,52 @@ void Set_Data_EEPROM_Default(void)
 
 }
 
-/*funzione che gestione il Panic Button
- * se viene premuto per almeno TIMER_PANIC_BUTTON * 50 msec,
- * impostiamo PANIC_BUTTON_ACTIVATION = TRUE. Negli allarmi
- * gestiremo PANIC_BUTTON_ACTIVATION e sempre negli allarmi,
+/*funzione che gestione il Button Emergency
+ * se viene premuto per almeno TIMER_EMERGENCY_BUTTON * 50 msec,
+ * impostiamo EMERGENCY_BUTTON_ACTIVATION = TRUE. Negli allarmi
+ * gestiremo EMERGENCY_BUTTON_ACTIVATION e sempre negli allarmi,
  * se dovesse arrivare un reset dopo l'attivazione, metteremo
- * PANIC_BUTTON_ACTIVATION = FALSE.
- * PANIC_BUTTON_OUTPUT viene posto alto e PANIC_BUTTON_INPUT in pull down
+ * EMERGENCY_BUTTON_ACTIVATION = FALSE.
+ * EMERGENCY_BUTTON_OUTPUT viene posto alto e EMERGENCY_BUTTON_INPUT in pull down
  * la pressione del bottone mette in corto i due pin quindi anche l'input sarà alto*/
-void Manage_Panic_Button(void)
+void Manage_Emergency_Button(void)
 {
-	static unsigned char Status_Panic_Button = 0;
+	static unsigned char Status_Emergency_Button = 0;
 	static unsigned long timer_button = 0;
 
-	switch (Status_Panic_Button)
+	switch (Status_Emergency_Button)
 	{
 		case 0:
-			if (PANIC_BUTTON_INPUT_GetVal() )
+			if (!EMERGENCY_BUTTON_GetVal() )
 			{
 				timer_button = timerCounterModBus;
-				Status_Panic_Button = 1;
+				Status_Emergency_Button = 1;
 			}
 
 			break;
 
 		case 1:
-			if (!PANIC_BUTTON_INPUT_GetVal())
+			if (EMERGENCY_BUTTON_GetVal())
 			{
 				// Filippo - inserita la gestione dell'attivazione dell'allarme e dello spegnimento del PC
-				if ((msTick_elapsed(timer_button)>=TIMER_PANIC_BUTTON_ALARM) && (msTick_elapsed(timer_button)<TIMER_PANIC_BUTTON) && (!PANIC_BUTTON_ACTIVATION))
+				if ((msTick_elapsed(timer_button)>=TIMER_EMERGENCY_BUTTON_ALARM) && (msTick_elapsed(timer_button)<TIMER_EMERGENCY_BUTTON) && (!EMERGENCY_BUTTON_ACTIVATION))
 				{
-					PANIC_BUTTON_ACTIVATION=TRUE;
-					Status_Panic_Button = 0;
+					EMERGENCY_BUTTON_ACTIVATION=TRUE;
+					Status_Emergency_Button = 0;
 				}
 				else
 				{
-					Status_Panic_Button = 0;
-					PANIC_BUTTON_ACTIVATION_PC = FALSE;
+					Status_Emergency_Button = 0;
+					EMERGENCY_BUTTON_ACTIVATION_PC = FALSE;
 					timer_button = timerCounterModBus;
 				}
 			}
-			else if (msTick_elapsed(timer_button) >= TIMER_PANIC_BUTTON)
-				PANIC_BUTTON_ACTIVATION_PC = TRUE;
+			else if (msTick_elapsed(timer_button) >= TIMER_EMERGENCY_BUTTON)
+				EMERGENCY_BUTTON_ACTIVATION_PC = TRUE;
 			break;
 
 		default:
-			Status_Panic_Button = 0;
+			Status_Emergency_Button = 0;
 			break;
 	}
 }
@@ -6366,7 +6365,8 @@ void verificaTempPlate(void)
 	}
 }
 
-// Filippo - funzione per eseguire il test del sensore aria
+/*Vincenzo gestione T0 TEST*/
+// Filippo - funzione per eseguire il test del sensore aria T0 TEST
 void airSensorTest(void)
 {
 	unsigned int conta=0;
@@ -6378,8 +6378,8 @@ void airSensorTest(void)
 		if (Air_1_Status == LIQUID)
 		{
 			// il test lo faccio se all'inizio c'è del liquido
-			AIR_T_1_SetVal();
-			AIR_T_2_SetVal();
+		//	AIR_T_1_SetVal(); 	// not connected
+		//	AIR_T_2_SetVal(); 	//not connected
 			AIR_T_3_SetVal();
 
 			while ((!AIR_SENSOR_GetVal()) && (conta<30000))
