@@ -72,6 +72,7 @@
 #include "AIR_SENSOR.h"
 #include "EMERGENCY_BUTTON.h"
 
+#include "Adc_Ges.h"
 
 bool IsPinchPosOk(unsigned char *pArrPinchPos);
 
@@ -6369,28 +6370,43 @@ void verificaTempPlate(void)
 // Filippo - funzione per eseguire il test del sensore aria T0 TEST
 void airSensorTest(void)
 {
-	unsigned int conta=0;
+	unsigned int conta=0;//, conta_debug = 0;
 
 	if (timerCounterTestAirSensor>=200)
 	{
+		char status = 0xFF;
+
 		// il test lo faccio ogni 10 secondi
 		timerCounterTestAirSensor=0;
 		if (Air_1_Status == LIQUID)
 		{
 			// il test lo faccio se all'inizio c'è del liquido
-		//	AIR_T_1_SetVal(); 	// not connected
-		//	AIR_T_2_SetVal(); 	//not connected
+			//AIR_T_1_SetVal(); 	// not connected
+			//AIR_T_2_SetVal(); 	//not connected
 			AIR_T_3_SetVal();
 
-			while ((!AIR_SENSOR_GetVal()) && (conta<30000))
+//			while ((!AIR_SENSOR_GetVal()) && (conta<30000))
+//			{
+//				status = AIR_SENSOR_GetVal();
+//				conta++;
+//			}
+
+			while (conta < 30000)
 			{
 				conta++;
+				if (AIR_SENSOR_GetVal())
+					break;//conta_debug++;
 			}
+
+			status = AIR_SENSOR_GetVal();
 
 			if (conta>=30000)
 			{
 				// non ritorna normale allarme!!!
 				airSensorTestKO=TRUE;
+			//	AIR_T_1_ClrVal();
+			//	AIR_T_2_ClrVal();
+				AIR_T_3_ClrVal();
 				return;
 			}
 			else
