@@ -1628,6 +1628,8 @@ Kd = Kp*Pu/8  = 0.01875
 #define LIVER_PPAR_SPEED 4000//2000 only for test
 // velocita' con cui faccio partire, per ora, la pompa di ossigenazione e perfusione venosa nel caso di priming
 #define LIVER_PRIMING_PMP_OXYG_SPEED 6000//2000 only for test
+// velocita' con cui faccio partire, per ora, la pompa di ossigenazione nel caso di priming
+#define KIDNEY_PRIMING_PMP_OXYG_SPEED 6000//2000 only for test
 // definisce il valore massimo di giri che possono raggiungere le pompe di ossigenazione
 #define MAX_OXYG_RPM  120//105
 // numero di giri della pompa arteriosa durante lo scarico
