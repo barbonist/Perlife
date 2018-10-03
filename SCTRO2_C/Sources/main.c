@@ -43,14 +43,19 @@
 #include "EN_24_M_C.h"
 #include "BitIoLdd8.h"
 #include "EMERGENCY_BUTTON.h"
+
 #include "BitIoLdd9.h"
 #include "FRONTAL_COVER_1.h"
+
 #include "BitIoLdd10.h"
 #include "FRONTAL_COVER_2.h"
+
 #include "BitIoLdd12.h"
 #include "HOOK_SENSOR_1.h"
+
 #include "BitIoLdd11.h"
 #include "HOOK_SENSOR_2.h"
+
 #include "BitIoLdd13.h"
 #include "PC_DEBUG_COMM.h"
 #include "ASerialLdd2.h"
@@ -87,6 +92,7 @@
 #include "IntI2cLdd1.h"
 #include "TU1.h"
 #include "PANIC_BUTTON_INPUT.h"
+
 //#include "PANIC_BUTTON_INPUT.h"
 #include "BitIoLdd1.h"
 #include "PANIC_BUTTON_OUTPUT.h"
@@ -179,6 +185,7 @@
 #include "SevenSeg.h"
 #include "ControlProtectiveInterface_C.h"
 
+extern uint8_t AlarmCheckFlag;
 extern bool EnableHeatingFromControl;
 extern bool EnableFrigoFromPlate;
 extern bool EnableFrigoFromControl;
@@ -533,7 +540,7 @@ int main(void)
   timerCounterADC1 = 0;
 
 
-  // al reset metto tutti i rami delle pich chiusi
+  // al reset metto tutti i rami delle pinch chiusi
   setPinchPosValue (PINCH_2WPVF, MODBUS_PINCH_POS_CLOSED);
   while (timerCounterCheckModBus < 1);
   timerCounterCheckModBus = 0;
@@ -580,6 +587,8 @@ int main(void)
    TempLiquidoDecimi = 250;
 #endif
 
+   AlarmCheckFlag = 0;
+
 
   /**********MAIN LOOP START************/
   for(;;) {
@@ -625,7 +634,7 @@ int main(void)
 	        	processMachineState();
 
 	        	alarmEngineAlways();
-	        	//warningsEngineAlways();
+	        	warningsEngineAlways();
 		        GenerateSBCComm();
 		        ProtectiveTask();
 		        // Filippo - devo verificare che le temperature piatto lette dalla control e dalla protective siano le stesse

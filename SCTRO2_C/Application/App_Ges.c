@@ -7,7 +7,7 @@
 
 #include "PE_Types.h"
 #include "Global.h"
-//#include "PANIC_BUTTON_INPUT.h"
+#include "PANIC_BUTTON_INPUT.h"
 #include "ModBusCommProt.h"
 #include "App_Ges.h"
 #include "Peltier_Module.h"
@@ -32,12 +32,13 @@
 #include "D_7S_E.h"
 #include "D_7S_F.h"
 #include "D_7S_G.h"
-
-#include "EMERGENCY_BUTTON.h"
-#include "FRONTAL_COVER_1.h"
-#include "FRONTAL_COVER_2.h"
-#include "HOOK_SENSOR_1.h"
-#include "HOOK_SENSOR_2.h"
+/*
+#include "COVER_M1.h"
+#include "COVER_M2.h"
+#include "COVER_M3.h"
+#include "COVER_M4.h"
+#include "COVER_M5.h"
+*/
 
 #include "BUBBLE_KEYBOARD_BUTTON1.h"
 #include "BUBBLE_KEYBOARD_BUTTON2.h"
@@ -71,7 +72,10 @@
 #include "AIR_T_3.h"
 #include "AIR_SENSOR.h"
 #include "EMERGENCY_BUTTON.h"
-
+#include "FRONTAL_COVER_1.h"
+#include "FRONTAL_COVER_2.h"
+#include "HOOK_SENSOR_1.h"
+#include "HOOK_SENSOR_2.h"
 #include "Adc_Ges.h"
 
 bool IsPinchPosOk(unsigned char *pArrPinchPos);
@@ -86,8 +90,7 @@ extern float pressSample2_Art;
 extern word MedForArteriousPid;
 extern word MedForVenousPid;
 
-
-extern float pressSample1;  // FM Questi due vanno inizializzati alla pressione corrente prima di far partire il pid
+extern float pressSample1; // FM Questi due vanno inizializzati alla pressione corrente prima di far partire il pid
 extern float pressSample2;
 extern unsigned char PidFirstTime[];
 
@@ -150,8 +153,8 @@ void CallInIdleState(void)
 	SetTherapyType(Undef);
 	parameterWordSetFromGUI[PAR_SET_PRIMING_VOL_PERFUSION].value = 0;
 	parameterWordSetFromGUI[PAR_SET_PRIMING_TEMPERATURE_PERFUSION].value = 0;
-	parameterWordSetFromGUI[PAR_SET_OXYGENATOR_ACTIVE].value = NOT_DEF;     // undef
-	parameterWordSetFromGUI[PAR_SET_DEPURATION_ACTIVE].value = NOT_DEF;     // undef
+	parameterWordSetFromGUI[PAR_SET_OXYGENATOR_ACTIVE].value = NOT_DEF; // undef
+	parameterWordSetFromGUI[PAR_SET_DEPURATION_ACTIVE].value = NOT_DEF; // undef
 
 	// questi parametri non li reinizializzo di nuovo
 //	parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value = 1000;
@@ -233,11 +236,6 @@ void CallInIdleState(void)
   	FrigoHeatTempControlTaskNewPID((LIQ_TEMP_CONTR_TASK_CMD)LIQ_T_CONTR_TASK_RESET_CMD);
 
 }
-
-
-
-
-
 
 /********************************/
 /* general purpose function     */
@@ -354,7 +352,6 @@ void manageStateMountDisp(void)
 {
 	//releaseGUIButton(BUTTON_CONFIRM);
 }
-
 
 void HandlePinch( int cmd)
 {
@@ -1054,7 +1051,8 @@ void initT1Test(void){
 }
 
 
-void manageParentChkConfig(void){
+void manageParentChkConfig(void)
+{
 	//leggo dati da eeprom
 	DebugStringStr("manage chk config");
 	EEPROM_Read(START_ADDRESS_EEPROM, (EEPROM_TDataAddress)&config_data, sizeof(config_data));
@@ -1172,7 +1170,8 @@ void manageParenT1PinchInit(void){
 	timerCounterT1Test = 0;
 }
 
-void manageParenT1Pinch(void){
+void manageParenT1Pinch(void)
+{
 	switch(t1Test_pinch_state)
 	{
 	case 0: //idle
@@ -1529,98 +1528,96 @@ unsigned char TemperatureStateMach(int cmd)
 			}
 			break;
 
-		case START_RECIRC_HIGH_SPEED:
-			RicircTimeout = timerCounterModBus;
-			setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, (int)RECIRC_PUMP_HIGH_SPEED);
-			if((GetTherapyType() == KidneyTreat) &&
-			   (((PARAMETER_ACTIVE_TYPE)parameterWordSetFromGUI[PAR_SET_OXYGENATOR_ACTIVE].value) == YES))
+	case START_RECIRC_HIGH_SPEED:
+		RicircTimeout = timerCounterModBus;
+		setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress,(int)RECIRC_PUMP_HIGH_SPEED);
+		if((GetTherapyType() == KidneyTreat) && (((PARAMETER_ACTIVE_TYPE)parameterWordSetFromGUI[PAR_SET_OXYGENATOR_ACTIVE].value) == YES))
+		{
+			// sono nel ricircolo rene con ossigenatore abilitato
+			setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, (int)RECIRC_PUMP_HIGH_SPEED);
+		}
+		else if((GetTherapyType() == LiverTreat))
+		{
+			// sono nel priming fegato
+			setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, (int)RECIRC_PUMP_HIGH_SPEED_ART);
+			setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, (int)RECIRC_PUMP_HIGH_SPEED);
+		}
+		TempStateMach = CALC_PUMPS_GAIN;
+		ArteriousPumpGainForPid = DEFAULT_ART_PUMP_GAIN;
+		VenousPumpGainForPid = DEFAULT_VEN_PUMP_GAIN;
+		break;
+	case CALC_PUMPS_GAIN:
+		if((msTick_elapsed(RicircTimeout) * 50L) >= (HIGH_PUMP_SPEED_DURATION - 3000))
+		{
+			// 3 secondi prima della fine del ricircolo calcolo il guadagno delle pompe e le memorizzo
+			ArteriousPumpGainForPid = CalcArtPumpGain(sensor_UFLOW[0].Average_Flow_Val);
+			VenousPumpGainForPid = CalcVenPumpGain(sensor_UFLOW[1].Average_Flow_Val);
+			TempStateMach = STOP_RECIRC_HIGH_SPEED;
+		}
+		break;
+	case STOP_RECIRC_HIGH_SPEED:
+		if((msTick_elapsed(RicircTimeout) * 50L) >= HIGH_PUMP_SPEED_DURATION)
+		{
+			// ho raggiunto il tempo di ricircolo ad alta velocita' per eliminare l'aria eventuale
+			// proseguo con il controllo della temperatura
+			TempStateMach = TEMP_START_CHECK_STATE;
+
+			// ripristino le velocita' di priming normali
+			setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, RPM_IN_PRIMING_PHASES);
+			if((GetTherapyType() == KidneyTreat) && (((PARAMETER_ACTIVE_TYPE)parameterWordSetFromGUI[PAR_SET_OXYGENATOR_ACTIVE].value) == YES))
 			{
 				// sono nel ricircolo rene con ossigenatore abilitato
-				setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, (int)RECIRC_PUMP_HIGH_SPEED);
+				setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress,
+							                 (int)((float)parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value / OXYG_FLOW_TO_RPM_CONV * 100.0));
 			}
-			else if((GetTherapyType() == LiverTreat))
+			else if(GetTherapyType() == LiverTreat)
 			{
-				// sono nel priming fegato
-				setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, (int)RECIRC_PUMP_HIGH_SPEED_ART);
-				setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, (int)RECIRC_PUMP_HIGH_SPEED);
+				// sono nel priming fegato ed ho superato una quantita' minima nel reservoir, quindi, la pompa venosa
+				// per il riempimento del disposable di ossigenazione e la pompa di depurazione PPAR
+				setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, (int)LIVER_PRIMING_PMP_OXYG_SPEED);
+				setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, LIVER_PPAR_SPEED);
 			}
-			TempStateMach = CALC_PUMPS_GAIN;
-			ArteriousPumpGainForPid = DEFAULT_ART_PUMP_GAIN;
-			VenousPumpGainForPid = DEFAULT_VEN_PUMP_GAIN;
-			break;
-		case CALC_PUMPS_GAIN:
-			if((msTick_elapsed(RicircTimeout) * 50L) >= (HIGH_PUMP_SPEED_DURATION - 3000))
-			{
-				// 3 secondi prima della fine del ricircolo calcolo il guadagno delle pompe e le memorizzo
-				ArteriousPumpGainForPid = CalcArtPumpGain(sensor_UFLOW[0].Average_Flow_Val);
-				VenousPumpGainForPid = CalcVenPumpGain(sensor_UFLOW[1].Average_Flow_Val);
-				TempStateMach = STOP_RECIRC_HIGH_SPEED;
-			}
-			break;
-		case STOP_RECIRC_HIGH_SPEED:
-			if((msTick_elapsed(RicircTimeout) * 50L) >= HIGH_PUMP_SPEED_DURATION)
-			{
-				// ho raggiunto il tempo di ricircolo ad alta velocita' per eliminare l'aria eventuale
-				// proseguo con il controllo della temperatura
-				TempStateMach = TEMP_START_CHECK_STATE;
+		}
+		break;
 
-				// ripristino le velocita' di priming normali
-				setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, RPM_IN_PRIMING_PHASES);
-				if((GetTherapyType() == KidneyTreat) &&
-				   (((PARAMETER_ACTIVE_TYPE)parameterWordSetFromGUI[PAR_SET_OXYGENATOR_ACTIVE].value) == YES))
-				{
-					// sono nel ricircolo rene con ossigenatore abilitato
-					setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress,
-							                  (int)((float)parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value / OXYG_FLOW_TO_RPM_CONV * 100.0));
-				}
-				else if(GetTherapyType() == LiverTreat)
-				{
-					// sono nel priming fegato ed ho superato una quantita' minima nel reservoir, quindi, la pompa venosa
-					// per il riempimento del disposable di ossigenazione e la pompa di depurazione PPAR
-					setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, (int)LIVER_PRIMING_PMP_OXYG_SPEED);
-					setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, LIVER_PPAR_SPEED);
-				}
-			}
-			break;
-
-		case TEMP_START_CHECK_STATE:
-			if((tmpr >= (float)(tmpr_trgt - DELTA_TEMP_TERGET_FOR_STABILITY_PRIMING)) && (tmpr <= (float)(tmpr_trgt + DELTA_TEMP_TERGET_FOR_STABILITY_PRIMING)))
+	case TEMP_START_CHECK_STATE:
+		if((tmpr >= (float)(tmpr_trgt - DELTA_TEMP_TERGET_FOR_STABILITY_PRIMING)) && (tmpr <= (float)(tmpr_trgt + DELTA_TEMP_TERGET_FOR_STABILITY_PRIMING)))
+		{
+			// ho raggiunto la temperatura target
+			TempStateMach = TEMP_CHECK_DURATION_STATE;
+			RicircTimeout = timerCounterModBus;
+		}
+		break;
+	case TEMP_CHECK_DURATION_STATE:
+		if((tmpr >= (float)(tmpr_trgt - DELTA_TEMP_TERGET_FOR_STABILITY_PRIMING)) && (tmpr <= (float)(tmpr_trgt + DELTA_TEMP_TERGET_FOR_STABILITY_PRIMING)))
+		{
+			// ho raggiunto la temperatura target
+			if(msTick_elapsed(RicircTimeout) * 50L >= TIMEOUT_TEMPERATURE_RICIRC)
 			{
-				// ho raggiunto la temperatura target
-				TempStateMach = TEMP_CHECK_DURATION_STATE;
-				RicircTimeout = timerCounterModBus;
+				// per almeno TIMEOUT_TEMPERATURE_RICIRC/1000 secondi la temperatura si e' mantenuta nell'intorno del target,
+				// posso uscire dalla fase di ricircolo
+				TempReached = 1;
+				TempStateMach = TEMP_ABANDONE_STATE;
 			}
-			break;
-		case TEMP_CHECK_DURATION_STATE:
-			if((tmpr >= (float)(tmpr_trgt - DELTA_TEMP_TERGET_FOR_STABILITY_PRIMING)) && (tmpr <= (float)(tmpr_trgt + DELTA_TEMP_TERGET_FOR_STABILITY_PRIMING)))
-			{
-				// ho raggiunto la temperatura target
-				if(msTick_elapsed(RicircTimeout) * 50L >= TIMEOUT_TEMPERATURE_RICIRC)
-				{
-					// per almeno TIMEOUT_TEMPERATURE_RICIRC/1000 secondi la temperatura si e' mantenuta nell'intorno del target,
-					// posso uscire dalla fase di ricircolo
-					TempReached = 1;
-					TempStateMach = TEMP_ABANDONE_STATE;
-				}
-			}
-			else
-			{
-				TempStateMach = TEMP_START_CHECK_STATE;
-			}
-			break;
-		case TEMP_ABANDONE_STATE:
-			// ho ricevuto il comando di abbandonare e tornare in idle
+		}
+		else
+		{
+			TempStateMach = TEMP_START_CHECK_STATE;
+		}
+		break;
+	case TEMP_ABANDONE_STATE:
+		// ho ricevuto il comando di abbandonare e tornare in idle
 
-			// il priming e' terminato blocco il conteggio del timer
-			TotalPrimingDuration += PrimingDuration;
-			PrimingDuration = 0;
-			// faccio in modo che il conteggio riprenda al prossimo button_start_priming
-			StartPrimingTime = 0;
+		// il priming e' terminato blocco il conteggio del timer
+		TotalPrimingDuration += PrimingDuration;
+		PrimingDuration = 0;
+		// faccio in modo che il conteggio riprenda al prossimo button_start_priming
+		StartPrimingTime = 0;
 
-			// si chiude la fase di priming per entrare in quella di trattamento, disabilito il controllo
-			// delle pinch fatte in priming
-			CheckCurrPinchPosTask(CHECK_CURR_PINCH_POS_DISABLE_CMD);
-			break;
+		// si chiude la fase di priming per entrare in quella di trattamento, disabilito il controllo
+		// delle pinch fatte in priming
+		CheckCurrPinchPosTask(CHECK_CURR_PINCH_POS_DISABLE_CMD);
+		break;
 	}
 	return TempReached;
 }
@@ -1673,6 +1670,11 @@ void manageParentPrimingAlways(void){
 	case PARENT_PRIMING_TREAT_KIDNEY_1_INIT:
 		if(buttonGUITreatment[BUTTON_START_PRIMING].state == GUI_BUTTON_RELEASED)
 		{
+			// Filippo - aggiunto da file FM nel merge 1-10-2018
+			//al rientro dell'allarme, se in allarme era stato spento il frigo, lo riaccendo
+			if (IsFrigoStoppedInAlarm())
+				FrigoHeatTempControlTaskNewPID(LIQ_T_CONTR_TASK_RESET_CMD);
+
 			setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, RPM_IN_PRIMING_PHASES);
 			if((GetTherapyType() == KidneyTreat) && (((PARAMETER_ACTIVE_TYPE)parameterWordSetFromGUI[PAR_SET_OXYGENATOR_ACTIVE].value) == YES) &&
 				(perfusionParam.priVolPerfArt > MIN_LIQ_IN_RES_TO_START_OXY_VEN))
@@ -1878,191 +1880,174 @@ void manageParentPrimingAlways(void){
 		break;
 
 	case PARENT_PRIMING_TREAT_KIDNEY_1_RUN:
-			if(buttonGUITreatment[BUTTON_START_PRIMING].state == GUI_BUTTON_RELEASED)
-			{
-				if(ptrCurrentState->state == STATE_PRIMING_RICIRCOLO)
-				{
-					SetPinchPosInPriming();
-					// sono nella fase di ricircolo e si e' verificato un allarme oppure l'utente ha
-					// fermato il processo con stop priming e poi e' ripartito
-					if(AlarmOrStopInRecircFlag)
-						AlarmOrStopInRecircFlag = FALSE;
-					TemperatureStateMach(RESTART_CMD);
-				}
-				else
-				{
-					setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, RPM_IN_PRIMING_PHASES);
-					//if(((PARAMETER_ACTIVE_TYPE)parameterWordSetFromGUI[PAR_SET_OXYGENATOR_ACTIVE].value) == YES)
-					//	setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, (int)((float)parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value / OXYG_FLOW_TO_RPM_CONV * 100.0));
-					if((GetTherapyType() == KidneyTreat) && (((PARAMETER_ACTIVE_TYPE)parameterWordSetFromGUI[PAR_SET_OXYGENATOR_ACTIVE].value) == YES) &&
-						(perfusionParam.priVolPerfArt > MIN_LIQ_IN_RES_TO_START_OXY_VEN))
-					{
-						// sono nel priming rene con ossigenatore abilitato ed ho superato una quantita' minima nel reservoir
-						setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress,
-												  (int)((float)parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value / OXYG_FLOW_TO_RPM_CONV * 100.0));
-					}
-					else if((GetTherapyType() == LiverTreat) && (perfusionParam.priVolPerfArt > MIN_LIQ_IN_RES_TO_START_OXY_VEN))
-					{
-						// sono nel priming fegato ed ho superato una quantita' minima nel reservoir, quindi, la pompa venosa
-						// per il riempimento del disposable di ossigenazione e la pompa di depurazione PPAR
-						setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, (int)LIVER_PRIMING_PMP_OXYG_SPEED);
-						setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, LIVER_PPAR_SPEED);
-					}
-				}
+		if(buttonGUITreatment[BUTTON_START_PRIMING].state == GUI_BUTTON_RELEASED)
+		{
+			// Filippo - messa nel merge del 1-10-2018
+			//al rientro dell'allarme, se in allarme era stato spento il frigo, lo riaccendo
+			if (IsFrigoStoppedInAlarm())
+				FrigoHeatTempControlTaskNewPID(LIQ_T_CONTR_TASK_RESET_CMD);
 
+			if(ptrCurrentState->state == STATE_PRIMING_RICIRCOLO)
+			{
 				SetPinchPosInPriming();
-				// QUESTO CODICE E' STATO SPOSTATO NELLA FUNZIONE SetPinchPosInPriming
-//				if(!FilterSelected)
-//					setPinchPositionHighLevel(PINCH_2WPVF, MODBUS_PINCH_LEFT_OPEN);
-//				else
-//					setPinchPositionHighLevel(PINCH_2WPVF, MODBUS_PINCH_RIGHT_OPEN);
-//				setPinchPositionHighLevel(PINCH_2WPVA, PRIM_PINCH_2WPVA_POS);
-//				if(GetTherapyType() == LiverTreat)
-//				{
-//					// ho selezionato il fegato, quindi devo riempire anche il circuito venoso
-//					setPinchPositionHighLevel(PINCH_2WPVV, PRIM_PINCH_2WPVV_POS);
-//				}
-
-				releaseGUIButton(BUTTON_START_PRIMING);
-				if(!StartPrimingTime)
-				{
-					// prendo il tempo di start del priming solo se il valore vale 0, cioe' sono partito da IDLE
-					StartPrimingTime = (unsigned long)timerCounterModBus;
-				}
-				else
-				{
-					// Filippo - inserito nel merge
-					//al rientro dell'allarme, se in allarme era stato spento il frigo, lo riaccendo
-	//				if (IsFrigoStoppedInAlarm())
-						FrigoHeatTempControlTaskNewPID(LIQ_T_CONTR_TASK_RESET_CMD);
-				}
-
-				// inizializzo il controllo delle pinch fatto durante l'esecuzione del trattamento
-				CheckCurrPinchPosTask(CHECK_CURR_PINCH_POS_INIT_CMD);
-				// abilito allarme di pinch posizionate male
-				EnableBadPinchPosAlmFunc();
+				// sono nella fase di ricircolo e si e' verificato un allarme oppure l'utente ha
+				// fermato il processo con stop priming e poi e' ripartito
+				if(AlarmOrStopInRecircFlag)
+					AlarmOrStopInRecircFlag = FALSE;
+				TemperatureStateMach(RESTART_CMD);
 			}
-			else if(buttonGUITreatment[BUTTON_START_PERF_PUMP].state == GUI_BUTTON_RELEASED)
+			else
 			{
-				releaseGUIButton(BUTTON_START_PERF_PUMP);
-
 				setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, RPM_IN_PRIMING_PHASES);
-
-				SetPinchPosInPriming();
-				// QUESTO CODICE E' STATO SPOSTATO NELLA FUNZIONE SetPinchPosInPriming
-//				if(!FilterSelected)
-//					setPinchPositionHighLevel(PINCH_2WPVF, MODBUS_PINCH_LEFT_OPEN);
-//				else
-//					setPinchPositionHighLevel(PINCH_2WPVF, MODBUS_PINCH_RIGHT_OPEN);
-//				setPinchPositionHighLevel(PINCH_2WPVA, PRIM_PINCH_2WPVA_POS);
-//				if(GetTherapyType() == LiverTreat)
-//				{
-//					// ho selezionato il fegato, quindi devo riempire anche il circuito venoso
-//					setPinchPositionHighLevel(PINCH_2WPVV, PRIM_PINCH_2WPVV_POS);
-//				}
-			}
-			else if(buttonGUITreatment[BUTTON_START_OXYGEN_PUMP].state == GUI_BUTTON_RELEASED)
-			{
-				releaseGUIButton(BUTTON_START_OXYGEN_PUMP);
-				//setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, (int)((float)parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value / OXYG_FLOW_TO_RPM_CONV * 100.0));
+				//if(((PARAMETER_ACTIVE_TYPE)parameterWordSetFromGUI[PAR_SET_OXYGENATOR_ACTIVE].value) == YES)
+				//	setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, (int)((float)parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value / OXYG_FLOW_TO_RPM_CONV * 100.0));
 				if((GetTherapyType() == KidneyTreat) && (((PARAMETER_ACTIVE_TYPE)parameterWordSetFromGUI[PAR_SET_OXYGENATOR_ACTIVE].value) == YES) &&
 					(perfusionParam.priVolPerfArt > MIN_LIQ_IN_RES_TO_START_OXY_VEN))
 				{
 					// sono nel priming rene con ossigenatore abilitato ed ho superato una quantita' minima nel reservoir
 					setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress,
-							                  (int)((float)parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value / OXYG_FLOW_TO_RPM_CONV * 100.0));
+									(int)((float)parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value / OXYG_FLOW_TO_RPM_CONV * 100.0));
 				}
 				else if((GetTherapyType() == LiverTreat) && (perfusionParam.priVolPerfArt > MIN_LIQ_IN_RES_TO_START_OXY_VEN))
 				{
 					// sono nel priming fegato ed ho superato una quantita' minima nel reservoir, quindi, la pompa venosa
 					// per il riempimento del disposable di ossigenazione e la pompa di depurazione PPAR
 					setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, (int)LIVER_PRIMING_PMP_OXYG_SPEED);
+					setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, LIVER_PPAR_SPEED);
 				}
+			}
 
-			}
-			else if(buttonGUITreatment[BUTTON_STOP_ALL_PUMP].state == GUI_BUTTON_RELEASED)
-			{
-				setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
-				setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 0);
-				if(GetTherapyType() == LiverTreat)
-				{
-					// se sono nel trattamento fegato fermo anche l'altro motore !!
-					setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, 0);
-				}
-				releaseGUIButton(BUTTON_STOP_ALL_PUMP);
-			}
-			else if(buttonGUITreatment[BUTTON_STOP_PERF_PUMP].state == GUI_BUTTON_RELEASED)
-			{
-				releaseGUIButton(BUTTON_STOP_PERF_PUMP);
+			SetPinchPosInPriming();
+			// QUESTO CODICE E' STATO SPOSTATO NELLA FUNZIONE SetPinchPosInPriming
+//				if(!FilterSelected)
+//					setPinchPositionHighLevel(PINCH_2WPVF, MODBUS_PINCH_LEFT_OPEN);
+//				else
+//					setPinchPositionHighLevel(PINCH_2WPVF, MODBUS_PINCH_RIGHT_OPEN);
+//				setPinchPositionHighLevel(PINCH_2WPVA, PRIM_PINCH_2WPVA_POS);
+//				if(GetTherapyType() == LiverTreat)
+//				{
+//					// ho selezionato il fegato, quindi devo riempire anche il circuito venoso
+//					setPinchPositionHighLevel(PINCH_2WPVV, PRIM_PINCH_2WPVV_POS);
+//				}
 
-				setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
-				iflag_perf = 0;
-			}
-			else if(buttonGUITreatment[BUTTON_STOP_OXYGEN_PUMP].state == GUI_BUTTON_RELEASED)
+			releaseGUIButton(BUTTON_START_PRIMING);
+			if(!StartPrimingTime)
 			{
-				releaseGUIButton(BUTTON_STOP_OXYGEN_PUMP);
-
-				setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 0);
-				iflag_perf = 0;
+				// prendo il tempo di start del priming solo se il valore vale 0, cioe' sono partito da IDLE
+				StartPrimingTime = (unsigned long)timerCounterModBus;
 			}
-			else if(buttonGUITreatment[BUTTON_STOP_PRIMING].state == GUI_BUTTON_RELEASED)
+			else
 			{
-				setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
-				setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 0);
-				if(GetTherapyType() == LiverTreat)
-				{
-					// se sono nel trattamento fegato fermo anche l'altro motore !!
-					setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, 0);
-				}
-				releaseGUIButton(BUTTON_STOP_PRIMING);
-				TotalPrimingDuration += PrimingDuration;
-				PrimingDuration = 0;
-				// faccio in modo che il conteggio riprenda al prossimo button_start_priming
-				StartPrimingTime = 0;
-
-				currentGuard[GUARD_ENT_PAUSE_STATE_PRIM_KIDNEY_1].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
-				CheckPumpStopTask((CHECK_PUMP_STOP_CMD)INIT_CHECK_SEQ_CMD);
-				DebugStringStr("Stop prim.");
-				//FilterFlowVal = 0;
-				// Disabilto il controllo delle pinch fino a quando non parte il riciclo
-				CheckCurrPinchPosTask(CHECK_CURR_PINCH_POS_DISABLE_CMD);
-				// disabilito allarme di pinch posizionate male
-				DisableBadPinchPosAlmFunc();
+				// Filippo - inserito nel merge
+				//al rientro dell'allarme, se in allarme era stato spento il frigo, lo riaccendo
+				if (IsFrigoStoppedInAlarm())
+					FrigoHeatTempControlTaskNewPID(LIQ_T_CONTR_TASK_RESET_CMD);
 			}
+
+			// inizializzo il controllo delle pinch fatto durante l'esecuzione del trattamento
+			CheckCurrPinchPosTask(CHECK_CURR_PINCH_POS_INIT_CMD);
+			// abilito allarme di pinch posizionate male
+			EnableBadPinchPosAlmFunc();
+		}
+		else if(buttonGUITreatment[BUTTON_START_PERF_PUMP].state == GUI_BUTTON_RELEASED)
+		{
+			releaseGUIButton(BUTTON_START_PERF_PUMP);
+
+			setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, RPM_IN_PRIMING_PHASES);
+
+			SetPinchPosInPriming();
+			// QUESTO CODICE E' STATO SPOSTATO NELLA FUNZIONE SetPinchPosInPriming
+//				if(!FilterSelected)
+//					setPinchPositionHighLevel(PINCH_2WPVF, MODBUS_PINCH_LEFT_OPEN);
+//				else
+//					setPinchPositionHighLevel(PINCH_2WPVF, MODBUS_PINCH_RIGHT_OPEN);
+//				setPinchPositionHighLevel(PINCH_2WPVA, PRIM_PINCH_2WPVA_POS);
+//				if(GetTherapyType() == LiverTreat)
+//				{
+//					// ho selezionato il fegato, quindi devo riempire anche il circuito venoso
+//					setPinchPositionHighLevel(PINCH_2WPVV, PRIM_PINCH_2WPVV_POS);
+//				}
+		}
+		else if(buttonGUITreatment[BUTTON_START_OXYGEN_PUMP].state == GUI_BUTTON_RELEASED)
+		{
+			releaseGUIButton(BUTTON_START_OXYGEN_PUMP);
+			//setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, (int)((float)parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value / OXYG_FLOW_TO_RPM_CONV * 100.0));
+			if((GetTherapyType() == KidneyTreat) && (((PARAMETER_ACTIVE_TYPE)parameterWordSetFromGUI[PAR_SET_OXYGENATOR_ACTIVE].value) == YES) &&
+				(perfusionParam.priVolPerfArt > MIN_LIQ_IN_RES_TO_START_OXY_VEN))
+			{
+				// sono nel priming rene con ossigenatore abilitato ed ho superato una quantita' minima nel reservoir
+				setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress,
+							       (int)((float)parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value / OXYG_FLOW_TO_RPM_CONV * 100.0));
+			}
+			else if((GetTherapyType() == LiverTreat) && (perfusionParam.priVolPerfArt > MIN_LIQ_IN_RES_TO_START_OXY_VEN))
+			{
+				// sono nel priming fegato ed ho superato una quantita' minima nel reservoir, quindi, la pompa venosa
+				// per il riempimento del disposable di ossigenazione e la pompa di depurazione PPAR
+				setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, (int)LIVER_PRIMING_PMP_OXYG_SPEED);
+			}
+
+		}
+		else if(buttonGUITreatment[BUTTON_STOP_ALL_PUMP].state == GUI_BUTTON_RELEASED)
+		{
+			setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
+			setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 0);
+			if(GetTherapyType() == LiverTreat)
+			{
+				// se sono nel trattamento fegato fermo anche l'altro motore !!
+				setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, 0);
+			}
+			releaseGUIButton(BUTTON_STOP_ALL_PUMP);
+		}
+		else if(buttonGUITreatment[BUTTON_STOP_PERF_PUMP].state == GUI_BUTTON_RELEASED)
+		{
+			releaseGUIButton(BUTTON_STOP_PERF_PUMP);
+
+			setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
+			iflag_perf = 0;
+		}
+		else if(buttonGUITreatment[BUTTON_STOP_OXYGEN_PUMP].state == GUI_BUTTON_RELEASED)
+		{
+			releaseGUIButton(BUTTON_STOP_OXYGEN_PUMP);
+
+			setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 0);
+			iflag_perf = 0;
+		}
+		else if(buttonGUITreatment[BUTTON_STOP_PRIMING].state == GUI_BUTTON_RELEASED)
+		{
+			setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
+			setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 0);
+			if(GetTherapyType() == LiverTreat)
+			{
+				// se sono nel trattamento fegato fermo anche l'altro motore !!
+				setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, 0);
+			}
+			releaseGUIButton(BUTTON_STOP_PRIMING);
+			TotalPrimingDuration += PrimingDuration;
+			PrimingDuration = 0;
+			// faccio in modo che il conteggio riprenda al prossimo button_start_priming
+			StartPrimingTime = 0;
+
+			currentGuard[GUARD_ENT_PAUSE_STATE_PRIM_KIDNEY_1].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+			CheckPumpStopTask((CHECK_PUMP_STOP_CMD)INIT_CHECK_SEQ_CMD);
+			DebugStringStr("Stop prim.");
+			//FilterFlowVal = 0;
+			// Disabilto il controllo delle pinch fino a quando non parte il riciclo
+			CheckCurrPinchPosTask(CHECK_CURR_PINCH_POS_DISABLE_CMD);
+			// disabilito allarme di pinch posizionate male
+			DisableBadPinchPosAlmFunc();
+		}
 #ifdef DEBUG_WITH_SERVICE_SBC
-			else if((ptrCurrentState->state == STATE_PRIMING_PH_1) &&
-					((float)perfusionParam.priVolPerfArt >= ((float)GetTotalPrimingVolumePerf(0) * 50 / 100.0)))  // parameterWordSetFromGUI[PAR_SET_PRIMING_VOL_PERFUSION].value
+		else if((ptrCurrentState->state == STATE_PRIMING_PH_1) &&
+				((float)perfusionParam.priVolPerfArt >= ((float)GetTotalPrimingVolumePerf(0) * 50 / 100.0)))  // parameterWordSetFromGUI[PAR_SET_PRIMING_VOL_PERFUSION].value
 #else
-			// nel caso di debug considero il 50%
-			else if((ptrCurrentState->state == STATE_PRIMING_PH_1) &&
-					((float)perfusionParam.priVolPerfArt >= ((float)GetTotalPrimingVolumePerf(0) * PERC_OF_PRIM_FOR_FILTER / 100.0)))  // parameterWordSetFromGUI[PAR_SET_PRIMING_VOL_PERFUSION].value
+		// nel caso di debug considero il 50%
+		else if((ptrCurrentState->state == STATE_PRIMING_PH_1) &&
+				((float)perfusionParam.priVolPerfArt >= ((float)GetTotalPrimingVolumePerf(0) * PERC_OF_PRIM_FOR_FILTER / 100.0)))  // parameterWordSetFromGUI[PAR_SET_PRIMING_VOL_PERFUSION].value
 #endif
+		{
+			if(currentGuard[GUARD_ENABLE_STATE_PRIMING_PH_1_WAIT].guardEntryValue != GUARD_ENTRY_VALUE_TRUE)
 			{
-				if(currentGuard[GUARD_ENABLE_STATE_PRIMING_PH_1_WAIT].guardEntryValue != GUARD_ENTRY_VALUE_TRUE)
-				{
-					// ho raggiunto il 95% del volume, fermo le pompe ed aspetto il caricamento del filtro
-					setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
-					setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 0);
-					if(GetTherapyType() == LiverTreat)
-					{
-						// se sono nel trattamento fegato fermo anche l'altro motore !!
-						setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, 0);
-					}
-					// vengono fermate le pompe in attesa del montaggio del filtro poi il priming riprende
-					TotalPrimingDuration += PrimingDuration;
-					PrimingDuration = 0;
-					// faccio in modo che il conteggio riprenda al prossimo button_start_priming
-					StartPrimingTime = 0;
-				}
-				currentGuard[GUARD_ENABLE_STATE_PRIMING_PH_1_WAIT].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
-			}
-			else if((ptrCurrentState->state == STATE_PRIMING_PH_2) &&
-					(perfusionParam.priVolPerfArt >= GetTotalPrimingVolumePerf(0))) // parameterWordSetFromGUI[PAR_SET_PRIMING_VOL_PERFUSION].value
-			{
-				// aggiorno il totale del volume accumulato per gli eventuali priming successivi
-				GetTotalPrimingVolumePerf((int)NEW_PRIM_CMD_TOT_PRIM_VOL);
-
-				// ho raggiunto il volume complessivo, fermo le pompe ed aspetto
+				// ho raggiunto il 95% del volume, fermo le pompe ed aspetto il caricamento del filtro
 				setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
 				setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 0);
 				if(GetTherapyType() == LiverTreat)
@@ -2070,80 +2055,102 @@ void manageParentPrimingAlways(void){
 					// se sono nel trattamento fegato fermo anche l'altro motore !!
 					setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, 0);
 				}
-				// faccio andare lo stato principale nello stato di attesa di un nuovo volume
-				// o di un fine priming
-				currentGuard[GUARD_ENABLE_PRIMING_WAIT].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
-
-				// vengono fermate le pompe in attesa della partenza della fase di ricircolo
+				// vengono fermate le pompe in attesa del montaggio del filtro poi il priming riprende
 				TotalPrimingDuration += PrimingDuration;
 				PrimingDuration = 0;
 				// faccio in modo che il conteggio riprenda al prossimo button_start_priming
 				StartPrimingTime = 0;
-
-				// dato che sono in un cambi
-				ClearAlarmState();
-
-				// Disabilto il controllo delle pinch fino a quando non parte il riciclo
-				CheckCurrPinchPosTask(CHECK_CURR_PINCH_POS_DISABLE_CMD);
 			}
-			else if(ptrCurrentState->state == STATE_PRIMING_RICIRCOLO)
+			currentGuard[GUARD_ENABLE_STATE_PRIMING_PH_1_WAIT].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+		}
+		else if((ptrCurrentState->state == STATE_PRIMING_PH_2) &&
+				(perfusionParam.priVolPerfArt >= GetTotalPrimingVolumePerf(0))) // parameterWordSetFromGUI[PAR_SET_PRIMING_VOL_PERFUSION].value
+		{
+			// aggiorno il totale del volume accumulato per gli eventuali priming successivi
+			GetTotalPrimingVolumePerf((int)NEW_PRIM_CMD_TOT_PRIM_VOL);
+
+			// ho raggiunto il volume complessivo, fermo le pompe ed aspetto
+			setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
+			setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 0);
+			if(GetTherapyType() == LiverTreat)
 			{
-				if(TemperatureStateMach(0))
-				{
-					// ho raggiunto la temperatura ( + o - un grado)richiesta posso passare nello stato di
-					// attesa ricezione comando di start trattamento
-					// fermo le pompe ed aspetto
-
-					// debugVal le 7 linee di programma che seguono le devo commentare
-					// se voglio provare l'allarme delle pompe che non si fermano alla fine
-					// del ricircolo
-					// commento solo per debug. DA TOGLIERE !!!!
-					setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
-					setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 0);
-					if(GetTherapyType() == LiverTreat)
-					{
-						// se sono nel trattamento fegato fermo anche l'altro motore !!
-						setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, 0);
-					}
-
-					//currentGuard[GUARD_ENABLE_WAIT_TREATMENT].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
-					//StartTreatmentTime = (unsigned long)timerCounterModBus;
-
-					//currentGuard[GUARD_ENABLE_TREATMENT_KIDNEY_1].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
-					// SE NON VADO PIU' INTRATTAMENTO MA DEVO PRIMA CONTROLLARE CHE LE POMPE SIANO FERME E POI CHIUDERE
-					// LE PINCH
-					currentGuard[GUARD_CHK_FOR_ALL_MOT_STOP].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
-				}
-				else if(buttonGUITreatment[BUTTON_PRIMING_ABANDON].state == GUI_BUTTON_RELEASED)
-				{
-					releaseGUIButton(BUTTON_PRIMING_ABANDON);
-					setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
-					setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 0);
-					if(GetTherapyType() == LiverTreat)
-					{
-						// se sono nel trattamento fegato fermo anche l'altro motore !!
-						setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, 0);
-					}
-					//currentGuard[GUARD_ABANDON_PRIMING].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
-					SetAbandonGuard();
-					// sposto la macchina a stati in TEMP_ABANDONE_CMD per evitare problemi
-					TemperatureStateMach(TEMP_ABANDONE_CMD);
-				}
-
+				// se sono nel trattamento fegato fermo anche l'altro motore !!
+				setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, 0);
 			}
+			// faccio andare lo stato principale nello stato di attesa di un nuovo volume
+			// o di un fine priming
+			currentGuard[GUARD_ENABLE_PRIMING_WAIT].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+
+			// vengono fermate le pompe in attesa della partenza della fase di ricircolo
+			TotalPrimingDuration += PrimingDuration;
+			PrimingDuration = 0;
+			// faccio in modo che il conteggio riprenda al prossimo button_start_priming
+			StartPrimingTime = 0;
+
+			// dato che sono in un cambi
+			ClearAlarmState();
+
+			// Disabilto il controllo delle pinch fino a quando non parte il riciclo
+			CheckCurrPinchPosTask(CHECK_CURR_PINCH_POS_DISABLE_CMD);
+		}
+		else if(ptrCurrentState->state == STATE_PRIMING_RICIRCOLO)
+		{
+			if(TemperatureStateMach(0))
+			{
+				// ho raggiunto la temperatura ( + o - un grado)richiesta posso passare nello stato di
+				// attesa ricezione comando di start trattamento
+				// fermo le pompe ed aspetto
+
+				// debugVal le 7 linee di programma che seguono le devo commentare
+				// se voglio provare l'allarme delle pompe che non si fermano alla fine
+				// del ricircolo
+				// commento solo per debug. DA TOGLIERE !!!!
+				setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
+				setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 0);
+				if(GetTherapyType() == LiverTreat)
+				{
+					// se sono nel trattamento fegato fermo anche l'altro motore !!
+					setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, 0);
+				}
+
+				//currentGuard[GUARD_ENABLE_WAIT_TREATMENT].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+				//StartTreatmentTime = (unsigned long)timerCounterModBus;
+
+				//currentGuard[GUARD_ENABLE_TREATMENT_KIDNEY_1].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+				// SE NON VADO PIU' INTRATTAMENTO MA DEVO PRIMA CONTROLLARE CHE LE POMPE SIANO FERME E POI CHIUDERE
+				// LE PINCH
+				currentGuard[GUARD_CHK_FOR_ALL_MOT_STOP].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+			}
+			else if(buttonGUITreatment[BUTTON_PRIMING_ABANDON].state == GUI_BUTTON_RELEASED)
+			{
+				releaseGUIButton(BUTTON_PRIMING_ABANDON);
+				setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
+				setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 0);
+				if(GetTherapyType() == LiverTreat)
+				{
+					// se sono nel trattamento fegato fermo anche l'altro motore !!
+					setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, 0);
+				}
+				//currentGuard[GUARD_ABANDON_PRIMING].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+				SetAbandonGuard();
+				// sposto la macchina a stati in TEMP_ABANDONE_CMD per evitare problemi
+				TemperatureStateMach(TEMP_ABANDONE_CMD);
+			}
+
+		}
 
 		if((timerCounterModBus%9) == 8)
-			{
-				if(timerCounterModBus != 0)
-					timerCopy = timerCounterModBus;
-				timerCounter = 0;
+		{
+			if(timerCounterModBus != 0)
+				timerCopy = timerCounterModBus;
+			timerCounter = 0;
 
-				//readPumpSpeedValue(pumpPerist[0].pmpMySlaveAddress);
-				readPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress);
-				// non ho messo la pompa 2 perche'  e' agganciata alla 1
-				readPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress);
-				readPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress);
-			}
+			//readPumpSpeedValue(pumpPerist[0].pmpMySlaveAddress);
+			readPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress);
+			// non ho messo la pompa 2 perche'  e' agganciata alla 1
+			readPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress);
+			readPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress);
+		}
 
 		if(pumpPerist[0].dataReady == DATA_READY_TRUE)
 		{
@@ -2541,103 +2548,103 @@ TREAT_SET_PINCH_POS_TASK_STATE TreatSetPinchPosTask(TREAT_SET_PINCH_POS_CMD cmd)
 
 	switch (TreatSetPinchPosTaskState)
 	{
-		case T_SET_PINCH_IDLE:
-			TreatSetPinchPosTaskState = T_SET_PINCH_WAIT_START_BUTT;
-			break;
-		case T_SET_PINCH_WAIT_START_BUTT:
-			if(buttonGUITreatment[BUTTON_START_TREATMENT].state == GUI_BUTTON_RELEASED)
+	case T_SET_PINCH_IDLE:
+		TreatSetPinchPosTaskState = T_SET_PINCH_WAIT_START_BUTT;
+		break;
+	case T_SET_PINCH_WAIT_START_BUTT:
+		if(buttonGUITreatment[BUTTON_START_TREATMENT].state == GUI_BUTTON_RELEASED)
+		{
+			// NON FACCIO VOLUTAMENTE LA RELEASEBUTTON PERCHE' MI SERVIRA' PER FORZARE LO START
+			// DOPO AVER POSIZIONATO LE PINCH
+			if(!FilterSelected)
 			{
-				// NON FACCIO VOLUTAMENTE LA RELEASEBUTTON PERCHE' MI SERVIRA' PER FORZARE LO START
-				// DOPO AVER POSIZIONATO LE PINCH
-				if(!FilterSelected)
-				{
-					// il filtro non viene usato quindi devo passare sempre sul bypass
-					setPinchPositionHighLevel(PINCH_2WPVF, MODBUS_PINCH_LEFT_OPEN);
-				}
-				else
-					setPinchPositionHighLevel(PINCH_2WPVF, MODBUS_PINCH_RIGHT_OPEN);
-				// quando entro in trattamento la pinch deve essere attaccata all'organo
-				setPinchPositionHighLevel(PINCH_2WPVA, MODBUS_PINCH_LEFT_OPEN);
-				if(GetTherapyType() == LiverTreat)
-				{
-					// ho selezionato il fegato, quindi se entro in trattamento devo collegarmi all'organo
-					setPinchPositionHighLevel(PINCH_2WPVV, MODBUS_PINCH_LEFT_OPEN);
-				}
-				TreatSetPinchPosTaskState = T_SET_PINCH_WAIT_POS;
-				DebugStringStr("PINCH TO ORGAN");
+				// il filtro non viene usato quindi devo passare sempre sul bypass
+				setPinchPositionHighLevel(PINCH_2WPVF, MODBUS_PINCH_LEFT_OPEN);
 			}
-			break;
-		case T_SET_PINCH_WAIT_POS:
-			EndPositioning = TRUE;
-			if (PinchWriteTerminated(0) && (modbusData[PINCH_2WPVF-3][17] != 0xaa))
+			else
+				setPinchPositionHighLevel(PINCH_2WPVF, MODBUS_PINCH_RIGHT_OPEN);
+			// quando entro in trattamento la pinch deve essere attaccata all'organo
+			setPinchPositionHighLevel(PINCH_2WPVA, MODBUS_PINCH_LEFT_OPEN);
+			if(GetTherapyType() == LiverTreat)
 			{
-				// posizione impostata non raggiunta
-				EndPositioning = FALSE;
+				// ho selezionato il fegato, quindi se entro in trattamento devo collegarmi all'organo
+				setPinchPositionHighLevel(PINCH_2WPVV, MODBUS_PINCH_LEFT_OPEN);
 			}
-			if (PinchWriteTerminated(1) && (modbusData[PINCH_2WPVA-3][17] != 0xaa))
+			TreatSetPinchPosTaskState = T_SET_PINCH_WAIT_POS;
+			DebugStringStr("PINCH TO ORGAN");
+		}
+		break;
+	case T_SET_PINCH_WAIT_POS:
+		EndPositioning = TRUE;
+		if (PinchWriteTerminated(0) && (modbusData[PINCH_2WPVF-3][17] != 0xaa))
+		{
+			// posizione impostata non raggiunta
+			EndPositioning = FALSE;
+		}
+		if (PinchWriteTerminated(1) && (modbusData[PINCH_2WPVA-3][17] != 0xaa))
+		{
+			// posizione impostata non raggiunta
+			EndPositioning = FALSE;
+		}
+		if (PinchWriteTerminated(2) && (modbusData[PINCH_2WPVV-3][17] != 0xaa) && (TherType == LiverTreat))
+		{
+			// posizione impostata non raggiunta
+			EndPositioning = FALSE;
+		}
+		if(EndPositioning)
+		{
+			if(!GlobalFlags.FlagsDef.EnableBadPinchPosAlm)
 			{
-				// posizione impostata non raggiunta
-				EndPositioning = FALSE;
+				// la generazione dell'allarme e' disabilitata quindi vado direttamente alla
+				// fine del processo di posizionamento delle pinch
+				TreatSetPinchPosTaskState = T_SET_PINCH_CHECK_POS;
 			}
-			if (PinchWriteTerminated(2) && (modbusData[PINCH_2WPVV-3][17] != 0xaa) && (TherType == LiverTreat))
+			else
 			{
-				// posizione impostata non raggiunta
-				EndPositioning = FALSE;
-			}
-			if(EndPositioning)
-			{
-				if(!GlobalFlags.FlagsDef.EnableBadPinchPosAlm)
-				{
-					// la generazione dell'allarme e' disabilitata quindi vado direttamente alla
-					// fine del processo di posizionamento delle pinch
-					TreatSetPinchPosTaskState = T_SET_PINCH_CHECK_POS;
-				}
-				else
-				{
-					// posizionamento delle pinch completate, passo alla verifica con la protective
-					TreatSetPinchPosTaskState = T_SET_PINCH_CHECK_POS;
-					TreatSetPinchPosTaskPresc = 0;
-					CorrectPosCnt = 0;
-					WrongPosCnt = 0;
-					if(IsPinchPosOk(PinchPos))
-						CorrectPosCnt++;
-					else
-						WrongPosCnt++;
-				}
-			}
-			break;
-		case T_SET_PINCH_CHECK_POS:
-			TreatSetPinchPosTaskPresc++;
-			if(TreatSetPinchPosTaskPresc >= 10)
-			{
-				// dopo mezzo secondo confronto ancora la posizione con la protective
+				// posizionamento delle pinch completate, passo alla verifica con la protective
+				TreatSetPinchPosTaskState = T_SET_PINCH_CHECK_POS;
 				TreatSetPinchPosTaskPresc = 0;
+				CorrectPosCnt = 0;
+				WrongPosCnt = 0;
 				if(IsPinchPosOk(PinchPos))
-				{
-					WrongPosCnt = 0;
 					CorrectPosCnt++;
-					if(CorrectPosCnt >= 3)
-					{
-						// la posizione e' identica a quella del protective per 3 volte consecutive, posso iniziare il trattamento
-						// il tasto BUTTON_START_TREATMENT lo ho gia' ricevuto, quindi, per il prossimo start
-						// devo forzarlo
-						setGUIButton(BUTTON_START_TREATMENT);
-						TreatSetPinchPosTaskState = T_SET_PINCH_END;
-						DebugStringStr("PINCH TO ORGAN 1");
-					}
-				}
 				else
-				{
-					CorrectPosCnt = 0;
 					WrongPosCnt++;
-					if(WrongPosCnt >= 3)
-					{
-						// la posizione e' diversa da quella del protective per 3 volte consecutive, posso generare un allarme
-						TreatSetPinchPosTaskState = T_SET_PINCH_ALARM;
-					}
+			}
+		}
+		break;
+	case T_SET_PINCH_CHECK_POS:
+		TreatSetPinchPosTaskPresc++;
+		if(TreatSetPinchPosTaskPresc >= 10)
+		{
+			// dopo mezzo secondo confronto ancora la posizione con la protective
+			TreatSetPinchPosTaskPresc = 0;
+			if(IsPinchPosOk(PinchPos))
+			{
+				WrongPosCnt = 0;
+				CorrectPosCnt++;
+				if(CorrectPosCnt >= 3)
+				{
+					// la posizione e' identica a quella del protective per 3 volte consecutive, posso iniziare il trattamento
+					// il tasto BUTTON_START_TREATMENT lo ho gia' ricevuto, quindi, per il prossimo start
+					// devo forzarlo
+					setGUIButton(BUTTON_START_TREATMENT);
+					TreatSetPinchPosTaskState = T_SET_PINCH_END;
+					DebugStringStr("PINCH TO ORGAN 1");
 				}
 			}
-			break;
+			else
+			{
+				CorrectPosCnt = 0;
+				WrongPosCnt++;
+				if(WrongPosCnt >= 3)
+				{
+					// la posizione e' diversa da quella del protective per 3 volte consecutive, posso generare un allarme
+					TreatSetPinchPosTaskState = T_SET_PINCH_ALARM;
+				}
+			}
+		}
+		break;
 		case T_SET_PINCH:
 			break;
 		case T_SET_PINCH_ALARM:
@@ -2880,6 +2887,10 @@ void manageParentTreatAlways(void)
 			// disabilito allarme di livello alto in trattamento (per ora)
 			GlobalFlags.FlagsDef.EnableLevHighAlarm = 0;
 			//GlobalFlags.FlagsDef.TankLevelHigh = 0;
+			//Filippo - aggiunto nel merge del 1-10-2018
+			//al rientro dell'allarme, se in allarme era stato spento il frigo, lo riaccendo
+			if (IsFrigoStoppedInAlarm())
+				FrigoHeatTempControlTaskNewPID(LIQ_T_CONTR_TASK_RESET_CMD);
 		    } else if (buttonGUITreatment[BUTTON_START_PERF_PUMP].state
 				       == GUI_BUTTON_RELEASED) {
 			releaseGUIButton(BUTTON_START_PERF_PUMP);
@@ -3147,6 +3158,10 @@ void manageParentTreatAlways(void)
 			// disabilito allarme di livello alto in trattamento (per ora)
 			GlobalFlags.FlagsDef.EnableLevHighAlarm = 0;
 			//GlobalFlags.FlagsDef.TankLevelHigh = 0;
+			// Filippo - aggiunto nel merge del 1-10-2018
+			//al rientro dell'allarme, se in allarme era stato spento il frigo, lo riaccendo
+			if (IsFrigoStoppedInAlarm())
+				FrigoHeatTempControlTask(LIQ_T_CONTR_TASK_RESET_CMD);
 		}
 		else if(buttonGUITreatment[BUTTON_START_PERF_PUMP].state == GUI_BUTTON_RELEASED)
 		{
@@ -4661,6 +4676,22 @@ void processMachineState(void)
 		}
 	}
 
+	// Filippo - messo per gestire lo shut down del PC da tasto
+	if (buttonGUITreatment[BUTTON_SHUT_DOWN_PC].state==GUI_BUTTON_RELEASED)
+	{
+//		buttonGUITreatment[BUTTON_SHUT_DOWN_PC].state=GUI_BUTTON_PRESSED;
+		if (ptrCurrentState->state!=STATE_IDLE)
+		{
+			// mi porto in idle solo se non c'ero già
+			ptrFutureState = &stateState[3];
+			/* compute future parent */
+			ptrFutureParent = ptrFutureState->ptrParent;
+			/* compute future child */
+			ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
+			DebugStringStr("enable state idle");
+
+		}
+	}
 
 	/* process state structure --> in base alla guard si decide lo stato --> in base allo stato si eseguono certe funzioni in modalità init o always */
 	switch(ptrCurrentState->state)
@@ -4694,131 +4725,131 @@ void processMachineState(void)
 		//NONE
 		break;
 
-		case STATE_ENTRY:
+	case STATE_ENTRY:
+		/* compute future state */
+		if(currentGuard[GUARD_T1_NO_DISP_OK].guardValue == GUARD_VALUE_TRUE)
+		{
+			/* (FM) VADO NELLO STATO IDLE,ACTION_ON_ENTRY DATO CHE LA FASE INIZIALE DI TEST E' FINITA */
 			/* compute future state */
-			if(currentGuard[GUARD_T1_NO_DISP_OK].guardValue == GUARD_VALUE_TRUE)
-			{
-				/* (FM) VADO NELLO STATO IDLE,ACTION_ON_ENTRY DATO CHE LA FASE INIZIALE DI TEST E' FINITA */
-				/* compute future state */
-				ptrFutureState = &stateState[7];
-				/* compute future parent */
-				ptrFutureParent = ptrFutureState->ptrParent;
-				/* compute future child */
-				ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
-				DebugStringStr("exit from entry");
-				break; //cambio stato ENTRY --> T1_TEST_NO_DISP
-			}
+			ptrFutureState = &stateState[7];
+			/* compute future parent */
+			ptrFutureParent = ptrFutureState->ptrParent;
+			/* compute future child */
+			ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
+			DebugStringStr("exit from entry");
+			break; //cambio stato ENTRY --> T1_TEST_NO_DISP
+		}
 
-			/* compute parent......compute child */
-			if(ptrCurrentParent->action == ACTION_ON_ENTRY)
+		/* compute parent......compute child */
+		if(ptrCurrentParent->action == ACTION_ON_ENTRY)
+		{
+			/* execute parent callback function */
+			// non serve qui verra' chiamata nella manageStateEntryAndStateAlways
+			//ptrCurrentParent->callBackFunct();
+			/* compute future parent */
+			//ptrFutureParent = &stateParentEntry[2]; //non si può attribuire al ON_ENTRY una funzione ALWAYS
+		}
+		else if(ptrCurrentParent->action == ACTION_ALWAYS)
+		{
+			// non serve qui verra' chiamata nella manageStateEntryAndStateAlways
+			// ptrCurrentParent->callBackFunct();
+		}
+
+		if(ptrCurrentChild->child == CHILD_ENTRY)
+		{
+			if(ptrCurrentChild->action == ACTION_ON_ENTRY)
 			{
-				/* execute parent callback function */
+				/* (FM) esegue la parte ACTION_ON_ENTRY dello stato entry - child */
 				// non serve qui verra' chiamata nella manageStateEntryAndStateAlways
-				//ptrCurrentParent->callBackFunct();
-				/* compute future parent */
-				//ptrFutureParent = &stateParentEntry[2]; //non si può attribuire al ON_ENTRY una funzione ALWAYS
+				//ptrCurrentChild->callBackFunct();
+				//ptrFutureChild = &stateChildEntry[2]; //non si può attribuire al ON_ENTRY una funzione ALWAYS
 			}
-			else if(ptrCurrentParent->action == ACTION_ALWAYS)
-			{
+			else if(ptrCurrentChild->action == ACTION_ALWAYS){
+				/* (FM) esegue la parte ACTION_ALWAYS dello stato entry - child */
 				// non serve qui verra' chiamata nella manageStateEntryAndStateAlways
-				// ptrCurrentParent->callBackFunct();
+				// ptrCurrentChild->callBackFunct();
 			}
+		}
 
-			if(ptrCurrentChild->child == CHILD_ENTRY)
-			{
-				if(ptrCurrentChild->action == ACTION_ON_ENTRY)
-				{
-					/* (FM) esegue la parte ACTION_ON_ENTRY dello stato entry - child */
-					// non serve qui verra' chiamata nella manageStateEntryAndStateAlways
-					//ptrCurrentChild->callBackFunct();
-					//ptrFutureChild = &stateChildEntry[2]; //non si può attribuire al ON_ENTRY una funzione ALWAYS
-				}
-				else if(ptrCurrentChild->action == ACTION_ALWAYS){
-					/* (FM) esegue la parte ACTION_ALWAYS dello stato entry - child */
-					// non serve qui verra' chiamata nella manageStateEntryAndStateAlways
-					// ptrCurrentChild->callBackFunct();
-				}
-			}
-
-			/* execute function state level */
-            /* (FM) DOPO AVER ESEGUITO IL CODICE IN ENTRATA DELLO STATO (ACTION_ON_ENTRY) SI SPOSTA NELLO STATO ACTION_ALWAYS
-               E LI' RIMANE FINO A QUANDO NON GLI ARRIVA UN NUOVO COMANDO */
-			manageStateEntryAndStateAlways(2);
-			break;
-
-		case STATE_T1_NO_DISPOSABLE:
-			// Filippo - se arriva un comando di service vado in idle a meno che non sia già in allarme
-			if (Service)
-			{
-				if (ptrCurrentParent->parent!=PARENT_T1_NO_DISP_ALARM)
-				{
-					// se sono in allarme non posso cambiare di stato
-					currentGuard[GUARD_HW_T1T_DONE].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
-					currentGuard[GUARD_COMM_ENABLED].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
-				}
-			}
-
-			if((currentGuard[GUARD_HW_T1T_DONE].guardValue == GUARD_VALUE_TRUE) &&
-			   (currentGuard[GUARD_COMM_ENABLED].guardValue == GUARD_VALUE_TRUE))
-			{
-				ptrFutureState = &stateState[3];
-				/* compute future parent */
-				ptrFutureParent = ptrFutureState->ptrParent;
-				/* compute future child */
-				ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
-				DebugStringStr("enable state idle");
-			}
-
-			manageStateEntryAndStateAlways(8);
+		/* execute function state level */
+        /* (FM) DOPO AVER ESEGUITO IL CODICE IN ENTRATA DELLO STATO (ACTION_ON_ENTRY) SI SPOSTA NELLO STATO ACTION_ALWAYS
+           E LI' RIMANE FINO A QUANDO NON GLI ARRIVA UN NUOVO COMANDO */
+		manageStateEntryAndStateAlways(2);
 		break;
 
-		case STATE_IDLE:
-			/* compute future state */
-			if((currentGuard[GUARD_ENABLE_SELECT_TREAT_PAGE].guardValue == GUARD_VALUE_TRUE))
+	case STATE_T1_NO_DISPOSABLE:
+		// Filippo - se arriva un comando di service vado in idle a meno che non sia già in allarme
+		if (Service)
+		{
+			if (ptrCurrentParent->parent!=PARENT_T1_NO_DISP_ALARM)
 			{
-				currentGuard[GUARD_ENABLE_SELECT_TREAT_PAGE].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
-			    /* (FM) HO RICEVUTO UN COMANDO (DA TASTIERA O SERIALE) CHE MI CHIEDE DI ENTRARE NELLO STATO DI
-			       SELEZIONE DEL TRATTAMENTO */
-
-				/* compute future state */
-				// provvisoriamente per provare il pid passo direttamente allo stato di trattamento con il tasto 3
-				// della tastiera a bolle
-				//ptrFutureState = &stateState[17];
-
-				// Passo direttamente allo stato mounting disposable senza passare per STATE_SELECT_TREAT
-				// perche' il trattamento e' gia' stato selezionato.
-				ptrFutureState = &stateState[9];
-				/* compute future parent */
-				ptrFutureParent = ptrFutureState->ptrParent;
-				/* compute future child */
-				ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
-				DebugStringStr("STATE_MOUNTING_DISP");
+				// se sono in allarme non posso cambiare di stato
+				currentGuard[GUARD_HW_T1T_DONE].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+				currentGuard[GUARD_COMM_ENABLED].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
 			}
-			/* execute function state level */
-			// (FM) DOPO LA PRIMA VOLTA PASSA AUTOMATICAMENTE NELLO STATO IDLE,ACTION_ALWAYS
-			manageStateEntryAndStateAlways(4);
+		}
 
-			DebugStringStr("reach idle state");
-			break;
+		if((currentGuard[GUARD_HW_T1T_DONE].guardValue == GUARD_VALUE_TRUE) &&
+			(currentGuard[GUARD_COMM_ENABLED].guardValue == GUARD_VALUE_TRUE))
+		{
+			ptrFutureState = &stateState[3];
+			/* compute future parent */
+			ptrFutureParent = ptrFutureState->ptrParent;
+			/* compute future child */
+			ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
+			DebugStringStr("enable state idle");
+		}
 
-		case STATE_SELECT_TREAT:     // NON E' USATO CON LA GESTIONE DA SERVICE
+		manageStateEntryAndStateAlways(8);
+		break;
+
+	case STATE_IDLE:
+		/* compute future state */
+		if((currentGuard[GUARD_ENABLE_SELECT_TREAT_PAGE].guardValue == GUARD_VALUE_TRUE))
+		{
+			currentGuard[GUARD_ENABLE_SELECT_TREAT_PAGE].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
+			/* (FM) HO RICEVUTO UN COMANDO (DA TASTIERA O SERIALE) CHE MI CHIEDE DI ENTRARE NELLO STATO DI
+			   SELEZIONE DEL TRATTAMENTO */
+
 			/* compute future state */
-			if( (currentGuard[GUARD_ENABLE_MOUNT_DISPOSABLE].guardValue == GUARD_VALUE_TRUE) )
-			{
-				currentGuard[GUARD_ENABLE_MOUNT_DISPOSABLE].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
-				/* (FM) E' ARRIVATO UN COMANDO CHE MI CHIEDE DI PASSARE ALLA FASE DI INSTALLAZIONE DEL DISPOSABLE */
-				/* compute future state */
-				ptrFutureState = &stateState[9];
-				/* compute future parent */
-				ptrFutureParent = ptrFutureState->ptrParent;
-				/* compute future child */
-				ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
-				DebugStringStr("STATE_MOUNTING_DISP");
-			}
+			// provvisoriamente per provare il pid passo direttamente allo stato di trattamento con il tasto 3
+			// della tastiera a bolle
+			//ptrFutureState = &stateState[17];
 
-			/* execute function state level */
-			manageStateEntryAndStateAlways(6);
-			break;
+			// Passo direttamente allo stato mounting disposable senza passare per STATE_SELECT_TREAT
+			// perche' il trattamento e' gia' stato selezionato.
+			ptrFutureState = &stateState[9];
+			/* compute future parent */
+			ptrFutureParent = ptrFutureState->ptrParent;
+			/* compute future child */
+			ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
+			DebugStringStr("STATE_MOUNTING_DISP");
+		}
+		/* execute function state level */
+		// (FM) DOPO LA PRIMA VOLTA PASSA AUTOMATICAMENTE NELLO STATO IDLE,ACTION_ALWAYS
+		manageStateEntryAndStateAlways(4);
+
+		DebugStringStr("reach idle state");
+		break;
+
+	case STATE_SELECT_TREAT:     // NON E' USATO CON LA GESTIONE DA SERVICE
+		/* compute future state */
+		if( (currentGuard[GUARD_ENABLE_MOUNT_DISPOSABLE].guardValue == GUARD_VALUE_TRUE) )
+		{
+			currentGuard[GUARD_ENABLE_MOUNT_DISPOSABLE].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
+			/* (FM) E' ARRIVATO UN COMANDO CHE MI CHIEDE DI PASSARE ALLA FASE DI INSTALLAZIONE DEL DISPOSABLE */
+			/* compute future state */
+			ptrFutureState = &stateState[9];
+			/* compute future parent */
+			ptrFutureParent = ptrFutureState->ptrParent;
+			/* compute future child */
+			ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
+			DebugStringStr("STATE_MOUNTING_DISP");
+		}
+
+		/* execute function state level */
+		manageStateEntryAndStateAlways(6);
+		break;
 
 		case STATE_MOUNTING_DISP:
 			if(
@@ -4872,344 +4903,344 @@ void processMachineState(void)
 			manageStateEntryAndStateAlways(12);
 			break;
 
-		case STATE_PRIMING_PH_1:
-			if(currentGuard[GUARD_ENABLE_STATE_PRIMING_PH_1_WAIT].guardValue == GUARD_VALUE_TRUE)
-			{
-				// nello stato priming 1 aspetto che mi arrivi il comando di caricamento del filtro
-				// quando mi arriva passo subito a priming 2 per completare il 5% di priming che mi rimane
-				// le pompe sono ferme e vado nello stato di attesa che l'utente monti il filtro
-				currentGuard[GUARD_ENABLE_STATE_PRIMING_PH_1_WAIT].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
-				/* compute future state */
-				ptrFutureState = &stateState[39];
-				/* compute future parent */
-				ptrFutureParent = ptrFutureState->ptrParent;
-				/* compute future child */
-				ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
-				DebugStringStr("PRIMING_PH_1_WAIT");
-				break;
-			}
-			else if(currentGuard[GUARD_ABANDON_PRIMING].guardValue == GUARD_VALUE_TRUE)
-			{
-				currentGuard[GUARD_ABANDON_PRIMING].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
-				/* (FM) HO DECISO DI ABBANDONARE IL PRIMING, VADO NELLO STATO DI SVUOTAMENTO */
-				/* compute future state */
-				ptrFutureState = &stateState[19];
-				/* compute future parent */
-				ptrFutureParent = ptrFutureState->ptrParent;
-				/* compute future child */
-				ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
-				DebugStringStr("STATE_EMPTY_DISPOSABLE(ABBANDONA)");
-			}
-			/* execute function state level */
-			manageStateEntryAndStateAlways(14);
+	case STATE_PRIMING_PH_1:
+		if(currentGuard[GUARD_ENABLE_STATE_PRIMING_PH_1_WAIT].guardValue == GUARD_VALUE_TRUE)
+		{
+			// nello stato priming 1 aspetto che mi arrivi il comando di caricamento del filtro
+			// quando mi arriva passo subito a priming 2 per completare il 5% di priming che mi rimane
+			// le pompe sono ferme e vado nello stato di attesa che l'utente monti il filtro
+			currentGuard[GUARD_ENABLE_STATE_PRIMING_PH_1_WAIT].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
+			/* compute future state */
+			ptrFutureState = &stateState[39];
+			/* compute future parent */
+			ptrFutureParent = ptrFutureState->ptrParent;
+			/* compute future child */
+			ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
+			DebugStringStr("PRIMING_PH_1_WAIT");
 			break;
+		}
+		else if(currentGuard[GUARD_ABANDON_PRIMING].guardValue == GUARD_VALUE_TRUE)
+		{
+			currentGuard[GUARD_ABANDON_PRIMING].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
+			/* (FM) HO DECISO DI ABBANDONARE IL PRIMING, VADO NELLO STATO DI SVUOTAMENTO */
+			/* compute future state */
+			ptrFutureState = &stateState[19];
+			/* compute future parent */
+			ptrFutureParent = ptrFutureState->ptrParent;
+			/* compute future child */
+			ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
+			DebugStringStr("STATE_EMPTY_DISPOSABLE(ABBANDONA)");
+		}
+		/* execute function state level */
+		manageStateEntryAndStateAlways(14);
+		break;
 
-		case STATE_PRIMING_PH_1_WAIT:
-			// aspetto inserimento del filtro
-			if( (currentGuard[GUARD_FILTER_INSTALLED].guardValue == GUARD_VALUE_TRUE) )
-			{
-				// il filtro e' stato montato passo alla seconda fase di priming
-				currentGuard[GUARD_FILTER_INSTALLED].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
-				/* (FM) FINITA LA FASE 1 DEL PRIMING POSSO PASSARE ALLA FASE 2 */
-				/* compute future state */
-				ptrFutureState = &stateState[15];
-				/* compute future parent */
-				ptrFutureParent = ptrFutureState->ptrParent;
-				/* compute future child */
-				ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
-				DebugStringStr("STATE_PRIMING_PH_2");
-				break;
-			}
-			else if(currentGuard[GUARD_ABANDON_PRIMING].guardValue == GUARD_VALUE_TRUE)
-			{
-				currentGuard[GUARD_ABANDON_PRIMING].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
-				/* (FM) HO DECISO DI ABBANDONARE IL PRIMING, VADO NELLO STATO DI SVUOTAMENTO */
-				/* compute future state */
-				ptrFutureState = &stateState[19];
-				/* compute future parent */
-				ptrFutureParent = ptrFutureState->ptrParent;
-				/* compute future child */
-				ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
-				DebugStringStr("STATE_EMPTY_DISPOSABLE(ABBANDONA)");
-				break;
-			}
-			/* execute function state level */
-			manageStateEntryAndStateAlways(40);
+	case STATE_PRIMING_PH_1_WAIT:
+		// aspetto inserimento del filtro
+		if( (currentGuard[GUARD_FILTER_INSTALLED].guardValue == GUARD_VALUE_TRUE) )
+		{
+			// il filtro e' stato montato passo alla seconda fase di priming
+			currentGuard[GUARD_FILTER_INSTALLED].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
+			/* (FM) FINITA LA FASE 1 DEL PRIMING POSSO PASSARE ALLA FASE 2 */
+			/* compute future state */
+			ptrFutureState = &stateState[15];
+			/* compute future parent */
+			ptrFutureParent = ptrFutureState->ptrParent;
+			/* compute future child */
+			ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
+			DebugStringStr("STATE_PRIMING_PH_2");
 			break;
-
-		case STATE_PRIMING_PH_2:
-			if((currentGuard[GUARD_ENABLE_PRIMING_WAIT].guardValue == GUARD_VALUE_TRUE))
-			{
-				currentGuard[GUARD_ENABLE_PRIMING_WAIT].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
-				/* (FM) FINITA LA FASE 2 DEL PRIMING PASSO ALL'ATTESA DI UN NUOVO VOLUME O UN BUTTON_PRIMING_END */
-				/* compute future state */
-				ptrFutureState = &stateState[21];
-				/* compute future parent */
-				ptrFutureParent = ptrFutureState->ptrParent;
-				/* compute future child */
-				ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
-				DebugStringStr("STATE_PRIMING_WAIT");
-
-				/*torno indietro nella macchina a stati quindi resetto la flag di entry sullo stato in cui sono*/
-				currentGuard[GUARD_ENABLE_PRIMING_PHASE_2].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
-				break;
-			}
-			else if(currentGuard[GUARD_ABANDON_PRIMING].guardValue == GUARD_VALUE_TRUE)
-			{
-				currentGuard[GUARD_ABANDON_PRIMING].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
-				/* (FM) HO DECISO DI ABBANDONARE IL PRIMING, VADO NELLO STATO DI SVUOTAMENTO */
-				/* compute future state */
-				ptrFutureState = &stateState[19];
-				/* compute future parent */
-				ptrFutureParent = ptrFutureState->ptrParent;
-				/* compute future child */
-				ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
-				DebugStringStr("STATE_EMPTY_DISPOSABLE(ABBANDONA)");
-				break;
-			}
-			/* execute function state level */
-			manageStateEntryAndStateAlways(16);
+		}
+		else if(currentGuard[GUARD_ABANDON_PRIMING].guardValue == GUARD_VALUE_TRUE)
+		{
+			currentGuard[GUARD_ABANDON_PRIMING].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
+			/* (FM) HO DECISO DI ABBANDONARE IL PRIMING, VADO NELLO STATO DI SVUOTAMENTO */
+			/* compute future state */
+			ptrFutureState = &stateState[19];
+			/* compute future parent */
+			ptrFutureParent = ptrFutureState->ptrParent;
+			/* compute future child */
+			ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
+			DebugStringStr("STATE_EMPTY_DISPOSABLE(ABBANDONA)");
 			break;
+		}
+		/* execute function state level */
+		manageStateEntryAndStateAlways(40);
+		break;
 
-		case STATE_TREATMENT_KIDNEY_1:
-			if( currentGuard[GUARD_ENABLE_WAIT_TREATMENT].guardValue == GUARD_VALUE_TRUE )
-			{
-				// vado nello stato di attesa di un nuovo start trattamento o start svuotamento
-				currentGuard[GUARD_ENABLE_WAIT_TREATMENT].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
-				ptrFutureState = &stateState[25];
-				/* compute future parent */
-				ptrFutureParent = ptrFutureState->ptrParent;
-				/* compute future child */
-				ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
-				DebugStringStr("STATE_WAIT_TREATMENT");
+	case STATE_PRIMING_PH_2:
+		if((currentGuard[GUARD_ENABLE_PRIMING_WAIT].guardValue == GUARD_VALUE_TRUE))
+		{
+			currentGuard[GUARD_ENABLE_PRIMING_WAIT].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
+			/* (FM) FINITA LA FASE 2 DEL PRIMING PASSO ALL'ATTESA DI UN NUOVO VOLUME O UN BUTTON_PRIMING_END */
+			/* compute future state */
+			ptrFutureState = &stateState[21];
+			/* compute future parent */
+			ptrFutureParent = ptrFutureState->ptrParent;
+			/* compute future child */
+			ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
+			DebugStringStr("STATE_PRIMING_WAIT");
 
-				/*per poter tornare indietro dallo stato STATE_WAIT_TREATMENT allo stato STATE_TREATMENT_KIDNEY_1
-				 * resetto la flag di entry sullo stato in cui sono*/
-				currentGuard[GUARD_ENABLE_TREATMENT_KIDNEY_1].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
-				currentGuard[GUARD_ENABLE_TREATMENT_KIDNEY_1].guardValue = GUARD_VALUE_FALSE;
-
-				// disabilito allarme di pinch posizionate male perche' sto uscendo dal trattamento.
-				// Il controllo sulle pinch posizionate correttamente viene fatto solo nello stato di trattamento
-				DisableBadPinchPosAlmFunc();
-				break;
-			}
-			else if(currentGuard[GUARD_ABANDON_PRIMING].guardValue == GUARD_VALUE_TRUE)
-			{
-				currentGuard[GUARD_ABANDON_PRIMING].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
-				/* (FM) HO DECISO DI ABBANDONARE IL PRIMING, VADO NELLO STATO DI SVUOTAMENTO */
-				/* compute future state */
-				ptrFutureState = &stateState[19];
-				/* compute future parent */
-				ptrFutureParent = ptrFutureState->ptrParent;
-				/* compute future child */
-				ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
-				DebugStringStr("STATE_EMPTY_DISPOSABLE(ABBANDONA)");
-
-				// disabilito allarme di pinch posizionate male perche' sto uscendo dal trattamento.
-				// Il controllo sulle pinch posizionate correttamente viene fatto solo nello stato di trattamento
-				DisableBadPinchPosAlmFunc();
-				break;
-			}
-
-			/* execute function state level */
-			manageStateEntryAndStateAlways(18);
+			/*torno indietro nella macchina a stati quindi resetto la flag di entry sullo stato in cui sono*/
+			currentGuard[GUARD_ENABLE_PRIMING_PHASE_2].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
 			break;
+		}
+		else if(currentGuard[GUARD_ABANDON_PRIMING].guardValue == GUARD_VALUE_TRUE)
+		{
+			currentGuard[GUARD_ABANDON_PRIMING].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
+			/* (FM) HO DECISO DI ABBANDONARE IL PRIMING, VADO NELLO STATO DI SVUOTAMENTO */
+			/* compute future state */
+			ptrFutureState = &stateState[19];
+			/* compute future parent */
+			ptrFutureParent = ptrFutureState->ptrParent;
+			/* compute future child */
+			ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
+			DebugStringStr("STATE_EMPTY_DISPOSABLE(ABBANDONA)");
+			break;
+		}
+		/* execute function state level */
+		manageStateEntryAndStateAlways(16);
+		break;
 
-		case STATE_PRIMING_WAIT:
-				if( currentGuard[GUARD_PRIMING_END].guardValue == GUARD_VALUE_TRUE )
-				{
-					// ho terminato il riempimento del reservoir vado nello stato di attesa di raggiungimento della temperatura
-					currentGuard[GUARD_PRIMING_END].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
-					ptrFutureState = &stateState[23];
-					/* compute future parent */
-					ptrFutureParent = ptrFutureState->ptrParent;
-					/* compute future child */
-					ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
-					DebugStringStr("STATE_RICICLO");
-					break;
-				}
-				else if( currentGuard[GUARD_ABANDON_PRIMING].guardValue == GUARD_VALUE_TRUE )
-				{
-					// abbandono il priming e VADO NELLO STATO DI SVUOTAMENTO
-					currentGuard[GUARD_ABANDON_PRIMING].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
-					ptrFutureState = &stateState[19];
-					/* compute future parent */
-					ptrFutureParent = ptrFutureState->ptrParent;
-					/* compute future child */
-					ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
-					DebugStringStr("STATE_EMPTY_DISPOSABLE(ABBANDONA)");
-					break;
-				}
-				else if( currentGuard[GUARD_ENABLE_PRIMING_PHASE_2].guardValue == GUARD_VALUE_TRUE )
-				{
-					// il volume e' stato modificato ritorno nella fase di riempimento
-					currentGuard[GUARD_ENABLE_PRIMING_PHASE_2].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
+	case STATE_TREATMENT_KIDNEY_1:
+		if( currentGuard[GUARD_ENABLE_WAIT_TREATMENT].guardValue == GUARD_VALUE_TRUE )
+		{
+			// vado nello stato di attesa di un nuovo start trattamento o start svuotamento
+			currentGuard[GUARD_ENABLE_WAIT_TREATMENT].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
+			ptrFutureState = &stateState[25];
+			/* compute future parent */
+			ptrFutureParent = ptrFutureState->ptrParent;
+			/* compute future child */
+			ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
+			DebugStringStr("STATE_WAIT_TREATMENT");
 
-					ptrFutureState = &stateState[15];
-					/* compute future parent */
-					ptrFutureParent = ptrFutureState->ptrParent;
-					/* compute future child */
-					ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
-					DebugStringStr("STATE_PRIMING_PHASE_2");
+			/*per poter tornare indietro dallo stato STATE_WAIT_TREATMENT allo stato STATE_TREATMENT_KIDNEY_1
+			 * resetto la flag di entry sullo stato in cui sono*/
+			currentGuard[GUARD_ENABLE_TREATMENT_KIDNEY_1].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
+			currentGuard[GUARD_ENABLE_TREATMENT_KIDNEY_1].guardValue = GUARD_VALUE_FALSE;
 
-					/*torno indietro nella macchina a stati quindi resetto la flag di entry sullo stato in cui sono*/
-					currentGuard[GUARD_ENABLE_PRIMING_WAIT].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
-					break;
-				}
+			// disabilito allarme di pinch posizionate male perche' sto uscendo dal trattamento.
+			// Il controllo sulle pinch posizionate correttamente viene fatto solo nello stato di trattamento
+			DisableBadPinchPosAlmFunc();
+			break;
+		}
+		else if(currentGuard[GUARD_ABANDON_PRIMING].guardValue == GUARD_VALUE_TRUE)
+		{
+			currentGuard[GUARD_ABANDON_PRIMING].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
+			/* (FM) HO DECISO DI ABBANDONARE IL PRIMING, VADO NELLO STATO DI SVUOTAMENTO */
+			/* compute future state */
+			ptrFutureState = &stateState[19];
+			/* compute future parent */
+			ptrFutureParent = ptrFutureState->ptrParent;
+			/* compute future child */
+			ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
+			DebugStringStr("STATE_EMPTY_DISPOSABLE(ABBANDONA)");
 
-				/* execute function state level */
-				manageStateEntryAndStateAlways(22);
-				break;
-		case STATE_PRIMING_RICIRCOLO:
-				if( currentGuard[GUARD_ENABLE_TREATMENT_KIDNEY_1].guardValue == GUARD_VALUE_TRUE )
-				{
-					// PASSO ALLA FASE DI TRATTAMENTO
-					currentGuard[GUARD_ENABLE_TREATMENT_KIDNEY_1].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
-					// ho ricevuto il comando per entrare in trattamento
-					ptrFutureState = &stateState[17];
-					/* compute future parent */
-					ptrFutureParent = ptrFutureState->ptrParent;
-					/* compute future child */
-					ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
-					DebugStringStr("STATE_TREATMENT");
-					break;
-				}
-				else if( currentGuard[GUARD_ABANDON_PRIMING].guardValue == GUARD_VALUE_TRUE )
-				{
-					// abbandono il priming e VADO NELLO STATO DI SVUOTAMENTO
-					currentGuard[GUARD_ABANDON_PRIMING].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
-					ptrFutureState = &stateState[19];
-					/* compute future parent */
-					ptrFutureParent = ptrFutureState->ptrParent;
-					/* compute future child */
-					ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
-					DebugStringStr("STATE_EMPTY_DISPOSABLE(ABBANDONA)");
-					break;
-				}
+			// disabilito allarme di pinch posizionate male perche' sto uscendo dal trattamento.
+			// Il controllo sulle pinch posizionate correttamente viene fatto solo nello stato di trattamento
+			DisableBadPinchPosAlmFunc();
+			break;
+		}
 
-				/* execute function state level */
-				manageStateEntryAndStateAlways(24);
-				break;
-		case STATE_WAIT_TREATMENT:
-			    if( currentGuard[GUARD_ENABLE_DISPOSABLE_EMPTY].guardValue == GUARD_VALUE_TRUE )
-				{
-					currentGuard[GUARD_ENABLE_DISPOSABLE_EMPTY].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
-					// se voglio andare in idle e selezionare un nuovo trattamento
-					//ptrFutureState = &stateState[3];
-					// se voglio andare nella procedura di svuotamento
-					ptrFutureState = &stateState[19];
-					/* compute future parent */
-					ptrFutureParent = ptrFutureState->ptrParent;
-					/* compute future child */
-					ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
-					// ripristino gli enable azzerati alla fine del trattamento
-					RestoreAllCntrlAlarm(&AlarmEnableConf);
-					DebugStringStr("STATE_EMPTY_DISPOSABLE");
-					break;
-				}
-				else if( currentGuard[GUARD_ENABLE_TREATMENT_KIDNEY_1].guardValue == GUARD_VALUE_TRUE )
-				{
-					// ritorno direttamente in trattamento per cominciarne uno nuovo
-					currentGuard[GUARD_ENABLE_TREATMENT_KIDNEY_1].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
+		/* execute function state level */
+		manageStateEntryAndStateAlways(18);
+		break;
 
-					ptrFutureState = &stateState[17];
-					/* compute future parent */
-					ptrFutureParent = ptrFutureState->ptrParent;
-					/* compute future child */
-					ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
-					// ripristino gli enable azzerati alla fine del trattamento
-					RestoreAllCntrlAlarm(&AlarmEnableConf);
-					DebugStringStr("STATE_TREATMENT");
+	case STATE_PRIMING_WAIT:
+		if( currentGuard[GUARD_PRIMING_END].guardValue == GUARD_VALUE_TRUE )
+		{
+			// ho terminato il riempimento del reservoir vado nello stato di attesa di raggiungimento della temperatura
+			currentGuard[GUARD_PRIMING_END].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
+			ptrFutureState = &stateState[23];
+			/* compute future parent */
+			ptrFutureParent = ptrFutureState->ptrParent;
+			/* compute future child */
+			ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
+			DebugStringStr("STATE_RICICLO");
+			break;
+		}
+		else if( currentGuard[GUARD_ABANDON_PRIMING].guardValue == GUARD_VALUE_TRUE )
+		{
+			// abbandono il priming e VADO NELLO STATO DI SVUOTAMENTO
+			currentGuard[GUARD_ABANDON_PRIMING].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
+			ptrFutureState = &stateState[19];
+			/* compute future parent */
+			ptrFutureParent = ptrFutureState->ptrParent;
+			/* compute future child */
+			ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
+			DebugStringStr("STATE_EMPTY_DISPOSABLE(ABBANDONA)");
+			break;
+		}
+		else if( currentGuard[GUARD_ENABLE_PRIMING_PHASE_2].guardValue == GUARD_VALUE_TRUE )
+		{
+			// il volume e' stato modificato ritorno nella fase di riempimento
+			currentGuard[GUARD_ENABLE_PRIMING_PHASE_2].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
 
-					// riparte come se fosse un nuovo trattamento
-					StartTreatmentTime = 0;
-					TotalTreatDuration = 0;
-					TreatDuration = 0;
-					setGUIButton(BUTTON_START_TREATMENT);
+			ptrFutureState = &stateState[15];
+			/* compute future parent */
+			ptrFutureParent = ptrFutureState->ptrParent;
+			/* compute future child */
+			ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
+			DebugStringStr("STATE_PRIMING_PHASE_2");
 
-					/*per poter tornare indietro dallo stato STATE_WAIT_TREATMENT allo stato STATE_TREATMENT_KIDNEY_1
-					 * resetto la flag di entry sullo stato in cui sono*/
-					currentGuard[GUARD_ENABLE_WAIT_TREATMENT].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
-					currentGuard[GUARD_ENABLE_WAIT_TREATMENT].guardValue = GUARD_VALUE_FALSE;
-					break;
-				}
-				/* execute function state level */
-				manageStateEntryAndStateAlways(26);
-				break;
+			/*torno indietro nella macchina a stati quindi resetto la flag di entry sullo stato in cui sono*/
+			currentGuard[GUARD_ENABLE_PRIMING_WAIT].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
+			break;
+		}
+
+		/* execute function state level */
+		manageStateEntryAndStateAlways(22);
+		break;
+	case STATE_PRIMING_RICIRCOLO:
+		if( currentGuard[GUARD_ENABLE_TREATMENT_KIDNEY_1].guardValue == GUARD_VALUE_TRUE )
+		{
+			// PASSO ALLA FASE DI TRATTAMENTO
+			currentGuard[GUARD_ENABLE_TREATMENT_KIDNEY_1].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
+			// ho ricevuto il comando per entrare in trattamento
+			ptrFutureState = &stateState[17];
+			/* compute future parent */
+			ptrFutureParent = ptrFutureState->ptrParent;
+			/* compute future child */
+			ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
+			DebugStringStr("STATE_TREATMENT");
+			break;
+		}
+		else if( currentGuard[GUARD_ABANDON_PRIMING].guardValue == GUARD_VALUE_TRUE )
+		{
+			// abbandono il priming e VADO NELLO STATO DI SVUOTAMENTO
+			currentGuard[GUARD_ABANDON_PRIMING].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
+			ptrFutureState = &stateState[19];
+			/* compute future parent */
+			ptrFutureParent = ptrFutureState->ptrParent;
+			/* compute future child */
+			ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
+			DebugStringStr("STATE_EMPTY_DISPOSABLE(ABBANDONA)");
+			break;
+		}
+
+		/* execute function state level */
+		manageStateEntryAndStateAlways(24);
+		break;
+	case STATE_WAIT_TREATMENT:
+		if( currentGuard[GUARD_ENABLE_DISPOSABLE_EMPTY].guardValue == GUARD_VALUE_TRUE )
+		{
+			currentGuard[GUARD_ENABLE_DISPOSABLE_EMPTY].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
+			// se voglio andare in idle e selezionare un nuovo trattamento
+			//ptrFutureState = &stateState[3];
+			// se voglio andare nella procedura di svuotamento
+			ptrFutureState = &stateState[19];
+			/* compute future parent */
+			ptrFutureParent = ptrFutureState->ptrParent;
+			/* compute future child */
+			ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
+			// ripristino gli enable azzerati alla fine del trattamento
+			RestoreAllCntrlAlarm(&AlarmEnableConf);
+			DebugStringStr("STATE_EMPTY_DISPOSABLE");
+			break;
+		}
+		else if( currentGuard[GUARD_ENABLE_TREATMENT_KIDNEY_1].guardValue == GUARD_VALUE_TRUE )
+		{
+			// ritorno direttamente in trattamento per cominciarne uno nuovo
+			currentGuard[GUARD_ENABLE_TREATMENT_KIDNEY_1].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
+
+			ptrFutureState = &stateState[17];
+			/* compute future parent */
+			ptrFutureParent = ptrFutureState->ptrParent;
+			/* compute future child */
+			ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
+			// ripristino gli enable azzerati alla fine del trattamento
+			RestoreAllCntrlAlarm(&AlarmEnableConf);
+			DebugStringStr("STATE_TREATMENT");
+
+			// riparte come se fosse un nuovo trattamento
+			StartTreatmentTime = 0;
+			TotalTreatDuration = 0;
+			TreatDuration = 0;
+			setGUIButton(BUTTON_START_TREATMENT);
+
+			/*per poter tornare indietro dallo stato STATE_WAIT_TREATMENT allo stato STATE_TREATMENT_KIDNEY_1
+			 * resetto la flag di entry sullo stato in cui sono*/
+			currentGuard[GUARD_ENABLE_WAIT_TREATMENT].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
+			currentGuard[GUARD_ENABLE_WAIT_TREATMENT].guardValue = GUARD_VALUE_FALSE;
+			break;
+		}
+		/* execute function state level */
+		manageStateEntryAndStateAlways(26);
+		break;
 
 
 		/*case STATE_T1_WITH_DISPOSABLE:
-			break;
+		break;
 
-		case STATE_PRIMING_TREAT_1:
-			break;
+	case STATE_PRIMING_TREAT_1:
+		break;
 
-		case STATE_PRIMING_TREAT_2:
-			break;*/
+	case STATE_PRIMING_TREAT_2:
+		break;*/
 
 
-		case STATE_TREATMENT_2:
-			break;
+	case STATE_TREATMENT_2:
+		break;
 
-		case STATE_EMPTY_DISPOSABLE:
-			if((currentGuard[GUARD_EMPTY_DISPOSABLE_END].guardValue == GUARD_VALUE_TRUE) ||
-			   (currentGuard[GUARD_ABANDON_PRIMING].guardValue == GUARD_VALUE_TRUE))
+	case STATE_EMPTY_DISPOSABLE:
+		if((currentGuard[GUARD_EMPTY_DISPOSABLE_END].guardValue == GUARD_VALUE_TRUE) ||
+			(currentGuard[GUARD_ABANDON_PRIMING].guardValue == GUARD_VALUE_TRUE))
+		{
+			// se voglio andare in idle e selezionare un nuovo trattamento
+			//ptrFutureState = &stateState[3];
+			// se voglio andare in STATE_UNMOUNT_DISPOSABLE e staccare il disposable
+			ptrFutureState = &stateState[27];
+			/* compute future parent */
+			ptrFutureParent = ptrFutureState->ptrParent;
+			/* compute future child */
+			ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
+			if(currentGuard[GUARD_ABANDON_PRIMING].guardValue == GUARD_VALUE_TRUE)
 			{
-				// se voglio andare in idle e selezionare un nuovo trattamento
-				//ptrFutureState = &stateState[3];
-				// se voglio andare in STATE_UNMOUNT_DISPOSABLE e staccare il disposable
-				ptrFutureState = &stateState[27];
-				/* compute future parent */
-				ptrFutureParent = ptrFutureState->ptrParent;
-				/* compute future child */
-				ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
-				if(currentGuard[GUARD_ABANDON_PRIMING].guardValue == GUARD_VALUE_TRUE)
-				{
-					// abbandono il priming e VADO NELLO STATO DI STATE_UNMOUNT_DISPOSABLE per smontare il disposable
-					currentGuard[GUARD_ABANDON_PRIMING].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
-					DebugStringStr("UNMOUNT_DISPOS(ABBANDONA)");
-				}
-				else
-				{
-					// ho terminato lo svuotamento del reservoir vado nello stato di smontaggio del disposable
-					currentGuard[GUARD_EMPTY_DISPOSABLE_END].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
-					DebugStringStr("STATE_UNMOUNT_DISPOSABLE");
-				}
-				break;
+				// abbandono il priming e VADO NELLO STATO DI STATE_UNMOUNT_DISPOSABLE per smontare il disposable
+				currentGuard[GUARD_ABANDON_PRIMING].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
+				DebugStringStr("UNMOUNT_DISPOS(ABBANDONA)");
 			}
-
-			/* execute function state level */
-			manageStateEntryAndStateAlways(20);
-			break;
-
-		case STATE_UNMOUNT_DISPOSABLE:
-			if((currentGuard[GUARD_ENABLE_UNMOUNT_END].guardValue == GUARD_VALUE_TRUE) ||
-			   (currentGuard[GUARD_ABANDON_PRIMING].guardValue == GUARD_VALUE_TRUE))
+			else
 			{
-				ptrFutureState = &stateState[3];
-				/* compute future parent */
-				ptrFutureParent = ptrFutureState->ptrParent;
-				/* compute future child */
-				ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
-
-				if(currentGuard[GUARD_ABANDON_PRIMING].guardValue == GUARD_VALUE_TRUE)
-				{
-					// abbandono il priming e VADO NELLO STATO DI SVUOTAMENTO
-					currentGuard[GUARD_ABANDON_PRIMING].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
-					DebugStringStr("STATE_IDLE(ABBANDONA)");
-				}
-				else
-				{
-					// ho smontato il disposable ritorno in idle
-					currentGuard[GUARD_ENABLE_UNMOUNT_END].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
-					DebugStringStr("STATE_IDLE");
-				}
-				break;
+				// ho terminato lo svuotamento del reservoir vado nello stato di smontaggio del disposable
+				currentGuard[GUARD_EMPTY_DISPOSABLE_END].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
+				DebugStringStr("STATE_UNMOUNT_DISPOSABLE");
 			}
-
-			/* execute function state level */
-			manageStateEntryAndStateAlways(28);
 			break;
+		}
+
+		/* execute function state level */
+		manageStateEntryAndStateAlways(20);
+		break;
+
+	case STATE_UNMOUNT_DISPOSABLE:
+		if((currentGuard[GUARD_ENABLE_UNMOUNT_END].guardValue == GUARD_VALUE_TRUE) ||
+			(currentGuard[GUARD_ABANDON_PRIMING].guardValue == GUARD_VALUE_TRUE))
+		{
+			ptrFutureState = &stateState[3];
+			/* compute future parent */
+			ptrFutureParent = ptrFutureState->ptrParent;
+			/* compute future child */
+			ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
+
+			if(currentGuard[GUARD_ABANDON_PRIMING].guardValue == GUARD_VALUE_TRUE)
+			{
+				// abbandono il priming e VADO NELLO STATO DI SVUOTAMENTO
+				currentGuard[GUARD_ABANDON_PRIMING].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
+				DebugStringStr("STATE_IDLE(ABBANDONA)");
+			}
+			else
+			{
+				// ho smontato il disposable ritorno in idle
+				currentGuard[GUARD_ENABLE_UNMOUNT_END].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
+				DebugStringStr("STATE_IDLE");
+			}
+			break;
+		}
+
+		/* execute function state level */
+		manageStateEntryAndStateAlways(28);
+		break;
 
 		case STATE_EMPTY_DISPOSABLE_1:
 			break;
@@ -5239,10 +5270,10 @@ void processMachineState(void)
 	switch(ptrCurrentChild->child){
 //		static unsigned char maskGuard;
 
-		case CHILD_PRIMING_ALARM_INIT:
+	case CHILD_PRIMING_ALARM_INIT:
 
-            /* (FM) qui ci entra quando nel ciclo switch precedente del parent e durante il priming si verifica un allarme.
-               La tabella del parent contiene gia' il riferimento alla struttura 1 di inizializzazione della tabella del child. */
+    	/* (FM) qui ci entra quando nel ciclo switch precedente del parent e durante il priming si verifica un allarme.
+            La tabella del parent contiene gia' il riferimento alla struttura 1 di inizializzazione della tabella del child. */
 //			maskGuard = (currentGuard[GUARD_ALARM_STOP_ALL_ACTUATOR].guardValue == GUARD_VALUE_TRUE) 		|
 //						((currentGuard[GUARD_ALARM_STOP_ALL].guardValue == GUARD_VALUE_TRUE) << 1)			|
 //						((currentGuard[GUARD_ALARM_STOP_PERF_PUMP].guardValue == GUARD_VALUE_TRUE) << 2)	|
@@ -5250,77 +5281,77 @@ void processMachineState(void)
 //						((currentGuard[GUARD_ALARM_STOP_OXYG_PUMP].guardValue == GUARD_VALUE_TRUE) << 4)	|
 //						((currentGuard[GUARD_ALARM_STOP_PELTIER].guardValue == GUARD_VALUE_TRUE) << 5);
 
-			if(ptrCurrentChild->action == ACTION_ON_ENTRY)
-			{
-				/* (FM) esegue la parte ACTION_ON_ENTRY della gestione dell'allarme */
-				//ptrCurrentChild->callBackFunct(); NON SERVE QUESTO
-				ptrFutureChild = &stateChildAlarmPriming[2];
-			}
-			else if(ptrCurrentChild->action == ACTION_ALWAYS){
-				/* (FM) esegue la parte ACTION_ALWAYS della gestione dell'allarme */
-				//ptrCurrentChild->callBackFunct(); NON SERVE QUESTO
-			}
+		if(ptrCurrentChild->action == ACTION_ON_ENTRY)
+		{
+			/* (FM) esegue la parte ACTION_ON_ENTRY della gestione dell'allarme */
+			//ptrCurrentChild->callBackFunct(); NON SERVE QUESTO
+			ptrFutureChild = &stateChildAlarmPriming[2];
+		}
+		else if(ptrCurrentChild->action == ACTION_ALWAYS){
+			/* (FM) esegue la parte ACTION_ALWAYS della gestione dell'allarme */
+			//ptrCurrentChild->callBackFunct(); NON SERVE QUESTO
+		}
 
-            /* (FM) probabilmente cio' che deve essere fatto per completare la gestione dell'allarme e'quello che segue.
-               I valori vengono messi a GUARD_VALUE_TRUE nella funzione manageAlarmChildGuard in base alle impostazioni
-               fatte per la gestione degli allarmi */
-            if(currentGuard[GUARD_ALARM_STOP_ALL_ACTUATOR].guardValue == GUARD_VALUE_TRUE)
-            {
-                /* (FM) risolvo la situazione di allarme andando a spegnere tutti gli attuatori */
-                ptrFutureChild = &stateChildAlarmPriming[11];
-            }
-            else if(currentGuard[GUARD_ALARM_STOP_ALL].guardValue == GUARD_VALUE_TRUE)
-            {
-            	/* (FM) risolvo la situazione di allarme andando a spegnere tutti gli attuatori e pompe */
-                ptrFutureChild = &stateChildAlarmPriming[7];
-            }
-            else if(currentGuard[GUARD_ALARM_STOP_PERF_PUMP].guardValue == GUARD_VALUE_TRUE)
-            {
-            	/* (FM) risolvo la situazione di allarme andando a spegnere la PERF PUMP */
-                ptrFutureChild = &stateChildAlarmPriming[3];
-            }
-            else if(currentGuard[GUARD_ALARM_STOP_PURIF_PUMP].guardValue == GUARD_VALUE_TRUE)
-            {
-            	/* (FM) risolvo la situazione di allarme andando a spegnere la PURIF PUMP */
-                ptrFutureChild = &stateChildAlarmPriming[5];
-            }
-            else if(currentGuard[GUARD_ALARM_STOP_OXYG_PUMP].guardValue == GUARD_VALUE_TRUE)
-            {
-            	/* (FM) risolvo la situazione di allarme andando a spegnere la OXYG PUMP */
-                ptrFutureChild = &stateChildAlarmPriming[5];
-            }
-            else if(currentGuard[GUARD_ALARM_STOP_PELTIER].guardValue == GUARD_VALUE_TRUE)
-            {
-            	/* (FM) risolvo la situazione di allarme andando ad agire sulla cella di peltier */
-                ptrFutureChild = &stateChildAlarmPriming[9];
-            }
-            else if(currentGuard[GUARD_ALARM_STOP_ALL_ACT_WAIT_CMD].guardValue == GUARD_VALUE_TRUE)
-            {
-            	/* (FM) risolvo la situazione di allarme andando  a spegnere tutti gli attuatori */
-                ptrFutureChild = &stateChildAlarmPriming[15];
-            }
-            else if(currentGuard[GUARD_ALARM_PUMPS_NOT_STILL].guardValue == GUARD_VALUE_TRUE)
-            {
-            	/* (FM) risolvo la situazione di allarme andando  a spegnere tutti gli attuatori */
-                ptrFutureChild = &stateChildAlarmPriming[17];
-            }
-            else if(currentGuard[GUARD_ALARM_BAD_PINCH_POS].guardValue == GUARD_VALUE_TRUE)
-            {
-            	/* (FM) risolvo la situazione di allarme andando  a spegnere tutti gli attuatori */
-                ptrFutureChild = &stateChildAlarmPriming[19];
-            }
-            else if(currentGuard[GUARD_ALARM_SFA_PRIM_AIR_DET].guardValue == GUARD_VALUE_TRUE)
-            {
-            	/* (FM) risolvo la situazione di allarme andando  a spegnere tutti gli attuatori */
-                ptrFutureChild = &stateChildAlarmPriming[21];
-            }
-            else if(currentGuard[GUARD_ALARM_MOD_BUS_ERROR].guardValue == GUARD_VALUE_TRUE)
-            {
-            	/* (FM) risolvo la situazione di allarme andando  a spegnere tutti gli attuatori */
-                ptrFutureChild = &stateChildAlarmPriming[23];
-            }
-            ResButInChildFlag = FALSE;
-			break;
+        /* (FM) probabilmente cio' che deve essere fatto per completare la gestione dell'allarme e'quello che segue.
+           I valori vengono messi a GUARD_VALUE_TRUE nella funzione manageAlarmChildGuard in base alle impostazioni
+           fatte per la gestione degli allarmi */
+		if(currentGuard[GUARD_ALARM_STOP_ALL_ACTUATOR].guardValue == GUARD_VALUE_TRUE)
+        {
+        	/* (FM) risolvo la situazione di allarme andando a spegnere tutti gli attuatori */
+        	ptrFutureChild = &stateChildAlarmPriming[11];
+        }
+        else if(currentGuard[GUARD_ALARM_STOP_ALL].guardValue == GUARD_VALUE_TRUE)
+        {
+        	/* (FM) risolvo la situazione di allarme andando a spegnere tutti gli attuatori e pompe */
+            ptrFutureChild = &stateChildAlarmPriming[7];
+        }
+        else if(currentGuard[GUARD_ALARM_STOP_PERF_PUMP].guardValue == GUARD_VALUE_TRUE)
+        {
+        	/* (FM) risolvo la situazione di allarme andando a spegnere la PERF PUMP */
+            ptrFutureChild = &stateChildAlarmPriming[3];
+        }
+        else if(currentGuard[GUARD_ALARM_STOP_PURIF_PUMP].guardValue == GUARD_VALUE_TRUE)
+       	{
+        	/* (FM) risolvo la situazione di allarme andando a spegnere la PURIF PUMP */
+            ptrFutureChild = &stateChildAlarmPriming[5];
+        }
+        else if(currentGuard[GUARD_ALARM_STOP_OXYG_PUMP].guardValue == GUARD_VALUE_TRUE)
+        {
+        	/* (FM) risolvo la situazione di allarme andando a spegnere la OXYG PUMP */
+           	ptrFutureChild = &stateChildAlarmPriming[5];
+        }
+        else if(currentGuard[GUARD_ALARM_STOP_PELTIER].guardValue == GUARD_VALUE_TRUE)
+        {
+        	/* (FM) risolvo la situazione di allarme andando ad agire sulla cella di peltier */
+            ptrFutureChild = &stateChildAlarmPriming[9];
+        }
+        else if(currentGuard[GUARD_ALARM_STOP_ALL_ACT_WAIT_CMD].guardValue == GUARD_VALUE_TRUE)
+        {
+        	/* (FM) risolvo la situazione di allarme andando  a spegnere tutti gli attuatori */
+            ptrFutureChild = &stateChildAlarmPriming[15];
+        }
+        else if(currentGuard[GUARD_ALARM_PUMPS_NOT_STILL].guardValue == GUARD_VALUE_TRUE)
+        {
+        	/* (FM) risolvo la situazione di allarme andando  a spegnere tutti gli attuatori */
+            ptrFutureChild = &stateChildAlarmPriming[17];
+        }
+        else if(currentGuard[GUARD_ALARM_BAD_PINCH_POS].guardValue == GUARD_VALUE_TRUE)
+        {
+        	/* (FM) risolvo la situazione di allarme andando  a spegnere tutti gli attuatori */
+            ptrFutureChild = &stateChildAlarmPriming[19];
+        }
+        else if(currentGuard[GUARD_ALARM_SFA_PRIM_AIR_DET].guardValue == GUARD_VALUE_TRUE)
+        {
+        	/* (FM) risolvo la situazione di allarme andando  a spegnere tutti gli attuatori */
+            ptrFutureChild = &stateChildAlarmPriming[21];
+        }
+        else if(currentGuard[GUARD_ALARM_MOD_BUS_ERROR].guardValue == GUARD_VALUE_TRUE)
+        {
+        	/* (FM) risolvo la situazione di allarme andando  a spegnere tutti gli attuatori */
+            ptrFutureChild = &stateChildAlarmPriming[23];
+        }
+        ResButInChildFlag = FALSE;
+		break;
 
 		case CHILD_PRIMING_ALARM_STOP_PERFUSION:
 			if(ptrCurrentChild->action == ACTION_ON_ENTRY)
@@ -5549,11 +5580,11 @@ void CheckOxygenationSpeed(word value)
 void CheckDepurationSpeed(word value, bool ForceValue, bool DisableUpdateCmd)
 {
 	static bool EnableUpdate = FALSE;
-	if(DisableUpdateCmd)
+	if (DisableUpdateCmd)
 	{
 		EnableUpdate = FALSE;
 		return;
-	}	
+	}
     if(ForceValue)
 	{
 		setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, (int)((float)parameterWordSetFromGUI[PAR_SET_PURIF_FLOW_TARGET].value / DEFAULT_ART_PUMP_GAIN * 100.0));
@@ -5597,18 +5628,18 @@ void Display_7S_Management()
 	// D_7S_DP_SetVal(); //spegne puntino led
 	// D_7S_DP_ClrVal(); //accende puntino led
 }
+// Filippo - tolto il commento alla funzione per il merge del 1-10-2018
+//void Cover_Sensor_GetVal() {
+//	unsigned char CoverM1, CoverM2, CoverM3, CoverM4, CoverM5;
 
-//void Cover_Sensor_GetVal()
-//{
-//	unsigned char CoverM1,CoverM2,CoverM3,CoverM4,CoverM5;
-//
 //	CoverM1 = COVER_M1_GetVal();
 //	CoverM2 = COVER_M2_GetVal();
 //	CoverM3 = COVER_M3_GetVal();
 //	CoverM4 = COVER_M4_GetVal();
 //	CoverM5 = COVER_M5_GetVal();
-//
+
 //}
+
 
 void Voltage_BM_Chk()
 {

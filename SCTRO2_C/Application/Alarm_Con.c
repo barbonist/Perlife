@@ -20,6 +20,7 @@
 #include "App_Ges.h"
 
 extern bool FilterSelected;
+extern bool AtLeastoneButResRcvd;
 
 // FM questa lista devo costruirla mettendo prima i PHYSIC_TRUE e poi i PHYSIC_FALSE,
 // ognuno deve poi essere ordinato in base alla priorita' ???
@@ -93,7 +94,7 @@ struct alarm alarmList[] =
         {CODE_ALARM_MACHINE_COVERS,       PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH,    0,  100, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull},         /* 33 */
         {CODE_ALARM_HOOKS_RESERVOIR,      PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH,    0,  100, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull},         /* 34 */
 		// da qui in avanti solo le warning
-		{CODE_ALARM_PRESS_ADS_FILTER_WARN, PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_LOW, 2000, 2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull},	        /* 35 esempio di warning*/
+		{CODE_ALARM_PRESS_ADS_FILTER_WARN, PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_LOW, 2000, 2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull},	        /* 30 esempio di warning*/
 		{}
 };
 
@@ -465,15 +466,309 @@ static int IdxCurrAlarm = 0xff;
 int StartAlmArrIdx = 0;
 int i_al;
 
-void alarmConInit(void){
+void alarmConInit_(void){
 	ptrAlarmCurrent = &alarmList[0];
 	StrAlarmWritten = 0;
 	IdxCurrAlarm = 0xff;
 	StartAlmArrIdx = 0;
 }
 
+void CalcAlarmActive(void)
+{
+	/*Faccio uno switch su tutta la macchina a stati in modo
+	 * gestire ogni allarme in funzioine dello stato in cui sono*/
 
-void EnableNextAlarmFunc(void)
+	switch(ptrCurrentState->state)
+	{
+		case STATE_NULL:
+		{
+			/* DA DEBUGGARE*/
+			//manageAlarmFlowSensNotDetected();
+			//manageAlarmIrTempSensNotDetected();
+
+			break;
+		}
+
+		case STATE_ENTRY:
+		{
+			/* DA DEBUGGARE*/
+			//manageAlarmFlowSensNotDetected();
+			//manageAlarmIrTempSensNotDetected();
+
+			break;
+		}
+
+		case STATE_IDLE:
+		{
+			/* DA DEBUGGARE*/
+			//manageAlarmFlowSensNotDetected();
+			//manageAlarmIrTempSensNotDetected();
+				// Filippo - aggiungo la gestione del tasto di stop come allarme
+				manageAlarmStopButtonPressed();
+
+			break;
+		}
+
+		case STATE_SELECT_TREAT:
+		{
+			/* DA DEBUGGARE*/
+			//manageAlarmFlowSensNotDetected();
+			//manageAlarmIrTempSensNotDetected();
+
+			break;
+		}
+
+		case STATE_T1_NO_DISPOSABLE:
+		{
+			/* DA DEBUGGARE*/
+			//manageAlarmFlowSensNotDetected();
+			//manageAlarmIrTempSensNotDetected();
+
+			break;
+		}
+
+		case STATE_MOUNTING_DISP:
+		{
+			/* DA DEBUGGARE*/
+			//manageAlarmFlowSensNotDetected();
+			//manageAlarmIrTempSensNotDetected();
+
+			break;
+		}
+
+		case STATE_TANK_FILL:
+		{
+			/* DA DEBUGGARE*/
+			//manageAlarmFlowSensNotDetected();
+			//manageAlarmIrTempSensNotDetected();
+
+			break;
+		}
+
+		case STATE_PRIMING_PH_1:
+		{
+			manageAlarmFlowSensNotDetected();
+			manageAlarmIrTempSensNotDetected();
+
+			//verifica physic pressioni
+			manageAlarmPhysicPressSensHigh();
+			//manageAlarmPhysicPressSensLow(); non serve questo allarme in priming
+
+			//verifica physic ir temp sens
+			manageAlarmPhysicTempSens();
+
+			manageAlarmLiquidLevelHigh();
+			if(GetTherapyType() == LiverTreat)
+				manageAlarmCoversPumpLiver();
+			else if(GetTherapyType() == KidneyTreat)
+				manageAlarmCoversPumpKidney();
+
+			manageAlarmCanBus();
+			manageAlarmActuatorModbusNotRespond();
+			manageAlarmActuatorWRModbusNotRespond();
+			manageAlarmFromProtective();
+			manageAlarmBadPinchPos();   // allarme di pinch posizionate correttamente
+			break;
+		}
+
+		case STATE_PRIMING_PH_2:
+		{
+			manageAlarmFlowSensNotDetected();
+			manageAlarmIrTempSensNotDetected();
+
+			//verifica physic pressioni
+			manageAlarmPhysicPressSensHigh();
+			//manageAlarmPhysicPressSensLow(); non serve questo allarme in priming
+
+			//verifica physic ir temp sens
+			manageAlarmPhysicTempSens();
+
+			manageAlarmLiquidLevelHigh();
+			if(GetTherapyType() == LiverTreat)
+				manageAlarmCoversPumpLiver();
+			else if(GetTherapyType() == KidneyTreat)
+				manageAlarmCoversPumpKidney();
+			manageAlarmCanBus();
+			manageAlarmPrimSFAAirDet();
+			manageAlarmActuatorModbusNotRespond();
+			manageAlarmActuatorWRModbusNotRespond();
+			manageAlarmFromProtective();
+			manageAlarmBadPinchPos();   // allarme di pinch posizionate correttamente
+			break;
+		}
+
+		case STATE_TREATMENT_KIDNEY_1:
+		{
+			//verifica physic pressioni
+			manageAlarmPhysicPressSensHigh();
+			manageAlarmPhysicPressSensLow();
+
+			//verifica physic flow sensor (presenza aria)
+			manageAlarmPhysicUFlowSens();
+			manageAlarmSAFAirSens();
+			manageAlarmPhysicUFlowSensVen();
+
+
+			//verifica physic ir temp sens
+			manageAlarmPhysicTempSens();
+
+			//verifica physic flusso di perfusione arteriosa alto
+			manageAlarmPhysicFlowPerfArtHigh();
+
+			//verifica  flusso  non rilevato
+			manageAlarmFlowSensNotDetected();
+
+			//verifica temperatura noin rilevata
+			manageAlarmIrTempSensNotDetected();
+
+			if(GetTherapyType() == LiverTreat)
+				manageAlarmCoversPumpLiver();
+			else if(GetTherapyType() == KidneyTreat)
+				manageAlarmCoversPumpKidney();
+
+			// Questo allarme lo commento per ora, perche' bisogna avere un sensore di livello
+			// che funziona bene e si e' sicuri del suo funzionamento
+			//manageAlarmLiquidLevelLow();
+			// i due allarmi che seguono devo essere gestiti attentamente perche' potrei avere delle
+			// segnalazioni di allarme anche durante la fase di accelerazione e decelerazione del pid
+			// Per ora li commento.
+			//manageAlarmDeltaFlowArt();
+			//manageAlarmDeltaFlowVen();
+			manageAlarmDeltaTempRecArt();
+			manageAlarmDeltaTempRecVen();
+			manageAlarmCanBus();
+			manageAlarmBadPinchPos(); // controllo il posizionamento delle pinch prima di iniziare un trattamento
+			manageAlarmActuatorModbusNotRespond();
+			manageAlarmActuatorWRModbusNotRespond();
+			manageAlarmFromProtective();
+				// Filippo - aggiungo la gestione del tasto di stop come allarme
+				manageAlarmStopButtonPressed();
+
+				// Filippo - aggiunto allarme per test sensore aria sbagliato
+				manageAlarmAirSensorTestKO();
+			break;
+		}
+
+		case STATE_PRIMING_WAIT:
+			// in questo stato non sono gestiti gli allarmi, per ora
+			//verifica physic pressioni
+			//manageAlarmPhysicPressSensHigh();
+			//manageAlarmPhysicPressSensLow();
+
+			//verifica physic ir temp sens
+			//manageAlarmPhysicTempSens();
+			break;
+
+		case STATE_PRIMING_RICIRCOLO:
+			//verifica physic pressioni
+			manageAlarmPhysicPressSensHigh();
+			manageAlarmPhysicPressSensLow();
+
+			//verifica physic ir temp sens
+			manageAlarmPhysicTempSens();
+			if(GetTherapyType() == LiverTreat)
+				manageAlarmCoversPumpLiver();
+			else if(GetTherapyType() == KidneyTreat)
+				manageAlarmCoversPumpKidney();
+			manageAlarmCanBus();
+			manageAlarmPumpNotStill();  // controllo allarme di pompe ferme alla fine del ricircolo
+			manageAlarmBadPinchPos();   // allarme di pinch posizionate correttamente
+			manageAlarmPrimSFAAirDet();
+			manageAlarmActuatorModbusNotRespond();
+			manageAlarmActuatorWRModbusNotRespond();
+			manageAlarmFromProtective();
+				// Filippo - aggiungo la gestione del tasto di stop come allarme
+				manageAlarmStopButtonPressed();
+			break;
+
+		case STATE_WAIT_TREATMENT:
+			//verifica physic pressioni
+			//manageAlarmPhysicPressSensHigh();
+			//manageAlarmPhysicPressSensLow();
+
+			//verifica physic ir temp sens
+			//manageAlarmPhysicTempSens();
+			break;
+
+		/*case STATE_T1_WITH_DISPOSABLE:
+		{
+			break;
+		}
+
+		case STATE_PRIMING_TREAT_1:
+		{
+			break;
+		}
+
+		case STATE_PRIMING_TREAT_2:
+		{
+			break;
+		}*/
+
+
+		case STATE_TREATMENT_2:
+		{
+			break;
+		}
+
+		case STATE_EMPTY_DISPOSABLE:
+		case STATE_EMPTY_DISPOSABLE_1:
+		{
+			manageAlarmFlowSensNotDetected();
+			manageAlarmIrTempSensNotDetected();
+
+			manageAlarmPhysicPressSensHigh();
+			manageAlarmPhysicUFlowSens();
+			manageAlarmSAFAirSens();
+			manageAlarmPhysicUFlowSensVen();
+			if(GetTherapyType() == LiverTreat)
+				manageAlarmCoversPumpLiver();
+			else if(GetTherapyType() == KidneyTreat)
+				manageAlarmCoversPumpKidney();
+			manageAlarmActuatorModbusNotRespond();
+			manageAlarmActuatorWRModbusNotRespond();
+			manageAlarmFromProtective();
+				// Filippo - aggiungo la gestione del tasto di stop come allarme
+				manageAlarmStopButtonPressed();
+			break;
+		}
+
+		case STATE_EMPTY_DISPOSABLE_2:
+		{
+			/* DA DEBUGGARE*/
+			//manageAlarmFlowSensNotDetected();
+			//manageAlarmIrTempSensNotDetected();
+			break;
+		}
+
+		case STATE_UNMOUNT_DISPOSABLE:
+			// per il momento, in questo stato non sono previsti allarmi.
+			// In questo stato sono azionate solo le pinch per smontare
+			// il disposable
+			break;
+
+		case STATE_WASHING:
+		{
+			/* DA DEBUGGARE*/
+			//manageAlarmFlowSensNotDetected();
+			//manageAlarmIrTempSensNotDetected();
+
+			break;
+		}
+
+		case STATE_FATAL_ERROR:
+		{
+			break;
+		}
+
+		default:
+		{
+			break;
+		}
+	}
+}
+
+void EnableNextAlarmFunc_(void)
 {
 	EnableNextAlarm = TRUE;
 
@@ -487,7 +782,7 @@ void EnableNextAlarmFunc(void)
 }
 
 
-void alarmEngineAlways(void)
+void alarmEngineAlways_(void)
 {
 //	static int CntTickDelay = 0;
 
@@ -513,318 +808,7 @@ void alarmEngineAlways(void)
 //	}
 
 
-
-/*Faccio uno switch su tutta la macchina a stati in modo
- * gestire ogni allarme in funzioine dello stato in cui sono*/
-
-
-	//if(GlobalFlags.FlagsDef.EnableAllAlarms)
-	{
-		switch(ptrCurrentState->state)
-		{
-			case STATE_NULL:
-			{
-				/* DA DEBUGGARE*/
-				//manageAlarmFlowSensNotDetected();
-				//manageAlarmIrTempSensNotDetected();
-
-				break;
-			}
-
-			case STATE_ENTRY:
-			{
-				/* DA DEBUGGARE*/
-				//manageAlarmFlowSensNotDetected();
-				//manageAlarmIrTempSensNotDetected();
-
-				break;
-			}
-
-			case STATE_IDLE:
-			{
-				/* DA DEBUGGARE*/
-				//manageAlarmFlowSensNotDetected();
-				//manageAlarmIrTempSensNotDetected();
-				// Filippo - aggiungo la gestione del tasto di stop come allarme
-				manageAlarmStopButtonPressed();
-
-				break;
-			}
-
-			case STATE_SELECT_TREAT:
-			{
-				/* DA DEBUGGARE*/
-				//manageAlarmFlowSensNotDetected();
-				//manageAlarmIrTempSensNotDetected();
-
-				break;
-			}
-
-			case STATE_T1_NO_DISPOSABLE:
-			{
-				/* DA DEBUGGARE*/
-				//manageAlarmFlowSensNotDetected();
-				//manageAlarmIrTempSensNotDetected();
-				manageAlarmStopButtonPressed();
-				manageAlarmT1Test();
-				break;
-			}
-
-			case STATE_MOUNTING_DISP:
-			{
-				/* DA DEBUGGARE*/
-				//manageAlarmFlowSensNotDetected();
-				//manageAlarmIrTempSensNotDetected();
-
-				break;
-			}
-
-			case STATE_TANK_FILL:
-			{
-				/* DA DEBUGGARE*/
-				//manageAlarmFlowSensNotDetected();
-				//manageAlarmIrTempSensNotDetected();
-
-				break;
-			}
-
-			case STATE_PRIMING_PH_1:
-			{
-				manageCover_Hook_Sensor();
-				manageAlarmFlowSensNotDetected();
-				manageAlarmIrTempSensNotDetected();
-
-				//verifica physic pressioni
-				manageAlarmPhysicPressSensHigh();
-				//manageAlarmPhysicPressSensLow(); non serve questo allarme in priming
-
-				//verifica physic ir temp sens
-				manageAlarmPhysicTempSens();
-
-				manageAlarmLiquidLevelHigh();
-				if(GetTherapyType() == LiverTreat)
-					manageAlarmCoversPumpLiver();
-				else if(GetTherapyType() == KidneyTreat)
-					manageAlarmCoversPumpKidney();
-
-				manageAlarmCanBus();
-				manageAlarmActuatorModbusNotRespond();
-				manageAlarmActuatorWRModbusNotRespond();
-				manageAlarmFromProtective();
-				manageAlarmBadPinchPos();   // allarme di pinch posizionate correttamente
-				// Filippo - aggiungo la gestione del tasto di stop come allarme
-				manageAlarmStopButtonPressed();
-				break;
-			}
-
-			case STATE_PRIMING_PH_2:
-			{
-				manageCover_Hook_Sensor();
-				manageAlarmFlowSensNotDetected();
-				manageAlarmIrTempSensNotDetected();
-
-				//verifica physic pressioni
-				manageAlarmPhysicPressSensHigh();
-				//manageAlarmPhysicPressSensLow(); non serve questo allarme in priming
-
-				//verifica physic ir temp sens
-				manageAlarmPhysicTempSens();
-
-				manageAlarmLiquidLevelHigh();
-				if(GetTherapyType() == LiverTreat)
-					manageAlarmCoversPumpLiver();
-				else if(GetTherapyType() == KidneyTreat)
-					manageAlarmCoversPumpKidney();
-				manageAlarmCanBus();
-				manageAlarmPrimSFAAirDet();
-				manageAlarmActuatorModbusNotRespond();
-				manageAlarmActuatorWRModbusNotRespond();
-				manageAlarmFromProtective();
-				manageAlarmBadPinchPos();   // allarme di pinch posizionate correttamente
-				// Filippo - aggiungo la gestione del tasto di stop come allarme
-				manageAlarmStopButtonPressed();
-				break;
-			}
-
-			case STATE_TREATMENT_KIDNEY_1:
-			{
-				manageCover_Hook_Sensor();
-				//verifica physic pressioni
-				manageAlarmPhysicPressSensHigh();
-				manageAlarmPhysicPressSensLow();
-
-				//verifica physic flow sensor (presenza aria)
-				manageAlarmPhysicUFlowSens();
-				manageAlarmSAFAirSens();
-				manageAlarmPhysicUFlowSensVen();
-
-
-				//verifica physic ir temp sens
-				manageAlarmPhysicTempSens();
-
-				//verifica physic flusso di perfusione arteriosa alto
-				manageAlarmPhysicFlowPerfArtHigh();
-
-				//verifica  flusso  non rilevato
-				manageAlarmFlowSensNotDetected();
-
-				//verifica temperatura noin rilevata
-				manageAlarmIrTempSensNotDetected();
-
-				if(GetTherapyType() == LiverTreat)
-					manageAlarmCoversPumpLiver();
-				else if(GetTherapyType() == KidneyTreat)
-					manageAlarmCoversPumpKidney();
-
-				// Questo allarme lo commento per ora, perche' bisogna avere un sensore di livello
-				// che funziona bene e si e' sicuri del suo funzionamento
-				//manageAlarmLiquidLevelLow();
-				// i due allarmi che seguono devo essere gestiti attentamente perche' potrei avere delle
-				// segnalazioni di allarme anche durante la fase di accelerazione e decelerazione del pid
-				// Per ora li commento.
-				//manageAlarmDeltaFlowArt();
-				//manageAlarmDeltaFlowVen();
-				manageAlarmDeltaTempRecArt();
-				manageAlarmDeltaTempRecVen();
-				manageAlarmCanBus();
-				manageAlarmBadPinchPos(); // controllo il posizionamento delle pinch prima di iniziare un trattamento
-				manageAlarmActuatorModbusNotRespond();
-				manageAlarmActuatorWRModbusNotRespond();
-				manageAlarmFromProtective();
-				// Filippo - aggiungo la gestione del tasto di stop come allarme
-				manageAlarmStopButtonPressed();
-
-				// Filippo - aggiunto allarme per test sensore aria sbagliato
-				manageAlarmAirSensorTestKO();
-				break;
-			}
-
-			case STATE_PRIMING_WAIT:
-				// in questo stato non sono gestiti gli allarmi, per ora
-				//verifica physic pressioni
-				//manageAlarmPhysicPressSensHigh();
-				//manageAlarmPhysicPressSensLow();
-
-				//verifica physic ir temp sens
-				//manageAlarmPhysicTempSens();
-				manageCover_Hook_Sensor();
-				break;
-
-			case STATE_PRIMING_RICIRCOLO:
-
-				manageCover_Hook_Sensor();
-				//verifica physic pressioni
-				manageAlarmPhysicPressSensHigh();
-				manageAlarmPhysicPressSensLow();
-
-				//verifica physic ir temp sens
-				manageAlarmPhysicTempSens();
-				if(GetTherapyType() == LiverTreat)
-					manageAlarmCoversPumpLiver();
-				else if(GetTherapyType() == KidneyTreat)
-					manageAlarmCoversPumpKidney();
-				manageAlarmCanBus();
-				manageAlarmPumpNotStill();  // controllo allarme di pompe ferme alla fine del ricircolo
-				manageAlarmBadPinchPos();   // allarme di pinch posizionate correttamente
-				manageAlarmPrimSFAAirDet();
-				manageAlarmActuatorModbusNotRespond();
-				manageAlarmActuatorWRModbusNotRespond();
-				manageAlarmFromProtective();
-				// Filippo - aggiungo la gestione del tasto di stop come allarme
-				manageAlarmStopButtonPressed();
-				break;
-
-			case STATE_WAIT_TREATMENT:
-				manageCover_Hook_Sensor();
-				//verifica physic pressioni
-				//manageAlarmPhysicPressSensHigh();
-				//manageAlarmPhysicPressSensLow();
-
-				//verifica physic ir temp sens
-				//manageAlarmPhysicTempSens();
-				break;
-
-			/*case STATE_T1_WITH_DISPOSABLE:
-			{
-				break;
-			}
-
-			case STATE_PRIMING_TREAT_1:
-			{
-				break;
-			}
-
-			case STATE_PRIMING_TREAT_2:
-			{
-				break;
-			}*/
-
-
-			case STATE_TREATMENT_2:
-			{
-				manageCover_Hook_Sensor();
-				break;
-			}
-
-			case STATE_EMPTY_DISPOSABLE:
-			case STATE_EMPTY_DISPOSABLE_1:
-			{
-				manageCover_Hook_Sensor();
-				manageAlarmFlowSensNotDetected();
-				manageAlarmIrTempSensNotDetected();
-
-				manageAlarmPhysicPressSensHigh();
-				manageAlarmPhysicUFlowSens();
-				manageAlarmSAFAirSens();
-				manageAlarmPhysicUFlowSensVen();
-				if(GetTherapyType() == LiverTreat)
-					manageAlarmCoversPumpLiver();
-				else if(GetTherapyType() == KidneyTreat)
-					manageAlarmCoversPumpKidney();
-				manageAlarmActuatorModbusNotRespond();
-				manageAlarmActuatorWRModbusNotRespond();
-				manageAlarmFromProtective();
-				// Filippo - aggiungo la gestione del tasto di stop come allarme
-				manageAlarmStopButtonPressed();
-				break;
-			}
-
-			case STATE_EMPTY_DISPOSABLE_2:
-			{
-				/* DA DEBUGGARE*/
-				//manageAlarmFlowSensNotDetected();
-				//manageAlarmIrTempSensNotDetected();
-				manageCover_Hook_Sensor();
-				break;
-			}
-
-			case STATE_UNMOUNT_DISPOSABLE:
-				// per il momento, in questo stato non sono previsti allarmi.
-				// In questo stato sono azionate solo le pinch per smontare
-				// il disposable
-				break;
-
-			case STATE_WASHING:
-			{
-				/* DA DEBUGGARE*/
-				//manageAlarmFlowSensNotDetected();
-				//manageAlarmIrTempSensNotDetected();
-
-				break;
-			}
-
-			case STATE_FATAL_ERROR:
-			{
-				break;
-			}
-
-			default:
-			{
-				break;
-			}
-		}
-	}
-
+	CalcAlarmActive();
 
 	for(i_al=StartAlmArrIdx; i_al<ALARM_ACTIVE_IN_STRUCT; i_al++)
 	{
@@ -1249,6 +1233,9 @@ void manageAlarmPhysicPressSensLow(void)
 	}
 }
 
+int ForcePressArtHigh = 0;
+int ForcePressAdsFiltHigh = 0;
+
 void manageAlarmPhysicPressSensHigh(void)
 {
 	word MaxPressArt;
@@ -1263,7 +1250,6 @@ void manageAlarmPhysicPressSensHigh(void)
 
 	if(GlobalFlags.FlagsDef.EnablePressSensHighAlm)
 	{
-
 		if(PR_ART_Sistolyc_mmHg > MaxPressArt)
 		{
 			alarmList[PRESS_ART_HIGH].physic = PHYSIC_TRUE;
@@ -1281,6 +1267,14 @@ void manageAlarmPhysicPressSensHigh(void)
 		{
 			alarmList[PRESS_ADS_FILTER_HIGH].physic = PHYSIC_FALSE;
 		}
+
+		//--------------------------------------------------------
+		if(ForcePressArtHigh)  // DEBUG !!!!!!!!!!!!!!!!!!!
+			alarmList[PRESS_ART_HIGH].physic = PHYSIC_TRUE;
+		if(ForcePressAdsFiltHigh)  // DEBUG !!!!!!!!!!!!!!!!!!!
+			alarmList[PRESS_ADS_FILTER_HIGH].physic = PHYSIC_TRUE;
+		//--------------------------------------------------------
+
 
 		/*il sensore Venoso è usato solo nel trattamento Liver, il Kidney non ha la linea Venosa*/
 		if((PR_VEN_Sistolyc_mmHg /*PR_VEN_mmHg_Filtered*/ > PR_VEN_HIGH) && (GetTherapyType() == LiverTreat))
@@ -1308,9 +1302,7 @@ void manageAlarmPhysicPressSensHigh(void)
 		alarmList[PRESS_VEN_HIGH].physic = PHYSIC_FALSE;
 		alarmList[PRESS_OXYG_HIGH].physic = PHYSIC_FALSE;
 	}
-
 }
-
 
 void manageCover_Hook_Sensor(void)
 {
@@ -1542,6 +1534,24 @@ void manageAlarmT1Test(void)
 	}
 
 }
+// Filippo - funzione che gestisce l'allarme per il fallimento del test del sensore aria
+void manageAlarmAirSensorTestKO(void)
+{
+	if (airSensorTestKO)
+	{
+//		alarmList[ALARM_AIR_SENSOR_TEST_KO].physic=PHYSIC_TRUE;
+	}
+	else
+	{
+	//	alarmList[ALARM_AIR_SENSOR_TEST_KO].physic=PHYSIC_FALSE;
+	}
+
+	/*SOLO PER TEST, DA RIMUOVERE*/
+	//alarmList[ALARM_AIR_SENSOR_TEST_KO].physic=PHYSIC_FALSE;
+	/*SOLO PER TEST, FINE*/
+}
+
+
 
 void manageAlarmFlowSensNotDetected(void)
 {
@@ -1567,23 +1577,6 @@ void manageAlarmFlowSensNotDetected(void)
 		for (int j = 0; j<2; j++)
 			sensor_UFLOW[i].RequestMsgProcessed = 0;
 	}
-}
-
-// Filippo - funzione che gestisce l'allarme per il fallimento del test del sensore aria
-void manageAlarmAirSensorTestKO(void)
-{
-	if (airSensorTestKO)
-	{
-//		alarmList[ALARM_AIR_SENSOR_TEST_KO].physic=PHYSIC_TRUE;
-	}
-	else
-	{
-	//	alarmList[ALARM_AIR_SENSOR_TEST_KO].physic=PHYSIC_FALSE;
-	}
-
-	/*SOLO PER TEST, DA RIMUOVERE*/
-	//alarmList[ALARM_AIR_SENSOR_TEST_KO].physic=PHYSIC_FALSE;
-	/*SOLO PER TEST, FINE*/
 }
 
 void manageAlarmIrTempSensNotDetected(void)
@@ -1723,7 +1716,7 @@ void manageAlarmFromProtective(void)
 
 
 
-void alarmManageNull(void)
+void alarmManageNull_(void)
 {
 	static unsigned char dummy = 0;
 	static unsigned short elapsedEntryTime = 0;
@@ -2261,18 +2254,49 @@ void CalcWarningActive(void)
 }
 
 
-static int StrWarningWritten = 0;
-static int IdxCurrWarn = 0xff;
-int StartWrnArrIdx = 0;
-int i_wr;
+//---------------------------------------------GESTIONE warning--------------------------------------------------
+// numero totale di WARNING presE in considerazione
+#define MAX_NUM_WARNING  4
+#define MAX_NUM_ALARM  4
+#define MAX_NUM_ALARM_ACTIVATED 10
+#define MAX_NUM_WARNING_ACTIVATED 10
 
-void warningConInit(void){
-	ptrWarningCurrent = &alarmList[0];
-	StrWarningWritten = 0;
-	IdxCurrWarn = 0xff;
-	StartWrnArrIdx = 0;
-}
+// task di controllo degli allarmi esegue una scansione della struttura alarmList ogni 50 msec.
+// Potrebbe essere necessario allungare questo tempo se volessi effettivamente realizzare la gestione
+// differenziata delle attuazioni in base all'allarme. Quuesto e' dovuto al fatto che, una volta stabilita
+// l'attuazione da fare per risolvere l'allarme, la funzione ProcessStateMachine ha bisogno di almeno
+// due timeslot (due giri di programma) per metterla in atto
+#define ALARM_CHECK_PRESCALER 1
 
+void WrnLisStateAlways(void);
+
+// lista di variabili di stato corrispondenti a vari allarmi e warning attivi
+int WrnLisStateArr[MAX_NUM_WARNING];
+// lista degli indici della struttura alarmListcorrispondenti ai vari warning attivi
+// inizializzato a 0xffffffff
+int WrnListOf_AlarmListStrctPos[MAX_NUM_WARNING];
+// indice dell'array di warning che sto esaminando
+int CurrWrnLisStateArrdx;
+// posizione nell'array WrnLisStateArr del primo allarme
+int WrnLisStateArrFirstWrnPos;
+
+unsigned short elapsedEntryTimeWrn[MAX_NUM_WARNING];
+unsigned short elapsedExitTimeWrn[MAX_NUM_WARNING];
+
+// lista dei codici degli allarmi attivi
+// il codice di warning e' attivo se vale 0..n
+// il codice di warning non e' attivo se vale 0xffff
+uint16_t WarningCodeArray[MAX_NUM_ALARM];
+struct alarm * ptrWarningCurrent_new;
+
+// 1 controllo allarme
+// 0 controllo warning
+uint8_t AlarmCheckFlag;
+
+// lista delle posizioni nell'array AlarmList che si sono attivati
+int ListOf_WarningListStrctPos[MAX_NUM_ALARM_ACTIVATED];
+// lista dei codici di allarme che sono stati attivati
+int ListOf_WarningCode[MAX_NUM_ALARM_ACTIVATED];
 
 void EnableNextWarningFunc(void)
 {
@@ -2284,44 +2308,184 @@ void EnableNextWarningFunc(void)
 		// FM la warning e' stata disattivata perche' non sono piu'
 		// verificate le condizioni fisiche che lo hanno generato
 		memset(&warningCurrent, 0, sizeof(struct alarm));
+		ptrWarningCurrent = 0;
+		warningConInit();
 	}
 }
 
-void warningsEngineAlways(void)
+bool AddToWarningCodeArray(uint16_t code, int WarningListStrctPos)
 {
-	if((StrWarningWritten == 0) && !EnableNextWarning)
+	int i;
+	bool Added = FALSE;
+	for(i = 0; i < MAX_NUM_WARNING_ACTIVATED; i++)
 	{
-		// non ho ancora premuto il tasto button reset per resettare l'allarme corrente quindi non posso
-		// andare avanti.
-		// Se andassi avanti comunque avrei dei problemi nella gestione di due allarmi diversi e contemporanei
-		// come nel caso di livello alto e cover.
-		return;
+		if((ListOf_WarningCode[i] == code) && (ListOf_WarningListStrctPos[i] == WarningListStrctPos))
+		{
+			// gia' presente
+			Added = TRUE;
+			break;
+		}
 	}
+
+	if(i >= MAX_NUM_WARNING_ACTIVATED)
+	{
+		for(i = 0; i < MAX_NUM_WARNING_ACTIVATED; i++)
+		{
+			if(ListOf_WarningCode[i] == -1)
+			{
+				// posizione libera
+				ListOf_WarningCode[i] = code;
+				ListOf_WarningListStrctPos[i] = WarningListStrctPos;
+				Added = TRUE;
+				break;
+			}
+		}
+	}
+	return Added;
+}
+
+bool DeleteFromWarningCodeArray(uint16_t code)
+{
+	int i;
+	bool Deleted = FALSE;
+	struct alarm * ptrAlm;
+	for(i = 0; i < MAX_NUM_WARNING_ACTIVATED; i++)
+	{
+		if(ListOf_WarningCode[i] == code)
+		{
+			// forzo disattivazione allarme perche' poi riparto da 0
+			// con il suo controllo (reset delle
+			ptrAlm = &alarmList[ListOf_WarningListStrctPos[i]];
+			ptrAlm->active = ACTIVE_FALSE;
+			// NON SERVE CHIAMARE LA manageAlarmChildGuard PERCHE'
+			// NEL CASO DI WARNING NON FACCIO ALCUNA ATTUAZIONE
+			// devo azzerare anche GUARD_ALARM_.....
+			// altrimenti mi rimane settato
+			//manageAlarmChildGuard(ptrAlm);
+
+			// posizione libera
+			ListOf_WarningCode[i] = -1;
+			ListOf_WarningListStrctPos[i] = -1;
+			Deleted = TRUE;
+		}
+	}
+	return Deleted;
+}
+
+
+bool IsWarningElem(struct alarm * ptrAlmArrElem)
+{
+//	bool ret = FALSE;
+//	if(ptrAlmArrElem->priority == PRIORITY_LOW)
+//		ret = TRUE;
+	bool ret = FALSE;
+	if(ptrAlmArrElem->code >= START_WARNING_CODE)
+		ret = TRUE;
+	return ret;
+}
+
+// ritorna true se la warning e' in osservazione
+// WarningListStrctCurrPos posizione nella struttura  alarmList
+bool IsWarningAlreadyIn_WrnLisStateArr(int WarningListStrctCurrPos)
+{
+	bool ret = FALSE;
+	int i;
+	for( i = 0; i < MAX_NUM_WARNING; i++)
+	{
+		if(IsWarningElem(&alarmList[WarningListStrctCurrPos]) &&
+		   (WrnListOf_AlarmListStrctPos[i] == WarningListStrctCurrPos))
+		{
+			ret = TRUE;
+			// la struttura alarm e' gia sotto controllo per gestire un eventuale warning
+			break;
+		}
+	}
+	return ret;
+}
+
+void warningConInit(void){
+	ptrWarningCurrent = 0;
+	ptrWarningCurrent_new = 0;
+	WrnLisStateArrFirstWrnPos = 0xff;
+	memset(WrnLisStateArr, 0, sizeof(WrnLisStateArr));
+	// imposto gli indici a nessun warning presente
+	memset(WrnListOf_AlarmListStrctPos, 0xff, sizeof(WrnListOf_AlarmListStrctPos));
+	CurrWrnLisStateArrdx = 0;
+	memset(elapsedEntryTimeWrn, 0, sizeof(elapsedEntryTimeWrn));
+	memset(elapsedExitTimeWrn, 0, sizeof(elapsedExitTimeWrn));
+	memset(WarningCodeArray, 0xff, sizeof(WarningCodeArray));
+	memset(ListOf_WarningListStrctPos, 0xff, sizeof(ListOf_WarningListStrctPos));
+	memset(ListOf_WarningCode, 0xff, sizeof(ListOf_WarningCode));
+}
+
+
+
+void WrnLisStateAlways(void)
+{
+	int pos_wrn;
+	int CurrWarningIDX;
+	int SearchNextWarningFlag;
+
+	AlarmCheckFlag = 0;
+//	if((WrnLisStateArr[CurrWrnLisStateArrdx] == 0) && !EnableNextWarning)
+//	{
+//		// non ho ancora premuto il tasto button reset per resettare l'allarme corrente quindi non posso
+//		// andare avanti.
+//		// Se andassi avanti comunque avrei dei problemi nella gestione di due allarmi diversi e contemporanei
+//		// come nel caso di livello alto e cover.
+//		return;
+//	}
 
 	CalcWarningActive();
 
-	for(i_wr=StartWrnArrIdx; i_wr<ALARM_ACTIVE_IN_STRUCT; i_wr++)
+	if(WrnListOf_AlarmListStrctPos[CurrWrnLisStateArrdx] == -1)
 	{
-		if(alarmList[i_wr].priority == PRIORITY_LOW)
+		// a questo indice dell'array non corrisponde nessun allarme in esame quindi esamino la struttura partendo da 0
+		pos_wrn = 0;
+		SearchNextWarningFlag = 1;
+	}
+	else
+	{
+		// sono nella fase di inizio rilevazione di un allarme (calcolo del ritardo in entrata
+		// o allarme in corso quindi parto direttamente dalla posizione dell'allarme attuale
+		pos_wrn = WrnListOf_AlarmListStrctPos[CurrWrnLisStateArrdx];
+		SearchNextWarningFlag = 0;
+	}
+
+	for(; pos_wrn<ALARM_ACTIVE_IN_STRUCT; pos_wrn++)
+	{
+		if(SearchNextWarningFlag && IsWarningAlreadyIn_WrnLisStateArr(pos_wrn) || (!IsWarningElem(&alarmList[pos_wrn])))
+		{
+			// la warning e' gia' sotto osservazione quindi devo vedere se ne
+			// trovo un'altra
+			// oppure l'elemento non e' una struttura di warning
+			continue;
+		}
+		//if(alarmList[pos_wrn].priority == PRIORITY_LOW)
+		if(IsWarningElem(&alarmList[pos_wrn]))
 		{
 			// CONSIDERO WARNING SOLO GLI ALLARMI DI PRIORITA' BASSA
-			if((alarmList[i_wr].physic == PHYSIC_TRUE) && (alarmList[i_wr].active != ACTIVE_TRUE))
+			if((alarmList[pos_wrn].physic == PHYSIC_TRUE) && (alarmList[pos_wrn].active != ACTIVE_TRUE))
 			{
-				ptrWarningCurrent = &alarmList[i_wr];
-				alarmList[i_wr].prySafetyActionFunc();
-				StartWrnArrIdx = i_wr;
-				IdxCurrWarn = i_wr;
+				ptrWarningCurrent_new = &alarmList[pos_wrn];
+				alarmList[pos_wrn].prySafetyActionFunc();
+				WrnListOf_AlarmListStrctPos[CurrWrnLisStateArrdx] = pos_wrn;
+				// salvo il codice dell'allarme nella lista alla posizione CurrAlmLisStateArrdx
+				// che dovrebbe essere libera
+				AddToWarningCodeArray(ptrWarningCurrent_new->code, WrnListOf_AlarmListStrctPos[CurrWrnLisStateArrdx]);
+				if(WarningCodeArray[CurrWrnLisStateArrdx] == 0xffff)
+					WarningCodeArray[CurrWrnLisStateArrdx] = ptrWarningCurrent_new->code;
 				break;
 			}
-			else if((alarmList[i_wr].active == ACTIVE_TRUE) && (alarmList[i_wr].physic == PHYSIC_FALSE))
+			else if((alarmList[pos_wrn].active == ACTIVE_TRUE) && (alarmList[pos_wrn].physic == PHYSIC_FALSE))
 			{
-				ptrWarningCurrent = &alarmList[i_wr];
-				alarmList[i_wr].prySafetyActionFunc();
+				ptrWarningCurrent_new = &alarmList[pos_wrn];
+				alarmList[pos_wrn].prySafetyActionFunc();
 				break;
 			}
 			else
 			{
-				if(StrWarningWritten)
+				if(WrnLisStateArr[CurrWrnLisStateArrdx])
 				{
 					// allarme ancora in corso, sono in attesa di ACTIVE_FALSE
 					// quindi, per ora, non posso prendere in considerazione altri allarmi
@@ -2331,68 +2495,122 @@ void warningsEngineAlways(void)
 		}
 	}
 
-	if( !StrWarningWritten && (StartWrnArrIdx < ALARM_ACTIVE_IN_STRUCT))
+	if( !WrnLisStateArr[CurrWrnLisStateArrdx] && (CurrWrnLisStateArrdx < ALARM_ACTIVE_IN_STRUCT))
 	{
-		if(alarmList[IdxCurrWarn].active == ACTIVE_TRUE)
-			StrWarningWritten = 1;
-		else
+		CurrWarningIDX = WrnListOf_AlarmListStrctPos[CurrWrnLisStateArrdx];
+		if(CurrWarningIDX != -1)
 		{
-			// potrebbe essersi verificato un allarme molto breve che non e' riuscito
-			// ad attivarsi, forzo una ripartenza dall'inizio della tabella
-			StartWrnArrIdx = 0;
-			EnableNextWarning = TRUE;
-			memset(&alarmCurrent, 0, sizeof(struct alarm));
+			if(alarmList[CurrWarningIDX].active == ACTIVE_TRUE)
+			{
+				WrnLisStateArr[CurrWrnLisStateArrdx] = 1;
+			}
+			else
+			{
+				// potrebbe essersi verificato un allarme molto breve che non e' riuscito
+				// ad attivarsi, forzo una ripartenza dall'inizio della tabella
+				WrnListOf_AlarmListStrctPos[CurrWrnLisStateArrdx] = -1;
+				WarningCodeArray[CurrWrnLisStateArrdx] = 0xffff;
+				EnableNextWarning = TRUE;
+				//memset(&warningCurrent, 0, sizeof(struct alarm));
+			}
 		}
 	}
-	else if(StrWarningWritten == 1)
+	else if(WrnLisStateArr[CurrWrnLisStateArrdx] == 1)
 	{
-		ShowAlarmStr((int)alarmList[IdxCurrWarn].code, " on");
-		StrWarningWritten = 2;
-		EnableNextWarning = FALSE;
+		CurrWarningIDX = WrnListOf_AlarmListStrctPos[CurrWrnLisStateArrdx];
+		if(CurrWarningIDX != -1)
+		{
+			ShowAlarmStr((int)alarmList[CurrWarningIDX].code, " on");
+			WrnLisStateArr[CurrWrnLisStateArrdx] = 2;
+			EnableNextWarning = FALSE;
+		}
 	}
-	else if(StrWarningWritten == 2)
+	else if(WrnLisStateArr[CurrWrnLisStateArrdx] == 2)
 	{
-		if( alarmList[IdxCurrWarn].active == ACTIVE_FALSE)
+		CurrWarningIDX = WrnListOf_AlarmListStrctPos[CurrWrnLisStateArrdx];
+		if( (CurrWarningIDX != -1) && alarmList[CurrWarningIDX].active == ACTIVE_FALSE)
 		{
 			// allarme terminato
-			StrWarningWritten = 0;
-			ShowAlarmStr((int)alarmList[IdxCurrWarn].code, " off");
-			StartWrnArrIdx = 0;
+			WrnLisStateArr[CurrWrnLisStateArrdx] = 0;
+			ShowAlarmStr((int)alarmList[CurrWarningIDX].code, " off");
+			WrnListOf_AlarmListStrctPos[CurrWrnLisStateArrdx] = -1;
+			WarningCodeArray[CurrWrnLisStateArrdx] = 0xffff;
 		}
 	}
+}
+
+void warningsEngineAlways(void)
+{
+	static int WrnLisStateArr_id = 0;
+	static int WarningCheckPresc = 0; // il prescaler serve per la eventuale gestione differenziata dell'allarme
+
+	WarningCheckPresc++;
+	if(WarningCheckPresc >= ALARM_CHECK_PRESCALER)
+	{
+		WarningCheckPresc = 0;
+		CurrWrnLisStateArrdx = WrnLisStateArr_id;
+
+		WrnLisStateAlways();
+
+		WrnLisStateArr_id++;
+		if(WrnLisStateArr_id >= MAX_NUM_WARNING)
+			WrnLisStateArr_id = 0;
+	}
+
+
+//	int i;
+//	for(i = 0; i < MAX_NUM_WARNING; i++)
+//	{
+//		CurrWrnLisStateArrdx = i;
+//		WrnLisStateAlways();
+//	}
 }
 
 
 void warningManageNull(void)
 {
-	static unsigned char dummy = 0;
-	static unsigned short elapsedEntryTime = 0;
-	static unsigned short elapsedExitTime = 0;
-
-	elapsedEntryTime = elapsedEntryTime + 50;
-	elapsedExitTime = elapsedExitTime + 50;
-	if((ptrWarningCurrent->priority == PRIORITY_LOW) && (ptrWarningCurrent->active != ACTIVE_TRUE) && (elapsedEntryTime > ptrWarningCurrent->entryTime))
+	elapsedEntryTimeWrn[CurrWrnLisStateArrdx] = elapsedEntryTimeWrn[CurrWrnLisStateArrdx] + 50;
+	elapsedExitTimeWrn[CurrWrnLisStateArrdx] = elapsedExitTimeWrn[CurrWrnLisStateArrdx] + 50;
+	if(IsWarningElem(ptrWarningCurrent_new) && (ptrWarningCurrent_new->active != ACTIVE_TRUE) &&
+	   (elapsedEntryTimeWrn[CurrWrnLisStateArrdx] > ptrWarningCurrent_new->entryTime))
 	{
 		// entro nella gestione di un allarme che ha bisogno di azioni sugli attuatori
-		elapsedEntryTime = 0;
-		elapsedExitTime = 0;
-		ptrWarningCurrent->active = ACTIVE_TRUE;
+		elapsedEntryTimeWrn[CurrWrnLisStateArrdx] = 0;
+		elapsedExitTimeWrn[CurrWrnLisStateArrdx] = 0;
+		ptrWarningCurrent_new->active = ACTIVE_TRUE;
 		//currentGuard[GUARD_ALARM_ACTIVE].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
 
-		// FM ora AlarmCurrent contiene l'allarme attivo corrente che sara' inviato ad SBC
-		warningCurrent = *ptrWarningCurrent;
+		//-----------------------faccio partire l'allarme-------------------------------
+		if(!ptrWarningCurrent)
+		{
+			// FM ora AlarmCurrent contiene l'allarme attivo corrente che sara' inviato ad SBC
+			warningCurrent = *ptrWarningCurrent_new;
+			ptrWarningCurrent = ptrWarningCurrent_new;
+			if(alarmCurrent.code == 0)
+			{
+				// non ci sono allarmi visualizzo subito la warning
+				alarmCurrent = *ptrWarningCurrent_new;
+			}
+
+			if(alarmCurrent.code == 0)
+				alarmCurrent = *ptrWarningCurrent;
+			// mi salvo in questa variabile globale la posizione nell'array WrnLisStateArr della
+			// prima warning rilevata
+			WrnLisStateArrFirstWrnPos = CurrWrnLisStateArrdx;
+		}
+
+		//------------------------------------------------------------------------------
 	}
-	else if((ptrWarningCurrent->priority == PRIORITY_LOW) && (ptrWarningCurrent->active == ACTIVE_TRUE) && (elapsedExitTime > ptrWarningCurrent->exitTime))
+	else if(IsWarningElem(ptrWarningCurrent_new) && (ptrWarningCurrent_new->active == ACTIVE_TRUE) &&
+		    (elapsedExitTimeWrn[CurrWrnLisStateArrdx] > ptrWarningCurrent_new->exitTime))
 	{
 		// esco dalla gestione di un allarme che ha bisogno di azioni sugli attuatori
-		elapsedEntryTime = 0;
-		elapsedExitTime = 0;
-		ptrWarningCurrent->active = ACTIVE_FALSE;
-		//currentGuard[GUARD_ALARM_ACTIVE].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
+		elapsedEntryTimeWrn[CurrWrnLisStateArrdx] = 0;
+		elapsedExitTimeWrn[CurrWrnLisStateArrdx] = 0;
+		ptrWarningCurrent_new->active = ACTIVE_FALSE;
 
-		StartWrnArrIdx = 0;
+		WrnListOf_AlarmListStrctPos[CurrWrnLisStateArrdx] = 0;
 	}
-	dummy = dummy + 1;
 }
 
 // ritorna su 16 bit il codice di allarme e quello dello warning
@@ -2402,5 +2620,723 @@ uint16_t GetAlarmAndWarnCode(void)
 	u16 = alarmCurrent.code;
 	u16 |= (warningCurrent.code << 8);
 	return u16;
+}
+
+
+
+//---------------------------------------------NUOVA GESTIONE ALLARMI--------------------------------------------------
+// numero totale di allarmi e warning presi in considerazione
+void AlmLisStateAlways(void);
+
+// lista di variabili di stato corrispondenti a vari allarmi e warning attivi
+int AlmLisStateArr[MAX_NUM_ALARM];
+// lista degli indici della struttura alarmListcorrispondenti ai vari allarmi attivi
+// inizializzato a 0xffffffff
+int AlmListOf_AlarmListStrctPos[MAX_NUM_ALARM];
+// indice dell'array AlmLisStateArr di di stato degli allarmi che sto esaminando
+int CurrAlmLisStateArrdx;
+// posizione nell'array AlmLisStateArr del primo allarme
+int AlmLisStateArrFirstWrnPos;
+unsigned short elapsedEntryTime[MAX_NUM_ALARM];
+unsigned short elapsedExitTime[MAX_NUM_ALARM];
+
+// lista dei codici degli allarmi che si sono attivati
+// il codice di allarme e' attivo se vale 0..n
+// il codice di allarme non e' attivo se vale 0xffff
+uint16_t AlarmCodeArray[MAX_NUM_ALARM];
+struct alarm * ptrAlarmCurrent_new;
+
+// lista delle posizioni nell'array AlarmList che si sono attivati
+int ListOf_AlarmListStrctPos[MAX_NUM_ALARM_ACTIVATED];
+// lista dei codici di allarme che sono stati attivati
+int ListOf_AlarmCode[MAX_NUM_ALARM_ACTIVATED];
+// posizione nell'array WrnLisStateArr del primo allarme
+int AlmLisStateArrFirstAlmPos;
+
+
+void EnableNextAlarmFunc(void)
+{
+	EnableNextAlarm = TRUE;
+
+	//if((ptrAlarmCurrent->active == ACTIVE_TRUE) && (ptrAlarmCurrent->code == alarmCurrent.code) && (ptrAlarmCurrent->physic == PHYSIC_TRUE))
+	if(ptrAlarmCurrent->code == alarmCurrent.code)
+	{
+		// FM l'allarme e' stato disattivato perche' non sono piu'
+		// verificate le condizioni fisiche che lo hanno generato
+		memset(&alarmCurrent, 0, sizeof(struct alarm));
+		ptrAlarmCurrent = 0;
+		alarmConInit();
+	}
+}
+
+bool AddToAlarmCodeArray(uint16_t code, int AlarmListStrctPos)
+{
+	int i;
+	bool Added = FALSE;
+	for(i = 0; i < MAX_NUM_ALARM_ACTIVATED; i++)
+	{
+		if((ListOf_AlarmCode[i] == code) && (ListOf_AlarmListStrctPos[i] == AlarmListStrctPos))
+		{
+			// gia' presente
+			Added = TRUE;
+			break;
+		}
+	}
+
+	if(i >= MAX_NUM_ALARM_ACTIVATED)
+	{
+		for(i = 0; i < MAX_NUM_ALARM_ACTIVATED; i++)
+		{
+			if(ListOf_AlarmCode[i] == -1)
+			{
+				// posizione libera
+				ListOf_AlarmCode[i] = code;
+				ListOf_AlarmListStrctPos[i] = AlarmListStrctPos;
+				Added = TRUE;
+				break;
+			}
+		}
+	}
+	return Added;
+}
+
+// controlla se si tratta di un allarme aria e fa partire il recupero
+// dopo l'ultimo reset
+int IfAirAlmStartRecovery(struct alarm * ptrAlm)
+{
+	int AirAlmFlag = 0;
+	switch (ptrAlm->secActType)
+	{
+	case SECURITY_SAF_AIR_FILTER:
+		currentGuard[GUARD_ALARM_AIR_FILT_RECOVERY].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+		AirAlmFlag = 1;
+		break;
+	case SECURITY_SFV_AIR_DET:
+		currentGuard[GUARD_ALARM_AIR_SFV_RECOVERY].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+		AirAlmFlag = 1;
+		break;
+	case SECURITY_SFA_AIR_DET:
+		currentGuard[GUARD_ALARM_AIR_SFA_RECOVERY].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+		AirAlmFlag = 1;
+		break;
+	case SECURITY_SFA_PRIM_AIR_DET:
+		currentGuard[GUARD_ALARM_PRIM_AIR_FILT_RECOVERY].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+		AirAlmFlag = 1;
+		break;
+	}
+	return AirAlmFlag;
+}
+
+
+bool DeleteFromAlarmCodeArray(uint16_t code)
+{
+	int i;
+	bool Deleted = FALSE;
+	struct alarm * ptrAlm;
+	for(i = 0; i < MAX_NUM_ALARM_ACTIVATED; i++)
+	{
+		if(ListOf_AlarmCode[i] == code)
+		{
+			// forzo disattivazione allarme perche' poi riparto da 0
+			// con il suo controllo (reset delle
+			ptrAlm = &alarmList[ListOf_AlarmListStrctPos[i]];
+			ptrAlm->active = ACTIVE_FALSE;
+			// devo azzerare anche GUARD_ALARM_.....
+			// altrimenti mi rimane settato
+			manageAlarmChildGuard(ptrAlm);
+			if(!IfAirAlmStartRecovery(ptrAlm))
+			{
+				// In questo if vanno inseriti tutti i codici di allarme che hanno un codice di
+				// attuazione pari a SECURITY_STOP_ALL_ACT_WAIT_CMD che richiede di forzare off l'allarme ed uscire
+				// semplicemente con un reset
+				if(ptrAlm->code == CODE_ALARM_TANK_LEVEL_HIGH)
+				{
+					// Questa tipologia di allarmi deve essere forzata in off dal software prima di poter riprendere il lavoro
+					ForceCurrentAlarmOff();
+					// setto la guard per fare in modo che quando l'allarme risultera' non attivo
+					// la macchina a stati parent riprenda il funzionamento normale
+					currentGuard[GUARD_ALARM_WAIT_CMD_TO_EXIT].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+
+					// l'allarme viene generato dal sensore di livello, quindi, se voglio andare avanti normalmente
+					// (dato che il sensore mi dice che il recipiente e' pieno) devo forzare anche la quantita' di liquido
+					// di priming al target richiesto
+					perfusionParam.priVolPerfArt = GetTotalPrimingVolumePerf(0);
+				}
+			}
+
+			// posizione libera
+			ListOf_AlarmCode[i] = -1;
+			ListOf_AlarmListStrctPos[i] = -1;
+			Deleted = TRUE;
+			break;
+		}
+	}
+	return Deleted;
+}
+
+
+// controlla se l'elemento alarm contiene un allarme o una warning
+bool IsAlarmElem(struct alarm * ptrAlmArrElem)
+{
+	bool ret = FALSE;
+	if(!IsWarningElem(ptrAlmArrElem))
+		ret = TRUE;
+	return ret;
+}
+
+// ritorna true se l'allarme e' in osservazione
+// AlarmListStrctCurrPos posizione nella struttura  alarmList
+bool IsAlarmAlreadyIn_AlmLisStateArr(int AlarmListStrctCurrPos)
+{
+	bool ret = FALSE;
+	int i;
+	for( i = 0; i < MAX_NUM_ALARM; i++)
+	{
+		if(IsAlarmElem(&alarmList[AlarmListStrctCurrPos]) &&
+		   AlmListOf_AlarmListStrctPos[i] == AlarmListStrctCurrPos)
+		{
+			ret = TRUE;
+			// la struttura alarm e' gia sotto controllo per gestire un eventuale allarme
+			break;
+		}
+	}
+	return ret;
+}
+
+void alarmConInit(void){
+	ptrAlarmCurrent = 0;
+	ptrAlarmCurrent_new = 0;
+	AlmLisStateArrFirstAlmPos = 0xff;
+	memset(AlmLisStateArr, 0, sizeof(AlmLisStateArr));
+	// imposto gli indici a nessun allarme presente
+	memset(AlmListOf_AlarmListStrctPos, 0xff, sizeof(AlmListOf_AlarmListStrctPos));
+	CurrAlmLisStateArrdx = 0;
+	memset(elapsedEntryTime, 0, sizeof(elapsedEntryTime));
+	memset(elapsedExitTime, 0, sizeof(elapsedExitTime));
+	memset(AlarmCodeArray, 0xff, sizeof(AlarmCodeArray));
+	AlarmCheckFlag = 0;
+	memset(ListOf_AlarmListStrctPos, 0xff, sizeof(ListOf_AlarmListStrctPos));
+	memset(ListOf_AlarmCode, 0xff, sizeof(ListOf_AlarmCode));
+}
+
+
+void AlmLisStateAlways(void)
+{
+	int pos_alm;
+	int CurrAlarmIDX;
+	int SearchNextAlarmFlag;
+
+	AlarmCheckFlag = 1;
+//	// QUESTO CONTROLLO NON DOVREBBE SERVIRE PIU' NELLA NUOVA GESTIONE PERCHE' IL PROGRAMMA DEVE CONTINUAMENTE
+//  // MONITORARE LE CONDIZIONI DI ALLARME PER TENERNE TRACCIA
+//	if((alarmCurrent.code == alarmList[AlmListOf_AlarmListStrctPos[CurrAlmLisStateArrdx]].code) &&
+//	   (AlmLisStateArr[CurrAlmLisStateArrdx] == 0) && !EnableNextAlarm)
+//	{
+//		// non ho ancora premuto il tasto button reset per resettare l'allarme corrente quindi non posso
+//		// andare avanti.
+//		// Se andassi avanti comunque avrei dei problemi nella gestione di due allarmi diversi e contemporanei
+//		// come nel caso di livello alto e cover.
+//		return;
+//	}
+
+	CalcAlarmActive();
+
+	if(AlmListOf_AlarmListStrctPos[CurrAlmLisStateArrdx] == -1)
+	{
+		// a questo indice dell'array non corrisponde nessun allarme in esame quindi esamino la struttura partendo da 0
+		pos_alm = 0;
+		SearchNextAlarmFlag = 1;
+	}
+	else
+	{
+		// sono nella fase di inizio rilevazione di un allarme (calcolo del ritardo in entrata
+		// o allarme in corso quindi parto direttamente dalla posizione dell'allarme attuale
+		pos_alm = AlmListOf_AlarmListStrctPos[CurrAlmLisStateArrdx];
+		SearchNextAlarmFlag = 0;
+	}
+
+	for(; pos_alm<ALARM_ACTIVE_IN_STRUCT; pos_alm++)
+	{
+		if(SearchNextAlarmFlag && IsAlarmAlreadyIn_AlmLisStateArr(pos_alm) || IsWarningElem(&alarmList[pos_alm]))
+		{
+			// l'allarme e' gia' sotto osservazione oppure si tratta di una warning
+			// quindi devo saltare questa posizione
+			continue;
+		}
+
+		if((alarmList[pos_alm].physic == PHYSIC_TRUE) && (alarmList[pos_alm].active != ACTIVE_TRUE))
+		{
+			ptrAlarmCurrent_new = &alarmList[pos_alm];
+			alarmList[pos_alm].prySafetyActionFunc();
+			AlmListOf_AlarmListStrctPos[CurrAlmLisStateArrdx] = pos_alm;
+			// salvo il codice dell'allarme nella lista alla posizione CurrAlmLisStateArrdx
+			// che dovrebbe essere libera
+			AddToAlarmCodeArray(ptrAlarmCurrent_new->code, AlmListOf_AlarmListStrctPos[CurrAlmLisStateArrdx]);
+			if(AlarmCodeArray[CurrAlmLisStateArrdx] == 0xffff)
+				AlarmCodeArray[CurrAlmLisStateArrdx] = ptrAlarmCurrent_new->code;
+
+			// FM forse qui devo interrompere perche' ho trovato una condizione di allarme da attivare
+			// e devo gestirla prima di andare a vedere le altre
+			break;
+		}
+		else if((alarmList[pos_alm].active == ACTIVE_TRUE) && (alarmList[pos_alm].physic == PHYSIC_FALSE))
+		{
+			ptrAlarmCurrent_new = &alarmList[pos_alm];
+			alarmList[pos_alm].prySafetyActionFunc();
+
+			// FM forse qui devo interrompere perche' ho trovato una condizione di allarme da disattivare
+			// e devo gestirla prima di andare a vedere le altre
+			break;
+		}
+		else
+		{
+			if(AlmLisStateArr[CurrAlmLisStateArrdx])
+			{
+				// allarme ancora in corso, sono in attesa di ACTIVE_FALSE
+				// quindi, per ora, non posso prendere in considerazione altri allarmi
+				break;
+			}
+		}
+	}
+
+	if( !AlmLisStateArr[CurrAlmLisStateArrdx] && (AlmListOf_AlarmListStrctPos[CurrAlmLisStateArrdx] < ALARM_ACTIVE_IN_STRUCT))
+	{
+		// prendo l'indice della struttura alarm in esame
+		CurrAlarmIDX = AlmListOf_AlarmListStrctPos[CurrAlmLisStateArrdx];
+		if(CurrAlarmIDX != -1)
+		{
+			if(alarmList[CurrAlarmIDX].active == ACTIVE_TRUE)
+			{
+				AlmLisStateArr[CurrAlmLisStateArrdx] = 1;
+			}
+			else
+			{
+				// potrebbe essersi verificato un allarme molto breve che non e' riuscito
+				// ad attivarsi, forzo una ripartenza dall'inizio della tabella
+				AlmListOf_AlarmListStrctPos[CurrAlmLisStateArrdx] = -1;
+				AlarmCodeArray[CurrAlmLisStateArrdx] = 0xffff;
+				EnableNextAlarm = TRUE;
+				//memset(&alarmCurrent, 0, sizeof(struct alarm));
+			}
+		}
+	}
+	else if(AlmLisStateArr[CurrAlmLisStateArrdx] == 1)
+	{
+		CurrAlarmIDX = AlmListOf_AlarmListStrctPos[CurrAlmLisStateArrdx];
+		if(CurrAlarmIDX != -1)
+		{
+			ShowAlarmStr((int)alarmList[CurrAlarmIDX].code, " on");
+			AlmLisStateArr[CurrAlmLisStateArrdx] = 2;
+			EnableNextAlarm = FALSE;
+		}
+	}
+	else if(AlmLisStateArr[CurrAlmLisStateArrdx] == 2)
+	{
+		CurrAlarmIDX = AlmListOf_AlarmListStrctPos[CurrAlmLisStateArrdx];
+		if((CurrAlarmIDX != -1) && alarmList[CurrAlarmIDX].active == ACTIVE_FALSE)
+		{
+			// allarme terminato
+			AlmLisStateArr[CurrAlmLisStateArrdx] = 0;
+			ShowAlarmStr((int)alarmList[CurrAlarmIDX].code, " off");
+			AlmListOf_AlarmListStrctPos[CurrAlmLisStateArrdx] = -1;
+			AlarmCodeArray[CurrAlmLisStateArrdx] = 0xffff;
+		}
+	}
+}
+
+
+void alarmEngineAlways(void)
+{
+	static int AlmLisStateArr_id = 0;
+	static int AlarmCheckPresc = 0; // il prescaler serve per la eventuale gestione differenziata dell'allarme
+
+	AlarmCheckPresc++;
+	if(AlarmCheckPresc >= ALARM_CHECK_PRESCALER)
+	{
+		AlarmCheckPresc = 0;
+		CurrAlmLisStateArrdx = AlmLisStateArr_id;
+
+		AlmLisStateAlways();
+
+		AlmLisStateArr_id++;
+		if(AlmLisStateArr_id >= MAX_NUM_ALARM)
+			AlmLisStateArr_id = 0;
+	}
+
+//	int i;
+//	for(i = 0; i < MAX_NUM_ALARM; i++)
+//	{
+//		CurrAlmLisStateArrdx = i;
+//		AlmLisStateAlways();
+//	}
+}
+
+
+void alarmManageNull(void)
+{
+	if(!AlarmCheckFlag)
+	{
+		// se faccio l'analisi delle warning devo chiamare questa funzione
+		warningManageNull();
+	}
+	else
+	{
+		elapsedEntryTime[CurrAlmLisStateArrdx] = elapsedEntryTime[CurrAlmLisStateArrdx] + 50;
+		elapsedExitTime[CurrAlmLisStateArrdx] = elapsedExitTime[CurrAlmLisStateArrdx] + 50;
+		if((ptrAlarmCurrent_new->active != ACTIVE_TRUE) && (elapsedEntryTime[CurrAlmLisStateArrdx] > ptrAlarmCurrent_new->entryTime))
+		{
+			// entro nella gestione di un allarme che ha bisogno di azioni sugli attuatori
+			elapsedEntryTime[CurrAlmLisStateArrdx] = 0;
+			elapsedExitTime[CurrAlmLisStateArrdx] = 0;
+			ptrAlarmCurrent_new->active = ACTIVE_TRUE;
+
+			//-----------------------faccio partire l'allarme-------------------------------
+			// prendo il primo che si verifica
+			if(!ptrAlarmCurrent)
+			{
+				ptrAlarmCurrent = ptrAlarmCurrent_new;
+				alarmCurrent = *ptrAlarmCurrent_new;
+				currentGuard[GUARD_ALARM_ACTIVE].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+				// FM ora AlarmCurrent contiene l'allarme attivo corrente che sara' inviato ad SBC
+				//alarmCurrent = *ptrAlarmCurrent_new;
+				if(IsNonPhysicalAlm((int)alarmCurrent.code))
+				{
+					// e' solo una segnalazione, l'allarme non deve essere gestito tramite le tabelle child
+					currentGuard[GUARD_ALARM_ACTIVE].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
+				}
+				// mi salvo in questa variabile globale la posizione nell'array WrnLisStateArr della
+				// prima warning rilevata
+				AlmLisStateArrFirstAlmPos = CurrAlmLisStateArrdx;
+			}
+			//------------------------------------------------------------------------------
+			manageAlarmChildGuard(ptrAlarmCurrent_new);
+		}
+		else if((ptrAlarmCurrent_new->active == ACTIVE_TRUE) && (elapsedExitTime[CurrAlmLisStateArrdx] > ptrAlarmCurrent_new->exitTime))
+		{
+			// esco dalla gestione di un allarme che ha bisogno di azioni sugli attuatori
+			elapsedEntryTime[CurrAlmLisStateArrdx] = 0;
+			elapsedExitTime[CurrAlmLisStateArrdx] = 0;
+			ptrAlarmCurrent_new->active = ACTIVE_FALSE;
+
+			// devo spostarlo dopo l'ultimo reset
+			//currentGuard[GUARD_ALARM_ACTIVE].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
+
+			manageAlarmChildGuard(ptrAlarmCurrent_new);
+
+			// allarme terminato riparto dall'indice 0 dell'array di strutture
+			AlmListOf_AlarmListStrctPos[CurrAlmLisStateArrdx] = 0;
+		}
+	}
+}
+
+
+//-----------------------------------------------------------------------------------------------------------------
+// Copia la  successiva warning (se esiste) nella struttura alarmCurrent
+// ritorna l'indice nella lista WrnLisStateArr della nuova warning (-1 se non esiste
+// una nuova warning)
+int GetNextWarningFromList(void)
+{
+	int NewIndex = -1;
+	static int i = 0;
+	for(; i < MAX_NUM_WARNING_ACTIVATED; i++)
+	{
+		if(ListOf_WarningListStrctPos[i] != -1)
+		{
+			ptrWarningCurrent = &alarmList[ListOf_WarningListStrctPos[i]];
+			warningCurrent = *ptrWarningCurrent;
+			// la copio nella struttura globale per farla vedere al PC
+			alarmCurrent = *ptrWarningCurrent;
+			NewIndex = i;
+			break;
+		}
+		// per le warning questo controllo non serve
+		//tanto sono sempre visualizzate dopo gli allarmi
+//		if(ListOf_WarningListStrctPos[i] == WrnListOf_AlarmListStrctPos[WrnLisStateArrFirstWrnPos])
+//		{
+//			// warning visualizzata per prima
+//			continue;
+//		}
+	}
+
+	if(i >= MAX_NUM_WARNING_ACTIVATED)
+		i = 0;
+	return NewIndex;
+}
+
+int GetTotNumWarning( void )
+{
+	int cnt = 0;
+	int i;
+	for(i = 0; i < MAX_NUM_WARNING_ACTIVATED; i++)
+	{
+		if(ListOf_WarningCode[i] != -1)
+		{
+			cnt++;
+		}
+	}
+	return cnt;
+}
+
+// Cancella dalla lista AlmLisStateArr l'allarme nella posizione IndiceArr
+// Potrebbe anche non essere presente
+void ResetWarningFromList( int code )
+{
+	int i;
+	for(i = 0; i < MAX_NUM_WARNING; i++)
+	{
+		if(WarningCodeArray[i] == code)
+		{
+			WrnLisStateArr[i] = 0;   // annullo lo stato
+			WrnListOf_AlarmListStrctPos[i] = -1;
+			elapsedEntryTimeWrn[i] = 0;
+			elapsedExitTimeWrn[i] = 0;
+			WarningCodeArray[i] = 0xffff;
+		}
+	}
+}
+
+void ResetWarninigWithCode(uint16_t code)
+{
+	// cancello dalla lista totale degli warning  (MAX_NUM_WARNING_ACTIVATED elementi)
+	DeleteFromWarningCodeArray(code);
+	// cancello dalla lista di ricerca (MAX_NUM_WARNING elementi) degli allarmi
+	ResetWarningFromList(code);
+}
+
+
+//-----------------------------------------------------------------------------------------------------------------
+
+// Copia il successivo allarme (se esiste) nella struttura alarmCurrent
+// ritorna l'indice nella lista ListOf_AlarmListStrctPos del nuovo allarme(-1 se non esiste
+// un nuovo allarme)
+int GetNextAlarmFromList( void )
+{
+	int NewIndex = -1;
+	static int i = 0;
+	for(; i < MAX_NUM_ALARM_ACTIVATED; i++)
+	{
+		if(ListOf_AlarmListStrctPos[i] != -1)
+		{
+			ptrAlarmCurrent = &alarmList[ListOf_AlarmListStrctPos[i]];
+			alarmCurrent = *ptrAlarmCurrent;
+			NewIndex = i;
+			break;
+		}
+		if(ListOf_AlarmListStrctPos[i] == AlmListOf_AlarmListStrctPos[AlmLisStateArrFirstAlmPos])
+			continue;
+	}
+
+	if(i >= MAX_NUM_ALARM_ACTIVATED)
+		i = 0;
+	return NewIndex;
+}
+
+int GetTotNumAlarm( void )
+{
+	int cnt = 0;
+	int i;
+	for(i = 0; i < MAX_NUM_ALARM_ACTIVATED; i++)
+	{
+		if(ListOf_AlarmCode[i] != -1)
+		{
+			cnt++;
+		}
+	}
+	return cnt;
+}
+
+// Cancella dalla lista AlmLisStateArr l'allarme con il codice code
+// Potrebbe anche non essere presente
+void ResetAlarmFromList( int code )
+{
+	int i;
+	for(i = 0; i < MAX_NUM_ALARM; i++)
+	{
+		if(AlarmCodeArray[i] == code)
+		{
+			AlmLisStateArr[i] = 0;   // annullo lo stato
+			AlmListOf_AlarmListStrctPos[i] = -1;
+			elapsedEntryTime[i] = 0;
+			elapsedExitTime[i] = 0;
+			AlarmCodeArray[i] = 0xffff;
+		}
+	}
+}
+
+void ResetAlarmWithCode(uint16_t code)
+{
+	// cancello dalla lista totale degli allarmi (MAX_NUM_ALARM_ACTIVATED elementi)
+	DeleteFromAlarmCodeArray(code);
+	// cancello dalla lista di ricerca (MAX_NUM_ALARM elementi) degli allarmi
+	ResetAlarmFromList(code);
+}
+
+
+// devo chiamarla quando mi arriva un comando di reset allarme da utente
+// se ritorna true vuol dire che il reset può essere lasciato transitare alla
+// macchina a stati, altrimenti devo visualizzare l'allarme successivo
+//bool ResetAlmHandleFunc(uint16_t code)
+//{
+//	bool ResetGoToProc = FALSE;
+//	int ival;
+//
+//	if(code == 0xffff)
+//	{
+//		ResetGoToProc = TRUE;
+//		return ResetGoToProc;
+//	}
+//
+//	if(AmJInAlarmState())
+//	{
+//		// se e' una warning la resetto altrimenti non faccio niente
+//		//ResetWarninigWithCode(code);
+//		// se e' una allarme lo resetto altrimenti non faccio niente
+//		ResetAlarmWithCode(code);
+//		if(GetTotNumAlarm())
+//		{
+//			ResetGoToProc = FALSE;
+//			ival = GetNextAlarmFromList();
+//			if(ival == -1)
+//			{
+//				// qualcosa non va, questo non e' possibile
+//			}
+//		}
+//		else if(GetTotNumWarning())
+//		{
+////			memset(&alarmCurrent,  0, sizeof(alarmCurrent));
+////			currentGuard[GUARD_ALARM_ACTIVE].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
+////			currentGuard[GUARD_ALARM_ACTIVE].guardValue = GUARD_VALUE_FALSE;
+////			ptrAlm = &alarmList[ListOf_AlarmListStrctPos[i]];
+////			ptrAlm->active = ACTIVE_FALSE;
+////			// devo azzerare anche GUARD_ALARM_.....
+////			// altrimenti mi rimane settato
+////			manageAlarmChildGuard(ptrAlm);
+//
+//			AtLeastoneButResRcvd = TRUE;
+//			ResetGoToProc = TRUE;
+//			ival = GetNextWarningFromList();
+//			if(ival == -1)
+//			{
+//				// qualcosa non va, questo non e' possibile
+//			}
+//		}
+//		else
+//		{
+//			// non ci sono piu' allarmi o warning posso resettare anche le ultime variabili
+//			ptrAlarmCurrent = 0;
+//			ptrAlarmCurrent_new = 0;
+//			AlmLisStateArrFirstWrnPos = 0xff;
+//			CurrAlmLisStateArrdx = 0;
+//			ptrWarningCurrent = 0;
+//			ptrWarningCurrent_new = 0;
+//			WrnLisStateArrFirstWrnPos = 0xff;
+//			CurrWrnLisStateArrdx = 0;
+//			memset(&alarmCurrent, 0, sizeof(struct alarm));
+//
+//			// forzo uscita dallo stato di allarme
+//			currentGuard[GUARD_ALARM_ACTIVE].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
+//			ResetGoToProc = TRUE;
+//		}
+//	}
+//	else
+//	{
+//		ResetWarninigWithCode(code);
+//		if(GetTotNumWarning())  //IsWarningElem(struct alarm * ptrAlmArrElem))
+//		{
+////			memset(&alarmCurrent,  0, sizeof(alarmCurrent));
+////			currentGuard[GUARD_ALARM_ACTIVE].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
+////			currentGuard[GUARD_ALARM_ACTIVE].guardValue = GUARD_VALUE_FALSE;
+//			ResetGoToProc = FALSE;
+//			//if(alarmCurrent.code == warningCurrent.code)
+//			// se e' una warning la resetto altrimenti non faccio niente
+//			ival = GetNextWarningFromList();
+//			if(ival == -1)
+//			{
+//				// qualcosa non va, questo non e' possibile
+//			}
+//		}
+//		else
+//		{
+//			// non sono in uno stato di allarme quindi il reset puo' essere inviato alla macchina a stati
+//			ResetGoToProc = TRUE;
+//		}
+//	}
+//	return ResetGoToProc;
+//}
+
+
+bool ResetAlmHandleFunc(uint16_t code)
+{
+	bool ResetGoToProc = FALSE;
+	int ival;
+
+	if(AmJInAlarmState())
+	{
+		if(GetTotNumAlarm())
+		{
+			// loop allarmi
+
+			// se e' una allarme lo resetto altrimenti non faccio niente
+			ResetAlarmWithCode(code);
+			if(GetTotNumAlarm())
+			{
+				ResetGoToProc = FALSE;
+				ival = GetNextAlarmFromList();
+				if(ival == -1)
+				{
+					// qualcosa non va, questo non e' possibile
+				}
+			}
+			else
+			{
+				// allarmi finiti
+				// non ci sono piu' allarmi o warning posso resettare anche le ultime variabili
+				ptrAlarmCurrent = 0;
+				ptrAlarmCurrent_new = 0;
+				AlmLisStateArrFirstWrnPos = 0xff;
+				CurrAlmLisStateArrdx = 0;
+				ptrWarningCurrent = 0;
+				ptrWarningCurrent_new = 0;
+				WrnLisStateArrFirstWrnPos = 0xff;
+				CurrWrnLisStateArrdx = 0;
+				memset(&alarmCurrent, 0, sizeof(struct alarm));
+
+				// forzo uscita dallo stato di allarme
+				currentGuard[GUARD_ALARM_ACTIVE].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
+				ResetGoToProc = TRUE;
+
+				if(GetTotNumWarning())
+				{
+					ResetGoToProc = FALSE;
+					ival = GetNextWarningFromList();
+					if(ival == -1)
+					{
+						// qualcosa non va, questo non e' possibile
+					}
+				}
+			}
+		}
+	}
+	else if(GetTotNumWarning())
+	{
+		ResetWarninigWithCode(code);
+		// loop warning
+		if(GetTotNumWarning())
+		{
+			ResetGoToProc = FALSE;
+			ival = GetNextWarningFromList();
+			if(ival == -1)
+			{
+				// qualcosa non va, questo non e' possibile
+			}
+		}
+	}
+	else
+	{
+		// non sono in uno stato di allarme quindi il reset puo' essere inviato alla macchina a stati
+		ResetGoToProc = TRUE;
+	}
+
+	return ResetGoToProc;
 }
 

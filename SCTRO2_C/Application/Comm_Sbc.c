@@ -1363,7 +1363,15 @@ void buildRDMachineStateResponseMsg(char code, char subcode)
 	/*131*/  sbc_tx_data[index++] = (wd     ) & 0xFF;
 	/* free 1*/
 	// Filippo - metto la necessità o meno di spegnere il PC
-	wd=(word)EMERGENCY_BUTTON_ACTIVATION_PC;
+	if (buttonGUITreatment[BUTTON_SHUT_DOWN_PC].state==GUI_BUTTON_RELEASED)
+	{
+		wd=1;
+	}
+	else
+	{
+		wd=(word)EMERGENCY_BUTTON_ACTIVATION_PC;
+	}
+
 	/*132*/  sbc_tx_data[index++] = (wd >> 8) & 0xFF;
 	/*133*/  sbc_tx_data[index++] = (wd     ) & 0xFF;
 	/* free 2*/

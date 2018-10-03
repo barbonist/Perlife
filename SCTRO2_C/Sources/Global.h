@@ -1215,7 +1215,8 @@ enum buttonGUIEnum{
 	BUTTON_START_EMPTY_DISPOSABLE = 0xF0,    // comando per inizio svuotamento
 	BUTTON_STOP_EMPTY_DISPOSABLE = 0xF1,     // ferma il processo di svuotamento
 	BUTTON_UNMOUNT_END = 0xF2,               // comando per fine smontaggio, posso tornare in idle
-
+	// Filippo - messo per gestire lo shut down del PC da tasto
+	BUTTON_SHUT_DOWN_PC = 0xF3,
 	BUTTON_END_NUMBER = 39
 };
 

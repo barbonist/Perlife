@@ -21,6 +21,13 @@
 #include "D_7S_F.h"
 #include "D_7S_G.h"
 
+// Filippo - inserito per il merge del 1-10-2018
+/*#include "COVER_M1.h"
+#include "COVER_M2.h"
+#include "COVER_M3.h"
+#include "COVER_M4.h"
+#include "COVER_M5.h"
+*/
 #include "EMERGENCY_BUTTON.h"
 #include "FRONTAL_COVER_1.h"
 #include "FRONTAL_COVER_2.h"
@@ -372,15 +379,16 @@ bool AmJInAlarmState(void)
 // Se sono in uno stato non di allarme ma l'allarme verso la GUI e' diverso da 0, allora
 // forzo annullamento allarme perche' e' una situazione di errore.
 // Vuol dire che per un qualche motivo il reset dell'allarme non ha funzionato
-//void CheckAlarmForGuiStateMsg(void)
-//{
-//	if(!AmJInAlarmState())
-//	{
-//		if(alarmCurrent.code)
-//			memset(&alarmCurrent, 0, sizeof(struct alarm));
-//	}
-//}
 
+// Filippo - tolto commento alla funzione per merge del 1-10-2018
+void CheckAlarmForGuiStateMsg(void)
+{
+	if(!AmJInAlarmState())
+	{
+		if(alarmCurrent.code)
+			memset(&alarmCurrent, 0, sizeof(struct alarm));
+	}
+}
 // ritorna TRUE se lo stato child ha bisogno del button reset per fare qualcosa
 // QUESTA FUZIONE DOVREBBE ESSERE AGGIORNATA OGNI VOLTA CHE SI AGGIUNGE UN NUOVO STATO PER LA GESTIONE
 // DI ALLARMI DOVE LO STATO CHILD HA BISOGNO DI UN BUTTON RESET
