@@ -1567,8 +1567,8 @@ unsigned char TemperatureStateMach(int cmd)
 			if((GetTherapyType() == KidneyTreat) && (((PARAMETER_ACTIVE_TYPE)parameterWordSetFromGUI[PAR_SET_OXYGENATOR_ACTIVE].value) == YES))
 			{
 				// sono nel ricircolo rene con ossigenatore abilitato
-				setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress,
-							                 (int)((float)parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value / OXYG_FLOW_TO_RPM_CONV * 100.0));
+					setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress,KIDNEY_PRIMING_PMP_OXYG_SPEED);
+							                  /*(int)((float)parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value / OXYG_FLOW_TO_RPM_CONV * 100.0));*/
 			}
 			else if(GetTherapyType() == LiverTreat)
 			{
@@ -1680,8 +1680,8 @@ void manageParentPrimingAlways(void){
 				(perfusionParam.priVolPerfArt > MIN_LIQ_IN_RES_TO_START_OXY_VEN))
 			{
 				// sono nel priming rene con ossigenatore abilitato ed ho superato una quantita' minima nel reservoir
-				setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress,
-										  (int)((float)parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value / OXYG_FLOW_TO_RPM_CONV * 100.0));
+				setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress,KIDNEY_PRIMING_PMP_OXYG_SPEED);
+						                  /*(int)((float)parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value / OXYG_FLOW_TO_RPM_CONV * 100.0));*/
 			}
 			else if((GetTherapyType() == LiverTreat) && (perfusionParam.priVolPerfArt > MIN_LIQ_IN_RES_TO_START_OXY_VEN))
 			{
@@ -1753,8 +1753,8 @@ void manageParentPrimingAlways(void){
 				(perfusionParam.priVolPerfArt > MIN_LIQ_IN_RES_TO_START_OXY_VEN))
 			{
 				// sono nel priming rene con ossigenatore abilitato ed ho superato una quantita' minima nel reservoir
-				setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress,
-										  (int)((float)parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value / OXYG_FLOW_TO_RPM_CONV * 100.0));
+				setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress,KIDNEY_PRIMING_PMP_OXYG_SPEED);
+						                  /*(int)((float)parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value / OXYG_FLOW_TO_RPM_CONV * 100.0));*/
 			}
 			else if((GetTherapyType() == LiverTreat) && (perfusionParam.priVolPerfArt > MIN_LIQ_IN_RES_TO_START_OXY_VEN))
 			{
@@ -1905,8 +1905,8 @@ void manageParentPrimingAlways(void){
 					(perfusionParam.priVolPerfArt > MIN_LIQ_IN_RES_TO_START_OXY_VEN))
 				{
 					// sono nel priming rene con ossigenatore abilitato ed ho superato una quantita' minima nel reservoir
-					setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress,
-									(int)((float)parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value / OXYG_FLOW_TO_RPM_CONV * 100.0));
+						setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress,KIDNEY_PRIMING_PMP_OXYG_SPEED);
+								                  /*(int)((float)parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value / OXYG_FLOW_TO_RPM_CONV * 100.0));*/
 				}
 				else if((GetTherapyType() == LiverTreat) && (perfusionParam.priVolPerfArt > MIN_LIQ_IN_RES_TO_START_OXY_VEN))
 				{
@@ -1976,8 +1976,8 @@ void manageParentPrimingAlways(void){
 				(perfusionParam.priVolPerfArt > MIN_LIQ_IN_RES_TO_START_OXY_VEN))
 			{
 				// sono nel priming rene con ossigenatore abilitato ed ho superato una quantita' minima nel reservoir
-				setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress,
-							       (int)((float)parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value / OXYG_FLOW_TO_RPM_CONV * 100.0));
+					setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress,KIDNEY_PRIMING_PMP_OXYG_SPEED);
+							                  /*(int)((float)parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value / OXYG_FLOW_TO_RPM_CONV * 100.0));*/
 			}
 			else if((GetTherapyType() == LiverTreat) && (perfusionParam.priVolPerfArt > MIN_LIQ_IN_RES_TO_START_OXY_VEN))
 			{
@@ -4115,8 +4115,8 @@ static void computeMachineStateGuardPrimingPh1(void){
 		   (perfusionParam.priVolPerfArt > MIN_LIQ_IN_RES_TO_START_OXY_VEN) && (StartOxygAndDepState == 0))
 		{
 			// sono nel priming rene con ossigenatore abilitato ed ho superato una quantita' minima nel reservoir
-			setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress,
-					                  (int)((float)parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value / OXYG_FLOW_TO_RPM_CONV * 100.0));
+			setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress,KIDNEY_PRIMING_PMP_OXYG_SPEED);
+					                  /*(int)((float)parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value / OXYG_FLOW_TO_RPM_CONV * 100.0));*/
 			StartOxygAndDepState = 1;
 			// memorizzo la durata del priming prima che vengono fatte partire le pompe di ossigenazione
 			PrimDurUntilOxyStart = (word)(TotalPrimingDuration + PrimingDuration);
@@ -4175,8 +4175,8 @@ static void computeMachineStateGuardPrimingPh2(void){
 		   (perfusionParam.priVolPerfArt > MIN_LIQ_IN_RES_TO_START_OXY_VEN) && (StartOxygAndDepState == 0))
 		{
 			// sono nel priming rene con ossigenatore abilitato ed ho superato una quantita' minima nel reservoir
-			setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress,
-					                  (int)((float)parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value / OXYG_FLOW_TO_RPM_CONV * 100.0));
+			setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress,KIDNEY_PRIMING_PMP_OXYG_SPEED);
+					                  /*(int)((float)parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value / OXYG_FLOW_TO_RPM_CONV * 100.0));*/
 			StartOxygAndDepState = 1;
 			// memorizzo la durata del priming prima che vengono fatte partire le pompe di ossigenazione
 			PrimDurUntilOxyStart = (word)(TotalPrimingDuration + PrimingDuration);
