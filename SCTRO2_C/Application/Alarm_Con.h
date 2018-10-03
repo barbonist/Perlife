@@ -281,5 +281,6 @@ void manageAlarmT1Test(void);
 void manageAlarmAirSensorTestKO(void);
 void manageCover_Hook_Sensor(void);
 
+#define START_WARNING_CODE		255
 
 #endif /* APPLICATION_ALARM_CON_H_ */
