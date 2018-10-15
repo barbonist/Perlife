@@ -466,13 +466,6 @@ static int IdxCurrAlarm = 0xff;
 int StartAlmArrIdx = 0;
 int i_al;
 
-void alarmConInit_(void){
-	ptrAlarmCurrent = &alarmList[0];
-	StrAlarmWritten = 0;
-	IdxCurrAlarm = 0xff;
-	StartAlmArrIdx = 0;
-}
-
 void CalcAlarmActive(void)
 {
 	/*Faccio uno switch su tutta la macchina a stati in modo
@@ -768,116 +761,6 @@ void CalcAlarmActive(void)
 	}
 }
 
-void EnableNextAlarmFunc_(void)
-{
-	EnableNextAlarm = TRUE;
-
-	//if((ptrAlarmCurrent->active == ACTIVE_TRUE) && (ptrAlarmCurrent->code == alarmCurrent.code) && (ptrAlarmCurrent->physic == PHYSIC_TRUE))
-	if(ptrAlarmCurrent->code == alarmCurrent.code)
-	{
-		// FM l'allarme e' stato disattivato perche' non sono piu'
-		// verificate le condizioni fisiche che lo hanno generato
-		memset(&alarmCurrent, 0, sizeof(struct alarm));
-	}
-}
-
-
-void alarmEngineAlways_(void)
-{
-//	static int CntTickDelay = 0;
-
-//	CntTickDelay++;
-//	if((StartAlmArrIdx == 0) && (CntTickDelay <= 3))
-//			return;
-//	else if(StartAlmArrIdx == 0)
-//		CntTickDelay = 3;
-	if((StrAlarmWritten == 0) && !EnableNextAlarm)
-	{
-		// non ho ancora premuto il tasto button reset per resettare l'allarme corrente quindi non posso
-		// andare avanti.
-		// Se andassi avanti comunque avrei dei problemi nella gestione di due allarmi diversi e contemporanei
-		// come nel caso di livello alto e cover.
-		return;
-	}
-//	else if((StrAlarmWritten == 2) && EnableNextAlarm)
-//	{
-//		// ho ricevuto un reset allarme da utente ma la condizione di allarme e' ancora attiva
-//		// devo reinizializzare le variabili che seguono altrimenti l'allarme non viene riproposto
-//		StrAlarmWritten = 0;
-//		StartAlmArrIdx = 0;
-//	}
-
-
-	CalcAlarmActive();
-
-	for(i_al=StartAlmArrIdx; i_al<ALARM_ACTIVE_IN_STRUCT; i_al++)
-	{
-		if((alarmList[i_al].physic == PHYSIC_TRUE) && (alarmList[i_al].active != ACTIVE_TRUE))
-		{
-			ptrAlarmCurrent = &alarmList[i_al];
-			alarmList[i_al].prySafetyActionFunc();
-			StartAlmArrIdx = i_al;
-			IdxCurrAlarm = i_al;
-
-			// FM forse qui devo interrompere perche' ho trovato una condizione di allarme da attivare
-			// e devo gestirla prima di andare a vedere le altre
-			break;
-		}
-		else if((alarmList[i_al].active == ACTIVE_TRUE) && (alarmList[i_al].physic == PHYSIC_FALSE))
-		{
-			ptrAlarmCurrent = &alarmList[i_al];
-			alarmList[i_al].prySafetyActionFunc();
-
-			//StartAlmArrIdx = i_al;  // allarme finito riparto dall'inizio della struttura
-			//IdxCurrAlarm = i_al;
-
-			// FM forse qui devo interrompere perche' ho trovato una condizione di allarme da disattivare
-			// e devo gestirla prima di andare a vedere le altre
-			break;
-		}
-		else
-		{
-			if(StrAlarmWritten)
-			{
-				// allarme ancora in corso, sono in attesa di ACTIVE_FALSE
-				// quindi, per ora, non posso prendere in considerazione altri allarmi
-				break;
-			}
-		}
-	}
-
-	if( !StrAlarmWritten && (StartAlmArrIdx < ALARM_ACTIVE_IN_STRUCT))
-	{
-		if(alarmList[IdxCurrAlarm].active == ACTIVE_TRUE)
-			StrAlarmWritten = 1;
-		else
-		{
-			// potrebbe essersi verificato un allarme molto breve che non e' riuscito
-			// ad attivarsi, forzo una ripartenza dall'inizio della tabella
-			StartAlmArrIdx = 0;
-			//CntTickDelay = 0;
-			EnableNextAlarm = TRUE;
-			memset(&alarmCurrent, 0, sizeof(struct alarm));
-		}
-	}
-	else if(StrAlarmWritten == 1)
-	{
-		ShowAlarmStr((int)alarmList[IdxCurrAlarm].code, " on");
-		StrAlarmWritten = 2;
-		EnableNextAlarm = FALSE;
-	}
-	else if(StrAlarmWritten == 2)
-	{
-		if( alarmList[IdxCurrAlarm].active == ACTIVE_FALSE)
-		{
-			// allarme terminato
-			StrAlarmWritten = 0;
-			ShowAlarmStr((int)alarmList[IdxCurrAlarm].code, " off");
-			StartAlmArrIdx = 0;
-			//CntTickDelay = 0;
-		}
-	}
-}
 
 //------------------------FUNZIONI PER DETERMINARE LA CONDIZIONE DI ALLARME----------------------------------
 
@@ -1652,6 +1535,7 @@ void manageAlarmActuatorModbusNotRespond(void)
 	}
 }
 
+
 // errore su modbus durante le operazioni di scrittura
 void manageAlarmActuatorWRModbusNotRespond(void)
 {
@@ -1716,56 +1600,6 @@ void manageAlarmFromProtective(void)
 
 
 
-void alarmManageNull_(void)
-{
-	static unsigned char dummy = 0;
-	static unsigned short elapsedEntryTime = 0;
-	static unsigned short elapsedExitTime = 0;
-
-	elapsedEntryTime = elapsedEntryTime + 50;
-	elapsedExitTime = elapsedExitTime + 50;
-	if((ptrAlarmCurrent->active != ACTIVE_TRUE) && (elapsedEntryTime > ptrAlarmCurrent->entryTime))
-	{
-		// entro nella gestione di un allarme che ha bisogno di azioni sugli attuatori
-		elapsedEntryTime = 0;
-		elapsedExitTime = 0;
-		ptrAlarmCurrent->active = ACTIVE_TRUE;
-		currentGuard[GUARD_ALARM_ACTIVE].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
-
-		// FM ora AlarmCurrent contiene l'allarme attivo corrente che sara' inviato ad SBC
-		alarmCurrent = *ptrAlarmCurrent;
-		if(IsNonPhysicalAlm((int)alarmCurrent.code))
-		{
-			// e' solo una segnalazione, l'allarme non deve essere gestito tramite le tabelle child
-			currentGuard[GUARD_ALARM_ACTIVE].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
-		}
-
-		manageAlarmChildGuard(ptrAlarmCurrent);
-		//ShowAlarmStr((int)alarmList[StartAlmArrIdx].code, " alarm");
-	}
-	else if((ptrAlarmCurrent->active == ACTIVE_TRUE) && (elapsedExitTime > ptrAlarmCurrent->exitTime))
-	//else if((ptrAlarmCurrent->active == ACTIVE_TRUE) && (elapsedExitTime > ((EnableNextAlarm) ? 0 : ptrAlarmCurrent->exitTime)))
-	{
-		// esco dalla gestione di un allarme che ha bisogno di azioni sugli attuatori
-		elapsedEntryTime = 0;
-		elapsedExitTime = 0;
-		ptrAlarmCurrent->active = ACTIVE_FALSE;
-		currentGuard[GUARD_ALARM_ACTIVE].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
-
-		// FM l'allarme e' stato disattivato perche' non sono piu'
-		// verificate le condizioni fisiche che lo hanno generato
-		//memset(&alarmCurrent, 0, sizeof(struct alarm));
-
-		manageAlarmChildGuard(ptrAlarmCurrent);
-
-		// allarme terminato riparto dall'indice 0 dell'array di strutture
-		//ShowAlarmStr((int)alarmList[StartAlmArrIdx].code, " terminato");
-		StartAlmArrIdx = 0;
-	}
-
-
-	dummy = dummy + 1;
-}
 
 void manageAlarmChildGuard(struct alarm * ptrAlarm){
 	struct alarm * myAlarmPointer;
@@ -2282,6 +2116,8 @@ int WrnLisStateArrFirstWrnPos;
 
 unsigned short elapsedEntryTimeWrn[MAX_NUM_WARNING];
 unsigned short elapsedExitTimeWrn[MAX_NUM_WARNING];
+//unsigned long elapsedEntryStartTimeWrn[MAX_NUM_WARNING];
+//unsigned long elapsedExitStartTimeWrn[MAX_NUM_WARNING];
 
 // lista dei codici degli allarmi attivi
 // il codice di warning e' attivo se vale 0..n
@@ -2416,6 +2252,8 @@ void warningConInit(void){
 	memset(WarningCodeArray, 0xff, sizeof(WarningCodeArray));
 	memset(ListOf_WarningListStrctPos, 0xff, sizeof(ListOf_WarningListStrctPos));
 	memset(ListOf_WarningCode, 0xff, sizeof(ListOf_WarningCode));
+//	memset(elapsedEntryStartTimeWrn, 0, sizeof(elapsedEntryStartTimeWrn));
+//	memset(elapsedExitStartTimeWrn, 0, sizeof(elapsedExitStartTimeWrn));
 }
 
 
@@ -2541,34 +2379,50 @@ void WrnLisStateAlways(void)
 
 void warningsEngineAlways(void)
 {
-	static int WrnLisStateArr_id = 0;
-	static int WarningCheckPresc = 0; // il prescaler serve per la eventuale gestione differenziata dell'allarme
-
-	WarningCheckPresc++;
-	if(WarningCheckPresc >= ALARM_CHECK_PRESCALER)
-	{
-		WarningCheckPresc = 0;
-		CurrWrnLisStateArrdx = WrnLisStateArr_id;
-
-		WrnLisStateAlways();
-
-		WrnLisStateArr_id++;
-		if(WrnLisStateArr_id >= MAX_NUM_WARNING)
-			WrnLisStateArr_id = 0;
-	}
-
-
-//	int i;
-//	for(i = 0; i < MAX_NUM_WARNING; i++)
+//	static int WrnLisStateArr_id = 0;
+//	static int WarningCheckPresc = 0; // il prescaler serve per la eventuale gestione differenziata dell'allarme
+//
+//	WarningCheckPresc++;
+//	if(WarningCheckPresc >= ALARM_CHECK_PRESCALER)
 //	{
-//		CurrWrnLisStateArrdx = i;
+//		WarningCheckPresc = 0;
+//		CurrWrnLisStateArrdx = WrnLisStateArr_id;
+//
 //		WrnLisStateAlways();
+//
+//		WrnLisStateArr_id++;
+//		if(WrnLisStateArr_id >= MAX_NUM_WARNING)
+//			WrnLisStateArr_id = 0;
 //	}
+
+
+	int i;
+	for(i = 0; i < MAX_NUM_WARNING; i++)
+	{
+		CurrWrnLisStateArrdx = i;
+		WrnLisStateAlways();
+	}
 }
 
 
 void warningManageNull(void)
 {
+//	if(elapsedEntryTimeWrn[CurrWrnLisStateArrdx] == 0)
+//	{
+//		// faccio in modo che il primo valore calcolato di elapsedEntryTimeWrn[CurrWrnLisStateArrdx] sia
+//		// subito != 0 altrimenti passerebbe sempre qui
+//		elapsedEntryStartTimeWrn[CurrWrnLisStateArrdx] = timerCounterModBus - 1;
+//	}
+//	if(elapsedExitStartTimeWrn[CurrWrnLisStateArrdx] == 0)
+//	{
+//		// faccio in modo che il primo valore calcolato di elapsedExitTimeWrn[CurrWrnLisStateArrdx] sia
+//		// subito != 0 altrimenti passerebbe sempre qui
+//		elapsedExitStartTimeWrn[CurrWrnLisStateArrdx] = timerCounterModBus - 1;
+//	}
+//
+//	elapsedEntryTimeWrn[CurrWrnLisStateArrdx] = msTick_elapsed(elapsedEntryStartTimeWrn[CurrWrnLisStateArrdx]) * 50L;
+//	elapsedExitTimeWrn[CurrWrnLisStateArrdx] = msTick_elapsed(elapsedExitStartTimeWrn[CurrWrnLisStateArrdx]) * 50L;
+
 	elapsedEntryTimeWrn[CurrWrnLisStateArrdx] = elapsedEntryTimeWrn[CurrWrnLisStateArrdx] + 50;
 	elapsedExitTimeWrn[CurrWrnLisStateArrdx] = elapsedExitTimeWrn[CurrWrnLisStateArrdx] + 50;
 	if(IsWarningElem(ptrWarningCurrent_new) && (ptrWarningCurrent_new->active != ACTIVE_TRUE) &&
@@ -2639,6 +2493,8 @@ int CurrAlmLisStateArrdx;
 int AlmLisStateArrFirstWrnPos;
 unsigned short elapsedEntryTime[MAX_NUM_ALARM];
 unsigned short elapsedExitTime[MAX_NUM_ALARM];
+//unsigned long elapsedEntryStartTime[MAX_NUM_ALARM];
+//unsigned long elapsedExitStartTime[MAX_NUM_ALARM];
 
 // lista dei codici degli allarmi che si sono attivati
 // il codice di allarme e' attivo se vale 0..n
@@ -2817,6 +2673,8 @@ void alarmConInit(void){
 	AlarmCheckFlag = 0;
 	memset(ListOf_AlarmListStrctPos, 0xff, sizeof(ListOf_AlarmListStrctPos));
 	memset(ListOf_AlarmCode, 0xff, sizeof(ListOf_AlarmCode));
+//	memset(elapsedEntryStartTime, 0, sizeof(elapsedEntryStartTime));
+//	memset(elapsedExitStartTime, 0, sizeof(elapsedExitStartTime));
 }
 
 
@@ -2947,28 +2805,28 @@ void AlmLisStateAlways(void)
 
 void alarmEngineAlways(void)
 {
-	static int AlmLisStateArr_id = 0;
-	static int AlarmCheckPresc = 0; // il prescaler serve per la eventuale gestione differenziata dell'allarme
-
-	AlarmCheckPresc++;
-	if(AlarmCheckPresc >= ALARM_CHECK_PRESCALER)
-	{
-		AlarmCheckPresc = 0;
-		CurrAlmLisStateArrdx = AlmLisStateArr_id;
-
-		AlmLisStateAlways();
-
-		AlmLisStateArr_id++;
-		if(AlmLisStateArr_id >= MAX_NUM_ALARM)
-			AlmLisStateArr_id = 0;
-	}
-
-//	int i;
-//	for(i = 0; i < MAX_NUM_ALARM; i++)
+//	static int AlmLisStateArr_id = 0;
+//	static int AlarmCheckPresc = 0; // il prescaler serve per la eventuale gestione differenziata dell'allarme
+//
+//	AlarmCheckPresc++;
+//	if(AlarmCheckPresc >= ALARM_CHECK_PRESCALER)
 //	{
-//		CurrAlmLisStateArrdx = i;
+//		AlarmCheckPresc = 0;
+//		CurrAlmLisStateArrdx = AlmLisStateArr_id;
+//
 //		AlmLisStateAlways();
+//
+//		AlmLisStateArr_id++;
+//		if(AlmLisStateArr_id >= MAX_NUM_ALARM)
+//			AlmLisStateArr_id = 0;
 //	}
+
+	int i;
+	for(i = 0; i < MAX_NUM_ALARM; i++)
+	{
+		CurrAlmLisStateArrdx = i;
+		AlmLisStateAlways();
+	}
 }
 
 
@@ -2981,6 +2839,22 @@ void alarmManageNull(void)
 	}
 	else
 	{
+//		if(elapsedEntryTime[CurrAlmLisStateArrdx] == 0)
+//		{
+//			// faccio in modo che il primo valore calcolato di elapsedEntryTime[CurrWrnLisStateArrdx] sia
+//			// subito != 0 altrimenti passerebbe sempre qui
+//			elapsedEntryStartTime[CurrWrnLisStateArrdx] = timerCounterModBus - 1;
+//		}
+//		if(elapsedExitTime[CurrAlmLisStateArrdx] == 0)
+//		{
+//			// faccio in modo che il primo valore calcolato di elapsedExitTime[CurrWrnLisStateArrdx] sia
+//			// subito != 0 altrimenti passerebbe sempre qui
+//			elapsedExitStartTime[CurrWrnLisStateArrdx] = timerCounterModBus - 1;
+//		}
+//		// calcolo il tempo trascorso
+//		elapsedEntryTime[CurrAlmLisStateArrdx] = msTick_elapsed(elapsedEntryStartTime[CurrWrnLisStateArrdx]) * 50L;
+//		elapsedExitTime[CurrAlmLisStateArrdx] = msTick_elapsed(elapsedExitStartTime[CurrWrnLisStateArrdx]) * 50L;
+
 		elapsedEntryTime[CurrAlmLisStateArrdx] = elapsedEntryTime[CurrAlmLisStateArrdx] + 50;
 		elapsedExitTime[CurrAlmLisStateArrdx] = elapsedExitTime[CurrAlmLisStateArrdx] + 50;
 		if((ptrAlarmCurrent_new->active != ACTIVE_TRUE) && (elapsedEntryTime[CurrAlmLisStateArrdx] > ptrAlarmCurrent_new->entryTime))
@@ -3090,6 +2964,8 @@ void ResetWarningFromList( int code )
 			WrnListOf_AlarmListStrctPos[i] = -1;
 			elapsedEntryTimeWrn[i] = 0;
 			elapsedExitTimeWrn[i] = 0;
+//			elapsedEntryStartTimeWrn[i] = 0;
+//			elapsedExitStarTimeWrn[i] = 0;
 			WarningCodeArray[i] = 0xffff;
 		}
 	}
@@ -3158,6 +3034,8 @@ void ResetAlarmFromList( int code )
 			AlmListOf_AlarmListStrctPos[i] = -1;
 			elapsedEntryTime[i] = 0;
 			elapsedExitTime[i] = 0;
+//			elapsedEntryStartTime[i] = 0;
+//			elapsedExitStartTime[i] = 0;
 			AlarmCodeArray[i] = 0xffff;
 		}
 	}
@@ -3307,7 +3185,9 @@ bool ResetAlmHandleFunc(uint16_t code)
 
 				if(GetTotNumWarning())
 				{
-					ResetGoToProc = FALSE;
+					// non ci vuole perche' il reset serve alla macchina a stati per uscire dagli allarmi
+					// sia che c'e' una warning che no.
+					//ResetGoToProc = FALSE;
 					ival = GetNextWarningFromList();
 					if(ival == -1)
 					{
@@ -3316,9 +3196,17 @@ bool ResetAlmHandleFunc(uint16_t code)
 				}
 			}
 		}
+		else
+		{
+			// sono in uno stato di allarme, ma gli allarmi sono stati tutti resettati
+			// faccio passare il tasto reset perche', se non esco dallo stato di allarme non riesco
+			// a resettare l'eventuale warning
+			ResetGoToProc = TRUE;
+		}
 	}
 	else if(GetTotNumWarning())
 	{
+		// il reset alle warning non lo faccio mai andare alla macchina a stati
 		ResetWarninigWithCode(code);
 		// loop warning
 		if(GetTotNumWarning())
@@ -3329,6 +3217,17 @@ bool ResetAlmHandleFunc(uint16_t code)
 			{
 				// qualcosa non va, questo non e' possibile
 			}
+		}
+		else
+		{
+			// c'era solo una warning e l'ho resettata
+			// quindi reinizializzo tutte le variabili relative
+			// alle warning
+			ptrWarningCurrent = 0;
+			ptrWarningCurrent_new = 0;
+			WrnLisStateArrFirstWrnPos = 0xff;
+			CurrWrnLisStateArrdx = 0;
+			memset(&alarmCurrent, 0, sizeof(struct alarm));
 		}
 	}
 	else

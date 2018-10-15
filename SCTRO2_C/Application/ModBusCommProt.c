@@ -1848,7 +1848,7 @@ void Manage_and_Storage_ModBus_Actuator_Data(void)
 
     if (ReadActive )
  	{
-    	if(timerCounterModBusReadDur && (msTick10_elapsed(timerCounterModBusReadDur) >= 2))
+    	if(timerCounterModBusReadDur && (msTick10_elapsed(timerCounterModBusReadDur) >= 3))
     	{
     		// sono passati 20 msec e non ho ancoraricevuto una risposta
     		// interrompo la fase di lettura per timeout

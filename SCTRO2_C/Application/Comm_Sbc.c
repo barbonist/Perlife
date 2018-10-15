@@ -1515,22 +1515,30 @@ void initGUIButton(void){
 // Questo e' stato fatto perche' ora si vuol lavorare sugli eventi di release
 // e non di press.
 // Facendo questa inversione non cambio tutto il resto del codice.
-void setGUIButton(unsigned char buttonId){
-	//buttonGUITreatment[buttonId].state = GUI_BUTTON_PRESSED;
-	buttonGUITreatment[buttonId].state = GUI_BUTTON_RELEASED;
-	actionFlag = 2;
-	if((buttonId == BUTTON_RESET_ALARM) || (buttonId == BUTTON_OVERRIDE_ALARM))
+void setGUIButton(unsigned char buttonId)
+{
+	if((buttonId == BUTTON_RESET_ALARM) && !ResetAlmHandleFunc(alarmCurrent.code))
 	{
-		actionFlag = 2;
-		// serve per abilitare la ricezione del successivo allarme
-		//EnableNextAlarm = TRUE;
+		// butto via il reset perche' ci sono altri allarmi o warning da resettare
 	}
-
-	if((buttonId == BUTTON_RESET_ALARM) && alarmCurrent.code)
+	else
 	{
-		// dovro' uscire dalla condizione di allarme e quindi azzero subito l'allarme
-		// inviato alla gui
-		SuspendInvioAlarmCode = 1;
+		//buttonGUITreatment[buttonId].state = GUI_BUTTON_PRESSED;
+		buttonGUITreatment[buttonId].state = GUI_BUTTON_RELEASED;
+		actionFlag = 2;
+		if((buttonId == BUTTON_RESET_ALARM) || (buttonId == BUTTON_OVERRIDE_ALARM))
+		{
+			actionFlag = 2;
+			// serve per abilitare la ricezione del successivo allarme
+			//EnableNextAlarm = TRUE;
+		}
+
+		if((buttonId == BUTTON_RESET_ALARM) && alarmCurrent.code)
+		{
+			// dovro' uscire dalla condizione di allarme e quindi azzero subito l'allarme
+			// inviato alla gui
+			SuspendInvioAlarmCode = 1;
+		}
 	}
 }
 
