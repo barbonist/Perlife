@@ -280,6 +280,7 @@ void manageAlarmT1Test(void);
 // Filippo - funzione che gestisce l'allarme per il fallimento del test del sensore aria
 void manageAlarmAirSensorTestKO(void);
 void manageCover_Hook_Sensor(void);
+bool ResetAlmHandleFunc(uint16_t code);
 
 #define START_WARNING_CODE		255
 
