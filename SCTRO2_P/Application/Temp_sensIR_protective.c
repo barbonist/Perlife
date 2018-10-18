@@ -67,10 +67,10 @@ void initTempSensIR(void){
  * sensorIR_TM[2].tempSensValue --> temperatura del flusso di perfusione venosa */
 void Manage_IR_Sens_Temp(void)
 {
-   unsigned char Address = 0x01;//FIRST_IR_TEMP_SENSOR; /*lo metto static così non la inizializza tutte le vote*/
+   static unsigned char Address = FIRST_IR_TEMP_SENSOR; /*lo metto static così non la inizializza tutte le vote*/
 
 	/*interrogo su bus I2C ogni 200 msec, quindi ogni sensore sarà interrogato ogni 600 msec perché abbiamo 3 sensori*/
-   if (CHANGE_ADDRESS_IR_SENS == FALSE && timerCounterCheckTempIRSens >= 6)
+   if (CHANGE_ADDRESS_IR_SENS == FALSE && timerCounterCheckTempIRSens >= 4)
     {
  		timerCounterCheckTempIRSens = 0;
 
@@ -78,22 +78,22 @@ void Manage_IR_Sens_Temp(void)
  		if (ON_NACK_IR_TM)
  		{
  			/*incremento il contatore di errori NACK*/
- 			sensorIR_TM[0/*Address-2*/].errorNACK++;
+ 			sensorIR_TM[Address-2].errorNACK++;
  			ON_NACK_IR_TM = FALSE;
  		}
 
-// 		/*se l'indirizzo supera l'ultimo sensore, resetto l'indirizzo al primo sensore per rifare il giro dei 3*/
-// 		if (Address > LAST_IR_TEMP_SENSOR)
-// 			Address = FIRST_IR_TEMP_SENSOR;
+ 		/*se l'indirizzo supera l'ultimo sensore, resetto l'indirizzo al primo sensore per rifare il giro dei 3*/
+ 		if (Address > LAST_IR_TEMP_SENSOR)
+ 			Address = FIRST_IR_TEMP_SENSOR;
 
  		/*costruisco il comando di lettura per il sensore di temperatura con indirizzo pari ad Address
  		 * Quando scatterà l'interrupt di trasmissione 'void IR_TM_COMM_OnTransmitData(void)'
  		 * andrò ad effettuare la lettura con 'IR_TM_COMM_RecvBlock(ptrDataTemperatureIR, 3, &ret);'*/
  		ptrDataTemperatureIR = buildCmdReadTempSensIR(Address, (RAM_ACCESS_COMMAND | SD_TOBJ1_RAM_ADDRESS), 0);
  		/*incremento i possibili errori dpovuti a non risposte o a risposte con PEC errate; se ricevo benbe resetto questo contatore*/
-// 		sensorIR_TM[Address].ErrorMSG++;
-// 		/*incremento l'indirizzo così al prossimo giro interrogo il sensore successivo*/
-// 		Address++;
+ 		sensorIR_TM[Address].ErrorMSG++;
+ 		/*incremento l'indirizzo così al prossimo giro interrogo il sensore successivo*/
+ 		Address++;
     }
 
 	/* Quando scatterà l'interrupt di ricezione 'IR_TM_COMM_OnReceiveData(void) sarà comandata
@@ -104,8 +104,8 @@ void Manage_IR_Sens_Temp(void)
  	{
  		/*mi vado a memorizzare quale lo slave Address su cui ho inviato l'ultimo comando
  		 * in quanto dopo l'invio del comando l'Address è stato incrementato*/
- 	//	unsigned char Slave_Address_Sent = Address -1;
- 		unsigned char Slave_Address_Sent = Address;
+ 		unsigned char Slave_Address_Sent = Address -1;
+
 
  		/*se Ho spedito il comando al sensore con indirizzo pari a 'Addres' ma nell'if precedente
  		 * Address è già stato incrementato per essere pronto alla nuova spedzione;io però
@@ -142,55 +142,55 @@ void Manage_IR_Sens_Temp(void)
  	}
 }
 
-void Manage_IR_Sens_Temp_200ms(void) {
-
-	static unsigned char ThermAddress =  DEFAULT_TSENS_ADDR;
-
-	/*se prima avevo ricevuto un NACK, resetto il flag altrimenti non ricevo più*/
-	if (ON_NACK_IR_TM) {
-		/*incremento il contatore di errori NACK*/
-		sensorIR_TM5A.errorNACK++;
-		ON_NACK_IR_TM = FALSE;
-	}
-
-	/*costruisco il comando di lettura per il sensore di temperatura con indirizzo pari ad ThermAddress
-	 * Quando scatterà l'interrupt di trasmissione 'void IR_TM_COMM_OnTransmitData(void)'
-	 * andrò ad effettuare la lettura con 'IR_TM_COMM_RecvBlock(ptrDataTemperatureIR, 3, &ret);'*/
-	ptrDataTemperatureIR = buildCmdReadTempSensIR(ThermAddress,
-			(RAM_ACCESS_COMMAND | SD_TOBJ1_RAM_ADDRESS), 0);
-	/*incremento i possibili errori dpovuti a non risposte o a risposte con PEC errate; se ricevo benbe resetto questo contatore*/
-	sensorIR_TM5A.ErrorMSG++;
-
-	/* Quando scatterà l'interrupt di ricezione 'IR_TM_COMM_OnReceiveData(void) sarà comandata
-	 * la send Stop 'IR_TM_COMM_SendStop() e alzato il flag iflag_sensTempIR_Meas_Ready = IFLAG_IRTEMP_MEASURE_READY
-	 * con cui potrò copiare il dato ricevuto*/
-	if ((iflag_sensTempIR_Meas_Ready == IFLAG_IRTEMP_MEASURE_READY
-			&& ON_NACK_IR_TM == FALSE)) {
-
-		/*mi vado a memorizzare quale lo slave ThermAddress su cui ho inviato l'ultimo comando
-		 * in quanto dopo l'invio del comando l'ThermAddress è stato incrementato*/
-		unsigned char Slave_Address_Sent = ThermAddress - 1;
-		unsigned char * ptrChar;
-
-		ptrChar = &sensorIR_TM5A.bufferReceived[0];
-
-		/*devo salvare il dato solo dopo aver fatto il controllo della PEC Packet Error Code*/
-		/*Vado a copiarmi il dato ricevuto dal sensore IR solo se non ho ricevuto un NACK
-		 * e se torna LA PEC ricevuta con quella calcolata*/
-		if (computeCRC8TempSensRx(ptrChar,
-				(RAM_ACCESS_COMMAND | SD_TOBJ1_RAM_ADDRESS),
-				Slave_Address_Sent)) {
-			sensorIR_TM5A.tempSensValue = (float) ((BYTES_TO_WORD(
-					sensorIR_TM5A.bufferReceived[1],
-					sensorIR_TM5A.bufferReceived[0])) * ((float) 0.02))
-					- (float) 273.15;
-			/*ho ricevuto bene, resetto il contatore consecutivo di errore*/
-			sensorIR_TM5A.ErrorMSG = 0;
-		}
-		iflag_sensTempIR_Meas_Ready = IFLAG_IDLE;
-
-	}
-}
+//void Manage_IR_Sens_Temp_200ms(void) {
+//
+//	static unsigned char ThermAddress =  DEFAULT_TSENS_ADDR;
+//
+//	/*se prima avevo ricevuto un NACK, resetto il flag altrimenti non ricevo più*/
+//	if (ON_NACK_IR_TM) {
+//		/*incremento il contatore di errori NACK*/
+//		sensorIR_TM5A.errorNACK++;
+//		ON_NACK_IR_TM = FALSE;
+//	}
+//
+//	/*costruisco il comando di lettura per il sensore di temperatura con indirizzo pari ad ThermAddress
+//	 * Quando scatterà l'interrupt di trasmissione 'void IR_TM_COMM_OnTransmitData(void)'
+//	 * andrò ad effettuare la lettura con 'IR_TM_COMM_RecvBlock(ptrDataTemperatureIR, 3, &ret);'*/
+//	ptrDataTemperatureIR = buildCmdReadTempSensIR(ThermAddress,
+//			(RAM_ACCESS_COMMAND | SD_TOBJ1_RAM_ADDRESS), 0);
+//	/*incremento i possibili errori dpovuti a non risposte o a risposte con PEC errate; se ricevo benbe resetto questo contatore*/
+//	sensorIR_TM5A.ErrorMSG++;
+//
+//	/* Quando scatterà l'interrupt di ricezione 'IR_TM_COMM_OnReceiveData(void) sarà comandata
+//	 * la send Stop 'IR_TM_COMM_SendStop() e alzato il flag iflag_sensTempIR_Meas_Ready = IFLAG_IRTEMP_MEASURE_READY
+//	 * con cui potrò copiare il dato ricevuto*/
+//	if ((iflag_sensTempIR_Meas_Ready == IFLAG_IRTEMP_MEASURE_READY
+//			&& ON_NACK_IR_TM == FALSE)) {
+//
+//		/*mi vado a memorizzare quale lo slave ThermAddress su cui ho inviato l'ultimo comando
+//		 * in quanto dopo l'invio del comando l'ThermAddress è stato incrementato*/
+//		unsigned char Slave_Address_Sent = ThermAddress - 1;
+//		unsigned char * ptrChar;
+//
+//		ptrChar = &sensorIR_TM5A.bufferReceived[0];
+//
+//		/*devo salvare il dato solo dopo aver fatto il controllo della PEC Packet Error Code*/
+//		/*Vado a copiarmi il dato ricevuto dal sensore IR solo se non ho ricevuto un NACK
+//		 * e se torna LA PEC ricevuta con quella calcolata*/
+//		if (computeCRC8TempSensRx(ptrChar,
+//				(RAM_ACCESS_COMMAND | SD_TOBJ1_RAM_ADDRESS),
+//				Slave_Address_Sent)) {
+//			sensorIR_TM5A.tempSensValue = (float) ((BYTES_TO_WORD(
+//					sensorIR_TM5A.bufferReceived[1],
+//					sensorIR_TM5A.bufferReceived[0])) * ((float) 0.02))
+//					- (float) 273.15;
+//			/*ho ricevuto bene, resetto il contatore consecutivo di errore*/
+//			sensorIR_TM5A.ErrorMSG = 0;
+//		}
+//		iflag_sensTempIR_Meas_Ready = IFLAG_IDLE;
+//
+//	}
+//}
 
 
 
@@ -272,8 +272,8 @@ unsigned char * buildCmdReadTempSensIR(unsigned char  tempSensAddress,
 	word ret;
 
 
-//		if(tempSensAddress == 0x5A)
-//			sensTempIRId = sensorIR_TM[tempSensAddress-1].sensorId;
+		if(tempSensAddress == 0x5A)
+			sensTempIRId = sensorIR_TM[tempSensAddress-1].sensorId;
 
 	/* Start + slave address + write command */
 	IR_TM_COMM_SelectSlave(tempSensAddress);
@@ -290,7 +290,7 @@ unsigned char * buildCmdReadTempSensIR(unsigned char  tempSensAddress,
 	//if(err == ERR_OK)
 		//IR_TM_COMM_RecvBlock(&rcvData[0], NUM_BYTE_RCV, &ret);
 	//ptrData = &rcvData[0];
-	ptrData = &sensorIR_TM[0/*tempSensAddress-1*/].bufferReceived[0];
+	ptrData = &sensorIR_TM[tempSensAddress-1].bufferReceived[0];
 	//IR_TM_COMM_RecvBlock(ptrData, 3, &ret);
 
 	return	ptrData;
