@@ -525,6 +525,7 @@ bool Frigo_ON;	//variabile globale che mi dice se è partito il firgo
 
 #define AIR							0x00
 #define LIQUID						0x01
+unsigned char Air_1_Status;				//variabile globale per vedere lo stato del sensore di aria SONOTEC; può assumere valire AIR opp LIQUID
 
 bool Service;
 
