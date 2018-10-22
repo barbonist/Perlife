@@ -701,12 +701,12 @@ int meanWA(unsigned char dimNum, int newSensVal, char IdSens)
 		return 0;
 }
 
-/*
+
 void Manage_Air_Sensor_1(void)
 {
- 	if (AIR_SENSOR_GetVal())
+ 	if (AIR_SENSOR_3_GetVal())
  		Air_1_Status = AIR;
  	else
  		Air_1_Status = LIQUID;
 }
-*/
+

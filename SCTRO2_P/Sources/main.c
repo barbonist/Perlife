@@ -416,6 +416,10 @@ int main(void)
 	  Manange_ADC1();
 	  /*END funzioni per leggere i canali AD*/
 
+	  /*funzione che aggiorna lo stato del sesnore si aria filtro (digitale)*/
+	  Manage_Air_Sensor_1();
+	  /*END*/
+
 	 /*faccio lo start della conversione sul canale AD0 ogni 50 msec*/
 	 if (timerCounterADC0 >=1)
 	 {
