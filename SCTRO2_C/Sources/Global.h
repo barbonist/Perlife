@@ -1626,11 +1626,14 @@ Kd = Kp*Pu/8  = 0.01875
 #define MAX_LIQUID_AMOUNT 2500
 
 // velocita' con cui faccio partire, per ora, la pompa di depurazione
-#define LIVER_PPAR_SPEED 4000//2000 only for test
+#define LIVER_PPAR_SPEED 					4000//2000 only for test
+#define LIVER_PPAR_SPEED_INIT 				500//2000 only for test
 // velocita' con cui faccio partire, per ora, la pompa di ossigenazione e perfusione venosa nel caso di priming
-#define LIVER_PRIMING_PMP_OXYG_SPEED 6000//2000 only for test
+#define LIVER_PRIMING_PMP_OXYG_SPEED 		7000//6000//2000 only for test
+#define LIVER_PRIMING_PMP_OXYG_SPEED_INIT 	500
 // velocita' con cui faccio partire, per ora, la pompa di ossigenazione nel caso di priming
-#define KIDNEY_PRIMING_PMP_OXYG_SPEED 6000//2000 only for test
+#define KIDNEY_PRIMING_PMP_OXYG_SPEED 		7000//6000//2000 only for test
+#define KIDNEY_PRIMING_PMP_OXYG_SPEED_INIT  500
 // definisce il valore massimo di giri che possono raggiungere le pompe di ossigenazione
 #define MAX_OXYG_RPM  120//105
 // numero di giri della pompa arteriosa durante lo scarico
@@ -1759,7 +1762,7 @@ typedef enum
 #define RECIRC_PUMP_HIGH_SPEED_ART 2000
 */
 //only for test
-#define RECIRC_PUMP_HIGH_SPEED 5000
+#define RECIRC_PUMP_HIGH_SPEED 8000//5000
 #define RECIRC_PUMP_HIGH_SPEED_ART 5000
 
 // GESTIONE PRIMING AGGIUNTIVO DA DEBUGGARE
@@ -1783,7 +1786,8 @@ float VenousPumpGainForPid;
 #define DEFAULT_ART_PUMP_GAIN 9.3
 #define DEFAULT_VEN_PUMP_GAIN 22.0
 
-#define RPM_IN_PRIMING_PHASES  2000
+#define RPM_IN_PRIMING_PHASES  		4000//2000
+#define RPM_IN_PRIMING_PHASES_INIT  500
 
 
 typedef struct

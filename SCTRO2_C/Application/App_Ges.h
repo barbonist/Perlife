@@ -28,6 +28,13 @@
 #define DELTA_TEMP_TERGET_FOR_STABILITY_PRIMING		5 //4	//range per identificare il raggungimento della tmeperatura target esperro in decimi di grado (es 4 = 0.4°C)
 #define TIMEOUT_TEMPERATURE_RICIRC					60000 //2000L passo da 2 seocndi a 60 secondi
 
+#define DELTA_RPM_ACC_IN_PRIMING_ART	50  //200 //centesimi di RPM
+#define DELTA_RPM_ACC_IN_PRIMING_VEN	100 //200 //centesimi di RPM
+#define DELTA_RPM_ACC_IN_PRIMING_FLT	50  //200 //centesimi di RPM
+#define TIMER_RPM_ACC_IN_PRIMING_ART    40  //200 //multipli di 50 msec ---> 200 = 10 sec --- 40 = 2 sec
+#define TIMER_RPM_ACC_IN_PRIMING_VEN    40  //200 //multipli di 50 msec ---> 200 = 10 sec --- 40 = 2 sec
+#define TIMER_RPM_ACC_IN_PRIMING_FLT    40  //200 //multipli di 50 msec ---> 200 = 10 sec --- 40 = 2 sec
+
 /* MACHINE STATE FUNCTION */
 void manageNull(void);
 void manageStateLevel(void);
