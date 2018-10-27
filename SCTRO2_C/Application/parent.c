@@ -1336,6 +1336,7 @@ void ParentFuncT1Test(void)
 		// lo mando al test dell'heater
 //		ptrFutureParent = &stateParentT1TNoDisposable[29]; //con il 29 passo al T1 TEST dsel FRIGO
 //		ptrFutureParent = &stateParentT1TNoDisposable[3];	// lo mando al test della EEPROM quindi eseguo il T1 TEST
+#endif // TI_TEST_ENABLED
 		break;
 
 		if(currentGuard[GUARD_ENABLE_T1_CONFIG].guardValue == GUARD_VALUE_TRUE)
