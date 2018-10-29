@@ -1889,6 +1889,9 @@ void manageParentPrimingAlways(void){
 		static int timerCounterRampaAccPmpFlt    = 0;
 		static int timerCounterRampaAccPmpVenArt = 0;
 
+		//TODO sarebbe sempre meglio controllare la velocità che si vuol dare alla pompa
+		//con quella letta dalla pompa stessa e dare ilo comando se è diversa.
+
 		/*se sono in STATE_PRIMING_PH_1_WAIT le pompe devono star ferme quindi non faccio l'incremento
 		 * se sono in ricircolo le pompe devono andare in alto flusso quindi non vado più in rampa*/
 		if (ptrCurrentState->state != STATE_PRIMING_PH_1_WAIT &&
@@ -1897,7 +1900,7 @@ void manageParentPrimingAlways(void){
 			/*blocco l'incremento alla velocità target*/
 			if (speed_Arterious >= RPM_IN_PRIMING_PHASES)
 				speed_Arterious = RPM_IN_PRIMING_PHASES;
-			/*finche la velocità è inferiore al target ogni 10 sec (200 intervalli da 50 msec) incremento di 5 RPM la velocità*/
+			/*finche la velocità è inferiore al target ogni 2 sec (40 intervalli da 50 msec) incremento di 0.5 RPM la velocità*/
 			else if (msTick_elapsed(timerCounterRampaAccPmpFlt) >= TIMER_RPM_ACC_IN_PRIMING_ART && speed_Arterious <= RPM_IN_PRIMING_PHASES)
 			{
 				speed_Arterious += DELTA_RPM_ACC_IN_PRIMING_ART;
@@ -1911,12 +1914,15 @@ void manageParentPrimingAlways(void){
 				/*blocco l'incremento alla velocità target*/
 				if (speed_Venous >= KIDNEY_PRIMING_PMP_OXYG_SPEED)
 					speed_Venous = KIDNEY_PRIMING_PMP_OXYG_SPEED;
-				/*finche la velocità è inferiore al target ogni 10 sec (200 intervalli da 50 msec) incremento di 5 RPM la velocità*/
-				else if (msTick_elapsed(timerCounterRampaAccPmpVenArt) >= TIMER_RPM_ACC_IN_PRIMING_VEN && speed_Venous <= KIDNEY_PRIMING_PMP_OXYG_SPEED )
+
+				/*finche la velocità è inferiore al target ogni 2 sec (40 intervalli da 50 msec) incremento di 0.5 RPM la velocità*/
+				if (msTick_elapsed(timerCounterRampaAccPmpVenArt) >= TIMER_RPM_ACC_IN_PRIMING_VEN )
 				{
 					speed_Venous += DELTA_RPM_ACC_IN_PRIMING_VEN;
 					timerCounterRampaAccPmpVenArt = timerCounterModBus;
-					setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, speed_Venous);
+
+					if (speed_Venous <= KIDNEY_PRIMING_PMP_OXYG_SPEED )
+						setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, speed_Venous);
 				}
 			}
 			else if((GetTherapyType() == LiverTreat) && (perfusionParam.priVolPerfArt > MIN_LIQ_IN_RES_TO_START_OXY_VEN))
@@ -1928,7 +1934,7 @@ void manageParentPrimingAlways(void){
 				if (speed_filter >= LIVER_PPAR_SPEED)
 					speed_filter  = LIVER_PPAR_SPEED;
 
-				else if (msTick_elapsed(timerCounterRampaAccPmpVenArt) >= TIMER_RPM_ACC_IN_PRIMING_VEN )
+				if (msTick_elapsed(timerCounterRampaAccPmpVenArt) >= TIMER_RPM_ACC_IN_PRIMING_VEN )
 				{
 					speed_filter += DELTA_RPM_ACC_IN_PRIMING_FLT;
 					speed_Venous += DELTA_RPM_ACC_IN_PRIMING_VEN;
@@ -1961,7 +1967,7 @@ void manageParentPrimingAlways(void){
 			}
 			else
 			{
-				setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, speed_filter);
+				setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, speed_Arterious);
 
 				//if(((PARAMETER_ACTIVE_TYPE)parameterWordSetFromGUI[PAR_SET_OXYGENATOR_ACTIVE].value) == YES)
 				//	setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, (int)((float)parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value / OXYG_FLOW_TO_RPM_CONV * 100.0));
@@ -1977,7 +1983,7 @@ void manageParentPrimingAlways(void){
 					// sono nel priming fegato ed ho superato una quantita' minima nel reservoir, quindi, la pompa venosa
 					// per il riempimento del disposable di ossigenazione e la pompa di depurazione PPAR
 					setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, speed_Venous);
-					setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, speed_Arterious);
+					setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, speed_filter);
 				}
 			}
 
