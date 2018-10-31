@@ -1328,7 +1328,7 @@ void ParentFuncT1Test(void)
 	{
 		/*Vincenzo gestione T1 TEST*/
 	case PARENT_T1_NO_DISP_INIT:
-#ifdef TI_TEST_ENABLED
+#ifdef T1_TEST_ENABLED
 		// Filippo - tolto per fargli eseguire il T1 test
 		ptrFutureParent = &stateParentT1TNoDisposable[3];	// lo mando al test della EEPROM quindi eseguo il T1 TEST
 #else

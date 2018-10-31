@@ -1681,8 +1681,8 @@ void setParamWordFromGUI(unsigned char parId, int value)
 	}
 
 //	// TODO DA RIMUOVERE SOLO PER DEBUG GUI !!!!
-//	parameterWordSetFromGUI[PAR_SET_DESIRED_DURATION].value = 0x00; // due ore
-//	parameterWordSetFromGUI[PAR_SET_DESIRED_DURATION].value = 0x003; // 20 minuti
+//	parameterWordSetFromGUI[PAR_SET_DESIRED_DURATION].value = 0x0000; // due ore
+//	parameterWordSetFromGUI[PAR_SET_DESIRED_DURATION].value = 0x0001; // 1 minuto
 }
 
 void resetParamWordFromGUI(unsigned char parId){

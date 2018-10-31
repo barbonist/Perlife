@@ -1672,8 +1672,8 @@ void manageParentPrimingAlways(void){
 		{
 			// Filippo - aggiunto da file FM nel merge 1-10-2018
 			//al rientro dell'allarme, se in allarme era stato spento il frigo, lo riaccendo
-			if (IsFrigoStoppedInAlarm())
-				FrigoHeatTempControlTaskNewPID(LIQ_T_CONTR_TASK_RESET_CMD);
+		//	if (IsFrigoStoppedInAlarm())
+			FrigoHeatTempControlTaskNewPID(LIQ_T_CONTR_TASK_RESET_CMD);
 
 			setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, RPM_IN_PRIMING_PHASES_INIT);
 			if((GetTherapyType() == KidneyTreat) && (((PARAMETER_ACTIVE_TYPE)parameterWordSetFromGUI[PAR_SET_OXYGENATOR_ACTIVE].value) == YES) &&
@@ -1953,8 +1953,8 @@ void manageParentPrimingAlways(void){
 		{
 			// Filippo - messa nel merge del 1-10-2018
 			//al rientro dell'allarme, se in allarme era stato spento il frigo, lo riaccendo
-			if (IsFrigoStoppedInAlarm())
-				FrigoHeatTempControlTaskNewPID(LIQ_T_CONTR_TASK_RESET_CMD);
+			//if (IsFrigoStoppedInAlarm())
+			FrigoHeatTempControlTaskNewPID(LIQ_T_CONTR_TASK_RESET_CMD);
 
 			if(ptrCurrentState->state == STATE_PRIMING_RICIRCOLO)
 			{
@@ -2010,8 +2010,8 @@ void manageParentPrimingAlways(void){
 			{
 				// Filippo - inserito nel merge
 				//al rientro dell'allarme, se in allarme era stato spento il frigo, lo riaccendo
-				if (IsFrigoStoppedInAlarm())
-					FrigoHeatTempControlTaskNewPID(LIQ_T_CONTR_TASK_RESET_CMD);
+			//	if (IsFrigoStoppedInAlarm())
+				FrigoHeatTempControlTaskNewPID(LIQ_T_CONTR_TASK_RESET_CMD);
 			}
 
 			// inizializzo il controllo delle pinch fatto durante l'esecuzione del trattamento
@@ -2959,9 +2959,11 @@ void manageParentTreatAlways(void)
 			//GlobalFlags.FlagsDef.TankLevelHigh = 0;
 			//Filippo - aggiunto nel merge del 1-10-2018
 			//al rientro dell'allarme, se in allarme era stato spento il frigo, lo riaccendo
-			if (IsFrigoStoppedInAlarm())
-				FrigoHeatTempControlTaskNewPID(LIQ_T_CONTR_TASK_RESET_CMD);
-		    } else if (buttonGUITreatment[BUTTON_START_PERF_PUMP].state
+		//	if (IsFrigoStoppedInAlarm())
+			FrigoHeatTempControlTaskNewPID(LIQ_T_CONTR_TASK_RESET_CMD);
+		}
+
+			else if (buttonGUITreatment[BUTTON_START_PERF_PUMP].state
 				       == GUI_BUTTON_RELEASED) {
 			releaseGUIButton(BUTTON_START_PERF_PUMP);
 
@@ -3230,8 +3232,8 @@ void manageParentTreatAlways(void)
 			//GlobalFlags.FlagsDef.TankLevelHigh = 0;
 			// Filippo - aggiunto nel merge del 1-10-2018
 			//al rientro dell'allarme, se in allarme era stato spento il frigo, lo riaccendo
-			if (IsFrigoStoppedInAlarm())
-				FrigoHeatTempControlTask(LIQ_T_CONTR_TASK_RESET_CMD);
+		//	if (IsFrigoStoppedInAlarm())
+			FrigoHeatTempControlTaskNewPID(LIQ_T_CONTR_TASK_RESET_CMD);
 		}
 		else if(buttonGUITreatment[BUTTON_START_PERF_PUMP].state == GUI_BUTTON_RELEASED)
 		{

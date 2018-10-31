@@ -839,15 +839,15 @@ bool IsFrigo()
 
 // ritorna TRUE se e' selezionato il frigo
 // Filippo - nuova funzione inserita per gestire stop attuatori quando pompe ferme
-bool IsFrigoStoppedInAlarm()
-{
-	bool IsFrigoFlag = FALSE;
-	LIQ_TEMP_CONTR_TASK_STATE ltcts;
-	ltcts = FrigoHeatTempControlTask((LIQ_TEMP_CONTR_TASK_CMD)READ_STATE_CMD);
-	if((ltcts == LIQ_T_CONTR_STOPPED_BY_ALM))
-		IsFrigoFlag = TRUE;
-	return IsFrigoFlag ;
-}
+//bool IsFrigoStoppedInAlarm()
+//{
+//	bool IsFrigoFlag = FALSE;
+//	LIQ_TEMP_CONTR_TASK_STATE ltcts;
+//	ltcts = FrigoHeatTempControlTask((LIQ_TEMP_CONTR_TASK_CMD)READ_STATE_CMD);
+//	if((ltcts == LIQ_T_CONTR_STOPPED_BY_ALM))
+//		IsFrigoFlag = TRUE;
+//	return IsFrigoFlag ;
+//}
 // ritorna TRUE se il processo di raffreddamento e' partito
 // Questo comando serve per riabilitare il frigo.
 // AL MOMENTO NON E' USATO MA POTREBBE VERIFICARSI LA NECESSITA' DI RIABILITARE IL FRIGO

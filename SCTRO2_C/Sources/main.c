@@ -196,6 +196,7 @@ extern bool WriteActive;
 extern unsigned char Released1;
 extern unsigned char Released2;
 extern unsigned char Released3;
+extern unsigned char Released4;
 
 #ifdef ENABLE_PROTECTIVE_ALARM_RESET
 void HandleProtectiveAlarm(void);
@@ -657,16 +658,19 @@ int main(void)
 	         if(ReadKey1()) // per debug con la tastiera a bolle
 	         {
 	        //	 setPumpSpeedValueHighLevel(0x04,2000);
+	        //	 setPumpSpeedValueHighLevel(0x04,4000);
 	        	 Released1 = 1;
 	         }
 	         if(ReadKey2()) // per debug con la tastiera a bolle
 	         {
 	        //	 setPumpSpeedValueHighLevel(0x04,8000);
+	        //	 setPumpSpeedValueHighLevel(0x04,0000);
 	        	 Released2 = 1;
 	         }
 	         if(ReadKey3()) // per debug con la tastiera a bolle
 	         {
 	        //	 EN_Motor_Control(DISABLE);
+	        //	 setPumpSpeedValueHighLevel(0x05,4000);
 	        	 Released3 = 1;
 	         }
 	         if(ReadKey4()) // per debug con la tastiera a bolle
@@ -675,7 +679,8 @@ int main(void)
 //	        	 TempLiquidoDecimi--;
 //#endif
 	        //	 EN_Motor_Control(ENABLE);
-	        	 Released3 = 1;
+	       // 	 setPumpSpeedValueHighLevel(0x05,0000);
+	        	 Released4 = 1;
 	         }
 
 	         /****MACHINE STATE UPDATE END****/

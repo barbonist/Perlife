@@ -326,7 +326,7 @@ bool EnableHeating(void);
 bool DisableHeating(void);
 bool IsFrigo();
 // Filippo - inserito funzione per gestire stop attuatori a pompe ferme
-bool IsFrigoStoppedInAlarm();
+//bool IsFrigoStoppedInAlarm();
 bool EnableFrigo(void);
 bool DisableFrigo(void);
 bool StartHeating(float DeltaT);

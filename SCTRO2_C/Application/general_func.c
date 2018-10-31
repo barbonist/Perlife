@@ -581,6 +581,7 @@ unsigned char ReadKey4(void)
 unsigned char Released1;
 unsigned char Released2;
 unsigned char Released3;
+unsigned char Released4;
 
 
 void GenEvntParentPrim(void)
