@@ -5900,7 +5900,8 @@ void manageParentT1Heater(void)
 			t1Test_heater=2;
 			timerCounterT1Test=0;
 		}
-		else
+		/*aspetto 10 secondi prima di andare in allarme per dare il tempo al riscaldatore di partire */
+		else if (timerCounterT1Test>500)
 		{
 			currentGuard[GUARD_ENABLE_T1_ALARM].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
 			DebugStringStr("alarm from chk heater");
@@ -5945,7 +5946,8 @@ void manageParentT1Heater(void)
 			timerCounterT1Test=0;
 //			primoPassaggio=1;	// Filippo - da togliere
 		}
-		else
+		/*aspetto 10 secondi prima di andare in allarme per dare il tempo al riscaldatore di fermarsi */
+		else if (timerCounterT1Test>500)
 		{
 			// non si è fermato - errore
 			currentGuard[GUARD_ENABLE_T1_ALARM].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
@@ -6007,7 +6009,8 @@ void manageParentT1Heater(void)
 			t1Test_heater=6;
 			timerCounterT1Test=0;
 		}
-		else
+		/*aspetto 5 secondi prima di andare in allarme per dare il tempo alr riscaldatore di partire */
+		else if (timerCounterT1Test>500)
 		{
 			currentGuard[GUARD_ENABLE_T1_ALARM].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
 			DebugStringStr("alarm from chk heater");
@@ -6051,7 +6054,8 @@ void manageParentT1Heater(void)
 			tempMaxHeatPlate=T_PLATE_C_GRADI_CENT;
 			timerCounterT1Test=0;
 		}
-		else
+		/*aspetto 10 secondi prima di andare in allarme per dare il tempo al riscaldatore di fermarsi */
+		else if (timerCounterT1Test>500)
 		{
 			// non si è fermato - errore
 			currentGuard[GUARD_ENABLE_T1_ALARM].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
@@ -6179,7 +6183,8 @@ void manageParentT1Fridge(void)
 			t1Test_Frigo=2;
 			timerCounterT1Test=0;
 		}
-		else
+		/*aspetto 10 secondi prima di andare in allarme per dare il tempo al frigo di partire */
+		else if (timerCounterT1Test>500)
 		{
 			currentGuard[GUARD_ENABLE_T1_ALARM].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
 			DebugStringStr("alarm from chk fridge");
@@ -6228,7 +6233,8 @@ void manageParentT1Fridge(void)
 			tempFridgePlate=T_PLATE_C_GRADI_CENT;
 			protectiveOn=1;
 		}
-		else
+		/*aspetto 10 secondi prima di andare in allarme per dare il tempo al frigo di fermarsi */
+		else if (timerCounterT1Test>500)
 		{
 			// non si è fermato - errore
 			currentGuard[GUARD_ENABLE_T1_ALARM].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
@@ -6258,7 +6264,8 @@ void manageParentT1Fridge(void)
 			t1Test_Frigo=6;
 			timerCounterT1Test=0;
 		}
-		else
+		/*aspetto 10 secondi prima di andare in allarme per dare il tempo al frigo di partire */
+		else if (timerCounterT1Test>500)
 		{
 			currentGuard[GUARD_ENABLE_T1_ALARM].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
 			DebugStringStr("alarm from chk fridge");
@@ -6308,7 +6315,8 @@ void manageParentT1Fridge(void)
 			counterFridgeStability=0;
 			tempFridgePlate=T_PLATE_C_GRADI_CENT;
 		}
-		else
+		/*aspetto 10 secondi prima di andare in allarme per dare il tempo al frigo di fermarsi */
+		else if (timerCounterT1Test>500)
 		{
 			// non si è fermato - errore
 			currentGuard[GUARD_ENABLE_T1_ALARM].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
