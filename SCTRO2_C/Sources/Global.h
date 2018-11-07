@@ -1131,6 +1131,7 @@ struct ultrsndFlowSens{
 	unsigned char bubblePresence;
 	float Inst_Flow_Value;
 	float Average_Flow_Val;
+	float Average_Flow_Val_for_GUI;
 	float Temperature;
 	float Accumulated_Volume_ul;
 	unsigned char Bubble_Alarm;
@@ -1147,10 +1148,12 @@ struct ultrsndFlowSens{
 #define MASK_Device_Fault					0x80
 
 //#define SAMPLE 								64          // se uso un campinamento di 50 msec
-#define SAMPLE 							16 		    //numero di campioni su cui mediare il flusso istantaneo letto
+#define SAMPLE 							16 		    //numero di campioni su cui mediare il flusso istantaneo letto da usare nelle rotine interne come il PID
+#define SAMPLE_FOR_GUI 					64 		    //numero di campioni su cui mediare il flusso istantaneo letto da trasmettere alla GUI
 #define TOT_UF_SENSOR 						2
 #define BYTE_COUNT_GET_VAL_CODE 			0x17 		//numero di byte che mi aspetto in ricezione col comando di GET_VAL_CODE customizzato con 3 byte di richesta 0x82 -- 0x88 -- 0x8B
-float buffer_flow_value [TOT_UF_SENSOR][SAMPLE];
+float buffer_flow_value         [TOT_UF_SENSOR][SAMPLE];
+float buffer_flow_value_for_GUI [TOT_UF_SENSOR][SAMPLE_FOR_GUI];
 
 struct ultrsndFlowSens sensor_UFLOW[2];
 struct ultrsndFlowSens * ptrCurrent_UFLOW; /* puntatore a struttura corrente - sensore attualmente interrogato */

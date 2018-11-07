@@ -1210,11 +1210,11 @@ void buildRDMachineStateResponseMsg(char code, char subcode)
 	/*47*/  sbc_tx_data[index++] = (PR_VEN_Med_mmHg     ) & 0xFF;
 
 	/* sensors parameters: pressure flow arterial */
-	/*48*/  sbc_tx_data[index++] = (((int)sensor_UFLOW[0].Average_Flow_Val) >> 8) & 0xFF;  // sensorsValues.flowArt
-	/*49*/  sbc_tx_data[index++] = ((int)sensor_UFLOW[0].Average_Flow_Val) & 0xFF;
+	/*48*/  sbc_tx_data[index++] = (((int)sensor_UFLOW[0].Average_Flow_Val_for_GUI) >> 8) & 0xFF;  // sensorsValues.flowArt
+	/*49*/  sbc_tx_data[index++] = ((int)sensor_UFLOW[0].Average_Flow_Val_for_GUI) & 0xFF;
 	/* sensors parameters: pressure flow venous / oxygenation */
-	/*50*/  sbc_tx_data[index++] = (((int)sensor_UFLOW[1].Average_Flow_Val) >> 8) & 0xFF;  // sensorsValues.flowVenOxy
-	/*51*/  sbc_tx_data[index++] = ((int)sensor_UFLOW[1].Average_Flow_Val) & 0xFF;
+	/*50*/  sbc_tx_data[index++] = (((int)sensor_UFLOW[1].Average_Flow_Val_for_GUI) >> 8) & 0xFF;  // sensorsValues.flowVenOxy
+	/*51*/  sbc_tx_data[index++] = ((int)sensor_UFLOW[1].Average_Flow_Val_for_GUI) & 0xFF;
 	/* sensors parameters: temperature reservoir outlet */
 	/*52*/  sbc_tx_data[index++] = (((int)(sensorIR_TM[1].tempSensValue*10)) >> 8) & 0xFF;
 	/*53*/  sbc_tx_data[index++] = (((int)(sensorIR_TM[1].tempSensValue*10))     ) & 0xFF;
@@ -1361,7 +1361,6 @@ void buildRDMachineStateResponseMsg(char code, char subcode)
 	wd = perfusionParam.pulsatilityVenous;
 	/*130*/  sbc_tx_data[index++] = (wd >> 8) & 0xFF;
 	/*131*/  sbc_tx_data[index++] = (wd     ) & 0xFF;
-	/* free 1*/
 	// Filippo - metto la necessità o meno di spegnere il PC
 	if (buttonGUITreatment[BUTTON_SHUT_DOWN_PC].state==GUI_BUTTON_RELEASED)
 	{
@@ -1371,10 +1370,13 @@ void buildRDMachineStateResponseMsg(char code, char subcode)
 	{
 		wd=(word)EMERGENCY_BUTTON_ACTIVATION_PC;
 	}
-
 	/*132*/  sbc_tx_data[index++] = (wd >> 8) & 0xFF;
 	/*133*/  sbc_tx_data[index++] = (wd     ) & 0xFF;
-	/* free 2*/
+	/*set point flusso depurazione usato solo per il liver*/
+	if (GetTherapyType() == LiverTreat)
+		wd = parameterWordSetFromGUI[PAR_SET_PURIF_FLOW_TARGET].value;
+	else // if (GetTherapyType() == KidneyTreat)
+		wd = 0;
 	/*134*/  sbc_tx_data[index++] = (wd >> 8) & 0xFF;
 	/*135*/  sbc_tx_data[index++] = (wd     ) & 0xFF;
 
@@ -1947,7 +1949,9 @@ void UpdateFilterFlowVal(void)
 		u32 = timerCounterModBus;
 		if(GetTherapyType() == KidneyTreat)
 		{
-			FilterFlowVal = CalcFilterFlow((unsigned char)(modbusData[pumpPerist[0].pmpMySlaveAddress-2][17] / 100));
+		//	FilterFlowVal = CalcFilterFlow((unsigned char)(modbusData[pumpPerist[0].pmpMySlaveAddress-2][17] / 100));
+			/*Nel caso di trattamento Kidney, il flusso del filtro conicide col flusso arterioso*/
+			FilterFlowVal = sensor_UFLOW[0].Average_Flow_Val_for_GUI;
 		}
 		else if(GetTherapyType() == LiverTreat)
 		{

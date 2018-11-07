@@ -47,6 +47,7 @@
 void initUFlowSensor(void);
 void Manage_UFlow_Sens(void);
 float Average_Flow_Value(unsigned char Id_sensor, float new_UF_Value);
+float Average_Flow_Value_for_GUI(unsigned char Id_sensor, float new_UF_Value);
 void alwaysUFlowSensor(void);
 unsigned char computeCRCFlowSens(unsigned char buffer[]);
 struct ultrsndFlowSens * buildCmdToFlowSens(unsigned char sensorAddress, unsigned char cmdId, unsigned char ctrlZeroAdjust, float valueZeroAdjust);

@@ -39,11 +39,16 @@
 #define FIRST_IR_TEMP_SENSOR			0x01 /*corrisponde al sensore con connettore a 4 pin*/
 #define LAST_IR_TEMP_SENSOR				0x03 /*corrisponde al sensore con connettore a 6 pin, l'indirizzo 0x02 corrisponde al sensore con connettore a 5 pin*/
 
+#define LOWER_RANGE_IR_CORRECTION		10
+#define HIGHER_RANGE_IR_CORRECTION		31
+#define DELTA_CORRECTION				0.3 //delta di correzione tmeperatura per 1 °C
+
 
 void initTempSensIR(void);
 unsigned char computeCRC8TempSens(unsigned char buffer[]);
 bool computeCRC8TempSensRx(unsigned char buffer[],unsigned char command, unsigned char TempSensAddr);
 void Manage_IR_Sens_Temp(void);
+float Ir_Temperature_correction_offset (float Temp_value);
 unsigned char * buildCmdReadTempSensIR(unsigned char  tempSensAddress,
 										   unsigned char  command,
 										   word dataWordTx);

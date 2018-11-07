@@ -150,11 +150,21 @@ void Manage_UFlow_Sens()
 				sensor_UFLOW[Id_Buffer].Inst_Flow_Value = numFloatUFlow_Val.numFormatFloat_Val;
 				//sensor_UFLOW[Id_Buffer].Average_Flow_Val = Average_Flow_Value(Id_Buffer, numFloatUFlow_Val.numFormatFloat_Val);
 				sensor_UFLOW[Id_Buffer].Average_Flow_Val = Average_Flow_Value(Id_Buffer, sensor_UFLOW[Id_Buffer].Inst_Flow_Value);
+				/*adesso eseguo un filtraggio più pesante per il dato a video*/
+				sensor_UFLOW[Id_Buffer].Average_Flow_Val_for_GUI = Average_Flow_Value_for_GUI(Id_Buffer, sensor_UFLOW[Id_Buffer].Average_Flow_Val);
 
 				if (Id_Buffer == 1)
-					sensor_UFLOW[Id_Buffer].Average_Flow_Val = sensor_UFLOW[Id_Buffer].Average_Flow_Val * config_data.FlowSensor_Ven_Gain - config_data.FlowSensor_Ven_Offset;
+				{
+					sensor_UFLOW[Id_Buffer].Average_Flow_Val         = sensor_UFLOW[Id_Buffer].Average_Flow_Val * config_data.FlowSensor_Ven_Gain - config_data.FlowSensor_Ven_Offset;
+					sensor_UFLOW[Id_Buffer].Average_Flow_Val_for_GUI = sensor_UFLOW[Id_Buffer].Average_Flow_Val * config_data.FlowSensor_Ven_Gain - config_data.FlowSensor_Ven_Offset;
+				}
 				else //if (Id_Buffer == 0)
-					sensor_UFLOW[Id_Buffer].Average_Flow_Val = sensor_UFLOW[Id_Buffer].Average_Flow_Val * config_data.FlowSensor_Art_Gain - config_data.FlowSensor_Art_Offset;
+				{
+					sensor_UFLOW[Id_Buffer].Average_Flow_Val         = sensor_UFLOW[Id_Buffer].Average_Flow_Val * config_data.FlowSensor_Art_Gain - config_data.FlowSensor_Art_Offset;
+					sensor_UFLOW[Id_Buffer].Average_Flow_Val_for_GUI = sensor_UFLOW[Id_Buffer].Average_Flow_Val * config_data.FlowSensor_Art_Gain - config_data.FlowSensor_Art_Offset;
+				}
+
+
 
 				/*se sul flusso ricevo un valore neativo lo metto a zero
 				 * in quanto il sensore di flusso ha un verso e non
@@ -221,6 +231,27 @@ float Average_Flow_Value(unsigned char Id_sensor, float new_UF_Value)
 	}
 
 	return (Average_Flow/SAMPLE);
+}
+
+float Average_Flow_Value_for_GUI(unsigned char Id_sensor, float new_UF_Value)
+{
+	float Average_Flow = 0;
+	char i;
+
+	/*shifto tutti i campioni a destra di uno*/
+	for (i = 0; i < SAMPLE_FOR_GUI -1; i++)
+	{
+		buffer_flow_value_for_GUI [Id_sensor] [i] = buffer_flow_value_for_GUI [Id_sensor] [i+1];
+	}
+	/*memorizzo l'ultimo campione e scarto il più vecchio*/
+	buffer_flow_value_for_GUI [Id_sensor] [SAMPLE_FOR_GUI - 1] = new_UF_Value;
+
+	for (i = 0; i < SAMPLE_FOR_GUI ; i++)
+	{
+		Average_Flow = Average_Flow + buffer_flow_value_for_GUI [Id_sensor] [i];
+	}
+
+	return (Average_Flow/SAMPLE_FOR_GUI);
 }
 
 
