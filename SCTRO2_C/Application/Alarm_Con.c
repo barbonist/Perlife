@@ -497,7 +497,7 @@ void CalcAlarmActive(void)
 			//manageAlarmFlowSensNotDetected();
 			//manageAlarmIrTempSensNotDetected();
 				// Filippo - aggiungo la gestione del tasto di stop come allarme
-				manageAlarmStopButtonPressed();
+			//	manageAlarmStopButtonPressed();
 
 			break;
 		}
@@ -635,7 +635,7 @@ void CalcAlarmActive(void)
 			manageAlarmActuatorWRModbusNotRespond();
 			manageAlarmFromProtective();
 				// Filippo - aggiungo la gestione del tasto di stop come allarme
-				manageAlarmStopButtonPressed();
+			//	manageAlarmStopButtonPressed();
 
 				// Filippo - aggiunto allarme per test sensore aria sbagliato
 				manageAlarmAirSensorTestKO();
@@ -671,7 +671,7 @@ void CalcAlarmActive(void)
 			manageAlarmActuatorWRModbusNotRespond();
 			manageAlarmFromProtective();
 				// Filippo - aggiungo la gestione del tasto di stop come allarme
-				manageAlarmStopButtonPressed();
+			//	manageAlarmStopButtonPressed();
 			break;
 
 		case STATE_WAIT_TREATMENT:
@@ -722,7 +722,7 @@ void CalcAlarmActive(void)
 			manageAlarmActuatorWRModbusNotRespond();
 			manageAlarmFromProtective();
 				// Filippo - aggiungo la gestione del tasto di stop come allarme
-				manageAlarmStopButtonPressed();
+			//	manageAlarmStopButtonPressed();
 			break;
 		}
 
@@ -2820,6 +2820,11 @@ void alarmEngineAlways(void)
 //		if(AlmLisStateArr_id >= MAX_NUM_ALARM)
 //			AlmLisStateArr_id = 0;
 //	}
+
+	/*Vincenzo: la funzione che gestisce lo stop button la chiamo
+	 * qui perchè deve essere chiamata sempre anche se c'è un allarme
+	 * attivo o una condizione di recovery da un allarme*/
+	manageAlarmStopButtonPressed();
 
 	int i;
 	for(i = 0; i < MAX_NUM_ALARM; i++)
