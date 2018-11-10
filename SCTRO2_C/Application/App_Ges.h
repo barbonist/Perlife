@@ -25,7 +25,8 @@
 #define TIMER_EMERGENCY_BUTTON				60 //2 secondi di pressione consecutiva per il PANIC_BUTTON
 
 /*Vincenzo*/
-#define DELTA_TEMP_TERGET_FOR_STABILITY_PRIMING		5 //4	//range per identificare il raggungimento della tmeperatura target esperro in decimi di grado (es 4 = 0.4°C)
+//TODO messo a 8 ovvero 0.8°C solo per Test Bergamo --> da ripristinare a 5
+#define DELTA_TEMP_TERGET_FOR_STABILITY_PRIMING		8//5 //4	//range per identificare il raggungimento della tmeperatura target esperro in decimi di grado (es 4 = 0.4°C)
 #define TIMEOUT_TEMPERATURE_RICIRC					60000 //2000L passo da 2 seocndi a 60 secondi
 
 #define DELTA_RPM_ACC_IN_PRIMING_ART	50  //200 //centesimi di RPM

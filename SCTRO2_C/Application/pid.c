@@ -221,7 +221,7 @@ void alwaysPumpPressLoopArt(unsigned char pmpId, unsigned char *PidFirstTime)
 	/*se la velocità resta costante ed inferiore alla massima, sono in equilibrio, provo ad aumentarla per
 	 * vedere se trovo un equilibrio andando + forte e avvicindandomi al massimo flusso impostato*/
     if (SpeedCostanteArt((int)actualSpeed_Art) &&
-        (actualSpeed_Art <= MAX_ART_RPM_Val) && (sensor_UFLOW[ARTERIOUS_AIR_SENSOR].Average_Flow_Val < (float)parameterWordSetFromGUI[PAR_SET_MAX_FLOW_PERFUSION].value)
+        (actualSpeed_Art <= MAX_ART_RPM) && (sensor_UFLOW[ARTERIOUS_AIR_SENSOR].Average_Flow_Val_for_GUI < (float)parameterWordSetFromGUI[PAR_SET_MAX_FLOW_PERFUSION].value)
 		)
     {
  	   if((Target_PID_ART && (errPress > 0.0)) || (!Target_PID_ART && (errPress >= 0.0)))
@@ -240,23 +240,23 @@ void alwaysPumpPressLoopArt(unsigned char pmpId, unsigned char *PidFirstTime)
 
 	/*se misuro un flusso e ho una velocità >0 e sto misurando uin flusso superiore al limite impostato
 	 * aggiorno la velocità al massimo flusso impostato */
-	if ((sensor_UFLOW[ARTERIOUS_AIR_SENSOR].Average_Flow_Val > 0.0) &&
-		(sensor_UFLOW[ARTERIOUS_AIR_SENSOR].Average_Flow_Val > ( parameterWordSetFromGUI[PAR_SET_MAX_FLOW_PERFUSION].value)) &&
+	if ((sensor_UFLOW[ARTERIOUS_AIR_SENSOR].Average_Flow_Val_for_GUI > 0.0) &&
+		(sensor_UFLOW[ARTERIOUS_AIR_SENSOR].Average_Flow_Val_for_GUI > ( parameterWordSetFromGUI[PAR_SET_MAX_FLOW_PERFUSION].value)) &&
 		(actualSpeed_Art > 0.0))
 	{
 		/*Cerco di non avere sovraelongazioni rispetto al flusso target*/
 
 		/*se il flusso misurato supera quello impostato per oltre il 10% abbasso la velocità di 3 RPM*/
-		if (sensor_UFLOW[ARTERIOUS_AIR_SENSOR].Average_Flow_Val > parameterWordSetFromGUI[PAR_SET_MAX_FLOW_PERFUSION].value * 1.15)
+		if (sensor_UFLOW[ARTERIOUS_AIR_SENSOR].Average_Flow_Val_for_GUI > parameterWordSetFromGUI[PAR_SET_MAX_FLOW_PERFUSION].value * 1.15)
 			deltaSpeed_Art = -2.5;
 		/*se il flusso misurato supera quello impostato per oltre il 5% abbasso la velocità di 2 RPM*/
-		else if (sensor_UFLOW[ARTERIOUS_AIR_SENSOR].Average_Flow_Val > parameterWordSetFromGUI[PAR_SET_MAX_FLOW_PERFUSION].value * 1.10)
+		else if (sensor_UFLOW[ARTERIOUS_AIR_SENSOR].Average_Flow_Val_for_GUI > parameterWordSetFromGUI[PAR_SET_MAX_FLOW_PERFUSION].value * 1.10)
 			deltaSpeed_Art = -1.5;
 		/*altrimenti la abbasso di mezzo RPM*/
 		else
 			deltaSpeed_Art = -0.8;
 	}
-	else if (sensor_UFLOW[ARTERIOUS_AIR_SENSOR].Average_Flow_Val == 0 && pressSample0_Art < 100)
+	else if (sensor_UFLOW[ARTERIOUS_AIR_SENSOR].Average_Flow_Val_for_GUI == 0 && pressSample0_Art < 100)
 	{
 		// se il flusso e' 0 e la pressione e' al di sotto di 60 mmhg
 		// forzo una velocita' delle pompe != 0. Altrimenti si ferma in equilibrio a flusso 0;
@@ -1252,7 +1252,7 @@ void alwaysPumpPressLoopVen(unsigned char pmpId, unsigned char *PidFirstTime){
 	/*se la veilocità resta costante ed inferiore alla masisma, sono in equilibrio, provo ad aumentarla per
 	 * vedere se trovo un equilibrio andando + forte e avvicindandomi al massimo flusso impostato*/
    if (SpeedCostanteVen((int)actualSpeed_Ven) &&
-	   (actualSpeed_Ven <= MAX_OXYG_RPM_Val) && (sensor_UFLOW[VENOUS_AIR_SENSOR].Average_Flow_Val < (float)parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value)
+	   (actualSpeed_Ven <= MAX_OXYG_RPM_Val) && (sensor_UFLOW[VENOUS_AIR_SENSOR].Average_Flow_Val_for_GUI < (float)parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value)
 	   )
    {
 	   if((Target_PID_VEN && (errPress > 0.0)) || (!Target_PID_VEN && (errPress >= 0.0)))
@@ -1273,11 +1273,11 @@ void alwaysPumpPressLoopVen(unsigned char pmpId, unsigned char *PidFirstTime){
 	fl = (float) parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value;
 	fl1 = fl - fl * 2.0 / 100.0;
 	fl2 = fl + fl * 2.0 / 100.0;
-	if((sensor_UFLOW[1].Average_Flow_Val > 0.0) &&
-	   (sensor_UFLOW[1].Average_Flow_Val > fl))
+	if((sensor_UFLOW[1].Average_Flow_Val_for_GUI > 0.0) &&
+	   (sensor_UFLOW[1].Average_Flow_Val_for_GUI > fl))
 	{
 		// ho superato il flusso massimo impostato tiro giu' la velocita' di 1rpm
-		if((sensor_UFLOW[1].Average_Flow_Val - fl) > 200.0)
+		if((sensor_UFLOW[1].Average_Flow_Val_for_GUI - fl) > 200.0)
 		{
 			// probabilmente mi e' stato ridotto il flusso target da utente
 			deltaSpeed_Ven = -0.7;
@@ -1285,15 +1285,15 @@ void alwaysPumpPressLoopVen(unsigned char pmpId, unsigned char *PidFirstTime){
 		else
 			deltaSpeed_Ven = -0.3;
 	}
-	else if ((sensor_UFLOW[1].Average_Flow_Val > 0.0) &&
-		     (sensor_UFLOW[1].Average_Flow_Val > fl1) &&
-			 (sensor_UFLOW[1].Average_Flow_Val < fl2) &&
+	else if ((sensor_UFLOW[1].Average_Flow_Val_for_GUI > 0.0) &&
+		     (sensor_UFLOW[1].Average_Flow_Val_for_GUI > fl1) &&
+			 (sensor_UFLOW[1].Average_Flow_Val_for_GUI < fl2) &&
 		     //(sensor_UFLOW[1].Average_Flow_Val > fl) &&
 		     (actualSpeed_Ven > 0.0) && (deltaSpeed_Ven > 0))
 	{
 		deltaSpeed_Ven = 0.0;
 	}
-	else if((sensor_UFLOW[1].Average_Flow_Val == 0.0) && (pressSample0_Ven < 10.0))
+	else if((sensor_UFLOW[1].Average_Flow_Val_for_GUI == 0.0) && (pressSample0_Ven < 10.0))
 	{
 		// se il flusso e' 0 e la pressione e' al di sotto di 10 mmhg
 		// forzo una velocita' delle pompe != 0. Altrimenti si ferma in equilibrio a flusso 0;

@@ -177,11 +177,11 @@ void SetAllAlarmEnableFlags(void)
 	GlobalFlags.FlagsDef.EnableDeltaFlowVenAlarm = 1;     // abilito allarme delta flusso venoso troppo alto
 	GlobalFlags.FlagsDef.EnableDeltaTempRecVenAlarm = 1;  // abilito allarme delta temperatura recipiente e line venosa troppo alta
 	GlobalFlags.FlagsDef.EnableDeltaTempRecArtAlarm = 1;  // abilito allarme delta temperatura recipiente e line arteriosa troppo alta
-	GlobalFlags.FlagsDef.EnableMachineCovers = 1;         // abilito allarmi Hall Machine Covers
-	GlobalFlags.FlagsDef.EnableHooksReservoir = 1;        // abilito allarmi Hall ganci contenitore organo
 	GlobalFlags.FlagsDef.EnableSAFAir = 1;
 	GlobalFlags.FlagsDef.EnableSFVAir = 1;
 	GlobalFlags.FlagsDef.EnableSFAAir = 1;
+	GlobalFlags.FlagsDef.EnableMachineCovers = 1;         // abilito allarmi Hall Machine Covers
+	GlobalFlags.FlagsDef.EnableHooksReservoir = 1;        // abilito allarmi Hall ganci contenitore organo
 #ifdef ENABLE_PROTECTIVE_BOARD
 	GlobalFlags.FlagsDef.EnableCANBUSErr = 1;
 #else
@@ -497,7 +497,7 @@ void CalcAlarmActive(void)
 			//manageAlarmFlowSensNotDetected();
 			//manageAlarmIrTempSensNotDetected();
 				// Filippo - aggiungo la gestione del tasto di stop come allarme
-			//	manageAlarmStopButtonPressed();
+		//		manageAlarmStopButtonPressed();
 
 			break;
 		}
@@ -635,7 +635,7 @@ void CalcAlarmActive(void)
 			manageAlarmActuatorWRModbusNotRespond();
 			manageAlarmFromProtective();
 				// Filippo - aggiungo la gestione del tasto di stop come allarme
-			//	manageAlarmStopButtonPressed();
+		//		manageAlarmStopButtonPressed();
 
 				// Filippo - aggiunto allarme per test sensore aria sbagliato
 				manageAlarmAirSensorTestKO();
@@ -671,7 +671,7 @@ void CalcAlarmActive(void)
 			manageAlarmActuatorWRModbusNotRespond();
 			manageAlarmFromProtective();
 				// Filippo - aggiungo la gestione del tasto di stop come allarme
-			//	manageAlarmStopButtonPressed();
+		//		manageAlarmStopButtonPressed();
 			break;
 
 		case STATE_WAIT_TREATMENT:
@@ -722,7 +722,7 @@ void CalcAlarmActive(void)
 			manageAlarmActuatorWRModbusNotRespond();
 			manageAlarmFromProtective();
 				// Filippo - aggiungo la gestione del tasto di stop come allarme
-			//	manageAlarmStopButtonPressed();
+		//		manageAlarmStopButtonPressed();
 			break;
 		}
 
@@ -1069,7 +1069,8 @@ void manageAlarmPhysicPressSensLow(void)
 {
 	if(GlobalFlags.FlagsDef.EnablePressSensLowAlm)
 	{
-		if(PR_ADS_FLT_mmHg_Filtered < PR_ADS_FILTER_LOW)
+		/*abilito l'allarme di pressione filtro bassa solo se la pompa filtro si sta muovendo a velocità superiore a 5 RPM*/
+		if(PR_ADS_FLT_mmHg_Filtered < PR_ADS_FILTER_LOW && modbusData[3][17] > 500)
 		{
 			alarmList[PRESS_ADS_FILTER_LOW].physic = PHYSIC_TRUE;
 		}
@@ -1078,7 +1079,8 @@ void manageAlarmPhysicPressSensLow(void)
 			alarmList[PRESS_ADS_FILTER_LOW].physic = PHYSIC_FALSE;
 		}
 
-		if(PR_OXYG_mmHg_Filtered < PR_OXYG_LOW)
+		/*abilito l'allarme di pressione OXY bassa solo se almeno una delle due pompe OXY si sta muovendo  a velocità superiore a 5 RPM*/
+		if(PR_OXYG_mmHg_Filtered < PR_OXYG_LOW && (modbusData[1][17] > 500 || modbusData[2][17] > 500))
 		{
 			alarmList[PRESS_OXYG_LOW].physic = PHYSIC_TRUE;
 		}
@@ -1087,6 +1089,9 @@ void manageAlarmPhysicPressSensLow(void)
 			alarmList[PRESS_OXYG_LOW].physic = PHYSIC_FALSE;
 		}
 /*
+		// se il sensore di pressione arteriosa misura la pressione subito prima dell'organo
+		// questo codice va commentato perche' la pressione prima di andare in trattamento e' sempre 0
+		// Per ora faccio una prova mettendo PR_ART_LOW a 0
 		// se il sensore di pressione arteriosa misura la pressione subito prima dell'organo
 		// questo codice va commentato perche' la pressione prima di andare in trattamento e' sempre 0
 		// Per ora faccio una prova mettendo PR_ART_LOW a 0
@@ -1108,6 +1113,18 @@ void manageAlarmPhysicPressSensLow(void)
 			alarmList[PRESS_VEN_LOW].physic = PHYSIC_FALSE;
 		}
 	*/
+
+		/*abilito l'allarme di pressione OXY bassa solo se almeno una delle due pompe OXY si sta muovendo  a velocità superiore a 5 RPM*/
+//		if(PR_VEN_mmHg_Filtered <= PR_VEN_LOW && GetTherapyType() == LiverTreat &&
+//		     (modbusData[1][17] > 500 || modbusData[2][17] > 500))
+//		{
+//			alarmList[PRESS_VEN_LOW].physic = PHYSIC_TRUE;
+//		}
+//		else
+//		{
+//			alarmList[PRESS_VEN_LOW].physic = PHYSIC_FALSE;
+//		}
+
 	}
 	else
 	{
@@ -1121,14 +1138,16 @@ int ForcePressAdsFiltHigh = 0;
 
 void manageAlarmPhysicPressSensHigh(void)
 {
-	word MaxPressArt;
+	word MaxPressArt = PR_ART_HIGH;
+	word MaxPressVen = PR_VEN_HIGH;
 
-	MaxPressArt = PR_ART_HIGH;
+
 	if((ptrCurrentState->state == STATE_PRIMING_PH_1) || (ptrCurrentState->state == STATE_PRIMING_PH_2) ||
 	   (ptrCurrentState->state == STATE_PRIMING_RICIRCOLO))
 	{
 		// nel caso di priming considero una pressione arteriosa piu' alta
-		MaxPressArt = PR_ART_HIGH + 50;
+		MaxPressArt += 150;
+		MaxPressVen += 150;
 	}
 
 	if(GlobalFlags.FlagsDef.EnablePressSensHighAlm)
@@ -1160,7 +1179,7 @@ void manageAlarmPhysicPressSensHigh(void)
 
 
 		/*il sensore Venoso è usato solo nel trattamento Liver, il Kidney non ha la linea Venosa*/
-		if((PR_VEN_Sistolyc_mmHg /*PR_VEN_mmHg_Filtered*/ > PR_VEN_HIGH) && (GetTherapyType() == LiverTreat))
+		if((PR_VEN_Sistolyc_mmHg /*PR_VEN_mmHg_Filtered*/ > MaxPressVen) && (GetTherapyType() == LiverTreat))
 		{
 			alarmList[PRESS_VEN_HIGH].physic = PHYSIC_TRUE;
 		}
@@ -1258,9 +1277,9 @@ void manageAlarmPhysicUFlowSensVen(void)
 	}
 	else
 	{
-//		if((sensor_UFLOW[VENOUS_AIR_SENSOR].bubbleSize >= 25) ||
+//		if((sensor_UFLOW[VENOUS_AIR_SENSOR].bubbleSize >= MAX_BUBBLE_SIZE) ||
 //			(sensor_UFLOW[VENOUS_AIR_SENSOR].bubblePresence == MASK_ERROR_BUBBLE_ALARM))
-		if(((sensor_UFLOW[VENOUS_AIR_SENSOR].bubbleSize >= 25) ||
+		if(((sensor_UFLOW[VENOUS_AIR_SENSOR].bubbleSize >= MAX_BUBBLE_SIZE) ||
 			(sensor_UFLOW[VENOUS_AIR_SENSOR].bubblePresence == MASK_ERROR_BUBBLE_ALARM)) &&
 			(sensor_UFLOW[VENOUS_AIR_SENSOR].bubbleSize != 255))
 		{
@@ -1283,11 +1302,11 @@ void manageAlarmPhysicUFlowSens(void){
 	else
 	{
 //		if(
-//			(sensor_UFLOW[ARTERIOUS_AIR_SENSOR].bubbleSize >= 25) ||
+//			(sensor_UFLOW[ARTERIOUS_AIR_SENSOR].bubbleSize >= MAX_BUBBLE_SIZE) ||
 //			(sensor_UFLOW[ARTERIOUS_AIR_SENSOR].bubblePresence == MASK_ERROR_BUBBLE_ALARM)
 //			)
 		if(
-			((sensor_UFLOW[ARTERIOUS_AIR_SENSOR].bubbleSize >= 25) ||
+			((sensor_UFLOW[ARTERIOUS_AIR_SENSOR].bubbleSize >= MAX_BUBBLE_SIZE) ||
 			(sensor_UFLOW[ARTERIOUS_AIR_SENSOR].bubblePresence == MASK_ERROR_BUBBLE_ALARM)) &&
 			(sensor_UFLOW[ARTERIOUS_AIR_SENSOR].bubbleSize != 255)
 			)
@@ -1780,7 +1799,7 @@ bool IsDisposableEmptyNoAlarm(void)
 		DebugStringStr("AL_AIR_PRES_ADSRB_FILT");
 	}
 
-	if(((sensor_UFLOW[VENOUS_AIR_SENSOR].bubbleSize >= 50) ||
+	if(((sensor_UFLOW[VENOUS_AIR_SENSOR].bubbleSize >= MAX_BUBBLE_SIZE) ||
 		(sensor_UFLOW[VENOUS_AIR_SENSOR].bubblePresence == MASK_ERROR_BUBBLE_ALARM)) &&
 		(sensor_UFLOW[VENOUS_AIR_SENSOR].bubbleSize != 255) &&
 		(ChildEmptyFlags.FlagsDef.SFVAirDetected == 0))
@@ -1789,7 +1808,7 @@ bool IsDisposableEmptyNoAlarm(void)
 		DebugStringStr("AL_AIR_PRES_VEN");
 	}
 
-	if(((sensor_UFLOW[ARTERIOUS_AIR_SENSOR].bubbleSize >= 50) ||
+	if(((sensor_UFLOW[ARTERIOUS_AIR_SENSOR].bubbleSize >= MAX_BUBBLE_SIZE) ||
 		(sensor_UFLOW[ARTERIOUS_AIR_SENSOR].bubblePresence == MASK_ERROR_BUBBLE_ALARM)) &&
 		(sensor_UFLOW[ARTERIOUS_AIR_SENSOR].bubbleSize != 255) &&
 		(ChildEmptyFlags.FlagsDef.SFAAirDetected == 0)
@@ -1884,7 +1903,13 @@ void manageWarningPhysicPressSensHigh(void)
 	// USO GLI STESSI ENABLE EDGLI ALLARMI, NON SO SE QUESTO E' GIUSTO
 	if(GlobalFlags.FlagsDef.EnablePressSensHighAlm)
 	{
-		if(PR_ADS_FLT_mmHg_Filtered > PR_ADS_FILTER_WARN)
+		/*TODO per debug eliminato questo warning -->
+		 * sarà poi da mettere a video solo una volta e riarmarlo quando la pressione scende
+		 * probabilmente sarà aggiungere un terzo stato ad esempio PHISIC_PENDING
+		 * che sarà settato dopo la conferma del warning; fin tanto che è PENDING non lo
+		 * si rimette a TRUE; quando la pressione scende sotto il valore lo si mette a FALSE
+		 * e da lì può tornare TRUE*/
+		if(0/*PR_ADS_FLT_mmHg_Filtered > PR_ADS_FILTER_WARN*/)
 		{
 			alarmList[PRESS_ADS_FILTER_WARN].physic = PHYSIC_TRUE;
 		}
@@ -2827,6 +2852,13 @@ void alarmEngineAlways(void)
 	manageAlarmStopButtonPressed();
 
 	int i;
+
+ // Vincenzo: aggiunta la gestione del tasto di stop che deve
+ //           essere gestito sempre, anche con un eventuale allarme
+ //           in corso, o condizione di recovery
+
+	manageAlarmStopButtonPressed();
+
 	for(i = 0; i < MAX_NUM_ALARM; i++)
 	{
 		CurrAlmLisStateArrdx = i;

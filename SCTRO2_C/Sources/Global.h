@@ -635,6 +635,8 @@ enum MachineStateGuardId {
 	GUARD_ENABLE_TREATMENT_KIDNEY_1,
 	GUARD_ENABLE_DISPOSABLE_EMPTY,
 	GUARD_ABANDON_PRIMING,
+	GUARD_ABANDON_EMPTY,
+	GUARD_ABANDON_UNMOUNT,
 	GUARD_ENABLE_PRIMING_WAIT,
 	GUARD_ENABLE_WAIT_TREATMENT,
 	GUARD_ENABLE_UNMOUNT_END,
@@ -773,8 +775,8 @@ struct alarm {
 	unsigned int	secActType;		/* alarm security action: type of secuirty action required
 	                                   (FM modificato da char ad unsigned int perche' ho bisogno di piu' bit per distinguere i vari allarmi*/
 	unsigned char	priority;		/* alarm priority: low, medium, right */
-	unsigned short	entryTime;		/* entry time in ms */
-	unsigned short	exitTime;		/* exit time in ms */
+	unsigned int	entryTime;		/* entry time in ms */
+	unsigned int	exitTime;		/* exit time in ms */
 	unsigned char	ovrdEnable;		/* override enable: alarm can be overridden when alarm condition is still present */
 	unsigned char	resettable;		/* reset property */
 	unsigned char	silence;		/* silence property: the alarm acoustic signal can be silenced for a limited period of time */
@@ -1149,7 +1151,7 @@ struct ultrsndFlowSens{
 
 //#define SAMPLE 								64          // se uso un campinamento di 50 msec
 #define SAMPLE 							16 		    //numero di campioni su cui mediare il flusso istantaneo letto da usare nelle rotine interne come il PID
-#define SAMPLE_FOR_GUI 					64 		    //numero di campioni su cui mediare il flusso istantaneo letto da trasmettere alla GUI
+#define SAMPLE_FOR_GUI 					256//64 		    //numero di campioni su cui mediare il flusso istantaneo letto da trasmettere alla GUI
 #define TOT_UF_SENSOR 						2
 #define BYTE_COUNT_GET_VAL_CODE 			0x17 		//numero di byte che mi aspetto in ricezione col comando di GET_VAL_CODE customizzato con 3 byte di richesta 0x82 -- 0x88 -- 0x8B
 float buffer_flow_value         [TOT_UF_SENSOR][SAMPLE];
@@ -1220,7 +1222,9 @@ enum buttonGUIEnum{
 	BUTTON_UNMOUNT_END = 0xF2,               // comando per fine smontaggio, posso tornare in idle
 	// Filippo - messo per gestire lo shut down del PC da tasto
 	BUTTON_SHUT_DOWN_PC = 0xF3,
-	BUTTON_END_NUMBER = 39
+	BUTTON_ABANDON_EMPTY = 0xF4,
+	BUTTON_ABANDON_UNMOUNT = 0xF5,
+	BUTTON_END_NUMBER = 42
 };
 
 struct buttonGUI{

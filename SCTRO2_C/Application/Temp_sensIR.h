@@ -39,9 +39,20 @@
 #define FIRST_IR_TEMP_SENSOR			0x01 /*corrisponde al sensore con connettore a 4 pin*/
 #define LAST_IR_TEMP_SENSOR				0x03 /*corrisponde al sensore con connettore a 6 pin, l'indirizzo 0x02 corrisponde al sensore con connettore a 5 pin*/
 
-#define LOWER_RANGE_IR_CORRECTION		10
+/*se inizio a correggere da 10, da 10 a 4 ho 6 °C;
+ * con 0.5 per 1°C quando leggo dal sensore 6 °C,
+ * avrò come correzione T = 6 - (10-6) * 0.5 = 4 °C
+ * ma siccome se devo arrivare a 4, accetto anche 4.5 °, avrò 4.5 quando in realtà ho 6.3333
+ * La formula inversa per rovare quale valore corretto serve per avere un determinato valore reale
+ * è:  Temp_value =  ( (LOWER_RANGE_IR_CORRECTION * DELTA_CORRECTION) + Temp_correct )/ (1+DELTA_CORRECTION)
+ * Analogamente da 31 a 37 ho 6°C e ho un offset totale di 2 °C
+ * Se correggo da 19, da 19 a 4 ho 15 °C quindi con 0.5 per 1 °C
+ * Così facendo ho 4 °C quando leggo dal sensore 9 °C,
+ * ma siccome se devo arrivare a 4, accetto anche 4.5 °, avrò 4.5 quando in realtà ho 9.3333
+ * */
+#define LOWER_RANGE_IR_CORRECTION		19 //10 TODO da rimettere 10 nella versione definitiva---19 solo per Bergamo/Pisa
 #define HIGHER_RANGE_IR_CORRECTION		31
-#define DELTA_CORRECTION				0.3 //delta di correzione tmeperatura per 1 °C
+#define DELTA_CORRECTION				0.5 //delta di correzione tmeperatura per 1 °C
 
 
 void initTempSensIR(void);

@@ -1228,8 +1228,10 @@ void buildRDMachineStateResponseMsg(char code, char subcode)
 
 	/* PERFUSION PARAMETERS */
 	/* perfusion parameters: priming volume adsorbent filter */
+
 	/*58*/  sbc_tx_data[index++] = (perfusionParam.priVolAdsFilter >> 8) & 0xFF;
 	/*59*/  sbc_tx_data[index++] = (perfusionParam.priVolAdsFilter     ) & 0xFF;
+
 	/* perfusion parameters: priming volume perfusion arterial */
 	wd = perfusionParam.priVolPerfArt;
 	if(wd <= VOLUME_DISPOSABLE)
@@ -1336,14 +1338,25 @@ void buildRDMachineStateResponseMsg(char code, char subcode)
 	/*114*/  sbc_tx_data[index++] = (wd >> 8) & 0xFF;
 	/*115*/  sbc_tx_data[index++] = (wd     ) & 0xFF;
 	/* programmed temperature (gradi Centigradi * 10)*/
-	wd = parameterWordSetFromGUI[PAR_SET_TEMPERATURE].value;
+	wd = parameterWordSetFromGUI[PAR_SET_PRIMING_TEMPERATURE_PERFUSION].value;
 	/*116*/  sbc_tx_data[index++] = (wd >> 8) & 0xFF;
 	/*117*/  sbc_tx_data[index++] = (wd     ) & 0xFF;
 	// durata del priming calcolata
 	/*118*/  sbc_tx_data[index++] = (ExpectedPrimDuration >> 8) & 0xFF;
 	/*119*/  sbc_tx_data[index++] = (ExpectedPrimDuration     ) & 0xFF;
+	/*Nel caso trattamento Kidney questo flusso coincide col flusso arteriso
+	 * altrimenti è perfusionParam.priVolAdsFilter*/
+	if (GetTherapyType() == KidneyTreat)
+	{
+    /*copio il valore dei byte 48 e 49 che sono flusso arterioso*/
+	/*120*/ sbc_tx_data[index++] = sbc_tx_data[48];
+	/*121*/ sbc_tx_data[index++] = sbc_tx_data[49];
+	}
+	else //if (GetTherapyType() == LiverTreat)
+	{
 	/*120*/  sbc_tx_data[index++] = ((word)FilterFlowVal >> 8) & 0xFF;  // flusso nel filtro in ml/min (!= 0 solo se il filtro e' presente)
 	/*121*/  sbc_tx_data[index++] = ((word)FilterFlowVal     ) & 0xFF;
+	}
 	wd = 0;
 	/*122*/  sbc_tx_data[index++] = (TimeoutAirEjection >> 8) & 0xFF;  // flag di timeout nell'espulsione dell'aria
 	/*123*/  sbc_tx_data[index++] = (TimeoutAirEjection     ) & 0xFF;
@@ -1684,7 +1697,7 @@ void setParamWordFromGUI(unsigned char parId, int value)
 
 //	// TODO DA RIMUOVERE SOLO PER DEBUG GUI !!!!
 //	parameterWordSetFromGUI[PAR_SET_DESIRED_DURATION].value = 0x0000; // due ore
-//	parameterWordSetFromGUI[PAR_SET_DESIRED_DURATION].value = 0x0001; // 1 minuto
+//	parameterWordSetFromGUI[PAR_SET_DESIRED_DURATION].value = 0x0002; // 2 minuto
 }
 
 void resetParamWordFromGUI(unsigned char parId){

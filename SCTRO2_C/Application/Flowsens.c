@@ -151,7 +151,7 @@ void Manage_UFlow_Sens()
 				//sensor_UFLOW[Id_Buffer].Average_Flow_Val = Average_Flow_Value(Id_Buffer, numFloatUFlow_Val.numFormatFloat_Val);
 				sensor_UFLOW[Id_Buffer].Average_Flow_Val = Average_Flow_Value(Id_Buffer, sensor_UFLOW[Id_Buffer].Inst_Flow_Value);
 				/*adesso eseguo un filtraggio più pesante per il dato a video*/
-				sensor_UFLOW[Id_Buffer].Average_Flow_Val_for_GUI = Average_Flow_Value_for_GUI(Id_Buffer, sensor_UFLOW[Id_Buffer].Average_Flow_Val);
+				sensor_UFLOW[Id_Buffer].Average_Flow_Val_for_GUI = Average_Flow_Value_for_GUI(Id_Buffer, sensor_UFLOW[Id_Buffer].Inst_Flow_Value);
 
 				if (Id_Buffer == 1)
 				{
@@ -171,6 +171,10 @@ void Manage_UFlow_Sens()
 				 * può leggere flussi negativi*/
 				if (sensor_UFLOW[Id_Buffer].Average_Flow_Val < 0)
 					sensor_UFLOW[Id_Buffer].Average_Flow_Val = 0;
+
+				if (sensor_UFLOW[Id_Buffer].Average_Flow_Val_for_GUI < 0)
+					sensor_UFLOW[Id_Buffer].Average_Flow_Val_for_GUI = 0;
+
 
 				/*decremento il contatore dei messaggi inviati per quel sensore*/
 				sensor_UFLOW[Id_Buffer].RequestMsgProcessed = 0;
@@ -236,7 +240,7 @@ float Average_Flow_Value(unsigned char Id_sensor, float new_UF_Value)
 float Average_Flow_Value_for_GUI(unsigned char Id_sensor, float new_UF_Value)
 {
 	float Average_Flow = 0;
-	char i;
+	int i;
 
 	/*shifto tutti i campioni a destra di uno*/
 	for (i = 0; i < SAMPLE_FOR_GUI -1; i++)

@@ -154,6 +154,8 @@
 
 #define PR_ADS_FILTER_WARN									100
 
+#define MAX_BUBBLE_SIZE		50
+
 enum ALARM
 {
 	 PRESS_ART_HIGH = 0,

@@ -126,8 +126,10 @@ void Manage_IR_Sens_Temp(void)
  		 * e se torna LA PEC ricevuta con quella calcolata*/
  		if (computeCRC8TempSensRx(ptrChar,(RAM_ACCESS_COMMAND | SD_TOBJ1_RAM_ADDRESS),Slave_Address_Sent) )
  		{
+ 			/*Copio il valore ricevuto*/
  			sensorIR_TM[index_array].tempSensValue = (float)((BYTES_TO_WORD(sensorIR_TM[index_array].bufferReceived[1], sensorIR_TM[index_array].bufferReceived[0]))*((float)0.02)) - (float)273.15;
- 			sensorIR_TM[index_array].tempSensValue = Ir_Temperature_correction_offset(sensorIR_TM[index_array].tempSensValue);
+ 			/*correggo il valore di OfFset se sono sotto LOWER_RANGE_IR_CORRECTION o sopra HIGHER_RANGE_IR_CORRECTION*/
+ 			sensorIR_TM[index_array].tempSensValue = Ir_Temperature_correction_offset (sensorIR_TM[index_array].tempSensValue);
  			/*ho ricevuto bene, resetto il contatore consecutivo di errore*/
  			sensorIR_TM[index_array].ErrorMSG = 0;
  		}
@@ -141,22 +143,22 @@ void Manage_IR_Sens_Temp(void)
  * Offset via via crescente quando la temperatura letta è <= 10 opp >= 31*/
 float Ir_Temperature_correction_offset (float Temp_value)
 {
-	float Temp_correct;
+	float Temp_correct = Temp_value;
 
-	/*se la temperaura è compresa tra LOWER_RANGE_IR_CORRECTION e HIGHER_RANGE_IR_CORRECTION non facciuo nessuna converisone*/
-	if (Temp_value < HIGHER_RANGE_IR_CORRECTION && Temp_value >LOWER_RANGE_IR_CORRECTION)
+//	/*se la temperaura è compresa tra LOWER_RANGE_IR_CORRECTION e HIGHER_RANGE_IR_CORRECTION non facciuo nessuna converisone*/
+//	if (Temp_value < HIGHER_RANGE_IR_CORRECTION && Temp_value > LOWER_RANGE_IR_CORRECTION)
+//	{
+//		Temp_correct = Temp_value;
+//	}
+	/*se la temperatura è <= LOWER_RANGE_IR_CORRECTION correggo in negativo*/
+	/*else*/ if (Temp_value <= LOWER_RANGE_IR_CORRECTION)
 	{
-		Temp_correct = Temp_value;
+		Temp_correct = Temp_value - (LOWER_RANGE_IR_CORRECTION - Temp_value ) * DELTA_CORRECTION;
 	}
-	/*se la temperatura è <=LOWER_RANGE_IR_CORRECTION correggo in negativo*/
-	else if (Temp_value <=LOWER_RANGE_IR_CORRECTION)
+	/*se la temperatura è >= HIGHER_RANGE_IR_CORRECTION correggo in positivo*/
+	else if (Temp_correct >= HIGHER_RANGE_IR_CORRECTION)
 	{
-		Temp_value = Temp_value - (LOWER_RANGE_IR_CORRECTION - Temp_value ) * DELTA_CORRECTION;
-	}
-	/*se la temperatura è <=>= HIGHER_RANGE_IR_CORRECTION correggo in positivo*/
-	else if (Temp_correct >=HIGHER_RANGE_IR_CORRECTION)
-	{
-		Temp_value = Temp_value + (Temp_value - HIGHER_RANGE_IR_CORRECTION) * DELTA_CORRECTION;
+		Temp_correct = Temp_value + (Temp_value - HIGHER_RANGE_IR_CORRECTION) * DELTA_CORRECTION;
 	}
 
 	return (Temp_correct);

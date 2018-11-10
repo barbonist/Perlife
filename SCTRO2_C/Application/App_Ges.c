@@ -686,6 +686,22 @@ void manageStateEmptyDispAlways(void)
 {
 	ParentEmptyDispStateMach();
 
+	/*Vincenzo: controllo se durante lo svuotamento viene premuto il tasto di abandon
+	 * in tal caso fermo tutte le pompe senza verificare se sono usate o no, poi la
+	 * la macchina a stati mi porterà nello stato di smontaggio*/
+
+	if(buttonGUITreatment[BUTTON_ABANDON_EMPTY].state == GUI_BUTTON_RELEASED)
+	{
+		releaseGUIButton(BUTTON_ABANDON_EMPTY);
+		setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
+		setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 0);
+
+		setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, 0);
+
+
+		currentGuard[GUARD_ABANDON_EMPTY].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+	}
+
 	// il codice che segue serve SOLO PER DEBUG E NELLA VERSIONE DEFINITIVA
 	// DEVE ESSERE CANCELLATO
 //	if(buttonGUITreatment[BUTTON_START_OXYGEN_PUMP].state == GUI_BUTTON_RELEASED)
@@ -864,12 +880,12 @@ void manageStateUnmountDisposableAlways(void)
 		releaseGUIButton(BUTTON_UNMOUNT_END);
 		currentGuard[GUARD_ENABLE_UNMOUNT_END].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
 	}
-	else if(buttonGUITreatment[BUTTON_PRIMING_ABANDON].state == GUI_BUTTON_RELEASED)
+	else if(buttonGUITreatment[BUTTON_ABANDON_UNMOUNT].state == GUI_BUTTON_RELEASED)
 	{
 		// mi e' stato richiesto di abbandonare la fase di smontaggio e andare direttamente in IDLE
-		releaseGUIButton(BUTTON_PRIMING_ABANDON);
-		//currentGuard[GUARD_ABANDON_PRIMING].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
-		SetAbandonGuard();
+		releaseGUIButton(BUTTON_ABANDON_UNMOUNT);
+		currentGuard[GUARD_ABANDON_UNMOUNT].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+	//	SetAbandonGuard();
 	}
 
 }
@@ -1530,7 +1546,7 @@ unsigned char TemperatureStateMach(int cmd)
 
 	case START_RECIRC_HIGH_SPEED:
 		RicircTimeout = timerCounterModBus;
-		setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress,(int)RECIRC_PUMP_HIGH_SPEED);
+		setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress,(int)RECIRC_PUMP_HIGH_SPEED_ART);
 		if((GetTherapyType() == KidneyTreat) && (((PARAMETER_ACTIVE_TYPE)parameterWordSetFromGUI[PAR_SET_OXYGENATOR_ACTIVE].value) == YES))
 		{
 			// sono nel ricircolo rene con ossigenatore abilitato
@@ -4298,7 +4314,19 @@ static void computeMachineStateGuardTreatment(void)
 	int newSpeedPmp1_2 = 0;
 	int newSpeedPmp_3 = 0;
 
-	if((TotalTreatDuration + TreatDuration) >= isec)
+	/*Vincenzo: Gestisco l'abbandona trattamwento anche nel caso in cui lo si faccia
+	 * senza fare uno stop quidni per sicurezza, indipendentemente dal trattamento
+	 * fermo tutte le pompe, poi andrò in svuotamento*/
+	if(buttonGUITreatment[BUTTON_PRIMING_ABANDON].state == GUI_BUTTON_RELEASED)
+	{
+		releaseGUIButton(BUTTON_PRIMING_ABANDON);
+		setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
+		setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 0);
+		setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, 0);
+
+		SetAbandonGuard();
+	}
+	else if((TotalTreatDuration + TreatDuration) >= isec)
 	{
 		if(!computeMachineStateGuardTreatmentState)
 		{
@@ -4876,6 +4904,21 @@ void processMachineState(void)
 		break;
 
 	case STATE_IDLE:
+		/*Vincenzo: Potrei essere tornato inn  IDLE alla fine di un trattamento, quindi
+		 * per sicurezza resetto i contatori del trattamento*/
+
+		/*volume di priming effettuato*/
+		if (perfusionParam.priVolPerfArt != 0)
+			perfusionParam.priVolPerfArt = 0;
+
+		/*volume di svuotamento effettuato*/
+		if (VolumeDischarged != 0)
+			VolumeDischarged = 0;
+
+		/*durata totale effettuata del trattamento*/
+		if (TotalTreatDuration != 0)
+			TotalTreatDuration = 0;
+
 		/* compute future state */
 		if((currentGuard[GUARD_ENABLE_SELECT_TREAT_PAGE].guardValue == GUARD_VALUE_TRUE))
 		{
@@ -4939,6 +4982,20 @@ void processMachineState(void)
 				ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
 				DebugStringStr("STATE_TANK_FILL");
 			}
+
+//TODO da aggiungere l'eventuale tasto di abbandona che porta in somontaggio e non in svuotamento
+//			else if(currentGuard[GUARD_ABANDON_PRIMING].guardValue == GUARD_VALUE_TRUE)
+//			{
+//				currentGuard[GUARD_ABANDON_PRIMING].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
+//				/* (VP) HO DECISO DI ABBANDONARE IL PRIMING senza che esso sia mai partito, sono ancvora in motaggio, vado in smontaggio
+				// se voglio andare in STATE_UNMOUNT_DISPOSABLE e staccare il disposable
+//				ptrFutureState = &stateState[27];
+//				/* compute future parent */
+//				ptrFutureParent = ptrFutureState->ptrParent;
+//				/* compute future child */
+//				ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
+//				DebugStringStr("STATE_EMPTY_DISPOSABLE(ABBANDONA)");
+//			}
 
 			/* execute function state level */
 			manageStateEntryAndStateAlways(10);
@@ -5099,7 +5156,7 @@ void processMachineState(void)
 		else if(currentGuard[GUARD_ABANDON_PRIMING].guardValue == GUARD_VALUE_TRUE)
 		{
 			currentGuard[GUARD_ABANDON_PRIMING].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
-			/* (FM) HO DECISO DI ABBANDONARE IL PRIMING, VADO NELLO STATO DI SVUOTAMENTO */
+			/* (FM) HO DECISO DI ABBANDONARE IL TRATTAMENTO, VADO NELLO STATO DI SVUOTAMENTO */
 			/* compute future state */
 			ptrFutureState = &stateState[19];
 			/* compute future parent */
@@ -5256,7 +5313,7 @@ void processMachineState(void)
 
 	case STATE_EMPTY_DISPOSABLE:
 		if((currentGuard[GUARD_EMPTY_DISPOSABLE_END].guardValue == GUARD_VALUE_TRUE) ||
-			(currentGuard[GUARD_ABANDON_PRIMING].guardValue == GUARD_VALUE_TRUE))
+			(currentGuard[GUARD_ABANDON_EMPTY].guardValue == GUARD_VALUE_TRUE))
 		{
 			// se voglio andare in idle e selezionare un nuovo trattamento
 			//ptrFutureState = &stateState[3];
@@ -5266,10 +5323,10 @@ void processMachineState(void)
 			ptrFutureParent = ptrFutureState->ptrParent;
 			/* compute future child */
 			ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
-			if(currentGuard[GUARD_ABANDON_PRIMING].guardValue == GUARD_VALUE_TRUE)
+			if(currentGuard[GUARD_ABANDON_EMPTY].guardValue == GUARD_VALUE_TRUE)
 			{
 				// abbandono il priming e VADO NELLO STATO DI STATE_UNMOUNT_DISPOSABLE per smontare il disposable
-				currentGuard[GUARD_ABANDON_PRIMING].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
+				currentGuard[GUARD_ABANDON_EMPTY].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
 				DebugStringStr("UNMOUNT_DISPOS(ABBANDONA)");
 			}
 			else
@@ -5287,7 +5344,7 @@ void processMachineState(void)
 
 	case STATE_UNMOUNT_DISPOSABLE:
 		if((currentGuard[GUARD_ENABLE_UNMOUNT_END].guardValue == GUARD_VALUE_TRUE) ||
-			(currentGuard[GUARD_ABANDON_PRIMING].guardValue == GUARD_VALUE_TRUE))
+			(currentGuard[GUARD_ABANDON_UNMOUNT].guardValue == GUARD_VALUE_TRUE))
 		{
 			ptrFutureState = &stateState[3];
 			/* compute future parent */
@@ -5295,10 +5352,10 @@ void processMachineState(void)
 			/* compute future child */
 			ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
 
-			if(currentGuard[GUARD_ABANDON_PRIMING].guardValue == GUARD_VALUE_TRUE)
+			if(currentGuard[GUARD_ABANDON_UNMOUNT].guardValue == GUARD_VALUE_TRUE)
 			{
 				// abbandono il priming e VADO NELLO STATO DI SVUOTAMENTO
-				currentGuard[GUARD_ABANDON_PRIMING].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
+				currentGuard[GUARD_ABANDON_UNMOUNT].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
 				DebugStringStr("STATE_IDLE(ABBANDONA)");
 			}
 			else
