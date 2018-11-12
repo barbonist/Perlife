@@ -330,10 +330,10 @@ void CalcVenSistDiastPress(word Press)
 
 
 
-	if (sensor_UFLOW[1].Average_Flow_Val <= 100)
+	if (sensor_UFLOW[1].Average_Flow_Val_for_GUI <= 100)
 		perfusionParam.renalResistanceVenous = 0;
 	else
-		perfusionParam.renalResistanceVenous = (word)((float)PR_VEN_Med_mmHg /sensor_UFLOW[1].Average_Flow_Val * 1000.0); // mmHg/(ml/min) *10 (SBC poi divide per 10)
+		perfusionParam.renalResistanceVenous = (word)((float)PR_VEN_Med_mmHg /sensor_UFLOW[1].Average_Flow_Val_for_GUI * 1000.0); // mmHg/(ml/min) *10 (SBC poi divide per 10)
 
 	perfusionParam.pulsatilityVenous = PR_VEN_Sistolyc_mmHg - PR_VEN_Diastolyc_mmHg;
 
@@ -494,10 +494,10 @@ void CalcArtSistDiastPress(word Press)
 	//perfusionParam.renalResistance = (word)((float)PR_ART_Med_mmHg_ORG /sensor_UFLOW[0].Average_Flow_Val * 100.0);
 //	wd = (int) ( 2 * PR_ART_Sistolyc_mmHg_ORG + PR_ART_Diastolyc_mmHg_ORG)/3;
 
-	if (sensor_UFLOW[0].Average_Flow_Val <= 20)
+	if (sensor_UFLOW[0].Average_Flow_Val_for_GUI <= 20)
 		perfusionParam.renalResistance = 0;
 	else
-		perfusionParam.renalResistance = (word)((float)PR_ART_Med_mmHg /sensor_UFLOW[0].Average_Flow_Val * 1000.0); // mmHg/(ml/min) * 10 (SBC poi divide per 10)
+		perfusionParam.renalResistance = (word)((float)PR_ART_Med_mmHg /sensor_UFLOW[0].Average_Flow_Val_for_GUI * 1000.0); // mmHg/(ml/min) * 10 (SBC poi divide per 10)
 
 	if (PR_ART_Diastolyc_mmHg_ORG < 0)
 		PR_ART_Diastolyc_mmHg_ORG = 0;
