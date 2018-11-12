@@ -110,6 +110,30 @@ unsigned char CHANGE_ADDRESS_IR_SENS;
 #define BUTTON_3 0x03
 #define BUTTON_4 0x04
 
+
+
+#define PR_OXYG_GAIN_DEFAULT 		0.0277778
+#define PR_OXYG_OFFSET_DEFAULT		-549.583
+
+#define PR_LEVEL_GAIN_DEFAULT 		0.000535045
+#define PR_LEVEL_OFFSET_DEFAULT		-10.2772
+
+#define PR_ADS_FLT_GAIN_DEFAULT		0.0272547
+#define PR_ADS_FLT_OFFSET_DEFAULT	-537.517
+
+#define PR_VEN_GAIN_DEFAULT 		0.00658244
+#define PR_VEN_OFFSET_DEFAULT		-128.147
+
+#define PR_ART_GAIN_DEFAULT 		0.00657
+#define PR_ART_OFFSET_DEFAULT		-127.287
+
+/*valore di gain e offset del sensore di flusso venoso calcolati sperimentalmente con prove di flusso con la bilancia*/
+#define GAIN_FLOW_SENS_VEN		0.891219f
+#define OFFSET_FLOW_SENS_VEN		25
+#define GAIN_FLOW_SENS_ART      0.7678f
+#define OFFSET_FLOW_SENS_ART		56
+
+
 struct funcRetStruct
 {
 	unsigned char *  ptr_msg;
@@ -525,7 +549,6 @@ bool Frigo_ON;	//variabile globale che mi dice se è partito il firgo
 
 #define AIR							0x00
 #define LIQUID						0x01
-unsigned char Air_1_Status;				//variabile globale per vedere lo stato del sensore di aria SONOTEC; può assumere valire AIR opp LIQUID
 
 bool Service;
 
@@ -560,16 +583,24 @@ struct pressureSensor{
 //	word * (*readAdctPtr)(void);
 };
 
+
+
 struct ParSaveTO_EEPROM
 {
 	struct pressureSensor sensor_PRx[5];
-	float  T_Plate_Sensor_Gain_cold;
-	float  T_Plate_Sensor_Offset_cold;
-	float  T_Plate_Sensor_Gain_heat;
+	float  FlowSensor_Ven_Gain;
+	float  FlowSensor_Ven_Offset;
+	float  FlowSensor_Art_Gain;
+	float  FlowSensor_Art_Offset;
+	float  T_Plate_Sensor_Gain_Heat;
+	float  T_Plate_Sensor_Offset_Heat;
+	float  T_Plate_Sensor_Gain_Cold;
+	float  T_Plate_Sensor_Offset_Cold;
 	float  T_Plate_Sensor_Offset_heat;
 	unsigned char EEPROM_Revision;
 	word EEPROM_CRC;
 };
+
 
 //volume del liquido in vaschetta come percentuale rispetto al suo valore massimo
 word LiquidAmount;
@@ -694,6 +725,10 @@ bool HOOK_SENSOR_1_STATUS;
 /*variabile globale per il sensore di gancio 2; diventa TRUE se gancio aperto*/
 bool HOOK_SENSOR_2_STATUS;
 
+
+unsigned char Air_1_Status;    //variabile globale per vedere lo stato del sensore di aria SONOTEC; può assumere valire AIR opp LIQUID
+
+void Manage_Air_Sensor_1(void);  // Vincenzo P. 19 Oct 2018
 void Enable_Power_EVER_PUMP(bool status);
 void Enable_Power_Motor(bool status);
 void Enable_Pump_filter(bool status);
@@ -704,5 +739,7 @@ void Enable_Pinch_Arterial(bool status);
 void Enable_Pinch_Venous(bool status);
 void Enable_Heat(bool status);
 void Enable_Frigo (bool status);
+
+
 
 #endif /* SOURCES_GLOBAL_H_ */

@@ -8,6 +8,9 @@
 #include "stdint.h"
 #include "Global.h"
 #include "SWTimer.h"
+#include "Adc_Ges.h"
+#include "AD1.h"
+
 
 
 void InitSensorsAccess(void)
@@ -16,7 +19,7 @@ void InitSensorsAccess(void)
 	ADC1_Calibration();
 	PR_Sens_ADC_Init();
 	AD1_Start();
-	AddSwTimer(AD1_Start,1,TM_REPEAT);
+    AddSwTimer((TAction)AD1_Start,1,TM_REPEAT);
 }
 
 

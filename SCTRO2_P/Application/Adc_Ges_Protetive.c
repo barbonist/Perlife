@@ -23,8 +23,9 @@
 #include "stdlib.h"
 #include "EEPROM.h"
 #include "App_Ges.h"
-#include "ModBusCommProt.h"
+//#include "ModBusCommProt.h"
 #include "Comm_Sbc.h"
+#include "ControlProtectiveInterface.h"
 
 // Filippo - definisco tabella di conversione per una PT1000
 TABELLA_PT1000 tabellaPT1000[14]={
@@ -78,14 +79,15 @@ void Dip_Switch_ADC_Init(void)
 	DipSwitch_2_ADC = 0;
 }
 
-void T_PLATE_P_Init(void)
-{
-	T_PLATE_P_ADC		 = 0;
-	T_PLATE_P_GRADI_CENT = 0;
-}
+
+//{
+	//SB T_PLATE_P_ADC		 = 0;
+//	T_PLATE_P_GRADI_CENT = 0;
+//}
 
 void Manange_ADC0(void)
 {
+	//word TPlatePadc = 0;
 	/*dentro l'if seguente posso mettere
 	 * tutte le letture del canale ADC0
 	 * usando delle variabili globali
@@ -97,11 +99,14 @@ void Manange_ADC0(void)
 		/*DP_SW1 sta su AD0 channel 5; passando l'indirizzo della variabile, la valorizzo*/
 		AD0_GetChanValue16(DipSwitch_1_ADC_CHANNEL, &DipSwitch_1_ADC);
 		/*T_PLATE_P sta su AD0 channel 6; passando l'indirizzo della variabile, la valorizzo*/
-		AD0_GetChanValue16(T_PLATE_P_ADC_CHANNEL, &T_PLATE_P_ADC);
+		AD0_GetChanValue16(T_PLATE_P_ADC_CHANNEL, &T_PLATE_P_ADC/*TPlatePadc*/);
 
 		/*converte il valori ADC in gradi centigradi del sensor di temperatura della piastra*/
+		//onNewTPlateCentDegrees( Coversion_From_ADC_To_degree_T_PLATE_Sensor() );
 		Coversion_From_ADC_To_degree_T_PLATE_Sensor();
+		float pippo = T_PLATE_P_GRADI_CENT;
 
+		onNewTPlateCentDegrees(pippo);
 		/*resetto il flag di lettura sull'interrupt AD0_OnEnd*/
 		END_ADC0 = FALSE;
   	  }
@@ -138,6 +143,13 @@ void Manange_ADC1(void)
 		Coversion_From_ADC_To_mmHg_Pressure_Sensor();
 		/*filtra i valori di mmHg dei sensori di pressione*/
 		Pressure_sensor_Fltered();
+
+		onNewPressOxygen(PR_OXYG_mmHg_Filtered);
+		onNewTubPressLevel(PR_LEVEL_mmHg_Filtered);
+		onNewPressADSFLT(PR_ADS_FLT_mmHg_Filtered);
+		onNewPressVen(PR_VEN_mmHg_Filtered);
+		onNewPressArt(PR_ART_mmHg_Filtered);
+
 		/*converte i valori ADC in volt per le tensioni*/
 		Coversion_From_ADC_To_Voltage();
 
@@ -160,7 +172,7 @@ void Plate_Temp_Sensor_Calibration(float value)
 }
 
 
-void Coversion_From_ADC_To_degree_T_PLATE_Sensor()
+void Coversion_From_ADC_To_degree_T_PLATE_Sensor(/*word TPlatePadc*/)
 {
 /* Filippo - calcoliamo la temperatura della PT1000 in altro modo
 	if (Frigo_ON)
@@ -213,6 +225,7 @@ void Coversion_From_ADC_To_degree_T_PLATE_Sensor()
 		T_PLATE_P_GRADI_CENT=tabellaPT1000[13].temperatura;
 	}
 
+//	return (T_PLATE_P_GRADI_CENT);
 }
 
 void Coversion_From_ADC_To_mmHg_Pressure_Sensor()
@@ -701,12 +714,46 @@ int meanWA(unsigned char dimNum, int newSensVal, char IdSens)
 		return 0;
 }
 
+/*funzione del CheckSum usata anche per la EEPROM e per il protocollo con SBC*/
+unsigned int ComputeChecksum(unsigned char * data, int size)
+{
+	unsigned int CRC16 = 0xFFFF;
+	unsigned int CRCLsb = 0x0000;
+	unsigned int byte = 0x0000;
+
+	for(int i = 0; i < size; i++)
+	{
+		byte = *(data+i) & 0x00FF;
+		CRC16 = CRC16 ^ byte;
+
+		for(int j = 0; j < 8; j++)
+		{
+			CRCLsb = CRC16 & 0x0001;
+			CRC16 = (CRC16 >> 1) & 0x7FFF;
+
+			if(CRCLsb == 0x0001)
+			{
+				CRC16 = CRC16 ^ CRC_POLYNOMIAL;
+			}
+		}
+	}
+
+	return CRC16;
+}
+
 
 void Manage_Air_Sensor_1(void)
 {
- 	if (AIR_SENSOR_3_GetVal())
- 		Air_1_Status = AIR;
- 	else
- 		Air_1_Status = LIQUID;
+     if (AIR_SENSOR_3_GetVal())
+         Air_1_Status = AIR;
+     else
+         Air_1_Status = LIQUID;
+
+     onNewAirSensorStat(Air_1_Status);
 }
+
+
+
+
+
 

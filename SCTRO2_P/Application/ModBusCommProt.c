@@ -7,6 +7,7 @@
 
 #include "ModBusCommProt.h"
 /* Public function */
+unsigned int ComputeChecksum(unsigned char * data, int size);
 struct func3RetStruct * ModBusReadRegisterReq(char slaveAddr,
 									  char funcCode,
 									  unsigned int readStartAddr,

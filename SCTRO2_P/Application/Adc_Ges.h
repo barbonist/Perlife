@@ -49,7 +49,7 @@ void Manange_ADC1(void);
 void PR_Sens_ADC_Init(void);
 void Coversion_From_ADC_To_mmHg_Pressure_Sensor(void);
 void Coversion_From_ADC_To_Voltage();
-void Coversion_From_ADC_To_degree_T_PLATE_Sensor(void);
+void Coversion_From_ADC_To_degree_T_PLATE_Sensor(/*word TPlatePadc*/);
 void Pressure_sensor_Fltered (void);
 void Manage_Air_Sensor_1(void);
 void Manage_Debug_led(bool Status);

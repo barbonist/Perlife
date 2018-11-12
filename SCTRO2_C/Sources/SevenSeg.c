@@ -78,10 +78,10 @@ void ManageSevenSeg200ms(void)
 		if(strlen(String2Show) != 0){
 			Set7SegAscii(String2Show[String2ShowIdx]);
 			String2ShowIdx = (String2ShowIdx + 1) % strlen(String2Show);
-			Dot(TRUE);
+		//	Dot(TRUE);
 		}
 		else{
-			Dot(FALSE);
+			//Dot(FALSE);
 		}
 	}
 	else {

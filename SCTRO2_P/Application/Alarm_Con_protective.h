@@ -71,10 +71,42 @@
 
 // protective codes
 
-#define CODE_ALARM_NOCAN_COMMUNICATION			0xB1 // 177
-#define CODE_ALARM_PUMPSPEED_DONT_MATCH			0xB9 // 185
+#define CODE_ALARM_NOCAN_COMMUNICATION			0x1C0 // 177 for obvious reasons can't be sent to control board
+
+#define CODE_ALARM_PUMPSPEED_DONT_MATCH			0x1C1 // 185
+#define CODE_ALARM_PRESS_ART_DONTMATCH			0x1C2
+#define CODE_ALARM_PRESS_VEN_DONTMATCH			0x1C3
+#define CODE_ALARM_PRESS_ADSFILT_DONTMATCH		0x1C4
+#define CODE_ALARM_PRESS_OXYGEN_DONTMATCH		0x1C5
+#define CODE_ALARM_PRESS_LEVEL_DONTMATCH		0x1C6
+
+#define CODE_ALARM_TEMP_PLATE_DONTMATCH			0x1C7
+#define CODE_ALARM_TEMP_ART_DONTMATCH			0x1C8
+#define CODE_ALARM_TEMP_VEN_DONTMATCH			0x1C9
+#define CODE_ALARM_TEMP_FLUID_DONTMATCH			0x1CA
+
+#define CODE_PINCH_POS_DONTMATCH				0x1CB
+
+#define CODE_ALARM_PRESS_ART_XHIGH			    0x1DD
+#define CODE_ALARM_PRESS_VEN_XHIGH			    0x1DE
+#define CODE_ALARM_PRESS_ADSFILT_XHIGH  		0x1DF
+#define CODE_ALARM_PRESS_OXYGEN_XHIGH 			0x1E0
+#define CODE_ALARM_PRESS_LEVEL_XHIGH			0x1E1
+
+#define CODE_ALARM_TEMP_PLATE_XHIGH				0x1E2
+#define CODE_ALARM_TEMP_ART_XHIGH				0x1E3
+#define CODE_ALARM_TEMP_VEN_XHIGH				0x1E4
+#define CODE_ALARM_TEMP_FLUID_XHIGH				0x1E5
+
+#define CODE_ALARM_TEMP_PLATE_XLOW				0x1E6
+#define CODE_ALARM_TEMP_ART_XLOW				0x1E7
+#define CODE_ALARM_TEMP_VEN_XLOW				0x1E8
+#define CODE_ALARM_TEMP_FLUID_XLOW				0x1E9
+
+#define CODE_ALARM_GEN_HWFAILURE				0x1F0
 
 
+#define CODE_ALARM_
 
 #define	PHYSIC_TRUE		0xA5
 #define PHYSIC_FALSE	0x5A
@@ -113,22 +145,54 @@
 #define MEMO_ALLOWED			0xA5
 #define MEMO_NOT_ALLOWED		0x5A
 
-
 #define FLOW_LIVER_MAX   2500
 #define FLOW_KIDNEY_MAX  2500
 
 #define MAX_MSG_CONSECUTIVE_FLOW_SENS_NOT_DETECTED 			10
 #define MAX_MSG_CONSECUTIVE_IR_TEMP_SENS_NOT_DETECTED 		10
-#define PR_ART_HIGH											300  //100
-#define PR_ART_LOW											0
-#define PR_VEN_HIGH											10  //290
-//TODO da definire esattamente
-#define PR_OXYG_HIGH                                        800
-//#define PR_VEN_LOW											40
-// modificato altrimenti viene sempre fuori allarme di pressione bassa
-#define PR_VEN_LOW											25
-#define PR_ADS_FILTER_HIGH									250
 #define MAX_MSG_CONSECUTIVE_ACTUATOR_MODBUS_NOT_RESPOND 	10
+
+#define PR_ART_HIGH											300  //100
+#define PR_ART_XHIGH										(PR_ART_HIGH	+ 30)
+#define PR_ART_LOW											0
+
+#define PR_VEN_HIGH											10
+#define PR_VEN_XHIGH										(PR_VEN_HIGH	+ 2)
+
+//#define PR_OXYG_HIGH                                        800
+#define PR_OXYG_HIGH                                        500
+
+#define PR_OXYG_XHIGH										(PR_OXYG_HIGH + 80)
+
+#define PR_ADS_FILTER_HIGH									250
+#define PR_ADS_FILTER_XHIGH									(PR_ADS_FILTER_HIGH + 25)
+
+#define PR_TUB_XHIGH										4
+
+#define PR_ADS_FILTER_LOW                                   10
+#define PR_ADS_FILTER_WARN									100
+
+// temperature
+#define TEMPER_ART_HIGH										40.0
+#define TEMPER_ART_XHIGH									(TEMPER_ART_HIGH	+1)
+#define TEMPER_ART_LOW										3.0
+#define TEMPER_ART_XLOW										(TEMPER_ART_LOW	-1)
+
+#define TEMPER_VEN_HIGH										40.0
+#define TEMPER_VEN_XHIGH									(TEMPER_VEN_HIGH + 1)
+#define TEMPER_VEN_LOW										3.0
+#define TEMPER_VEN_XLOW										(TEMPER_VEN_LOW	-1)
+
+#define TEMPER_FLUID_HIGH									40.0
+#define TEMPER_FLUID_XHIGH									(TEMPER_FLUID_HIGH + 1)
+#define TEMPER_FLUID_LOW									3.0
+#define TEMPER_FLUID_XLOW									(TEMPER_FLUID_LOW - 1)
+
+#define MAX_PLATE_TEMP  									70.0
+#define XMAX_PLATE_TEMP  									(MAX_PLATE_TEMP + 15)
+
+#define MIN_PLATE_TEMP  									-5.0
+#define XMIN_PLATE_TEMP 									(MIN_PLATE_TEMP - 10)
 
 enum ALARM
 {
@@ -155,13 +219,24 @@ enum ALARM
 	 DELTA_TEMP_REC_ART,
 	 DELTA_TEMP_REC_VEN,
 	 CAN_BUS_ERROR,
-	 MODBUS_ACTUATOR_SEND
+	 MODBUS_ACTUATOR_SEND,
+
+	 PUMP_NOT_STILL,
+	 BAD_PINCH_POS,
+	 PRIM_AIR_ON_FILTER,
+	 PRESS_ADS_FILTER_LOW,
+	 PRESS_OXYG_LOW,
+	 ALARM_FROM_PROTECTIVE,
+
+	 // da qui in avanti i codici delle warning
+	 PRESS_ADS_FILTER_WARN
+
 };
 
 void alarmConInit(void);
 void alarmEngineAlways(void);
 void alarmManageNull(void);
-void manageAlarmChildGuard(struct alarm * ptrAlarm);
+//void manageAlarmChildGuard(struct alarm * ptrAlarm);
 void manageAlarmPhysicFlowPerfArtHigh(void);
 void manageAlarmFlowSensNotDetected(void);
 void manageAlarmIrTempSensNotDetected(void);

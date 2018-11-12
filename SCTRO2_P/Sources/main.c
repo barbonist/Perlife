@@ -186,7 +186,7 @@
 #include "Init_Config.h"
 /**/
 /* User includes (#include below this line is not maintained by Processor Expert) */
-#include "ModBusCommProt.h"
+//#include "ModBusCommProt.h"
 #include "Machine_State.h"
 #include "Global.h"
 #include "App_Ges.h"
@@ -195,126 +195,21 @@
 #include "SWTimer.h"
 #include "SevenSeg.h"
 #include "FlexCanWrapper.h"
-#include "Temp_sensIR_protective.h"
+#include "Temp_sensIR.h"
 #include "SensorAccess.h"
 #include "ControlProtectiveInterface.h"
 #include "RPMGauge.h"
 #include "BubbleKeyboard.h"
 #include "Adc_Ges.h"
+#include "ActionsProtective.h"
 #include "debug_routine.h"
 
 void InitTest(void);
 void verificaTempPlate(void);
 /*lint -save  -e970 Disable MISRA rule (6.3) checking. */
 
+int Phase = 0x99;
 /*Funtion to enable power and actuation of teh actuator*/
-void Enable_Power_EVER_PUMP(bool status)
-{
-	if (status && !EN_P_1_C_GetVal())
-	{
-		EN_P_1_C_SetVal();
-		EN_P_2_C_SetVal();
-	}
-
-	if (!status && EN_P_1_C_GetVal())
-	{
-		EN_P_1_C_ClrVal();
-		EN_P_2_C_ClrVal();
-	}
-}
-void Enable_Power_Motor(bool status)
-{
-	if (status && !EN_24_M_P_GetVal())
-		EN_24_M_P_SetVal();
-
-	if (!status && EN_24_M_P_GetVal())
-		EN_24_M_P_ClrVal();
-}
-void Enable_Pump_filter(bool status)
-{
-	if (status && !EN_MOTOR_P_1_GetVal())
-		EN_MOTOR_P_1_SetVal();
-
-	if (!status && EN_MOTOR_P_1_GetVal())
-		EN_MOTOR_P_1_ClrVal();
-}
-void Enable_Pump_Art_Livcer(bool status)
-{
-	if (status && !EN_MOTOR_P_2_GetVal())
-		EN_MOTOR_P_2_SetVal();
-
-	if (!status && EN_MOTOR_P_2_GetVal())
-		EN_MOTOR_P_2_ClrVal();
-}
-void Enable_Pump_OXY(bool status)
-{
-	if (status && !EN_MOTOR_P_3_GetVal())
-		EN_MOTOR_P_3_SetVal();
-
-	if (status && !EN_MOTOR_P_4_GetVal())
-		EN_MOTOR_P_4_SetVal();
-
-	if (!status && EN_MOTOR_P_3_GetVal())
-		EN_MOTOR_P_3_ClrVal();
-
-	if (!status && EN_MOTOR_P_4_GetVal())
-		EN_MOTOR_P_4_ClrVal();
-}
-void Enable_Pinch_Filter(bool status)
-{
-	if (status && !EN_CLAMP_P_1_GetVal())
-		EN_CLAMP_P_1_SetVal();
-
-	if (!status && EN_CLAMP_P_1_GetVal())
-		EN_CLAMP_P_1_ClrVal();
-}
-void Enable_Pinch_Arterial(bool status)
-{
-	if (status && !EN_CLAMP_P_2_GetVal())
-		EN_CLAMP_P_2_SetVal();
-
-	if (!status && EN_CLAMP_P_2_GetVal())
-		EN_CLAMP_P_2_ClrVal();
-}
-void Enable_Pinch_Venous(bool status)
-{
-	if (status && !EN_CLAMP_P_3_GetVal())
-		EN_CLAMP_P_3_SetVal();
-
-	if (!status && EN_CLAMP_P_3_GetVal())
-		EN_CLAMP_P_3_ClrVal();
-}
-
-void Enable_Heat(bool status)
-{
-	if (status && !HEAT_ON_P_GetVal())
-	{
-		HEAT_ON_P_SetVal();
-		Heat_ON = TRUE;
-	}
-
-	if (!status && HEAT_ON_P_GetVal())
-	{
-		HEAT_ON_P_ClrVal();
-		Heat_ON = FALSE;
-	}
-}
-
-void Enable_Frigo (bool status)
-{
-	if (status && !COMP_ENABLE_GetVal())
-	{
-		COMP_ENABLE_SetVal();
-		Frigo_ON = TRUE;
-	}
-
-	if (!status && COMP_ENABLE_GetVal())
-	{
-		COMP_ENABLE_ClrVal();
-		Frigo_ON = FALSE;
-	}
-}
-
 void verificaTempPlate(void)
 {
 	float differenza;
@@ -327,21 +222,14 @@ void verificaTempPlate(void)
 		{
 			differenza=-differenza;
 		}
-
 		if (differenza>2)
 		{
 			// la differenza tra le due temperature lette è eccessiva - allarme
-			// per adesso non lo metto perchè la gestione degli allarmi protective la sta facendo Barboni
-
-
+			// per adesso non lo metto perchè la gestione degli allarmi protective la sta facendo Barbonix
 		}
 	}
-
 	// nella stessa funzione metto anche l'aggiornamento del buffer con il valore di temperatura piatto letto
 	onNewTempPlateValue((int16_t)(T_PLATE_P_GRADI_CENT*10));
-
-
-
 }
 
 int main(void)
@@ -370,21 +258,10 @@ int main(void)
 
   Dip_Switch_ADC_Init();
   PR_Sens_ADC_Init();
-  T_PLATE_P_Init();
+  // SB T_PLATE_P_Init();
+  InitActuators();
 
-  Enable_Power_EVER_PUMP(TRUE);
-  Enable_Power_Motor(TRUE);
-  Enable_Pump_filter(TRUE);
-  Enable_Pump_Art_Livcer(TRUE);
-  Enable_Pump_OXY(TRUE);
-  Enable_Pinch_Filter(TRUE);
-  Enable_Pinch_Arterial(TRUE);
-  Enable_Pinch_Venous(TRUE);
-  Enable_Heat(FALSE);
-  Enable_Frigo(FALSE);
-  Heat_ON = FALSE;
-  Frigo_ON = FALSE;
-
+  IR_TM_COMM_Enable();
   ptrMsgSbcRx = &sbc_rx_data[0];
   ptrSbcCountRx = 0;
   timerCounter=0;
@@ -403,26 +280,29 @@ int main(void)
    // di piatto spedita dalla control
    timerConfrontaTempPlate=0;
 
+   //printf("provo di scrivere sulla console \r\n");
+
   for(;;)
   {
   	  if (Service)
   		 Service_SBC();
 
 	  ManageSwTimers();
+	  Phase = 2;
 	  UpdateActuatorPosition();
+	  Phase = 3;
 	  Manage_IR_Sens_Temp();
 	  /*funzioni per leggere i canali AD*/
+	  Phase = 4;
 	  Manange_ADC0();
+	  Phase = 5;
 	  Manange_ADC1();
 	  /*END funzioni per leggere i canali AD*/
-
-	  /*funzione che aggiorna lo stato del sesnore si aria filtro (digitale)*/
-	  Manage_Air_Sensor_1();
-	  /*END*/
 
 	 /*faccio lo start della conversione sul canale AD0 ogni 50 msec*/
 	 if (timerCounterADC0 >=1)
 	 {
+		Phase = 6;
 		timerCounterADC0 = 0;
 		AD0_Start();
 	 }
@@ -431,6 +311,7 @@ int main(void)
 	 if (timerCounterADC1 >=10)
 	 {
 		//EnterCritical();
+		Phase = 7;
 		timerCounterADC1 = 0;
 		//ExitCritical();
 		AD1_Start();
@@ -445,8 +326,11 @@ int main(void)
 	 /*          HOOK SENSORS        */
 	 /********************************/
 	 Manage_Hook_Sensors();
-
 	 verificaTempPlate();
+
+     /*funzione che aggiorna lo stato del sesnore si aria filtro (digitale)*/
+     Manage_Air_Sensor_1();
+
   }
 
 

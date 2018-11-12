@@ -19,7 +19,7 @@
 #include "stdlib.h"
 
 #include "App_Ges.h"
-#include "Temp_sensIR_protective.h"
+//#include "Temp_sensIR_protective.h"
 
 
 extern bool WriteActive;
@@ -164,30 +164,30 @@ void Service_SBC(void){
 					{
 						//TODO write the register
 
-						CHANGE_ADDRESS_IR_SENS = TRUE;
-						unsigned char OldAddress = 0x5A;
-						word snd;
-						ptrMsgSbcRx = &sbc_rx_data[0];
-						word NewAddress = BYTES_TO_WORD(ptrMsgSbcRx[9], ptrMsgSbcRx[10]);
-
-						buildTempIRSensWriteRegResponseMsg(ptrMsgSbcRx);
-						ptrMsgSbcTx = &sbc_tx_data[0];
-						SBC_COMM_SendBlock(ptrMsgSbcTx,myCommunicatorToSBC.numByteToSend,&snd);
-
-
-						/*resetto l'indirzzo*/
-						buildCmdWriteTempSensIR(OldAddress, (EEPROM_ACCESS_COMMAND | SD_SMBUS_E2_ADDRESS), 0x0000);
-						timerCounter=0;
-						int wait = timerCounter;
-						/*attendo 250 msec*/
-						while ( timerCounter - wait < 30);
-
-						/*scrivo il nuovo indirizzo*/
-						buildCmdWriteTempSensIR(OldAddress, (EEPROM_ACCESS_COMMAND | SD_SMBUS_E2_ADDRESS), NewAddress);
-
-						wait = timerCounter;
-						/*attendo 250 msec*/
-						while ( timerCounter - wait < 30);
+//						CHANGE_ADDRESS_IR_SENS = TRUE;
+//						unsigned char OldAddress = 0x5A;
+//						word snd;
+//						ptrMsgSbcRx = &sbc_rx_data[0];
+//						word NewAddress = BYTES_TO_WORD(ptrMsgSbcRx[9], ptrMsgSbcRx[10]);
+//
+//						buildTempIRSensWriteRegResponseMsg(ptrMsgSbcRx);
+//						ptrMsgSbcTx = &sbc_tx_data[0];
+//						SBC_COMM_SendBlock(ptrMsgSbcTx,myCommunicatorToSBC.numByteToSend,&snd);
+//
+//
+//						/*resetto l'indirzzo*/
+//						buildCmdWriteTempSensIR(OldAddress, (EEPROM_ACCESS_COMMAND | SD_SMBUS_E2_ADDRESS), 0x0000);
+//						timerCounter=0;
+//						int wait = timerCounter;
+//						/*attendo 250 msec*/
+//						while ( timerCounter - wait < 30);
+//
+//						/*scrivo il nuovo indirizzo*/
+//						buildCmdWriteTempSensIR(OldAddress, (EEPROM_ACCESS_COMMAND | SD_SMBUS_E2_ADDRESS), NewAddress);
+//
+//						wait = timerCounter;
+//						/*attendo 250 msec*/
+//						while ( timerCounter - wait < 30);
 
 //						/*resetto l'indirzzo*/
 //						buildCmdWriteTempSensIR(OldAddress, (RAM_ACCESS_COMMAND | SD_SMBUS_E2_ADDRESS), 0x0000);

@@ -10,14 +10,15 @@
 #include "stdint.h"
 #include "SWTimer.h"
 
-
+//c239
 typedef struct{
     uint16_t counter;  // fino a piu di 10 minuti
     uint16_t TimerVal;
     uint8_t DoAct;
     uint8_t Enabled;
     TTimerMode  TimerMode;
-    void (*Action)(void);
+    TAction Action;
+    //void (*Action)(void);
     int TimerChecksum;
 } TSwTimer;
 
@@ -123,6 +124,7 @@ void timerIsr_10ms(void)
 
 int TaskIndex = 0;
 void RestartTimer0(void);
+int LastDoActIndexDebug = 0x99;
 
 void ManageSwTimers(void)
 {
@@ -131,6 +133,8 @@ void ManageSwTimers(void)
 	for( ii=0 ; ii<TimersCounter; ii++){
 		TaskIndex = (TaskIndex + 1)%TimersCounter;
 		if(Timers[TaskIndex].DoAct == 1){
+			 LastDoActIndexDebug = TaskIndex;
+
 			Timers[TaskIndex].DoAct = 0;
 			(Timers[TaskIndex].Action)();
 			return;

@@ -986,7 +986,7 @@ void ShowParameterStr(struct parWordSetFromGUI *ParamGuiArray, unsigned char id)
 			break;
 //		case PAR_SET_DEPURATION_ACTIVE:
 //				break;
-		case PAR_SET_TEMPERATURE:
+		case PAR_SET_PRIMING_TEMPERATURE_PERFUSION:
 			sprintf(stringPr, "\rTemp=%d", ParamGuiArray[id].value );
 			break;
 		case PAR_SET_PRESS_ART_TARGET:

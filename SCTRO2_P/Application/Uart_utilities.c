@@ -6,7 +6,7 @@
  */
 
 #include "Uart_utilities.h"
-#include "ModBusCommProt.h"
+//#include "ModBusCommProt.h"
 #include "Global.h"
 
 #include "Pins1.h"

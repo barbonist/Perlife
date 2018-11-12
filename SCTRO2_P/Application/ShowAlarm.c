@@ -18,6 +18,7 @@
 #include "SevenSeg.h"
 #include "Global.h"
 #include "Alarm_Con_protective.h"
+#include "ControlProtectiveInterface.h"
 
 //#define CONTROL_BOARD
 //#undef PROTECTIVE_BOARD
@@ -56,9 +57,15 @@ void ManageShowAlarm500ms(void)
 }
 
 
-ShowNewAlarmError(uint16_t AlarmCode)
+#define NO_SEND_ERROR
+void ShowNewAlarmError(uint16_t AlarmCode)
 {
 	ActualErrNum = AlarmCode;
+
+#ifndef NO_SEND_ERROR
+	TxAlarmCode( AlarmCode);
+#endif
+
 }
 
 
