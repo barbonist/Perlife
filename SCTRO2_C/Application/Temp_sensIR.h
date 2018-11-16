@@ -50,7 +50,7 @@
  * Così facendo ho 4 °C quando leggo dal sensore 9 °C,
  * ma siccome se devo arrivare a 4, accetto anche 4.5 °, avrò 4.5 quando in realtà ho 9.3333
  * */
-#define LOWER_RANGE_IR_CORRECTION		19 //10 TODO da rimettere 10 nella versione definitiva---19 solo per Bergamo/Pisa
+#define LOWER_RANGE_IR_CORRECTION		10 //TODO da rimettere 10 nella versione definitiva---19 solo per Bergamo/Pisa
 #define HIGHER_RANGE_IR_CORRECTION		31
 #define DELTA_CORRECTION				0.5 //delta di correzione tmeperatura per 1 °C
 
