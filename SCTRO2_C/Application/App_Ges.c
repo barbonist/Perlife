@@ -1576,7 +1576,7 @@ unsigned char TemperatureStateMach(int cmd)
 		{
 			// ho raggiunto il tempo di ricircolo ad alta velocita' per eliminare l'aria eventuale
 			// proseguo con il controllo della temperatura
-			TempStateMach = TEMP_START_CHECK_STATE;
+			TempStateMach = SWITCH_PINCH_IN_INLET_LINE;
 
 			// ripristino le velocita' di priming normali
 			setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, RPM_IN_PRIMING_PHASES);
@@ -1593,10 +1593,39 @@ unsigned char TemperatureStateMach(int cmd)
 				setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, (int)LIVER_PRIMING_PMP_OXYG_SPEED);
 				setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, LIVER_PPAR_SPEED);
 			}
+
+			/*qui metto le pinch venosa e arteria a destra per riempire i
+			 * tubi di ingresso all'organo e resetto il timer*/
+			RicircTimeout = timerCounterModBus;
+
+			setPinchPositionHighLevel(PINCH_2WPVA, MODBUS_PINCH_LEFT_OPEN);
+			if(GetTherapyType() == LiverTreat)
+			{
+				// ho selezionato il fegato, quindi devo chiudere anche questa
+				setPinchPositionHighLevel(PINCH_2WPVV, MODBUS_PINCH_LEFT_OPEN);
+			}
+		}
+		break;
+
+	case SWITCH_PINCH_IN_INLET_LINE:
+		if ((msTick_elapsed(RicircTimeout) * 50L) >= TIMER_PRIMING_INLET_LINE)
+		{
+			/*scaduto il timer di riempimento linee ingresso organo
+			 * switcho le pinch sullo scarico e
+			 * vado in controllo raggiungimento temperatura*/
+			setPinchPositionHighLevel(PINCH_2WPVA, MODBUS_PINCH_RIGHT_OPEN);
+			if(GetTherapyType() == LiverTreat)
+			{
+				// ho selezionato il fegato, quindi devo chiudere anche questa
+				setPinchPositionHighLevel(PINCH_2WPVV, MODBUS_PINCH_RIGHT_OPEN);
+			}
+
+			TempStateMach = TEMP_START_CHECK_STATE;
 		}
 		break;
 
 	case TEMP_START_CHECK_STATE:
+
 		if((tmpr >= (float)(tmpr_trgt - DELTA_TEMP_TERGET_FOR_STABILITY_PRIMING)) && (tmpr <= (float)(tmpr_trgt + DELTA_TEMP_TERGET_FOR_STABILITY_PRIMING)))
 		{
 			// ho raggiunto la temperatura target
@@ -1648,11 +1677,14 @@ void SetPinchPosInPriming(void)
 			setPinchPositionHighLevel(PINCH_2WPVF, MODBUS_PINCH_RIGHT_OPEN);
 		// Durante il ricircolo e' stato richiesto di spostare le pinch sull'organo per fare in modo che anche la parte finale delle linee si
 		// riempa di liquido
-		setPinchPositionHighLevel(PINCH_2WPVA, MODBUS_PINCH_LEFT_OPEN);
+		/*15-11-2018 Vincenzo: richiesta successiva, si parete con le pinch sullo scarico
+		 * poi, finita la parte di ricircolo veloce, si spostano per 30 secondi sull'organo
+		 * poi nuovamente sullo scarico*/
+		setPinchPositionHighLevel(PINCH_2WPVA, MODBUS_PINCH_RIGHT_OPEN);
 		if(GetTherapyType() == LiverTreat)
 		{
 			// ho selezionato il fegato, quindi devo chiudere anche questa
-			setPinchPositionHighLevel(PINCH_2WPVV, MODBUS_PINCH_LEFT_OPEN);
+			setPinchPositionHighLevel(PINCH_2WPVV, MODBUS_PINCH_RIGHT_OPEN);
 		}
 	}
 	else

@@ -1141,8 +1141,18 @@ void manageAlarmPhysicPressSensHigh(void)
 	word MaxPressArt = PR_ART_HIGH;
 	word MaxPressVen = PR_VEN_HIGH;
 
+	if (GetTherapyType() == LiverTreat)
+	{
+		if((ptrCurrentState->state == STATE_PRIMING_PH_1) || (ptrCurrentState->state == STATE_PRIMING_PH_2) ||
+			   (ptrCurrentState->state == STATE_PRIMING_RICIRCOLO))
+		{
+			MaxPressArt = PR_ART_HIGH_PRIMING_LIVER;
+			MaxPressVen = PR_VEN_HIGH_PRIMING_LIVER;
+		}
 
-	if((ptrCurrentState->state == STATE_PRIMING_PH_1) || (ptrCurrentState->state == STATE_PRIMING_PH_2) ||
+	}
+
+	else if((ptrCurrentState->state == STATE_PRIMING_PH_1) || (ptrCurrentState->state == STATE_PRIMING_PH_2) ||
 	   (ptrCurrentState->state == STATE_PRIMING_RICIRCOLO))
 	{
 		// nel caso di priming considero una pressione arteriosa piu' alta

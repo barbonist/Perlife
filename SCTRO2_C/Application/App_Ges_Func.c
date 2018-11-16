@@ -1090,6 +1090,9 @@ void HeatingPwm(int Perc)
 	if(!EnableHeatingFromPlate || !EnableHeatingFromControl)
 	{
 		HEAT_ON_C_ClrVal();  // per sicurezza
+		/*se sono entrato qui, spengo il riscaldatore
+		 * q	uindi devo mettere la percentuale a zero*/
+		OldPerc = 0;
 		return;
 	}
 

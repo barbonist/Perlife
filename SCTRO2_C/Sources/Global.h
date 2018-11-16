@@ -1746,6 +1746,7 @@ typedef enum
 	START_RECIRC_HIGH_SPEED,    // inizio fase di ricircolo ad alta velocita'
 	STOP_RECIRC_HIGH_SPEED,     // fine fase di ricircolo ad alta velocita'
 	CALC_PUMPS_GAIN,
+	SWITCH_PINCH_IN_INLET_LINE,
 	TEMP_START_CHECK_STATE,     // inizio intervallo di controllo temperatura in range
 	TEMP_CHECK_DURATION_STATE,  // controllo durata della temperatura in range
 	TEMP_ABANDONE_STATE         // ho ricevuto il comando di abbandonare e tornare in idle
@@ -1763,6 +1764,8 @@ typedef enum
 // un minuto di ricircolo veloce per essere sicuro di eliminare tutta l'eventuale aria presente nei tubi
 #define HIGH_PUMP_SPEED_DURATION 60000L
 
+//timer per il riempimento delle linee in iungresso all'organo
+#define TIMER_PRIMING_INLET_LINE 30000L
 // velocita' delle pompe per la fase del ricircolo ad alta velocita'
 /*
 #define RECIRC_PUMP_HIGH_SPEED 4000

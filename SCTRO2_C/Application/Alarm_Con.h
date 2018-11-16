@@ -139,8 +139,10 @@
 #define MAX_MSG_CONSECUTIVE_FLOW_SENS_NOT_DETECTED 			10
 #define MAX_MSG_CONSECUTIVE_IR_TEMP_SENS_NOT_DETECTED 		10
 #define PR_ART_HIGH											100
+#define PR_ART_HIGH_PRIMING_LIVER							300
 #define PR_ART_LOW											0
 #define PR_VEN_HIGH											10  //290
+#define PR_VEN_HIGH_PRIMING_LIVER							300
 //TODO da definire esattamente
 #define PR_OXYG_HIGH                                        800
 #define PR_OXYG_LOW                                          10
