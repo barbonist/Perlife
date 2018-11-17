@@ -1599,8 +1599,15 @@ void setParamWordFromGUI(unsigned char parId, int value)
 	if(parId == PAR_SET_PRIMING_VOL_PERFUSION)
 	{
 		// controllo range del volume di liquido caricato nel reservoir
-		if(value > MAX_VOLUME_RESERVOIR)
-			value = MAX_VOLUME_RESERVOIR;
+		if(GetTherapyType() == LiverTreat && value > MAX_VOLUME_RESERVOIR_THERAPY_LIVER)
+		{
+			value = MAX_VOLUME_RESERVOIR_THERAPY_LIVER;
+		}
+		if(GetTherapyType() == KidneyTreat && value > MAX_VOLUME_RESERVOIR_THERAPY_KIDNEY)
+		{
+			value = MAX_VOLUME_RESERVOIR_THERAPY_KIDNEY;
+		}
+
 		if(value < MIN_VOLUME_RESERVOIR)
 			value = MIN_VOLUME_RESERVOIR;
 #ifdef DEBUG_WITH_SERVICE_SBC

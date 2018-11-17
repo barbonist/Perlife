@@ -1495,7 +1495,8 @@ typedef enum{Undef = 0, KidneyTreat = 0x10, LiverTreat = 0x50} THERAPY_TYPE;
 typedef enum{NOT_DEF = 0, NO = 1, YES = 2} PARAMETER_ACTIVE_TYPE;
 
 // volume massimo in ml trasferito nel reservoir
-#define MAX_VOLUME_RESERVOIR     2000
+#define MAX_VOLUME_RESERVOIR_THERAPY_KIDNEY     2000
+#define MAX_VOLUME_RESERVOIR_THERAPY_LIVER     3000
 // volume minimo in ml trasferito nel reservoir
 #define MIN_VOLUME_RESERVOIR     1000
 
