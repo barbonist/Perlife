@@ -247,9 +247,13 @@ void onNewSensTempVal(uint16_t PressOxyg, uint16_t TempRes,
 		               uint16_t TempArt, uint16_t TempVen)
 {
 	TxCan2.STxCan2.PressOxy = PressOxyg;
-	TxCan2.STxCan2.TempFluidx10 = TempRes;
-	TxCan2.STxCan2.TempArtx10 = TempArt;
-	TxCan2.STxCan2.TempVenx10 = TempVen;
+	TxCan2.STxCan2.TempFluidx10 = TempRes * 10;
+	TxCan2.STxCan2.TempArtx10 = TempArt * 10;
+	TxCan2.STxCan2.TempVenx10 = TempVen * 10;
+
+    // SB added plate temperature
+
+    TxCan5.STxCan5.tempPlateC = (uint16_t)(T_PLATE_C_GRADI_CENT*10);
 }
 
 void onNewPinchVal(uint8_t AirFiltStat, uint16_t AlarmCode,
