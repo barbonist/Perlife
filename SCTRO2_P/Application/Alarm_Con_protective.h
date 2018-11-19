@@ -152,6 +152,9 @@
 #define MAX_MSG_CONSECUTIVE_IR_TEMP_SENS_NOT_DETECTED 		10
 #define MAX_MSG_CONSECUTIVE_ACTUATOR_MODBUS_NOT_RESPOND 	10
 
+//#define LEGACY_VERS
+
+#ifdef LEGACY_VERS
 #define PR_ART_HIGH											300  //100
 #define PR_ART_XHIGH										(PR_ART_HIGH	+ 30)
 #define PR_ART_LOW											0
@@ -171,6 +174,31 @@
 
 #define PR_ADS_FILTER_LOW                                   10
 #define PR_ADS_FILTER_WARN									100
+
+#else
+#define PR_ART_HIGH											350  //100
+#define PR_ART_XHIGH										(PR_ART_HIGH	+ 30)
+#define PR_ART_LOW											0
+
+#define PR_VEN_HIGH											350
+#define PR_VEN_XHIGH										(PR_VEN_HIGH	+ 2)
+
+//#define PR_OXYG_HIGH                                        800
+#define PR_OXYG_HIGH                                        700
+
+#define PR_OXYG_XHIGH										(PR_OXYG_HIGH + 80)
+
+#define PR_ADS_FILTER_HIGH									250
+#define PR_ADS_FILTER_XHIGH									(PR_ADS_FILTER_HIGH + 75)
+
+#define PR_TUB_XHIGH										4
+
+#define PR_ADS_FILTER_LOW                                   10
+#define PR_ADS_FILTER_WARN									100
+
+
+#endif
+
 
 // temperature
 #define TEMPER_ART_HIGH										40.0
