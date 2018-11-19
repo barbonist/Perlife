@@ -2078,8 +2078,8 @@ LIQ_TEMP_CONTR_TASK_STATE FrigoHeatTempControlTaskNewPID(LIQ_TEMP_CONTR_TASK_CMD
 				timeInterval10_r = FreeRunCnt10msec;
 
 			// Filippo - se per troppo tempo rimango qui e la temperatura non scende devo attivare il ciclo di frigorifero per fare in modo che la temperatura
-			// scenda più rapidamente
-			if (tmpr>((float)tmpr_trgt+1))
+			// scenda più rapidamente; Vincenzo: attivo il frigo solo se la temperatira letta supera quella impostata di almeno 1.5 °C
+			if (tmpr>((float)tmpr_trgt+15))
 			{
 				if (timeInterval10_max && (msTick10_elapsed(timeInterval10_max) >= MAX_TEMP_CNTRL_DELAY))
 				{
