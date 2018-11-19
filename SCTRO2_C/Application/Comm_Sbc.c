@@ -1109,7 +1109,9 @@ void buildRDMachineStateResponseMsg(char code, char subcode)
 	 * terzo numero avendo quindi una versione massima
 	 * pari a 32.32.64  */
 
-	/*10*/	sbc_tx_data[index++] = 0x00;
+	/*0x0800 --> 1.0.0*/
+
+	/*10*/	sbc_tx_data[index++] = 0x08;
 	/*11*/	sbc_tx_data[index++] = 0x00;
 
 	/* TODO status parameters: rev fw-H
@@ -1119,7 +1121,9 @@ void buildRDMachineStateResponseMsg(char code, char subcode)
 	 * terzo numero avendo quindi una versione massima
 	 * pari a 32.32.64  */
 
-	/*12*/	sbc_tx_data[index++] = 0x00;
+	/*0x0800 --> 1.0.0*/
+
+	/*12*/	sbc_tx_data[index++] = 0x08;
 	/*13*/	sbc_tx_data[index++] = 0x00;
 
 //	if(SuspendInvioAlarmCode)
