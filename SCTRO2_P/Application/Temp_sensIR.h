@@ -39,6 +39,24 @@
 #define FIRST_IR_TEMP_SENSOR			0x01 /*corrisponde al sensore con connettore a 4 pin*/
 #define LAST_IR_TEMP_SENSOR				0x03 /*corrisponde al sensore con connettore a 6 pin, l'indirizzo 0x02 corrisponde al sensore con connettore a 5 pin*/
 
+//#define DEMO_AFERETICA
+
+#ifdef DEMO_AFERETICA
+	// define di correzione del valore di temp. sensori Ir
+	#define LOWER_RANGE_IR_CORRECTION 19
+	#define HIGHER_RANGE_IR_CORRECTION 31
+	#define DELTA_CORRECTION 0.5
+#else
+// define di correzione del valore di temp. sensori Ir
+	#define LOWER_RANGE_IR_CORRECTION 10
+	#define HIGHER_RANGE_IR_CORRECTION 31
+	#define DELTA_CORRECTION 0.5
+#endif
+
+
+
+
+
 
 void initTempSensIR(void);
 unsigned char computeCRC8TempSens(unsigned char buffer[]);

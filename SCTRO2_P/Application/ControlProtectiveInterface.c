@@ -20,6 +20,7 @@
 #include "ActionsProtective.h"
 #include "Alarm_Con_Protective.h"
 #include "IncomingAlarmsManager.h"
+#include "ControlProtectiveInterface.h"
 
 #define VAL_JOLLY16	0x5A5A
 #define VAL_JOLLY8	0x5A
@@ -584,9 +585,6 @@ void NewDataRxChannel2(void) {
 				VerifyRxTemperatures(RxCan2.SRxCan2.TempArtx10, RxCan2.SRxCan2.TempFluidx10, RxCan2.SRxCan2.TempVenx10, RxCan5.SRxCan5.tempPlateC);
 //	}
 }
-
-void Enable_Heater_CommandCAN(bool status);
-void Enable_Frigo_CommandCAN(bool status);
 
 void NewDataRxChannel3(void) {
 	// air alarm

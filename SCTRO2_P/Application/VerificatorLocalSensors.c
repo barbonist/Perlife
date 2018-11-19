@@ -71,7 +71,7 @@ static TAlarmTimer	*AlarmTimerList[] = {
 		&LowFluidTempAlarmTimer
 };
 
-static void ManageVerificatorAlarms100ms(void) ;
+static void ManageLocalVerificatorAlarms100ms(void) ;
 
 static int StartupDelayCnt = 0;
 
@@ -81,13 +81,18 @@ static int StartupDelayCnt = 0;
 
 void InitVerificatorLocalParams(void)
 {
-	AddSwTimer(ManageVerificatorAlarms100ms,10,TM_REPEAT);
+	AddSwTimer(ManageLocalVerificatorAlarms100ms,10,TM_REPEAT);
 }
 
-static void ManageVerificatorAlarms100ms(void)
+static void ManageLocalVerificatorAlarms100ms(void)
 {
 int ii;
-return;
+
+	if( !IsVerifyRequired() ){
+		// avoid control if no verify required
+		return;
+	}
+
 	if(StartupDelayCnt < 100){
 		// verificator idle for 10 seconds from startup
 		StartupDelayCnt++;

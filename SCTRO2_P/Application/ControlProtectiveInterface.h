@@ -43,5 +43,8 @@ void onNewTPerfArteriosa(float Temper);
 void onNewTPerfRicircolo(float Temper);
 void onNewTPerfVenosa(float Temper);
 
+void Enable_Heater_CommandCAN(bool status);
+void Enable_Frigo_CommandCAN(bool status);
+
 void GetTemperatures(uint16_t *TempArtx10, uint16_t *TempFluidx10, uint16_t *TempVenx10, uint16_t *TempPlatex10);
 #endif /* CONTROLPROTECTIVEINTERFACE_H_ */

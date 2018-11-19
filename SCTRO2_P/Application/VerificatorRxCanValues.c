@@ -89,7 +89,12 @@ static int StartupDelayCnt = 0;
 static void ManageVerificatorAlarms100ms(void) {
 
 int ii;
-return;
+
+	if( !IsVerifyRequired() ){
+		// avoid control if no verify required
+		return;
+	}
+
 	if(StartupDelayCnt < 100){
 		// verificator idle for 10 seconds from startup
 		StartupDelayCnt++;
@@ -274,8 +279,8 @@ void VerifyRxTemperatures(uint16_t TempArtx10, uint16_t TempFluidx10, uint16_t T
 	TempVenMismatchAlarmTimer.AlarmConditionPending = ValueIsInRange(tempVenx10_p, TempVenx10, 40 ) ? false : true ;
 	TempFluidMismatchAlarmTimer.AlarmConditionPending = ValueIsInRange(tempFluidx10_p, TempFluidx10, 40 ) ? false : true ;
 	//TempPlateMismatchAlarmTimer.AlarmConditionPending = ValueIsInRange(tempPlatex10_p, TempPlatex10, 40 ) ? false : true ;
-	// causa inaccuratezza della misura ,  porto l'errore accettabile da 4 a 8 gradi
-	TempPlateMismatchAlarmTimer.AlarmConditionPending = ValueIsInRange(tempPlatex10_p, TempPlatex10, 80 ) ? false : true ;
+	// causa inaccuratezza della misura ,  porto l'errore accettabile da 4 a 8 gradi , no a 15 gradi ( ah ah )
+	TempPlateMismatchAlarmTimer.AlarmConditionPending = ValueIsInRange(tempPlatex10_p, TempPlatex10, 150 ) ? false : true ;
 }
 
 void VerifyRxAirAlarm( uint8_t RxAirAlarm )
@@ -311,7 +316,7 @@ bool Pump3Ok = true;
 
 	Pump0Ok = ValueIsInRange(GetMeasuredPumpSpeed(0), SpeedPump0Rpmx100, 1000) ? true : false;
 	Pump1Ok = ValueIsInRange(GetMeasuredPumpSpeed(1), SpeedPump1Rpmx100, 1000) ? true : false;
-	Pump1Ok = true; // debug SB 7 11 2018
+	//Pump1Ok = true; // debug SB 7 11 2018
 	Pump2Ok = ValueIsInRange(GetMeasuredPumpSpeed(2), SpeedPump2Rpmx100, 1000) ? true : false;
 	Pump3Ok = ValueIsInRange(GetMeasuredPumpSpeed(3), SpeedPump3Rpmx100, 1000) ? true : false;
 

@@ -65,14 +65,14 @@ bool SomePinchNotDisabled = false;
 		}
 
 		if( IsAlarmTemperatureRelated( controlBoard_AlarmCode ) ){
-				DisablePinchNPumps();
-				Enable_Heater(false);
+//				DisablePinchNPumps();
+//				Enable_Heater(false);
 				TimeSecsFromControlAlarm = 65; // trigger check pumps after 6 seconds ( limit of hall sensors pos )
 		}
 
 		if( IsAlarmNotTemperatureRelated( controlBoard_AlarmCode ) ){
-				DisablePinchNPumps();
-				Enable_Heater(false);
+//				DisablePinchNPumps();
+//				Enable_Heater(false);
 		}
 	}
 	// manage possible failure in pump stop or pinch disable
@@ -107,7 +107,7 @@ bool PinchesAreInSafetyMode(void)
 	uint8_t pch0, pch1, pch2;
 
 	GetPinchPos( &pch0 ,  &pch1, &pch2);
-	return ((pch0 == 0x02) && (pch1 == 0x02) && (pch2 == 0x02));
+	return ((pch0 == 0x02) && (pch1 == 0x04) && (pch2 == 0x04));
 }
 
 bool PumpsAreStopped(void)
