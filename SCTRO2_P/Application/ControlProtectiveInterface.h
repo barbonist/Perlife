@@ -15,7 +15,7 @@ void ReceivedCanData(uint8_t *rxbuff, int rxlen, int RxChannel);
 
 uint16_t GetReceivedAlarmCode(void);
 void TxAlarmCode( uint16_t AlarmCode);
-
+uint16_t GetControlFSMState(void);
 void GetPinchPos( uint8_t *Pinch0Pos ,  uint8_t *Pinch1_pos , uint8_t *Pinch2_pos);
 void GetPressures(uint16_t* PressFilter, uint16_t* PressArt,  uint16_t* PressVen,  uint16_t* PressLevelx100,  uint16_t* PressOxy);
 

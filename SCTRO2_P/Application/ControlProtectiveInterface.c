@@ -306,6 +306,10 @@ void onNewAirSensorStat(unsigned char AirStatus)
 
 #endif
 
+uint16_t GetControlFSMState(void)
+{
+	return RxCan2.SRxCan0.State;
+}
 
 void GetPressures(uint16_t* PressFilter, uint16_t* PressArt,  uint16_t* PressVen,  uint16_t* PressLevelx100,  uint16_t* PressOxy)
 {

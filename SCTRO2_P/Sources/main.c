@@ -337,7 +337,7 @@ int main(void)
   /******************************************************
 	History protective
 
-	Versione 2.0 19/11/2018
+	Versione 1.0 19/11/2018
 
 	- bug segnalato : durante fase priming , com T impostata di 37 gradi ,  la protective blocca i motori
 	- il debug rivela che il blocco è causato da un blocco motori
@@ -354,6 +354,17 @@ int main(void)
 	  questo è stato tolto .
 	- quando TimeSecsFromControlAlarm andava in timeout , veniva verificato che effettivamente sia le pinch che i motori fossero in sicurezza.
 	  la funzione PinchesAreInSafetyMode() era errata dato che si aspettava tutte le pinch aperte verso sinistra , mentre 2 sono aperte a dx e 1 a sx
+
+	Versione 1.0.001 20/11/2018
+
+	modifiche inserite
+	Sul missmatch dei sensori di pressione, spostiamo i delta che identificano il missmatch a 20 mmHg; aggiungiamo che questa differenza
+	deve restare attiva per almeno 5 secondi.
+	L'allarme di temperatura di venosa e arteriosa  ( non ricircolo ) , va bene a 40+1 come adesso ma deve essere attivato solo se almeno
+	una tra le pinch arteriuosa e venosa risulta aperta sull'organo (ovvero a sinistra) E SE SIAMO IN TRATTAMENTO --> Stato = ... STATE_TREATMENT_KIDNEY_1, = 9
+	Per la piastra --> Allarme SEMPRE se supera 85 gradi.
+	Aggiornati anche i valori limite per la pressione
+	Temp bassa piastra per allarme , -20
 
 
   */

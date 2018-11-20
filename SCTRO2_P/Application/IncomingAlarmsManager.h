@@ -12,6 +12,7 @@
 void InitIncomingAlarmManager(void);
 bool IsVerifyRequired(void);
 bool PinchesAreInSafetyMode(void);
+bool SomePinchIsInPerfusionPosition(void);
 bool PumpsAreStopped(void);
 
 

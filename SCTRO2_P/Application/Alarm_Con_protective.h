@@ -220,7 +220,7 @@
 #define XMAX_PLATE_TEMP  									(MAX_PLATE_TEMP + 15)
 
 #define MIN_PLATE_TEMP  									-5.0
-#define XMIN_PLATE_TEMP 									(MIN_PLATE_TEMP - 10)
+#define XMIN_PLATE_TEMP 									(MIN_PLATE_TEMP - 15)
 
 enum ALARM
 {
