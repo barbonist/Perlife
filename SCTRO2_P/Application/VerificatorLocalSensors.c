@@ -20,8 +20,7 @@
 #include "Alarm_Con_Protective.h"
 #include "ActionsProtective.h"
 #include "ControlProtectiveInterface.h"
-
-//#include "IncomingAlarmsManager.h"
+#include "IncomingAlarmsManager.h"
 
 static void Dummy(void);
 
@@ -136,14 +135,20 @@ int ii;
 void HighArterPressAlarmAct(void)
 {
 	ShowNewAlarmError(CODE_ALARM_PRESS_ART_XHIGH);
-	DisablePinchNPumps();
+	if( GetControlFSMState() == STATE_TREATMENT)
+	{
+		DisablePinchNPumps();
+	}
 }
 
 void HighVenousPressAlarmAct(void)
 {
 	ShowNewAlarmError(CODE_ALARM_PRESS_VEN_XHIGH);
-	DisablePinchNPumps();
-	// trigger sec action
+	if( GetControlFSMState() == STATE_TREATMENT)
+	{
+		DisablePinchNPumps();
+		// trigger sec action
+	}
 	if(HighVenousPressAlarmTimer.SecondaryActionTimerTreshold != 0){
 		HighVenousPressAlarmTimer.SecondaryActionTimer = HighVenousPressAlarmTimer.SecondaryActionTimerTreshold;
 	}
@@ -163,19 +168,19 @@ void PumpsOrPinchNotRespond_EmergAct(void)
 
 void HighAdsFiltPressAlarmAct(void)
 {
+	ShowNewAlarmError(CODE_ALARM_PRESS_ADSFILT_XHIGH);
 	if( GetControlFSMState() == STATE_TREATMENT)
 	{
-		ShowNewAlarmError(CODE_ALARM_PRESS_ADSFILT_XHIGH);
 		DisablePinchNPumps();
 	}
 }
 
 void HighOxygenPressAlarmAct(void)
 {
+	ShowNewAlarmError(CODE_ALARM_PRESS_OXYGEN_XHIGH);
 	if( GetControlFSMState() == STATE_TREATMENT)
 	{
-	ShowNewAlarmError(CODE_ALARM_PRESS_OXYGEN_XHIGH);
-	DisablePinchNPumps();
+		DisablePinchNPumps();
 	}
 }
 
@@ -235,25 +240,31 @@ void LowPlateTempAlarmAct(void)
 void LowArtTempAlarmAct(void)
 {
 	ShowNewAlarmError(CODE_ALARM_TEMP_ART_XLOW);
-	DisablePinchNPumps();
-	if( !PinchesAreInSafetyMode() )
+	if( SomePinchIsInPerfusionPosition() && (GetControlFSMState() == STATE_TREATMENT))
+	{
+		DisablePinchNPumps();
 		Enable_Frigo(FALSE);
+	}
 }
 
 void LowVenTempAlarmAct(void)
 {
 	ShowNewAlarmError(CODE_ALARM_TEMP_VEN_XLOW);
-	DisablePinchNPumps();
-	if( !PinchesAreInSafetyMode() )
+	if( SomePinchIsInPerfusionPosition() && (GetControlFSMState() == STATE_TREATMENT))
+	{
+		DisablePinchNPumps();
 		Enable_Frigo(FALSE);
+	}
 }
 
 void LowFluidTempAlarmAct(void)
 {
 	ShowNewAlarmError(CODE_ALARM_TEMP_FLUID_XLOW);
-	DisablePinchNPumps();
-	if( !PinchesAreInSafetyMode() )
+	if( GetControlFSMState() == STATE_TREATMENT)
+	{
+		DisablePinchNPumps();
 		Enable_Frigo(FALSE);
+	}
 }
 
 

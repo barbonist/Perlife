@@ -181,7 +181,10 @@ void MismatchPressArtAlarmAct(void)
 void MismatchPressVenAlarmAct(void)
 {
 	ShowNewAlarmError(CODE_ALARM_PRESS_VEN_DONTMATCH);
-	DisablePinchNPumps();
+	if( GetControlFSMState() == STATE_TREATMENT )
+	{
+		DisablePinchNPumps();
+	}
 	// trigger sec action
 	if(PressVenMismatchAlarmTimer.SecondaryActionTimerTreshold != 0){
 		PressVenMismatchAlarmTimer.SecondaryActionTimer = PressVenMismatchAlarmTimer.SecondaryActionTimerTreshold;
@@ -204,44 +207,65 @@ void MismatchPressVen2ndAlarmAct(void)
 void MismatchPressFiltAlarmAct(void)
 {
 	ShowNewAlarmError(CODE_ALARM_PRESS_ADSFILT_DONTMATCH);
-	DisablePinchNPumps();
+	if(GetControlFSMState() == STATE_TREATMENT)
+	{
+		DisablePinchNPumps();
+	}
 }
 
 // oxy pressure
 void MismatchPressOxyAlarmAct(void)
 {
 	ShowNewAlarmError(CODE_ALARM_PRESS_OXYGEN_DONTMATCH);
-	DisablePinchNPumps();
+	if(GetControlFSMState() == STATE_TREATMENT)
+	{
+		DisablePinchNPumps();
+	}
 }
 
 void MismatchPressLevelAlarmAct(void)
 {
 	ShowNewAlarmError(CODE_ALARM_PRESS_LEVEL_DONTMATCH);
-	DisablePinchNPumps();
+	if(GetControlFSMState() == STATE_TREATMENT)
+	{
+		DisablePinchNPumps();
+	}
 }
 
 void MismatchTempPlateAlarmAct(void)
 {
 	ShowNewAlarmError(CODE_ALARM_TEMP_PLATE_DONTMATCH);
-	DisablePinchNPumps();
+	if(GetControlFSMState() == STATE_TREATMENT)
+	{
+		DisablePinchNPumps();
+	}
 }
 
 void MismatchTempArtAlarmAct(void)
 {
 	ShowNewAlarmError(CODE_ALARM_TEMP_ART_DONTMATCH);
-	DisablePinchNPumps();
+	if(GetControlFSMState() == STATE_TREATMENT)
+	{
+		DisablePinchNPumps();
+	}
 }
 
 void MismatchTempVenAlarmAct(void)
 {
 	ShowNewAlarmError(CODE_ALARM_TEMP_VEN_DONTMATCH);
-	DisablePinchNPumps();
+	if(GetControlFSMState() == STATE_TREATMENT)
+	{
+		DisablePinchNPumps();
+	}
 }
 
 void MismatchTempFluidAlarmAct(void)
 {
 	ShowNewAlarmError(CODE_ALARM_TEMP_FLUID_DONTMATCH);
-	DisablePinchNPumps();
+	if(GetControlFSMState() == STATE_TREATMENT)
+	{
+		DisablePinchNPumps();
+	}
 }
 
 
