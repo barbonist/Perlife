@@ -1109,10 +1109,11 @@ void buildRDMachineStateResponseMsg(char code, char subcode)
 	 * terzo numero avendo quindi una versione massima
 	 * pari a 32.32.64  */
 
-	/*0x0800 --> 1.0.0*/
+	/*0x0800 --> 1.0.0
+	 *0x0801 --> 1.0.1  */
 
 	/*10*/	sbc_tx_data[index++] = 0x08;
-	/*11*/	sbc_tx_data[index++] = 0x00;
+	/*11*/	sbc_tx_data[index++] = 0x01;
 
 	/* TODO status parameters: rev fw-H
 	 * potrei usare questa come versione FW
@@ -1121,10 +1122,11 @@ void buildRDMachineStateResponseMsg(char code, char subcode)
 	 * terzo numero avendo quindi una versione massima
 	 * pari a 32.32.64  */
 
-	/*0x0800 --> 1.0.0*/
+	/*0x0800 --> 1.0.0
+     *0x0801 --> 1.0.1  */
 
 	/*12*/	sbc_tx_data[index++] = 0x08;
-	/*13*/	sbc_tx_data[index++] = 0x00;
+	/*13*/	sbc_tx_data[index++] = 0x01;
 
 //	if(SuspendInvioAlarmCode)
 //	{
