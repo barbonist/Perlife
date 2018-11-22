@@ -268,9 +268,14 @@ void alwaysPumpPressLoopArt(unsigned char pmpId, unsigned char *PidFirstTime)
 		actualSpeed_Art = actualSpeed_Art + deltaSpeed_Art;
 	}
 
-	/*se ho velocità negativa o pressione oltre soglia massima, fermo le pompe*/
-	if(actualSpeed_Art < 0 || pressSample0_Art > 100)
+	/*se ho velocità negativa o pressione oltre soglia massima, o flusso impostao pari a 0 fermo le pompe*/
+	if( actualSpeed_Art  < 0    ||
+	    pressSample0_Art > 100  ||
+		parameterWordSetFromGUI[PAR_SET_MAX_FLOW_PERFUSION].value == 0)
+	{
 		actualSpeed_Art = 0;
+		pumpPerist[pmpId].actualSpeedOld = 0.0;
+	}
 
 	/*vincolo la velocità massima impostata dal pid al massimo valore che non mi fa perdere il passo*/
 	if(actualSpeed_Art > (float)MAX_ART_RPM /*&& sensor_UFLOW[0].Average_Flow_Val > (float)parameterWordSetFromGUI[PAR_SET_MAX_FLOW_PERFUSION].value*/)
@@ -1313,10 +1318,14 @@ void alwaysPumpPressLoopVen(unsigned char pmpId, unsigned char *PidFirstTime){
 	}
 
 
-	/*se ho velocità negativa o pressione oltre soglia massima, fermo le pompe*/
-	if((actualSpeed_Ven <= 0) || (pressSample0_Ven > 10.0))
+	/*se ho velocità negativa o pressione oltre soglia massima, o flusso impostato a zero fermo le pompe*/
+	if((actualSpeed_Ven <= 0)    ||
+	   (pressSample0_Ven > 10.0) ||
+	   parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value == 0)
 	{
 		actualSpeed_Ven = 0;
+    	// forzo a 0 il valore old per fare in modo che la prima scrittura venga sempre fatta
+    	pumpPerist[pmpId].actualSpeedOld = 0;
 	}
 
 	/*vincolo la velocità massima impostata dal pid al massimo valore che non mi fa perdere il passo*/
