@@ -354,6 +354,8 @@ int main(void)
 
   // Filippo - inizializzo l'allarme del T1 test
   allarmeTestT1Attivo=FALSE;
+  // inizializzo la variabile che decide se fare il T1Test del frigo prima del riscaldatore
+  T1_Test_Frigo_Before_Heater = FALSE;
 
   Frigo_ON = FALSE;
   Heat_ON  = FALSE;

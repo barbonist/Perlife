@@ -1331,6 +1331,12 @@ void ParentFuncT1Test(void)
 #ifdef T1_TEST_ENABLED
 		// Filippo - tolto per fargli eseguire il T1 test
 		ptrFutureParent = &stateParentT1TNoDisposable[3];	// lo mando al test della EEPROM quindi eseguo il T1 TEST
+
+		/*se la temperatura di piastra supera i 38 gradi
+		 * decido di fare prima il T1_Test del frigo,
+		 * il riscaldatore lo farò per ultimo*/
+		if (T_PLATE_C_GRADI_CENT>=38)
+			T1_Test_Frigo_Before_Heater = TRUE;
 #else
 		ptrFutureParent = &stateParentT1TNoDisposable[23]; //con il 23 salto di netto tutti i T1 TEST
 		// lo mando al test dell'heater
@@ -1591,10 +1597,20 @@ void ParentFuncT1Test(void)
 	case PARENT_T1_NO_DISP_CHEK_PELTIER:
 		if(currentGuard[GUARD_ENABLE_T1_HEATER].guardValue == GUARD_VALUE_TRUE)
 		{
-			ptrFutureParent = &stateParentT1TNoDisposable[29];
-//		ptrFutureParent = &stateParentT1TNoDisposable[23];
-			ptrFutureChild = ptrFutureParent->ptrChild;
-			DebugStringStr("parent to chk heater");
+			/*se devo afr partire prima il riscaldatore*/
+			if (T1_Test_Frigo_Before_Heater == FALSE)
+			{
+				ptrFutureParent = &stateParentT1TNoDisposable[29];
+	//		ptrFutureParent = &stateParentT1TNoDisposable[23];
+				ptrFutureChild = ptrFutureParent->ptrChild;
+				DebugStringStr("parent to chk heater");
+			}
+			else //if (T1_Test_Frigo_Before_Heater == TRUE)
+			{
+				ptrFutureParent = &stateParentT1TNoDisposable[31];	// finisco il test
+				ptrFutureChild = ptrFutureParent->ptrChild;
+				DebugStringStr("parent chk fridge");
+			}
 			break;
 		}
 
@@ -1649,10 +1665,19 @@ void ParentFuncT1Test(void)
 		// adesso metto l'end, però man mano che aggiungo test potrebbe cambiare
 		if(currentGuard[GUARD_ENABLE_T1_FRIDGE].guardValue == GUARD_VALUE_TRUE)
 		{
-//			ptrFutureParent = &stateParentT1TNoDisposable[23];	// finisco il test
-			ptrFutureParent = &stateParentT1TNoDisposable[31];	// finisco il test
-			ptrFutureChild = ptrFutureParent->ptrChild;
-			DebugStringStr("parent chk fridge");
+			if (T1_Test_Frigo_Before_Heater == FALSE)
+			{
+				//			ptrFutureParent = &stateParentT1TNoDisposable[23];	// finisco il test
+				ptrFutureParent = &stateParentT1TNoDisposable[31];	// finisco il test
+				ptrFutureChild = ptrFutureParent->ptrChild;
+				DebugStringStr("parent chk fridge");
+			}
+			else //if (T1_Test_Frigo_Before_Heater == TRUE)
+			{
+				ptrFutureParent = &stateParentT1TNoDisposable[23];	// finisco il test
+				ptrFutureChild = ptrFutureParent->ptrChild;
+				DebugStringStr("parent to end");
+			}
 			break;
 		}
 		else if (currentGuard[GUARD_ENABLE_T1_ALARM].guardValue == GUARD_VALUE_TRUE)
@@ -1685,9 +1710,18 @@ void ParentFuncT1Test(void)
 		// adesso metto l'end, però man mano che aggiungo test potrebbe cambiare
 		if(currentGuard[GUARD_ENABLE_T1_END].guardValue == GUARD_VALUE_TRUE)
 		{
-			ptrFutureParent = &stateParentT1TNoDisposable[23];	// finisco il test
-			ptrFutureChild = ptrFutureParent->ptrChild;
-			DebugStringStr("parent to end");
+			if (T1_Test_Frigo_Before_Heater == FALSE)
+			{
+				ptrFutureParent = &stateParentT1TNoDisposable[23];	// finisco il test
+				ptrFutureChild = ptrFutureParent->ptrChild;
+				DebugStringStr("parent to end");
+			}
+			else //if (T1_Test_Frigo_Before_Heater == TRUE)
+			{
+				ptrFutureParent = &stateParentT1TNoDisposable[29];
+				ptrFutureChild = ptrFutureParent->ptrChild;
+				DebugStringStr("parent to chk heater");
+			}
 			break;
 		}
 		else if (currentGuard[GUARD_ENABLE_T1_ALARM].guardValue == GUARD_VALUE_TRUE)
