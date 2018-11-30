@@ -1561,6 +1561,26 @@ void setGUIButton(unsigned char buttonId)
 			SuspendInvioAlarmCode = 1;
 		}
 	}
+	/*se mi è arrivato il primo start treatment faccio la tara delle pressioni*/
+	if (buttonId == BUTTON_START_TREATMENT && TARA_DONE == FALSE)
+	{
+
+		/*calcolo la tara della pressione arteriosa dopo la connessione dell'organo*/
+		PR_ART_TARA_mmHg = PR_ART_mmHg_Filtered;
+
+		/*impongo che la tara sia non negativa*/
+		if (PR_ART_TARA_mmHg < 0)
+			PR_ART_TARA_mmHg = 0;
+
+		/*calcolo la tara della pressione venosa dopo la connessione dell'organo*/
+		PR_VEN_TARA_mmHg = PR_VEN_mmHg_Filtered;
+
+		/*impongo che la tara sia non negativa*/
+		if (PR_VEN_TARA_mmHg < 0)
+			PR_VEN_TARA_mmHg = 0;
+
+		TARA_DONE = TRUE;
+	}
 }
 
 unsigned char getGUIButton(unsigned char buttonId)

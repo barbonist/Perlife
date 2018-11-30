@@ -60,16 +60,18 @@ unsigned int MedForArteriousPid	 = 0;
 
 void PR_Sens_ADC_Init()
 {
-	PR_ADS_FLT_ADC  = 0;		//variabile globale per il valore ADC del sensore di pressione del filtro assorbente --> PTB11
-	PR_ADS_FLT_mmHg = 0;		//variabile globale per il valore in mmHg del sensore di pressione del filtro assorbente
-	PR_ART_ADC 		= 0;		//variabile globale per il valore ADC del sensore di pressione arteriosa --> PTB7
-	PR_ART_mmHg		= 0;		//variabile globale per il valore in mmHg del sensore di pressione arteriosa
-	PR_VEN_ADC		= 0;		//variabile globale per il valore ADC del sensore di pressione Venoso --> PTB6
-	PR_VEN_mmHg		= 0;		//variabile globale per il valore in mmHg del sensore di pressione Venoso
-	PR_OXYG_ADC		= 0;		//variabile globale per il valore ADC del sensore di pressione ossigenatore --> PTC10
-	PR_OXYG_mmHg	= 0;		//variabile globale per il valore in mmHg del sensore di pressione ossigenatore
-	PR_LEVEL_ADC	= 0;		//variabile globale per il valore ADC del sensore di pressione di livello vaschetta --> PTC11
-	PR_LEVEL_mmHg	= 0;		//variabile globale per il valore in mmHg del sensore di pressione di livello vaschetta
+	PR_ADS_FLT_ADC   = 0;		//variabile globale per il valore ADC del sensore di pressione del filtro assorbente --> PTB11
+	PR_ADS_FLT_mmHg  = 0;		//variabile globale per il valore in mmHg del sensore di pressione del filtro assorbente
+	PR_ART_ADC 		 = 0;		//variabile globale per il valore ADC del sensore di pressione arteriosa --> PTB7
+	PR_ART_mmHg		 = 0;		//variabile globale per il valore in mmHg del sensore di pressione arteriosa
+	PR_VEN_ADC		 = 0;		//variabile globale per il valore ADC del sensore di pressione Venoso --> PTB6
+	PR_VEN_mmHg	 	 = 0;		//variabile globale per il valore in mmHg del sensore di pressione Venoso
+	PR_OXYG_ADC		 = 0;		//variabile globale per il valore ADC del sensore di pressione ossigenatore --> PTC10
+	PR_OXYG_mmHg	 = 0;		//variabile globale per il valore in mmHg del sensore di pressione ossigenatore
+	PR_LEVEL_ADC	 = 0;		//variabile globale per il valore ADC del sensore di pressione di livello vaschetta --> PTC11
+	PR_LEVEL_mmHg	 = 0;		//variabile globale per il valore in mmHg del sensore di pressione di livello vaschetta
+	PR_VEN_TARA_mmHg = 0;		//variabile globale che serve a fare la tara di pressione dopo la connessione dell'organo, all'inizio del trattamento
+	PR_ART_TARA_mmHg = 0;  		//variabile globale che serve a fare la tara di pressione dopo la connessione dell'organo, all'inizio del trattamento
 }
 
 void Dip_Switch_ADC_Init(void)
@@ -319,7 +321,25 @@ void CalcVenSistDiastPress(word Press)
 	  MedForVenousPid = MedForVenousPid / CircPressArrIdx;
   }
 	PR_VEN_Diastolyc_mmHg = min;
+
+	/*sottraggo la tara col valore che sarà diverso da zero solo dopo la connessione organo,
+	 * viene valorizzatasolo all'inizio del trattamento*/
+	PR_VEN_Diastolyc_mmHg = PR_VEN_Diastolyc_mmHg - PR_VEN_TARA_mmHg;
+
+	/*controllo se dopo la tara ho un valore negativo e lo metto a zero*/
+	if (PR_VEN_Diastolyc_mmHg < 0)
+		PR_VEN_Diastolyc_mmHg = 0;
+
 	PR_VEN_Sistolyc_mmHg  = max;
+
+	/*sottraggo la tara col valore che sarà diverso da zero solo dopo la connessione organo,
+	 * viene valorizzatasolo all'inizio del trattamento*/
+	PR_VEN_Sistolyc_mmHg = PR_VEN_Sistolyc_mmHg - PR_VEN_TARA_mmHg;
+
+	/*controllo se dopo la tara ho un valore negativo e lo metto a zero*/
+	if (PR_VEN_Sistolyc_mmHg < 0)
+		PR_VEN_Sistolyc_mmHg = 0;
+
 	PR_VEN_Med_mmHg = (int) ( 2 * PR_VEN_Sistolyc_mmHg + PR_VEN_Diastolyc_mmHg)/3;
 
 //	Press_flow_extimated = CalcolaPresVen_with_Flow(1);
@@ -472,8 +492,16 @@ void CalcArtSistDiastPress(word Press)
 	  MedForArteriousPid = MedForArteriousPid / CircPressArrIdx;
   }
 	PR_ART_Diastolyc_mmHg = min;
-	PR_ART_Sistolyc_mmHg  = max;
 
+	/*sottraggo la tara col valore che sarà diverso da zero solo dopo la connessione organo,
+	 * viene valorizzatasolo all'inizio del trattamento*/
+	PR_ART_Diastolyc_mmHg = PR_ART_Diastolyc_mmHg - PR_ART_TARA_mmHg;
+
+	/*controllo se dopo la tara ho un valore negativo e lo metto a zero*/
+	if (PR_ART_Diastolyc_mmHg < 0)
+		PR_ART_Diastolyc_mmHg = 0;
+
+	PR_ART_Sistolyc_mmHg  = max;
 
 	if ( pumpPerist[0].actualSpeed < 12)
 	{
@@ -481,6 +509,14 @@ void CalcArtSistDiastPress(word Press)
 		// ed il pid non funziona piu' bene
 		PR_ART_Sistolyc_mmHg = PR_ART_mmHg_Filtered;
 	}
+
+	/*sottraggo la tara col valore che sarà diverso da zero solo dopo la connessione organo,
+	 * viene valorizzata solo all'inizio del trattamento*/
+	PR_ART_Sistolyc_mmHg = PR_ART_Sistolyc_mmHg - PR_ART_TARA_mmHg;
+
+	/*controllo se dopo la tara ho un valore negativo e lo metto a zero*/
+	if (PR_ART_Sistolyc_mmHg < 0)
+		PR_ART_Sistolyc_mmHg = 0;
 
 	PR_ART_Med_mmHg = (int) ( 2 * PR_ART_Sistolyc_mmHg + PR_ART_Diastolyc_mmHg)/3;
 

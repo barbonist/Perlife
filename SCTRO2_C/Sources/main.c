@@ -271,6 +271,9 @@ int main(void)
   Enable_AMS = 0;
   ptrT1Test = &T1TEST;
 
+  /*inizializzo il flag che mi dice che non ho ancora fatto la tara delle pressioni che va fatta dopo la connessione dell'organo*/
+  TARA_DONE = FALSE;
+
   // Filippo - inizializzo il flag di test del frigo e riscaldatore
   testT1HeatFridge=0;
   airSensorTestKO=FALSE;

@@ -4937,7 +4937,8 @@ void processMachineState(void)
 
 	case STATE_IDLE:
 		/*Vincenzo: Potrei essere tornato inn  IDLE alla fine di un trattamento, quindi
-		 * per sicurezza resetto i contatori del trattamento*/
+		 * per sicurezza resetto i contatori del trattamento e il flagf che mi dice
+		 * se ho fatto o meno la tara sui sensori di presisone dopo la connessione dell'organo*/
 
 		/*volume di priming effettuato*/
 		if (perfusionParam.priVolPerfArt != 0)
@@ -4950,6 +4951,8 @@ void processMachineState(void)
 		/*durata totale effettuata del trattamento*/
 		if (TotalTreatDuration != 0)
 			TotalTreatDuration = 0;
+
+		TARA_DONE = FALSE;
 
 		/* compute future state */
 		if((currentGuard[GUARD_ENABLE_SELECT_TREAT_PAGE].guardValue == GUARD_VALUE_TRUE))
