@@ -19,8 +19,7 @@
 #include "VerificatorRxCanValues.h"
 #include "Alarm_Con_Protective.h"
 #include "ActionsProtective.h"
-#include "ControlProtectiveInterface.h"
-#include "IncomingAlarmsManager.h"
+//#include "IncomingAlarmsManager.h"
 
 static void Dummy(void);
 
@@ -135,20 +134,14 @@ int ii;
 void HighArterPressAlarmAct(void)
 {
 	ShowNewAlarmError(CODE_ALARM_PRESS_ART_XHIGH);
-	if( GetControlFSMState() == STATE_TREATMENT)
-	{
-		DisablePinchNPumps();
-	}
+	DisablePinchNPumps();
 }
 
 void HighVenousPressAlarmAct(void)
 {
 	ShowNewAlarmError(CODE_ALARM_PRESS_VEN_XHIGH);
-	if( GetControlFSMState() == STATE_TREATMENT)
-	{
-		DisablePinchNPumps();
-		// trigger sec action
-	}
+	DisablePinchNPumps();
+	// trigger sec action
 	if(HighVenousPressAlarmTimer.SecondaryActionTimerTreshold != 0){
 		HighVenousPressAlarmTimer.SecondaryActionTimer = HighVenousPressAlarmTimer.SecondaryActionTimerTreshold;
 	}
@@ -169,65 +162,51 @@ void PumpsOrPinchNotRespond_EmergAct(void)
 void HighAdsFiltPressAlarmAct(void)
 {
 	ShowNewAlarmError(CODE_ALARM_PRESS_ADSFILT_XHIGH);
-	if( GetControlFSMState() == STATE_TREATMENT)
-	{
-		DisablePinchNPumps();
-	}
+	DisablePinchNPumps();
 }
 
 void HighOxygenPressAlarmAct(void)
 {
 	ShowNewAlarmError(CODE_ALARM_PRESS_OXYGEN_XHIGH);
-	if( GetControlFSMState() == STATE_TREATMENT)
-	{
-		DisablePinchNPumps();
-	}
+	DisablePinchNPumps();
 }
 
 void HighLevelPressAlarmAct(void)
 {
 	ShowNewAlarmError(CODE_ALARM_PRESS_LEVEL_XHIGH);
-	if( GetControlFSMState() == STATE_TREATMENT)
-	{
-			DisablePinchNPumps();
-	}
+	DisablePinchNPumps();
 }
 
 void HighPlateTempAlarmAct(void)
 {
 	ShowNewAlarmError(CODE_ALARM_TEMP_PLATE_XHIGH);
 	DisablePinchNPumps();
-	Enable_Heater(FALSE);
+	if( !PinchesAreInSafetyMode() )
+		Enable_Heater(FALSE);
 }
 
 void HighArtTempAlarmAct(void)
 {
 	ShowNewAlarmError(CODE_ALARM_TEMP_ART_XHIGH);
-	if( SomePinchIsInPerfusionPosition() && (GetControlFSMState() == STATE_TREATMENT) )
-	{
-		DisablePinchNPumps();
+	DisablePinchNPumps();
+	if( !PinchesAreInSafetyMode() )
 		Enable_Heater(FALSE);
-	}
 }
 
 void HighVenTempAlarmAct(void)
 {
 	ShowNewAlarmError(CODE_ALARM_TEMP_VEN_XHIGH);
-	if( SomePinchIsInPerfusionPosition() && (GetControlFSMState() == STATE_TREATMENT))
-	{
-		DisablePinchNPumps();
+	DisablePinchNPumps();
+	if( !PinchesAreInSafetyMode() )
 		Enable_Heater(FALSE);
-	}
 }
 
 void HighFluidTempAlarmAct(void)
 {
 	ShowNewAlarmError(CODE_ALARM_TEMP_FLUID_XHIGH);
-	if( SomePinchIsInPerfusionPosition() && (GetControlFSMState() == STATE_TREATMENT))
-	{
-		DisablePinchNPumps();
+	DisablePinchNPumps();
+	if( !PinchesAreInSafetyMode() )
 		Enable_Heater(FALSE);
-	}
 }
 
 void LowPlateTempAlarmAct(void)
@@ -240,31 +219,25 @@ void LowPlateTempAlarmAct(void)
 void LowArtTempAlarmAct(void)
 {
 	ShowNewAlarmError(CODE_ALARM_TEMP_ART_XLOW);
-	if( SomePinchIsInPerfusionPosition() && (GetControlFSMState() == STATE_TREATMENT))
-	{
-		DisablePinchNPumps();
+	DisablePinchNPumps();
+	if( !PinchesAreInSafetyMode() )
 		Enable_Frigo(FALSE);
-	}
 }
 
 void LowVenTempAlarmAct(void)
 {
 	ShowNewAlarmError(CODE_ALARM_TEMP_VEN_XLOW);
-	if( SomePinchIsInPerfusionPosition() && (GetControlFSMState() == STATE_TREATMENT))
-	{
-		DisablePinchNPumps();
+	DisablePinchNPumps();
+	if( !PinchesAreInSafetyMode() )
 		Enable_Frigo(FALSE);
-	}
 }
 
 void LowFluidTempAlarmAct(void)
 {
 	ShowNewAlarmError(CODE_ALARM_TEMP_FLUID_XLOW);
-	if( GetControlFSMState() == STATE_TREATMENT)
-	{
-		DisablePinchNPumps();
+	DisablePinchNPumps();
+	if( !PinchesAreInSafetyMode() )
 		Enable_Frigo(FALSE);
-	}
 }
 
 

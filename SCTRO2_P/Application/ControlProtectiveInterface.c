@@ -20,7 +20,6 @@
 #include "ActionsProtective.h"
 #include "Alarm_Con_Protective.h"
 #include "IncomingAlarmsManager.h"
-#include "ControlProtectiveInterface.h"
 
 #define VAL_JOLLY16	0x5A5A
 #define VAL_JOLLY8	0x5A
@@ -306,10 +305,6 @@ void onNewAirSensorStat(unsigned char AirStatus)
 
 #endif
 
-uint16_t GetControlFSMState(void)
-{
-	return RxCan0.SRxCan0.State;
-}
 
 void GetPressures(uint16_t* PressFilter, uint16_t* PressArt,  uint16_t* PressVen,  uint16_t* PressLevelx100,  uint16_t* PressOxy)
 {
@@ -589,6 +584,9 @@ void NewDataRxChannel2(void) {
 				VerifyRxTemperatures(RxCan2.SRxCan2.TempArtx10, RxCan2.SRxCan2.TempFluidx10, RxCan2.SRxCan2.TempVenx10, RxCan5.SRxCan5.tempPlateC);
 //	}
 }
+
+void Enable_Heater_CommandCAN(bool status);
+void Enable_Frigo_CommandCAN(bool status);
 
 void NewDataRxChannel3(void) {
 	// air alarm

@@ -50,11 +50,11 @@ TAlarmTimer PumpMismatchAlarmTimer = {0,70,false,false,MismatchPumpSpeedAlarmAct
 TAlarmTimer CanOfflineAlarmTimer = {0,20,false,false,NoCanCommunicationAlarmAct , 0 , 0 , Dummy}; // alarm after 2 s mismatch
 TAlarmTimer PinchMismatchAlarmTimer = {0,20,false,false, MismatchPinchPosAlarmAct , 0 , 0 , Dummy}; // alarm after 2 s mismatch
 
-TAlarmTimer PressArtMismatchAlarmTimer = {0,50,false,false, MismatchPressArtAlarmAct , 0 , 0 , Dummy}; // alarm after 5 s mismatch
-TAlarmTimer PressVenMismatchAlarmTimer = {0,50,false,false, MismatchPressVenAlarmAct , 0 , 65 , MismatchPressVen2ndAlarmAct }; // alarm after 5 s mismatch and 6.5
-TAlarmTimer PressFilterMismatchAlarmTimer = {0,50,false,false, MismatchPressFiltAlarmAct , 0 , 0 , Dummy}; // alarm after 5 s mismatch
-TAlarmTimer PressOxyMismatchAlarmTimer = {0,50,false,false, MismatchPressOxyAlarmAct , 0 , 0 , Dummy}; // alarm after 5 s mismatch
-TAlarmTimer PressLevelMismatchAlarmTimer = {0,70,false,false, MismatchPressLevelAlarmAct , 0 , 0 , Dummy}; // alarm after 7 s mismatch
+TAlarmTimer PressArtMismatchAlarmTimer = {0,20,false,false, MismatchPressArtAlarmAct , 0 , 0 , Dummy}; // alarm after 2 s mismatch
+TAlarmTimer PressVenMismatchAlarmTimer = {0,20,false,false, MismatchPressVenAlarmAct , 0 , 65 , MismatchPressVen2ndAlarmAct }; // alarm after 2 s mismatch and 6.5
+TAlarmTimer PressFilterMismatchAlarmTimer = {0,20,false,false, MismatchPressFiltAlarmAct , 0 , 0 , Dummy}; // alarm after 2 s mismatch
+TAlarmTimer PressOxyMismatchAlarmTimer = {0,20,false,false, MismatchPressOxyAlarmAct , 0 , 0 , Dummy}; // alarm after 2 s mismatch
+TAlarmTimer PressLevelMismatchAlarmTimer = {0,50,false,false, MismatchPressLevelAlarmAct , 0 , 0 , Dummy}; // alarm after 5 s mismatch
 
 TAlarmTimer TempArtMismatchAlarmTimer = {0,20,false,false, MismatchTempArtAlarmAct , 0 , 0 , Dummy}; // alarm after 2 s mismatch
 TAlarmTimer TempVenMismatchAlarmTimer = {0,20,false,false, MismatchTempVenAlarmAct , 0 , 0 , Dummy}; // alarm after 2 s mismatch
@@ -181,10 +181,7 @@ void MismatchPressArtAlarmAct(void)
 void MismatchPressVenAlarmAct(void)
 {
 	ShowNewAlarmError(CODE_ALARM_PRESS_VEN_DONTMATCH);
-	if( GetControlFSMState() == STATE_TREATMENT )
-	{
-		DisablePinchNPumps();
-	}
+	DisablePinchNPumps();
 	// trigger sec action
 	if(PressVenMismatchAlarmTimer.SecondaryActionTimerTreshold != 0){
 		PressVenMismatchAlarmTimer.SecondaryActionTimer = PressVenMismatchAlarmTimer.SecondaryActionTimerTreshold;
@@ -207,65 +204,44 @@ void MismatchPressVen2ndAlarmAct(void)
 void MismatchPressFiltAlarmAct(void)
 {
 	ShowNewAlarmError(CODE_ALARM_PRESS_ADSFILT_DONTMATCH);
-	if(GetControlFSMState() == STATE_TREATMENT)
-	{
-		DisablePinchNPumps();
-	}
+	DisablePinchNPumps();
 }
 
 // oxy pressure
 void MismatchPressOxyAlarmAct(void)
 {
 	ShowNewAlarmError(CODE_ALARM_PRESS_OXYGEN_DONTMATCH);
-	if(GetControlFSMState() == STATE_TREATMENT)
-	{
-		DisablePinchNPumps();
-	}
+	DisablePinchNPumps();
 }
 
 void MismatchPressLevelAlarmAct(void)
 {
 	ShowNewAlarmError(CODE_ALARM_PRESS_LEVEL_DONTMATCH);
-	if(GetControlFSMState() == STATE_TREATMENT)
-	{
-		DisablePinchNPumps();
-	}
+	DisablePinchNPumps();
 }
 
 void MismatchTempPlateAlarmAct(void)
 {
 	ShowNewAlarmError(CODE_ALARM_TEMP_PLATE_DONTMATCH);
-	if(GetControlFSMState() == STATE_TREATMENT)
-	{
-		DisablePinchNPumps();
-	}
+	DisablePinchNPumps();
 }
 
 void MismatchTempArtAlarmAct(void)
 {
 	ShowNewAlarmError(CODE_ALARM_TEMP_ART_DONTMATCH);
-	if(GetControlFSMState() == STATE_TREATMENT)
-	{
-		DisablePinchNPumps();
-	}
+	DisablePinchNPumps();
 }
 
 void MismatchTempVenAlarmAct(void)
 {
 	ShowNewAlarmError(CODE_ALARM_TEMP_VEN_DONTMATCH);
-	if(GetControlFSMState() == STATE_TREATMENT)
-	{
-		DisablePinchNPumps();
-	}
+	DisablePinchNPumps();
 }
 
 void MismatchTempFluidAlarmAct(void)
 {
 	ShowNewAlarmError(CODE_ALARM_TEMP_FLUID_DONTMATCH);
-	if(GetControlFSMState() == STATE_TREATMENT)
-	{
-		DisablePinchNPumps();
-	}
+	DisablePinchNPumps();
 }
 
 
@@ -273,9 +249,9 @@ void MismatchTempFluidAlarmAct(void)
 ///////////////////////////////////////////////////////////////////////////////////////
 //  Verify can bus incoming parameters from control board to check possible mismatches
 ///////////////////////////////////////////////////////////////////////////////////////
+
 void VerifyRxState(uint16_t State, uint16_t Parent, uint16_t Child,
-		uint16_t Guard)
-{
+		uint16_t Guard) {
 
 }
 
@@ -286,11 +262,11 @@ uint16_t pressFilter, pressArt,  pressVen,  pressLevelx100 ,  pressOxy;
 
 	GetPressures(&pressFilter, &pressArt,  &pressVen,  &pressLevelx100 ,  &pressOxy);
 	// activate alarms hunting if mismatch detected
-	PressFilterMismatchAlarmTimer.AlarmConditionPending = ValueIsInRange(pressFilter, PressFilter, 20) ? false : true;
-	PressArtMismatchAlarmTimer.AlarmConditionPending = ValueIsInRange(pressArt, PressArt, 20) ? false : true;
-	PressVenMismatchAlarmTimer.AlarmConditionPending = ValueIsInRange(pressVen, PressVen, 20) ? false : true;
+	PressFilterMismatchAlarmTimer.AlarmConditionPending = ValueIsInRange(pressFilter, PressFilter, 5) ? false : true;
+	PressArtMismatchAlarmTimer.AlarmConditionPending = ValueIsInRange(pressArt, PressArt, 5) ? false : true;
+	PressVenMismatchAlarmTimer.AlarmConditionPending = ValueIsInRange(pressVen, PressVen, 3) ? false : true;
 	PressLevelMismatchAlarmTimer.AlarmConditionPending = ValueIsInRange(pressLevelx100, PressLevelx100, 200) ? false : true;
-	PressOxyMismatchAlarmTimer.AlarmConditionPending = ValueIsInRange(pressOxy, PressOxy, 20) ? false : true;
+	PressOxyMismatchAlarmTimer.AlarmConditionPending = ValueIsInRange(pressOxy, PressOxy, 5) ? false : true;
 }
 
 void VerifyRxTemperatures(uint16_t TempArtx10, uint16_t TempFluidx10, uint16_t TempVenx10, uint16_t TempPlatex10)
@@ -326,7 +302,7 @@ bool Pinch2Ok = true;
 		PinchMismatchAlarmTimer.AlarmConditionPending = false;
 	}
 	else{
-		PinchMismatchAlarmTimer.AlarmConditionPending = true;
+//		PinchMismatchAlarmTimer.AlarmConditionPending = true;
 	}
 }
 

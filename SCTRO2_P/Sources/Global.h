@@ -134,8 +134,6 @@ unsigned char CHANGE_ADDRESS_IR_SENS;
 #define OFFSET_FLOW_SENS_ART		56
 
 
-#define STATE_TREATMENT	9
-
 struct funcRetStruct
 {
 	unsigned char *  ptr_msg;

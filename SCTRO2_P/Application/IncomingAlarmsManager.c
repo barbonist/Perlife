@@ -110,14 +110,6 @@ bool PinchesAreInSafetyMode(void)
 	return ((pch0 == 0x02) && (pch1 == 0x04) && (pch2 == 0x04));
 }
 
-bool SomePinchIsInPerfusionPosition(void)
-{
-	uint8_t pch0, pch1, pch2;
-
-	GetPinchPos( &pch0 ,  &pch1, &pch2);
-	return ((pch1 == 0x02) || (pch2 == 0x02));
-}
-
 bool PumpsAreStopped(void)
 {
 bool SomePumpIsMoving =

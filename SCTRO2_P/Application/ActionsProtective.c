@@ -109,10 +109,9 @@ sensore SPL2 livello incongruente con SPL1
 #include "Events.h"
 #include "Global.h"
 #include "ActionsProtective.h"
-#include "ControlProtectiveInterface.h"
 
-//#define NO_DISABLE_FORTEST 1
-#undef NO_DISABLE_FORTEST
+#define NO_DISABLE_FORTEST 1
+//#undef NO_DISABLE_FORTEST
 
 void InitActuators(void)
 {
@@ -304,8 +303,8 @@ void Enable_Pinch_Venous(bool status)
 #endif
 }
 
-//#define DISABLE_HEATER_FRIGO_CONTROL
-#undef DISABLE_HEATER_FRIGO_CONTROL
+#define DISABLE_HEATER_FRIGO_CONTROL
+//#undef DISABLE_HEATER_FRIGO_CONTROL
 
 void Enable_Heater(bool status)
 {

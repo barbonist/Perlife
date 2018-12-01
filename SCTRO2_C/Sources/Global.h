@@ -2359,7 +2359,7 @@ typedef enum
 // Filippo - attesa per lo spegnimento del frigo quando lo uso spot per raffreddare il riscaldatore (tick da 10ms)
 #define ATTESA_FRIGO_OFF_SPOT 6000
 
-//#define T1_TEST_ENABLED			//se scommentata abilita i T1 Test
+#define T1_TEST_ENABLED			//se scommentata abilita i T1 Test
 bool T1_Test_Frigo_Before_Heater;		//variabile  che decide se fare il T1 Test prima del frigo e poi del riscaldatore o viceversa
 
 // stati per gestire il pilotaggio delle resistenze di riscaldamento

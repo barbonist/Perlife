@@ -334,42 +334,6 @@ int main(void)
   }
 
 
-  /******************************************************
-	History protective
-
-	Versione 1.0 19/11/2018
-
-	- bug segnalato : durante fase priming , com T impostata di 37 gradi ,  la protective blocca i motori
-	- il debug rivela che il blocco è causato da un blocco motori
-	Causa
-	- Quando arriva un messaggio di errore da control , la funzione IsVerifyRequired() torna false , e
-	  i dati in arrivo da can non vengono processsati. Peroò la gestione degli errori a tempo ,  in VerifyRxCan.c , static void ManageVerificatorAlarms100ms() ,
-	  restava in esecuzione . Se si aveva un errore di velocità motori prima dell'arrivo del cod di errore , restava attivo per piu di 7 secondi dato
-	  che non veniva aggiornato il flag ErrorConditionPending.  Adesso La ManagerVerificatorAlarms100ms non esegue se la IsVerifyRequired è false.
-	- Un altro punto che bloccava le pompe è presente nella IncomingAlarmsManager. Qui , in caso di errore riportato dalla control , veniva forzatamente tolto l'enable
-	  alle pompe e alle pinch.
-	  		if( IsAlarmTemperatureRelated( controlBoard_AlarmCode ) ){
-				DisablePinchNPumps();
-				Enable_Heater(false);
-	  questo è stato tolto .
-	- quando TimeSecsFromControlAlarm andava in timeout , veniva verificato che effettivamente sia le pinch che i motori fossero in sicurezza.
-	  la funzione PinchesAreInSafetyMode() era errata dato che si aspettava tutte le pinch aperte verso sinistra , mentre 2 sono aperte a dx e 1 a sx
-
-	Versione 1.0.001 20/11/2018
-
-	modifiche inserite
-	Sul missmatch dei sensori di pressione, spostiamo i delta che identificano il missmatch a 20 mmHg; aggiungiamo che questa differenza
-	deve restare attiva per almeno 5 secondi.
-	L'allarme di temperatura di venosa e arteriosa  ( non ricircolo ) , va bene a 40+1 come adesso ma deve essere attivato solo se almeno
-	una tra le pinch arteriuosa e venosa risulta aperta sull'organo (ovvero a sinistra) E SE SIAMO IN TRATTAMENTO --> Stato = ... STATE_TREATMENT_KIDNEY_1, = 9
-	Per la piastra --> Allarme SEMPRE se supera 85 gradi.
-	Aggiornati anche i valori limite per la pressione
-	Temp bassa piastra per allarme , -20
-
-
-  */
-
-
   /*** Don't write any code pass this line, or it will be deleted during code generation. ***/
   /*** RTOS startup code. Macro PEX_RTOS_START is defined by the RTOS component. DON'T MODIFY THIS CODE!!! ***/
   #ifdef PEX_RTOS_START
