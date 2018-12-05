@@ -1110,10 +1110,11 @@ void buildRDMachineStateResponseMsg(char code, char subcode)
 	 * pari a 32.32.64  */
 
 	/*0x0800 --> 1.0.0
-	 *0x0801 --> 1.0.1  */
+	 *0x0801 --> 1.0.1
+	 *0x0802 --> 1.0.2*/
 
 	/*10*/	sbc_tx_data[index++] = 0x08;
-	/*11*/	sbc_tx_data[index++] = 0x01;
+	/*11*/	sbc_tx_data[index++] = 0x02;
 
 	/* TODO status parameters: rev fw-H
 	 * potrei usare questa come versione FW
