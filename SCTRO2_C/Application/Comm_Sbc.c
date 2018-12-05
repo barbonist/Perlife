@@ -1562,7 +1562,7 @@ void setGUIButton(unsigned char buttonId)
 		}
 	}
 	/*se mi è arrivato il primo start treatment faccio la tara delle pressioni*/
-	if (buttonId == BUTTON_START_TREATMENT && TARA_DONE == FALSE && ptrCurrentState->state == STATE_TREATMENT_KIDNEY_1)
+	if (buttonId == BUTTON_START_TREATMENT && TARA_PRESS_DONE == FALSE && ptrCurrentState->state == STATE_TREATMENT_KIDNEY_1)
 	{
 
 		/*calcolo la tara della pressione arteriosa dopo la connessione dell'organo*/
@@ -1579,7 +1579,7 @@ void setGUIButton(unsigned char buttonId)
 		if (PR_VEN_TARA_mmHg < 0)
 			PR_VEN_TARA_mmHg = 0;
 
-		TARA_DONE = TRUE;
+		TARA_PRESS_DONE = TRUE;
 	}
 }
 

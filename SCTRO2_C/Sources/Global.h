@@ -775,8 +775,8 @@ struct alarm {
 	unsigned int	secActType;		/* alarm security action: type of secuirty action required
 	                                   (FM modificato da char ad unsigned int perche' ho bisogno di piu' bit per distinguere i vari allarmi*/
 	unsigned char	priority;		/* alarm priority: low, medium, right */
-	unsigned int	entryTime;		/* entry time in ms */
-	unsigned int	exitTime;		/* exit time in ms */
+	unsigned long int	entryTime;		/* entry time in ms */
+	unsigned long int	exitTime;		/* exit time in ms */
 	unsigned char	ovrdEnable;		/* override enable: alarm can be overridden when alarm condition is still present */
 	unsigned char	resettable;		/* reset property */
 	unsigned char	silence;		/* silence property: the alarm acoustic signal can be silenced for a limited period of time */
@@ -1057,7 +1057,7 @@ int  PR_VEN_Med_mmHg_ORG;			//variabile globale per il valore medio in mmHg del 
 
 int PR_VEN_TARA_mmHg;			//variabile globale che serve a fare la tara di pressione dopo la connessione dell'organo, all'inizio del trattamento
 int PR_ART_TARA_mmHg;			//variabile globale che serve a fare la tara di pressione dopo la connessione dell'organo, all'inizio del trattamento
-bool TARA_DONE;
+bool TARA_PRESS_DONE;
 
 
 
@@ -1771,7 +1771,7 @@ typedef enum
 #define HIGH_PUMP_SPEED_DURATION 60000L
 
 //timer per il riempimento delle linee in iungresso all'organo
-#define TIMER_PRIMING_INLET_LINE 30000L
+#define TIMER_PRIMING_INLET_LINE 60000L //30000L
 // velocita' delle pompe per la fase del ricircolo ad alta velocita'
 /*
 #define RECIRC_PUMP_HIGH_SPEED 4000
@@ -2391,7 +2391,7 @@ typedef enum
 
 //---------------------------------------------------------------------------------------
 
-
+//#define DEMO //define di compilazione per abilitare controlli meno stringenti per le demo
 
 #endif /* SOURCES_GLOBAL_H_ */
 

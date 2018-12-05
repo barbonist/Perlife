@@ -72,8 +72,8 @@ struct alarm alarmList[] =
 		// allarme aria nel filtro (usato nello stato di trattamento)
 		{CODE_ALARM_SFA_PRIM_AIR_DET,      PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_SFA_PRIM_AIR_DET,      PRIORITY_HIGH,  1000, 0,   OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull},	    /* 25 */
 
-		{CODE_ALARM_PRESS_ADS_FILTER_LOW,  PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH, 2000, 2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull},	    /* 26 */
-		{CODE_ALARM_PRESS_OXYG_LOW, 	   PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH, 2000, 2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull}, 		/* 27 */
+		{CODE_ALARM_PRESS_ADS_FILTER_LOW,  PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH, 60000, 2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull},	    /* 26 */
+		{CODE_ALARM_PRESS_OXYG_LOW, 	   PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH, 60000, 2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull}, 		/* 27 */
 
 		//Allarme per errore nella lettura e scrittura modbus. Se dopo 10 ripetizioni non ottengo risposta alla lettura o scrittura genero un allarme.
 		// Per questo allarme uso la stessa procedura per le pompe non ferme. (Dovrei tolgliere direttamente l'enable alle pompe.
@@ -650,6 +650,10 @@ void CalcAlarmActive(void)
 
 			//verifica physic ir temp sens
 			//manageAlarmPhysicTempSens();
+
+			manageAlarmActuatorModbusNotRespond();
+			manageAlarmActuatorWRModbusNotRespond();
+
 			break;
 
 		case STATE_PRIMING_RICIRCOLO:
@@ -681,6 +685,16 @@ void CalcAlarmActive(void)
 
 			//verifica physic ir temp sens
 			//manageAlarmPhysicTempSens();
+
+			/*ONLY FOR TEST*/
+//			if(GetTherapyType() == LiverTreat)
+//				manageAlarmCoversPumpLiver();
+//			else if(GetTherapyType() == KidneyTreat)
+//				manageAlarmCoversPumpKidney();
+//			/*END TEST*/
+//			manageAlarmActuatorModbusNotRespond();
+//			manageAlarmActuatorWRModbusNotRespond();
+
 			break;
 
 		/*case STATE_T1_WITH_DISPOSABLE:
@@ -862,6 +876,7 @@ void manageAlarmDeltaFlowArt(void)
 {
 	if(GlobalFlags.FlagsDef.EnableDeltaFlowArtAlarm)
 	{
+		/*TODO Vincenzo: credo che il controllo vcada fatto anche, anzi soprattutto, se il flusso letto è+ zero (esempio tubo tolto)*/
 		if(sensor_UFLOW[ARTERIOUS_AIR_SENSOR].Average_Flow_Val > 0.0)
 		{
 			float Pump_Gain = DEFAULT_ART_PUMP_GAIN;
@@ -889,6 +904,7 @@ void manageAlarmDeltaFlowVen(void)
 {
 	if(GlobalFlags.FlagsDef.EnableDeltaFlowVenAlarm)
 	{
+		/*TODO Vincenzo: credo che il controllo vcada fatto anche, anzi soprattutto, se il flusso letto è+ zero (esempio tubo tolto)*/
 		if(sensor_UFLOW[VENOUS_AIR_SENSOR].Average_Flow_Val > 0.0)
 		{
 			float Pump_Gain = DEFAULT_VEN_PUMP_GAIN;
@@ -1067,6 +1083,17 @@ void manageAlarmCoversPumpKidney(void)
 
 void manageAlarmPhysicPressSensLow(void)
 {
+	/*se sono in trattamento ma lo stesso non è ancora partito
+	 * ovvero non ho fatto la tarea delle pressioni,
+	 * allora non controllo la pressione bassa sull'ossigenatore
+	 * oppure se siamo in svuotamento, attesa ripresa trattamwento o smontaggio*/
+	if ( (ptrCurrentState->state == STATE_TREATMENT_KIDNEY_1 && TARA_PRESS_DONE == FALSE) ||
+		  ptrCurrentState->state == STATE_WAIT_TREATMENT							||
+		  ptrCurrentState->state == STATE_EMPTY_DISPOSABLE						    ||
+		  ptrCurrentState->state == STATE_UNMOUNT_DISPOSABLE
+			)
+		return;
+
 	if(GlobalFlags.FlagsDef.EnablePressSensLowAlm)
 	{
 		/*abilito l'allarme di pressione filtro bassa solo se la pompa filtro si sta muovendo a velocità superiore a 5 RPM*/
@@ -1191,7 +1218,12 @@ void manageAlarmPhysicPressSensHigh(void)
 		/*il sensore Venoso è usato solo nel trattamento Liver, il Kidney non ha la linea Venosa*/
 		if((PR_VEN_Sistolyc_mmHg /*PR_VEN_mmHg_Filtered*/ > MaxPressVen) && (GetTherapyType() == LiverTreat))
 		{
-			alarmList[PRESS_VEN_HIGH].physic = PHYSIC_TRUE;
+			/*aggiungo controllo che non fa alzare allarem di sovrapressione
+			 * venosa in trattamento se lo stesso non è ancora partito
+			 * se è partito, vuol dire che ho fatto la tara sulle presisoni*/
+			if ( (MaxPressVen > PR_VEN_HIGH) || ( (MaxPressVen == PR_VEN_HIGH) && TARA_PRESS_DONE == TRUE) )
+				alarmList[PRESS_VEN_HIGH].physic = PHYSIC_TRUE;
+
 		}
 		else
 		{
@@ -1289,6 +1321,7 @@ void manageAlarmPhysicUFlowSensVen(void)
 	{
 //		if((sensor_UFLOW[VENOUS_AIR_SENSOR].bubbleSize >= MAX_BUBBLE_SIZE) ||
 //			(sensor_UFLOW[VENOUS_AIR_SENSOR].bubblePresence == MASK_ERROR_BUBBLE_ALARM))
+		/*TODO Vincenzo: con sensor_UFLOW[VENOUS_AIR_SENSOR].bubbleSize == 255 secondo me dovremmo comunque dare errore*/
 		if(((sensor_UFLOW[VENOUS_AIR_SENSOR].bubbleSize >= MAX_BUBBLE_SIZE) ||
 			(sensor_UFLOW[VENOUS_AIR_SENSOR].bubblePresence == MASK_ERROR_BUBBLE_ALARM)) &&
 			(sensor_UFLOW[VENOUS_AIR_SENSOR].bubbleSize != 255))
@@ -1315,6 +1348,7 @@ void manageAlarmPhysicUFlowSens(void){
 //			(sensor_UFLOW[ARTERIOUS_AIR_SENSOR].bubbleSize >= MAX_BUBBLE_SIZE) ||
 //			(sensor_UFLOW[ARTERIOUS_AIR_SENSOR].bubblePresence == MASK_ERROR_BUBBLE_ALARM)
 //			)
+		/*TODO Vincenzo: con sensor_UFLOW[VENOUS_AIR_SENSOR].bubbleSize == 255 secondo me dovremmo comunque dare errore*/
 		if(
 			((sensor_UFLOW[ARTERIOUS_AIR_SENSOR].bubbleSize >= MAX_BUBBLE_SIZE) ||
 			(sensor_UFLOW[ARTERIOUS_AIR_SENSOR].bubblePresence == MASK_ERROR_BUBBLE_ALARM)) &&

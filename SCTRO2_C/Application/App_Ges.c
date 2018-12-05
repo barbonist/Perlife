@@ -1584,7 +1584,7 @@ unsigned char TemperatureStateMach(int cmd)
 			{
 				// sono nel ricircolo rene con ossigenatore abilitato
 					setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress,KIDNEY_PRIMING_PMP_OXYG_SPEED);
-							                  /*(int)((float)parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value / OXYG_FLOW_TO_RPM_CONV * 100.0));*/
+                /*(int)((float)parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value / OXYG_FLOW_TO_RPM_CONV * 100.0));*/
 			}
 			else if(GetTherapyType() == LiverTreat)
 			{
@@ -1598,6 +1598,9 @@ unsigned char TemperatureStateMach(int cmd)
 			 * tubi di ingresso all'organo e resetto il timer*/
 			RicircTimeout = timerCounterModBus;
 
+			/*Vincenzo: quando finisco il ricircolo veloce, sposto le pinch sull'organo
+			 * per rimepire e linee organo;le terrò lì per un minuto, scaduto il quale
+			 * nel case successivo, le rimetto sullo scarico*/
 			setPinchPositionHighLevel(PINCH_2WPVA, MODBUS_PINCH_LEFT_OPEN);
 			if(GetTherapyType() == LiverTreat)
 			{
@@ -1677,14 +1680,17 @@ void SetPinchPosInPriming(void)
 			setPinchPositionHighLevel(PINCH_2WPVF, MODBUS_PINCH_RIGHT_OPEN);
 		// Durante il ricircolo e' stato richiesto di spostare le pinch sull'organo per fare in modo che anche la parte finale delle linee si
 		// riempa di liquido
-		/*15-11-2018 Vincenzo: richiesta successiva, si parete con le pinch sullo scarico
+		/*15-11-2018 Vincenzo: richiesta successiva, si parte con le pinch sullo scarico
 		 * poi, finita la parte di ricircolo veloce, si spostano per 30 secondi sull'organo
+		 * poi nuovamente sullo scarico*/
+		/*05-12-2018 Vincenzo: richiesta successiva, si parte con la pinch arteriosa sullo scarico e la venosa sull'organo
+		 * poi, finita la parte di ricircolo veloce, si spostano per 60 secondi sull'organo
 		 * poi nuovamente sullo scarico*/
 		setPinchPositionHighLevel(PINCH_2WPVA, MODBUS_PINCH_RIGHT_OPEN);
 		if(GetTherapyType() == LiverTreat)
 		{
 			// ho selezionato il fegato, quindi devo chiudere anche questa
-			setPinchPositionHighLevel(PINCH_2WPVV, MODBUS_PINCH_RIGHT_OPEN);
+			setPinchPositionHighLevel(PINCH_2WPVV, MODBUS_PINCH_LEFT_OPEN);
 		}
 	}
 	else
@@ -4952,7 +4958,7 @@ void processMachineState(void)
 		if (TotalTreatDuration != 0)
 			TotalTreatDuration = 0;
 
-		TARA_DONE = FALSE;
+		TARA_PRESS_DONE = FALSE;
 
 		/* compute future state */
 		if((currentGuard[GUARD_ENABLE_SELECT_TREAT_PAGE].guardValue == GUARD_VALUE_TRUE))

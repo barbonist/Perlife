@@ -256,9 +256,9 @@ void alwaysPumpPressLoopArt(unsigned char pmpId, unsigned char *PidFirstTime)
 		else
 			deltaSpeed_Art = -0.8;
 	}
-	else if (sensor_UFLOW[ARTERIOUS_AIR_SENSOR].Average_Flow_Val_for_GUI == 0 && pressSample0_Art < 100)
+	else if (sensor_UFLOW[ARTERIOUS_AIR_SENSOR].Average_Flow_Val_for_GUI == 0 && pressSample0_Art < Target_PID_ART)
 	{
-		// se il flusso e' 0 e la pressione e' al di sotto di 60 mmhg
+		// se il flusso e' 0 e la pressione e' al di sotto di Target_PID_ART
 		// forzo una velocita' delle pompe != 0. Altrimenti si ferma in equilibrio a flusso 0;
 		deltaSpeed_Art = 1.0;
 	}
@@ -1298,9 +1298,9 @@ void alwaysPumpPressLoopVen(unsigned char pmpId, unsigned char *PidFirstTime){
 	{
 		deltaSpeed_Ven = 0.0;
 	}
-	else if((sensor_UFLOW[1].Average_Flow_Val_for_GUI == 0.0) && (pressSample0_Ven < 10.0))
+	else if((sensor_UFLOW[1].Average_Flow_Val_for_GUI == 0.0) && (pressSample0_Ven < Target_PID_VEN))
 	{
-		// se il flusso e' 0 e la pressione e' al di sotto di 10 mmhg
+		// se il flusso e' 0 e la pressione e' al di sotto di quella target
 		// forzo una velocita' delle pompe != 0. Altrimenti si ferma in equilibrio a flusso 0;
 		deltaSpeed_Ven = 1.0;
 	}
