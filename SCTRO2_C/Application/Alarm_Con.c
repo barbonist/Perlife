@@ -1083,16 +1083,6 @@ void manageAlarmCoversPumpKidney(void)
 
 void manageAlarmPhysicPressSensLow(void)
 {
-	/*se sono in trattamento ma lo stesso non è ancora partito
-	 * ovvero non ho fatto la tarea delle pressioni,
-	 * allora non controllo la pressione bassa sull'ossigenatore
-	 * oppure se siamo in svuotamento, attesa ripresa trattamwento o smontaggio*/
-	if ( (ptrCurrentState->state == STATE_TREATMENT_KIDNEY_1 && TARA_PRESS_DONE == FALSE) ||
-		  ptrCurrentState->state == STATE_WAIT_TREATMENT							||
-		  ptrCurrentState->state == STATE_EMPTY_DISPOSABLE						    ||
-		  ptrCurrentState->state == STATE_UNMOUNT_DISPOSABLE
-			)
-		return;
 
 	if(GlobalFlags.FlagsDef.EnablePressSensLowAlm)
 	{
