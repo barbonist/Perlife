@@ -1843,6 +1843,7 @@ typedef struct
 	unsigned int EnableT1TestAlarm			: 1;	// abilita la gestione dell'allarme nel T1 test
 	unsigned int EnableHooksReservoir       : 1;    // abilitazione allarme ganci reservoir
 	unsigned int EnableMachineCovers        : 1;    // abilitazione allarme sportelli macchina
+	unsigned int EnableArtResAlarm          : 1;    // abilitazione allarme resistenza arteriosa
 }FLAGS_DEF;
 
 typedef union
@@ -1882,6 +1883,9 @@ unsigned char CoversState;
 
 // massima differenza di temperatura tra recevoir e liquido venoso
 #define MAX_DELTA_TEMP_VEN_AND_REC  10.0
+
+// valore massimo del parametro di resitenza arteriosa
+#define RENAL_RESIST_HIGH_LEVEL   600 // 0.60 mmHg/ml/min
 
 // Quando e' true vuol dire che lo start e' stato inviato
 bool Peltier2On;

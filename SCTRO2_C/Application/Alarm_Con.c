@@ -93,8 +93,10 @@ struct alarm alarmList[] =
 		{CODE_ALARM_AIR_SENSOR_TEST_KO,PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,PRIORITY_HIGH, 0, 2000, OVRD_NOT_ENABLED, RESET_NOT_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull}, 		/* 32 */
         {CODE_ALARM_MACHINE_COVERS,       PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH,    0,  100, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull},         /* 33 */
         {CODE_ALARM_HOOKS_RESERVOIR,      PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH,    0,  100, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull},         /* 34 */
+        {CODE_ALARM_ART_RES_HIGH,         PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH,    0,  100, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull},         /* 35 */
 		// da qui in avanti solo le warning
 		{CODE_ALARM_PRESS_ADS_FILTER_WARN, PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_LOW, 2000, 2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull},	        /* 30 esempio di warning*/
+
 		{}
 };
 
@@ -199,6 +201,7 @@ void SetAllAlarmEnableFlags(void)
 	GlobalFlags.FlagsDef.EnableT1TestAlarm=1;
 	GlobalFlags.FlagsDef.EnableHooksReservoir = 1;
 
+	GlobalFlags.FlagsDef.EnableArtResAlarm = 1;
 }
 
 // Questa funzione serve per forzare ad off un eventuale allarme.
@@ -278,9 +281,9 @@ void ForceAlarmOff(uint16_t code)
         case CODE_ALARM_HOOKS_RESERVOIR:
             GlobalFlags.FlagsDef.EnableHooksReservoir = 0;   // forzo allarme hooks a OFF
             break;
-
-
-
+        case CODE_ALARM_ART_RES_HIGH:
+            GlobalFlags.FlagsDef.EnableArtResAlarm = 0;     // forzo allarme allarme resistenza arteriosa OFF
+            break;
 	}
 }
 
@@ -457,7 +460,11 @@ void ShowAlarmStr(int i, char * str)
 			strcat(s, str);
 			DebugStringStr(s);
 			break;
-
+        case CODE_ALARM_ART_RES_HIGH:
+			strcpy(s, "AL_ART_RESIST");
+			strcat(s, str);
+			DebugStringStr(s);
+            break;
 	}
 }
 
@@ -639,6 +646,7 @@ void CalcAlarmActive(void)
 
 				// Filippo - aggiunto allarme per test sensore aria sbagliato
 				manageAlarmAirSensorTestKO();
+            manageAlarmArterialResistance();
 			break;
 		}
 
@@ -1353,6 +1361,58 @@ void manageAlarmPhysicUFlowSens(void){
 		}
 	}
 }
+
+
+void manageAlarmArterialResistance(void)
+{
+	static uint8_t manageAlarmArtResState = 0;
+	static uint32_t ArtResStartTime = 0;
+
+	if(GlobalFlags.FlagsDef.EnableArtResAlarm && (GetTherapyType() == KidneyTreat))
+	{
+		switch (manageAlarmArtResState)
+		{
+			case 0:
+				alarmList[ARTERIAL_RESIST_HIGH].physic = PHYSIC_FALSE;
+				if(perfusionParam.renalResistance >= RENAL_RESIST_HIGH_LEVEL)
+				{
+					ArtResStartTime = timerCounterModBus;
+					manageAlarmArtResState = 1;
+				}
+				break;
+			case 1:
+				// monitor tempo a livello alto
+				alarmList[ARTERIAL_RESIST_HIGH].physic = PHYSIC_FALSE;
+				if(perfusionParam.renalResistance < RENAL_RESIST_HIGH_LEVEL)
+				{
+					manageAlarmArtResState = 0;
+					break;
+				}
+				if((msTick_elapsed(ArtResStartTime) * 50L) >= ART_RES_HIGH_TOUT_MSEC)
+				{
+					manageAlarmArtResState = 2;
+					ArtResStartTime = timerCounterModBus;
+				}
+				break;
+			case 2:
+				// allarme attivo
+				alarmList[ARTERIAL_RESIST_HIGH].physic = PHYSIC_TRUE;
+				if((msTick_elapsed(ArtResStartTime) * 50L) >= ART_RES_ALM_ON_MSEC)
+				{
+					// una volta scattato l'allarme posso tornare al monitoraggio
+					// del parametro
+					manageAlarmArtResState = 0;
+				}
+				break;
+		}
+	}
+	else
+	{
+		alarmList[ARTERIAL_RESIST_HIGH].physic = PHYSIC_FALSE;
+		manageAlarmArtResState = 0;
+	}
+}
+
 
 // Imposto un allarme non fisico da inviare ad SBC
 void SetNonPhysicalAlm( int AlarmCode)
