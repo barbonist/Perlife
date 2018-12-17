@@ -204,6 +204,9 @@
 #include "ActionsProtective.h"
 #include "debug_routine.h"
 
+/*prescaler per timer printf di debug*/
+int Timer_printf_debug = 0;
+
 void InitTest(void);
 void verificaTempPlate(void);
 /*lint -save  -e970 Disable MISRA rule (6.3) checking. */
@@ -305,6 +308,14 @@ int main(void)
 		Phase = 6;
 		timerCounterADC0 = 0;
 		AD0_Start();
+
+		/*ogni 500 msec (da 0 a 9 sobo 10 per 50 = 500 msec)
+		 * trasmetto sulla seriale di debug tramite la DebugString()*/
+		if (Timer_printf_debug >= 9)
+		{
+			Timer_printf_debug = 0;
+			DebugString();
+		}
 	 }
 	 /*faccio lo start della conversione sul canale AD1 ogni 10 msec
 	  * per avere le pressioni a 100 HZ (timerCounterADC1 si incremente ogni msec*/

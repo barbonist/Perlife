@@ -53,6 +53,9 @@
 #include "FRONTAL_COVER_2.h"
 #include "HOOK_SENSOR_1.h"
 #include "HOOK_SENSOR_2.h"
+#include "PC_DEBUG_COMM.h"
+#include "stdio.h"
+#include "RPMGauge.h"
 
 
 /********************************/
@@ -222,4 +225,33 @@ int aaa =  0;
 
 	  onNewPinchStat(HallSens);
 
+}
+
+void DebugString()
+{
+	static char stringPr[100];
+
+
+		sprintf(stringPr, "\r %i; %i; %i; %i; %i; %i; %i; %i; %i;",
+								(int)HallSens.PinchFilter_Left,		//uno se pinch filtro è aperta a sinistra
+								(int)HallSens.PinchFilter_Right,	//uno se pinch filtro è aperta a destra
+								(int)HallSens.PinchArt_Left,		//uno se pinch arteriosa è aperta a sinistra
+								(int)HallSens.PinchArt_Right,		//uno se pinch arteriosa è aperta a destra
+								(int)HallSens.PinchVen_Left,		//uno se pinch venosa è aperta a sinistra
+								(int)HallSens.PinchVen_Right,		//uno se pinch venosa è aperta a destra
+								(uint16_t) GetMeasuredPumpSpeed(0),	//velocità in RPM * 100 della pompa filtro
+								(uint16_t) GetMeasuredPumpSpeed(1),	//velocità in RPM * 100 della pompa arteriosa Liver
+								(uint16_t) GetMeasuredPumpSpeed(2),	//velocità in RPM * 100 della pompa OXY 1
+								(uint16_t) GetMeasuredPumpSpeed(3)	//velocità in RPM * 100 della pompa OXY 2
+					);
+
+
+	for(int i=0; i<100; i++)
+	{
+		if(stringPr[i])
+			PC_DEBUG_COMM_SendChar(stringPr[i]);
+		else
+			break;
+	}
+	PC_DEBUG_COMM_SendChar(0x0A);
 }
