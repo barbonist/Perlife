@@ -205,7 +205,7 @@
 #include "debug_routine.h"
 
 /*prescaler per timer printf di debug*/
-int Timer_printf_debug = 0;
+unsigned char Timer_printf_debug = 1;
 
 void InitTest(void);
 void verificaTempPlate(void);
@@ -309,11 +309,13 @@ int main(void)
 		timerCounterADC0 = 0;
 		AD0_Start();
 
-		/*ogni 500 msec (da 0 a 9 sobo 10 per 50 = 500 msec)
+		Timer_printf_debug ++;
+
+		/*ogni 500 msec (ovvero una volta ogni 10 ingressi in questo if da 50 msec)
 		 * trasmetto sulla seriale di debug tramite la DebugString()*/
-		if (Timer_printf_debug >= 9)
+		if (Timer_printf_debug >= 10)
 		{
-			Timer_printf_debug = 0;
+			Timer_printf_debug = 1;
 			DebugString();
 		}
 	 }

@@ -229,7 +229,7 @@ int aaa =  0;
 
 void DebugString()
 {
-	static char stringPr[100];
+	static char stringPr[200];
 
 
 		sprintf(stringPr, "\r %i; %i; %i; %i; %i; %i; %i; %i; %i;",
