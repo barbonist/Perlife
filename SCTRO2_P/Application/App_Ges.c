@@ -233,16 +233,16 @@ void DebugString()
 
 
 		sprintf(stringPr, "\r %i; %i; %i; %i; %i; %i; %i; %i; %i;",
-								(int)HallSens.PinchFilter_Left,		//uno se pinch filtro è aperta a sinistra
-								(int)HallSens.PinchFilter_Right,	//uno se pinch filtro è aperta a destra
-								(int)HallSens.PinchArt_Left,		//uno se pinch arteriosa è aperta a sinistra
-								(int)HallSens.PinchArt_Right,		//uno se pinch arteriosa è aperta a destra
-								(int)HallSens.PinchVen_Left,		//uno se pinch venosa è aperta a sinistra
-								(int)HallSens.PinchVen_Right,		//uno se pinch venosa è aperta a destra
-								(uint16_t) GetMeasuredPumpSpeed(0),	//velocità in RPM * 100 della pompa filtro
-								(uint16_t) GetMeasuredPumpSpeed(1),	//velocità in RPM * 100 della pompa arteriosa Liver
-								(uint16_t) GetMeasuredPumpSpeed(2),	//velocità in RPM * 100 della pompa OXY 1
-								(uint16_t) GetMeasuredPumpSpeed(3)	//velocità in RPM * 100 della pompa OXY 2
+								(int)HallSens.PinchFilter_Left,	//uno se pinch filtro è aperta a sinistra
+								(int)HallSens.PinchFilter_Right,//uno se pinch filtro è aperta a destra
+								(int)HallSens.PinchArt_Left,	//uno se pinch arteriosa è aperta a sinistra
+								(int)HallSens.PinchArt_Right,	//uno se pinch arteriosa è aperta a destra
+								(int)HallSens.PinchVen_Left,	//uno se pinch venosa è aperta a sinistra
+								(int)HallSens.PinchVen_Right,	//uno se pinch venosa è aperta a destra
+								(int)GetMeasuredPumpSpeed(0),	//velocità in RPM * 100 della pompa filtro
+								(int)GetMeasuredPumpSpeed(1),	//velocità in RPM * 100 della pompa arteriosa Liver
+								(int)GetMeasuredPumpSpeed(2),	//velocità in RPM * 100 della pompa OXY 1
+								(int)GetMeasuredPumpSpeed(3)	//velocità in RPM * 100 della pompa OXY 2
 					);
 
 
