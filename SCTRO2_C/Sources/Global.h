@@ -1846,13 +1846,32 @@ typedef struct
 	unsigned int EnableArtResAlarm          : 1;    // abilitazione allarme resistenza arteriosa
 }FLAGS_DEF;
 
+typedef struct
+{
+	unsigned int EnableAdsPressHigh           : 1;    // abilito warning di pressione ADS alta
+	unsigned int EnablePumpDepStill           : 1;    // abilito warning di pompa depurazione ferma
+	unsigned int EnablePumpPerfArtStill       : 1;    // abilito warning di pompa perfusione arteriosa ferma
+	unsigned int EnablePumpOxygStill          : 1;    // abilito warning di pompa ossigenazione ferma
+	unsigned int GenEnableAdsPressHigk        : 1;    // abilitazione generale warning di pressione ADS alta
+	unsigned int GenEnablePumpDepStill        : 1;    // abilitazione generale warning di pompa depurazione ferma
+	unsigned int GenEnablePumpPerfArtStill    : 1;    // abilitazione generale warning di pompa perfusione arteriosa ferma
+	unsigned int GenEnablePumpOxygStill       : 1;    // abilitazione generale warning di pompa ossigenazione ferma
+}WRN_FLAGS_DEF;
+
 typedef union
 {
     FLAGS_DEF FlagsDef;
 	unsigned int FlagsVal;
 }GLOBAL_FLAGS;
 
+typedef union
+{
+    WRN_FLAGS_DEF WrnFlagsDef;
+	unsigned int WrnFlagsVal;
+}WRN_GLOBAL_FLAGS;
+
 GLOBAL_FLAGS GlobalFlags;
+WRN_GLOBAL_FLAGS WrnGlobalFlags;
 
 // 0 cover della pompa 0 aperto
 // 1 cover della pompa 1 aperto

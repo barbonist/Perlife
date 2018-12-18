@@ -95,8 +95,10 @@ struct alarm alarmList[] =
         {CODE_ALARM_HOOKS_RESERVOIR,      PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH,    0,  100, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull},         /* 34 */
         {CODE_ALARM_ART_RES_HIGH,         PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH,    0,  100, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull},         /* 35 */
 		// da qui in avanti solo le warning
-		{CODE_ALARM_PRESS_ADS_FILTER_WARN, PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_LOW, 2000, 2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull},	        /* 30 esempio di warning*/
-
+		{CODE_ALARM_PRESS_ADS_FILTER_WARN, PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_LOW, 2000, 2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull},	        /* 36 esempio di warning*/
+		{CODE_ALARM_DEP_PUMP_STILL_WARN,   PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,    PRIORITY_LOW, 2000, 2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull},	        /* 37 */
+		{CODE_ALARM_PERF_ART_PUMP_STILL_WARN, PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR, PRIORITY_LOW, 2000, 2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull},	        /* 38 */
+		{CODE_ALARM_OXYG_PUMP_STILL_WARN,     PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR, PRIORITY_LOW, 2000, 2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull},	        /* 39 */
 		{}
 };
 
@@ -1992,32 +1994,501 @@ void ClearAlarmState(void)
 //-----------------------------------------------------------------------------------------------
 //----------------------------GESTIONE DELLE WARNING---------------------------------------------
 
+WARNING_STATE WrnPressSensHighState;
+WARNING_STATE WrnDepPumpStillState;
+WARNING_STATE WrnPerfArtPumpStillState;
+WARNING_STATE WrnOxygPumpStillState;
+
+void SetAllWarningEnableFlags(void)
+{
+	WrnPressSensHighState = WRN_INIT;
+	WrnDepPumpStillState = WRN_INIT;
+	WrnPerfArtPumpStillState = WRN_INIT;
+	WrnOxygPumpStillState = WRN_INIT;
+
+	WrnGlobalFlags.WrnFlagsDef.EnableAdsPressHigh = 1;
+	WrnGlobalFlags.WrnFlagsDef.EnablePumpDepStill = 1;
+	WrnGlobalFlags.WrnFlagsDef.EnablePumpPerfArtStill = 1;
+	WrnGlobalFlags.WrnFlagsDef.EnablePumpOxygStill = 1;
+
+	WrnGlobalFlags.WrnFlagsDef.GenEnableAdsPressHigk = 1;
+	WrnGlobalFlags.WrnFlagsDef.GenEnablePumpDepStill = 1;
+	WrnGlobalFlags.WrnFlagsDef.GenEnablePumpPerfArtStill = 1;
+	WrnGlobalFlags.WrnFlagsDef.GenEnablePumpOxygStill = 1;
+}
+
+void SetWarningEnableFlag(uint16_t WrnCode)
+{
+	switch (WrnCode)
+	{
+		case CODE_ALARM_PRESS_ADS_FILTER_WARN:
+			WrnGlobalFlags.WrnFlagsDef.GenEnableAdsPressHigk = 1;          // Abilito warning ads filter
+			WrnPressSensHighState = WRN_INIT;
+			break;
+		case CODE_ALARM_DEP_PUMP_STILL_WARN:
+			WrnGlobalFlags.WrnFlagsDef.GenEnablePumpDepStill = 1;
+			WrnDepPumpStillState = WRN_INIT;
+			break;
+		case CODE_ALARM_PERF_ART_PUMP_STILL_WARN:
+			WrnGlobalFlags.WrnFlagsDef.GenEnablePumpPerfArtStill = 1;
+			WrnPerfArtPumpStillState = WRN_INIT;
+			break;
+		case CODE_ALARM_OXYG_PUMP_STILL_WARN:
+			WrnGlobalFlags.WrnFlagsDef.GenEnablePumpOxygStill = 1;
+			WrnOxygPumpStillState = WRN_INIT;
+			break;
+	}
+}
+
+void ResetFromUserReceived(uint16_t WrnCode)
+{
+	switch (WrnCode)
+	{
+		case CODE_ALARM_PRESS_ADS_FILTER_WARN:
+			if( WrnPressSensHighState == WRN_CONTROL)
+			{
+				// forzo attesa del livello basso di pressione o ripartenza normale
+				WrnGlobalFlags.WrnFlagsDef.EnableAdsPressHigh = 0;
+			}
+			break;
+		case CODE_ALARM_DEP_PUMP_STILL_WARN:
+			if(WrnDepPumpStillState == WRN_CONTROL_DELAY)
+			{
+				// la pompa non e' ripartita da sola quando mi arriva il reset dell'allarme
+				// faccio ripartire il conteggio di due minuti
+				WrnGlobalFlags.WrnFlagsDef.EnablePumpDepStill = 0;
+			}
+			break;
+		case CODE_ALARM_PERF_ART_PUMP_STILL_WARN:
+			if(WrnPerfArtPumpStillState == WRN_CONTROL_DELAY)
+			{
+				// la pompa non e' ripartita da sola quando mi arriva il reset dell'allarme
+				WrnGlobalFlags.WrnFlagsDef.EnablePumpPerfArtStill = 0;
+			}
+			break;
+		case CODE_ALARM_OXYG_PUMP_STILL_WARN:
+			if(WrnOxygPumpStillState == WRN_CONTROL_DELAY)
+			{
+				// la pompa non e' ripartita da sola quando mi arriva il reset dell'allarme
+				WrnGlobalFlags.WrnFlagsDef.EnablePumpOxygStill = 0;
+			}
+			break;
+	}
+}
+
+void InitWarningsStates(void)
+{
+	WrnGlobalFlags.WrnFlagsVal = 0;
+	SetAllWarningEnableFlags();
+}
+// ritorna true se c'e' un allarme attivo (non una warning) e quindi le pompe sono sempre ferme
+bool IsAlamActiveAndNotWrn(void)
+{
+	if(alarmCurrent.code &&
+	   alarmCurrent.code <= CODE_ALARM_ART_RES_HIGH &&
+	   (alarmCurrent.code == ptrAlarmCurrent->code) &&
+	   (ptrAlarmCurrent->active == ACTIVE_TRUE))
+		return TRUE;
+	else
+		return FALSE;
+}
+
+
+void WarningPhysicPressSensHigh(void)
+{
+	switch (WrnPressSensHighState)
+	{
+		case WRN_INIT:
+			alarmList[PRESS_ADS_FILTER_WARN].physic = PHYSIC_FALSE;
+			if(WrnGlobalFlags.WrnFlagsDef.EnableAdsPressHigh)
+				WrnPressSensHighState = WRN_CONTROL;
+			break;
+		case WRN_CONTROL:
+			if(WrnGlobalFlags.WrnFlagsDef.EnableAdsPressHigh)
+			{
+				if(PR_ADS_FLT_mmHg_Filtered > PR_ADS_FILTER_WARN)
+					alarmList[PRESS_ADS_FILTER_WARN].physic = PHYSIC_TRUE;
+				else
+					alarmList[PRESS_ADS_FILTER_WARN].physic = PHYSIC_FALSE;
+			}
+			else
+			{
+				// se l'allarme e' scattato e viene resettato dall'utente
+				if(PR_ADS_FLT_mmHg_Filtered > PR_ADS_FILTER_WARN_LOWER_LEV)
+				{
+					// dopo che e' scattato l'allarme devo aspettare che la pressione
+					// scenda al di sotto di PR_ADS_FILTER_WARN_LOWER_LEV
+					WrnPressSensHighState = WRN_WAIT_LOWER_LEV;
+					alarmList[PRESS_ADS_FILTER_WARN].physic = PHYSIC_FALSE;
+				}
+				else
+				{
+					// la condizione fisica di warning se ne era gia' andata da sola
+					WrnGlobalFlags.WrnFlagsDef.EnableAdsPressHigh = 1;
+				}
+			}
+			break;
+		case WRN_WAIT_LOWER_LEV:
+			alarmList[PRESS_ADS_FILTER_WARN].physic = PHYSIC_FALSE;
+			if(PR_ADS_FLT_mmHg_Filtered < PR_ADS_FILTER_WARN_LOWER_LEV)
+			{
+				WrnPressSensHighState = WRN_INIT;
+				WrnGlobalFlags.WrnFlagsDef.EnableAdsPressHigh = 1;
+			}
+			break;
+	}
+}
+
+void WarningDepPumpStill(void)
+{
+	static uint32_t StartTime50Msec;
+	switch (WrnDepPumpStillState)
+	{
+		case WRN_INIT:
+			alarmList[DEP_PUMP_STILL_WARN].physic = PHYSIC_FALSE;
+			if(WrnGlobalFlags.WrnFlagsDef.EnablePumpDepStill)
+			{
+				if((((PARAMETER_ACTIVE_TYPE)parameterWordSetFromGUI[PAR_SET_DEPURATION_ACTIVE].value) == YES) &&
+										(parameterWordSetFromGUI[PAR_SET_PURIF_FLOW_TARGET].value != 0))
+					WrnDepPumpStillState = WRN_CONTROL;
+			}
+			if(IsAlamActiveAndNotWrn())
+				WrnDepPumpStillState = WRN_WAIT_END_ALARM;
+			break;
+		case WRN_CONTROL:
+			if((((PARAMETER_ACTIVE_TYPE)parameterWordSetFromGUI[PAR_SET_DEPURATION_ACTIVE].value) != YES) ||
+									(parameterWordSetFromGUI[PAR_SET_PURIF_FLOW_TARGET].value == 0))
+			{
+				WrnDepPumpStillState = WRN_INIT;
+				break;
+			}
+			if(IsAlamActiveAndNotWrn())
+			{
+				WrnDepPumpStillState = WRN_WAIT_END_ALARM;
+				break;
+			}
+			if(WrnGlobalFlags.WrnFlagsDef.EnablePumpDepStill)
+			{
+				if(((int)(modbusData[pumpPerist[3].pmpMySlaveAddress-2][17] / 100)) <= (int)PUMP_STOPPED_SPEED_VAL)
+				{
+					alarmList[DEP_PUMP_STILL_WARN].physic = PHYSIC_FALSE;
+					StartTime50Msec = timerCounterModBus;
+					WrnDepPumpStillState = WRN_CONTROL_DELAY;
+				}
+				else
+					alarmList[DEP_PUMP_STILL_WARN].physic = PHYSIC_FALSE;
+			}
+			else
+				alarmList[DEP_PUMP_STILL_WARN].physic = PHYSIC_FALSE;
+			break;
+		case WRN_CONTROL_DELAY:
+			if((((PARAMETER_ACTIVE_TYPE)parameterWordSetFromGUI[PAR_SET_DEPURATION_ACTIVE].value) != YES) ||
+									(parameterWordSetFromGUI[PAR_SET_PURIF_FLOW_TARGET].value == 0))
+			{
+				WrnDepPumpStillState = WRN_INIT;
+				break;
+			}
+			if(IsAlamActiveAndNotWrn())
+			{
+				WrnDepPumpStillState = WRN_WAIT_END_ALARM;
+				break;
+			}
+			if(WrnGlobalFlags.WrnFlagsDef.EnablePumpDepStill)
+			{
+				if(((int)(modbusData[pumpPerist[3].pmpMySlaveAddress-2][17] / 100)) <= (int)PUMP_STOPPED_SPEED_VAL)
+				{
+					if((msTick_elapsed(StartTime50Msec) * 50L) >= DEPURATION_PUMP_STILL_TOUT)
+						alarmList[DEP_PUMP_STILL_WARN].physic = PHYSIC_TRUE;
+					else
+						alarmList[DEP_PUMP_STILL_WARN].physic = PHYSIC_FALSE;
+				}
+				else
+				{
+					// la pompa e' ripartita. Riparte il conteggio del tempo per pompa ferma
+					alarmList[DEP_PUMP_STILL_WARN].physic = PHYSIC_FALSE;
+					WrnDepPumpStillState = WRN_CONTROL;
+				}
+			}
+			else
+			{
+				// ho ricevuto il reset dell'allarme
+				alarmList[DEP_PUMP_STILL_WARN].physic = PHYSIC_FALSE;
+				// faccio ripartire il controllo dei due minuti
+				WrnGlobalFlags.WrnFlagsDef.EnablePumpDepStill = 1;
+				WrnDepPumpStillState = WRN_CONTROL;
+			}
+			break;
+		case WRN_WAIT_END_ALARM:
+			if(!IsAlamActiveAndNotWrn())
+			{
+				// allarme finito le pompe dovrebbero essere in fase di
+				// ripartenza
+				WrnDepPumpStillState = WRN_INIT;
+				WrnGlobalFlags.WrnFlagsDef.EnablePumpDepStill = 1;
+			}
+			break;
+		case WRN_WAIT_LOWER_LEV:
+			break;
+	}
+}
+
+
+// allarme di pompa arteriosa ferma (valida per rene e fegato)
+void WarningPerfArtPumpStill(void)
+{
+	static uint32_t StartTime50Msec;
+	switch (WrnPerfArtPumpStillState)
+	{
+		case WRN_INIT:
+			alarmList[PERF_ART_PUMP_STILL_WRN].physic = PHYSIC_FALSE;
+			if(WrnGlobalFlags.WrnFlagsDef.EnablePumpPerfArtStill)
+			{
+				if(parameterWordSetFromGUI[PAR_SET_MAX_FLOW_PERFUSION].value != 0)
+					WrnPerfArtPumpStillState = WRN_CONTROL;
+			}
+			if(IsAlamActiveAndNotWrn())
+				WrnPerfArtPumpStillState = WRN_WAIT_END_ALARM;
+			break;
+		case WRN_CONTROL:
+			if(parameterWordSetFromGUI[PAR_SET_MAX_FLOW_PERFUSION].value == 0)
+			{
+				WrnPerfArtPumpStillState = WRN_INIT;
+				break;
+			}
+			if(IsAlamActiveAndNotWrn())
+			{
+				WrnPerfArtPumpStillState = WRN_WAIT_END_ALARM;
+				break;
+			}
+			if(WrnGlobalFlags.WrnFlagsDef.EnablePumpPerfArtStill)
+			{
+				if(((int)(modbusData[pumpPerist[0].pmpMySlaveAddress-2][17] / 100)) <= (int)PUMP_STOPPED_SPEED_VAL)
+				{
+					alarmList[PERF_ART_PUMP_STILL_WRN].physic = PHYSIC_FALSE;
+					StartTime50Msec = timerCounterModBus;
+					WrnPerfArtPumpStillState = WRN_CONTROL_DELAY;
+				}
+				else
+					alarmList[PERF_ART_PUMP_STILL_WRN].physic = PHYSIC_FALSE;
+			}
+			else
+				alarmList[PERF_ART_PUMP_STILL_WRN].physic = PHYSIC_FALSE;
+			break;
+		case WRN_CONTROL_DELAY:
+			if(parameterWordSetFromGUI[PAR_SET_MAX_FLOW_PERFUSION].value == 0)
+			{
+				WrnPerfArtPumpStillState = WRN_INIT;
+				break;
+			}
+			if(IsAlamActiveAndNotWrn())
+			{
+				WrnPerfArtPumpStillState = WRN_WAIT_END_ALARM;
+				break;
+			}
+			if(WrnGlobalFlags.WrnFlagsDef.EnablePumpPerfArtStill)
+			{
+				if(((int)(modbusData[pumpPerist[0].pmpMySlaveAddress-2][17] / 100)) <= (int)PUMP_STOPPED_SPEED_VAL)
+				{
+					if((msTick_elapsed(StartTime50Msec) * 50L) >= DEPURATION_PUMP_STILL_TOUT)
+						alarmList[PERF_ART_PUMP_STILL_WRN].physic = PHYSIC_TRUE;
+					else
+						alarmList[PERF_ART_PUMP_STILL_WRN].physic = PHYSIC_FALSE;
+				}
+				else
+				{
+					// la pompa e' ripartita. Riparte il conteggio del tempo per pompa ferma
+					alarmList[PERF_ART_PUMP_STILL_WRN].physic = PHYSIC_FALSE;
+					WrnPerfArtPumpStillState = WRN_CONTROL;
+				}
+			}
+			else
+			{
+				// ho ricevuto il reset dell'allarme
+				alarmList[PERF_ART_PUMP_STILL_WRN].physic = PHYSIC_FALSE;
+				// faccio ripartire il controllo dei due minuti
+				WrnGlobalFlags.WrnFlagsDef.EnablePumpPerfArtStill = 1;
+				WrnPerfArtPumpStillState = WRN_CONTROL;
+			}
+			break;
+		case WRN_WAIT_END_ALARM:
+			if(!IsAlamActiveAndNotWrn())
+			{
+				// allarme finito le pompe dovrebbero essere in fase di
+				// ripartenza
+				WrnPerfArtPumpStillState = WRN_INIT;
+				WrnGlobalFlags.WrnFlagsDef.EnablePumpPerfArtStill = 1;
+			}
+			break;
+		case WRN_WAIT_LOWER_LEV:
+			break;
+	}
+}
+
+
+// allarme di pompa ossigenazione ferma (valida per rene e fegato)
+void WarningOxygPumpStill(void)
+{
+	static uint32_t StartTime50Msec;
+	switch (WrnOxygPumpStillState)
+	{
+		case WRN_INIT:
+			alarmList[OXYG_PUMP_STILL_WRN].physic = PHYSIC_FALSE;
+			if(WrnGlobalFlags.WrnFlagsDef.EnablePumpOxygStill)
+			{
+				if(GetTherapyType() == KidneyTreat)
+				{
+					// nel caso di rene posso scegliere se applicare l'ossigenazione o no
+					if((((PARAMETER_ACTIVE_TYPE)parameterWordSetFromGUI[PAR_SET_OXYGENATOR_ACTIVE].value) == YES) &&
+					   (parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value != 0))
+						WrnOxygPumpStillState = WRN_CONTROL;
+				}
+				else if(parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value != 0)
+				{
+					// nel caso del fegato controllo solo il valore del flusso
+					WrnOxygPumpStillState = WRN_CONTROL;
+				}
+			}
+			if(IsAlamActiveAndNotWrn())
+				WrnOxygPumpStillState = WRN_WAIT_END_ALARM;
+			break;
+		case WRN_CONTROL:
+			if(GetTherapyType() == KidneyTreat)
+			{
+				if((((PARAMETER_ACTIVE_TYPE)parameterWordSetFromGUI[PAR_SET_OXYGENATOR_ACTIVE].value) != YES) ||
+				   (parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value == 0))
+				{
+					WrnOxygPumpStillState = WRN_INIT;
+					break;
+				}
+			}
+			else if(parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value == 0)
+			{
+				WrnOxygPumpStillState = WRN_INIT;
+				break;
+			}
+			if(IsAlamActiveAndNotWrn())
+			{
+				WrnOxygPumpStillState = WRN_WAIT_END_ALARM;
+				break;
+			}
+			if(WrnGlobalFlags.WrnFlagsDef.EnablePumpOxygStill)
+			{
+				if(((int)(modbusData[pumpPerist[1].pmpMySlaveAddress-2][17] / 100)) <= (int)PUMP_STOPPED_SPEED_VAL)
+				{
+					alarmList[OXYG_PUMP_STILL_WRN].physic = PHYSIC_FALSE;
+					StartTime50Msec = timerCounterModBus;
+					WrnOxygPumpStillState = WRN_CONTROL_DELAY;
+				}
+				else
+					alarmList[OXYG_PUMP_STILL_WRN].physic = PHYSIC_FALSE;
+			}
+			else
+				alarmList[OXYG_PUMP_STILL_WRN].physic = PHYSIC_FALSE;
+			break;
+		case WRN_CONTROL_DELAY:
+			if(GetTherapyType() == KidneyTreat)
+			{
+				if((((PARAMETER_ACTIVE_TYPE)parameterWordSetFromGUI[PAR_SET_OXYGENATOR_ACTIVE].value) != YES) ||
+				   (parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value == 0))
+				{
+					WrnOxygPumpStillState = WRN_INIT;
+					break;
+				}
+			}
+			else if(parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value == 0)
+			{
+				WrnOxygPumpStillState = WRN_INIT;
+				break;
+			}
+			if(IsAlamActiveAndNotWrn())
+			{
+				WrnOxygPumpStillState = WRN_WAIT_END_ALARM;
+				break;
+			}
+			if(WrnGlobalFlags.WrnFlagsDef.EnablePumpOxygStill)
+			{
+				if(((int)(modbusData[pumpPerist[1].pmpMySlaveAddress-2][17] / 100)) <= (int)PUMP_STOPPED_SPEED_VAL)
+				{
+					if((msTick_elapsed(StartTime50Msec) * 50L) >= DEPURATION_PUMP_STILL_TOUT)
+						alarmList[OXYG_PUMP_STILL_WRN].physic = PHYSIC_TRUE;
+					else
+						alarmList[OXYG_PUMP_STILL_WRN].physic = PHYSIC_FALSE;
+				}
+				else
+				{
+					// la pompa e' ripartita. Riparte il conteggio del tempo per pompa ferma
+					alarmList[OXYG_PUMP_STILL_WRN].physic = PHYSIC_FALSE;
+					WrnOxygPumpStillState = WRN_CONTROL;
+				}
+			}
+			else
+			{
+				// ho ricevuto il reset dell'allarme
+				alarmList[OXYG_PUMP_STILL_WRN].physic = PHYSIC_FALSE;
+				// faccio ripartire il controllo dei due minuti
+				WrnGlobalFlags.WrnFlagsDef.EnablePumpOxygStill = 1;
+				WrnOxygPumpStillState = WRN_CONTROL;
+			}
+			break;
+		case WRN_WAIT_END_ALARM:
+			if(!IsAlamActiveAndNotWrn())
+			{
+				// allarme finito le pompe dovrebbero essere in fase di
+				// ripartenza
+				WrnOxygPumpStillState = WRN_INIT;
+				WrnGlobalFlags.WrnFlagsDef.EnablePumpOxygStill = 1;
+			}
+			break;
+		case WRN_WAIT_LOWER_LEV:
+			break;
+	}
+}
+
 void manageWarningPhysicPressSensHigh(void)
 {
-	// USO GLI STESSI ENABLE EDGLI ALLARMI, NON SO SE QUESTO E' GIUSTO
-	if(GlobalFlags.FlagsDef.EnablePressSensHighAlm)
+	if(WrnGlobalFlags.WrnFlagsDef.GenEnableAdsPressHigk)
 	{
-		/*TODO per debug eliminato questo warning -->
-		 * sarà poi da mettere a video solo una volta e riarmarlo quando la pressione scende
-		 * probabilmente sarà aggiungere un terzo stato ad esempio PHISIC_PENDING
-		 * che sarà settato dopo la conferma del warning; fin tanto che è PENDING non lo
-		 * si rimette a TRUE; quando la pressione scende sotto il valore lo si mette a FALSE
-		 * e da lì può tornare TRUE*/
-		if(0/*PR_ADS_FLT_mmHg_Filtered > PR_ADS_FILTER_WARN*/)
-		{
-			alarmList[PRESS_ADS_FILTER_WARN].physic = PHYSIC_TRUE;
-		}
-		else
-		{
-			alarmList[PRESS_ADS_FILTER_WARN].physic = PHYSIC_FALSE;
-		}
-
+		WarningPhysicPressSensHigh();
 	}
 	else
 	{
 		alarmList[PRESS_ADS_FILTER_WARN].physic = PHYSIC_FALSE;
 	}
 }
+void manageWarningDepPumpStill(void)
+{
+	if(WrnGlobalFlags.WrnFlagsDef.GenEnablePumpDepStill)
+	{
+		WarningDepPumpStill();
+	}
+	else
+	{
+		alarmList[PRESS_ADS_FILTER_WARN].physic = PHYSIC_FALSE;
+	}
+}
+void manageWarningPerfArtPumpStill(void)
+{
+	if(WrnGlobalFlags.WrnFlagsDef.GenEnablePumpPerfArtStill)
+	{
+		WarningPerfArtPumpStill();
+	}
+	else
+	{
+		alarmList[PRESS_ADS_FILTER_WARN].physic = PHYSIC_FALSE;
+	}
+}
+void manageWarningOxygPumpStill(void)
+{
+	if(WrnGlobalFlags.WrnFlagsDef.GenEnablePumpOxygStill)
+	{
+		WarningOxygPumpStill();
+	}
+	else
+	{
+		alarmList[PRESS_ADS_FILTER_WARN].physic = PHYSIC_FALSE;
+	}
+}
+
 
 
 void CalcWarningActive(void)
@@ -2039,105 +2510,23 @@ void CalcWarningActive(void)
 		case STATE_PRIMING_PH_1:
 		{
 			manageWarningPhysicPressSensHigh();
-
-//			manageAlarmFlowSensNotDetected();
-//			manageAlarmIrTempSensNotDetected();
-//
-//			//verifica physic pressioni
-//			manageAlarmPhysicPressSensHigh();
-//			//manageAlarmPhysicPressSensLow(); non serve questo allarme in priming
-//
-//			//verifica physic ir temp sens
-//			manageAlarmPhysicTempSens();
-//
-//			manageAlarmLiquidLevelHigh();
-//			if(GetTherapyType() == LiverTreat)
-//				manageAlarmCoversPumpLiver();
-//			else if(GetTherapyType() == KidneyTreat)
-//				manageAlarmCoversPumpKidney();
-//
-//			manageAlarmCanBus();
-//			manageAlarmActuatorModbusNotRespond();
-//			manageAlarmActuatorWRModbusNotRespond();
-//			manageAlarmFromProtective();
-//			manageAlarmBadPinchPos();   // allarme di pinch posizionate correttamente
 			break;
 		}
 
 		case STATE_PRIMING_PH_2:
 		{
 			manageWarningPhysicPressSensHigh();
-
-//			manageAlarmFlowSensNotDetected();
-//			manageAlarmIrTempSensNotDetected();
-//
-//			//verifica physic pressioni
-//			manageAlarmPhysicPressSensHigh();
-//			//manageAlarmPhysicPressSensLow(); non serve questo allarme in priming
-//
-//			//verifica physic ir temp sens
-//			manageAlarmPhysicTempSens();
-//
-//			manageAlarmLiquidLevelHigh();
-//			if(GetTherapyType() == LiverTreat)
-//				manageAlarmCoversPumpLiver();
-//			else if(GetTherapyType() == KidneyTreat)
-//				manageAlarmCoversPumpKidney();
-//			manageAlarmCanBus();
-//			manageAlarmPrimSFAAirDet();
-//			manageAlarmActuatorModbusNotRespond();
-//			manageAlarmActuatorWRModbusNotRespond();
-//			manageAlarmFromProtective();
-//			manageAlarmBadPinchPos();   // allarme di pinch posizionate correttamente
 			break;
 		}
 
 		case STATE_TREATMENT_KIDNEY_1:
 		{
 			manageWarningPhysicPressSensHigh();
+			if(GetTherapyType() == LiverTreat)
+				manageWarningDepPumpStill();
 
-//			//verifica physic pressioni
-//			manageAlarmPhysicPressSensHigh();
-//			manageAlarmPhysicPressSensLow();
-//
-//			//verifica physic flow sensor (presenza aria)
-//			manageAlarmPhysicUFlowSens();
-//			manageAlarmSAFAirSens();
-//			manageAlarmPhysicUFlowSensVen();
-//
-//
-//			//verifica physic ir temp sens
-//			manageAlarmPhysicTempSens();
-//
-//			//verifica physic flusso di perfusione arteriosa alto
-//			manageAlarmPhysicFlowPerfArtHigh();
-//
-//			//verifica  flusso  non rilevato
-//			manageAlarmFlowSensNotDetected();
-//
-//			//verifica temperatura noin rilevata
-//			manageAlarmIrTempSensNotDetected();
-//
-//			if(GetTherapyType() == LiverTreat)
-//				manageAlarmCoversPumpLiver();
-//			else if(GetTherapyType() == KidneyTreat)
-//				manageAlarmCoversPumpKidney();
-//
-//			// Questo allarme lo commento per ora, perche' bisogna avere un sensore di livello
-//			// che funziona bene e si e' sicuri del suo funzionamento
-//			//manageAlarmLiquidLevelLow();
-//			// i due allarmi che seguono devo essere gestiti attentamente perche' potrei avere delle
-//			// segnalazioni di allarme anche durante la fase di accelerazione e decelerazione del pid
-//			// Per ora li commento.
-//			//manageAlarmDeltaFlowArt();
-//			//manageAlarmDeltaFlowVen();
-//			manageAlarmDeltaTempRecArt();
-//			manageAlarmDeltaTempRecVen();
-//			manageAlarmCanBus();
-//			manageAlarmBadPinchPos(); // controllo il posizionamento delle pinch prima di iniziare un trattamento
-//			manageAlarmActuatorModbusNotRespond();
-//			manageAlarmActuatorWRModbusNotRespond();
-//			manageAlarmFromProtective();
+			manageWarningPerfArtPumpStill();
+			manageWarningOxygPumpStill();
 			break;
 		}
 
@@ -2147,24 +2536,6 @@ void CalcWarningActive(void)
 
 		case STATE_PRIMING_RICIRCOLO:
 			manageWarningPhysicPressSensHigh();
-
-//			//verifica physic pressioni
-//			manageAlarmPhysicPressSensHigh();
-//			manageAlarmPhysicPressSensLow();
-//
-//			//verifica physic ir temp sens
-//			manageAlarmPhysicTempSens();
-//			if(GetTherapyType() == LiverTreat)
-//				manageAlarmCoversPumpLiver();
-//			else if(GetTherapyType() == KidneyTreat)
-//				manageAlarmCoversPumpKidney();
-//			manageAlarmCanBus();
-//			manageAlarmPumpNotStill();  // controllo allarme di pompe ferme alla fine del ricircolo
-//			manageAlarmBadPinchPos();   // allarme di pinch posizionate correttamente
-//			manageAlarmPrimSFAAirDet();
-//			manageAlarmActuatorModbusNotRespond();
-//			manageAlarmActuatorWRModbusNotRespond();
-//			manageAlarmFromProtective();
 			break;
 
 		case STATE_WAIT_TREATMENT:
@@ -2174,21 +2545,6 @@ void CalcWarningActive(void)
 		case STATE_EMPTY_DISPOSABLE_1:
 		{
 			manageWarningPhysicPressSensHigh();
-
-//			manageAlarmFlowSensNotDetected();
-//			manageAlarmIrTempSensNotDetected();
-//
-//			manageAlarmPhysicPressSensHigh();
-//			manageAlarmPhysicUFlowSens();
-//			manageAlarmSAFAirSens();
-//			manageAlarmPhysicUFlowSensVen();
-//			if(GetTherapyType() == LiverTreat)
-//				manageAlarmCoversPumpLiver();
-//			else if(GetTherapyType() == KidneyTreat)
-//				manageAlarmCoversPumpKidney();
-//			manageAlarmActuatorModbusNotRespond();
-//			manageAlarmActuatorWRModbusNotRespond();
-//			manageAlarmFromProtective();
 			break;
 		}
 
@@ -2498,23 +2854,6 @@ void WrnLisStateAlways(void)
 
 void warningsEngineAlways(void)
 {
-//	static int WrnLisStateArr_id = 0;
-//	static int WarningCheckPresc = 0; // il prescaler serve per la eventuale gestione differenziata dell'allarme
-//
-//	WarningCheckPresc++;
-//	if(WarningCheckPresc >= ALARM_CHECK_PRESCALER)
-//	{
-//		WarningCheckPresc = 0;
-//		CurrWrnLisStateArrdx = WrnLisStateArr_id;
-//
-//		WrnLisStateAlways();
-//
-//		WrnLisStateArr_id++;
-//		if(WrnLisStateArr_id >= MAX_NUM_WARNING)
-//			WrnLisStateArr_id = 0;
-//	}
-
-
 	int i;
 	for(i = 0; i < MAX_NUM_WARNING; i++)
 	{
@@ -2526,22 +2865,6 @@ void warningsEngineAlways(void)
 
 void warningManageNull(void)
 {
-//	if(elapsedEntryTimeWrn[CurrWrnLisStateArrdx] == 0)
-//	{
-//		// faccio in modo che il primo valore calcolato di elapsedEntryTimeWrn[CurrWrnLisStateArrdx] sia
-//		// subito != 0 altrimenti passerebbe sempre qui
-//		elapsedEntryStartTimeWrn[CurrWrnLisStateArrdx] = timerCounterModBus - 1;
-//	}
-//	if(elapsedExitStartTimeWrn[CurrWrnLisStateArrdx] == 0)
-//	{
-//		// faccio in modo che il primo valore calcolato di elapsedExitTimeWrn[CurrWrnLisStateArrdx] sia
-//		// subito != 0 altrimenti passerebbe sempre qui
-//		elapsedExitStartTimeWrn[CurrWrnLisStateArrdx] = timerCounterModBus - 1;
-//	}
-//
-//	elapsedEntryTimeWrn[CurrWrnLisStateArrdx] = msTick_elapsed(elapsedEntryStartTimeWrn[CurrWrnLisStateArrdx]) * 50L;
-//	elapsedExitTimeWrn[CurrWrnLisStateArrdx] = msTick_elapsed(elapsedExitStartTimeWrn[CurrWrnLisStateArrdx]) * 50L;
-
 	elapsedEntryTimeWrn[CurrWrnLisStateArrdx] = elapsedEntryTimeWrn[CurrWrnLisStateArrdx] + 50;
 	elapsedExitTimeWrn[CurrWrnLisStateArrdx] = elapsedExitTimeWrn[CurrWrnLisStateArrdx] + 50;
 	if(IsWarningElem(ptrWarningCurrent_new) && (ptrWarningCurrent_new->active != ACTIVE_TRUE) &&
@@ -3108,6 +3431,7 @@ void ResetWarninigWithCode(uint16_t code)
 	DeleteFromWarningCodeArray(code);
 	// cancello dalla lista di ricerca (MAX_NUM_WARNING elementi) degli allarmi
 	ResetWarningFromList(code);
+	ResetFromUserReceived(code);
 }
 
 
@@ -3179,100 +3503,6 @@ void ResetAlarmWithCode(uint16_t code)
 	// cancello dalla lista di ricerca (MAX_NUM_ALARM elementi) degli allarmi
 	ResetAlarmFromList(code);
 }
-
-
-// devo chiamarla quando mi arriva un comando di reset allarme da utente
-// se ritorna true vuol dire che il reset può essere lasciato transitare alla
-// macchina a stati, altrimenti devo visualizzare l'allarme successivo
-//bool ResetAlmHandleFunc(uint16_t code)
-//{
-//	bool ResetGoToProc = FALSE;
-//	int ival;
-//
-//	if(code == 0xffff)
-//	{
-//		ResetGoToProc = TRUE;
-//		return ResetGoToProc;
-//	}
-//
-//	if(AmJInAlarmState())
-//	{
-//		// se e' una warning la resetto altrimenti non faccio niente
-//		//ResetWarninigWithCode(code);
-//		// se e' una allarme lo resetto altrimenti non faccio niente
-//		ResetAlarmWithCode(code);
-//		if(GetTotNumAlarm())
-//		{
-//			ResetGoToProc = FALSE;
-//			ival = GetNextAlarmFromList();
-//			if(ival == -1)
-//			{
-//				// qualcosa non va, questo non e' possibile
-//			}
-//		}
-//		else if(GetTotNumWarning())
-//		{
-////			memset(&alarmCurrent,  0, sizeof(alarmCurrent));
-////			currentGuard[GUARD_ALARM_ACTIVE].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
-////			currentGuard[GUARD_ALARM_ACTIVE].guardValue = GUARD_VALUE_FALSE;
-////			ptrAlm = &alarmList[ListOf_AlarmListStrctPos[i]];
-////			ptrAlm->active = ACTIVE_FALSE;
-////			// devo azzerare anche GUARD_ALARM_.....
-////			// altrimenti mi rimane settato
-////			manageAlarmChildGuard(ptrAlm);
-//
-//			AtLeastoneButResRcvd = TRUE;
-//			ResetGoToProc = TRUE;
-//			ival = GetNextWarningFromList();
-//			if(ival == -1)
-//			{
-//				// qualcosa non va, questo non e' possibile
-//			}
-//		}
-//		else
-//		{
-//			// non ci sono piu' allarmi o warning posso resettare anche le ultime variabili
-//			ptrAlarmCurrent = 0;
-//			ptrAlarmCurrent_new = 0;
-//			AlmLisStateArrFirstWrnPos = 0xff;
-//			CurrAlmLisStateArrdx = 0;
-//			ptrWarningCurrent = 0;
-//			ptrWarningCurrent_new = 0;
-//			WrnLisStateArrFirstWrnPos = 0xff;
-//			CurrWrnLisStateArrdx = 0;
-//			memset(&alarmCurrent, 0, sizeof(struct alarm));
-//
-//			// forzo uscita dallo stato di allarme
-//			currentGuard[GUARD_ALARM_ACTIVE].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
-//			ResetGoToProc = TRUE;
-//		}
-//	}
-//	else
-//	{
-//		ResetWarninigWithCode(code);
-//		if(GetTotNumWarning())  //IsWarningElem(struct alarm * ptrAlmArrElem))
-//		{
-////			memset(&alarmCurrent,  0, sizeof(alarmCurrent));
-////			currentGuard[GUARD_ALARM_ACTIVE].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
-////			currentGuard[GUARD_ALARM_ACTIVE].guardValue = GUARD_VALUE_FALSE;
-//			ResetGoToProc = FALSE;
-//			//if(alarmCurrent.code == warningCurrent.code)
-//			// se e' una warning la resetto altrimenti non faccio niente
-//			ival = GetNextWarningFromList();
-//			if(ival == -1)
-//			{
-//				// qualcosa non va, questo non e' possibile
-//			}
-//		}
-//		else
-//		{
-//			// non sono in uno stato di allarme quindi il reset puo' essere inviato alla macchina a stati
-//			ResetGoToProc = TRUE;
-//		}
-//	}
-//	return ResetGoToProc;
-//}
-
 
 bool ResetAlmHandleFunc(uint16_t code)
 {

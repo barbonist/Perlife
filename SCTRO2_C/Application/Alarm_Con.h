@@ -15,7 +15,7 @@
 //#define CODE_ALARM2		0x02
 //#define ALARM_ACTIVE_IN_STRUCT					31
 // Filippo - aggiunto allarme tasto di stop e allarme T1
-#define ALARM_ACTIVE_IN_STRUCT					37//34
+#define ALARM_ACTIVE_IN_STRUCT					40
 #define CODE_ALARM_PRESS_ART_HIGH				0X01
 #define CODE_ALARM_PRESS_ART_LOW				0X02
 #define CODE_ALARM_PRESS_VEN_HIGH				0X03
@@ -77,7 +77,7 @@
 #define CODE_ALARM_BAD_PINCH_POS                0x92
 
 // Filippo - definisco codice allarme per il tasto di stop
-#define CODE_ALARM_EMERGENCY_BUTTON  				0x93
+#define CODE_ALARM_EMERGENCY_BUTTON             0x93
 #define CODE_ALARM_TEST_T1		  				0x94
 #define CODE_ALARM_AIR_SENSOR_TEST_KO			0x95
 
@@ -90,6 +90,12 @@
 
 // da qui in avanti i codici delle warning
 #define CODE_ALARM_PRESS_ADS_FILTER_WARN		0X105
+
+// warning pompa di depurazione ferma
+#define CODE_ALARM_DEP_PUMP_STILL_WARN		    0x106
+// warning di pompa arteriosa ferma (valido per rene e fegato)
+#define CODE_ALARM_PERF_ART_PUMP_STILL_WARN		0x107
+#define CODE_ALARM_OXYG_PUMP_STILL_WARN         0x108
 
 
 #define	PHYSIC_TRUE		0xA5
@@ -208,8 +214,10 @@ enum ALARM
      ARTERIAL_RESIST_HIGH,
 
 	 // da qui in avanti i codici delle warning
-	 PRESS_ADS_FILTER_WARN
-
+	 PRESS_ADS_FILTER_WARN,
+	 DEP_PUMP_STILL_WARN,
+	 PERF_ART_PUMP_STILL_WRN,
+	 OXYG_PUMP_STILL_WRN
 };
 
 void alarmConInit(void);
@@ -279,6 +287,7 @@ bool IsAlarmActive(void);
 bool IsAlarmCodeActive(uint16_t code);
 
 void warningConInit(void);
+void InitWarningsStates(void);
 void EnableNextWarningFunc(void);
 void warningsEngineAlways(void);
 void warningManageNull(void);
@@ -291,6 +300,24 @@ void manageCover_Hook_Sensor(void);
 bool ResetAlmHandleFunc(uint16_t code);
 
 #define START_WARNING_CODE		255
+
+//----------------------------------------------------------------------------------------------------------
+typedef enum
+{
+	WRN_INIT,
+	WRN_CONTROL,
+	WRN_CONTROL_DELAY,
+	WRN_WAIT_END_ALARM,
+	WRN_WAIT_LOWER_LEV
+}WARNING_STATE;
+
+#define PR_ADS_FILTER_WARN_LOWER_LEV    90
+// tempo di pompa depurazione ferma prima di dare la warning in msec
+#define DEPURATION_PUMP_STILL_TOUT  120000
+// valore di velocita' al di sotto della quale considero la pompa ferma
+#define PUMP_STOPPED_SPEED_VAL 1
+
+
 // durata della resistenza arteriosa alta prima di scattare l'allarme
 #define ART_RES_HIGH_TOUT_MSEC 10000
 // tempo necessario per far scattare l'allarme

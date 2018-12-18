@@ -330,6 +330,7 @@ int main(void)
 
   alarmConInit();
   warningConInit();
+  InitWarningsStates();
   initPerfusionParam();
   initPurifParam();
 
@@ -759,8 +760,7 @@ int main(void)
 					 stopPeltier2Actuator();
 #endif
 
-				 //if(ptrCurrentState->state == STATE_TREATMENT_KIDNEY_1)
-					 perfusionParam.pulsatility = (word)pumpPerist[0].actualSpeed * 2;
+				 perfusionParam.pulsatility = (word)(modbusData[pumpPerist[0].pmpMySlaveAddress-2][17] / 100) * 2;
 		     }
 
 	         /********************************/
