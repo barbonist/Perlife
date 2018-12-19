@@ -265,6 +265,20 @@ void onNewPinchVal(uint8_t AirFiltStat, uint16_t AlarmCode,
 	TxCan3.STxCan3.FilterPinchPos = Pinch2WPVF;
 	TxCan3.STxCan3.ArtPinchPos = Pinch2WPVA;
 	TxCan3.STxCan3.OxygPinchPos = Pinch2WPVV;
+	/* Aggingo l'informnazione della posizione della pinch
+	 * letta dal driver tramite la matrice globale modbusData;
+	 * la posizione settata (Pinch2WPVF -- Pinch2WPVA -- Pinch2WPVV)
+	 * si sposta nel nibble più alto del byte e nel nubble più
+	 * basso metto la posizione inviatami dal driver*/
+	TxCan3.STxCan3.FilterPinchPos  = TxCan3.STxCan3.FilterPinchPos << 4 ;
+	TxCan3.STxCan3.FilterPinchPos |= (modbusData[4][0] & 0x0F); // in modbusData[4][0] ho la posizione della pinch filtro inviatami dal driver
+
+	TxCan3.STxCan3.ArtPinchPos  = TxCan3.STxCan3.ArtPinchPos << 4 ;
+	TxCan3.STxCan3.ArtPinchPos |= (modbusData[5][0] & 0x0F); // in modbusData[5][0] ho la posizione della pinch arteriosa inviatami dal driver
+
+	TxCan3.STxCan3.OxygPinchPos  = TxCan3.STxCan3.OxygPinchPos << 4 ;
+	TxCan3.STxCan3.OxygPinchPos |= (modbusData[6][0] & 0x0F); // in modbusData[6][0] ho la posizione della pinch venosa/oxy inviatami dal driver
+
 	TxCan3.STxCan3.Free1 = free1;
 	TxCan3.STxCan3.Free2 = free2;
 }
@@ -362,7 +376,12 @@ void onNewCanBusMsg11( CANBUS_MSG_11 ReceivedCanBusMsg11);
 void onNewCanBusMsg12(CANBUS_MSG_12 ReceivedCanBusMsg12);
 // Filippo - gestione della ricezione del messaggio CAN dalla protective contenente il valore di temperatura del piatto come letto
 // dalla protective stessa
-void onNewCanBusMsg13(CANBUS_MSG_13 ReceivedCanBusMsg13);
+void onNewCanBusMsg14(CANBUS_MSG_14 ReceivedCanBusMsg14);
+
+uint16_t GetAlarmCodeProt(void)
+{
+	return (RxBuffCanP[2]->SRxCan2.AlarmCode);
+}
 
 void ReceivedCanData(uint8_t *rxbuff, int rxlen, int RxChannel)
 {
@@ -370,7 +389,7 @@ void ReceivedCanData(uint8_t *rxbuff, int rxlen, int RxChannel)
 	CANBUS_MSG_10 TempCanBusMsg10;
 	CANBUS_MSG_11 TempCanBusMsg11;
 	CANBUS_MSG_12 TempCanBusMsg12;
-	CANBUS_MSG_13 TempCanBusMsg13;
+	CANBUS_MSG_14 TempCanBusMsg14;
 
 	RetriggerAlarm();
 	if(( rxlen <= 8 ) && (RxChannel >= 8) /*>= 8) && (RxChannel <= 15)*/){
@@ -416,14 +435,14 @@ void ReceivedCanData(uint8_t *rxbuff, int rxlen, int RxChannel)
 			// Filippo gestita la ricezione del messaggio CAN che mi da il valore della temperatura letta sul piatto dalla protective
 			if( RxChannel == 13)
 			{
-				TempCanBusMsg13.free1 = RxBuffCanP[RxChannel-8]->SRxCan5.Free1;
-				TempCanBusMsg13.free2 = RxBuffCanP[RxChannel-8]->SRxCan5.Free2;
-				TempCanBusMsg13.tempPlateP = RxBuffCanP[RxChannel-8]->SRxCan5.tempPlateP;
-				TempCanBusMsg13.free3 = RxBuffCanP[RxChannel-8]->SRxCan5.Free5;
-				TempCanBusMsg13.free4 = RxBuffCanP[RxChannel-8]->SRxCan5.Free6;
-				TempCanBusMsg13.free5 = RxBuffCanP[RxChannel-8]->SRxCan5.Free7;
-				TempCanBusMsg13.free6 = RxBuffCanP[RxChannel-8]->SRxCan5.Free8;
-				onNewCanBusMsg13(TempCanBusMsg13);
+				TempCanBusMsg14.free1 = RxBuffCanP[RxChannel-8]->SRxCan5.Free1;
+				TempCanBusMsg14.free2 = RxBuffCanP[RxChannel-8]->SRxCan5.Free2;
+				TempCanBusMsg14.tempPlateP = RxBuffCanP[RxChannel-8]->SRxCan5.tempPlateP;
+				TempCanBusMsg14.free3 = RxBuffCanP[RxChannel-8]->SRxCan5.Free5;
+				TempCanBusMsg14.free4 = RxBuffCanP[RxChannel-8]->SRxCan5.Free6;
+				TempCanBusMsg14.free5 = RxBuffCanP[RxChannel-8]->SRxCan5.Free7;
+				TempCanBusMsg14.free6 = RxBuffCanP[RxChannel-8]->SRxCan5.Free8;
+				onNewCanBusMsg14(TempCanBusMsg14);
 			}
 
 		//}

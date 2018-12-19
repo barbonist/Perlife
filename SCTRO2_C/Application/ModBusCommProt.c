@@ -1821,8 +1821,9 @@ void Manage_and_Storage_ModBus_Actuator_Data(void)
 	  static unsigned long timerCounterModBusReadDur = 0;
 	  static unsigned char LastActuatslvAddr = 0;  // indirizzo dell'ultima pompa o pinch  che ho usato in Check_Actuator_Status
 	  word 			readAddrStart		 		= 0x0010;
+	  word 			readAddrStartPinch		    = 0x0000; //per la pinch inizio a leggere dallaa prima word per leggere anche la prima in cui c'è la posizione
 	  unsigned char numberOfAddressCheckPump	= 0x03;
-	  unsigned char numberOfAddressCheckPinch	= 0x02;
+	  unsigned char numberOfAddressCheckPinch	= 0x12; //leggo 18 byte per leggere anche la prima in cui c'è la posizione
 	  unsigned char funcCode 					= 0x03;
 #ifdef PUMP_EVER
 	  unsigned char numberOfAddressCheckPumpEver = 0x0A;//0x05;//0x03;
@@ -1900,7 +1901,7 @@ void Manage_and_Storage_ModBus_Actuator_Data(void)
 		else
 		{
 			/*funzione che mi legge lo stato delle pinch*/
-			Check_Actuator_Status (slvAddr,funcCode,readAddrStart,numberOfAddressCheckPinch);
+			Check_Actuator_Status (slvAddr,funcCode,readAddrStartPinch,numberOfAddressCheckPinch);
 			LastActuatslvAddr = slvAddr;
 		}
 
@@ -1924,7 +1925,7 @@ void StorageModbusData(unsigned char LastActuatslvAddr)
 	/*in questa funzione suppongo di usare sempre il msgToRecvFrame3 in quanto usata solo per messaggi di stato e non di impostazione
 	 * ecco perchè posso fare Address = msgToRecvFrame3[0] e funCode = msgToRecvFrame3[1]*/
 #ifdef PUMP_EVER
-	unsigned char dataTemp[TOT_DATA_MODBUS_RECEIVED_PUMP_EVER];
+	unsigned char dataTemp [MAX_DATA_MODBUS_RX]; //[TOT_DATA_MODBUS_RECEIVED_PUMP_EVER];
 #else
 	unsigned char dataTemp[TOT_DATA_MODBUS_RECEIVED_PUMP];
 #endif
@@ -1934,6 +1935,7 @@ void StorageModbusData(unsigned char LastActuatslvAddr)
 				  Pump_Status			 = 0,
 				  Pinch_Average_Current  = 0,
 				  Pinch_Status			 = 0,
+				  Pinch_Position_Read	 = 0,
 				  Pump_Ever_Acceleration = 0,
 				  Pump_Ever_Error        = 0;
 
@@ -1977,7 +1979,7 @@ void StorageModbusData(unsigned char LastActuatslvAddr)
 	{
 		Tot_ModBus_Data_RX = TOT_DATA_MODBUS_RECEIVED_PINCH;
 		CRC_CALC = ComputeChecksum(ptr_msg, TOT_DATA_MODBUS_RECEIVED_PINCH -2);
-		CRC_RX = BYTES_TO_WORD(msgToRecvFrame3[8], msgToRecvFrame3[7]);
+		CRC_RX = BYTES_TO_WORD(msgToRecvFrame3[40], msgToRecvFrame3[39]);
 	}
 	else
 	{
@@ -2050,8 +2052,9 @@ void StorageModbusData(unsigned char LastActuatslvAddr)
 	else if (Address >= FIRST_PINCH && Address <= LAST_ACTUATOR)
 	{
 		/*devo trasfomare i dati ricevuti da byte in word*/
-		Pinch_Average_Current = BYTES_TO_WORD(dataTemp[3], dataTemp[4]);
-		Pinch_Status	 	  = BYTES_TO_WORD(dataTemp[5], dataTemp[6]);
+		Pinch_Position_Read   = BYTES_TO_WORD(dataTemp[3], dataTemp[4]);
+		Pinch_Average_Current = BYTES_TO_WORD(dataTemp[35], dataTemp[36]);
+		Pinch_Status	 	  = BYTES_TO_WORD(dataTemp[37], dataTemp[38]);
 	}
 
 	    /* uso l'Address come indice per la matrice
@@ -2089,6 +2092,7 @@ void StorageModbusData(unsigned char LastActuatslvAddr)
 	 -* e le pinch hano addres  7-8-9  */
 		else if (Address >= FIRST_PINCH && Address <= LAST_ACTUATOR)
 		{
+			modbusData[Address-3][0] = Pinch_Position_Read;
 			modbusData[Address-3][16]= Pinch_Average_Current;
 			modbusData[Address-3][17]= Pinch_Status;
 			/*azzero per quello slave il contatore di messaggi

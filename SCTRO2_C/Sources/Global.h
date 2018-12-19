@@ -113,7 +113,7 @@ char    iFlag_modbusDataStorage;
 #define TOTAL_ACTUATOR				7
 #define TOTAL_MODBUS_DATA			32
 #define TOT_DATA_MODBUS_RECEIVED_PUMP	11
-#define TOT_DATA_MODBUS_RECEIVED_PINCH	9
+#define TOT_DATA_MODBUS_RECEIVED_PINCH	41 //9 modificato per aggiunta della lettura della prima word delle pinch e quindi di 18 word totali
 #define MAX_DATA_MODBUS_RX 		    67 //64byte di dati + 3 byte iniziali con slv Addr, fun code and byte Read Count
 
 /*valori di GAIN e OFFSET ricalcolati con in data 19-6-2018 con pt100 in classe A poggiata sulla piastra:
@@ -2071,7 +2071,7 @@ typedef struct
 	unsigned char  free4;
 	unsigned char  free5;
 	unsigned char  free6;
-}CANBUS_MSG_13;
+}CANBUS_MSG_14;
 
 
 //-------------------------------------------------------------------------------

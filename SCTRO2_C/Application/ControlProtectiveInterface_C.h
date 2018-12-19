@@ -33,5 +33,7 @@ extern uint16_t *SpeedPump2Rpmx10;
 extern uint16_t *SpeedPump3Rpmx10;
 extern uint16_t *SpeedPump4Rpmx10;
 
+uint16_t GetAlarmCodeProt(void);
+
 
 #endif /* CONTROLPROTECTIVEINTERFACE_H_ */

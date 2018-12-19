@@ -38,7 +38,7 @@ CANBUS_MSG_10 CanBusMsg10;
 CANBUS_MSG_11 CanBusMsg11;
 CANBUS_MSG_12 CanBusMsg12;
 // Filippo - gestione della ricezione del messaggio CAN che trasmette il valore della temperatura di piatto come letto dalla protective
-CANBUS_MSG_13 CanBusMsg13;
+CANBUS_MSG_14 CanBusMsg14;
 
 
 void InitTest(void)
@@ -105,16 +105,16 @@ void onNewCanBusMsg12(CANBUS_MSG_12 ReceivedCanBusMsg12)
 
 // Filippo - gestione della ricezione del messaggio CAN dalla protective contenente il valore di temperatura del piatto come letto
 // dalla protective stessa
-void onNewCanBusMsg13(CANBUS_MSG_13 ReceivedCanBusMsg13)
+void onNewCanBusMsg14(CANBUS_MSG_14 ReceivedCanBusMsg14)
 {
-	CanBusMsg13 = ReceivedCanBusMsg13;
+	CanBusMsg14 = ReceivedCanBusMsg14;
 }
 
 // Filippo - gestione della ricezione del messaggio CAN dalla protective contenente il valore di temperatura del piatto come letto
 // dalla protective stessa
 float getValTempPlateProt(void)
 {
-	return (float)CanBusMsg13.tempPlateP/10.0;
+	return (float)CanBusMsg14.tempPlateP/10.0;
 }
 
 // posizione delle pinch prima di collegare l'organo
