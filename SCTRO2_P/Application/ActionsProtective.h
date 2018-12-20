@@ -23,6 +23,11 @@ void Enable_Pump_OXY(bool status);
 void Enable_Pinch_Filter(bool status);
 void Enable_Pinch_Arterial(bool status);
 void Enable_Pinch_Venous(bool status);
+
+bool Pinch_Filter_IsEnabled(void);
+bool Pinch_Arterial_IsEnabled(void);
+bool Pinch_Venous_IsEnabled(void);
+
 void Enable_Heater(bool status);
 void Enable_Frigo (bool status);
 

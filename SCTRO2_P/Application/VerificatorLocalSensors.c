@@ -315,7 +315,6 @@ void VerifyVenousPressure(uint16_t  Value)
 		HighVenousPressAlarmTimer.AlarmConditionPending = true;
 	else
 		HighVenousPressAlarmTimer.AlarmConditionPending = false;
-
 }
 
 #ifdef TEMPERATURE_SENSORS_AVAILABLE

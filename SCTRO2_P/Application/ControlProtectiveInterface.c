@@ -252,12 +252,13 @@ void onNewPressArt(uint16_t  Value)		{  }
 
 void TxAlarmCode( uint16_t AlarmCode)
 {
+	TxCan2.STxCan2.AlarmCode = AlarmCode;
 	// alarm code can be written just once
-	if(TxCan2.STxCan2.AlarmCode ==  CODE_ALARM_NO_ERROR	) // quick and dirty solution. A single severe alarm can be issued , then a machine reset is needed.
-		TxCan2.STxCan2.AlarmCode = AlarmCode;
-	// reset alarm allowed anyway
-	if( AlarmCode ==  CODE_ALARM_NO_ERROR )
-		TxCan2.STxCan2.AlarmCode = AlarmCode;
+//	if(TxCan2.STxCan2.AlarmCode ==  CODE_ALARM_NO_ERROR	) // quick and dirty solution. A single severe alarm can be issued , then a machine reset is needed.
+//		TxCan2.STxCan2.AlarmCode = AlarmCode;
+//	// reset alarm allowed anyway
+//	if( AlarmCode ==  CODE_ALARM_NO_ERROR )
+//		TxCan2.STxCan2.AlarmCode = AlarmCode;
 }
 
 void onNewPressOxygen(uint16_t Value)

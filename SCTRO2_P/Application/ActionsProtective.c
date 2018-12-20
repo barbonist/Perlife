@@ -264,12 +264,13 @@ void Enable_Pump_OXY(bool status)
 #endif
 }
 
+
 void Enable_Pinch_Filter(bool status)
 {
 #ifndef NO_DISABLE_FORTEST
-	if (status && !EN_CLAMP_P_1_GetVal())
+	if (status && !EN_CLAMP_P_1_GetVal()){
 		EN_CLAMP_P_1_SetVal();
-
+	}
 	if (!status && EN_CLAMP_P_1_GetVal())
 		EN_CLAMP_P_1_ClrVal();
 #else
@@ -277,6 +278,7 @@ void Enable_Pinch_Filter(bool status)
 #endif
 
 }
+
 
 void Enable_Pinch_Arterial(bool status)
 {
@@ -303,6 +305,25 @@ void Enable_Pinch_Venous(bool status)
 	EN_CLAMP_P_3_SetVal();
 #endif
 }
+
+
+bool Pinch_Filter_IsEnabled(void)
+{
+	return EN_CLAMP_P_1_GetVal();
+}
+
+
+bool Pinch_Arterial_IsEnabled(void)
+{
+	return EN_CLAMP_P_2_GetVal();
+}
+
+
+bool Pinch_Venous_IsEnabled(void)
+{
+	return EN_CLAMP_P_3_GetVal();
+}
+
 
 //#define DISABLE_HEATER_FRIGO_CONTROL
 #undef DISABLE_HEATER_FRIGO_CONTROL

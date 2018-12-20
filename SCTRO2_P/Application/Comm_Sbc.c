@@ -208,13 +208,13 @@ void buildPressSensReadValuesResponseMsg(char *ptrMsgSbcRx)
 /*19*/	sbc_tx_data[index++] = (PR_ADS_FLT_ADC_Filtered >> 8)  & 0xFF;
 /*20*/	sbc_tx_data[index++] = PR_ADS_FLT_ADC_Filtered  & 0xFF;
 
-/*21*/  sbc_tx_data[index++] = 0;//(MedForVenousPid >> 8)  & 0xFF;
-/*22*/	sbc_tx_data[index++] = 0;//(MedForVenousPid)  & 0xFF;
+/*21*/  sbc_tx_data[index++] = ( PR_VEN_mmHg_Filtered	 >> 8)  & 0xFF;
+/*22*/	sbc_tx_data[index++] =  PR_VEN_mmHg_Filtered & 0xFF;
 /*23*/	sbc_tx_data[index++] = (PR_VEN_ADC_Filtered >> 8)  & 0xFF;
 /*24*/	sbc_tx_data[index++] = PR_VEN_ADC_Filtered  & 0xFF;
 
-/*25*/	sbc_tx_data[index++] = 0;//(MedForArteriousPid >> 8)  & 0xFF;
-/*26*/	sbc_tx_data[index++] = 0;//MedForArteriousPid  & 0xFF;
+/*25*/	sbc_tx_data[index++] = ( PR_ART_mmHg_Filtered	 >> 8)  & 0xFF;
+/*26*/	sbc_tx_data[index++] = PR_ART_mmHg_Filtered  & 0xFF;
 /*27*/	sbc_tx_data[index++] = (PR_ART_ADC_Filtered >> 8)  & 0xFF;
 /*28*/	sbc_tx_data[index++] = PR_ART_ADC_Filtered  & 0xFF;
 

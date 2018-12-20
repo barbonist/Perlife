@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
+#include <stdio.h>
 #include "stdint.h"
 #include "SwTimer.h"
 #include "Global.h"
@@ -19,6 +20,7 @@
 #include "HEAT_ON_P.h"
 #include "ActionsProtective.h"
 #include "IncomingAlarmsManager.h"
+#include "PC_DEBUG_COMM.h"
 
 //
 // TimerCounter increased each 100ms .
@@ -279,6 +281,9 @@ void VerifyRxState(uint16_t State, uint16_t Parent, uint16_t Child,
 
 }
 
+void DebugString(bool escpressed, uint16_t val1 ,  uint16_t val2);
+bool EscCharReceived(void);
+
 void VerifyRxPressures(uint16_t PressFilter, uint16_t PressArt, uint16_t PressVen, uint16_t PressLevelx100, uint16_t PressOxy )
 {
 //uint16_t *pressFilter_p, *pressArt_p,  *pressVen_p,  *pressLevelx100_p ,  *pressOxy_p;
@@ -291,6 +296,14 @@ uint16_t pressFilter, pressArt,  pressVen,  pressLevelx100 ,  pressOxy;
 	PressVenMismatchAlarmTimer.AlarmConditionPending = ValueIsInRange(pressVen, PressVen, 20) ? false : true;
 	PressLevelMismatchAlarmTimer.AlarmConditionPending = ValueIsInRange(pressLevelx100, PressLevelx100, 200) ? false : true;
 	PressOxyMismatchAlarmTimer.AlarmConditionPending = ValueIsInRange(pressOxy, PressOxy, 20) ? false : true;
+
+	if( PressFilterMismatchAlarmTimer.AlarmConditionPending || PressArtMismatchAlarmTimer.AlarmConditionPending ||
+			PressVenMismatchAlarmTimer.AlarmConditionPending || PressOxyMismatchAlarmTimer.AlarmConditionPending){
+		int DebugVal = 0x55;
+	}
+
+	// debug
+	DebugString(EscCharReceived() , PressVen , pressVen );
 }
 
 void VerifyRxTemperatures(uint16_t TempArtx10, uint16_t TempFluidx10, uint16_t TempVenx10, uint16_t TempPlatex10)
@@ -312,23 +325,119 @@ void VerifyRxAirAlarm( uint8_t RxAirAlarm )
 	// air alarm , don't know what to do since we have no dedicated air alarm input
 }
 
+
+// Nel messaggio can inviato da Control a Protective saranno presenti 2 informazioni per ogni PINCH:
+// - La posizione reale della pinch : POS_RE_CONTROL ( LS nibble )
+// - La posizione comandata dalla Control tramite il modbus :POS_CMD  ( MS nibble)
+//
+// La posizione letta dalla protective è POS_RE_PROTE ( letta dai sensori di hall )
+//
+// Algoritmo sulla protective:
+// -(PinchVerifierStat = 1)  ENABLE_PINCH = ON :   POS_RE e POS_CMD devono corrispondere tra loro e devono corrispondere con il valore rilevato dalla protective stessa mediante i sensori di Hall.
+//   Se non corrispondono --> Allarme
+//
+// -(PinchVerifierStat = 2) ENABLE_PINCH = OFF :   POS_RE_CONTROL e POS_RE_PROTE devono corrispondere . Non valutare POS_CMD perchè sopravanzato da ENABLE= OFF.
+// - se dopo ENABLE_PINC = OFF , torna ENABLE_PINCH = ON vai a (PinchVerifierStat = 3)
+//
+// -(PinchVerifierStat = 3)
+// COntinua a comportarsi come quando ENABLE_PINCH = OFF fino a quando si verifica un nuovo comando che riporta allo stato (PinchVerifierStat = 1)
+//
+// tutto questo per ogni pinch
+
+int Pinch0VerifierStat = 0;
+int Pinch1VerifierStat = 0;
+int Pinch2VerifierStat = 0;
+
+int OldCtrlPinch0_cmd = 0;
+int OldCtrlPinch1_cmd = 0;
+int OldCtrlPinch2_cmd = 0;
+
+
+bool CheckAPinch(int* PinchVerifierStat , uint8_t CtrlPinch_pos, uint8_t CtrPinch_cmd , uint8_t OldCtrPinch_cmd , uint8_t LocPinchPos , bool PinchEnabled);
+
 void VerifyRxPinchPos( uint8_t Pinch0Pos , uint8_t Pinch1Pos ,  uint8_t Pinch2Pos)
 {
+
+uint8_t CtrlPinch0_cmd, CtrlPinch1_cmd, CtrlPinch2_cmd;
+uint8_t CtrlPinch0_pos, CtrlPinch1_pos, CtrlPinch2_pos;
 uint8_t Locpinch0_pos, Locpinch1_pos , Locpinch2_pos;
 
 bool Pinch0Ok = true;
 bool Pinch1Ok = true;
 bool Pinch2Ok = true;
 
+	// extract data from received pinch values
+	CtrlPinch0_cmd = (Pinch0Pos >> 4) & 0x0F;
+	CtrlPinch1_cmd = (Pinch1Pos >> 4) & 0x0F;
+	CtrlPinch2_cmd = (Pinch2Pos >> 4) & 0x0F;
+	CtrlPinch0_pos = Pinch0Pos & 0x0F;
+	CtrlPinch1_pos = Pinch1Pos & 0x0F;
+	CtrlPinch2_pos = Pinch2Pos & 0x0F;
+
 	GetPinchPos( &Locpinch0_pos ,  &Locpinch1_pos , &Locpinch2_pos);
 
-	if (( Pinch0Pos == Locpinch0_pos ) && ( Pinch1Pos == Locpinch1_pos ) && ( Pinch2Pos == Locpinch2_pos )){
+	Pinch0Ok =  CheckAPinch( &Pinch0VerifierStat , CtrlPinch0_pos, CtrlPinch0_cmd, OldCtrlPinch0_cmd,  Locpinch0_pos , Pinch_Filter_IsEnabled());
+	OldCtrlPinch0_cmd = CtrlPinch0_cmd;
+	Pinch1Ok =  CheckAPinch( &Pinch1VerifierStat , CtrlPinch1_pos, CtrlPinch1_cmd, OldCtrlPinch1_cmd, Locpinch1_pos , Pinch_Arterial_IsEnabled());
+	OldCtrlPinch1_cmd = CtrlPinch1_cmd;
+	Pinch2Ok =  CheckAPinch( &Pinch2VerifierStat , CtrlPinch2_pos, CtrlPinch2_cmd, OldCtrlPinch1_cmd, Locpinch2_pos , Pinch_Venous_IsEnabled());
+	OldCtrlPinch2_cmd = CtrlPinch2_cmd;
+
+	if ( Pinch0Ok && Pinch1Ok && Pinch2Ok ){
 		PinchMismatchAlarmTimer.AlarmConditionPending = false;
 	}
 	else{
 		PinchMismatchAlarmTimer.AlarmConditionPending = true;
 	}
 }
+
+
+
+bool CheckAPinch(int* PinchVerifierStat , uint8_t CtrlPinch_pos, uint8_t CtrlPinch_cmd , uint8_t OldCtrlPinch_cmd , uint8_t Locpinch_pos , bool PinchEnabled)
+{
+bool PinchOk;
+
+	switch(*PinchVerifierStat)
+	{
+	case 1:
+		// pinch should be enabled
+		if(( CtrlPinch_pos == Locpinch_pos ) && ( CtrlPinch_pos == CtrlPinch_cmd ))
+			PinchOk = true;
+		else
+			PinchOk = false;
+
+		// check if status should be changed
+		if(!PinchEnabled){
+			*PinchVerifierStat = 2;
+		}
+		break;
+	case 2:
+		// pinch disabled
+		if( CtrlPinch_pos == CtrlPinch_cmd )
+			PinchOk = true;
+		else
+			PinchOk = false;
+		// check if status should be changed
+		if(PinchEnabled)
+			*PinchVerifierStat = 3;
+		break;
+	case 3:
+		// pinch reenabled but wait new command from
+		if( CtrlPinch_pos == CtrlPinch_cmd )
+			PinchOk = true;
+		else
+			PinchOk = false;
+		// check if status should be changed
+		if( !PinchEnabled )
+			*PinchVerifierStat = 2;
+		else if(CtrlPinch_cmd != OldCtrlPinch_cmd)
+			// new command issued by control to pinch
+			*PinchVerifierStat = 3;
+		break;
+	}
+	return PinchOk;
+}
+
 
 
 void VerifyRxPumpsRpm(uint16_t SpeedPump0Rpmx100, uint16_t SpeedPump1Rpmx100,
@@ -360,8 +469,11 @@ void ManageRxAlarmCode(uint16_t AlarmCode)
 
 }
 
+bool OldStatusOnline = false;
 void NotifyCanOnline(bool Online)
 {
+	if( OldStatusOnline == Online ) return;
+	OldStatusOnline = Online;
 	CanOfflineAlarmTimer.AlarmConditionPending = !Online;
 	/* le tre righe di codice sotto servono a far si che
 	 * se la PRO ha perso la comunicazione CAN e va in allarme,
@@ -369,9 +481,13 @@ void NotifyCanOnline(bool Online)
 	 * viene rimosso automaticamente senza intervento dell'operatore.
 	 * Se si cambia gestione e si vuole l'intervento di un reset
 	 * dell'operatore allora vanno rimosse*/
-	CanOfflineAlarmTimer.AlarmCounter = 0;
-	CanOfflineAlarmTimer.AlarmActive = false;
-	ShowNewAlarmError(CODE_ALARM_NO_ERROR);
+
+
+	if( Online ){
+		CanOfflineAlarmTimer.AlarmCounter = 0;
+		CanOfflineAlarmTimer.AlarmActive = false;
+		ShowNewAlarmError(CODE_ALARM_NO_ERROR);
+	}
 }
 
 
@@ -399,6 +515,53 @@ bool ValueIsInRange(uint16_t RefValue, uint16_t Val2Test, uint16_t IDelta) {
 //	return ((Val2Test <= max) && (Val2Test >= min));
 
 }
+
+/////////////////////////////////////////////
+// send data on serial debug
+// escpressed true or false
+////////////////////////////////////////////
+int debugstat = 0;
+void DebugString( bool escpressed, uint16_t val1, uint16_t val2)
+{
+    static char stringPtr[200];
+    uint16_t sent_data;
+
+    switch(debugstat){
+    case 0:
+    // idle tx off
+		if( escpressed ) {
+			debugstat = 1;
+			sprintf(stringPtr, "\"sep=,\"\r\n");
+			PC_DEBUG_COMM_SendBlock(stringPtr, strlen(stringPtr), &sent_data);
+			sprintf(stringPtr, "Press Ven Remote [mmHg] ,  Press Ven Local [mmHg]\r\n");
+			PC_DEBUG_COMM_SendBlock(stringPtr, strlen(stringPtr), &sent_data);
+		}
+    break;
+    case 1:
+    //  tx on
+    	sprintf(stringPtr, "%04u ,  %04u \r\n", val1 , val2);
+    	PC_DEBUG_COMM_SendBlock(stringPtr, strlen(stringPtr) , &sent_data);
+        if( escpressed ) {
+        	debugstat = 0;
+        	sprintf(stringPtr, "-----Stop-----\r\n");
+        	PC_DEBUG_COMM_SendBlock(stringPtr, 11, &sent_data);
+        }
+    break;
+    }
+}
+
+#define ESC 27
+bool EscCharReceived(void)
+{
+uint8_t rxchr;
+
+	if ( PC_DEBUG_COMM_RecvChar(&rxchr) == ERR_OK ){
+		if( rxchr == ESC ) return true;
+		else return false;
+	}
+	return false;
+}
+
 
 
 static void Dummy(void){}

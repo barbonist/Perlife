@@ -366,6 +366,29 @@ int main(void)
 	Aggiornati anche i valori limite per la pressione
 	Temp bassa piastra per allarme , -20
 
+	Versione 1.0.002 20/12/2018
+	- Correzione void NotifyCanOnline(bool Online) nel file VerificatorRxCanValues.c , resettava sempre l'errore
+	- Correzione in Comm_Sbc.c , non inviava il valore della pressione venosa e arteriosa a SBC
+	- Modifica nella gestione dell'errore pinch non corrispondenti:
+
+		 Nel messaggio can inviato da Control a Protective saranno presenti 2 informazioni per ogni PINCH:
+		 - La posizione reale della pinch : POS_RE_CONTROL ( LS nibble )
+		 - La posizione comandata dalla Control tramite il modbus :POS_CMD  ( MS nibble)
+
+		 La posizione letta dalla protective è POS_RE_PROTE ( letta dai sensori di hall )
+
+		Algoritmo sulla protective:
+		 -(PinchVerifierStat = 1)  ENABLE_PINCH = ON :   POS_RE e POS_CMD devono corrispondere tra loro e devono corrispondere con il valore rilevato dalla protective stessa mediante i sensori di Hall.
+		   Se non corrispondono --> Allarme
+
+		 -(PinchVerifierStat = 2) ENABLE_PINCH = OFF :   POS_RE_CONTROL e POS_RE_PROTE devono corrispondere . Non valutare POS_CMD perchè sopravanzato da ENABLE= OFF.
+		 - se dopo ENABLE_PINC = OFF , torna ENABLE_PINCH = ON vai a (PinchVerifierStat = 3)
+
+		 -(PinchVerifierStat = 3)
+		 COntinua a comportarsi come quando ENABLE_PINCH = OFF fino a quando si verifica un nuovo comando che riporta allo stato (PinchVerifierStat = 1)
+
+		 tutto questo per ogni pinch
+
 
   */
 
