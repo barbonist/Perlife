@@ -354,7 +354,8 @@ bool AmJInAlarmHandledState(void)
 	   (ptrCurrentParent->parent == PARENT_TREAT_KIDNEY_1_PUMP_ON) ||
 	   (ptrCurrentParent->parent == PARENT_TREAT_KIDNEY_1_AIR_FILT) ||
 	   (ptrCurrentParent->parent == PARENT_TREAT_KIDNEY_1_SFV) ||
-	   (ptrCurrentParent->parent == PARENT_TREAT_KIDNEY_1_SFA)
+	   (ptrCurrentParent->parent == PARENT_TREAT_KIDNEY_1_SFA) ||
+	   (ptrCurrentParent->parent == PARENT_TREAT_KIDNEY_1_ALM_DELTA_T_H_RECV)
 	   )
 		InAlarmState = TRUE;
 	return InAlarmState;
@@ -371,7 +372,9 @@ bool AmJInAlarmState(void)
 	   (ptrCurrentParent->parent == PARENT_TREAT_KIDNEY_1_ALARM) ||
 	   (ptrCurrentParent->parent == PARENT_PRIM_KIDNEY_1_ALM_AIR_REC) ||
 	   (ptrCurrentParent->parent == PARENT_PRIMING_END_RECIRC_ALARM) ||
-	   (ptrCurrentParent->parent == PARENT_PRIMING_TREAT_KIDNEY_1_ALARM))
+	   (ptrCurrentParent->parent == PARENT_PRIMING_TREAT_KIDNEY_1_ALARM) ||
+	   (ptrCurrentParent->parent == PARENT_TREAT_KIDNEY_1_ALM_DELTA_T_H_RECV) ||
+	   (ptrCurrentParent->parent == PARENT_TREAT_KIDNEY_1_DELTA_T_HIGH_WAIT))
 		InAlarmState = TRUE;
 	return InAlarmState;
 }
@@ -406,7 +409,8 @@ bool IsButtResUsedByChild(void)
 	   (ptrCurrentChild->child == CHILD_TREAT_ALARM_1_WAIT_CMD) ||
 	   (ptrCurrentChild->child == CHILD_TREAT_ALARM_BAD_PINCH_POS) ||
 	   (ptrCurrentChild->child == CHILD_TREAT_ALARM_MOD_BUS_ERROR) ||
-	   (ptrCurrentChild->child == CHILD_EMPTY_ALARM_MOD_BUS))
+	   (ptrCurrentChild->child == CHILD_EMPTY_ALARM_MOD_BUS) ||
+	   (ptrCurrentChild->child == CHILD_TREAT_ALARM_1_DELTA_TEMP_HIGH))
 	{
 		ButtResUsedByChild = TRUE;
 	}

@@ -331,6 +331,7 @@ int main(void)
   alarmConInit();
   warningConInit();
   InitWarningsStates();
+  InitAlarmsStates();
   initPerfusionParam();
   initPurifParam();
 

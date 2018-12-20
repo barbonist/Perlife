@@ -684,6 +684,13 @@ void ParentFunc(void)
 					// il trattamento riprenda automaticamente
 					setGUIButton(BUTTON_START_TREATMENT);
 				}
+				else if(currentGuard[GUARD_ALARM_DELTA_TEMP_HIGH_RECV].guardValue == GUARD_VALUE_TRUE)
+				{
+					// vado nello stato parent dove posso cercare di recuperare la temperatura del liquido
+					currentGuard[GUARD_ALARM_DELTA_TEMP_HIGH_RECV].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
+					currentGuard[GUARD_ALARM_DELTA_TEMP_HIGH_RECV].guardValue = GUARD_VALUE_FALSE;
+					GoToRecoveryParentState(PARENT_TREAT_KIDNEY_1_DELTA_T_HIGH_RECV);
+				}
 				else
 				{
 					if(ButtonResetRcvd)
@@ -986,6 +993,127 @@ void ParentFunc(void)
 			}
 			break;
 		//---------------------------------------------------------------------------------------------
+
+		// STATI PER LA GESTIONE DELLA PROCEDURA DI RIPRISTINO DELLA TEMPERATURA DEL LIQUIDO -----------------------
+		case PARENT_TREAT_KIDNEY_1_DELTA_T_HIGH_RECV:
+			if(currentGuard[GUARD_TEMP_RESTORE_END].guardValue == GUARD_VALUE_TRUE)
+			{
+				// vado nello stato in cui controllero' che l'allarme di temperatura non venga visualizzato
+				currentGuard[GUARD_TEMP_RESTORE_END].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
+				currentGuard[GUARD_TEMP_RESTORE_END].guardValue = GUARD_VALUE_FALSE;
+				ptrFutureParent = &stateParentTreatKidney1[25];
+				ptrFutureChild = ptrFutureParent->ptrChild;
+				break;
+			}
+
+			if(ptrCurrentParent->action == ACTION_ON_ENTRY)
+			{
+				/* compute future parent */
+				/* FM passo alla gestione ACTION_ALWAYS */
+				ptrFutureParent = &stateParentTreatKidney1[22];
+				ptrFutureChild = ptrFutureParent->ptrChild;
+			}
+			else if(ptrCurrentParent->action == ACTION_ALWAYS)
+			{
+			}
+
+			if(currentGuard[GUARD_ALARM_ACTIVE].guardValue == GUARD_VALUE_TRUE)
+			{
+				/* (FM) si e' verificato un allarme, durante la procedura di recupero dell'allarme delta temperatura eccessivo.
+				 * Per la sua gestione uso un nuovo stato 23  */
+				ptrFutureParent = &stateParentTreatKidney1[23];
+				ptrFutureChild = ptrFutureParent->ptrChild;
+				TotalTimeToRejAir += msTick_elapsed(StarTimeToRejAir);
+			}
+			break;
+
+		case PARENT_TREAT_KIDNEY_1_ALM_DELTA_T_H_RECV:
+			if(currentGuard[GUARD_ALARM_ACTIVE].guardValue == GUARD_VALUE_FALSE)
+			{
+				/* FM allarme finito posso ritornare nello stato di partenza
+				 * quando si e' verificato l'allarme */
+				if(AirParentState == PARENT_TREAT_KIDNEY_1_DELTA_T_HIGH_RECV)
+				{
+					ptrFutureParent = &stateParentTreatKidney1[21];
+					ptrFutureChild = ptrFutureParent->ptrChild;
+					StarTimeToRejAir = timerCounterModBus;
+					break;
+				}
+				else
+				{
+					// per sicurezza, non dovrebbe andarci mai
+					ptrFutureParent = &stateParentTreatKidney1[1];
+					ptrFutureChild = ptrFutureParent->ptrChild;
+					break;
+				}
+			}
+
+			if(ptrCurrentParent->action == ACTION_ON_ENTRY)
+			{
+				/* compute future parent */
+				/* (FM) passo alla gestione ACTION_ALWAYS dell'allarme */
+				ptrFutureParent = &stateParentTreatKidney1[24];
+				ptrFutureChild = ptrFutureParent->ptrChild;
+			}
+			else if(ptrCurrentParent->action == ACTION_ALWAYS)
+			{
+				// (FM) chiamo la funzione child che gestisce lo stato di allarme
+				ManageStateChildAlarmTreat1();
+			}
+			break;
+
+		case PARENT_TREAT_KIDNEY_1_DELTA_T_HIGH_WAIT:
+			if(currentGuard[GUARD_TEMP_NEW_RECOVERY].guardValue == GUARD_VALUE_TRUE)
+			{
+				currentGuard[GUARD_TEMP_NEW_RECOVERY].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
+				currentGuard[GUARD_TEMP_NEW_RECOVERY].guardValue = GUARD_VALUE_FALSE;
+				/* la condizione di allarme dovuta alla temperatura non e' stata risolta eseguo un'altro
+				 * ciclo di recupero non senza prima aver disabilitato l'allarme di temperatura che per ora non mi
+				 * serve piu'*/
+				ptrFutureParent = &stateParentTreatKidney1[21];
+				ptrFutureChild = ptrFutureParent->ptrChild;
+			}
+			else if(currentGuard[GUARD_TEMP_RESTART_TREAT].guardValue == GUARD_VALUE_TRUE)
+			{
+				// vado nello stato in cui controllero' che l'allarme di temperatura non venga visualizzato
+				currentGuard[GUARD_TEMP_RESTART_TREAT].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
+				currentGuard[GUARD_TEMP_RESTART_TREAT].guardValue = GUARD_VALUE_FALSE;
+
+				//l'ALLARME NON E' SCATTATO, HO RAGGIUNTO LA TEMPERATURA TARGET POSSO RIPARTIRE CON IL TRATTAMENTO
+
+				// ho terminato la fase di ripristino della temperatura del liquido, posso
+				// ritornare nello stato di allarme in cui sono partito oppure nello stato di
+				// lavoro normale (dopo aver riabilitato gli allarmi).
+				// Decido di ripartire dalla fase iniziale del trattamento.
+
+				// ripristino le abilitazioni degli allarmi
+				RestoreAllCntrlAlarm(&DELTA_T_HIGH_RECV_gbf);
+				EnableDeltaTHighAlmFunc();  // riabilito allarme temperatura
+				DisableAllAirAlarm(FALSE);  // riabilito allarmi aria
+				ptrFutureParent = &stateParentTreatKidney1[1];
+				ptrFutureChild = ptrFutureParent->ptrChild;
+
+				// preparo la macchina a stati per il posizionamento e controllo delle pinch aperte nella posizione richiesta
+				// per lo stato di trattamento
+				TreatSetPinchPosTask((TREAT_SET_PINCH_POS_CMD)T_SET_PINCH_RESET_CMD);
+				// forzo anche una pressione del tasto TREATMENT START per fare in modo che
+				// il trattamento riprenda automaticamente
+				setGUIButton(BUTTON_START_TREATMENT);
+				break;
+			}
+
+			if(ptrCurrentParent->action == ACTION_ON_ENTRY)
+			{
+				ptrFutureParent = &stateParentTreatKidney1[26];
+				ptrFutureChild = ptrFutureParent->ptrChild;
+			}
+			else if(ptrCurrentParent->action == ACTION_ALWAYS)
+			{
+			}
+			break;
+
+		//---------------------------------------------------------------------------------------------
+
 
 		case PARENT_TREAT_KIDNEY_1_END:
             /* (FM) fine del trattamento  devo rimanere fermo qui, fino a quando non ricevo un nuovo

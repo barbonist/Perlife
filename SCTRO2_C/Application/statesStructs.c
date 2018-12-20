@@ -211,6 +211,11 @@ struct machineChild stateChildAlarmTreat1[] =
 			// gestisce un eventuale allarme generato quando le ripetizioni di un comando su modbus superano un certo valore
 			{STATE_NULL, PARENT_NULL, CHILD_TREAT_ALARM_MOD_BUS_ERROR,       ACTION_ON_ENTRY, &stateNull[0], &manageChildTreatAlmModBusErrEntry},        /* 25 */
 			{STATE_NULL, PARENT_NULL, CHILD_TREAT_ALARM_MOD_BUS_ERROR,       ACTION_ALWAYS,   &stateNull[0], &manageChildTreatAlmModBusErrAlways},       /* 26 */
+
+			// gestisce un eventuale allarme generato quando la temperatura supera il valore massimo (40 gradi) oppure supera o e' al di sotto
+			// di un certo delta il valore target impostato
+			{STATE_NULL, PARENT_NULL, CHILD_TREAT_ALARM_1_DELTA_TEMP_HIGH,   ACTION_ON_ENTRY, &stateNull[0], &manageChildTreatAlmDeltaTempHighEntry},    /* 27 */
+			{STATE_NULL, PARENT_NULL, CHILD_TREAT_ALARM_1_DELTA_TEMP_HIGH,   ACTION_ALWAYS,   &stateNull[0], &manageChildTreatAlmDeltaTempHighAlways},   /* 28 */
 			{}
 		  };
 
@@ -463,6 +468,17 @@ struct machineParent stateParentTreatKidney1[] =
 		/* stop treatment ricevuto nella fase PARENT_TREAT_KIDNEY_1_PUMP_ON*/
 		{STATE_NULL, PARENT_TREAT_WAIT_PAUSE,           CHILD_IDLE, ACTION_ON_ENTRY, &stateChildIdle[0],         &manageParentTreatWaitPauseEntry},  /* 19 */
 		{STATE_NULL, PARENT_TREAT_WAIT_PAUSE,           CHILD_IDLE, ACTION_ALWAYS,   &stateChildIdle[0],         &manageParentTreatAlways},		     /* 20 */
+
+		/* treatment delta tempeatura eccessivo, cerco di ripristinarla mediante frigo o riscaldatore */
+		{STATE_NULL, PARENT_TREAT_KIDNEY_1_DELTA_T_HIGH_RECV,  CHILD_IDLE, ACTION_ON_ENTRY, &stateChildIdle[0],        &manageParentTreatDeltaTHRcvEntry},     /* 21 */
+		{STATE_NULL, PARENT_TREAT_KIDNEY_1_DELTA_T_HIGH_RECV,  CHILD_IDLE, ACTION_ALWAYS,   &stateChildIdle[0],        &manageParentTreatDeltaTHRcvAlways},    /* 22 */
+		/* treatment allarme durante la procedura di recupero da un allarme di delta temperatura eccessivo */
+		{STATE_NULL, PARENT_TREAT_KIDNEY_1_ALM_DELTA_T_H_RECV, CHILD_IDLE, ACTION_ON_ENTRY, &stateChildAlarmTreat1[1], &manageParentTreatAlmDeltaTHRcvEntry},  /* 23 */
+		{STATE_NULL, PARENT_TREAT_KIDNEY_1_ALM_DELTA_T_H_RECV, CHILD_IDLE, ACTION_ALWAYS,   &stateChildAlarmTreat1[1], &manageParentTreatAlmDeltaTHRcvAlways}, /* 24 */
+		/* treatment terminato un ciclo di recupero, aspetto di verificare se sono ancora in allarme o no
+		 * Se non devo ritornare a fare un nuovo ciclo di recupero temperatura ritorno in trattamento */
+		{STATE_NULL, PARENT_TREAT_KIDNEY_1_DELTA_T_HIGH_WAIT,  CHILD_IDLE, ACTION_ON_ENTRY, &stateChildIdle[0],        &manageParentTreatDeltaTHWaitEntry},     /* 25 */
+		{STATE_NULL, PARENT_TREAT_KIDNEY_1_DELTA_T_HIGH_WAIT,  CHILD_IDLE, ACTION_ALWAYS,   &stateChildIdle[0],        &manageParentTreatDeltaTHWaitAlways},    /* 26 */
 		{}
 };
 

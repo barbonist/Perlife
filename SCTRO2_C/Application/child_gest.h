@@ -85,6 +85,9 @@ void manageChildTreatAlmBadPinchPosAlways(void);
 void manageChildTreatAlmModBusErrEntry(void);
 void manageChildTreatAlmModBusErrAlways(void);
 
+void manageChildTreatAlmDeltaTempHighAlways(void);
+void manageChildTreatAlmDeltaTempHighEntry(void);
+
 void ManageStateChildAlarmTreat1(void);
 
 bool PinchWriteTerminated(int idx);

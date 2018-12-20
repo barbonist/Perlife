@@ -532,6 +532,10 @@ enum Parent {
 	PARENT_T1_NO_DISP_FATAL_ERROR,
 	PARENT_T1_NO_DISP_CHECK_HEATER,
 	PARENT_T1_NO_DISP_CHECK_FRIDGE,
+
+	PARENT_TREAT_KIDNEY_1_DELTA_T_HIGH_RECV,
+	PARENT_TREAT_KIDNEY_1_ALM_DELTA_T_H_RECV,
+	PARENT_TREAT_KIDNEY_1_DELTA_T_HIGH_WAIT,
 	PARENT_END_NUMBER,
 };
 
@@ -589,6 +593,8 @@ enum Child {
 	CHILD_PRIM_ALARM_MOD_BUS,
 	CHILD_TREAT_ALARM_MOD_BUS_ERROR,
 	CHILD_EMPTY_ALARM_MOD_BUS,
+
+	CHILD_TREAT_ALARM_1_DELTA_TEMP_HIGH,
 	CHILD_END_NUMBER,
 };
 
@@ -732,7 +738,12 @@ enum MachineStateGuardId {
 
 	GUARD_ALARM_WAIT_CONFIRM,  // aspetto una conferma dall'operatore per rimuovere l'allarme non dovuto a cause fisiche
 	GUARD_ALARM_MOD_BUS_ERROR,
+	GUARD_ALARM_DELTA_TEMP_HIGH,
 	GUARD_FATAL_ERROR,
+	GUARD_ALARM_DELTA_TEMP_HIGH_RECV,
+	GUARD_TEMP_RESTORE_END,
+	GUARD_TEMP_RESTART_TREAT,   // riprendo il trattamento dopo aver ripristinato la temperatura nella la fase di trattamento
+	GUARD_TEMP_NEW_RECOVERY,    // ricomincio una nuova fase di ripristino temperatura
 	GUARD_END_NUMBER
 };
 
@@ -1844,6 +1855,7 @@ typedef struct
 	unsigned int EnableHooksReservoir       : 1;    // abilitazione allarme ganci reservoir
 	unsigned int EnableMachineCovers        : 1;    // abilitazione allarme sportelli macchina
 	unsigned int EnableArtResAlarm          : 1;    // abilitazione allarme resistenza arteriosa
+	unsigned int EnableTempArtOORAlm        : 1;    // abilito allarme di temperatura arteriosa fuori range
 }FLAGS_DEF;
 
 typedef struct
@@ -2415,6 +2427,69 @@ typedef enum
 //---------------------------------------------------------------------------------------
 
 //#define DEMO //define di compilazione per abilitare controlli meno stringenti per le demo
+
+
+// PARAMETRI PER LA PROCEDURA DI RIPRISTINO DELLA TEMPERATURA DEL LIQUIDO DURANTE I TRATTAMENTO------------
+// velocita' di rotazione delle pompe durante il ripristino della temperatura
+#define TEMP_RESTORE_SPEED 2000
+// tempo in msec riservato al processo di ripristino della temperatura del liquido
+#define TIME_TO_RESTORE_TEMP 120000L
+
+typedef enum
+{
+	INIT_TEMP_ALARM_RECOVERY = 0,
+	START_TEMP_PUMP,
+	TEMP_RESTORE_START_TIME,
+	TEMP_RESTORE_END,
+	TEMP_RESTORE_END_1,
+	TEMP_RESTORE_STOPPED
+}DELTA_T_HIGH_ALM_RECVR_STATE;
+
+DELTA_T_HIGH_ALM_RECVR_STATE DeltaTHighAlarmRecvrState;
+
+// massimo discostamento in gradi della temperatura arteriosa rispetto al target previsto
+// al di sopra di questo valore viene generato un allarme
+#define MAX_DELTA_T_ART               2
+// valore minimo di temperatura in gradi del liquido al di sotto del quale non si deve andare
+#define MIN_LIQUID_TEMP               2
+// delta di temperatura rispetto al target per considerare il target raggiunto
+#define DELTA_T_ART_IF_OK             1.5
+// tempo in msec per far scattare l'allarme in caso di temperatura massima o minima superate
+#define OUT_OF_MAX_TEMP_TIME_FOR_ALM  120000
+
+
+typedef enum
+{
+	ALM_INIT,
+	ALM_CONTROL,
+	ALM_CONTROL_DELAY,
+	ALM_CONTROL_NEW_LEVEL
+}ALARM_STATE;
+
+typedef struct
+{
+	unsigned int EnableTArtMaxVal : 1;    // abilito allarme di temperatura massima superata (per gestire reset da utente)
+}ALM_FLAGS_DEF;
+
+typedef union
+{
+    ALM_FLAGS_DEF AlmFlagsDef;
+	unsigned int AlmFlagsVal;
+}ALM_GLOBAL_FLAGS;
+
+ALM_GLOBAL_FLAGS AlmGlobalFlags;
+
+
+// tempo di ripetizione allarme di massima/minima temperatura in priming
+#define MAX_TEMP_ALM_TIME_REPT_IN_PRIM   120000
+
+// tempo di rilavazine allarme di temperatura temperatura fuori range in trattamento
+#define MAX_TEMP_ALM_TIME_DET_IN_TREAT   120000
+
+// memorizza le abilitazioni degli allarmi
+GLOBAL_FLAGS DELTA_T_HIGH_RECV_gbf;
+
+int StarTimeToRetTeatFromRestTemp;
 
 #endif /* SOURCES_GLOBAL_H_ */
 

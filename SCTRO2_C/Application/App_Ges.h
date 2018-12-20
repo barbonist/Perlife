@@ -243,6 +243,15 @@ void manageParentTreatEndAlways(void);
 void manageParentTreatWaitPauseEntry(void);
 void manageParentTreatWaitStartEntry(void);
 
+void manageParentTreatDeltaTHRcvEntry(void);
+void manageParentTreatDeltaTHRcvAlways(void);
+
+void manageParentTreatAlmDeltaTHRcvAlways(void);
+void manageParentTreatAlmDeltaTHRcvEntry(void);
+
+void manageParentTreatDeltaTHWaitEntry(void);
+void manageParentTreatDeltaTHWaitAlways(void);
+
 /**************************************************************************************/
 /******-----------------------------TREATMENT----------------------------------********/
 /**************************************************************************************/

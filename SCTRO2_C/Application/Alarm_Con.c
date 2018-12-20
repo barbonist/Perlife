@@ -34,7 +34,7 @@ struct alarm alarmList[] =
 		{CODE_ALARM_AIR_PRES_ART,          PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_SFA_AIR_DET,           PRIORITY_HIGH, 1000, 1000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_ALLOWED,     &alarmManageNull}, 		/* 2 */
 		{CODE_ALARM_AIR_PRES_VEN,          PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_SFV_AIR_DET,           PRIORITY_HIGH, 1000, 1000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_ALLOWED,     &alarmManageNull}, 		/* 3 */
 		{CODE_ALARM_AIR_PRES_ADSRB_FILTER, PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_SAF_AIR_FILTER,        PRIORITY_HIGH, 1000, 1000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_ALLOWED,     &alarmManageNull}, 		/* 4 */
-		{CODE_ALARM_TEMP_ART_HIGH,         PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH, 5000, 2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull}, 	    /* 5 */
+		{CODE_ALARM_TEMP_ART_HIGH,         PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH, 2000, 2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull}, 	    /* 5 */
 		{CODE_ALARM_PRESS_ADS_FILTER_HIGH, PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH, 2000, 2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull},	    /* 6 */
 		{CODE_ALARM_FLOW_PERF_ART_HIGH,    PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH, 2000, 2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull}, 		/* 7 */
 		{CODE_ALARM_FLOW_ART_NOT_DETECTED, PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH, 2000, 2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull}, 		/* 8 */
@@ -94,13 +94,27 @@ struct alarm alarmList[] =
         {CODE_ALARM_MACHINE_COVERS,       PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH,    0,  100, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull},         /* 33 */
         {CODE_ALARM_HOOKS_RESERVOIR,      PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH,    0,  100, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull},         /* 34 */
         {CODE_ALARM_ART_RES_HIGH,         PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH,    0,  100, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull},         /* 35 */
+		{CODE_ALARM_T_ART_OUT_OF_RANGE,   PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_DELTA_TEMP_HIGH,       PRIORITY_HIGH, 2000,    0, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull}, 	    /* 36*/
+		{CODE_ALARM_TEMP_ART_HIGH_IN_TRT, PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_DELTA_TEMP_HIGH,       PRIORITY_HIGH, 2000,    0, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull}, 	    /* 37*/
 		// da qui in avanti solo le warning
-		{CODE_ALARM_PRESS_ADS_FILTER_WARN, PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_LOW, 2000, 2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull},	        /* 36 esempio di warning*/
-		{CODE_ALARM_DEP_PUMP_STILL_WARN,   PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,    PRIORITY_LOW, 2000, 2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull},	        /* 37 */
-		{CODE_ALARM_PERF_ART_PUMP_STILL_WARN, PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR, PRIORITY_LOW, 2000, 2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull},	        /* 38 */
-		{CODE_ALARM_OXYG_PUMP_STILL_WARN,     PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR, PRIORITY_LOW, 2000, 2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull},	        /* 39 */
+		{CODE_ALARM_PRESS_ADS_FILTER_WARN,    PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR, PRIORITY_LOW,  2000,  2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull},	    /* 38 esempio di warning*/
+		{CODE_ALARM_DEP_PUMP_STILL_WARN,      PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR, PRIORITY_LOW,  2000,  2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull},	    /* 39 */
+		{CODE_ALARM_PERF_ART_PUMP_STILL_WARN, PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR, PRIORITY_LOW,  2000,  2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull},	    /* 40 */
+		{CODE_ALARM_OXYG_PUMP_STILL_WARN,     PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR, PRIORITY_LOW,  2000,  2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull},	    /* 41 */
 		{}
 };
+
+void EnableDeltaTHighAlmFunc(void)
+{
+	GlobalFlags.FlagsDef.EnableTempArtHighAlm = 1;
+	GlobalFlags.FlagsDef.EnableTempArtOORAlm = 1;
+}
+
+void DisableDeltaTHighAlmFunc(void)
+{
+	GlobalFlags.FlagsDef.EnableTempArtHighAlm = 0;
+	GlobalFlags.FlagsDef.EnableTempArtOORAlm = 0;
+}
 
 
 void EnablePumpNotStillAlmFunc(void)
@@ -204,6 +218,7 @@ void SetAllAlarmEnableFlags(void)
 	GlobalFlags.FlagsDef.EnableHooksReservoir = 1;
 
 	GlobalFlags.FlagsDef.EnableArtResAlarm = 1;
+	GlobalFlags.FlagsDef.EnableTempArtOORAlm = 1;
 }
 
 // Questa funzione serve per forzare ad off un eventuale allarme.
@@ -236,6 +251,7 @@ void ForceAlarmOff(uint16_t code)
 			GlobalFlags.FlagsDef.EnablePressSensHighAlm = 0; // forzo allarme pressione alta off
 			break;
 		case CODE_ALARM_TEMP_ART_HIGH:
+		case CODE_ALARM_TEMP_ART_HIGH_IN_TRT:
 			GlobalFlags.FlagsDef.EnableTempArtHighAlm = 0;        // forzo allarme temperatura arteriosa alta off
 			break;
 		case CODE_ALARM_DELTA_FLOW_ART:
@@ -286,6 +302,10 @@ void ForceAlarmOff(uint16_t code)
         case CODE_ALARM_ART_RES_HIGH:
             GlobalFlags.FlagsDef.EnableArtResAlarm = 0;     // forzo allarme allarme resistenza arteriosa OFF
             break;
+        case CODE_ALARM_T_ART_OUT_OF_RANGE:
+            GlobalFlags.FlagsDef.EnableTempArtOORAlm = 0;
+            break;
+
 	}
 }
 
@@ -338,7 +358,13 @@ void ShowAlarmStr(int i, char * str)
 			DebugStringStr(s);
 			break;
 		case CODE_ALARM_TEMP_ART_HIGH:
+		case CODE_ALARM_TEMP_ART_HIGH_IN_TRT:
 			strcpy(s, "AL_TEMP_ART_HIGH");
+			strcat(s, str);
+			DebugStringStr(s);
+			break;
+		case CODE_ALARM_T_ART_OUT_OF_RANGE:
+			strcpy(s, "AL_TEMP_ART_OOR");
 			strcat(s, str);
 			DebugStringStr(s);
 			break;
@@ -612,7 +638,8 @@ void CalcAlarmActive(void)
 
 
 			//verifica physic ir temp sens
-			manageAlarmPhysicTempSens();
+			manageAlarmPhysicTempSensInTreat();
+			manageAlarmPhysicTempSensOOR();
 
 			//verifica physic flusso di perfusione arteriosa alto
 			manageAlarmPhysicFlowPerfArtHigh();
@@ -658,9 +685,6 @@ void CalcAlarmActive(void)
 			//manageAlarmPhysicPressSensHigh();
 			//manageAlarmPhysicPressSensLow();
 
-			//verifica physic ir temp sens
-			//manageAlarmPhysicTempSens();
-
 			manageAlarmActuatorModbusNotRespond();
 			manageAlarmActuatorWRModbusNotRespond();
 
@@ -692,9 +716,6 @@ void CalcAlarmActive(void)
 			//verifica physic pressioni
 			//manageAlarmPhysicPressSensHigh();
 			//manageAlarmPhysicPressSensLow();
-
-			//verifica physic ir temp sens
-			//manageAlarmPhysicTempSens();
 
 			/*ONLY FOR TEST*/
 //			if(GetTherapyType() == LiverTreat)
@@ -1275,21 +1296,235 @@ void manageCover_Hook_Sensor(void)
         alarmList[ALARM_MACHINE_COVERS].physic = PHYSIC_FALSE;
     }
 }
+
+//------------------------------------------------------------------------------------------
+ALARM_STATE checkAlmPhysicTempState;
+ALARM_STATE checkAlmPhysicTempOORState;
+
+void SetAllAlarmsEnableFlags(void)
+{
+	checkAlmPhysicTempState = ALM_INIT;
+	AlmGlobalFlags.AlmFlagsDef.EnableTArtMaxVal = 1;
+
+	checkAlmPhysicTempOORState = ALM_INIT;
+}
+
+void AlmResetFromUserReceived(uint16_t AlmCode)
+{
+	switch (AlmCode)
+	{
+		case CODE_ALARM_TEMP_ART_HIGH:
+			if( checkAlmPhysicTempState == WRN_CONTROL)
+			{
+				// allarme resettato da utente (devo far ripartire il timer da 2 minuti)
+				AlmGlobalFlags.AlmFlagsDef.EnableTArtMaxVal = 0;
+			}
+			break;
+	}
+}
+
+void InitAlarmsStates(void)
+{
+	AlmGlobalFlags.AlmFlagsVal = 0;
+	SetAllAlarmsEnableFlags();
+}
+
+// fa scattare l'allarme di temperatura massima e minima, se ci sono le condizioni, ogni 2 minuti
+void checkAlmPhysicTemp(void)
+{
+	static uint32_t StartTime50Msec;
+	static float CurrMaxTemp = 0.0;
+	static float CurrMinTemp = 0.0;
+	float TargetT;
+//	float deltaT;
+//
+	TargetT = (float)parameterWordSetFromGUI[PAR_SET_PRIMING_TEMPERATURE_PERFUSION].value / 10;  // (gradi Centigradi * 10)
+//	deltaT = TargetT - sensorIR_TM[0].tempSensValue;
+//	if(deltaT < 0)
+//		deltaT = -deltaT;
+	switch (checkAlmPhysicTempState)
+	{
+		case ALM_INIT:
+			alarmList[TEMP_ART_HIGH].physic = PHYSIC_FALSE;
+			if(AlmGlobalFlags.AlmFlagsDef.EnableTArtMaxVal)
+			{
+				CurrMaxTemp = 40.0;
+				CurrMinTemp = (float)MIN_LIQUID_TEMP;
+				checkAlmPhysicTempState = ALM_CONTROL;
+			}
+			break;
+		case ALM_CONTROL:
+			if(AlmGlobalFlags.AlmFlagsDef.EnableTArtMaxVal)
+			{
+				if((sensorIR_TM[0].tempSensValue > CurrMaxTemp) || (sensorIR_TM[0].tempSensValue < CurrMinTemp) )
+				{
+					alarmList[TEMP_ART_HIGH].physic = PHYSIC_FALSE;
+					StartTime50Msec = timerCounterModBus;
+					checkAlmPhysicTempState = ALM_CONTROL_DELAY;
+				}
+				else
+					alarmList[TEMP_ART_HIGH].physic = PHYSIC_FALSE;
+			}
+			else
+				alarmList[TEMP_ART_HIGH].physic = PHYSIC_FALSE;
+			break;
+		case ALM_CONTROL_DELAY:
+			if(AlmGlobalFlags.AlmFlagsDef.EnableTArtMaxVal)
+			{
+				if((sensorIR_TM[0].tempSensValue > CurrMaxTemp) || (sensorIR_TM[0].tempSensValue < CurrMinTemp) )
+				{
+					if((msTick_elapsed(StartTime50Msec) * 50L) >= MAX_TEMP_ALM_TIME_REPT_IN_PRIM)
+						alarmList[TEMP_ART_HIGH].physic = PHYSIC_TRUE;
+					else
+						alarmList[TEMP_ART_HIGH].physic = PHYSIC_FALSE;
+				}
+				else
+				{
+					// la temperatura e' ritornata al di sotto della massima e minima
+					alarmList[TEMP_ART_HIGH].physic = PHYSIC_FALSE;
+					checkAlmPhysicTempState = ALM_CONTROL;
+				}
+			}
+			else
+			{
+				// ho ricevuto il reset dell'allarme
+				alarmList[TEMP_ART_HIGH].physic = PHYSIC_FALSE;
+				// faccio ripartire il controllo dei due minuti
+				AlmGlobalFlags.AlmFlagsDef.EnableTArtMaxVal = 1;
+//				CurrMaxTemp = TargetT + (float)DELTA_T_ART_IF_OK;
+//				CurrMinTemp = TargetT - (float)DELTA_T_ART_IF_OK;
+				checkAlmPhysicTempState = ALM_INIT;
+			}
+			break;
+	}
+}
+
+
+void checkAlmPhysicTempOOR(void)
+{
+	static uint32_t StartTime50Msec;
+	float TargetT;
+	float deltaT;
+	static float CurrMaxDeltaT = 0.0;
+
+	TargetT = (float)parameterWordSetFromGUI[PAR_SET_PRIMING_TEMPERATURE_PERFUSION].value / 10;  // (gradi Centigradi * 10)
+	deltaT = TargetT - sensorIR_TM[0].tempSensValue;
+	if(deltaT < 0)
+		deltaT = -deltaT;
+	switch (checkAlmPhysicTempOORState)
+	{
+		case ALM_INIT:
+			alarmList[TEMP_ART_OOR].physic = PHYSIC_FALSE;
+			CurrMaxDeltaT = (float)MAX_DELTA_T_ART;
+			checkAlmPhysicTempOORState = ALM_CONTROL;
+			break;
+		case ALM_CONTROL:
+			alarmList[TEMP_ART_OOR].physic = PHYSIC_FALSE;
+			if(deltaT > (float)CurrMaxDeltaT)
+			{
+				StartTime50Msec = timerCounterModBus;
+				checkAlmPhysicTempOORState = ALM_CONTROL_DELAY;
+			}
+			break;
+		case ALM_CONTROL_DELAY:
+			alarmList[TEMP_ART_OOR].physic = PHYSIC_FALSE;
+			if(deltaT > CurrMaxDeltaT)
+			{
+				if((msTick_elapsed(StartTime50Msec) * 50L) >= MAX_TEMP_ALM_TIME_DET_IN_TREAT)
+				{
+					alarmList[TEMP_ART_OOR].physic = PHYSIC_TRUE;
+					CurrMaxDeltaT = (float)DELTA_T_ART_IF_OK;
+					checkAlmPhysicTempOORState = ALM_CONTROL_NEW_LEVEL;
+				}
+			}
+			else
+			{
+				// la temperatura e' ritornata al di sotto della massima e minima
+				checkAlmPhysicTempOORState = ALM_CONTROL;
+			}
+			break;
+		case ALM_CONTROL_NEW_LEVEL:
+			// controllo che la temperatura rientri in un range ridotto altrimenti genero un allarme
+			alarmList[TEMP_ART_OOR].physic = PHYSIC_TRUE;
+			if(deltaT < CurrMaxDeltaT)
+			{
+				// sono ritornato nelle vicinanze del target
+				alarmList[TEMP_ART_OOR].physic = PHYSIC_FALSE;
+				checkAlmPhysicTempOORState = ALM_INIT;
+			}
+			break;
+	}
+}
+
+//-----------------------------------------------------------------------------------------
+
+
+
+// usata durante la fase di priming/ricircolo genera un allarme che blocca tutto
+// e mette in bypass il filtro
 void manageAlarmPhysicTempSens(void)
 {
 	if(GlobalFlags.FlagsDef.EnableTempArtHighAlm)
 	{
-		if((sensorIR_TM[0].tempSensValue > 40.0))
-		{
-			alarmList[TEMP_ART_HIGH].physic = PHYSIC_TRUE;
-		}
-		else
-		{
-			alarmList[TEMP_ART_HIGH].physic = PHYSIC_FALSE;
-		}
+//		if((sensorIR_TM[0].tempSensValue > 40.0) || (sensorIR_TM[0].tempSensValue < (float)MIN_LIQUID_TEMP) )
+//		{
+//			alarmList[TEMP_ART_HIGH].physic = PHYSIC_TRUE;
+//		}
+//		else
+//		{
+//			alarmList[TEMP_ART_HIGH].physic = PHYSIC_FALSE;
+//		}
+		checkAlmPhysicTemp();
 	}
 	else
 		alarmList[TEMP_ART_HIGH].physic = PHYSIC_FALSE;
+}
+
+
+// usata durante la fase di trattamento genera un allarme che cerchera' di ripristinare
+// la temperatura target
+void manageAlarmPhysicTempSensInTreat(void)
+{
+	if(GlobalFlags.FlagsDef.EnableTempArtHighAlm)
+	{
+		if((sensorIR_TM[0].tempSensValue > 40.0) || (sensorIR_TM[0].tempSensValue < (float)MIN_LIQUID_TEMP) )
+		{
+			alarmList[TEMP_ART_HIGH_IN_TREAT].physic = PHYSIC_TRUE;
+		}
+		else
+		{
+			alarmList[TEMP_ART_HIGH_IN_TREAT].physic = PHYSIC_FALSE;
+		}
+	}
+	else
+		alarmList[TEMP_ART_HIGH_IN_TREAT].physic = PHYSIC_FALSE;
+}
+
+// allarme di temperatura fuori range di almeno due gradi
+void manageAlarmPhysicTempSensOOR(void)
+{
+//	float TargetT;
+//	float deltaT;
+	if(GlobalFlags.FlagsDef.EnableTempArtOORAlm)
+	{
+//		TargetT = (float)parameterWordSetFromGUI[PAR_SET_PRIMING_TEMPERATURE_PERFUSION].value / 10;  // (gradi Centigradi * 10)
+//		deltaT = TargetT - sensorIR_TM[0].tempSensValue;
+//		if(deltaT < 0)
+//			deltaT = -deltaT;
+//
+//		if(deltaT > (float)MAX_DELTA_T_ART)
+//		{
+//			alarmList[TEMP_ART_OOR].physic = PHYSIC_TRUE;
+//		}
+//		else
+//		{
+//			alarmList[TEMP_ART_OOR].physic = PHYSIC_FALSE;
+//		}
+
+		checkAlmPhysicTempOOR();
+	}
+	else
+		alarmList[TEMP_ART_OOR].physic = PHYSIC_FALSE;
 }
 
 
@@ -1824,6 +2059,14 @@ void manageAlarmChildGuard(struct alarm * ptrAlarm){
 		else
 			currentGuard[GUARD_ALARM_MOD_BUS_ERROR].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
 		break;
+
+	case SECURITY_DELTA_TEMP_HIGH:
+		if(myAlarmPointer->active == ACTIVE_TRUE)
+			currentGuard[GUARD_ALARM_DELTA_TEMP_HIGH].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+		else
+			currentGuard[GUARD_ALARM_DELTA_TEMP_HIGH].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
+		break;
+
 
 	default:
 		break;
@@ -2933,8 +3176,8 @@ int AlmListOf_AlarmListStrctPos[MAX_NUM_ALARM];
 int CurrAlmLisStateArrdx;
 // posizione nell'array AlmLisStateArr del primo allarme
 int AlmLisStateArrFirstWrnPos;
-unsigned short elapsedEntryTime[MAX_NUM_ALARM];
-unsigned short elapsedExitTime[MAX_NUM_ALARM];
+unsigned long elapsedEntryTime[MAX_NUM_ALARM];
+unsigned long elapsedExitTime[MAX_NUM_ALARM];
 //unsigned long elapsedEntryStartTime[MAX_NUM_ALARM];
 //unsigned long elapsedExitStartTime[MAX_NUM_ALARM];
 
@@ -3502,6 +3745,7 @@ void ResetAlarmWithCode(uint16_t code)
 	DeleteFromAlarmCodeArray(code);
 	// cancello dalla lista di ricerca (MAX_NUM_ALARM elementi) degli allarmi
 	ResetAlarmFromList(code);
+	AlmResetFromUserReceived(code);
 }
 
 bool ResetAlmHandleFunc(uint16_t code)

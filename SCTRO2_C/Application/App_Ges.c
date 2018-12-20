@@ -3428,6 +3428,9 @@ void manageParentTreatAlways(void)
 			releaseGUIButton(BUTTON_START_TREATMENT);
 			// ripristino allarmi delle cover
 			GlobalFlags.FlagsDef.EnableCoversAlarm = 1;
+			// ripristino allarmi di temperatura arteriosa
+			GlobalFlags.FlagsDef.EnableTempArtHighAlm = 1;
+			GlobalFlags.FlagsDef.EnableTempArtOORAlm = 1;
 			if(ptrCurrentParent->parent == PARENT_TREAT_WAIT_START)
 			{
 				currentGuard[GUARD_ENABLE_STATE_TREAT_KIDNEY_1_INIT].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
@@ -3456,6 +3459,9 @@ void manageParentTreatAlways(void)
 			SetAbandonGuard();
 			// ripristino allarmi delle cover
 			GlobalFlags.FlagsDef.EnableCoversAlarm = 1;
+			// ripristino allarmi di temperatura arteriosa
+			GlobalFlags.FlagsDef.EnableTempArtHighAlm = 1;
+			GlobalFlags.FlagsDef.EnableTempArtOORAlm = 1;
 		}
 
 		CheckPumpStopTask((CHECK_PUMP_STOP_CMD)NO_CHECK_PUMP_STOP_CMD);
@@ -4097,6 +4103,9 @@ void manageParentTreatWaitPauseEntry(void)
 {
 	// disabilito gli allarmi delle cover perche' quando entro in questo stato tutte le pompe si fermano
 	GlobalFlags.FlagsDef.EnableCoversAlarm = 0;
+	// disabilito allarmi di temperatura arteriosa
+	GlobalFlags.FlagsDef.EnableTempArtHighAlm = 0;
+	GlobalFlags.FlagsDef.EnableTempArtOORAlm = 0;
 	// Filippo - sospendo il PID in attesa di farlo partire
 	FrigoHeatTempControlTaskNewPID((LIQ_TEMP_CONTR_TASK_CMD)TEMP_MANAGER_SUSPEND_CMD);
 }
@@ -4106,9 +4115,213 @@ void manageParentTreatWaitStartEntry(void)
 {
 	// disabilito gli allarmi delle cover perche' quando entro in questo stato tutte le pompe si fermano
 	GlobalFlags.FlagsDef.EnableCoversAlarm = 0;
+	// disabilito allarmi di temperatura arteriosa
+	GlobalFlags.FlagsDef.EnableTempArtHighAlm = 0;
+	GlobalFlags.FlagsDef.EnableTempArtOORAlm = 0;
 	// Filippo - sospendo il PID in attesa di farlo partire
 	FrigoHeatTempControlTaskNewPID((LIQ_TEMP_CONTR_TASK_CMD)TEMP_MANAGER_SUSPEND_CMD);
 
+}
+
+// GESTIONE DELLO STATO PER IL RIPRISTINO DELLA TEMPERATURA DEL LIQUIDO-----------------------------------
+void DeltaTHighAlarmRecoveryStateMach(void)
+{
+	static unsigned long StarDelay = 0;
+	static int StarTimeToRestoreTemp;
+	static DELTA_T_HIGH_ALM_RECVR_STATE LastDeltaTHgAlmRecvrState = INIT_TEMP_ALARM_RECOVERY;
+	static int TimeRemaining = TIME_TO_RESTORE_TEMP;
+	float TargetT;
+	float deltaT;
+
+	THERAPY_TYPE TherType = GetTherapyType();
+
+	TargetT = (float)parameterWordSetFromGUI[PAR_SET_PRIMING_TEMPERATURE_PERFUSION].value / 10;  // (gradi Centigradi * 10)
+	// differenza di temperatura tra quella impostata e quella letta dal sensore sulla linea arteriosa
+	deltaT = TargetT - sensorIR_TM[0].tempSensValue;
+	if(deltaT < 0)
+		deltaT = -deltaT;
+
+	if(buttonGUITreatment[BUTTON_START_TREATMENT].state == GUI_BUTTON_RELEASED)
+	{
+		releaseGUIButton(BUTTON_START_TREATMENT);
+
+		DeltaTHighAlarmRecvrState =	LastDeltaTHgAlmRecvrState;
+		LastDeltaTHgAlmRecvrState = INIT_TEMP_ALARM_RECOVERY;
+		StarTimeToRestoreTemp = timerCounterModBus;
+
+		if(TherType == KidneyTreat)
+		{
+			setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, TEMP_RESTORE_SPEED);
+			setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, TEMP_RESTORE_SPEED);
+		}
+		else if(TherType == LiverTreat)
+		{
+			setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, TEMP_RESTORE_SPEED);
+			setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, TEMP_RESTORE_SPEED);
+			setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, TEMP_RESTORE_SPEED);
+		}
+	}
+	else if(buttonGUITreatment[BUTTON_STOP_TREATMENT].state == GUI_BUTTON_RELEASED)
+	{
+		releaseGUIButton(BUTTON_STOP_TREATMENT);
+
+		LastDeltaTHgAlmRecvrState = DeltaTHighAlarmRecvrState;
+		DeltaTHighAlarmRecvrState = TEMP_RESTORE_STOPPED;
+		TimeRemaining = TIME_TO_RESTORE_TEMP - msTick_elapsed(StarTimeToRestoreTemp) * 50L;
+		if(TimeRemaining > TIME_TO_RESTORE_TEMP)
+			TimeRemaining = TIME_TO_RESTORE_TEMP;
+
+		if(TherType == KidneyTreat)
+		{
+			setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
+			setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 0);
+		}
+		else if(TherType == LiverTreat)
+		{
+			setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
+			setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 0);
+			setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, 0);
+		}
+	}
+
+	switch (DeltaTHighAlarmRecvrState)
+	{
+		case INIT_TEMP_ALARM_RECOVERY:
+			DeltaTHighAlarmRecvrState = START_TEMP_PUMP;
+			break;
+		case START_TEMP_PUMP:
+			if(TherType == KidneyTreat)
+			{
+				setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, TEMP_RESTORE_SPEED);
+				setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, TEMP_RESTORE_SPEED);
+			}
+			else if(TherType == LiverTreat)
+			{
+				setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, TEMP_RESTORE_SPEED);
+				setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, TEMP_RESTORE_SPEED);
+				setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, TEMP_RESTORE_SPEED);
+			}
+			DeltaTHighAlarmRecvrState = TEMP_RESTORE_START_TIME;
+			StarTimeToRestoreTemp = timerCounterModBus;
+			TimeRemaining = TIME_TO_RESTORE_TEMP;
+			break;
+		case TEMP_RESTORE_START_TIME:
+			if(StarTimeToRestoreTemp && ((msTick_elapsed(StarTimeToRestoreTemp) * 50L) >= TimeRemaining) ||
+			   (deltaT < (float)DELTA_T_ART_IF_OK))
+			{
+				// e' trascorso il tempo massimo riservato al processo di ripristino della temperatura
+				// oppure la temperatura target e' stata raggiunta entro un certo range
+				if(TherType == KidneyTreat)
+				{
+					setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
+					setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 0);
+				}
+				else if(TherType == LiverTreat)
+				{
+					setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
+					setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 0);
+					setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, 0);
+				}
+				DeltaTHighAlarmRecvrState = TEMP_RESTORE_END;
+				// riabilito allarme temperatura perche' prima di ritornare in trattamento devo riportare il liquido
+				// in temperatura e segnalarlo con un ulteriore allarme
+				StopAllCntrlAlarm(&DELTA_T_HIGH_RECV_gbf);
+				EnableDeltaTHighAlmFunc();
+				StarDelay = timerCounterModBus;
+			}
+			break;
+		case TEMP_RESTORE_END:
+			// questo delay serve a far si che l'interrupt di temperatura scatti di nuovo se ci sono
+			// ancora le condizioni
+			if(StarDelay && ((msTick_elapsed(StarDelay) * 50L) >= 2000))
+			{
+				DeltaTHighAlarmRecvrState = TEMP_RESTORE_END_1;
+				currentGuard[GUARD_TEMP_RESTORE_END].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+			}
+			break;
+		case TEMP_RESTORE_END_1:
+			break;
+		case TEMP_RESTORE_STOPPED:
+			break;
+	}
+}
+
+// faccio partire le pompe per la ricircolazione del liquido per
+// riportarlo in temperatura
+void manageParentTreatDeltaTHRcvEntry(void)
+{
+	DeltaTHighAlarmRecvrState = INIT_TEMP_ALARM_RECOVERY;
+	FrigoHeatTempControlTaskNewPID(LIQ_T_CONTR_TASK_RESET_CMD);
+}
+
+void manageParentTreatDeltaTHRcvAlways(void)
+{
+	DeltaTHighAlarmRecoveryStateMach();
+}
+
+
+void manageParentTreatAlmDeltaTHRcvEntry(void)
+{
+
+}
+
+void manageParentTreatAlmDeltaTHRcvAlways(void)
+{
+
+}
+
+uint8_t mngParTreatDeltaTHWtState;
+void manageParentTreatDeltaTHWaitEntry(void)
+{
+	StarTimeToRetTeatFromRestTemp = timerCounterModBus;
+	mngParTreatDeltaTHWtState = 0;
+}
+
+void manageParentTreatDeltaTHWaitAlways(void)
+{
+	switch (mngParTreatDeltaTHWtState)
+	{
+		case 0:
+			if(StarTimeToRetTeatFromRestTemp && ((msTick_elapsed(StarTimeToRetTeatFromRestTemp) * 50L) >= 1000))
+			{
+				if(IsAlarmActive())
+				{
+					// se c'e' un allarme e' sicuramente quello di temperatura
+					LevelBuzzer = 2;
+					mngParTreatDeltaTHWtState = 1;
+				}
+				else
+					currentGuard[GUARD_TEMP_RESTART_TREAT].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+			}
+			break;
+		case 1:
+			// aspetto che l'utente prema reset allarm
+			if(buttonGUITreatment[BUTTON_RESET_ALARM].state == GUI_BUTTON_RELEASED)
+			{
+				releaseGUIButton(BUTTON_RESET_ALARM);
+				DisableDeltaTHighAlmFunc();
+				StarTimeToRetTeatFromRestTemp = timerCounterModBus;
+				mngParTreatDeltaTHWtState = 2;
+				LevelBuzzer = 0;
+				EnableNextAlarmFunc();
+			}
+			break;
+		case 2:
+			// aspetto un po di tempo che l'allarme di temperatura venga tolto
+			if(StarTimeToRetTeatFromRestTemp && ((msTick_elapsed(StarTimeToRetTeatFromRestTemp) * 50L) >= 1000))
+			{
+				RestoreAllCntrlAlarm(&DELTA_T_HIGH_RECV_gbf);
+				DisableDeltaTHighAlmFunc();
+				if(!IsAlarmActive())
+				{
+					currentGuard[GUARD_TEMP_NEW_RECOVERY].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+					mngParTreatDeltaTHWtState = 3;
+				}
+			}
+			break;
+		case 3:
+			break;
+	}
 }
 
 /*----------------------------------------FINE PARENT TREATMENTLEVEL FUNCTION -----------------------------------------------*/
@@ -4722,6 +4935,16 @@ void GoToRecoveryParentState(int MachineParentState)
 		TotalTimeToRejAir = 0;
 		/* (FM) passo nello stato per la risoluzione dell'allarme aria nella linea del filtro*/
 		ptrFutureParent = &stateParentTreatKidney1[7];
+		ptrFutureChild = ptrFutureParent->ptrChild;
+		break;
+
+	// vado nello stato di recupero della temperatura del liquido
+	case PARENT_TREAT_KIDNEY_1_DELTA_T_HIGH_RECV:
+		AirParentState = PARENT_TREAT_KIDNEY_1_DELTA_T_HIGH_RECV;
+		StarTimeToRejAir = timerCounterModBus;
+		TotalTimeToRejAir = 0;
+		/* (FM) passo nello stato per la risoluzione dell'allarme di delta temperatura eccessivo*/
+		ptrFutureParent = &stateParentTreatKidney1[21];
 		ptrFutureChild = ptrFutureParent->ptrChild;
 		break;
 	}

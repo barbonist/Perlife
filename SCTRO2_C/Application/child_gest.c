@@ -1238,6 +1238,37 @@ void manageChildTreatAlmModBusErrAlways(void)
 
 }
 
+
+// Manage CHILD_TREAT_ALARM_1_DELTA_TEMP_HIGH entry state
+void manageChildTreatAlmDeltaTempHighEntry(void)
+{
+	// fermo le pompe e metto le pinch in sicurezza
+	manageChildTreatAlm1StopAllActEntry();
+}
+
+/* Manage CHILD_TREAT_ALARM_1_DELTA_TEMP_HIGH always state */
+void manageChildTreatAlmDeltaTempHighAlways(void)
+{
+	// apetto che tutte le pompe si siano fermate
+	manageChildTreatAlm1StopAllActAlways();
+	// disabilito allarmi aria durante la fase di ripristino della temperatura del liquido
+	DisableAllAirAlarm(TRUE);
+	// forzo uscita da allarme
+	DisableDeltaTHighAlmFunc();
+	if(!ResButInChildFlag && (buttonGUITreatment[BUTTON_RESET_ALARM].state == GUI_BUTTON_RELEASED) && IsSecurityStateActive())
+	{
+		ResButInChildFlag = TRUE;
+		// setto la guard per fare in modo di passare alla movimentazione del liquido per
+		// cercare di rientrare nella temperatura
+		currentGuard[GUARD_ALARM_DELTA_TEMP_HIGH_RECV].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+		// ho raggiunto la condizione di sicurezza ed ho ricevuto un comando reset alarm
+		releaseGUIButton(BUTTON_RESET_ALARM);
+		EnableNextAlarmFunc();
+		LevelBuzzer = 0;
+	}
+}
+
+
 // funzione che gestisce gli stati child (allarmi) nel caso di trattamento1 o kidney
 // deve essere chiamata dalla gestione del parent nello stato PARENT_TREAT_KIDNEY_1_ALARM
 void ManageStateChildAlarmTreat1(void)
@@ -1335,6 +1366,13 @@ void ManageStateChildAlarmTreat1(void)
             {
             	/* (FM) risolvo la situazione di allarme andando  a spegnere tutti gli attuatori */
                 ptrFutureChild = &stateChildAlarmTreat1[25];
+            }
+            else if(currentGuard[GUARD_ALARM_DELTA_TEMP_HIGH].guardValue == GUARD_VALUE_TRUE)
+            {
+            	/* (FM) risolvo la situazione di allarme
+            	   escludendo l'organo per poi iniziare una fase di circolazione
+            	   del liquido fino a quando la temperatura non ritorna sul target */
+                ptrFutureChild = &stateChildAlarmTreat1[27];
             }
             ResButInChildFlag = FALSE;
 			break;
@@ -1486,6 +1524,17 @@ void ManageStateChildAlarmTreat1(void)
 			}
 			break;
 
+		case CHILD_TREAT_ALARM_1_DELTA_TEMP_HIGH:
+			if(ptrCurrentChild->action == ACTION_ON_ENTRY)
+			{
+				ptrFutureChild = &stateChildAlarmTreat1[28];
+			}
+            else if( currentGuard[GUARD_ALARM_DELTA_TEMP_HIGH].guardValue == GUARD_VALUE_FALSE )
+                ptrFutureChild = &stateChildAlarmTreat1[19]; /* FM allarme chiuso */
+			else if(ptrCurrentChild->action == ACTION_ALWAYS)
+			{
+			}
+			break;
 
 		case CHILD_TREAT_ALARM_1_END:
 			if(ptrCurrentChild->action == ACTION_ON_ENTRY)

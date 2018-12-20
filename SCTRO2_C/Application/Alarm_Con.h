@@ -15,7 +15,7 @@
 //#define CODE_ALARM2		0x02
 //#define ALARM_ACTIVE_IN_STRUCT					31
 // Filippo - aggiunto allarme tasto di stop e allarme T1
-#define ALARM_ACTIVE_IN_STRUCT					40
+#define ALARM_ACTIVE_IN_STRUCT					42
 #define CODE_ALARM_PRESS_ART_HIGH				0X01
 #define CODE_ALARM_PRESS_ART_LOW				0X02
 #define CODE_ALARM_PRESS_VEN_HIGH				0X03
@@ -27,6 +27,8 @@
 #define CODE_ALARM_PRESS_ADS_FILTER_LOW         0x09
 #define CODE_ALARM_PRESS_OXYG_LOW               0x0a
 
+// codice per allarme di superamento della temperatura massima o minima
+// Viene usato in priming\ricircolo
 #define CODE_ALARM_TEMP_ART_HIGH				0x10
 #define CODE_ALARM_TEMP_ART_LOW					0x11
 #define CODE_ALARM_TEMP_VEN_HIGH				0x12
@@ -36,6 +38,12 @@
 #define CODE_ALARM_TEMP_SENS_NOT_DETECTED		0x16
 #define CODE_ALARM_DELTA_TEMP_REC_ART		    0x17
 #define CODE_ALARM_DELTA_TEMP_REC_VEN		    0x18
+// codice per allarme di temperatura fuori range di almeno due gradi.
+// Viene usato in trattamento
+#define CODE_ALARM_T_ART_OUT_OF_RANGE           0x19
+// codice per allarme di superamento della temperatura massima o minima
+// Viene usato in trattamento
+#define CODE_ALARM_TEMP_ART_HIGH_IN_TRT         0x1a
 
 #define CODE_ALARM_FLOW_PERF_ART_HIGH			0x20
 #define CODE_ALARM_FLOW_PERF_ART_LOW			0x21
@@ -126,6 +134,7 @@
 #define SECURITY_SFA_PRIM_AIR_DET       0x1000
 #define SECURITY_STOP_ALL_ACT_WAIT_CMD  0x2000
 #define SECURITY_MOD_BUS_ERROR          0x4000
+#define SECURITY_DELTA_TEMP_HIGH        0x8000
 
 #define OVRD_ENABLE				0xA5
 #define OVRD_NOT_ENABLED		0x5A
@@ -212,6 +221,8 @@ enum ALARM
 	 //Allarme per sensori dei ganci reservoire
 	 ALARM_HOOKS_RESERVOIR,
      ARTERIAL_RESIST_HIGH,
+	 TEMP_ART_OOR,
+	 TEMP_ART_HIGH_IN_TREAT,
 
 	 // da qui in avanti i codici delle warning
 	 PRESS_ADS_FILTER_WARN,
@@ -235,6 +246,9 @@ void manageAlarmPhysicPressSensHigh(void);
 void manageAlarmPhysicPressSensLow(void);
 
 void manageAlarmPhysicTempSens(void);
+void manageAlarmPhysicTempSensOOR(void);
+void manageAlarmPhysicTempSensInTreat(void);
+
 void manageAlarmPhysicUFlowSens(void);
 void manageAlarmSAFAirSens(void);
 void manageAlarmPhysicUFlowSensVen(void);
@@ -299,6 +313,10 @@ void manageAlarmAirSensorTestKO(void);
 void manageCover_Hook_Sensor(void);
 bool ResetAlmHandleFunc(uint16_t code);
 
+void EnableDeltaTHighAlmFunc(void);
+void DisableDeltaTHighAlmFunc(void);
+
+
 #define START_WARNING_CODE		255
 
 //----------------------------------------------------------------------------------------------------------
@@ -323,4 +341,5 @@ typedef enum
 // tempo necessario per far scattare l'allarme
 #define ART_RES_ALM_ON_MSEC    1000
 
+void InitAlarmsStates(void);
 #endif /* APPLICATION_ALARM_CON_H_ */
