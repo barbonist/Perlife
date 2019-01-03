@@ -138,6 +138,14 @@ int counterFridgeStability;
 float tempFridgePlate;
 float tempMaxHeatPlate;
 
+int speed_filter;
+int speed_Arterious;
+int speed_Venous;
+int timerCounterRampaAccPmpFlt;
+int timerCounterRampaAccPmpVenArt;
+int TimeAtStopRiciclo;
+
+
 void CallInIdleState(void)
 {
 	memset(ParamRcvdInMounting, 0, sizeof(ParamRcvdInMounting));
@@ -234,7 +242,14 @@ void CallInIdleState(void)
 //  	FrigoHeatTempControlTask((LIQ_TEMP_CONTR_TASK_CMD)LIQ_T_CONTR_TASK_RESET_CMD);
 	// Filippo - cambiato funzione per gestire nuovo PID che usa il frigo e il riscaldatore insieme
   	FrigoHeatTempControlTaskNewPID((LIQ_TEMP_CONTR_TASK_CMD)LIQ_T_CONTR_TASK_RESET_CMD);
-
+  	// durante la fase di priming questo allarme deve essere disabilitato
+  	GlobalFlags.FlagsDef.EnableTempArtOORAlm = 0;
+  	speed_filter = 0;
+  	speed_Arterious = 0;
+  	speed_Venous = 0;
+  	timerCounterRampaAccPmpFlt = 0;
+  	timerCounterRampaAccPmpVenArt = 0;
+	TimeAtStopRiciclo = 0;
 }
 
 /********************************/
@@ -638,6 +653,8 @@ void manageStateTreatKidney1(void)
 		setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, 0);
 	}
 	EnableBadPinchPosAlmFunc();
+	// abilito allarme di delta di temperatura eccessivo
+	GlobalFlags.FlagsDef.EnableTempArtOORAlm = 1;
 }
 
 void manageStateTreatKidney1Always(void)
@@ -1472,6 +1489,24 @@ float CalcVenPumpGain(float flow)
 	return Pump_Gain;
 }
 
+void RestorePrimSpeedVal(void)
+{
+	// ripristino le velocita' di priming normali
+	setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, RPM_IN_PRIMING_PHASES);
+	if((GetTherapyType() == KidneyTreat) && (((PARAMETER_ACTIVE_TYPE)parameterWordSetFromGUI[PAR_SET_OXYGENATOR_ACTIVE].value) == YES))
+	{
+		// sono nel ricircolo rene con ossigenatore abilitato
+			setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress,KIDNEY_PRIMING_PMP_OXYG_SPEED);
+	}
+	else if(GetTherapyType() == LiverTreat)
+	{
+		// sono nel priming fegato ed ho superato una quantita' minima nel reservoir, quindi, la pompa venosa
+		// per il riempimento del disposable di ossigenazione e la pompa di depurazione PPAR
+		setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, (int)LIVER_PRIMING_PMP_OXYG_SPEED);
+		setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, LIVER_PPAR_SPEED);
+	}
+}
+
 
 // cmd comando per eventuare riposizionamento della macchina a stati
 unsigned char TemperatureStateMach(int cmd)
@@ -1479,6 +1514,7 @@ unsigned char TemperatureStateMach(int cmd)
 	static unsigned long RicircTimeout;
 	static unsigned char TempStateMach = START_RECIRC_HIGH_SPEED;
 	static int Delay = 0;
+	static int TimeRemaining = HIGH_PUMP_SPEED_DURATION;
 	unsigned char TempReached = 0;
 
 	float tmpr;
@@ -1498,11 +1534,22 @@ unsigned char TemperatureStateMach(int cmd)
 		{
 			// faccio ripartire i motori ad alta velocita'
 			TempStateMach = START_RECIRC_HIGH_SPEED;
+			TimeRemaining = (int)HIGH_PUMP_SPEED_DURATION - (TimeAtStopRiciclo - RicircTimeout) * 50;
+			RicircTimeout = timerCounterModBus;
+			if(TimeRemaining > HIGH_PUMP_SPEED_DURATION)
+				TimeRemaining = HIGH_PUMP_SPEED_DURATION;
+			else if(TimeRemaining < 0)
+				TimeRemaining = HIGH_PUMP_SPEED_DURATION;
 		}
 		else if((TempStateMach == TEMP_CHECK_DURATION_STATE) || (TempStateMach == TEMP_START_CHECK_STATE))
 		{
 			// dopo uno stop o un allarme devo far partire le pompe prima di continuare con il controllo di temperatura
-			TempStateMach = STOP_RECIRC_HIGH_SPEED;  //TEMP_START_CHECK_STATE;
+			RestorePrimSpeedVal();
+			TempStateMach = TEMP_START_CHECK_STATE;
+		}
+		else if(TempStateMach == SWITCH_PINCH_IN_INLET_LINE)
+		{
+			RestorePrimSpeedVal();
 		}
 	}
 	else if(cmd == TEMP_STATE_RESET)
@@ -1535,17 +1582,20 @@ unsigned char TemperatureStateMach(int cmd)
 				// per cercare di eliminare l'aria
 				TempStateMach = START_RECIRC_HIGH_SPEED;
 				Delay = 0;
+				// spostato da START_RECIRC_HIGH_SPEED  a qui per evitare di ricominciare daccapo
+				// il minuto di riciclo
+				RicircTimeout = timerCounterModBus;
 
 				if(!StartPrimingTime)
 				{
 					// faccio ripartire il timer del priming
 					StartPrimingTime = (unsigned long)timerCounterModBus;
 				}
+				TimeRemaining = HIGH_PUMP_SPEED_DURATION;
 			}
 			break;
 
 	case START_RECIRC_HIGH_SPEED:
-		RicircTimeout = timerCounterModBus;
 		setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress,(int)RECIRC_PUMP_HIGH_SPEED_ART);
 		if((GetTherapyType() == KidneyTreat) && (((PARAMETER_ACTIVE_TYPE)parameterWordSetFromGUI[PAR_SET_OXYGENATOR_ACTIVE].value) == YES))
 		{
@@ -1563,7 +1613,7 @@ unsigned char TemperatureStateMach(int cmd)
 		VenousPumpGainForPid = DEFAULT_VEN_PUMP_GAIN;
 		break;
 	case CALC_PUMPS_GAIN:
-		if((msTick_elapsed(RicircTimeout) * 50L) >= (HIGH_PUMP_SPEED_DURATION - 3000))
+		if((msTick_elapsed(RicircTimeout) * 50L) >= (TimeRemaining - 3000))
 		{
 			// 3 secondi prima della fine del ricircolo calcolo il guadagno delle pompe e le memorizzo
 			ArteriousPumpGainForPid = CalcArtPumpGain(sensor_UFLOW[0].Average_Flow_Val);
@@ -1572,7 +1622,7 @@ unsigned char TemperatureStateMach(int cmd)
 		}
 		break;
 	case STOP_RECIRC_HIGH_SPEED:
-		if((msTick_elapsed(RicircTimeout) * 50L) >= HIGH_PUMP_SPEED_DURATION)
+		if((msTick_elapsed(RicircTimeout) * 50L) >= TimeRemaining)
 		{
 			// ho raggiunto il tempo di ricircolo ad alta velocita' per eliminare l'aria eventuale
 			// proseguo con il controllo della temperatura
@@ -1937,11 +1987,11 @@ void manageParentPrimingAlways(void){
 	{
 
 	/*25-10-2018 Vincenzo --> partenza pompe a RAMPA all0inizio del priming*/
-		static int speed_filter		 	         = 0;
-		static int speed_Arterious 			     = 0;
-		static int speed_Venous				     = 0;
-		static int timerCounterRampaAccPmpFlt    = 0;
-		static int timerCounterRampaAccPmpVenArt = 0;
+//		static int speed_filter		 	         = 0;
+//		static int speed_Arterious 			     = 0;
+//		static int speed_Venous				     = 0;
+//		static int timerCounterRampaAccPmpFlt    = 0;
+//		static int timerCounterRampaAccPmpVenArt = 0;
 
 		//TODO sarebbe sempre meglio controllare la velocità che si vuol dare alla pompa
 		//con quella letta dalla pompa stessa e dare ilo comando se è diversa.
@@ -2159,6 +2209,9 @@ void manageParentPrimingAlways(void){
 			CheckCurrPinchPosTask(CHECK_CURR_PINCH_POS_DISABLE_CMD);
 			// disabilito allarme di pinch posizionate male
 			DisableBadPinchPosAlmFunc();
+
+			if(ptrCurrentState->state == STATE_PRIMING_RICIRCOLO)
+				TimeAtStopRiciclo = timerCounterModBus;
 		}
 #ifdef DEBUG_WITH_SERVICE_SBC
 		else if((ptrCurrentState->state == STATE_PRIMING_PH_1) &&
@@ -3929,7 +3982,7 @@ void manageParentEmptyDisposEndAlways(void)
 
 // GESTIONE DEGLI STATI PER L'ELIMINAZIONE DELL'ALLARME ARIA-----------------------------------
 
-void AirAlarmRecoveryStateMach(void)
+void AirAlarmRecoveryStateMach_originale(void)
 {
 	static unsigned long StarDelay = 0;
 	THERAPY_TYPE TherType = GetTherapyType();
@@ -4040,6 +4093,195 @@ void AirAlarmRecoveryStateMach(void)
 		break;
 	}
 }
+
+void AirAlarmRecoveryStateMach(void)
+{
+	static unsigned long StarDelay = 0;
+	static DELTA_T_HIGH_ALM_RECVR_STATE LastAirAlarmRecoveryState = INIT_AIR_ALARM_RECOVERY;
+	static int TimeRemaining = TIME_TO_REJECT_AIR;
+
+	THERAPY_TYPE TherType = GetTherapyType();
+
+	if(buttonGUITreatment[BUTTON_START_TREATMENT].state == GUI_BUTTON_RELEASED)
+	{
+		releaseGUIButton(BUTTON_START_TREATMENT);
+		if( AirAlarmRecoveryState == AIR_REJECT_STOPPED )
+		{
+			AirAlarmRecoveryState =	LastAirAlarmRecoveryState;
+			LastAirAlarmRecoveryState = INIT_TEMP_ALARM_RECOVERY;
+			StarDelay = timerCounterModBus;
+
+			if(TherType == KidneyTreat)
+			{
+				setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, TEMP_RESTORE_SPEED);
+				setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, TEMP_RESTORE_SPEED);
+			}
+			else if(TherType == LiverTreat)
+			{
+				setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, TEMP_RESTORE_SPEED);
+				setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, TEMP_RESTORE_SPEED);
+				setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, TEMP_RESTORE_SPEED);
+			}
+
+			if(AirParentState == PARENT_TREAT_KIDNEY_1_AIR_FILT)
+			{
+				if(TherType == KidneyTreat)
+					setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, AIR_REJECT_SPEED);
+				else if(TherType == LiverTreat)
+					setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, AIR_REJECT_SPEED);
+			}
+			else if(AirParentState == PARENT_TREAT_KIDNEY_1_SFV)
+				setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, AIR_REJECT_SPEED);
+			else if(AirParentState == PARENT_TREAT_KIDNEY_1_SFA)
+				setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, AIR_REJECT_SPEED);
+		}
+	}
+	else if(buttonGUITreatment[BUTTON_STOP_TREATMENT].state == GUI_BUTTON_RELEASED)
+	{
+		releaseGUIButton(BUTTON_STOP_TREATMENT);
+
+		if( (AirAlarmRecoveryState == START_AIR_PUMP) ||
+			(AirAlarmRecoveryState == AIR_CHANGE_START_TIME) ||
+			(AirAlarmRecoveryState == STOP_AIR_PUMP) )
+		{
+			LastAirAlarmRecoveryState = AirAlarmRecoveryState;
+			AirAlarmRecoveryState = AIR_REJECT_STOPPED;
+			TimeRemaining = TIME_TO_REJECT_AIR - msTick_elapsed(StarDelay) * 50L;
+			if(TimeRemaining > TIME_TO_REJECT_AIR)
+				TimeRemaining = TIME_TO_REJECT_AIR;
+			else if(TimeRemaining < 0)
+				TimeRemaining = TIME_TO_REJECT_AIR;
+
+			if(AirParentState == PARENT_TREAT_KIDNEY_1_AIR_FILT)
+			{
+				if(TherType == KidneyTreat)
+					setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
+				else if(TherType == LiverTreat)
+					setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, 0);
+			}
+			else if(AirParentState == PARENT_TREAT_KIDNEY_1_SFV)
+			{
+				// fermo la coppia di pompe per la venosa nel fegato e per l'ossigenazione nel rene
+				setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 0);
+			}
+			else if(AirParentState == PARENT_TREAT_KIDNEY_1_SFA)
+			{
+				// fermo la pompa a cui si riferisce la struttura pumpPerist 0
+				setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
+			}
+		}
+	}
+
+	switch (AirAlarmRecoveryState)
+	{
+	case INIT_AIR_ALARM_RECOVERY:
+		AirAlarmRecoveryState = START_AIR_PUMP;
+		TimeoutAirEjection = 0;
+		TimeRemaining = TIME_TO_REJECT_AIR;
+		break;
+	case START_AIR_PUMP:
+		if(AirParentState == PARENT_TREAT_KIDNEY_1_AIR_FILT)
+		{
+			if(TherType == KidneyTreat)
+				setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, AIR_REJECT_SPEED);
+			else if(TherType == LiverTreat)
+				setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, AIR_REJECT_SPEED);
+			AirAlarmRecoveryState = AIR_CHANGE_START_TIME;
+			StarDelay = timerCounterModBus;
+		}
+		else if(AirParentState == PARENT_TREAT_KIDNEY_1_SFV)
+		{
+			// faccio partire la coppia di pompe per la venosa nel fegato e per l'ossigenazione nel rene
+			setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, AIR_REJECT_SPEED);
+			AirAlarmRecoveryState = AIR_CHANGE_START_TIME;
+			StarDelay = timerCounterModBus;
+		}
+		else if(AirParentState == PARENT_TREAT_KIDNEY_1_SFA)
+		{
+			// parte la sempre la pompa a cui si riferisce la struttura pumpPerist 0
+			setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, AIR_REJECT_SPEED);
+			AirAlarmRecoveryState = AIR_CHANGE_START_TIME;
+			StarDelay = timerCounterModBus;
+		}
+		break;
+	case AIR_CHANGE_START_TIME:
+		if((AirParentState == PARENT_TREAT_KIDNEY_1_AIR_FILT) && (Air_1_Status == LIQUID))
+		{
+			//  la bolla se ne e' andata faccio; ripartire il timer per misurare il tempo a partire da ora
+			StarTimeToRejAir = timerCounterModBus;
+			AirAlarmRecoveryState = STOP_AIR_PUMP;
+		}
+		else if((AirParentState == PARENT_TREAT_KIDNEY_1_SFV) && (sensor_UFLOW[VENOUS_AIR_SENSOR].bubbleSize < 25))
+		{
+			//  la bolla se ne e' andata faccio; ripartire il timer per misurare il tempo a partire da ora
+			StarTimeToRejAir = timerCounterModBus;
+			AirAlarmRecoveryState = STOP_AIR_PUMP;
+		}
+		else if((AirParentState == PARENT_TREAT_KIDNEY_1_SFA) && (sensor_UFLOW[ARTERIOUS_AIR_SENSOR].bubbleSize < 25))
+		{
+			//  la bolla se ne e' andata faccio; ripartire il timer per misurare il tempo a partire da ora
+			StarTimeToRejAir = timerCounterModBus;
+			AirAlarmRecoveryState = STOP_AIR_PUMP;
+		}
+		else
+		{
+			// Dopo un timeout esco comunque e vado avanti dopo aver segnalato alla gui il fatto
+			if(StarDelay && ((msTick_elapsed(StarDelay) * 50L) >= 10000L))
+			{
+				// sono passati 10 secondi la bolla d'aria non si e' ancora spostata
+				// forzo il passaggio allo stato successivo.
+				StarTimeToRejAir = timerCounterModBus;
+				AirAlarmRecoveryState = STOP_AIR_PUMP;
+				TimeoutAirEjection = 1;
+			}
+		}
+		break;
+	case STOP_AIR_PUMP:
+		if(StarTimeToRejAir && ((msTick_elapsed(StarTimeToRejAir) + TotalTimeToRejAir) * 50L >= TimeRemaining))
+		{
+			// la pompa per l'espulsione dell'aria ha fatto 10 giri, che ritengo sufficienti per
+			// buttare fuori l'aria
+			if(AirParentState == PARENT_TREAT_KIDNEY_1_AIR_FILT)
+			{
+				if(TherType == KidneyTreat)
+					setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
+				else if(TherType == LiverTreat)
+					setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, 0);
+				AirAlarmRecoveryState = AIR_REJECTED;
+				//currentGuard[GUARD_AIR_RECOVERY_END].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+				StarDelay = timerCounterModBus;
+			}
+			else if(AirParentState == PARENT_TREAT_KIDNEY_1_SFV)
+			{
+				// fermo la coppia di pompe per la venosa nel fegato e per l'ossigenazione nel rene
+				setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 0);
+				AirAlarmRecoveryState = AIR_REJECTED;
+				//currentGuard[GUARD_AIR_RECOVERY_END].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+				StarDelay = timerCounterModBus;
+			}
+			else if(AirParentState == PARENT_TREAT_KIDNEY_1_SFA)
+			{
+				// fermo la pompa a cui si riferisce la struttura pumpPerist 0
+				setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
+				AirAlarmRecoveryState = AIR_REJECTED;
+				//currentGuard[GUARD_AIR_RECOVERY_END].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+				StarDelay = timerCounterModBus;
+			}
+		}
+		break;
+	case AIR_REJECTED:
+		if(StarDelay && ((msTick_elapsed(StarDelay) * 50L) >= 2000))
+		{
+			AirAlarmRecoveryState = AIR_REJECTED1;
+			currentGuard[GUARD_AIR_RECOVERY_END].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+		}
+		break;
+	case AIR_REJECTED1:
+		break;
+	}
+}
+
+
 // gestione dello stato PARENT_TREAT_KIDNEY_1_AIR_FILT
 // faccio fare un cero numero di giri alla pompa 2 fino a quando
 // l'aria on arriva al reservoir
@@ -4144,21 +4386,23 @@ void DeltaTHighAlarmRecoveryStateMach(void)
 	if(buttonGUITreatment[BUTTON_START_TREATMENT].state == GUI_BUTTON_RELEASED)
 	{
 		releaseGUIButton(BUTTON_START_TREATMENT);
-
-		DeltaTHighAlarmRecvrState =	LastDeltaTHgAlmRecvrState;
-		LastDeltaTHgAlmRecvrState = INIT_TEMP_ALARM_RECOVERY;
-		StarTimeToRestoreTemp = timerCounterModBus;
-
-		if(TherType == KidneyTreat)
+		if( DeltaTHighAlarmRecvrState == TEMP_RESTORE_STOPPED )
 		{
-			setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, TEMP_RESTORE_SPEED);
-			setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, TEMP_RESTORE_SPEED);
-		}
-		else if(TherType == LiverTreat)
-		{
-			setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, TEMP_RESTORE_SPEED);
-			setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, TEMP_RESTORE_SPEED);
-			setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, TEMP_RESTORE_SPEED);
+			DeltaTHighAlarmRecvrState =	LastDeltaTHgAlmRecvrState;
+			LastDeltaTHgAlmRecvrState = INIT_TEMP_ALARM_RECOVERY;
+			StarTimeToRestoreTemp = timerCounterModBus;
+
+			if(TherType == KidneyTreat)
+			{
+				setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, TEMP_RESTORE_SPEED);
+				setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, TEMP_RESTORE_SPEED);
+			}
+			else if(TherType == LiverTreat)
+			{
+				setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, TEMP_RESTORE_SPEED);
+				setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, TEMP_RESTORE_SPEED);
+				setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, TEMP_RESTORE_SPEED);
+			}
 		}
 	}
 	else if(buttonGUITreatment[BUTTON_STOP_TREATMENT].state == GUI_BUTTON_RELEASED)
@@ -4169,6 +4413,8 @@ void DeltaTHighAlarmRecoveryStateMach(void)
 		DeltaTHighAlarmRecvrState = TEMP_RESTORE_STOPPED;
 		TimeRemaining = TIME_TO_RESTORE_TEMP - msTick_elapsed(StarTimeToRestoreTemp) * 50L;
 		if(TimeRemaining > TIME_TO_RESTORE_TEMP)
+			TimeRemaining = TIME_TO_RESTORE_TEMP;
+		else if(TimeRemaining < 0)
 			TimeRemaining = TIME_TO_RESTORE_TEMP;
 
 		if(TherType == KidneyTreat)
@@ -4262,12 +4508,16 @@ void manageParentTreatDeltaTHRcvAlways(void)
 
 void manageParentTreatAlmDeltaTHRcvEntry(void)
 {
-
+	LevelBuzzer = 2;
 }
 
 void manageParentTreatAlmDeltaTHRcvAlways(void)
 {
-
+	if(buttonGUITreatment[BUTTON_RESET_ALARM].state == GUI_BUTTON_RELEASED)
+	{
+		// volutamente non resetto l'evento di bottone premuto
+		LevelBuzzer = 0;
+	}
 }
 
 uint8_t mngParTreatDeltaTHWtState;
@@ -4303,7 +4553,7 @@ void manageParentTreatDeltaTHWaitAlways(void)
 				StarTimeToRetTeatFromRestTemp = timerCounterModBus;
 				mngParTreatDeltaTHWtState = 2;
 				LevelBuzzer = 0;
-				EnableNextAlarmFunc();
+				//EnableNextAlarmFunc();
 			}
 			break;
 		case 2:
@@ -4614,6 +4864,11 @@ static void computeMachineStateGuardTreatment(void)
 			ClearAlarmState();
 			StopAllCntrlAlarm(&AlarmEnableConf);
 			currentGuard[GUARD_ENABLE_WAIT_TREATMENT].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+
+			// evito che mi venga fuori in continuazione l'allarme di temperatura se non e' stato
+			// risolto durante il trattamento
+			DisableDeltaTHighAlmFunc();
+
 			if (PeltierOn && (peltierCell.StopEnable == 0))
 			{
 				// se erano accese le spengo
@@ -4636,6 +4891,11 @@ static void computeMachineStateGuardTreatment(void)
 				ClearAlarmState();
 				StopAllCntrlAlarm(&AlarmEnableConf);
 				currentGuard[GUARD_ENABLE_WAIT_TREATMENT].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+
+				// evito che mi venga fuori in continuazione l'allarme di temperatura se non e' stato
+				// risolto durante il trattamento
+				DisableDeltaTHighAlmFunc();
+
 				if (PeltierOn && (peltierCell.StopEnable == 0))
 				{
 					// se erano accese le spengo

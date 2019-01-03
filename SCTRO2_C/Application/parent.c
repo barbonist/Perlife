@@ -1023,7 +1023,6 @@ void ParentFunc(void)
 				 * Per la sua gestione uso un nuovo stato 23  */
 				ptrFutureParent = &stateParentTreatKidney1[23];
 				ptrFutureChild = ptrFutureParent->ptrChild;
-				TotalTimeToRejAir += msTick_elapsed(StarTimeToRejAir);
 			}
 			break;
 

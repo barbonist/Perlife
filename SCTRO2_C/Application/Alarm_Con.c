@@ -501,8 +501,25 @@ static int IdxCurrAlarm = 0xff;
 int StartAlmArrIdx = 0;
 int i_al;
 
+// serve per evitare allarmi residui quando entro in uno stato
+// della macchina a stati principale in cui non sono gestiti
+void ResetAllUnusedAlmWrn(void)
+{
+	int i;
+	for( i = 0; i < ALARM_ACTIVE_IN_STRUCT; i++)
+		alarmList[i].physic = PHYSIC_FALSE;
+}
+
+
 void CalcAlarmActive(void)
 {
+	static CalcAlarmActiveOldState = 0;
+	if(ptrCurrentState->state != CalcAlarmActiveOldState)
+	{
+		CalcAlarmActiveOldState = ptrCurrentState->state;
+		ResetAllUnusedAlmWrn();
+	}
+
 	/*Faccio uno switch su tutta la macchina a stati in modo
 	 * gestire ogni allarme in funzioine dello stato in cui sono*/
 
