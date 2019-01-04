@@ -1203,26 +1203,38 @@ int ForcePressAdsFiltHigh = 0;
 
 void manageAlarmPhysicPressSensHigh(void)
 {
-	word MaxPressArt = PR_ART_HIGH;
-	word MaxPressVen = PR_VEN_HIGH;
+	word MaxPressArt = 0;
+	word MaxPressVen = 0;
 
 	if (GetTherapyType() == LiverTreat)
 	{
-		if((ptrCurrentState->state == STATE_PRIMING_PH_1) || (ptrCurrentState->state == STATE_PRIMING_PH_2) ||
-			   (ptrCurrentState->state == STATE_PRIMING_RICIRCOLO))
+        // PRIMING LIVER
+        if ((ptrCurrentState->state == STATE_PRIMING_PH_1) || (ptrCurrentState->state == STATE_PRIMING_PH_2) ||
+            (ptrCurrentState->state == STATE_PRIMING_RICIRCOLO))
 		{
 			MaxPressArt = PR_ART_HIGH_PRIMING_LIVER;
 			MaxPressVen = PR_VEN_HIGH_PRIMING_LIVER;
 		}
-
+		else
+		{
+			//TRATTAMENTO LIVER
+			MaxPressArt = PR_ART_HIGH_TREATMENT_LIVER;
+			MaxPressVen = PR_VEN_HIGH_TREATMENT_LIVER;
+		}
 	}
-
-	else if((ptrCurrentState->state == STATE_PRIMING_PH_1) || (ptrCurrentState->state == STATE_PRIMING_PH_2) ||
-	   (ptrCurrentState->state == STATE_PRIMING_RICIRCOLO))
+	else //KidneyTreat
 	{
-		// nel caso di priming considero una pressione arteriosa piu' alta
-		MaxPressArt += 150;
-		MaxPressVen += 150;
+		if ((ptrCurrentState->state == STATE_PRIMING_PH_1) || (ptrCurrentState->state == STATE_PRIMING_PH_2) ||
+	       (ptrCurrentState->state == STATE_PRIMING_RICIRCOLO))
+		{
+			// PRIMING KIDNEY
+			MaxPressArt = PR_ART_HIGH_PRIMING_KIDNEY;
+		}
+		else
+		{
+			// TRATTAMENTO KIDNEY
+			MaxPressArt = PR_ART_HIGH_TREATMENT_KIDNEY;
+		}
 	}
 
 	if(GlobalFlags.FlagsDef.EnablePressSensHighAlm)
@@ -1259,7 +1271,7 @@ void manageAlarmPhysicPressSensHigh(void)
 			/*aggiungo controllo che non fa alzare allarem di sovrapressione
 			 * venosa in trattamento se lo stesso non è ancora partito
 			 * se è partito, vuol dire che ho fatto la tara sulle presisoni*/
-			if ( (MaxPressVen > PR_VEN_HIGH) || ( (MaxPressVen == PR_VEN_HIGH) && TARA_PRESS_DONE == TRUE) )
+			if ( (MaxPressVen > PR_VEN_HIGH_TREATMENT_LIVER) || ( (MaxPressVen == PR_VEN_HIGH_TREATMENT_LIVER) && TARA_PRESS_DONE == TRUE) )
 				alarmList[PRESS_VEN_HIGH].physic = PHYSIC_TRUE;
 
 		}
