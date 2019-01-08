@@ -513,7 +513,7 @@ void ResetAllUnusedAlmWrn(void)
 
 void CalcAlarmActive(void)
 {
-	static CalcAlarmActiveOldState = 0;
+	static int CalcAlarmActiveOldState = 0;
 	if(ptrCurrentState->state != CalcAlarmActiveOldState)
 	{
 		CalcAlarmActiveOldState = ptrCurrentState->state;
