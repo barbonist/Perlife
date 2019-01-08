@@ -316,7 +316,7 @@ int main(void)
 		if (Timer_printf_debug >= 10)
 		{
 			Timer_printf_debug = 1;
-			DebugString();
+			DebugString_TEST();
 		}
 	 }
 	 /*faccio lo start della conversione sul canale AD1 ogni 10 msec

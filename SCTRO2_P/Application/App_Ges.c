@@ -227,7 +227,8 @@ int aaa =  0;
 
 }
 
-void DebugString()
+//messa da Vincenzo per Marco ( vedere pos pinch al volo o usarla p0er Test )
+void DebugString_TEST()
 {
 	static char stringPr[200];
 
