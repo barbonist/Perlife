@@ -154,23 +154,28 @@
 
 #define MAX_MSG_CONSECUTIVE_FLOW_SENS_NOT_DETECTED 			10
 #define MAX_MSG_CONSECUTIVE_IR_TEMP_SENS_NOT_DETECTED 		10
-#define PR_ART_HIGH											100
+
+// Allarmi di pressione arteriosa e venosa Liver [mmHg]
 #define PR_ART_HIGH_PRIMING_LIVER							300
-#define PR_ART_LOW											0
-#define PR_VEN_HIGH											10  //290
 #define PR_VEN_HIGH_PRIMING_LIVER							300
-//TODO da definire esattamente
-#define PR_OXYG_HIGH                                        800
+#define PR_ART_HIGH_TREATMENT_LIVER							110
+#define PR_VEN_HIGH_TREATMENT_LIVER						     10
+
+// Allarmi di pressione arteriosa Kidney [mmHg]
+#define PR_ART_HIGH_PRIMING_KIDNEY							250
+#define PR_ART_HIGH_TREATMENT_KIDNEY						110
+
+// Allarmi pressione ossigenatore [mmHg]
+#define PR_OXYG_HIGH                                        500
 #define PR_OXYG_LOW                                          10
 
-//#define PR_VEN_LOW											40
-// modificato altrimenti viene sempre fuori allarme di pressione bassa
-#define PR_VEN_LOW											25
-#define PR_ADS_FILTER_HIGH									250
-#define PR_ADS_FILTER_LOW                                   10
+// Allarmi pressione filtro [mmHg]
+#define PR_ADS_FILTER_HIGH									450
+#define PR_ADS_FILTER_LOW                                    10
+#define PR_ADS_FILTER_WARN									100
+
 #define MAX_MSG_CONSECUTIVE_ACTUATOR_MODBUS_NOT_RESPOND 	10
 
-#define PR_ADS_FILTER_WARN									100
 
 #define MAX_BUBBLE_SIZE		50
 
