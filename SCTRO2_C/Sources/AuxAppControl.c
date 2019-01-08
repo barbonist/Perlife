@@ -339,7 +339,7 @@ void NotifyTempSens(void)
 	{
 		onNewSensTempVal(PR_OXYG_mmHg_Filtered,         // pressione ossigenatore
 				         sensorIR_TM[1].tempSensValue,  // temperatura recipiente * 10
-						 sensorIR_TM[1].tempSensValue,  // sensorIR_TM[0].tempSensValue, probabilmente,
+						 sensorIR_TM[0].tempSensValue,  // sensorIR_TM[0].tempSensValue, probabilmente,
 						                                // in questo caso, la temperatura della linea arteriosa coincide
 						                                // con quella del recipiente
 						 sensorIR_TM[2].tempSensValue); // temperatura ossigenatore

@@ -15,7 +15,7 @@
 //#define CODE_ALARM2		0x02
 //#define ALARM_ACTIVE_IN_STRUCT					31
 // Filippo - aggiunto allarme tasto di stop e allarme T1
-#define ALARM_ACTIVE_IN_STRUCT					36//34
+#define ALARM_ACTIVE_IN_STRUCT					37//34
 #define CODE_ALARM_PRESS_ART_HIGH				0X01
 #define CODE_ALARM_PRESS_ART_LOW				0X02
 #define CODE_ALARM_PRESS_VEN_HIGH				0X03
@@ -66,6 +66,7 @@
 #define CODE_ALARM_PUMP_PURIF_COVER_OPEN		0x71
 #define CODE_ALARM_PUMP_OXYG_COVER_OPEN			0x73
 #define CODE_ALARM_PUMPS_NOT_STILL              0x74
+#define CODE_ALARM_ART_RES_HIGH                 0x75
 
 #define CODE_ALARM_END_PRIMING_PHASE_1			0x80
 #define CODE_ALARM_END_PRIMING_PHASE_2			0x81
@@ -204,9 +205,11 @@ enum ALARM
      ALARM_MACHINE_COVERS,
 	 //Allarme per sensori dei ganci reservoire
 	 ALARM_HOOKS_RESERVOIR,
+     ARTERIAL_RESIST_HIGH,
 
 	 // da qui in avanti i codici delle warning
 	 PRESS_ADS_FILTER_WARN
+
 };
 
 void alarmConInit(void);
@@ -239,6 +242,7 @@ void manageAlarmDeltaFlowArt(void);
 void manageAlarmDeltaFlowVen(void);
 void manageAlarmDeltaTempRecArt(void);
 void manageAlarmDeltaTempRecVen(void);
+void manageAlarmArterialResistance(void);
 
 void SetAllAlarmEnableFlags(void);
 
@@ -287,5 +291,9 @@ void manageCover_Hook_Sensor(void);
 bool ResetAlmHandleFunc(uint16_t code);
 
 #define START_WARNING_CODE		255
+// durata della resistenza arteriosa alta prima di scattare l'allarme
+#define ART_RES_HIGH_TOUT_MSEC 10000
+// tempo necessario per far scattare l'allarme
+#define ART_RES_ALM_ON_MSEC    1000
 
 #endif /* APPLICATION_ALARM_CON_H_ */
