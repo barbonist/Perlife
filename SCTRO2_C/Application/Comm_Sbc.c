@@ -1623,6 +1623,11 @@ void initSetParamInSourceCode(void)
 
 void setParamWordFromGUI(unsigned char parId, int value)
 {
+	if (parId == PAR_SET_THERAPY_TYPE)
+	{
+		if (value == LiverTreat || value == KidneyTreat)
+			SetTherapyType(value);
+	}
 	if(parId == PAR_SET_PRIMING_VOL_PERFUSION)
 	{
 		// controllo range del volume di liquido caricato nel reservoir

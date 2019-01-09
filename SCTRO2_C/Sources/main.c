@@ -253,7 +253,7 @@ int main(void)
   bool MOTORE_ACCESO = FALSE;
   bool MOTORE_ACCESO_2 = FALSE;
   bool Status_Board;
-  THERAPY_TYPE TreatType = KidneyTreat;
+  THERAPY_TYPE TreatType = Undef;
   EnableNextAlarm = FALSE;
 
   pollingDataFromSBC = 0;

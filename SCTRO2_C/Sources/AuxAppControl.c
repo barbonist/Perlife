@@ -346,6 +346,11 @@ void NotifyTempSens(void)
 	}
 }
 
+void NotifyTherapyType(void)
+{
+	onNewTherapyType();
+}
+
 extern bool HeaterOn;
 extern bool FrigoOn;
 
@@ -384,19 +389,38 @@ void NotifyPinchPos(void)
 				      alarmCurrent.code,                         // allarme corrente sulla control
 					  (uint8_t)pinchActuator[0].pinchPosTarget,  // posizione della pinch sul filtro 2WPVF
 					  (uint8_t)pinchActuator[1].pinchPosTarget,  // posizione della pinch su linea arteriosa 2WPVA
-					  (uint8_t)pinchActuator[2].pinchPosTarget,  // posizione della pinch su linea venosa 2WPVV
-		              0,                                         // free1
-					  0);                                        // free2
+					  (uint8_t)pinchActuator[2].pinchPosTarget);  // posizione della pinch su linea venosa 2WPVV
+
+
 	}
-	else
+	else // if(GetTherapyType() == KidneyTreat)
 	{
 		onNewPinchVal(u8,                                        // presenza aria sul filtro
 				      alarmCurrent.code,                         // allarme corrente sulla control
 					  (uint8_t)pinchActuator[0].pinchPosTarget,  // posizione della pinch sul filtro 2WPVF
 					  (uint8_t)pinchActuator[1].pinchPosTarget,  // posizione della pinch su linea arteriosa 2WPVA
-					  (uint8_t)pinchActuator[2].pinchPosTarget,  // posizione della pinch su linea venosa 2WPVV
-		              0,                                         // free1
-					  0);                                        // free2
+					  (uint8_t)pinchActuator[2].pinchPosTarget);  // posizione della pinch su linea venosa 2WPVV
+	}
+}
+void NotifyOffsetPressInlet(void)
+{
+
+
+	if(GetTherapyType() == LiverTreat)
+	{
+		onNewOffsetPressInlet( (uint8_t) PR_VEN_TARA_mmHg,                 // offset di pressione venosa calcolata al momento dello start treatment dopo la connessione dell'organo
+					           (uint8_t) PR_ART_TARA_mmHg);                // offset di pressione arteriosa calcolata al momento dello start treatment dopo la connessione dell'organo
+
+	}
+	else  if(GetTherapyType() == KidneyTreat)
+	{
+		onNewOffsetPressInlet(  0,               						  // offset di pressione venosa pari a zero nel trattamento kidney
+		                        PR_ART_TARA_mmHg);                // offset di pressione arteriosa calcolata al momento dello start treatment dopo la connessione dell'organo
+	}
+	else
+	{
+		onNewOffsetPressInlet(  0, 	  // Se la terapia non è definita mando 0
+				                0);   // Se la terapia non è definita mando 0
 	}
 }
 
@@ -418,21 +442,23 @@ void NotifyAlmToResetMsg(void)
 
 void ProtectiveTask(void)
 {
-	static unsigned short ProtTaskCnt = 0;
+//	static unsigned short ProtTaskCnt = 0;
 
 	NotifyMachineStatus();
 	NotifyPressSens();
 	NotifyTempSens();
 	NotifyPinchPos();
 	NotifyPumpsSpeed();
+	NotifyOffsetPressInlet();
+	NotifyTherapyType();
 #ifdef ENABLE_PROTECTIVE_ALARM_RESET
 	NotifyAlmToResetMsg();
 #endif
 
-	if(ProtTaskCnt % 2)
-	{
-		// invio gli altri messaggi
-	}
+//	if(ProtTaskCnt % 2)
+//	{
+//		// invio gli altri messaggi
+//	}
 }
 
 

@@ -18,8 +18,9 @@ void InitControlProtectiveInterface(void);
 void onNewSensTempVal(uint16_t PressOxyg, uint16_t TempRes,
 		               uint16_t TempArt, uint16_t TempVen);
 void onNewPinchVal(uint8_t AirFiltStat, uint16_t AlarmCode,
-		           uint8_t Pinch2WPVF, uint8_t Pinch2WPVA, uint8_t Pinch2WPVV,
-				   uint8_t free1, uint8_t free2);
+		           uint8_t Pinch2WPVF, uint8_t Pinch2WPVA, uint8_t Pinch2WPVV);
+void onNewOffsetPressInlet(uint8_t Offset_Press_Ven, uint8_t Offset_Press_Art);
+void onNewTherapyType(void);
 
 #ifdef ENABLE_PROTECTIVE_ALARM_RESET
 void onNewAlmToResetMsg(uint16_t AlmCodeToreset);

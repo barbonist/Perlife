@@ -14,6 +14,7 @@
 #include "Global.h"
 #include "Alarm_Con.h"
 #include "App_Ges.h"
+#include "ModBusCommProt.h"
 
 
 #define VAL_JOLLY16	0x5A5A
@@ -25,9 +26,9 @@
 
 union UTxCan {
 	uint8_t RawCanBuffer[SIZE_CAN_BUFFER];
-	struct {
-		uint8_t Filler[SIZE_CAN_BUFFER]; uint8_t NoSendCounter;
-	} SAux;
+//	struct {
+//		uint8_t Filler[SIZE_CAN_BUFFER]; uint8_t NoSendCounter;
+//	} SAux;
 	struct {
 		uint16_t	State;	uint16_t	Parent;	uint16_t	Child;	uint16_t	Guard;
 	} STxCan0;
@@ -38,7 +39,7 @@ union UTxCan {
 		uint16_t PressOxy;	uint16_t TempFluidx10;	uint16_t TempArtx10;	uint16_t TempVenx10;
 	} STxCan2;
 	struct {
-		uint8_t AirAlarm;	uint16_t AlarmCode;	uint8_t FilterPinchPos;	uint8_t ArtPinchPos; uint8_t OxygPinchPos;	uint8_t Free1; uint8_t Free2;
+		uint16_t AlarmCode; uint8_t AirAlarm; uint8_t FilterPinchPos; uint8_t ArtPinchPos; uint8_t OxygPinchPos; uint8_t Offset_Press_Ven; uint8_t Offset_Press_Art;
 	} STxCan3;
 	struct {
 		uint16_t SpeedPump1Rpmx10;	uint16_t SpeedPump2Rpmx10;	uint16_t SpeedPump3Rpmx10;	uint16_t SpeedPump4Rpmx10;
@@ -51,7 +52,7 @@ union UTxCan {
 #else
 	// Filippo - messo campo per lo scambio della temperatura di piatto
 	struct {
-		uint8_t Free1;	uint8_t Free2;	int16_t tempPlateC;	uint8_t Free5;	uint8_t Free6;	uint8_t Free7;	uint8_t Free8;
+		uint8_t Free1;	uint8_t Free2;	int16_t tempPlateC;	uint8_t TerapyType;	uint8_t Free6;	uint8_t Free7;	uint8_t Free8;
 	} STxCan5;
 #endif
 	struct {
@@ -165,13 +166,13 @@ void InitControlProtectiveInterface(void)
 		OldRxCan7.RawCanBuffer[ii] = VAL_JOLLY8;
 	}
 
-	TxCan1.SAux.NoSendCounter = 0;
-	TxCan2.SAux.NoSendCounter = 0;
-	TxCan3.SAux.NoSendCounter = 0;
-	TxCan4.SAux.NoSendCounter = 0;
-	TxCan5.SAux.NoSendCounter = 0;
-	TxCan6.SAux.NoSendCounter = 0;
-	TxCan7.SAux.NoSendCounter = 0;
+//	TxCan1.SAux.NoSendCounter = 0;
+//	TxCan2.SAux.NoSendCounter = 0;
+//	TxCan3.SAux.NoSendCounter = 0;
+//	TxCan4.SAux.NoSendCounter = 0;
+//	TxCan5.SAux.NoSendCounter = 0;
+//	TxCan6.SAux.NoSendCounter = 0;
+//	TxCan7.SAux.NoSendCounter = 0;
 
 	//AddSwTimer(ManageTxCan10ms,1,TM_REPEAT);
 	AddSwTimer(ManageTxCan50ms,5,TM_REPEAT);
@@ -206,8 +207,7 @@ void onNewSensTempVal(uint16_t PressOxyg, uint16_t TempRes,
 }
 
 void onNewPinchVal(uint8_t AirFiltStat, uint16_t AlarmCode,
-		           uint8_t Pinch2WPVF, uint8_t Pinch2WPVA, uint8_t Pinch2WPVV,
-				   uint8_t free1, uint8_t free2)
+		           uint8_t Pinch2WPVF, uint8_t Pinch2WPVA, uint8_t Pinch2WPVV)
 {
 }
 
@@ -243,6 +243,7 @@ void onNewSensPressVal(uint16_t PressFilt, uint16_t PressArt,
 	TxCan1.STxCan1.PressLevelx100 = PressLev;
 }
 
+
 void onNewSensTempVal(uint16_t PressOxyg, uint16_t TempRes,
 		               uint16_t TempArt, uint16_t TempVen)
 {
@@ -254,18 +255,24 @@ void onNewSensTempVal(uint16_t PressOxyg, uint16_t TempRes,
     // SB added plate temperature
 
     TxCan5.STxCan5.tempPlateC = (uint16_t)(T_PLATE_C_GRADI_CENT*10);
+
 }
 
-void onNewPinchVal(uint8_t AirFiltStat, uint16_t AlarmCode,
-		           uint8_t Pinch2WPVF, uint8_t Pinch2WPVA, uint8_t Pinch2WPVV,
-				   uint8_t free1, uint8_t free2)
+/*VP 9-1-2019: aggiunta informazione su tipo di trattamento
+ * se Kidney o Liver nel byte 5 del message buffer STxCan5 */
+void onNewTherapyType()
 {
-	TxCan3.STxCan3.AirAlarm = AirFiltStat;
+    TxCan5.STxCan5.TerapyType = (THERAPY_TYPE) GetTherapyType();
+}
+void onNewPinchVal(uint8_t AirFiltStat, uint16_t AlarmCode,
+		           uint8_t Pinch2WPVF, uint8_t Pinch2WPVA, uint8_t Pinch2WPVV)
+{
 	TxCan3.STxCan3.AlarmCode = AlarmCode;
+	TxCan3.STxCan3.AirAlarm = AirFiltStat;
 	TxCan3.STxCan3.FilterPinchPos = Pinch2WPVF;
 	TxCan3.STxCan3.ArtPinchPos = Pinch2WPVA;
 	TxCan3.STxCan3.OxygPinchPos = Pinch2WPVV;
-	/* Aggingo l'informnazione della posizione della pinch
+	/* Aggiungo l'informnazione della posizione della pinch
 	 * letta dal driver tramite la matrice globale modbusData;
 	 * la posizione settata (Pinch2WPVF -- Pinch2WPVA -- Pinch2WPVV)
 	 * si sposta nel nibble più alto del byte e nel nubble più
@@ -279,10 +286,15 @@ void onNewPinchVal(uint8_t AirFiltStat, uint16_t AlarmCode,
 	TxCan3.STxCan3.OxygPinchPos  = TxCan3.STxCan3.OxygPinchPos << 4 ;
 	TxCan3.STxCan3.OxygPinchPos |= (modbusData[6][0] & 0x0F); // in modbusData[6][0] ho la posizione della pinch venosa/oxy inviatami dal driver
 
-	TxCan3.STxCan3.Free1 = free1;
-	TxCan3.STxCan3.Free2 = free2;
 }
 
+void onNewOffsetPressInlet(uint8_t Offset_Pr_Ven, uint8_t Offset_Pr_Art)
+{
+	/*aggiungo le informazioni sull'offset di pressione venosa
+	 * e arteriosa calcolati all'inizio del trattamento e che andranno sottratti*/
+	TxCan3.STxCan3.Offset_Press_Ven = Offset_Pr_Ven;
+	TxCan3.STxCan3.Offset_Press_Art = Offset_Pr_Art;
+}
 void onNewPumpSpeed(uint16_t Pump0Speed, uint16_t Pump1Speed ,
 		            uint16_t Pump2Speed, uint16_t Pump3Speed)
 {
@@ -324,25 +336,25 @@ union UTxCan*	OldTxBuffCanP[8] =
 //
 // send altorithm 1
 //
-void ManageTxCan10ms(void)
-{
-	if(memcmp(TxBuffCanP[TxBuffIndex]->RawCanBuffer,OldTxBuffCanP[TxBuffIndex]->RawCanBuffer,SIZE_CAN_BUFFER) != 0) {
-		// 8 buffer are scanned each 80ms , amximum delay since value changed and tx on can
-		SendCAN(TxBuffCanP[TxBuffIndex]->RawCanBuffer, SIZE_CAN_BUFFER, 0);
-		memcpy(OldTxBuffCanP[TxBuffIndex]->RawCanBuffer, TxBuffCanP[TxBuffIndex]->RawCanBuffer, SIZE_CAN_BUFFER);
-		TxBuffCanP[TxBuffIndex]->SAux.NoSendCounter = 0;
-	}
-	else {
-		TxBuffCanP[TxBuffIndex]->SAux.NoSendCounter++;
-		if(TxBuffCanP[TxBuffIndex]->SAux.NoSendCounter == 5) {
-			// in any case , each 400ms send a buffer even if nothing changed on it , to prevent possible data loss
-			SendCAN(TxBuffCanP[TxBuffIndex]->RawCanBuffer, SIZE_CAN_BUFFER, 0);
-			// don't need to copy new buff in old one because they already match
-			TxBuffCanP[TxBuffIndex]->SAux.NoSendCounter = 0;
-		}
-	}
-	TxBuffIndex = (TxBuffIndex + 1) % (LAST_INDEX_TXBUFF2SEND+1);
-}
+//void ManageTxCan10ms(void)
+//{
+//	if(memcmp(TxBuffCanP[TxBuffIndex]->RawCanBuffer,OldTxBuffCanP[TxBuffIndex]->RawCanBuffer,SIZE_CAN_BUFFER) != 0) {
+//		// 8 buffer are scanned each 80ms , amximum delay since value changed and tx on can
+//		SendCAN(TxBuffCanP[TxBuffIndex]->RawCanBuffer, SIZE_CAN_BUFFER, 0);
+//		memcpy(OldTxBuffCanP[TxBuffIndex]->RawCanBuffer, TxBuffCanP[TxBuffIndex]->RawCanBuffer, SIZE_CAN_BUFFER);
+//		TxBuffCanP[TxBuffIndex]->SAux.NoSendCounter = 0;
+//	}
+//	else {
+//		TxBuffCanP[TxBuffIndex]->SAux.NoSendCounter++;
+//		if(TxBuffCanP[TxBuffIndex]->SAux.NoSendCounter == 5) {
+//			// in any case , each 400ms send a buffer even if nothing changed on it , to prevent possible data loss
+//			SendCAN(TxBuffCanP[TxBuffIndex]->RawCanBuffer, SIZE_CAN_BUFFER, 0);
+//			// don't need to copy new buff in old one because they already match
+//			TxBuffCanP[TxBuffIndex]->SAux.NoSendCounter = 0;
+//		}
+//	}
+//	TxBuffIndex = (TxBuffIndex + 1) % (LAST_INDEX_TXBUFF2SEND+1);
+//}
 
 
 //
