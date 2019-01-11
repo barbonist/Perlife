@@ -20,6 +20,7 @@
 #include "ASerialLdd5.h"
 #include "general_func.h"
 #include "Alarm_Con.h"
+#include "ControlProtectiveInterface_C.h"
 
 extern int PinchFilterCurrValue;
 extern word MedForArteriousPid;
@@ -1150,9 +1151,16 @@ void buildRDMachineStateResponseMsg(char code, char subcode)
 //	else
 //	{
 
-		/* status parameters: alarm code */
-		/*14*/	sbc_tx_data[index++] = (alarmCurrent.code >> 8 ) & 0xFF;
-		/*15*/	sbc_tx_data[index++] = (alarmCurrent.code 	    ) & 0xFF;
+		/* status parameters: alarm code  se GetAlarmCodeProt() != 0
+		 * oppre GetAlarmCodeProt() dando prioirità alla visualizzazione
+		 * degli alalrmi protective*/
+		if (GetAlarmCodeProt() != 0)
+			wd = GetAlarmCodeProt();
+		else
+			wd = alarmCurrent.code;
+
+	    /*14*/	sbc_tx_data[index++] = ( wd >> 8) & 0xFF; // (alarmCurrent.code >> 8 ) & 0xFF;
+		/*15*/	sbc_tx_data[index++] = ( wd )     & 0xFF; // (alarmCurrent.code 	    ) & 0xFF;
 		/* status parameters: alarm physic */
 		/*16*/	sbc_tx_data[index++] = (alarmCurrent.active >> 8 ) & 0xFF;
 		/*17*/	sbc_tx_data[index++] = (alarmCurrent.active      ) & 0xFF;

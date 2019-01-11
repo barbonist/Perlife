@@ -4024,13 +4024,13 @@ void AirAlarmRecoveryStateMach_originale(void)
 			StarTimeToRejAir = timerCounterModBus;
 			AirAlarmRecoveryState = STOP_AIR_PUMP;
 		}
-		else if((AirParentState == PARENT_TREAT_KIDNEY_1_SFV) && (sensor_UFLOW[VENOUS_AIR_SENSOR].bubbleSize < 25))
+		else if((AirParentState == PARENT_TREAT_KIDNEY_1_SFV) && (sensor_UFLOW[VENOUS_AIR_SENSOR].bubbleSize < MAX_BUBBLE_SIZE))
 		{
 			//  la bolla se ne e' andata faccio; ripartire il timer per misurare il tempo a partire da ora
 			StarTimeToRejAir = timerCounterModBus;
 			AirAlarmRecoveryState = STOP_AIR_PUMP;
 		}
-		else if((AirParentState == PARENT_TREAT_KIDNEY_1_SFA) && (sensor_UFLOW[ARTERIOUS_AIR_SENSOR].bubbleSize < 25))
+		else if((AirParentState == PARENT_TREAT_KIDNEY_1_SFA) && (sensor_UFLOW[ARTERIOUS_AIR_SENSOR].bubbleSize < MAX_BUBBLE_SIZE))
 		{
 			//  la bolla se ne e' andata faccio; ripartire il timer per misurare il tempo a partire da ora
 			StarTimeToRejAir = timerCounterModBus;
