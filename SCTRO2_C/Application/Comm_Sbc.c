@@ -1324,16 +1324,22 @@ void buildRDMachineStateResponseMsg(char code, char subcode)
 	wd = parameterWordSetFromGUI[PAR_SET_PRIMING_TEMPERATURE_PERFUSION].value;
 	/*100*/  sbc_tx_data[index++] = (wd >> 8) & 0xFF;
 	/*101*/  sbc_tx_data[index++] = (wd     ) & 0xFF;
-	/* programmed oxygenation active */
-	wd = parameterWordSetFromGUI[PAR_SET_OXYGENATOR_ACTIVE].value;
+
+	/* FREE */
+	wd = 0;
 	/*102*/  sbc_tx_data[index++] = (wd >> 8) & 0xFF;
 	/*103*/  sbc_tx_data[index++] = (wd     ) & 0xFF;
+
 	/* programmed oxygenation flow  ml/min*/
 	wd = parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value;
 	/*104*/  sbc_tx_data[index++] = (wd >> 8) & 0xFF;
 	/*105*/  sbc_tx_data[index++] = (wd     ) & 0xFF;
-	/* programmed depuration active */
-	wd = parameterWordSetFromGUI[PAR_SET_DEPURATION_ACTIVE].value;
+	/* programmed oxygenetaion active */
+	wd = parameterWordSetFromGUI[PAR_SET_OXYGENATOR_ACTIVE].value;
+	/*oxygenation is bit 2-3*/
+	wd = wd << 2;
+	/* programmed depuration active is in bit 0-1*/
+	wd = wd | parameterWordSetFromGUI[PAR_SET_DEPURATION_ACTIVE].value;
 	/*106*/  sbc_tx_data[index++] = (wd >> 8) & 0xFF;
 	/*107*/  sbc_tx_data[index++] = (wd     ) & 0xFF;
 	/* programmed target arterial pressure (mmHg)*/
