@@ -156,7 +156,7 @@ float Ir_Temperature_correction_offset (float Temp_value)
 		Temp_correct = Temp_value - (LOWER_RANGE_IR_CORRECTION - Temp_value ) * DELTA_CORRECTION;
 	}
 	/*se la temperatura è >= HIGHER_RANGE_IR_CORRECTION correggo in positivo*/
-	else if (Temp_correct >= HIGHER_RANGE_IR_CORRECTION)
+	else if (Temp_value >= HIGHER_RANGE_IR_CORRECTION)
 	{
 		Temp_correct = Temp_value + (Temp_value - HIGHER_RANGE_IR_CORRECTION) * DELTA_CORRECTION;
 	}
