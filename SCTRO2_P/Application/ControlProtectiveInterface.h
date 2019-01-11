@@ -18,7 +18,9 @@ void TxAlarmCode( uint16_t AlarmCode);
 uint16_t GetControlFSMState(void);
 void GetPinchPos( uint8_t *Pinch0Pos ,  uint8_t *Pinch1_pos , uint8_t *Pinch2_pos);
 void GetPressures(uint16_t* PressFilter, uint16_t* PressArt,  uint16_t* PressVen,  uint16_t* PressLevelx100,  uint16_t* PressOxy);
-
+void GetPressOffsets( uint8_t *OffsetPressArt, uint8_t *OffsetPressVen );
+uint16_t GetOffsetPressArt(void);
+uint16_t GetOffsetPressVen(void);
 
 void onNewPinchStat(ActuatorHallStatus Ahs );
 void onNewPressOxygen(uint16_t Value);

@@ -274,7 +274,7 @@ void LowFluidTempAlarmAct(void)
 
 void VerifyArterialPressure(uint16_t ValPress)
 {
-	if( ValPress > PR_ART_XHIGH)
+	if( (ValPress - GetOffsetPressArt()) > PR_ART_XHIGH) // consider offset when checking
 		HighArterPressAlarmTimer.AlarmConditionPending = true;
 	else
 		HighArterPressAlarmTimer.AlarmConditionPending = false;
@@ -311,7 +311,7 @@ void VerifyFilterPressure(uint16_t  Value)
 
 void VerifyVenousPressure(uint16_t  Value)
 {
-	if( Value > PR_VEN_XHIGH)
+	if( (Value - GetOffsetPressVen()) > PR_VEN_XHIGH)
 		HighVenousPressAlarmTimer.AlarmConditionPending = true;
 	else
 		HighVenousPressAlarmTimer.AlarmConditionPending = false;

@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
+#include <stdio.h>
 #include "stdint.h"
 #include "SwTimer.h"
 #include "FlexCANWrapper.h"
@@ -21,11 +22,15 @@
 #include "Alarm_Con_Protective.h"
 #include "IncomingAlarmsManager.h"
 #include "ControlProtectiveInterface.h"
+#include "PC_DEBUG_COMM.h"
 
 #define VAL_JOLLY16	0x5A5A
 #define VAL_JOLLY8	0x5A
 #define SIZE_CAN_BUFFER	8
 #define LAST_INDEX_TXBUFF2SEND 15	//
+
+#define ESC 27
+
 
 //#define CAN_DEBUG 1
 
@@ -41,14 +46,14 @@ union URxCan {
 		uint16_t PressOxy;	uint16_t TempFluidx10;	uint16_t TempArtx10;	uint16_t TempVenx10;
 	} SRxCan2;
 	struct {
-		uint8_t AirAlarm_N_Therm;	uint16_t AlarmCode;	uint8_t Pinch0Pos;	uint8_t Pinch1Pos;	uint8_t Pinch2Pos;	uint8_t Free1; uint8_t Free2;
+		uint16_t AlarmCode; uint8_t AirAlarm_N_Therm;	uint8_t Pinch0Pos;	uint8_t Pinch1Pos;	uint8_t Pinch2Pos;	uint8_t OffsetPrVen; uint8_t OffsetPrArt;
 	} SRxCan3;
 	struct {
 		int16_t SpeedPump0Rpmx100;	int16_t SpeedPump1Rpmx100;	int16_t SpeedPump2Rpmx100;	int16_t SpeedPump3Rpmx100;
 	} SRxCan4;
 	// Filippo - messo campo per lo scambio del valore di temperatura piatto
 	struct {
-		uint8_t Free1;	uint8_t Free2;	int16_t tempPlateC;	uint8_t Free5;	uint8_t Free6;	uint8_t Free7;	uint8_t Free8;
+		uint8_t Free1;	uint8_t Free2;	int16_t tempPlateC;	uint8_t TherapyType ;	uint8_t Free6;	uint8_t Free7;	uint8_t Free8;
 	} SRxCan5;
 	struct {
 		uint8_t Free1;	uint8_t Free2;	uint8_t Free3;	uint8_t Free4;	uint8_t Free5;	uint8_t Free6;	uint8_t Free7;	uint8_t Free8;
@@ -60,9 +65,6 @@ union URxCan {
 
 union UTxCan {
 	uint8_t RawCanBuffer[SIZE_CAN_BUFFER];
-	struct {
-		uint8_t Filler[SIZE_CAN_BUFFER]; uint8_t NoSendCounter;
-	} SAux;
 	struct {
 		uint16_t PressFilter;	uint16_t PressArt;	uint16_t PressVen;	uint16_t PressLevelx100;
 	} STxCan0;
@@ -112,6 +114,11 @@ void ManageTxCan10ms(void);
 void ManageTxCan100ms(void);
 void DebugFillTxBuffers(void);
 void CanCheckTimer(void);
+
+void ManageTxDebug(void);
+void TxDebugPressures(void);
+void TxDebugTemperatures(void);
+uint8_t CharReceived(void);
 
 #ifdef CAN_DEBUG
 void InitControlProtectiveInterface(void)
@@ -215,16 +222,8 @@ void InitControlProtectiveInterface(void)
 		OldRxCan7.RawCanBuffer[ii] = 1;
 	}
 
-	TxCan1.SAux.NoSendCounter = 0;
-	TxCan2.SAux.NoSendCounter = 0;
-	TxCan3.SAux.NoSendCounter = 0;
-	TxCan4.SAux.NoSendCounter = 0;
-	TxCan5.SAux.NoSendCounter = 0;
-	TxCan6.SAux.NoSendCounter = 0;
-	TxCan7.SAux.NoSendCounter = 0;
-
-	//AddSwTimer(ManageTxCan10ms,1,TM_REPEAT);
 	AddSwTimer(ManageTxCan100ms,10,TM_REPEAT);
+	AddSwTimer(ManageTxDebug,5,TM_REPEAT);
 	InitVerificatorRx();
 	InitVerificatorLocalParams();
 	InitIncomingAlarmManager();
@@ -329,6 +328,18 @@ void GetTemperatures(uint16_t *TempArtx10, uint16_t *TempFluidx10, uint16_t *Tem
 	*TempVenx10 = 	TxCan1.STxCan1.TempVenx10;
 	*TempPlatex10 = TxCan5.STxCan5.tempPlateP;
 }
+
+
+uint16_t GetOffsetPressArt(void)
+{
+	return (uint16_t) RxCan3.SRxCan3.OffsetPrArt;
+}
+
+uint16_t GetOffsetPressVen(void)
+{
+	return (uint16_t) RxCan3.SRxCan3.OffsetPrVen;
+}
+
 
 /* 6 RPM is the minimum speed value calculate by protective */
 /*
@@ -461,22 +472,22 @@ void onNewTPerfVenosa(float Temper)
 //
 void ManageTxCan10ms(void)
 {
-	if(memcmp(TxBuffCanP[TxBuffIndex]->RawCanBuffer,OldTxBuffCanP[TxBuffIndex]->RawCanBuffer,SIZE_CAN_BUFFER) != 0) {
-		// 8 buffer are scanned each 80ms , amximum delay since value changed and tx on can
-		SendCAN(TxBuffCanP[TxBuffIndex]->RawCanBuffer, SIZE_CAN_BUFFER, 0);
-		memcpy(OldTxBuffCanP[TxBuffIndex]->RawCanBuffer, TxBuffCanP[TxBuffIndex]->RawCanBuffer, SIZE_CAN_BUFFER);
-		TxBuffCanP[TxBuffIndex]->SAux.NoSendCounter = 0;
-	}
-	else {
-		TxBuffCanP[TxBuffIndex]->SAux.NoSendCounter++;
-		if(TxBuffCanP[TxBuffIndex]->SAux.NoSendCounter == 5) {
-			// in any case , each 400ms send a buffer even if nothing changed on it , to prevent possible data loss
-			SendCAN(TxBuffCanP[TxBuffIndex]->RawCanBuffer, SIZE_CAN_BUFFER, 0);
-			// don't need to copy new buff in old one because they already match
-			TxBuffCanP[TxBuffIndex]->SAux.NoSendCounter = 0;
-		}
-	}
-	TxBuffIndex = (TxBuffIndex + 1) % (LAST_INDEX_TXBUFF2SEND+1);
+//	if(memcmp(TxBuffCanP[TxBuffIndex]->RawCanBuffer,OldTxBuffCanP[TxBuffIndex]->RawCanBuffer,SIZE_CAN_BUFFER) != 0) {
+//		// 8 buffer are scanned each 80ms , amximum delay since value changed and tx on can
+//		SendCAN(TxBuffCanP[TxBuffIndex]->RawCanBuffer, SIZE_CAN_BUFFER, 0);
+//		memcpy(OldTxBuffCanP[TxBuffIndex]->RawCanBuffer, TxBuffCanP[TxBuffIndex]->RawCanBuffer, SIZE_CAN_BUFFER);
+//		TxBuffCanP[TxBuffIndex]->SAux.NoSendCounter = 0;
+//	}
+//	else {
+//		TxBuffCanP[TxBuffIndex]->SAux.NoSendCounter++;
+//		if(TxBuffCanP[TxBuffIndex]->SAux.NoSendCounter == 5) {
+//			// in any case , each 400ms send a buffer even if nothing changed on it , to prevent possible data loss
+//			SendCAN(TxBuffCanP[TxBuffIndex]->RawCanBuffer, SIZE_CAN_BUFFER, 0);
+//			// don't need to copy new buff in old one because they already match
+//			TxBuffCanP[TxBuffIndex]->SAux.NoSendCounter = 0;
+//		}
+//	}
+//	TxBuffIndex = (TxBuffIndex + 1) % (LAST_INDEX_TXBUFF2SEND+1);
 }
 
 
@@ -569,6 +580,14 @@ void NewDataRxChannel1(void) {
 	VerifyRxPressures(RxCan1.SRxCan1.PressFilter, RxCan1.SRxCan1.PressArt,
 			RxCan1.SRxCan1.PressVen, RxCan1.SRxCan1.PressLevelx100,
 			RxCan2.SRxCan2.PressOxy);
+}
+
+
+void DebugMIsmatchPressure(void)
+{
+		VerifyRxPressures(RxCan1.SRxCan1.PressFilter, RxCan1.SRxCan1.PressArt,
+				RxCan1.SRxCan1.PressVen, RxCan1.SRxCan1.PressLevelx100,
+				RxCan2.SRxCan2.PressOxy);
 }
 
 void NewDataRxChannel2(void) {
@@ -721,4 +740,121 @@ void CanCheckTimer(void)
 		}
 	}
 }
+
+
+//////////////////////////////////////////////////////////
+//
+//  debug routines using debug serial interface
+//
+//////////////////////////////////////////////////////////
+
+
+//
+//	T or t Pressed --> generate head line for csv file and temperatures headers
+//  P or p pressed --> generate head line for csv file and pressures headers
+//  esc --> stop logging
+//
+int TemperaturePrescalerCnt = 0;
+void ManageTxDebug(void)
+{
+static char stringPtr[200];
+word sent_data;
+
+	uint8_t cmd;
+	cmd = CharReceived();
+	static uint8_t mode = 0;  // 0: don't log , 1 log temp, 2 log press
+
+	switch(cmd){
+	case ESC:
+		mode = 0;
+		break;
+	case 'P':
+		mode = 1;
+		sprintf(stringPtr, "\"sep=,\"\r\n Press Ven Rem[mmHg] , Pr Ven Loc[mmHg], Pr Art Rem[mmHg] , Pr Art Loc[mmHg],");
+		PC_DEBUG_COMM_SendBlock(stringPtr, strlen(stringPtr), &sent_data);
+		sprintf(stringPtr, "Press Lev Remx100[mmHg] , Pr Lev Locx100[mmHg], Pr Filt Rem[mmHg] , Pr Filt Loc[mmHg] , Pr Oxy Rem[mmHg] , Pr Oxy Loc[mmHg]\r\n");
+		PC_DEBUG_COMM_SendBlock(stringPtr, strlen(stringPtr), &sent_data);
+		break;
+	case 'T':
+		mode = 4;
+		sprintf(stringPtr, "\"sep=,\"\r\n Tempx10 Ven Rem[mmHg] , Tempx10 Ven Loc[mmHg], Tempx10 Art Rem[mmHg] , Tempx10 Art Loc[mmHg] , Tempx10 Recycle Rem[mmHg] , Tempx10 Recycle Loc[mmHg], Tempx10 Plate Rem[mmHg] , Tempx10 Plate Loc[mmHg] \r\n");
+		PC_DEBUG_COMM_SendBlock(stringPtr, strlen(stringPtr), &sent_data);
+		break;
+	}
+
+	switch(mode){
+	case 1: // pressure
+		mode = 2;
+		break;
+	case 4: // temp
+		mode = 5;
+		break;
+	case 5: // temperature
+		if( TemperaturePrescalerCnt == 0){
+			TxDebugTemperatures();
+		}
+		TemperaturePrescalerCnt = (TemperaturePrescalerCnt + 1) % 10;
+		break;
+	case 2: // pressure
+		TxDebugPressures();
+		break;
+	}
+
+}
+
+/////////////////////////////////////////////
+// send data on serial debug
+// escpressed true or false
+////////////////////////////////////////////
+void TxDebugPressures(void)
+{
+    static char stringPtr[200];
+	uint16_t RPFilt , RPArt ,RPVen, RPLevelx100 ,RPOxy;
+	uint16_t LPFilt , LPArt ,LPVen, LPLevelx100 ,LPOxy;
+	word sent_data;
+
+	GetPressures(&LPFilt, &LPArt,  &LPVen,  &LPLevelx100 ,  &LPOxy);
+
+	RPFilt = RxCan1.SRxCan1.PressFilter;
+	RPArt  = RxCan1.SRxCan1.PressArt;
+	RPVen  = RxCan1.SRxCan1.PressVen;
+	RPLevelx100 = RxCan1.SRxCan1.PressLevelx100;
+	RPOxy = RxCan2.SRxCan2.PressOxy;
+
+    sprintf(stringPtr, "%04u ,  %04u , %04u , %04u , %04u ,  %04u , %04u , %04u , %04u , %04u \r\n",
+    				   RPVen , LPVen , RPArt, LPArt, RPLevelx100 , LPLevelx100 , RPFilt , LPFilt , RPOxy , LPOxy);
+    PC_DEBUG_COMM_SendBlock(stringPtr, strlen(stringPtr) , &sent_data);
+}
+
+void TxDebugTemperatures(void)
+{
+    static char stringPtr[200];
+	uint16_t RTempArtx10, RTempFluidx10, RTempVenx10, RTempPlatex10;
+	uint16_t LTempArtx10, LTempFluidx10, LTempVenx10, LTempPlatex10;
+	word sent_data;
+
+	GetTemperatures(&LTempArtx10, &LTempFluidx10, &LTempVenx10, &LTempPlatex10);
+
+	RTempArtx10 = RxCan2.SRxCan2.TempArtx10;
+	RTempFluidx10 = RxCan2.SRxCan2.TempFluidx10;
+	RTempVenx10 = RxCan2.SRxCan2.TempVenx10;
+	RTempPlatex10 = RxCan5.SRxCan5.tempPlateC;
+
+    sprintf(stringPtr, "%04u ,  %04u , %04u , %04u , %04u ,  %04u , %04u , %04u \r\n", RTempVenx10, LTempVenx10 , RTempArtx10, LTempArtx10,
+    																				   RTempFluidx10 , LTempFluidx10, RTempPlatex10, LTempPlatex10 );
+    PC_DEBUG_COMM_SendBlock(stringPtr, strlen(stringPtr) , &sent_data);
+
+}
+
+uint8_t CharReceived(void)
+{
+uint8_t rxchr;
+
+	if ( PC_DEBUG_COMM_RecvChar(&rxchr) == ERR_OK )  return rxchr;
+	else return 0xFF;
+
+}
+
+
+
 

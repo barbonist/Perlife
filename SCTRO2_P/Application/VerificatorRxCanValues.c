@@ -20,7 +20,6 @@
 #include "HEAT_ON_P.h"
 #include "ActionsProtective.h"
 #include "IncomingAlarmsManager.h"
-#include "PC_DEBUG_COMM.h"
 
 //
 // TimerCounter increased each 100ms .
@@ -88,10 +87,14 @@ void InitVerificatorRx(void){
 }
 
 static int StartupDelayCnt = 0;
+
+int CounterDebugErrorGenerator = 0;
+
 static void ManageVerificatorAlarms100ms(void) {
 
 int ii;
 
+CounterDebugErrorGenerator++;
 	if( !IsVerifyRequired() ){
 		// avoid control if no verify required
 		return;
@@ -281,8 +284,7 @@ void VerifyRxState(uint16_t State, uint16_t Parent, uint16_t Child,
 
 }
 
-void DebugString(bool escpressed, uint16_t val1 ,  uint16_t val2);
-bool EscCharReceived(void);
+
 
 void VerifyRxPressures(uint16_t PressFilter, uint16_t PressArt, uint16_t PressVen, uint16_t PressLevelx100, uint16_t PressOxy )
 {
@@ -301,14 +303,12 @@ uint16_t pressFilter, pressArt,  pressVen,  pressLevelx100 ,  pressOxy;
 			PressVenMismatchAlarmTimer.AlarmConditionPending || PressOxyMismatchAlarmTimer.AlarmConditionPending){
 		int DebugVal = 0x55;
 	}
-
-	// debug
-	DebugString(EscCharReceived() , PressVen , pressVen );
 }
 
 void VerifyRxTemperatures(uint16_t TempArtx10, uint16_t TempFluidx10, uint16_t TempVenx10, uint16_t TempPlatex10)
 {
 //	uint16_t *tempArtx10_p, *tempFluidx10_p, *tempVenx10_p, *tempPlatex10_p;
+
 	uint16_t tempArtx10_p, tempFluidx10_p, tempVenx10_p, tempPlatex10_p;
 	GetTemperatures( &tempArtx10_p, &tempFluidx10_p, &tempVenx10_p, &tempPlatex10_p );
 
@@ -515,53 +515,6 @@ bool ValueIsInRange(uint16_t RefValue, uint16_t Val2Test, uint16_t IDelta) {
 //	return ((Val2Test <= max) && (Val2Test >= min));
 
 }
-
-/////////////////////////////////////////////
-// send data on serial debug
-// escpressed true or false
-////////////////////////////////////////////
-int debugstat = 0;
-void DebugString( bool escpressed, uint16_t val1, uint16_t val2)
-{
-    static char stringPtr[200];
-    uint16_t sent_data;
-
-    switch(debugstat){
-    case 0:
-    // idle tx off
-		if( escpressed ) {
-			debugstat = 1;
-			sprintf(stringPtr, "\"sep=,\"\r\n");
-			PC_DEBUG_COMM_SendBlock(stringPtr, strlen(stringPtr), &sent_data);
-			sprintf(stringPtr, "Press Ven Remote [mmHg] ,  Press Ven Local [mmHg]\r\n");
-			PC_DEBUG_COMM_SendBlock(stringPtr, strlen(stringPtr), &sent_data);
-		}
-    break;
-    case 1:
-    //  tx on
-    	sprintf(stringPtr, "%04u ,  %04u \r\n", val1 , val2);
-    	PC_DEBUG_COMM_SendBlock(stringPtr, strlen(stringPtr) , &sent_data);
-        if( escpressed ) {
-        	debugstat = 0;
-        	sprintf(stringPtr, "-----Stop-----\r\n");
-        	PC_DEBUG_COMM_SendBlock(stringPtr, 11, &sent_data);
-        }
-    break;
-    }
-}
-
-#define ESC 27
-bool EscCharReceived(void)
-{
-uint8_t rxchr;
-
-	if ( PC_DEBUG_COMM_RecvChar(&rxchr) == ERR_OK ){
-		if( rxchr == ESC ) return true;
-		else return false;
-	}
-	return false;
-}
-
 
 
 static void Dummy(void){}

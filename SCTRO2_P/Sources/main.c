@@ -303,7 +303,7 @@ int main(void)
 	  /*END funzioni per leggere i canali AD*/
 
 	 /*faccio lo start della conversione sul canale AD0 ogni 50 msec*/
-	 if (timerCounterADC0 >=1)
+	 if (timerCounterADC0 >=5)
 	 {
 		Phase = 6;
 		timerCounterADC0 = 0;
@@ -316,17 +316,17 @@ int main(void)
 		if (Timer_printf_debug >= 10)
 		{
 			Timer_printf_debug = 1;
-			DebugString_TEST();
+			//DebugString_TEST();
 		}
 	 }
 	 /*faccio lo start della conversione sul canale AD1 ogni 10 msec
 	  * per avere le pressioni a 100 HZ (timerCounterADC1 si incremente ogni msec*/
 	 if (timerCounterADC1 >=10)
 	 {
-		//EnterCritical();
+		EnterCritical();
 		Phase = 7;
 		timerCounterADC1 = 0;
-		//ExitCritical();
+		ExitCritical();
 		AD1_Start();
 	 }
 
@@ -402,6 +402,23 @@ int main(void)
 
 		 tutto questo per ogni pinch
 
+	Versione 1.0.002 8/1/2019
+		Modificati i valori di allarme per pressione extrema
+		P Arteriosa max = 110 + 30 mmHg
+		P Venosa max = 10 + 2 mmHg
+		P filtro assorbente = 450 + 75 mmHg
+		P filtro ossigenazione = 500 + 80 mmHg
+
+		Modificati i valori di allarme per temperatura extrema
+		T flusso arterioso = 40 gradi + 2
+		T flusso venoso = 40 gradi + 2
+		T flusso ricircolo = 40 gradi + 2
+
+	Versione 1.0.003 9/1/2019
+		Comunicazione CAN , scambiati air alarm byte e Alarm code nel buffer #3 Control --> protective per prevenire errore allineamento.
+		Aggiunto campo per offset pressione da considerare in allarmi pressione venosa e arteriosa ( vaschetta sollevata )
+		Inserito il calcolo offset nella generazione allarme press. arteriosa alta e press venosa alta.
+		Migliorato il debug seriale con visualizzazione pressioni e temperature Contr e Prot
 
   */
 
