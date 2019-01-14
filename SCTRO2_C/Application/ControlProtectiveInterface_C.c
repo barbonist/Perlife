@@ -34,7 +34,7 @@ union UTxCan {
 	struct {
 		uint16_t PressFilter;	uint16_t PressArt;	uint16_t PressVen;	uint16_t PressLevelx100;
 	} STxCan1;
-		uint16_t PressOxy;	uint16_t TempFluidx10;	uint16_t TempArtx10;	uint16_t TempVenx10;
+	struct {	uint16_t PressOxy;	uint16_t TempFluidx10;	uint16_t TempArtx10;	uint16_t TempVenx10;
 	} STxCan2;
 	struct {
 		uint8_t AirAlarm;	uint16_t AlarmCode;	uint8_t FilterPinchPos;	uint8_t ArtPinchPos; uint8_t OxygPinchPos;	uint8_t Free1; uint8_t Free2;
@@ -170,7 +170,7 @@ void InitControlProtectiveInterface(void)
 	TxCan4.SAux.NoSendCounter = 0;
 	TxCan5.SAux.NoSendCounter = 0;
 	TxCan6.SAux.NoSendCounter = 0;
-	TxCan7.SAux.NoSendCounter = 0;ManageTxCan50ms
+	TxCan7.SAux.NoSendCounter = 0;
 
 	//AddSwTimer(ManageTxCan10ms,1,TM_REPEAT);
 	AddSwTimer(ManageTxCan50ms,5,TM_REPEAT);
