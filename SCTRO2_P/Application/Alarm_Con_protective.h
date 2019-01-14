@@ -176,19 +176,17 @@
 
 #else
 #define PR_ART_HIGH											110
-#define PR_ART_XHIGH										(PR_ART_HIGH	+ 30)
+#define PR_ART_XHIGH										(PR_ART_HIGH	+ 40)
 #define PR_ART_LOW											2
 
 #define PR_VEN_HIGH											10
-#define PR_VEN_XHIGH										(PR_VEN_HIGH	+ 2)
+#define PR_VEN_XHIGH										(PR_VEN_HIGH	+ 5)
 
-//#define PR_OXYG_HIGH                                        800
 #define PR_OXYG_HIGH                                        500
-
-#define PR_OXYG_XHIGH										(PR_OXYG_HIGH + 80)
+#define PR_OXYG_XHIGH										(PR_OXYG_HIGH + 150)
 
 #define PR_ADS_FILTER_HIGH									450
-#define PR_ADS_FILTER_XHIGH									(PR_ADS_FILTER_HIGH + 75)
+#define PR_ADS_FILTER_XHIGH									(PR_ADS_FILTER_HIGH + 150)
 
 #define PR_TUB_XHIGH										4
 
