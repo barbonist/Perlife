@@ -373,6 +373,8 @@ int main(void)
   OK_START = FALSE;
   ON_NACK_IR_TM = FALSE;
 
+  Stop_Button_clicked = FALSE;
+
   modBusPmpInit(TreatType);
   modBusPinchInit();
   modbusDataInit();

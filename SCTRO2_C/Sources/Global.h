@@ -979,7 +979,8 @@ struct Pinch_Valve {
 	unsigned char			dataReady;
 };
 
-struct Pinch_Valve			pinchActuator[5];
+struct Pinch_Valve			pinchActuator[5], pinchActuatorLastCommand[5];
+bool Stop_Button_clicked;
 
 word modbusData [TOTAL_ACTUATOR] [TOTAL_MODBUS_DATA];
 unsigned char CountErrorModbusMSG[8];

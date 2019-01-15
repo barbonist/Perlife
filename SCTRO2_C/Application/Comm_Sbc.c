@@ -1596,6 +1596,52 @@ void setGUIButton(unsigned char buttonId)
 
 		TARA_PRESS_DONE = TRUE;
 	}
+
+	/*Se mi arriva uno stop, devo
+	 * memorizzare lo stato delle pinch
+	 * memorizzare che mi è arrivatyo uno stop
+	 * chiudere tutte le pinch*/
+	if (
+		(buttonId == BUTTON_STOP_PRIMING 		||
+		 buttonId == BUTTON_STOP_TREATMENT 		||
+		 buttonId == BUTTON_STOP_EMPTY_DISPOSABLE
+		)
+		&& Stop_Button_clicked == FALSE
+	   )
+	{
+		/*memorizzo l'ultima posizione comandata sulle pinch nella variabile pinchActuatorLastCommand[i].pinchPosTarget*/
+		for (int i = 0; i<3; i++)
+			pinchActuatorLastCommand[i].pinchPosTarget = pinchActuator[i].pinchPosTarget;
+
+		/*chiudo tutte le pinch*/
+		setPinchPositionHighLevel(PINCH_2WPVF, MODBUS_PINCH_POS_CLOSED);
+		setPinchPositionHighLevel(PINCH_2WPVA, MODBUS_PINCH_POS_CLOSED);
+		setPinchPositionHighLevel(PINCH_2WPVV, MODBUS_PINCH_POS_CLOSED);
+
+		/*tengo traccia che sia avvenuto uno stop*/
+		Stop_Button_clicked = TRUE;
+
+	}
+	else if  (
+			   (buttonId == BUTTON_START_PRIMING 		||
+			    buttonId == BUTTON_START_TREATMENT 		||
+		        buttonId == BUTTON_STOP_EMPTY_DISPOSABLE
+		        )
+				&& Stop_Button_clicked == TRUE
+			 )
+	{
+		/*rimetto le pinch a posto*/
+		setPinchPositionHighLevel(PINCH_2WPVF, pinchActuatorLastCommand[0].pinchPosTarget);
+		setPinchPositionHighLevel(PINCH_2WPVA, pinchActuatorLastCommand[1].pinchPosTarget);
+		setPinchPositionHighLevel(PINCH_2WPVV, pinchActuatorLastCommand[2].pinchPosTarget);
+
+		/*tengo traccia che sia avvenuto uno start*/
+			Stop_Button_clicked = FALSE;
+	}
+
+	/*Se mi arriva uno start (priming -- Treatment -- Empty)
+	 *  succsasivo ad uno stop devo rimettere nella posizione salvata dopo lo stop*/
+
 }
 
 unsigned char getGUIButton(unsigned char buttonId)
