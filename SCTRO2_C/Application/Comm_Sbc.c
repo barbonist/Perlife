@@ -1597,6 +1597,8 @@ void setGUIButton(unsigned char buttonId)
 		TARA_PRESS_DONE = TRUE;
 	}
 
+//BSW8 START:
+
 	/*Se mi arriva uno stop, devo
 	 * memorizzare lo stato delle pinch
 	 * memorizzare che mi è arrivatyo uno stop
@@ -1622,6 +1624,8 @@ void setGUIButton(unsigned char buttonId)
 		Stop_Button_clicked = TRUE;
 
 	}
+	/*Se mi arriva uno start (priming -- Treatment -- Empty)
+	 *  succsasivo ad uno stop devo rimettere nella posizione salvata dopo lo stop*/
 	else if  (
 			   (buttonId == BUTTON_START_PRIMING 		||
 			    buttonId == BUTTON_START_TREATMENT 		||
@@ -1639,8 +1643,7 @@ void setGUIButton(unsigned char buttonId)
 			Stop_Button_clicked = FALSE;
 	}
 
-	/*Se mi arriva uno start (priming -- Treatment -- Empty)
-	 *  succsasivo ad uno stop devo rimettere nella posizione salvata dopo lo stop*/
+//BSW8 STOP:
 
 }
 
