@@ -308,7 +308,8 @@ void onNewAirSensorStat(unsigned char AirStatus)
 
 uint16_t GetControlFSMState(void)
 {
-	return RxCan0.SRxCan0.State;
+    return RxCan0.SRxCan0.State;
+	// debug return STATE_TREATMENT;
 }
 
 void GetPressures(uint16_t* PressFilter, uint16_t* PressArt,  uint16_t* PressVen,  uint16_t* PressLevelx100,  uint16_t* PressOxy)
@@ -840,7 +841,7 @@ void TxDebugTemperatures(void)
 	RTempVenx10 = RxCan2.SRxCan2.TempVenx10;
 	RTempPlatex10 = RxCan5.SRxCan5.tempPlateC;
 
-    sprintf(stringPtr, "%04u ,  %04u , %04u , %04u , %04u ,  %04u , %04u , %04u \r\n", RTempVenx10, LTempVenx10 , RTempArtx10, LTempArtx10,
+    sprintf(stringPtr, "%04d ,  %04d , %04d , %04d , %04d ,  %04d , %04d , %04d \r\n", RTempVenx10, LTempVenx10 , RTempArtx10, LTempArtx10,
     																				   RTempFluidx10 , LTempFluidx10, RTempPlatex10, LTempPlatex10 );
     PC_DEBUG_COMM_SendBlock(stringPtr, strlen(stringPtr) , &sent_data);
 

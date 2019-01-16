@@ -25,8 +25,6 @@
 static void Dummy(void);
 
 void HighVenousPressAlarmAct(void);
-void PumpsOrPinchNotRespond_EmergAct(void);
-
 void HighArterPressAlarmAct(void);
 void HighAdsFiltPressAlarmAct(void);
 void HighOxygenPressAlarmAct(void);
@@ -45,16 +43,16 @@ void LowFluidTempAlarmAct(void);
 TAlarmTimer HighArterPressAlarmTimer = {0,10,false,false,  HighArterPressAlarmAct , 0 , 65 , PumpsOrPinchNotRespond_EmergAct}; // alarm after 1 s alarm
 TAlarmTimer HighVenousPressAlarmTimer = {0,10,false,false, HighVenousPressAlarmAct , 0 ,  65 , PumpsOrPinchNotRespond_EmergAct}; // alarm after 1 s alarm
 TAlarmTimer HighAdsFiltPressAlarmTimer = {0,10,false,false, HighAdsFiltPressAlarmAct , 0 , 65 , PumpsOrPinchNotRespond_EmergAct}; // alarm after 1 s alarm
-TAlarmTimer HighOxygenPressAlarmTimer = {0,10,false,false, HighOxygenPressAlarmAct , 0 , 0 , Dummy}; // alarm after 1 s alarm
-TAlarmTimer HighLevelPressAlarmTimer = {0,40,false,false, HighLevelPressAlarmAct , 0 , 0 , Dummy}; // alarm after 4 s alarm
-TAlarmTimer HighPlateTempAlarmTimer = {0,10,false,false, HighPlateTempAlarmAct , 0 , 0 , Dummy}; // alarm after 1 s alarm
-TAlarmTimer HighArtTempAlarmTimer = {0,10,false,false, HighArtTempAlarmAct , 0 , 0 , Dummy}; // alarm after 1 s alarm
-TAlarmTimer HighVenTempAlarmTimer = {0,10,false,false, HighVenTempAlarmAct , 0 , 0 , Dummy}; // alarm after 1 s alarm
-TAlarmTimer HighFluidTempAlarmTimer = {0,10,false,false, HighFluidTempAlarmAct , 0 , 0 , Dummy}; // alarm after 1 s alarm
-TAlarmTimer LowPlateTempAlarmTimer = {0,10,false,false, LowPlateTempAlarmAct , 0 , 0 , Dummy}; // alarm after 1 s alarm
-TAlarmTimer LowArtTempAlarmTimer = {0,10,false,false, LowArtTempAlarmAct , 0 , 0 , Dummy}; // alarm after 1 s alarm
-TAlarmTimer LowVenTempAlarmTimer = {0,10,false,false, LowVenTempAlarmAct , 0 , 0 , Dummy}; // alarm after 1 s alarm
-TAlarmTimer LowFluidTempAlarmTimer = {0,10,false,false, LowFluidTempAlarmAct , 0 , 0 , Dummy}; // alarm after 1 s alarm
+TAlarmTimer HighOxygenPressAlarmTimer = {0,10,false,false, HighOxygenPressAlarmAct , 0 , 65 , PumpsOrPinchNotRespond_EmergAct}; // alarm after 1 s alarm
+TAlarmTimer HighLevelPressAlarmTimer = {0,40,false,false, HighLevelPressAlarmAct , 0 , 65 , PumpsOrPinchNotRespond_EmergAct}; // alarm after 4 s alarm
+TAlarmTimer HighPlateTempAlarmTimer = {0,10,false,false, HighPlateTempAlarmAct , 0 , 65 , PumpsOrPinchNotRespond_EmergAct}; // alarm after 1 s alarm
+TAlarmTimer HighArtTempAlarmTimer = {0,10,false,false, HighArtTempAlarmAct , 0 , 65 , PumpsOrPinchNotRespond_EmergAct}; // alarm after 1 s alarm
+TAlarmTimer HighVenTempAlarmTimer = {0,10,false,false, HighVenTempAlarmAct , 0 , 65 , PumpsOrPinchNotRespond_EmergAct}; // alarm after 1 s alarm
+TAlarmTimer HighFluidTempAlarmTimer = {0,10,false,false, HighFluidTempAlarmAct , 0 , 65 , PumpsOrPinchNotRespond_EmergAct}; // alarm after 1 s alarm
+TAlarmTimer LowPlateTempAlarmTimer = {0,10,false,false, LowPlateTempAlarmAct , 0 , 65 , PumpsOrPinchNotRespond_EmergAct}; // alarm after 1 s alarm
+TAlarmTimer LowArtTempAlarmTimer = {0,10,false,false, LowArtTempAlarmAct , 0 , 65 , PumpsOrPinchNotRespond_EmergAct}; // alarm after 1 s alarm
+TAlarmTimer LowVenTempAlarmTimer = {0,10,false,false, LowVenTempAlarmAct , 0 , 65 , PumpsOrPinchNotRespond_EmergAct}; // alarm after 1 s alarm
+TAlarmTimer LowFluidTempAlarmTimer = {0,10,false,false, LowFluidTempAlarmAct , 0 , 65 , PumpsOrPinchNotRespond_EmergAct}; // alarm after 1 s alarm
 
 static TAlarmTimer	*AlarmTimerList[] = {
 		&HighArterPressAlarmTimer,
@@ -134,23 +132,149 @@ int ii;
 
 void HighArterPressAlarmAct(void)
 {
-	ShowNewAlarmError(CODE_ALARM_PRESS_ART_XHIGH);
+
 	if( GetControlFSMState() == STATE_TREATMENT)
 	{
+		ShowNewAlarmError(CODE_ALARM_PRESS_ART_XHIGH);
 		DisablePinchNPumps();
+		TriggerSecondaryAction(&HighArterPressAlarmTimer);
 	}
 }
 
 void HighVenousPressAlarmAct(void)
 {
-	ShowNewAlarmError(CODE_ALARM_PRESS_VEN_XHIGH);
+
 	if( GetControlFSMState() == STATE_TREATMENT)
 	{
+		ShowNewAlarmError(CODE_ALARM_PRESS_VEN_XHIGH);
 		DisablePinchNPumps();
 		// trigger sec action
+		TriggerSecondaryAction(&HighVenousPressAlarmTimer);
 	}
-	if(HighVenousPressAlarmTimer.SecondaryActionTimerTreshold != 0){
-		HighVenousPressAlarmTimer.SecondaryActionTimer = HighVenousPressAlarmTimer.SecondaryActionTimerTreshold;
+}
+
+
+void HighAdsFiltPressAlarmAct(void)
+{
+	if( GetControlFSMState() == STATE_TREATMENT)
+	{
+		ShowNewAlarmError(CODE_ALARM_PRESS_ADSFILT_XHIGH);
+		DisablePinchNPumps();
+		TriggerSecondaryAction(&HighAdsFiltPressAlarmTimer);
+	}
+}
+
+
+void HighOxygenPressAlarmAct(void)
+{
+	if( GetControlFSMState() == STATE_TREATMENT)
+	{
+		ShowNewAlarmError(CODE_ALARM_PRESS_OXYGEN_XHIGH);
+		DisablePinchNPumps();
+		TriggerSecondaryAction(&HighOxygenPressAlarmTimer);
+	}
+}
+
+void HighLevelPressAlarmAct(void)
+{
+	if( GetControlFSMState() == STATE_TREATMENT)
+	{
+		ShowNewAlarmError(CODE_ALARM_PRESS_LEVEL_XHIGH);
+		DisablePinchNPumps();
+		TriggerSecondaryAction(&HighLevelPressAlarmTimer);
+	}
+}
+
+void HighPlateTempAlarmAct(void)
+{
+	ShowNewAlarmError(CODE_ALARM_TEMP_PLATE_XHIGH);
+	DisablePinchNPumps();
+	Enable_Heater(FALSE);
+	TriggerSecondaryAction(&HighPlateTempAlarmTimer);
+}
+
+void HighArtTempAlarmAct(void)
+{
+	if( SomePinchIsInPerfusionPosition() && (GetControlFSMState() == STATE_TREATMENT) )
+	{
+		DisablePinchNPumps();
+		ShowNewAlarmError(CODE_ALARM_TEMP_ART_XHIGH);
+		Enable_Heater(FALSE);
+		TriggerSecondaryAction(&HighArtTempAlarmTimer);
+	}
+}
+
+void HighVenTempAlarmAct(void)
+{
+	if( SomePinchIsInPerfusionPosition() && (GetControlFSMState() == STATE_TREATMENT))
+	{
+		ShowNewAlarmError(CODE_ALARM_TEMP_VEN_XHIGH);
+		DisablePinchNPumps();
+		Enable_Heater(FALSE);
+		TriggerSecondaryAction(&HighVenTempAlarmTimer);
+	}
+}
+
+void HighFluidTempAlarmAct(void)
+{
+	if( SomePinchIsInPerfusionPosition() && (GetControlFSMState() == STATE_TREATMENT))
+	{
+		ShowNewAlarmError(CODE_ALARM_TEMP_FLUID_XHIGH);
+		DisablePinchNPumps();
+		Enable_Heater(FALSE);
+		TriggerSecondaryAction(&HighFluidTempAlarmTimer);
+	}
+}
+
+void LowPlateTempAlarmAct(void)
+{
+	ShowNewAlarmError(CODE_ALARM_TEMP_PLATE_XLOW);
+	DisablePinchNPumps();
+	Enable_Frigo(FALSE);
+	TriggerSecondaryAction(&LowPlateTempAlarmTimer);
+}
+
+void LowArtTempAlarmAct(void)
+{
+	if( SomePinchIsInPerfusionPosition() && (GetControlFSMState() == STATE_TREATMENT))
+	{
+		ShowNewAlarmError(CODE_ALARM_TEMP_ART_XLOW);
+		ShowNewAlarmError(CODE_ALARM_TEMP_ART_XLOW);
+		DisablePinchNPumps();
+		Enable_Frigo(FALSE);
+		TriggerSecondaryAction(&LowArtTempAlarmTimer);
+	}
+}
+
+void LowVenTempAlarmAct(void)
+{
+	if( SomePinchIsInPerfusionPosition() && (GetControlFSMState() == STATE_TREATMENT))
+	{
+		ShowNewAlarmError(CODE_ALARM_TEMP_VEN_XLOW);
+		DisablePinchNPumps();
+		Enable_Frigo(FALSE);
+		TriggerSecondaryAction(&LowVenTempAlarmTimer);
+	}
+}
+
+void LowFluidTempAlarmAct(void)
+{
+	if( GetControlFSMState() == STATE_TREATMENT)
+	{
+		ShowNewAlarmError(CODE_ALARM_TEMP_FLUID_XLOW);
+		DisablePinchNPumps();
+		Enable_Frigo(FALSE);
+		TriggerSecondaryAction(&LowFluidTempAlarmTimer);
+	}
+}
+
+//
+// Late action if pumps and pinch not stopping and moving safe
+//
+void TriggerSecondaryAction(TAlarmTimer* AlarmTimer)
+{
+	if(AlarmTimer->SecondaryActionTimerTreshold != 0){
+		AlarmTimer->SecondaryActionTimer = AlarmTimer->SecondaryActionTimerTreshold;
 	}
 }
 
@@ -163,107 +287,6 @@ void PumpsOrPinchNotRespond_EmergAct(void)
 	}
 	if( !PumpsAreStopped() ){
 		SwitchOFFPinchNPumps();
-	}
-}
-
-void HighAdsFiltPressAlarmAct(void)
-{
-	ShowNewAlarmError(CODE_ALARM_PRESS_ADSFILT_XHIGH);
-	if( GetControlFSMState() == STATE_TREATMENT)
-	{
-		DisablePinchNPumps();
-	}
-}
-
-void HighOxygenPressAlarmAct(void)
-{
-	ShowNewAlarmError(CODE_ALARM_PRESS_OXYGEN_XHIGH);
-	if( GetControlFSMState() == STATE_TREATMENT)
-	{
-		DisablePinchNPumps();
-	}
-}
-
-void HighLevelPressAlarmAct(void)
-{
-	ShowNewAlarmError(CODE_ALARM_PRESS_LEVEL_XHIGH);
-	if( GetControlFSMState() == STATE_TREATMENT)
-	{
-			DisablePinchNPumps();
-	}
-}
-
-void HighPlateTempAlarmAct(void)
-{
-	ShowNewAlarmError(CODE_ALARM_TEMP_PLATE_XHIGH);
-	DisablePinchNPumps();
-	Enable_Heater(FALSE);
-}
-
-void HighArtTempAlarmAct(void)
-{
-	ShowNewAlarmError(CODE_ALARM_TEMP_ART_XHIGH);
-	if( SomePinchIsInPerfusionPosition() && (GetControlFSMState() == STATE_TREATMENT) )
-	{
-		DisablePinchNPumps();
-		Enable_Heater(FALSE);
-	}
-}
-
-void HighVenTempAlarmAct(void)
-{
-	ShowNewAlarmError(CODE_ALARM_TEMP_VEN_XHIGH);
-	if( SomePinchIsInPerfusionPosition() && (GetControlFSMState() == STATE_TREATMENT))
-	{
-		DisablePinchNPumps();
-		Enable_Heater(FALSE);
-	}
-}
-
-void HighFluidTempAlarmAct(void)
-{
-	ShowNewAlarmError(CODE_ALARM_TEMP_FLUID_XHIGH);
-	if( SomePinchIsInPerfusionPosition() && (GetControlFSMState() == STATE_TREATMENT))
-	{
-		DisablePinchNPumps();
-		Enable_Heater(FALSE);
-	}
-}
-
-void LowPlateTempAlarmAct(void)
-{
-	ShowNewAlarmError(CODE_ALARM_TEMP_PLATE_XLOW);
-	DisablePinchNPumps();
-	Enable_Frigo(FALSE);
-}
-
-void LowArtTempAlarmAct(void)
-{
-	ShowNewAlarmError(CODE_ALARM_TEMP_ART_XLOW);
-	if( SomePinchIsInPerfusionPosition() && (GetControlFSMState() == STATE_TREATMENT))
-	{
-		DisablePinchNPumps();
-		Enable_Frigo(FALSE);
-	}
-}
-
-void LowVenTempAlarmAct(void)
-{
-	ShowNewAlarmError(CODE_ALARM_TEMP_VEN_XLOW);
-	if( SomePinchIsInPerfusionPosition() && (GetControlFSMState() == STATE_TREATMENT))
-	{
-		DisablePinchNPumps();
-		Enable_Frigo(FALSE);
-	}
-}
-
-void LowFluidTempAlarmAct(void)
-{
-	ShowNewAlarmError(CODE_ALARM_TEMP_FLUID_XLOW);
-	if( GetControlFSMState() == STATE_TREATMENT)
-	{
-		DisablePinchNPumps();
-		Enable_Frigo(FALSE);
 	}
 }
 
@@ -317,9 +340,11 @@ void VerifyVenousPressure(uint16_t  Value)
 		HighVenousPressAlarmTimer.AlarmConditionPending = false;
 }
 
+
 #ifdef TEMPERATURE_SENSORS_AVAILABLE
 void VerifyPlateTemp(float Value)
 {
+
 	if( Value > XMAX_PLATE_TEMP )
 		HighPlateTempAlarmTimer.AlarmConditionPending = true;
 	else

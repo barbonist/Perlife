@@ -31,5 +31,22 @@ bool Pinch_Venous_IsEnabled(void);
 void Enable_Heater(bool status);
 void Enable_Frigo (bool status);
 
+typedef void(*TAlarmAction)(void);// TAlarmAction;
+
+typedef struct {
+	uint8_t AlarmCounter;
+	uint8_t	CountTreshold;
+	bool AlarmConditionPending;
+	bool AlarmActive;
+	TAlarmAction AlarmAction;
+	uint8_t SecondaryActionTimer;
+	uint8_t SecondaryActionTimerTreshold; // if 0 , never execute 2nd action
+	TAlarmAction SecondaryAlarmAction;
+} TAlarmTimer;
+
+
+void TriggerSecondaryAction(TAlarmTimer* AlarmTimer);
+void PumpsOrPinchNotRespond_EmergAct(void);
+
 
 #endif /* APPLICATION_ACTIONSPROTECTIVE_H_ */

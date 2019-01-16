@@ -419,6 +419,9 @@ int main(void)
 		Aggiunto campo per offset pressione da considerare in allarmi pressione venosa e arteriosa ( vaschetta sollevata )
 		Inserito il calcolo offset nella generazione allarme press. arteriosa alta e press venosa alta.
 		Migliorato il debug seriale con visualizzazione pressioni e temperature Contr e Prot
+	Versione 1.0.004 16/1/2019
+		Aggiunta la gestione dell'allarme hardware failure ( non si fermano pinch o pompe dopo disable ) per tutti
+		gli allarmi su cui è richiesto , ovvero tutti gli allarmi protective che prevedono blocco pompe e pinch in sicurezza
 
   */
 
