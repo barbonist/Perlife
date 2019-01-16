@@ -4804,7 +4804,13 @@ static void computeMachineStateGuardTreatment(void)
 
 	// tempo trascorso di trattamento in sec
 	if(StartTreatmentTime)
+	{
 		TreatDuration = msTick_elapsed(StartTreatmentTime) * 50L / 1000;
+	/*VINCY-->SOLO PER DEBUG, se voglio accelerare la durata della terapia di 100 volte
+	 * commento la riga sopra e decommento quella successiva*/
+	  // TreatDuration = msTick_elapsed(StartTreatmentTime) * 50L / 10;
+	}
+
 
 	unsigned long ival = (unsigned long)(parameterWordSetFromGUI[PAR_SET_DESIRED_DURATION].value >> 8);
 	unsigned long isec;
@@ -4815,8 +4821,8 @@ static void computeMachineStateGuardTreatment(void)
 	int newSpeedPmp1_2 = 0;
 	int newSpeedPmp_3 = 0;
 
-	/*Vincenzo: Gestisco l'abbandona trattamwento anche nel caso in cui lo si faccia
-	 * senza fare uno stop quidni per sicurezza, indipendentemente dal trattamento
+	/*Vincenzo: Gestisco l'abbandona trattamento anche nel caso in cui lo si faccia
+	 * senza fare uno stop quindi per sicurezza, indipendentemente dal trattamento
 	 * fermo tutte le pompe, poi andrò in svuotamento*/
 	if(buttonGUITreatment[BUTTON_PRIMING_ABANDON].state == GUI_BUTTON_RELEASED)
 	{
@@ -5437,9 +5443,9 @@ void processMachineState(void)
 		if (VolumeDischarged != 0)
 			VolumeDischarged = 0;
 
-		/*durata totale effettuata del trattamento*/
-		if (TotalTreatDuration != 0)
-			TotalTreatDuration = 0;
+//		/*durata totale effettuata del trattamento*/
+//		if (TotalTreatDuration != 0)
+//			TotalTreatDuration = 0;
 
 		TARA_PRESS_DONE = FALSE;
 
@@ -5807,7 +5813,10 @@ void processMachineState(void)
 
 			// riparte come se fosse un nuovo trattamento
 			StartTreatmentTime = 0;
-			TotalTreatDuration = 0;
+
+//			//mantengo la durata che avevo fatto precedentemente commentando la riga seguente
+//			TotalTreatDuration = 0;
+
 			TreatDuration = 0;
 			setGUIButton(BUTTON_START_TREATMENT);
 

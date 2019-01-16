@@ -650,6 +650,8 @@ int main(void)
 		        // Filippo - devo verificare che le temperature piatto lette dalla control e dalla protective siano le stesse
 		        verificaTempPlate();
 
+		        updateDurationToSendSBC();
+
 				/********************************/
 				/*      CHECK COVER PUMP        */
 				/********************************/

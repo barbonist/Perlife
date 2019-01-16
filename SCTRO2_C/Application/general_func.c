@@ -209,17 +209,10 @@ void DebugString()
 								(int) pumpPerist[1].actualSpeedOld * 100
 					);
 
-		perfusionParam.treatDurPerfArt = (word)(TotalTreatDuration + TreatDuration);   // concordato con Iudici di esprimerlo in secondi
-		perfusionParam.treatDurPerVenOxy = perfusionParam.treatDurPerfArt;
 	}
 
-	perfusionParam.priDurPerfArt = (word)(TotalPrimingDuration + PrimingDuration);  // concordato con Iudici di esprimerlo in secondi
-	perfusionParam.priDurPerVenOxy = 0;
-	if(PrimDurUntilOxyStart)
-	{
-		// la durata comincia quando partono le pompe di ossigenazione
-		perfusionParam.priDurPerVenOxy = perfusionParam.priDurPerfArt - PrimDurUntilOxyStart;
-	}
+
+
 
 //	sprintf(stringPr, "\r %i; %i; %i; - %i; %i; %d; %d;",
 //							(int) (sensorIR_TM[0].tempSensValue*10)/*PR_ADS_FLT_mmHg*/,
@@ -909,7 +902,20 @@ void GenerateSBCComm(void)
 //	}
 //}
 
+void updateDurationToSendSBC(void)
+{
+	perfusionParam.treatDurPerfArt = (word)(TotalTreatDuration + TreatDuration);   // concordato con Iudici di esprimerlo in secondi
+	perfusionParam.treatDurPerVenOxy = perfusionParam.treatDurPerfArt;
 
+	perfusionParam.priDurPerfArt = (word)(TotalPrimingDuration + PrimingDuration);  // concordato con Iudici di esprimerlo in secondi
+	perfusionParam.priDurPerVenOxy = 0;
+
+		if(PrimDurUntilOxyStart)
+	{
+		// la durata comincia quando partono le pompe di ossigenazione
+		perfusionParam.priDurPerVenOxy = perfusionParam.priDurPerfArt - PrimDurUntilOxyStart;
+	}
+}
 
 //parameterWordSetFromGUI[parId].value = value;
 //buttonGUITreatment[sbc_rx_data[7]]

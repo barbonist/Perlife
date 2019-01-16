@@ -1787,6 +1787,37 @@ void setParamWordFromGUI(unsigned char parId, int value)
 	{
 		TherapyCmdArrived = 1;
 	}
+	else if (parId == PAR_SET_DESIRED_DURATION)
+	{
+		/*variabili in cui memorizzare i minuti e le ore già
+		 * fatte nel caso in cui ci sia un proseguimento di trattamento
+		 * dopo che un trattamento è finito*/
+		int minuti_da_fare = 0;
+
+		/*Dal valore che mi è arrivato 'value' in ore--minuti calcolo i secondi*/
+		unsigned long ival = (unsigned long)(value >> 8);
+		unsigned long isec;
+		isec = ival * 3600L;      // numero di ore
+		ival = (unsigned long)(value & 0xff);
+		isec = isec + ival * 60L; // numero di minuti
+
+		/*ci salviamo la durata del trattamento fatto
+		 * nel caso si arrivi qui come proseguimento di un trattamento
+		 * che era arrivato alla fine*/
+		TotalTreatDuration += TreatDuration;
+		TreatDuration = 0;
+
+		/*Alla quantità di secondi già eseguiti sommo la quantità di seocndi che mi è arrivata*/
+		isec += TotalTreatDuration;
+
+		minuti_da_fare = isec / 60;
+
+		value = minuti_da_fare / 60;
+
+		value = value << 8;
+		value = value + (minuti_da_fare%60);
+
+	}
 	parameterWordSetFromGUI[parId].value = value;
 
 	if(parId == PAR_SET_PRIMING_VOL_PERFUSION)

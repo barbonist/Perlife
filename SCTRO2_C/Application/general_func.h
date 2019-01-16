@@ -28,6 +28,8 @@ void Heater_ON();
 void Set_Lamp(unsigned char level);
 void Reset_Lamp(unsigned char level);
 
+void updateDurationToSendSBC(void);
+
 void ShowButtonStr(struct buttonGUI *ButtonGuiArray, unsigned char id);
 void ShowParameterStr(struct parWordSetFromGUI *ParamGuiArray, unsigned char id);
 
