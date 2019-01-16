@@ -137,6 +137,8 @@ void HighArterPressAlarmAct(void)
 	{
 		ShowNewAlarmError(CODE_ALARM_PRESS_ART_XHIGH);
 		DisablePinchNPumps();
+		Enable_Heater(false);
+		Enable_Frigo(false);
 		TriggerSecondaryAction(&HighArterPressAlarmTimer);
 	}
 }
@@ -148,6 +150,8 @@ void HighVenousPressAlarmAct(void)
 	{
 		ShowNewAlarmError(CODE_ALARM_PRESS_VEN_XHIGH);
 		DisablePinchNPumps();
+		Enable_Heater(false);
+		Enable_Frigo(false);
 		// trigger sec action
 		TriggerSecondaryAction(&HighVenousPressAlarmTimer);
 	}
@@ -160,6 +164,8 @@ void HighAdsFiltPressAlarmAct(void)
 	{
 		ShowNewAlarmError(CODE_ALARM_PRESS_ADSFILT_XHIGH);
 		DisablePinchNPumps();
+		Enable_Heater(false);
+		Enable_Frigo(false);
 		TriggerSecondaryAction(&HighAdsFiltPressAlarmTimer);
 	}
 }
@@ -171,6 +177,8 @@ void HighOxygenPressAlarmAct(void)
 	{
 		ShowNewAlarmError(CODE_ALARM_PRESS_OXYGEN_XHIGH);
 		DisablePinchNPumps();
+		Enable_Heater(false);
+		Enable_Frigo(false);
 		TriggerSecondaryAction(&HighOxygenPressAlarmTimer);
 	}
 }
@@ -181,6 +189,8 @@ void HighLevelPressAlarmAct(void)
 	{
 		ShowNewAlarmError(CODE_ALARM_PRESS_LEVEL_XHIGH);
 		DisablePinchNPumps();
+		Enable_Heater(false);
+		Enable_Frigo(false);
 		TriggerSecondaryAction(&HighLevelPressAlarmTimer);
 	}
 }
@@ -189,7 +199,8 @@ void HighPlateTempAlarmAct(void)
 {
 	ShowNewAlarmError(CODE_ALARM_TEMP_PLATE_XHIGH);
 	DisablePinchNPumps();
-	Enable_Heater(FALSE);
+	Enable_Heater(false);
+	Enable_Frigo(false);
 	TriggerSecondaryAction(&HighPlateTempAlarmTimer);
 }
 
@@ -199,7 +210,8 @@ void HighArtTempAlarmAct(void)
 	{
 		DisablePinchNPumps();
 		ShowNewAlarmError(CODE_ALARM_TEMP_ART_XHIGH);
-		Enable_Heater(FALSE);
+		Enable_Heater(false);
+		Enable_Frigo(false);
 		TriggerSecondaryAction(&HighArtTempAlarmTimer);
 	}
 }
@@ -210,7 +222,8 @@ void HighVenTempAlarmAct(void)
 	{
 		ShowNewAlarmError(CODE_ALARM_TEMP_VEN_XHIGH);
 		DisablePinchNPumps();
-		Enable_Heater(FALSE);
+		Enable_Heater(false);
+		Enable_Frigo(false);
 		TriggerSecondaryAction(&HighVenTempAlarmTimer);
 	}
 }
@@ -221,7 +234,8 @@ void HighFluidTempAlarmAct(void)
 	{
 		ShowNewAlarmError(CODE_ALARM_TEMP_FLUID_XHIGH);
 		DisablePinchNPumps();
-		Enable_Heater(FALSE);
+		Enable_Heater(false);
+		Enable_Frigo(false);
 		TriggerSecondaryAction(&HighFluidTempAlarmTimer);
 	}
 }
@@ -230,7 +244,8 @@ void LowPlateTempAlarmAct(void)
 {
 	ShowNewAlarmError(CODE_ALARM_TEMP_PLATE_XLOW);
 	DisablePinchNPumps();
-	Enable_Frigo(FALSE);
+	Enable_Heater(false);
+	Enable_Frigo(false);
 	TriggerSecondaryAction(&LowPlateTempAlarmTimer);
 }
 
@@ -239,9 +254,9 @@ void LowArtTempAlarmAct(void)
 	if( SomePinchIsInPerfusionPosition() && (GetControlFSMState() == STATE_TREATMENT))
 	{
 		ShowNewAlarmError(CODE_ALARM_TEMP_ART_XLOW);
-		ShowNewAlarmError(CODE_ALARM_TEMP_ART_XLOW);
 		DisablePinchNPumps();
-		Enable_Frigo(FALSE);
+		Enable_Heater(false);
+		Enable_Frigo(false);
 		TriggerSecondaryAction(&LowArtTempAlarmTimer);
 	}
 }
@@ -252,7 +267,8 @@ void LowVenTempAlarmAct(void)
 	{
 		ShowNewAlarmError(CODE_ALARM_TEMP_VEN_XLOW);
 		DisablePinchNPumps();
-		Enable_Frigo(FALSE);
+		Enable_Heater(false);
+		Enable_Frigo(false);
 		TriggerSecondaryAction(&LowVenTempAlarmTimer);
 	}
 }
@@ -263,7 +279,8 @@ void LowFluidTempAlarmAct(void)
 	{
 		ShowNewAlarmError(CODE_ALARM_TEMP_FLUID_XLOW);
 		DisablePinchNPumps();
-		Enable_Frigo(FALSE);
+		Enable_Heater(false);
+		Enable_Frigo(false);
 		TriggerSecondaryAction(&LowFluidTempAlarmTimer);
 	}
 }

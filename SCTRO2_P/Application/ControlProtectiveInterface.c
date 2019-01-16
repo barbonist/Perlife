@@ -659,14 +659,11 @@ void NewDataRxChannel3(void) {
 	}
 
 	// pinch pos
-//	if ((RxCan3.SRxCan3.Pinch0Pos != OldRxCan3.SRxCan3.Pinch0Pos)
-//			|| (RxCan3.SRxCan3.Pinch1Pos != OldRxCan3.SRxCan3.Pinch1Pos)
-//			|| (RxCan3.SRxCan3.Pinch2Pos != OldRxCan3.SRxCan3.Pinch2Pos)) {
 
-		if( IsVerifyRequired() )
-		VerifyRxPinchPos(RxCan3.SRxCan3.Pinch0Pos, RxCan3.SRxCan3.Pinch1Pos,
-				RxCan3.SRxCan3.Pinch2Pos);
-//	}
+
+	if( IsVerifyRequired() )
+		VerifyRxPinchPos(RxCan3.SRxCan3.Pinch0Pos, RxCan3.SRxCan3.Pinch1Pos, RxCan3.SRxCan3.Pinch2Pos);
+
 }
 
 uint16_t GetReceivedAlarmCode(void)
