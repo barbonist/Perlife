@@ -19,6 +19,9 @@ uint16_t GetControlFSMState(void);
 void GetPinchPos( uint8_t *Pinch0Pos ,  uint8_t *Pinch1_pos , uint8_t *Pinch2_pos);
 void GetPressures(uint16_t* PressFilter, uint16_t* PressArt,  uint16_t* PressVen,  uint16_t* PressLevelx100,  uint16_t* PressOxy);
 void GetPressOffsets( uint8_t *OffsetPressArt, uint8_t *OffsetPressVen );
+void GetPumpsSpeedRpmx100(int16_t *SpeedPump0x100, int16_t *SpeedPump1x100,int16_t *SpeedPump2x100,int16_t *SpeedPump3x100);
+void GetTemperatures(uint16_t *TempArtx10, uint16_t *TempFluidx10, uint16_t *TempVenx10, uint16_t *TempPlatex10);
+
 uint16_t GetOffsetPressArt(void);
 uint16_t GetOffsetPressVen(void);
 
@@ -48,5 +51,4 @@ void onNewTPerfVenosa(float Temper);
 void Enable_Heater_CommandCAN(bool status);
 void Enable_Frigo_CommandCAN(bool status);
 
-void GetTemperatures(uint16_t *TempArtx10, uint16_t *TempFluidx10, uint16_t *TempVenx10, uint16_t *TempPlatex10);
 #endif /* CONTROLPROTECTIVEINTERFACE_H_ */

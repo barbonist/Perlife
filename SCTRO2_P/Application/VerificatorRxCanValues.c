@@ -47,7 +47,7 @@ void MismatchTempVenAlarmAct(void);
 void MismatchTempFluidAlarmAct(void);
 
 
-TAlarmTimer PumpMismatchAlarmTimer = {0,70,false,false,MismatchPumpSpeedAlarmAct , 0 , 65 , PumpsOrPinchNotRespond_EmergAct }; // alarm after 7 s mismatch
+TAlarmTimer PumpMismatchAlarmTimer = {0,80,false,false,MismatchPumpSpeedAlarmAct , 0 , 65 , PumpsOrPinchNotRespond_EmergAct }; // alarm after 7 s mismatch
 TAlarmTimer CanOfflineAlarmTimer = {0,20,false,false,NoCanCommunicationAlarmAct , 0 , 65 , PumpsOrPinchNotRespond_EmergAct }; // alarm after 2 s mismatch
 TAlarmTimer PinchMismatchAlarmTimer = {0,20,false,false, MismatchPinchPosAlarmAct , 0 , 65 , PumpsOrPinchNotRespond_EmergAct }; // alarm after 2 s mismatch
 

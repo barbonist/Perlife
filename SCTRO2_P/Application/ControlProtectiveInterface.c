@@ -9,6 +9,7 @@
 #include <stdbool.h>
 #include <string.h>
 #include <stdio.h>
+#include <float.h>
 #include "stdint.h"
 #include "SwTimer.h"
 #include "FlexCANWrapper.h"
@@ -118,6 +119,8 @@ void CanCheckTimer(void);
 void ManageTxDebug(void);
 void TxDebugPressures(void);
 void TxDebugTemperatures(void);
+void TxDebugPinch(void);
+
 uint8_t CharReceived(void);
 
 #ifdef CAN_DEBUG
@@ -373,6 +376,14 @@ void onNewPumpRPM(int16_t Value, int PumpIndex) {
 #endif
 }
 
+void GetPumpsSpeedRpmx100(int16_t *SpeedPump0x100, int16_t *SpeedPump1x100,int16_t *SpeedPump2x100,int16_t *SpeedPump3x100)
+{
+	*SpeedPump0x100 = TxCan3.STxCan3.SpeedPump0Rpmx100;
+	*SpeedPump1x100 = TxCan3.STxCan3.SpeedPump1Rpmx100;
+	*SpeedPump2x100 = TxCan3.STxCan3.SpeedPump2Rpmx100;
+	*SpeedPump3x100 = TxCan3.STxCan3.SpeedPump3Rpmx100;
+}
+
 // incoming new RPM values ( reduntant funtions , for possible future use )
 void onNewFilterPumpRPM(int16_t Value) {
 	TxCan3.STxCan3.SpeedPump0Rpmx100 = Value;
@@ -411,6 +422,7 @@ void GetPinchPos( uint8_t *Pinch0Pos ,  uint8_t *Pinch1Pos , uint8_t *Pinch2Pos)
 	 *Pinch1Pos = TxCan2.STxCan2.Pinch1Pos;
 	 *Pinch2Pos = TxCan2.STxCan2.Pinch2Pos;
 }
+
 // Filippo - questa funzione serve per aggiornare il messaggio CAN da spedire alla Control
 void onNewTempPlateValue(int16_t value)
 {
@@ -752,7 +764,7 @@ void CanCheckTimer(void)
 //  P or p pressed --> generate head line for csv file and pressures headers
 //  esc --> stop logging
 //
-int TemperaturePrescalerCnt = 0;
+int PrescalerCnt = 0;
 void ManageTxDebug(void)
 {
 static char stringPtr[200];
@@ -778,6 +790,17 @@ word sent_data;
 		sprintf(stringPtr, "\"sep=,\"\r\n Tempx10 Ven Rem[mmHg] , Tempx10 Ven Loc[mmHg], Tempx10 Art Rem[mmHg] , Tempx10 Art Loc[mmHg] , Tempx10 Recycle Rem[mmHg] , Tempx10 Recycle Loc[mmHg], Tempx10 Plate Rem[mmHg] , Tempx10 Plate Loc[mmHg] \r\n");
 		PC_DEBUG_COMM_SendBlock(stringPtr, strlen(stringPtr), &sent_data);
 		break;
+	case 'C':
+		mode = 7;
+		sprintf(stringPtr, "\"sep=,\"\r\n Pinch 1 Rem , Pinch 1 Loc, Pinch 2 Rem , Pinch 2 Loc , Pinch 3 Rem , Pinch 3 Loc \r\n");
+		PC_DEBUG_COMM_SendBlock(stringPtr, strlen(stringPtr), &sent_data);
+		break;
+	case 'M':
+		mode = 10;
+		sprintf(stringPtr, "\"sep=,\"\r\n Pump 1 Rem [rpm], Pump 1 Loc[rpm], Pump 2 Rem[rpm], Pump 2 Loc[rpm], Pump 3 Rem[rpm], Pump 3 Loc[rpm], "
+				"						  Pump 4 Rem[rpm], Pump4 Loc[rpm]\r\n");
+		PC_DEBUG_COMM_SendBlock(stringPtr, strlen(stringPtr), &sent_data);
+		break;
 	}
 
 	switch(mode){
@@ -787,14 +810,32 @@ word sent_data;
 	case 4: // temp
 		mode = 5;
 		break;
-	case 5: // temperature
-		if( TemperaturePrescalerCnt == 0){
-			TxDebugTemperatures();
-		}
-		TemperaturePrescalerCnt = (TemperaturePrescalerCnt + 1) % 10;
+	case 7: // pinch
+		mode = 8;
+		break;
+	case 10: // pumps
+		mode = 11;
 		break;
 	case 2: // pressure
 		TxDebugPressures();
+		break;
+	case 5: // temperature
+		if( PrescalerCnt == 0){
+			TxDebugTemperatures();
+		}
+		PrescalerCnt = (PrescalerCnt + 1) % 10;
+		break;
+	case 8: // pinc
+		if( PrescalerCnt == 0){
+			TxDebugPinch();
+		}
+		PrescalerCnt = (PrescalerCnt + 1) % 10;
+		break;
+	case 11: // pinc
+		if( PrescalerCnt == 0){
+			TxDebugPumpSpeed();
+		}
+		PrescalerCnt = (PrescalerCnt + 1) % 10;
 		break;
 	}
 
@@ -840,6 +881,56 @@ void TxDebugTemperatures(void)
 
     sprintf(stringPtr, "%04d ,  %04d , %04d , %04d , %04d ,  %04d , %04d , %04d \r\n", RTempVenx10, LTempVenx10 , RTempArtx10, LTempArtx10,
     																				   RTempFluidx10 , LTempFluidx10, RTempPlatex10, LTempPlatex10 );
+    PC_DEBUG_COMM_SendBlock(stringPtr, strlen(stringPtr) , &sent_data);
+
+}
+
+void TxDebugPinch(void)
+{
+    static char stringPtr[200];
+	uint8_t RPinch1, RPinch2, RPinch3;
+	uint8_t LPinch1, LPinch2, LPinch3;
+	word sent_data;
+
+	GetPinchPos( &LPinch1 ,  &LPinch2 , &LPinch3);
+
+	RPinch1 = RxCan3.SRxCan3.Pinch0Pos;
+	RPinch2 = RxCan3.SRxCan3.Pinch1Pos;
+	RPinch3 = RxCan3.SRxCan3.Pinch2Pos;
+
+    sprintf(stringPtr, "%02x , %01x   ,   %02x , %01x   ,   %02x , %01x \r\n", RPinch1, LPinch1 , RPinch2, LPinch2, RPinch3 , LPinch3);
+
+    PC_DEBUG_COMM_SendBlock(stringPtr, strlen(stringPtr) , &sent_data);
+
+}
+
+
+void TxDebugPumpSpeed(void)
+{
+    static char stringPtr[200];
+	uint16_t RSpeed1, RSpeed2, RSpeed3, RSpeed4;
+	uint16_t LSpeed1, LSpeed2, LSpeed3, LSpeed4;
+	float FRSpeed1, FRSpeed2, FRSpeed3, FRSpeed4;
+	float FLSpeed1, FLSpeed2, FLSpeed3, FLSpeed4;
+	word sent_data;
+
+	GetPumpsSpeedRpmx100(&LSpeed1, &LSpeed2 , &LSpeed3 , &LSpeed4);
+	FLSpeed1 = ((float)LSpeed1)/100.0;
+	FLSpeed2 = ((float)LSpeed2)/100.0;
+	FLSpeed3 = ((float)LSpeed3)/100.0;
+	FLSpeed4 = ((float)LSpeed4)/100.0;
+
+	RSpeed1 = RxCan4.SRxCan4.SpeedPump0Rpmx100;
+	RSpeed2 = RxCan4.SRxCan4.SpeedPump1Rpmx100;
+	RSpeed3 = RxCan4.SRxCan4.SpeedPump2Rpmx100;
+	RSpeed4 = RxCan4.SRxCan4.SpeedPump3Rpmx100;
+	FRSpeed1 = ((float)RSpeed1)/100.0;
+	FRSpeed2 = ((float)RSpeed2)/100.0;
+	FRSpeed3 = ((float)RSpeed3)/100.0;
+	FRSpeed4 = ((float)RSpeed4)/100.0;
+
+    sprintf(stringPtr, "%.2f , %.2f   ,   %.2f , %.2f   ,   %.2f , %.2f  ,   %.2f , %.2f \r\n", FRSpeed1, FLSpeed1 , FRSpeed2, FLSpeed2 ,FRSpeed3, FLSpeed3 ,FRSpeed4, FLSpeed4);
+
     PC_DEBUG_COMM_SendBlock(stringPtr, strlen(stringPtr) , &sent_data);
 
 }

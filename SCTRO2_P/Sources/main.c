@@ -424,9 +424,12 @@ int main(void)
 		Aggiunta la gestione dell'allarme hardware failure ( non si fermano pinch o pompe dopo disable ) per tutti
 		gli allarmi su cui è richiesto , ovvero tutti gli allarmi protective che prevedono blocco pompe e pinch in sicurezza
 
-		Versione 1.0.004 16/1/2019
+	Versione 1.0.005 16/1/2019
 		Allarmi per mismatch parametri emessi sempre e non soltanto in trattamento
 		Allarmi Protective in genere causano sempre spegnimento frigo e riscaldatore
+
+	Versione 1.0.006 17/1/2019
+		Inserita trasmissione su seriale di debug di informazioni su stato PINCH ( comando C ) e velocità pompe ( comando M )
 
   */
 
