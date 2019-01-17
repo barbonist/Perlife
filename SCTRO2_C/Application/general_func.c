@@ -1025,3 +1025,41 @@ void ShowParameterStr(struct parWordSetFromGUI *ParamGuiArray, unsigned char id)
 	PC_DEBUG_COMM_SendChar(0x0A);
 }
 
+/********************************/
+/*      CHECK STOP PUMP        */
+/********************************/
+/*funzione che controlla se ad ogni singola pompa è stato inviato un comando di stop
+ * e la stessa sta ancora girando, nel qual caso si reinoltra il comando di stop*/
+void CheckStopPump(void)
+{
+	if (GetTherapyType() == LiverTreat)
+	{
+		if (pumpPerist[0].pmpSpeed == 0 &&  modbusData[1][17] !=0)
+			setPumpSpeedValueHighLevel(PPAF, 0);
+
+		if (pumpPerist[1].pmpSpeed == 0 &&  modbusData[2][17] !=0)
+			setPumpSpeedValueHighLevel(PPV1, 0);
+
+		if (pumpPerist[2].pmpSpeed == 0 &&  modbusData[3][17] !=0)
+			setPumpSpeedValueHighLevel(PPV2, 0);
+
+		if (pumpPerist[3].pmpSpeed == 0 &&  modbusData[0][17] !=0)
+			setPumpSpeedValueHighLevel(PPAR, 0);
+
+	}
+	else if (GetTherapyType() == KidneyTreat)
+	{
+		if (pumpPerist[0].pmpSpeed == 0 &&  modbusData[0][17] !=0)
+			setPumpSpeedValueHighLevel(PPAF, 0);
+
+		if (pumpPerist[1].pmpSpeed == 0 &&  modbusData[2][17] !=0)
+			setPumpSpeedValueHighLevel(PPV1, 0);
+
+		if (pumpPerist[2].pmpSpeed == 0 &&  modbusData[3][17] !=0)
+			setPumpSpeedValueHighLevel(PPV2, 0);
+
+		if (pumpPerist[3].pmpSpeed == 0 &&  modbusData[1][17] !=0)
+			setPumpSpeedValueHighLevel(PPAR, 0);
+	}
+
+}

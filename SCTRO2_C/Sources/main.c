@@ -271,6 +271,8 @@ int main(void)
   Enable_AMS = 0;
   ptrT1Test = &T1TEST;
 
+  unsigned char Prescaler_CheckStopPump = 0;
+
   /*inizializzo il flag che mi dice che non ho ancora fatto la tara delle pressioni che va fatta dopo la connessione dell'organo*/
   TARA_PRESS_DONE = FALSE;
 
@@ -664,6 +666,19 @@ int main(void)
 				* tolgo la condizione di allarme, SBC metterà a video il retry
 				* e solo allora potrò far ripartire le pompe e riprendere con la macchina a stati*/
 		        CoversState = CheckCoverPump();
+
+				/********************************/
+				/*      CHECK STOP PUMP        */
+				/********************************/
+		        /*funzione che controlla se ad ogni singola pompa è stato inviato un comando di stop
+		         * e la stessa sta ancora girando, nel qual caso si reinoltra il comando di stop
+		         * il controllo lo una volta ogni 1 secondo per dar modo alla pompa eventualmente di partire*/
+		        Prescaler_CheckStopPump++;
+		        if (Prescaler_CheckStopPump > 20)
+		        {
+					CheckStopPump();
+					Prescaler_CheckStopPump = 0;
+		        }
 	         }
 
 	         if(ReadKey1()) // per debug con la tastiera a bolle

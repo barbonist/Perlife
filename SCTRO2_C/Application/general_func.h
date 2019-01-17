@@ -33,4 +33,8 @@ void updateDurationToSendSBC(void);
 void ShowButtonStr(struct buttonGUI *ButtonGuiArray, unsigned char id);
 void ShowParameterStr(struct parWordSetFromGUI *ParamGuiArray, unsigned char id);
 
+/*funzione che controlla se è stato inviato lo stop ad una pompa ma la pompa
+ * sta ancora girando, nel qual caso reinotlra il comando con velocità pari a '0'*/
+void CheckStopPump(void);
+
 #endif /* APPLICATION_GENERAL_FUNC_H_ */

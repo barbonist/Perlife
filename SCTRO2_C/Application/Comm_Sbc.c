@@ -1112,10 +1112,11 @@ void buildRDMachineStateResponseMsg(char code, char subcode)
 
 	/*0x0800 --> 1.0.0
 	 *0x0801 --> 1.0.1
-	 *0x0802 --> 1.0.2*/
+	 *0x0802 --> 1.0.2
+	 *0x0803 --> 1.0.3 */
 
 	/*10*/	sbc_tx_data[index++] = 0x08;
-	/*11*/	sbc_tx_data[index++] = 0x02;
+	/*11*/	sbc_tx_data[index++] = 0x03;
 
 	/* TODO status parameters: rev fw-H
 	 * potrei usare questa come versione FW
@@ -1689,7 +1690,14 @@ void setParamWordFromGUI(unsigned char parId, int value)
 	if (parId == PAR_SET_THERAPY_TYPE)
 	{
 		if (value == LiverTreat || value == KidneyTreat)
+		{
 			SetTherapyType(value);
+			/*aggiorno la mappatura degli indirizzi logici delle pompe
+			 * tutte le volte che ricevo una terapia; viene fatto anche
+			 * in computeMachineStateGuardIdle ma di li, dopo la prima
+			 * selezione della terapia non ci passa più*/
+			UpdatePmpAddress((THERAPY_TYPE)value);
+		}
 	}
 	if(parId == PAR_SET_PRIMING_VOL_PERFUSION)
 	{
@@ -1787,6 +1795,7 @@ void setParamWordFromGUI(unsigned char parId, int value)
 	{
 		TherapyCmdArrived = 1;
 	}
+	/*durata del trattamento*/
 	else if (parId == PAR_SET_DESIRED_DURATION)
 	{
 		/*variabili in cui memorizzare i minuti e le ore già
@@ -1810,13 +1819,18 @@ void setParamWordFromGUI(unsigned char parId, int value)
 		/*Alla quantità di secondi già eseguiti sommo la quantità di seocndi che mi è arrivata*/
 		isec += TotalTreatDuration;
 
+		/*calcolo i minuti da fare dividendo i seondi per 60 */
 		minuti_da_fare = isec / 60;
 
+		/*dividendo ulteriormente i minuti per 60 e prendendo
+		 * la parte intera trovo le ore totali da fare*/
 		value = minuti_da_fare / 60;
 
+		/*metto le ore da afre nella parte alta della word come da protocollo*/
 		value = value << 8;
+		/*nella parte bassa della word metto i minuti da fare calcolati come
+		 * resto della divisione per 60 dei minuti da fare*/
 		value = value + (minuti_da_fare%60);
-
 	}
 	parameterWordSetFromGUI[parId].value = value;
 
@@ -2026,9 +2040,6 @@ word ConvertMMHgToMl( word mmhg)
 	return wd;
 }
 
-
-
-
 // ritorna il tempo previsto per completare il priming espresso in secondi
 int CalcPrimingDuration(word volume)
 {
@@ -2121,25 +2132,3 @@ word CalcHoursMin(int seconds)
 	}
 	return wd;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
