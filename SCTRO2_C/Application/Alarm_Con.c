@@ -2255,7 +2255,7 @@ void ClearAlarmState(void)
 	StrAlarmWritten = 0;
 	StartAlmArrIdx = 0;
 	memset(&alarmCurrent, 0, sizeof(struct alarm));
-	LevelBuzzer = 0;
+	LevelBuzzer = SILENT;// 0;
 	//EnableNextAlarm = 1;
 	EnableNextAlarmFunc();
 	currentGuard[GUARD_ALARM_ACTIVE].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;

@@ -1523,9 +1523,9 @@ typedef enum{NOT_DEF = 0, NO = 1, YES = 2} PARAMETER_ACTIVE_TYPE;
 #define MIN_TEMP_PRIMING         4
 
 #define MAX_FLOW_ART_KIDNEY		500
-#define MAX_FLOW_ART_LIVER		400
-#define MIN_FLOW_ART_KIDNEY		50
-#define MIN_FLOW_ART_LIVER		50
+#define MAX_FLOW_ART_LIVER		500//400
+#define MIN_FLOW_ART_KIDNEY		0//50
+#define MIN_FLOW_ART_LIVER		0//50
 #define PUMP_ART_GAIN			9 /* ml/GIRO */
 #define PUMP_OXY_GAIN			9
 

@@ -82,7 +82,7 @@ void ParentFunc(void)
 				// ho premuto il tasto di stop - gestisco l'allarme
 				ptrFutureParent = &stateParentIdle[2];
 				ptrFutureChild = ptrFutureParent->ptrChild;
-				LevelBuzzer = 2;
+				LevelBuzzer = HIGH;//2;
 			}
 			releaseGUIButton(BUTTON_RESET_ALARM);
 			break;
@@ -95,7 +95,7 @@ void ParentFunc(void)
 				{
 					releaseGUIButton(BUTTON_RESET_ALARM);
 					EnableNextAlarmFunc(); //EnableNextAlarm = TRUE;
-					LevelBuzzer = 0;
+					LevelBuzzer = SILENT;//0;
 					ptrFutureParent = &stateParentIdle[1];
 					ptrFutureChild = ptrFutureParent->ptrChild;
 					currentGuard[GUARD_ALARM_ACTIVE].guardValue = GUARD_VALUE_FALSE;
@@ -140,7 +140,7 @@ void ParentFunc(void)
 //					// reset termino la procedura di priming e passo direttamente al ricircolo
 //					GlobalFlags.FlagsDef.TankLevelHigh = 1;
 //				}
-				LevelBuzzer = 2;
+				LevelBuzzer = HIGH;//2;
 			}
 			// per sicurezza resetto la flag di reset alarm premuto, nel caso mi fosse rimasto settato
 			releaseGUIButton(BUTTON_RESET_ALARM);
@@ -175,7 +175,7 @@ void ParentFunc(void)
 //					// reset termino la procedura di priming e passo direttamente al ricircolo
 //					GlobalFlags.FlagsDef.TankLevelHigh = 1;
 //				}
-				LevelBuzzer = 2;
+				LevelBuzzer = HIGH;//2;
 			}
 			else if(currentGuard[GUARD_ENT_PAUSE_STATE_PRIM_KIDNEY_1].guardValue == GUARD_VALUE_TRUE)
 			{
@@ -207,7 +207,7 @@ void ParentFunc(void)
 					{
 						releaseGUIButton(BUTTON_RESET_ALARM);
 						EnableNextAlarmFunc(); //EnableNextAlarm = TRUE;
-						LevelBuzzer = 0;
+						LevelBuzzer = SILENT;//0;
 						AtLeastoneButResRcvd = TRUE;
 					}
 					// ho ricevuto un BUTTON_RESET_ALARM e l'allarme era ancora attivo oppure
@@ -273,7 +273,7 @@ void ParentFunc(void)
 					//ptrFutureParent = &stateParentPrimingTreatKidney1[1];
 					ptrFutureParent = &stateParentPrimingTreatKidney1[3];
 					ptrFutureChild = ptrFutureParent->ptrChild;
-					LevelBuzzer = 0;
+					LevelBuzzer = SILENT;//0;
 				}
 				else if(!IsAlarmActive())
 				{
@@ -283,7 +283,7 @@ void ParentFunc(void)
 					{
 						ptrFutureParent = &stateParentPrimingTreatKidney1[3];
 						ptrFutureChild = ptrFutureParent->ptrChild;
-						LevelBuzzer = 0;
+						LevelBuzzer = SILENT;//0;
 						setGUIButton(BUTTON_START_PRIMING);
 					}
 				}
@@ -301,7 +301,7 @@ void ParentFunc(void)
 					//EnableNextAlarmFunc(); //EnableNextAlarm = TRUE;
 					ptrFutureParent = &stateParentPrimingTreatKidney1[3];
 					ptrFutureChild = ptrFutureParent->ptrChild;
-					LevelBuzzer = 0;
+					LevelBuzzer = SILENT;//0;
 					setGUIButton(BUTTON_START_PRIMING);
 					break;
 				}
@@ -315,7 +315,7 @@ void ParentFunc(void)
 					currentGuard[GUARD_ALARM_ACTIVE].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
 					ptrFutureParent = &stateParentPrimingTreatKidney1[3];
 					ptrFutureChild = ptrFutureParent->ptrChild;
-					LevelBuzzer = 0;
+					LevelBuzzer = SILENT;//0;
 					setGUIButton(BUTTON_START_PRIMING);
 				}
 				break;
@@ -368,7 +368,7 @@ void ParentFunc(void)
 			{
 				ptrFutureParent = &stateParentPrimingTreatKidney1[15];
 				ptrFutureChild = ptrFutureParent->ptrChild;
-				LevelBuzzer = 2;
+				LevelBuzzer = HIGH;//2;
 				ParentStateGenAlarm = PARENT_PRIM_WAIT_MOT_STOP;
 				break;
 			}
@@ -400,7 +400,7 @@ void ParentFunc(void)
 			{
 				ptrFutureParent = &stateParentPrimingTreatKidney1[15];
 				ptrFutureChild = ptrFutureParent->ptrChild;
-				LevelBuzzer = 2;
+				LevelBuzzer = HIGH;//2;
 				ParentStateGenAlarm = PARENT_PRIM_WAIT_PINCH_CLOSE;
 			}
 			if(ptrCurrentParent->action == ACTION_ON_ENTRY)
@@ -434,7 +434,7 @@ void ParentFunc(void)
 						ptrFutureParent = &stateParentPrimingTreatKidney1[11];
 						ptrFutureChild = ptrFutureParent->ptrChild;
 					}
-					LevelBuzzer = 0;
+					LevelBuzzer = SILENT;//0;
 				}
 			}
 
@@ -560,7 +560,7 @@ void ParentFunc(void)
 				ptrFutureParent = &stateParentTreatKidney1[5];
 				ptrFutureChild = ptrFutureParent->ptrChild;
 				DisableAllAirAlarm(FALSE);
-				LevelBuzzer = 2;
+				LevelBuzzer = HIGH;//2;
 				// guardando a questo valore posso vedere il tipo di azione di sicurezza
 				// e quindi posso decidere di andare anche in un qualche altro stato ad hoc
 				// di allarme
@@ -604,7 +604,7 @@ void ParentFunc(void)
 				ptrFutureParent = &stateParentTreatKidney1[5];
 				ptrFutureChild = ptrFutureParent->ptrChild;
 				DisableAllAirAlarm(FALSE);
-				LevelBuzzer = 2;
+				LevelBuzzer = HIGH;//2;
 				// guardando a questo valore posso vedere il tipo di azione di sicurezza
 				// e quindi posso decidere di andare anche in un qualche altro stato ad hoc
 				// di allarme
@@ -638,7 +638,7 @@ void ParentFunc(void)
 					FrigoHeatTempControlTaskNewPID((LIQ_TEMP_CONTR_TASK_CMD)LIQ_T_CONTR_TASK_RESET_CMD);
 					EnableNextAlarmFunc(); //EnableNextAlarm = TRUE;
 					ButtonResetRcvd = TRUE;
-					LevelBuzzer = 0;
+					LevelBuzzer = SILENT;//0;
 					// preparo la macchina a stati per il controllo delle pinch aperte nella posizione richiesta per lo stato di trattamento
 					TreatSetPinchPosTask((TREAT_SET_PINCH_POS_CMD)T_SET_PINCH_RESET_CMD);
 					AtLeastoneButResRcvd = TRUE;
@@ -723,7 +723,7 @@ void ParentFunc(void)
 						{
 							ptrFutureParent = &stateParentTreatKidney1[1];
 							ptrFutureChild = ptrFutureParent->ptrChild;
-							LevelBuzzer = 0;
+							LevelBuzzer = SILENT;//0;
 
 							// preparo la macchina a stati per il controllo delle pinch aperte nella posizione richiesta
 							// per lo stato di trattamento
@@ -749,7 +749,7 @@ void ParentFunc(void)
 					//EnableNextAlarmFunc(); //EnableNextAlarm = TRUE;
 					ptrFutureParent = &stateParentTreatKidney1[1];
 					ptrFutureChild = ptrFutureParent->ptrChild;
-					LevelBuzzer = 0;
+					LevelBuzzer = SILENT;//0;
 
 					// preparo la macchina a stati per il controllo delle pinch aperte nella posizione richiesta
 					// per lo stato di trattamento
@@ -769,7 +769,7 @@ void ParentFunc(void)
 					currentGuard[GUARD_ALARM_ACTIVE].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
 					ptrFutureParent = &stateParentTreatKidney1[1];
 					ptrFutureChild = ptrFutureParent->ptrChild;
-					LevelBuzzer = 0;
+					LevelBuzzer = SILENT;//0;
 
 					// preparo la macchina a stati per il controllo delle pinch aperte nella posizione richiesta
 					// per lo stato di trattamento
@@ -1766,7 +1766,7 @@ void ParentFuncT1Test(void)
 			// sempre
 			ptrFutureParent = &stateParentT1TNoDisposable[26];
 			ptrFutureChild = ptrFutureParent->ptrChild;
-			LevelBuzzer = 2;
+			LevelBuzzer = HIGH;//2;
 
 		}
 		else if(ptrCurrentParent->action == ACTION_ALWAYS)
@@ -1889,7 +1889,7 @@ void ParentFuncT1Test(void)
 			ptrFutureParent = &stateParentT1TNoDisposable[25]; //alarm
 			ptrFutureChild = ptrFutureParent->ptrChild;
 			DebugStringStr("alarm t1 test");
-			LevelBuzzer = 2;
+			LevelBuzzer = HIGH;//2;
 		}
 	}
 

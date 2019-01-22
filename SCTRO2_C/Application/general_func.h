@@ -15,8 +15,8 @@ unsigned char ReadKey2(void);
 unsigned char ReadKey3(void);
 unsigned char ReadKey4(void);
 
-void GenEvntParentPrim(void);
-void GenEvntParentTreat(void);
+//void GenEvntParentPrim(void);
+//void GenEvntParentTreat(void);
 
 void DebugStringStr(char *s);
 void DebugStringPID();

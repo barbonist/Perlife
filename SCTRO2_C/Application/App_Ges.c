@@ -220,7 +220,7 @@ void CallInIdleState(void)
 		peltierCell.StopEnable = 1;
 		peltierCell2.StopEnable = 1;
 	}
-	LevelBuzzer = 0;
+	LevelBuzzer = SILENT;//0;
 	PeltierStarted = FALSE;
 	LiquidTempContrTask(RESET_LIQUID_TEMP_CONTR_CMD);
 	PrimDurUntilOxyStart = 0;
@@ -4584,7 +4584,7 @@ void manageParentTreatDeltaTHRcvAlways(void)
 
 void manageParentTreatAlmDeltaTHRcvEntry(void)
 {
-	LevelBuzzer = 2;
+	LevelBuzzer = HIGH;//2;
 }
 
 void manageParentTreatAlmDeltaTHRcvAlways(void)
@@ -4592,7 +4592,7 @@ void manageParentTreatAlmDeltaTHRcvAlways(void)
 	if(buttonGUITreatment[BUTTON_RESET_ALARM].state == GUI_BUTTON_RELEASED)
 	{
 		// volutamente non resetto l'evento di bottone premuto
-		LevelBuzzer = 0;
+		LevelBuzzer = SILENT;//0;
 	}
 }
 
@@ -4613,7 +4613,7 @@ void manageParentTreatDeltaTHWaitAlways(void)
 				if(IsAlarmActive())
 				{
 					// se c'e' un allarme e' sicuramente quello di temperatura
-					LevelBuzzer = 2;
+					LevelBuzzer = HIGH;// 2;
 					mngParTreatDeltaTHWtState = 1;
 				}
 				else
@@ -4628,7 +4628,7 @@ void manageParentTreatDeltaTHWaitAlways(void)
 				DisableDeltaTHighAlmFunc();
 				StarTimeToRetTeatFromRestTemp = timerCounterModBus;
 				mngParTreatDeltaTHWtState = 2;
-				LevelBuzzer = 0;
+				LevelBuzzer = SILENT;//0;
 				//EnableNextAlarmFunc();
 			}
 			break;
@@ -4884,7 +4884,7 @@ static void computeMachineStateGuardTreatment(void)
 		TreatDuration = msTick_elapsed(StartTreatmentTime) * 50L / 1000;
 	/*VINCY-->SOLO PER DEBUG, se voglio accelerare la durata della terapia di 100 volte
 	 * commento la riga sopra e decommento quella successiva*/
-	  // TreatDuration = msTick_elapsed(StartTreatmentTime) * 50L / 10;
+	//   TreatDuration = msTick_elapsed(StartTreatmentTime) * 50L / 10;
 	}
 
 
@@ -5155,7 +5155,7 @@ void ParentEmptyDispStateMach(void)
 			ptrFutureParent = &stateParentEmptyDisp[5];
 			ptrFutureChild = ptrFutureParent->ptrChild;
 			EmptyWFLOATimeElapsed_Last = EmptyWFLOATimeElapsed;
-			LevelBuzzer = 2;
+			LevelBuzzer = HIGH;// 2;
 		}
 		break;
 
@@ -5201,7 +5201,7 @@ void ParentEmptyDispStateMach(void)
 			ptrFutureParent = &stateParentEmptyDisp[5];
 			ptrFutureChild = ptrFutureParent->ptrChild;
 			EmptyWFLOATimeElapsed_Last = EmptyWFLOATimeElapsed;
-			LevelBuzzer = 2;
+			LevelBuzzer = HIGH;//2;
 		}
 		break;
 
@@ -5218,7 +5218,7 @@ void ParentEmptyDispStateMach(void)
 			RestartPumpsEmptyState();
 			ptrFutureParent = &stateParentEmptyDisp[3];
 			ptrFutureChild = ptrFutureParent->ptrChild;
-			LevelBuzzer = 0;
+			LevelBuzzer = SILENT;//0;
 		}
 
 		if(ptrCurrentParent->action == ACTION_ON_ENTRY)
@@ -5342,6 +5342,75 @@ word GetTotalPrimingVolumePerf_new(int cmd)
 	return TotVolume;
 }
 
+/*funzione che gestione la pressione del tasto mute a seguito di un allarme
+ * se viene premuto, devo silenziare il buzzer per XXX secondi allo scadere dei
+ * quali devo riattivare il buzzer; se però prima dello scadere del timer compare
+ * un nuovo allarme devo riattivare il buzzer */
+void ManageMuteButton (void)
+{
+	static unsigned char State = 0;
+	static int AlarmCode = 0;
+	static unsigned long timeoutMute = 0;
+
+	switch (State)
+	{
+	 	/*in questo stato controllo se è stato premuto il tasto 'MUTE'
+	 	 * in tal caso silenzio il buzzer e cambio stato*/
+		case 0:
+	 	 {
+	 		/*controllo se è stato premuto il tasto 'MUTE'*/
+	 		if(buttonGUITreatment[BUTTON_SILENT_ALARM].state == GUI_BUTTON_RELEASED)
+	 		{
+	 			if(LevelBuzzer != SILENT)
+	 				LevelBuzzer = SILENT;
+
+	 			releaseGUIButton(BUTTON_SILENT_ALARM);
+	 			/*tengo traccia di quale allarme è stato generato*/
+	 			AlarmCode = alarmCurrent.code;
+
+	 			/*faccio partire il timer*/
+	 			timeoutMute = FreeRunCnt10msec;
+
+	 			/*cambio stato*/
+	 			State = 1;
+	 		}
+	 		 break;
+	 	 }
+	 	 /*in questo stato controllo se
+	 	  * -) non ci son più allarmi --> torno alo stato precednete
+	 	  * -) C'è un allarme diverso da quello che mi ha fatt venire qui --> riattivo il buzzer e torno allo sttao precedente
+	 	  * -) sono trascorsi DELAY_FOR_RESTART_BUZZER/100 secondi --> riattivo il buzzer e torno allo sttao precedente*/
+		case 1:
+		{
+			/*Se non ci sono allrmi attivi perchè è stato fatto un reset torno allo stato precedente*/
+			if (alarmCurrent.code == 0)
+			{
+				State = 0;
+				AlarmCode = 0;
+			}
+			/*altrimenti controllo se è arrivato un allarme diverso da quello che mi ha portato qui
+			 * in tal caso riattivo il buzzer e torno nello stato precedente aggiornando AlarmCode*/
+			else if(AlarmCode != alarmCurrent.code)
+			{
+				LevelBuzzer = HIGH;
+				State = 0;
+				AlarmCode = alarmCurrent.code;
+			}
+			/*altrimenti controllo se sono trascorsi DELAY_FOR_RESTART_BUZZER/100 secondi nel qual
+			 * caso riattivo il buzzer e torno nello stato precedente azzerando AlarmCode*/
+			else if (msTick10_elapsed(timeoutMute) >= DELAY_FOR_RESTART_BUZZER)
+			{
+				LevelBuzzer = HIGH;
+				State = 0;
+				AlarmCode = 0;
+			}
+			break;
+		}
+	 	 default:
+		 	 break;
+	}
+
+}
 
 /*----------------------------------------------------------------------------*/
 /* This function compute the machine state transition based on guard - state level         */
@@ -5349,12 +5418,7 @@ word GetTotalPrimingVolumePerf_new(int cmd)
 void processMachineState(void)
 {
 	static unsigned short Oldstate = 0;
-	if(buttonGUITreatment[BUTTON_SILENT_ALARM].state == GUI_BUTTON_RELEASED)
-	{
-		if(LevelBuzzer)
-			LevelBuzzer = 0;
-		releaseGUIButton(BUTTON_SILENT_ALARM);
-	}
+
 
 	if(ptrCurrentState->state != Oldstate)
 	{

@@ -45,6 +45,8 @@
 #define TIMER_RPM_ACC_IN_PRIMING_VEN    40  //200 //multipli di 50 msec ---> 200 = 10 sec --- 40 = 2 sec
 #define TIMER_RPM_ACC_IN_PRIMING_FLT    40  //200 //multipli di 50 msec ---> 200 = 10 sec --- 40 = 2 sec
 
+#define DELAY_FOR_RESTART_BUZZER		12000 // timeout di 120 sec oltre il quale il buzzer viene riattivato
+
 /* MACHINE STATE FUNCTION */
 void manageNull(void);
 void manageStateLevel(void);
@@ -60,6 +62,7 @@ static void computeMachineStateGuardPrimingPh1(void);
 static void computeMachineStateGuardPrimingPh2(void);
 static void computeMachineStateGuardTreatment(void);
 void processMachineState(void);
+void ManageMuteButton(void);
 static void manageStateEntryAndStateAlways(unsigned short stateId);
 
 

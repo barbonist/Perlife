@@ -263,7 +263,7 @@ void manageChildPrimAlmAndWaitCmdAlways(void)
 		// ho raggiunto la condizione di sicurezza ed ho ricevuto un comando reset alarm
 		releaseGUIButton(BUTTON_RESET_ALARM);
 		EnableNextAlarmFunc(); //EnableNextAlarm = TRUE;
-		LevelBuzzer = 0;
+		LevelBuzzer = SILENT;//0;
 	}
 }
 //--------------------------------------------------------------------------------------------------
@@ -382,7 +382,7 @@ void manageChildPrimAlmSFAAirDetAlways(void)
 		// ho raggiunto la condizione di sicurezza ed ho ricevuto un comando reset alarm
 		releaseGUIButton(BUTTON_RESET_ALARM);
 		EnableNextAlarmFunc(); //EnableNextAlarm = TRUE;
-		LevelBuzzer = 0;
+		LevelBuzzer = SILENT;//0;
 	}
 }
 
@@ -1050,7 +1050,7 @@ void manageChildTreatAlm1SafAirFiltAlways(void)
 		// ho raggiunto la condizione di sicurezza ed ho ricevuto un comando reset alarm
 		releaseGUIButton(BUTTON_RESET_ALARM);
 		EnableNextAlarmFunc(); //EnableNextAlarm = TRUE;
-		LevelBuzzer = 0;
+		LevelBuzzer = SILENT;//0;
 	}
 }
 
@@ -1092,7 +1092,7 @@ void manageChildTreatAlm1SFVAlways(void)
 		// ho raggiunto la condizione di sicurezza ed ho ricevuto un comando reset alarm
 		releaseGUIButton(BUTTON_RESET_ALARM);
 		EnableNextAlarmFunc(); //EnableNextAlarm = TRUE;
-		LevelBuzzer = 0;
+		LevelBuzzer = SILENT;//0;
 	}
 }
 
@@ -1126,7 +1126,7 @@ void manageChildTreatAlm1SFAAlways(void)
 		// ho raggiunto la condizione di sicurezza ed ho ricevuto un comando reset alarm
 		releaseGUIButton(BUTTON_RESET_ALARM);
 		EnableNextAlarmFunc(); //EnableNextAlarm = TRUE;
-		LevelBuzzer = 0;
+		LevelBuzzer = SILENT;//0;
 	}
 }
 
@@ -1164,7 +1164,7 @@ void manageChildAlmAndWaitCmdAlways(void)
 		// ho raggiunto la condizione di sicurezza ed ho ricevuto un comando reset alarm
 		releaseGUIButton(BUTTON_RESET_ALARM);
 		EnableNextAlarmFunc(); //EnableNextAlarm = TRUE;
-		LevelBuzzer = 0;
+		LevelBuzzer = SILENT;//0;
 	}
 }
 //--------------------------------------------------------------------------------------------------
@@ -1264,7 +1264,7 @@ void manageChildTreatAlmDeltaTempHighAlways(void)
 		// ho raggiunto la condizione di sicurezza ed ho ricevuto un comando reset alarm
 		releaseGUIButton(BUTTON_RESET_ALARM);
 		EnableNextAlarmFunc();
-		LevelBuzzer = 0;
+		LevelBuzzer = SILENT;//0;
 	}
 }
 

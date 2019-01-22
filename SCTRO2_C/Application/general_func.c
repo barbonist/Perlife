@@ -576,7 +576,7 @@ unsigned char Released2;
 unsigned char Released3;
 unsigned char Released4;
 
-
+/* creata per debug quando non c'era la GUI
 void GenEvntParentPrim(void)
 {
 	switch(ptrCurrentParent->parent){
@@ -642,14 +642,16 @@ void GenEvntParentPrim(void)
 	}
 }
 
+*/
 
+/*
 void GenEvntParentTreat(void)
 {
 	switch(ptrCurrentParent->parent){
 		case PARENT_TREAT_KIDNEY_1_INIT:
 //			if(perfusionParam.treatVolPerfArt >= 200)
 //			{
-//				/* FM faccio partire la pompa */
+//				// FM faccio partire la pompa
 //			}
 			if(ptrCurrentParent->action == ACTION_ON_ENTRY)
 			{
@@ -671,6 +673,7 @@ void GenEvntParentTreat(void)
 	}
 }
 
+*/
 
 // viene chiamata ad intervalli di 50 msec
 // sequenza di tasti 1,2 della tastiera a bolle fino ad arrivare a STATE_PRIMING_1
@@ -842,65 +845,6 @@ void GenerateSBCComm(void)
 //		//DebugStringPID();
 //	}
 }
-
-
-// Non so perche' questa da sola non funziona
-// Adr 2..5
-//void TestPump1(unsigned char Adr )
-//{
-//	static bool MotorOn = 0;
-//	int wait;
-//
-//	if (Bubble_Keyboard_GetVal(BUTTON_1))
-//	{
-//	  /*accendo il motore*/
-//	  MotorOn = TRUE;
-//
-//	  wait = FreeRunCnt10msec;
-//	  while ((FreeRunCnt10msec - wait) == 0);
-//	  setPumpSpeedValue(4, (int) 5000);
-//
-//	  wait = FreeRunCnt10msec;
-//	  while ((FreeRunCnt10msec - wait) == 0);
-//	  setPumpSpeedValue(5, (int) 5000);
-//	}
-//	else if (Bubble_Keyboard_GetVal(BUTTON_2))
-//	{
-//	  /*spengo il motore*/
-//	  MotorOn = TRUE;
-//
-//	  wait = FreeRunCnt10msec;
-//	  while ((FreeRunCnt10msec - wait) == 0);
-//	  setPumpSpeedValue(4, (int) 4000);
-//	  wait = FreeRunCnt10msec;
-//	  while ((FreeRunCnt10msec - wait) >= 2);
-//	  setPumpSpeedValue(5, (int) 4000);
-//	}
-//	else if (Bubble_Keyboard_GetVal(BUTTON_3))
-//	{
-//	  /*spengo il motore*/
-//	  MotorOn = TRUE;
-//
-//	  wait = FreeRunCnt10msec;
-//	  while ((FreeRunCnt10msec - wait) == 0);
-//	  setPumpSpeedValue(4, (int) 3000);
-//
-//	  wait = FreeRunCnt10msec;
-//	  while ((FreeRunCnt10msec - wait) >= 2);
-//	  setPumpSpeedValue(5, (int) 3000);
-//	}
-//	else if (Bubble_Keyboard_GetVal(BUTTON_4))
-//	{
-//		  /*spengo il motore*/
-//		  MotorOn = FALSE;
-//		  wait = FreeRunCnt10msec;
-//		  while ((FreeRunCnt10msec - wait) >= 2);
-//		  setPumpSpeedValue(4, (int)0);
-//		  wait = FreeRunCnt10msec;
-//		  while ((FreeRunCnt10msec - wait) >= 2);
-//		  setPumpSpeedValue(5, (int)0);
-//	}
-//}
 
 void updateDurationToSendSBC(void)
 {

@@ -645,6 +645,8 @@ int main(void)
 
 	        	processMachineState();
 
+	        	ManageMuteButton();
+
 	        	alarmEngineAlways();
 	        	warningsEngineAlways();
 		        GenerateSBCComm();
@@ -672,7 +674,7 @@ int main(void)
 				/********************************/
 		        /*funzione che controlla se ad ogni singola pompa è stato inviato un comando di stop
 		         * e la stessa sta ancora girando, nel qual caso si reinoltra il comando di stop
-		         * il controllo lo una volta ogni 1 secondo per dar modo alla pompa eventualmente di partire*/
+		         * il controllo lo facciamo una volta ogni 1 secondo per dar modo alla pompa eventualmente di eseguire il comando*/
 		        Prescaler_CheckStopPump++;
 		        if (Prescaler_CheckStopPump > 20)
 		        {
