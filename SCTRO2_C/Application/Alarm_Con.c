@@ -50,7 +50,7 @@ struct alarm alarmList[] =
 		{CODE_ALARM_PUMP_PURIF_COVER_OPEN, PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH,    0,  100, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull},	    /* 14 */
 		{CODE_ALARM_PUMP_OXYG_COVER_OPEN,  PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH,    0,  100, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull},	    /* 15 */
 		// allarme di livello liquido troppo basso
-		{CODE_ALARM_TANK_LEVEL_LOW,        PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH,  500,  500, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull},	    /* 16 */
+		{CODE_ALARM_TANK_LEVEL_LOW,        PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH,30000, 30000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull},	    /* 16 */
 		// allarme livello del liquido troppo alto
 		{CODE_ALARM_TANK_LEVEL_HIGH,       PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACT_WAIT_CMD, PRIORITY_HIGH,  500,  500, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull},	    /* 17 */
 
@@ -602,7 +602,8 @@ void CalcAlarmActive(void)
 			//verifica physic ir temp sens
 			manageAlarmPhysicTempSens();
 
-			manageAlarmLiquidLevelHigh();
+			/*22/01/19 VINCY togliamo al momento l'allarme di livello liquido eccessivo*/
+				//	manageAlarmLiquidLevelHigh();
 			if(GetTherapyType() == LiverTreat)
 				manageAlarmCoversPumpLiver();
 			else if(GetTherapyType() == KidneyTreat)
@@ -628,7 +629,8 @@ void CalcAlarmActive(void)
 			//verifica physic ir temp sens
 			manageAlarmPhysicTempSens();
 
-			manageAlarmLiquidLevelHigh();
+		/*22/01/19 VINCY togliamo al momento l'allarme di livello liquido eccessivo*/
+			//	manageAlarmLiquidLevelHigh();
 			if(GetTherapyType() == LiverTreat)
 				manageAlarmCoversPumpLiver();
 			else if(GetTherapyType() == KidneyTreat)
@@ -674,7 +676,11 @@ void CalcAlarmActive(void)
 
 			// Questo allarme lo commento per ora, perche' bisogna avere un sensore di livello
 			// che funziona bene e si e' sicuri del suo funzionamento
-			//manageAlarmLiquidLevelLow();
+			/*22/01/19 Vincy: riattivo l'allarme facendo una foto del livello minimo di ADC sul
+			 * sensore di livello che sarà Soglia_minima_ADC_allarme_Livello e controllando solo
+			 * in trattamento se Gli ADC del sensore di livello vanno sotto tale soglia
+			 */
+			manageAlarmLiquidLevelLow();
 			// i due allarmi che seguono devo essere gestiti attentamente perche' potrei avere delle
 			// segnalazioni di allarme anche durante la fase di accelerazione e decelerazione del pid
 			// Per ora li commento.
@@ -690,8 +696,8 @@ void CalcAlarmActive(void)
 				// Filippo - aggiungo la gestione del tasto di stop come allarme
 		//		manageAlarmStopButtonPressed();
 
-				// Filippo - aggiunto allarme per test sensore aria sbagliato
-				manageAlarmAirSensorTestKO();
+			// Filippo - aggiunto allarme per test sensore aria sbagliato
+			manageAlarmAirSensorTestKO();
             manageAlarmArterialResistance();
 			break;
 		}
@@ -1020,9 +1026,11 @@ void manageAlarmDeltaTempRecVen(void)
 // controlla se sono al di sotto del livello minimo
 void manageAlarmLiquidLevelLow(void)
 {
-	if(GlobalFlags.FlagsDef.EnableLevLowAlarm)
+	/*controllo l'alamre solo se ho calcolato la soglia Soglia_minima_ADC_allarme_Livello*/
+	if(GlobalFlags.FlagsDef.EnableLevLowAlarm && TARA_PRESS_DONE)
 	{
-		if(LiquidAmount <= MIN_LIQUID_LEV_IN_PERC)
+		//if(LiquidAmount <= MIN_LIQUID_LEV_IN_PERC)
+		if(PR_LEVEL_ADC_Filtered <= Soglia_minima_ADC_allarme_Livello)
 		{
 			alarmList[LIQUID_LEVEL_LOW].physic = PHYSIC_TRUE;
 		}

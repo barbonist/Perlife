@@ -1039,7 +1039,7 @@ struct ParSaveTO_EEPROM config_data;
 
 #define EEPROM_REVISION 0x01
 
-/*le variabili globali sottostanti usate perr la pressioner, potrebbero diventare solo 5 variabili della struttura che c'è sopra*/
+/*le variabili globali sottostanti usate per la pressione, potrebbero diventare solo 5 variabili della struttura che c'è sopra*/
 
 word  PR_OXYG_ADC;			 	//variabile globale per il valore ADC del sensore di pressione ossigenatore --> PTC10
 word  PR_OXYG_mmHg;			 	//variabile globale per il valore in mmHg del sensore di pressione ossigenatore
@@ -1071,6 +1071,9 @@ int PR_VEN_TARA_mmHg;			//variabile globale che serve a fare la tara di pression
 int PR_ART_TARA_mmHg;			//variabile globale che serve a fare la tara di pressione dopo la connessione dell'organo, all'inizio del trattamento
 bool TARA_PRESS_DONE;
 
+word Soglia_minima_ADC_allarme_Livello;
+#define Percentuale_Massima_perdita_liquido 0.4f //con 0.4 accetto una perdita del liquido non superiore al 40% oltre la quale andrò in allarme
+#define SOGLIA_ADC_MINIMA					650  //soglia minima di decremento rispetto al valore ADC frezato dopo il riempimento RESERVOIRE
 
 
 word  PR_ART_ADC;				//variabile globale per il valore ADC del sensore di pressione arteriosa --> PTB7

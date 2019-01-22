@@ -5651,13 +5651,17 @@ void processMachineState(void)
 				/* compute future child */
 				ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
 				DebugStringStr("STATE_TANK_FILL");
+
+				/*faccio la tara degli ADC del sensore di livello per sapere *
+                 * quanti ADC ho con tubo connesso ma senza liquido inserito nel reservoire*/
+				Soglia_minima_ADC_allarme_Livello = PR_LEVEL_ADC_Filtered;
 			}
 
 //TODO da aggiungere l'eventuale tasto di abbandona che porta in somontaggio e non in svuotamento
 //			else if(currentGuard[GUARD_ABANDON_PRIMING].guardValue == GUARD_VALUE_TRUE)
 //			{
 //				currentGuard[GUARD_ABANDON_PRIMING].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
-//				/* (VP) HO DECISO DI ABBANDONARE IL PRIMING senza che esso sia mai partito, sono ancvora in motaggio, vado in smontaggio
+//				/* (VP) HO DECISO DI ABBANDONARE IL PRIMING senza che esso sia mai partito, sono ancora in montaggio, vado in smontaggio
 				// se voglio andare in STATE_UNMOUNT_DISPOSABLE e staccare il disposable
 //				ptrFutureState = &stateState[27];
 //				/* compute future parent */

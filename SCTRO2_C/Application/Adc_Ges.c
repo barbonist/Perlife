@@ -72,6 +72,7 @@ void PR_Sens_ADC_Init()
 	PR_LEVEL_mmHg	 = 0;		//variabile globale per il valore in mmHg del sensore di pressione di livello vaschetta
 	PR_VEN_TARA_mmHg = 0;		//variabile globale che serve a fare la tara di pressione dopo la connessione dell'organo, all'inizio del trattamento
 	PR_ART_TARA_mmHg = 0;  		//variabile globale che serve a fare la tara di pressione dopo la connessione dell'organo, all'inizio del trattamento
+	Soglia_minima_ADC_allarme_Livello = 0; //variabile globale che serve a fare la tara di pressione del livello di liquido in vaschetta in ADC dopo la connessione dell'organo, all'inizio del trattamento
 }
 
 void Dip_Switch_ADC_Init(void)
