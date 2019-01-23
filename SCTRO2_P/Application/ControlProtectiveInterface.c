@@ -83,7 +83,7 @@ union UTxCan {
 	} STxCan4;
 	// Filippo - messo campo per lo scambio del valore di temperatura piatto
 	struct {
-		uint8_t Free1;	uint8_t Free2;	int16_t tempPlateP;	uint8_t Free5;	uint8_t Free6;	uint8_t Free7;	uint8_t Free8;
+		uint16_t ProtFwVersion;	int16_t tempPlateP;	uint8_t Free5;	uint8_t Free6;	uint8_t Free7;	uint8_t Free8;
 	} STxCan5;
 	struct {
 		uint8_t Free1;	uint8_t Free2;	uint8_t Free3;	uint8_t Free4;	uint8_t Free5;	uint8_t Free6;	uint8_t Free7;	uint8_t Free8;
@@ -183,6 +183,9 @@ void InitControlProtectiveInterface(void)
 #endif
 
 #ifndef CAN_DEBUG
+
+uint16_t GetFwVersionProtective(void);
+
 void InitControlProtectiveInterface(void)
 {
 	int ii;
@@ -225,6 +228,8 @@ void InitControlProtectiveInterface(void)
 		OldRxCan7.RawCanBuffer[ii] = 1;
 	}
 
+
+	TxCan5.STxCan5.ProtFwVersion = GetFwVersionProtective();
 	AddSwTimer(ManageTxCan100ms,10,TM_REPEAT);
 	AddSwTimer(ManageTxDebug,5,TM_REPEAT);
 	InitVerificatorRx();

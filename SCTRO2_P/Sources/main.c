@@ -235,6 +235,28 @@ void verificaTempPlate(void)
 	onNewTempPlateValue((int16_t)(T_PLATE_P_GRADI_CENT*10));
 }
 
+
+//
+//  returns firmware version in the following format using 16 bits
+//  z z z z z z , y y y y y , x x x x x     where z is the 3rd number of version , y the 2nd ,  x the 1st
+//  a version of 1.0.6 is shown as   0000110 00000 00001  ->  00011000 00000001 -> 0x1F 0x01
+//  NB : in this processor , msb is the second ( oxo1
+//
+
+#define VERS_1 1
+#define VERS_2 0
+#define VERS_3 6
+
+uint16_t GetFwVersionProtective(void)
+{
+uint16_t v1,v2,v3;
+
+v1 = VERS_1; v2=VERS_2 ; v3 = VERS_3;
+
+	return (v3  & 0x003F)   |   ((v2  << 6) & 0x07C0) | (( v1 << 11 ) & 0xF800);
+
+}
+
 int main(void)
 /*lint -restore Enable MISRA rule (6.3) checking. */
 {
@@ -345,6 +367,8 @@ int main(void)
      Manage_Air_Sensor_1();
 
   }
+
+
 
 
   /******************************************************
