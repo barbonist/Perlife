@@ -1113,10 +1113,11 @@ void buildRDMachineStateResponseMsg(char code, char subcode)
 	/*0x0800 --> 1.0.0
 	 *0x0801 --> 1.0.1
 	 *0x0802 --> 1.0.2
-	 *0x0803 --> 1.0.3 */
+	 *0x0803 --> 1.0.3
+	 *0x0804 --> 1.0.4  */
 
 	/*10*/	sbc_tx_data[index++] = 0x08;
-	/*11*/	sbc_tx_data[index++] = 0x03;
+	/*11*/	sbc_tx_data[index++] = 0x04;
 
 	/* TODO status parameters: rev fw-H
 	 * potrei usare questa come versione FW
@@ -1127,9 +1128,10 @@ void buildRDMachineStateResponseMsg(char code, char subcode)
 
 	/*0x0800 --> 1.0.0
      *0x0801 --> 1.0.1  */
+	wd = GetRevisionFWProt();
 
-	/*12*/	sbc_tx_data[index++] = 0x08;
-	/*13*/	sbc_tx_data[index++] = 0x01;
+	/*12*/  sbc_tx_data[index++] = (wd >> 8) & 0xFF; //sbc_tx_data[index++] = 0x08;
+	/*13*/  sbc_tx_data[index++] = (wd     ) & 0xFF; //sbc_tx_data[index++] = 0x01;
 
 //	if(SuspendInvioAlarmCode)
 //	{

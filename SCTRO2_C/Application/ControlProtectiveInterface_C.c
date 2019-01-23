@@ -77,12 +77,13 @@ union URxCan {
 	struct {
 		uint16_t SpeedPump1Rpmx10;	uint16_t SpeedPump2Rpmx10;	uint16_t SpeedPump3Rpmx10;	uint16_t SpeedPump4Rpmx10;
 	} SRxCan3;
-	// Filippo - messo campo per lo scambio della temperatura di piatto
+
 	struct {
 		uint8_t Free1;	uint8_t Free2;	uint8_t Free3;	uint8_t Free4;	uint8_t Free5;	uint8_t Free6;	uint8_t Free7;	uint8_t Free8;
 	} SRxCan4;
+	// Filippo - messo campo per lo scambio della temperatura di piatto
 	struct {
-		uint8_t Free1;	uint8_t Free2;	int16_t tempPlateP;	uint8_t Free5;	uint8_t Free6;	uint8_t Free7;	uint8_t Free8;
+		int16_t FW_Revision_Protective;	int16_t tempPlateP;	uint8_t Free5;	uint8_t Free6;	uint8_t Free7;	uint8_t Free8;
 	} SRxCan5;
 	struct {
 		uint8_t Free1;	uint8_t Free2;	uint8_t Free3;	uint8_t Free4;	uint8_t Free5;	uint8_t Free6;	uint8_t Free7;	uint8_t Free8;
@@ -395,6 +396,11 @@ uint16_t GetAlarmCodeProt(void)
 	return (RxBuffCanP[2]->SRxCan2.AlarmCode);
 }
 
+uint16_t GetRevisionFWProt()
+{
+	return (RxBuffCanP[5]->SRxCan5.FW_Revision_Protective);
+}
+
 void ReceivedCanData(uint8_t *rxbuff, int rxlen, int RxChannel)
 {
 	CANBUS_MSG_9 TempCanBusMsg9;
@@ -447,8 +453,7 @@ void ReceivedCanData(uint8_t *rxbuff, int rxlen, int RxChannel)
 			// Filippo gestita la ricezione del messaggio CAN che mi da il valore della temperatura letta sul piatto dalla protective
 			if( RxChannel == 13)
 			{
-				TempCanBusMsg14.free1 = RxBuffCanP[RxChannel-8]->SRxCan5.Free1;
-				TempCanBusMsg14.free2 = RxBuffCanP[RxChannel-8]->SRxCan5.Free2;
+				TempCanBusMsg14.FW_Revision_Protective = RxBuffCanP[RxChannel-8]->SRxCan5.FW_Revision_Protective;
 				TempCanBusMsg14.tempPlateP = RxBuffCanP[RxChannel-8]->SRxCan5.tempPlateP;
 				TempCanBusMsg14.free3 = RxBuffCanP[RxChannel-8]->SRxCan5.Free5;
 				TempCanBusMsg14.free4 = RxBuffCanP[RxChannel-8]->SRxCan5.Free6;

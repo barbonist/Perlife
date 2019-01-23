@@ -35,6 +35,7 @@ extern uint16_t *SpeedPump3Rpmx10;
 extern uint16_t *SpeedPump4Rpmx10;
 
 uint16_t GetAlarmCodeProt(void);
+uint16_t GetRevisionFWProt(void);
 
 
 #endif /* CONTROLPROTECTIVEINTERFACE_H_ */

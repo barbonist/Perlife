@@ -2081,8 +2081,7 @@ typedef struct
 //-------------------------------------------------------------------------------
 typedef struct
 {
-	unsigned char  free1;
-	unsigned char  free2;
+	int16_t FW_Revision_Protective;
 	int16_t	tempPlateP;
 	unsigned char  free3;
 	unsigned char  free4;
