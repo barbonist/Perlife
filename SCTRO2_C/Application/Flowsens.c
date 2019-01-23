@@ -156,12 +156,12 @@ void Manage_UFlow_Sens()
 				if (Id_Buffer == 1)
 				{
 					sensor_UFLOW[Id_Buffer].Average_Flow_Val         = sensor_UFLOW[Id_Buffer].Average_Flow_Val * config_data.FlowSensor_Ven_Gain - config_data.FlowSensor_Ven_Offset;
-					sensor_UFLOW[Id_Buffer].Average_Flow_Val_for_GUI = sensor_UFLOW[Id_Buffer].Average_Flow_Val * config_data.FlowSensor_Ven_Gain - config_data.FlowSensor_Ven_Offset;
+					sensor_UFLOW[Id_Buffer].Average_Flow_Val_for_GUI = sensor_UFLOW[Id_Buffer].Average_Flow_Val_for_GUI * config_data.FlowSensor_Ven_Gain - config_data.FlowSensor_Ven_Offset;
 				}
 				else //if (Id_Buffer == 0)
 				{
 					sensor_UFLOW[Id_Buffer].Average_Flow_Val         = sensor_UFLOW[Id_Buffer].Average_Flow_Val * config_data.FlowSensor_Art_Gain - config_data.FlowSensor_Art_Offset;
-					sensor_UFLOW[Id_Buffer].Average_Flow_Val_for_GUI = sensor_UFLOW[Id_Buffer].Average_Flow_Val * config_data.FlowSensor_Art_Gain - config_data.FlowSensor_Art_Offset;
+					sensor_UFLOW[Id_Buffer].Average_Flow_Val_for_GUI = sensor_UFLOW[Id_Buffer].Average_Flow_Val_for_GUI * config_data.FlowSensor_Art_Gain - config_data.FlowSensor_Art_Offset;
 				}
 
 
