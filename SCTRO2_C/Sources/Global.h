@@ -12,7 +12,21 @@
 // debug con il software di service fatto da Luca.
 //#define DEBUG_WITH_SERVICE_SBC 0
 
+/*----------++++++++++ FW REVISION ++++++++++----------*/
+	/* REVISION FW CONTROL: rev fw-H
+     * uso 5 bit per il primo numero
+	 * 5 bit per il secondo numero e 6 bit per il
+	 * terzo numero avendo quindi una versione massima
+	 * pari a 32.32.64  */
 
+	/*ESEMPI
+	 * 0x0800 --> 1.0.0
+	 *0x0801 --> 1.0.1
+	 *0x0802 --> 1.0.2
+	 *0x0803 --> 1.0.3
+	 *0x0804 --> 1.0.4  */
+
+#define REVISION_FW_CONTROL 0x0804
 
 /* Syncronization flag */
 char	iflag_pc_rx;
