@@ -25,9 +25,10 @@
 	 *0x0802 --> 1.0.2
 	 *0x0803 --> 1.0.3
 	 *0x0804 --> 1.0.4
-	 *0x0805 --> 1.0.5 */
+	 *0x0805 --> 1.0.5
+	 *0x0806 --> 1.0.6 */
 
-#define REVISION_FW_CONTROL 0x0805
+#define REVISION_FW_CONTROL 0x0806
 
 /* Syncronization flag */
 char	iflag_pc_rx;
