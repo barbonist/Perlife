@@ -65,7 +65,7 @@ void ShowNewAlarmError(uint16_t AlarmCode)
 #ifndef NO_SEND_ERROR
 	TxAlarmCode( AlarmCode);
 #endif
-
+	LogProtectiveBoardError(AlarmCode);
 }
 
 

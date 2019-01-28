@@ -120,6 +120,7 @@ void ManageTxDebug(void);
 void TxDebugPressures(void);
 void TxDebugTemperatures(void);
 void TxDebugPinch(void);
+void TxDebugErrors(void);
 
 uint8_t CharReceived(void);
 
@@ -673,6 +674,7 @@ void NewDataRxChannel3(void) {
 	// Alarm code
 	if (RxCan3.SRxCan3.AlarmCode != OldRxCan3.SRxCan3.AlarmCode) {
 		ManageRxAlarmCode(RxCan3.SRxCan3.AlarmCode);
+		LogControlBoardError(RxCan3.SRxCan3.AlarmCode);
 	}
 
 	// pinch pos
@@ -770,6 +772,7 @@ void CanCheckTimer(void)
 //  esc --> stop logging
 //
 int PrescalerCnt = 0;
+uint8_t LogMode = 0;  // 0: don't log , 4 log temp, 2 log press ..
 void ManageTxDebug(void)
 {
 static char stringPtr[200];
@@ -777,49 +780,56 @@ word sent_data;
 
 	uint8_t cmd;
 	cmd = CharReceived();
-	static uint8_t mode = 0;  // 0: don't log , 1 log temp, 2 log press
 
 	switch(cmd){
 	case ESC:
-		mode = 0;
+		LogMode = 0;
 		break;
 	case 'P':
-		mode = 1;
+		LogMode = 1;
 		sprintf(stringPtr, "\"sep=,\"\r\n Press Ven Rem[mmHg] , Pr Ven Loc[mmHg], Pr Art Rem[mmHg] , Pr Art Loc[mmHg],");
 		PC_DEBUG_COMM_SendBlock(stringPtr, strlen(stringPtr), &sent_data);
 		sprintf(stringPtr, "Press Lev Remx100[mmHg] , Pr Lev Locx100[mmHg], Pr Filt Rem[mmHg] , Pr Filt Loc[mmHg] , Pr Oxy Rem[mmHg] , Pr Oxy Loc[mmHg]\r\n");
 		PC_DEBUG_COMM_SendBlock(stringPtr, strlen(stringPtr), &sent_data);
 		break;
 	case 'T':
-		mode = 4;
+		LogMode = 4;
 		sprintf(stringPtr, "\"sep=,\"\r\n Tempx10 Ven Rem[mmHg] , Tempx10 Ven Loc[mmHg], Tempx10 Art Rem[mmHg] , Tempx10 Art Loc[mmHg] , Tempx10 Recycle Rem[mmHg] , Tempx10 Recycle Loc[mmHg], Tempx10 Plate Rem[mmHg] , Tempx10 Plate Loc[mmHg] \r\n");
 		PC_DEBUG_COMM_SendBlock(stringPtr, strlen(stringPtr), &sent_data);
 		break;
 	case 'C':
-		mode = 7;
+		LogMode = 7;
 		sprintf(stringPtr, "\"sep=,\"\r\n Pinch 1 Rem , Pinch 1 Loc, Pinch 2 Rem , Pinch 2 Loc , Pinch 3 Rem , Pinch 3 Loc \r\n");
 		PC_DEBUG_COMM_SendBlock(stringPtr, strlen(stringPtr), &sent_data);
 		break;
 	case 'M':
-		mode = 10;
+		LogMode = 10;
 		sprintf(stringPtr, "\"sep=,\"\r\n Pump 1 Rem [rpm], Pump 1 Loc[rpm], Pump 2 Rem[rpm], Pump 2 Loc[rpm], Pump 3 Rem[rpm], Pump 3 Loc[rpm], "
 				"						  Pump 4 Rem[rpm], Pump4 Loc[rpm]\r\n");
 		PC_DEBUG_COMM_SendBlock(stringPtr, strlen(stringPtr), &sent_data);
 		break;
+	case 'E': // log errors
+		LogMode = 13;
+		sprintf(stringPtr, "\"sep=,\"\r\n Error Ctrl , Error Prot \r\n");
+		PC_DEBUG_COMM_SendBlock(stringPtr, strlen(stringPtr), &sent_data);
+		break;
 	}
 
-	switch(mode){
+	switch(LogMode){
 	case 1: // pressure
-		mode = 2;
+		LogMode = 2;
 		break;
 	case 4: // temp
-		mode = 5;
+		LogMode = 5;
 		break;
 	case 7: // pinch
-		mode = 8;
+		LogMode = 8;
 		break;
 	case 10: // pumps
-		mode = 11;
+		LogMode = 11;
+		break;
+	case 13: // log errors
+		LogMode = 14;
 		break;
 	case 2: // pressure
 		TxDebugPressures();
@@ -836,14 +846,19 @@ word sent_data;
 		}
 		PrescalerCnt = (PrescalerCnt + 1) % 10;
 		break;
-	case 11: // pinc
+	case 11: // pumps speed
 		if( PrescalerCnt == 0){
 			TxDebugPumpSpeed();
 		}
 		PrescalerCnt = (PrescalerCnt + 1) % 10;
 		break;
+	case 14: // log errors
+		if( PrescalerCnt == 0){
+			TxDebugErrors();
+		}
+		PrescalerCnt = (PrescalerCnt + 1) % 20;
+		break;
 	}
-
 }
 
 /////////////////////////////////////////////
@@ -936,6 +951,41 @@ void TxDebugPumpSpeed(void)
 
     sprintf(stringPtr, "%.2f , %.2f   ,   %.2f , %.2f   ,   %.2f , %.2f  ,   %.2f , %.2f \r\n", FRSpeed1, FLSpeed1 , FRSpeed2, FLSpeed2 ,FRSpeed3, FLSpeed3 ,FRSpeed4, FLSpeed4);
 
+    PC_DEBUG_COMM_SendBlock(stringPtr, strlen(stringPtr) , &sent_data);
+
+}
+
+
+uint16_t OldProtectiveError = 0;
+uint16_t NewProtectiveError = 0;
+uint16_t OldControlError = 0;
+uint16_t NewControlError = 0;
+
+void LogControlBoardError(uint16_t NumCError)
+{
+	NewControlError = NumCError;
+    if(( OldControlError != NewControlError) && (LogMode == 14)){
+    	OldControlError = NewControlError;
+    	TxDebugErrors();
+    }
+}
+
+void LogProtectiveBoardError(uint16_t NumPError)
+{
+	NewProtectiveError = NumPError;
+    if(( OldProtectiveError != NewProtectiveError) && (LogMode == 14)){
+    	OldProtectiveError = NewProtectiveError;
+    	TxDebugErrors();
+    }
+}
+
+
+void TxDebugErrors(void)
+{
+    static char stringPtr[200];
+    word sent_data;
+
+    sprintf(stringPtr, "%03u , %03u \r\n", NewControlError, NewProtectiveError);
     PC_DEBUG_COMM_SendBlock(stringPtr, strlen(stringPtr) , &sent_data);
 
 }

@@ -305,7 +305,26 @@ int main(void)
    // di piatto spedita dalla control
    timerConfrontaTempPlate=0;
 
-   //printf("provo di scrivere sulla console \r\n");
+//   int DebCount = 0;
+//   debug del relè della protective.
+//for (;;)
+//{
+//	if((timerCounterCheckTempIRSens % 20 ) == 0)
+//	{
+//		timerCounterCheckTempIRSens = 1;
+//		DebCount++;
+//	}
+//	if( DebCount == 1) {
+//		//HEAT_ON_P_SetVal();
+//		COMP_ENABLE_SetVal();
+//	}
+//	else if ( DebCount == 2) {
+//		DebCount = 0;
+//		//HEAT_ON_P_ClrVal();
+//		COMP_ENABLE_ClrVal();
+//	}
+//}
+
 
   for(;;)
   {

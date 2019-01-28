@@ -51,4 +51,7 @@ void onNewTPerfVenosa(float Temper);
 void Enable_Heater_CommandCAN(bool status);
 void Enable_Frigo_CommandCAN(bool status);
 
+void LogControlBoardError(uint16_t NumCError);
+void LogProtectiveBoardError(uint16_t NumPError);
+
 #endif /* CONTROLPROTECTIVEINTERFACE_H_ */

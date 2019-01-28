@@ -298,3 +298,5 @@ void Enable_Frigo_CommandCAN(bool status)
 
 
 
+
+

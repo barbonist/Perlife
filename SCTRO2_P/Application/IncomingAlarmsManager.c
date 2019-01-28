@@ -102,11 +102,17 @@ bool SomePinchNotDisabled = false;
 	OldcontrolBoard_AlarmCode = controlBoard_AlarmCode;
 }
 
+
+// pinch chiuse --> 1
+// aperte a sinistra --> 2
+// aperte a destra --> 4
 bool PinchesAreInSafetyMode(void)
 {
 	uint8_t pch0, pch1, pch2;
 
 	GetPinchPos( &pch0 ,  &pch1, &pch2);
+	// la pinch 0 è quella in basso ( per il filtro )
+	// pa pinch 1 e 2 sono quelle in alto , venosa e arteriosa . La 2 è la venosa la 1 l'arteriosa.
 	return ((pch0 == 0x02) && (pch1 == 0x04) && (pch2 == 0x04));
 }
 
