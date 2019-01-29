@@ -255,7 +255,7 @@ void onNewSensTempVal(uint16_t PressOxyg, uint16_t TempRes,
 
     // SB added plate temperature
 
-    TxCan5.STxCan5.tempPlateC = (uint16_t)(T_PLATE_C_GRADI_CENT*10);
+    TxCan5.STxCan5.tempPlateC = (int16_t)(T_PLATE_C_GRADI_CENT*10);
 
 }
 
@@ -276,7 +276,7 @@ void onNewPinchVal(uint8_t AirFiltStat, uint16_t AlarmCode,
 	/* Aggiungo l'informnazione della posizione della pinch
 	 * letta dal driver tramite la matrice globale modbusData;
 	 * la posizione settata (Pinch2WPVF -- Pinch2WPVA -- Pinch2WPVV)
-	 * si sposta nel nibble più alto del byte e nel nubble più
+	 * si sposta nel nibble più alto del byte e nel nibble più
 	 * basso metto la posizione inviatami dal driver*/
 	TxCan3.STxCan3.FilterPinchPos  = TxCan3.STxCan3.FilterPinchPos << 4 ;
 	TxCan3.STxCan3.FilterPinchPos |= (modbusData[4][0] & 0x0F); // in modbusData[4][0] ho la posizione della pinch filtro inviatami dal driver
