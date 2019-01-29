@@ -613,7 +613,8 @@ void CalcAlarmActive(void)
 			manageAlarmActuatorModbusNotRespond();
 			manageAlarmActuatorWRModbusNotRespond();
 			manageAlarmFromProtective();
-			manageAlarmBadPinchPos();   // allarme di pinch posizionate correttamente
+			//manageAlarmBadPinchPos();   // allarme di pinch posizionate correttamente
+			manageCover_Hook_Sensor();
 			break;
 		}
 
@@ -640,7 +641,8 @@ void CalcAlarmActive(void)
 			manageAlarmActuatorModbusNotRespond();
 			manageAlarmActuatorWRModbusNotRespond();
 			manageAlarmFromProtective();
-			manageAlarmBadPinchPos();   // allarme di pinch posizionate correttamente
+			//manageAlarmBadPinchPos();   // allarme di pinch posizionate correttamente
+			manageCover_Hook_Sensor();
 			break;
 		}
 
@@ -653,8 +655,9 @@ void CalcAlarmActive(void)
 			//verifica physic flow sensor (presenza aria)
 			manageAlarmPhysicUFlowSens();
 			manageAlarmSAFAirSens();
-			manageAlarmPhysicUFlowSensVen();
 
+			if(GetTherapyType() == LiverTreat)
+			    manageAlarmPhysicUFlowSensVen();
 
 			//verifica physic ir temp sens
 			manageAlarmPhysicTempSensInTreat();
@@ -689,7 +692,7 @@ void CalcAlarmActive(void)
 			manageAlarmDeltaTempRecArt();
 			manageAlarmDeltaTempRecVen();
 			manageAlarmCanBus();
-			manageAlarmBadPinchPos(); // controllo il posizionamento delle pinch prima di iniziare un trattamento
+			//manageAlarmBadPinchPos(); // controllo il posizionamento delle pinch prima di iniziare un trattamento
 			manageAlarmActuatorModbusNotRespond();
 			manageAlarmActuatorWRModbusNotRespond();
 			manageAlarmFromProtective();
@@ -699,6 +702,7 @@ void CalcAlarmActive(void)
 			// Filippo - aggiunto allarme per test sensore aria sbagliato
 			manageAlarmAirSensorTestKO();
             manageAlarmArterialResistance();
+            manageCover_Hook_Sensor();
 			break;
 		}
 
@@ -731,6 +735,7 @@ void CalcAlarmActive(void)
 			manageAlarmActuatorModbusNotRespond();
 			manageAlarmActuatorWRModbusNotRespond();
 			manageAlarmFromProtective();
+			manageCover_Hook_Sensor();
 				// Filippo - aggiungo la gestione del tasto di stop come allarme
 		//		manageAlarmStopButtonPressed();
 			break;
@@ -789,6 +794,7 @@ void CalcAlarmActive(void)
 			manageAlarmActuatorModbusNotRespond();
 			manageAlarmActuatorWRModbusNotRespond();
 			manageAlarmFromProtective();
+			manageCover_Hook_Sensor();
 				// Filippo - aggiungo la gestione del tasto di stop come allarme
 		//		manageAlarmStopButtonPressed();
 			break;
