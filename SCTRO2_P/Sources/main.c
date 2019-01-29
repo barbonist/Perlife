@@ -245,7 +245,7 @@ void verificaTempPlate(void)
 
 #define VERS_1 1
 #define VERS_2 0
-#define VERS_3 6
+#define VERS_3 7
 
 uint16_t GetFwVersionProtective(void)
 {
@@ -473,6 +473,9 @@ int main(void)
 
 	Versione 1.0.006 17/1/2019
 		Inserita trasmissione su seriale di debug di informazioni su stato PINCH ( comando C ) e velocità pompe ( comando M )
+
+	Versione 1.0.007 29/1/2019
+		Inserita trasmissione su seriale di debug di informazioni su stato errori control e protective ( comando E )
 
   */
 
