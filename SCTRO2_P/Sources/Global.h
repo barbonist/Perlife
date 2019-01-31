@@ -11,6 +11,9 @@
 #include "PE_Types.h"
 typedef unsigned short	word;
 
+
+//#define PROTECTIVE_SLEEPS
+
 /* Syncronization flag */
 char	iflag_pc_rx;
 char	iflag_pc_tx;

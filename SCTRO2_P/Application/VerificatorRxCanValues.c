@@ -80,7 +80,8 @@ static TAlarmTimer	*AlarmTimerList[] = {
 };
 
 static void ManageVerificatorAlarms100ms(void);
-bool ValueIsInRange(uint16_t RefValue, uint16_t Val2Test, uint16_t IPercent);
+//bool ValueIsInRange(uint16_t RefValue, uint16_t Val2Test, uint16_t IPercent);
+bool ValueIsInRange(short int RefValue, short int Val2Test, short unsigned int IDelta);
 
 void InitVerificatorRx(void){
 	AddSwTimer(ManageVerificatorAlarms100ms,10,TM_REPEAT);
@@ -548,19 +549,27 @@ bool ValueIsInRangePerc(uint16_t RefValue, uint16_t Val2Test, uint16_t IPercent)
 
 }
 
-bool ValueIsInRange(uint16_t RefValue, uint16_t Val2Test, uint16_t IDelta) {
-	int16_t max;
-	int16_t min;
+//bool ValueIsInRange(uint16_t RefValue, uint16_t Val2Test, uint16_t IDelta) {
+//	int16_t max;
+//	int16_t min;
+//
+//	max = RefValue + IDelta;
+//	if (RefValue > IDelta) 	min = RefValue - IDelta;
+//	else min = 0;
+//	if( (Val2Test <= max) && (Val2Test >= min) )
+//		return true;
+//	else
+//		return false;
+////	return ((Val2Test <= max) && (Val2Test >= min));
+//
+//}
 
-	max = RefValue + IDelta;
-	if (RefValue > IDelta) 	min = RefValue - IDelta;
-	else min = 0;
-	if( (Val2Test <= max) && (Val2Test >= min) )
-		return true;
-	else
-		return false;
+bool ValueIsInRange(short int RefValue, short int Val2Test, short unsigned int IDelta) {
+
+	if( Val2Test > RefValue ) return (( Val2Test - RefValue ) <= IDelta);
+	else return (( RefValue - Val2Test ) <= IDelta);
+
 //	return ((Val2Test <= max) && (Val2Test >= min));
-
 }
 
 

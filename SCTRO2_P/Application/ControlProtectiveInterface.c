@@ -451,7 +451,7 @@ void onNewTPlateCentDegrees(  float Temper11  )
 {
 	int16_t Tempx10;
 
-       Tempx10 = ((int16_t)Temper11) * 10;
+       Tempx10 = (int16_t)(Temper11 * 10);
        TxCan5.STxCan5.tempPlateP = Tempx10;
        if( IsVerifyRequired() )
                     VerifyPlateTemp( Temper11 );
@@ -460,7 +460,7 @@ void onNewTPlateCentDegrees(  float Temper11  )
 void onNewTPerfArteriosa(float Temper)
 {
        int16_t Tempx10;
-       Tempx10 = ((int16_t)Temper) * 10;
+       Tempx10 = (int16_t)(Temper * 10);
        TxCan1.STxCan1.TempArtx10 = Tempx10;
        if( IsVerifyRequired() )
                     VerifyArtTemp(Temper);
@@ -469,7 +469,7 @@ void onNewTPerfArteriosa(float Temper)
 void onNewTPerfRicircolo(float Temper)
 {
       int16_t Tempx10;
-       Tempx10 = ((int16_t)Temper) * 10;
+       Tempx10 = (int16_t)(Temper * 10);
        TxCan1.STxCan1.TempFluidx10 = Tempx10;
        if( IsVerifyRequired() )
                     VerifyFluidTemp(Temper);
@@ -479,7 +479,7 @@ void onNewTPerfRicircolo(float Temper)
 void onNewTPerfVenosa(float Temper)
 {
        int16_t Tempx10;
-       Tempx10 = ((int16_t)Temper) * 10;
+       Tempx10 = (int16_t)(Temper * 10);
        TxCan1.STxCan1.TempVenx10 = Tempx10;
        if( IsVerifyRequired() )
              VerifyVenTemp(Temper);
@@ -794,7 +794,7 @@ word sent_data;
 		break;
 	case 'T':
 		LogMode = 4;
-		sprintf(stringPtr, "\"sep=,\"\r\n Tempx10 Ven Rem[mmHg] , Tempx10 Ven Loc[mmHg], Tempx10 Art Rem[mmHg] , Tempx10 Art Loc[mmHg] , Tempx10 Recycle Rem[mmHg] , Tempx10 Recycle Loc[mmHg], Tempx10 Plate Rem[mmHg] , Tempx10 Plate Loc[mmHg] \r\n");
+		sprintf(stringPtr, "\"sep=,\"\r\n Tempx10 Ven Rem[mmHg] , Tempx10 Ven Loc[mmHg], Tempx10 Art Rem[mmHg] , Tempx10 Art Loc[mmHg] , Tempx10 Recycle Rem[mmHg] , Tempx10 Recycle Loc[mmHg], Tempx10 Plate Rem[mmHg] , Tempx10 Plate Loc[mmHg] , Heat ON , Refrig ON\r\n");
 		PC_DEBUG_COMM_SendBlock(stringPtr, strlen(stringPtr), &sent_data);
 		break;
 	case 'C':
@@ -891,6 +891,7 @@ void TxDebugTemperatures(void)
 	uint16_t RTempArtx10, RTempFluidx10, RTempVenx10, RTempPlatex10;
 	uint16_t LTempArtx10, LTempFluidx10, LTempVenx10, LTempPlatex10;
 	word sent_data;
+	uint16_t FrigoOn, HeaterOn;
 
 	GetTemperatures(&LTempArtx10, &LTempFluidx10, &LTempVenx10, &LTempPlatex10);
 
@@ -898,9 +899,14 @@ void TxDebugTemperatures(void)
 	RTempFluidx10 = RxCan2.SRxCan2.TempFluidx10;
 	RTempVenx10 = RxCan2.SRxCan2.TempVenx10;
 	RTempPlatex10 = RxCan5.SRxCan5.tempPlateC;
+	FrigoOn = COMP_ENABLE_GetVal() ? 100:0;
+	HeaterOn = HEAT_ON_P_GetVal() ? 100:0;
 
-    sprintf(stringPtr, "%04d ,  %04d , %04d , %04d , %04d ,  %04d , %04d , %04d \r\n", RTempVenx10, LTempVenx10 , RTempArtx10, LTempArtx10,
-    																				   RTempFluidx10 , LTempFluidx10, RTempPlatex10, LTempPlatex10 );
+    sprintf(stringPtr, "%+04d , %+04d  ,  %+04d , %+04d  ,  %+04d , %+04d  ,  %+04d , %+04d ,     %03u , %03u \r\n", (short int)RTempVenx10, (short int)LTempVenx10 ,
+    																						   (short int)RTempArtx10, (short int)LTempArtx10,
+																							   (short int)RTempFluidx10 , (short int)LTempFluidx10,
+																							   (short int)RTempPlatex10, (short int)LTempPlatex10 ,
+																							   HeaterOn, FrigoOn);
     PC_DEBUG_COMM_SendBlock(stringPtr, strlen(stringPtr) , &sent_data);
 
 }

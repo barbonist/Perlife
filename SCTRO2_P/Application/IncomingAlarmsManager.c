@@ -106,14 +106,21 @@ bool SomePinchNotDisabled = false;
 // pinch chiuse --> 1
 // aperte a sinistra --> 2
 // aperte a destra --> 4
+
+// si considera che le pinch sono in sicurezza quando è verificata questa condizione:
+// pinch 0 ( in basso ) --> aperta a sinistra o chiusa
+// pinch 1 e 2 ( le 2 in alto ) --> aperta a destra o chiusa
+//
 bool PinchesAreInSafetyMode(void)
 {
 	uint8_t pch0, pch1, pch2;
 
 	GetPinchPos( &pch0 ,  &pch1, &pch2);
 	// la pinch 0 è quella in basso ( per il filtro )
-	// pa pinch 1 e 2 sono quelle in alto , venosa e arteriosa . La 2 è la venosa la 1 l'arteriosa.
-	return ((pch0 == 0x02) && (pch1 == 0x04) && (pch2 == 0x04));
+	// pa pinch 1 e 2 sono quelle in alto , venosa e arteriosa . La 2 è la venosa la 1 l'arteriosa ( in modalità liever )
+	return ( ((pch0 == 0x02) || (pch0 == 0x01)) &&
+			 ((pch1 == 0x04) || (pch1 == 0x01)) &&
+			 ((pch2 == 0x04) || (pch2 == 0x01)) );
 }
 
 bool SomePinchIsInPerfusionPosition(void)

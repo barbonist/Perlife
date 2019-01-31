@@ -243,10 +243,19 @@ void verificaTempPlate(void)
 //  NB : in this processor , msb is the second ( oxo1
 //
 
+#ifdef PROTECTIVE_SLEEPS
+
+#define VERS_1 0
+#define VERS_2 0
+#define VERS_3 1
+
+#else
+
 #define VERS_1 1
 #define VERS_2 0
-#define VERS_3 7
+#define VERS_3 8
 
+#endif
 uint16_t GetFwVersionProtective(void)
 {
 uint16_t v1,v2,v3;
@@ -476,6 +485,16 @@ int main(void)
 
 	Versione 1.0.007 29/1/2019
 		Inserita trasmissione su seriale di debug di informazioni su stato errori control e protective ( comando E )
+
+	Versione 1.0.008 31/1/2009
+		- Modificata la funzione
+			bool ValueIsInRange(uint16_t RefValue, uint16_t Val2Test, uint16_t IDelta) // VerificatorRxCanValues
+			in questa funzuione
+			bool ValueIsInRange(short int RefValue, short int Val2Test, short unsigned int IDelta)
+			per gestire correttamente anche i valori negativi dei parametri.
+		- Modificata la funzione
+			bool PinchesAreInSafetyMode(void)
+			per considerare in sicurezza anche una  pinch chiusa da entrambi i lati.
 
   */
 

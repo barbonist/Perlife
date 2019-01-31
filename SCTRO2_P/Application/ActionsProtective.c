@@ -12,8 +12,11 @@
 #include "ActionsProtective.h"
 #include "ControlProtectiveInterface.h"
 
-//#define NO_DISABLE_FORTEST 1
-#undef NO_DISABLE_FORTEST
+#ifdef PROTECTIVE_SLEEPS
+	#define NO_DISABLE_FORTEST 1
+#else
+	#undef NO_DISABLE_FORTEST
+#endif
 
 void InitActuators(void)
 {
@@ -225,9 +228,12 @@ bool Pinch_Venous_IsEnabled(void)
 	return EN_CLAMP_P_3_GetVal();
 }
 
+#ifdef PROTECTIVE_SLEEPS
+	#define DISABLE_HEATER_FRIGO_CONTROL
+#else
+	#undef DISABLE_HEATER_FRIGO_CONTROL
+#endif
 
-//#define DISABLE_HEATER_FRIGO_CONTROL
-#undef DISABLE_HEATER_FRIGO_CONTROL
 
 void Enable_Heater(bool status)
 {

@@ -57,7 +57,10 @@ void ManageShowAlarm500ms(void)
 }
 
 
-//#define NO_SEND_ERROR
+#ifdef PROTECTIVE_SLEEPS
+	#define NO_SEND_ERROR
+#endif
+
 void ShowNewAlarmError(uint16_t AlarmCode)
 {
 	ActualErrNum = AlarmCode;
