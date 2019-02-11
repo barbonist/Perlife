@@ -31,7 +31,8 @@
 #define LAST_INDEX_TXBUFF2SEND 15	//
 
 #define ESC 27
-
+#define CR  0x0D
+#define LF  0x0A
 
 //#define CAN_DEBUG 1
 
@@ -117,6 +118,7 @@ void DebugFillTxBuffers(void);
 void CanCheckTimer(void);
 
 void ManageTxDebug(void);
+void ManageGetParams(void);
 void TxDebugPressures(void);
 void TxDebugTemperatures(void);
 void TxDebugPinch(void);
@@ -233,6 +235,7 @@ void InitControlProtectiveInterface(void)
 	TxCan5.STxCan5.ProtFwVersion = GetFwVersionProtective();
 	AddSwTimer(ManageTxCan100ms,10,TM_REPEAT);
 	AddSwTimer(ManageTxDebug,5,TM_REPEAT);
+	AddSwTimer(ManageGetParams,5,TM_REPEAT);
 	InitVerificatorRx();
 	InitVerificatorLocalParams();
 	InitIncomingAlarmManager();
@@ -771,49 +774,116 @@ void CanCheckTimer(void)
 //  P or p pressed --> generate head line for csv file and pressures headers
 //  esc --> stop logging
 //
-int PrescalerCnt = 0;
+#define GREEN_TEXT   "\033[32;1m"
+#define YELLOW_TEXT  "\033[33;1m"
+#define BLUE_TEXT    "\033[34;1m"
+#define MAGENTA_TEXT "\033[35;1m"
+#define CYAN_TEXT    "\033[36;1m"
+#define WHITE_TEXT   "\033[37;1m"
+void ParseNExecuteCommand( char* CommadnNParamsString);
+bool FirstTime = true;
 uint8_t LogMode = 0;  // 0: don't log , 4 log temp, 2 log press ..
+
 void ManageTxDebug(void)
+{
+	word sent_data;
+	uint8_t ch1;
+	static char CommandBuff[100];
+	static int BuffCnt = 0;
+	int ii;
+	char* StrPrompt[40];
+
+	strcpy(StrPrompt,GREEN_TEXT) ; strcat(StrPrompt,"\r\nPerlife>") ; strcat(StrPrompt, WHITE_TEXT);
+
+	if(FirstTime){
+		PC_DEBUG_COMM_SendBlock(StrPrompt, strlen(StrPrompt) , &sent_data);
+		FirstTime = false;
+	}
+	ch1 = CharReceived();
+
+	if( LogMode != 0){
+		if( ch1 == ESC ) SetLogCommand(ESC);
+		return;
+	}
+
+	int CmdBuff;
+	if(ch1 != 0xFF){
+		CommandBuff[BuffCnt++] = ch1;
+ 		PC_DEBUG_COMM_SendChar(ch1);
+ 		if( ch1 == CR ){
+ 			PC_DEBUG_COMM_SendChar(LF);
+ 			if( BuffCnt > 2) {
+	 			ParseNExecuteCommand( CommandBuff );
+			}
+ 			if( LogMode == 0){
+ 				// if logging data have been triggered , avoid showing prompt
+ 	 			PC_DEBUG_COMM_SendBlock(StrPrompt, strlen(StrPrompt) , &sent_data);
+ 			}
+ 			for( ii = 0; ii< BuffCnt; ii++){
+ 	 			CommandBuff[ii] = 0;
+ 			}
+ 			BuffCnt = 0;
+ 		}
+	}
+}
+
+
+
+uint8_t cmd = '_' ; // nothing
+
+void SetLogCommand( uint8_t Command)
+{
+	cmd = Command;
+	ManageGetParams();
+}
+
+int PrescalerCnt = 0;
+void ManageGetParams(void)
 {
 static char stringPtr[200];
 word sent_data;
 
-	uint8_t cmd;
-	cmd = CharReceived();
+	//uint8_t cmd;
 
 	switch(cmd){
-	case ESC:
-		LogMode = 0;
-		break;
-	case 'P':
-		LogMode = 1;
-		sprintf(stringPtr, "\"sep=,\"\r\n Press Ven Rem[mmHg] , Pr Ven Loc[mmHg], Pr Art Rem[mmHg] , Pr Art Loc[mmHg],");
-		PC_DEBUG_COMM_SendBlock(stringPtr, strlen(stringPtr), &sent_data);
-		sprintf(stringPtr, "Press Lev Remx100[mmHg] , Pr Lev Locx100[mmHg], Pr Filt Rem[mmHg] , Pr Filt Loc[mmHg] , Pr Oxy Rem[mmHg] , Pr Oxy Loc[mmHg]\r\n");
-		PC_DEBUG_COMM_SendBlock(stringPtr, strlen(stringPtr), &sent_data);
-		break;
-	case 'T':
-		LogMode = 4;
-		sprintf(stringPtr, "\"sep=,\"\r\n Tempx10 Ven Rem[mmHg] , Tempx10 Ven Loc[mmHg], Tempx10 Art Rem[mmHg] , Tempx10 Art Loc[mmHg] , Tempx10 Recycle Rem[mmHg] , Tempx10 Recycle Loc[mmHg], Tempx10 Plate Rem[mmHg] , Tempx10 Plate Loc[mmHg] , Heat ON , Refrig ON\r\n");
-		PC_DEBUG_COMM_SendBlock(stringPtr, strlen(stringPtr), &sent_data);
-		break;
-	case 'C':
-		LogMode = 7;
-		sprintf(stringPtr, "\"sep=,\"\r\n Pinch 1 Rem , Pinch 1 Loc, Pinch 2 Rem , Pinch 2 Loc , Pinch 3 Rem , Pinch 3 Loc \r\n");
-		PC_DEBUG_COMM_SendBlock(stringPtr, strlen(stringPtr), &sent_data);
-		break;
-	case 'M':
-		LogMode = 10;
-		sprintf(stringPtr, "\"sep=,\"\r\n Pump 1 Rem [rpm], Pump 1 Loc[rpm], Pump 2 Rem[rpm], Pump 2 Loc[rpm], Pump 3 Rem[rpm], Pump 3 Loc[rpm], "
-				"						  Pump 4 Rem[rpm], Pump4 Loc[rpm]\r\n");
-		PC_DEBUG_COMM_SendBlock(stringPtr, strlen(stringPtr), &sent_data);
-		break;
-	case 'E': // log errors
-		LogMode = 13;
-		sprintf(stringPtr, "\"sep=,\"\r\n Error Ctrl , Error Prot \r\n");
-		PC_DEBUG_COMM_SendBlock(stringPtr, strlen(stringPtr), &sent_data);
-		break;
+		case ESC:
+			LogMode = 0;
+			break;
+		case 'P':
+			LogMode = 1;
+			sprintf(stringPtr, "\"sep=,\"\r\n Press Ven Rem[mmHg] , Pr Ven Loc[mmHg], Pr Art Rem[mmHg] , Pr Art Loc[mmHg],");
+			PC_DEBUG_COMM_SendBlock(stringPtr, strlen(stringPtr), &sent_data);
+			sprintf(stringPtr, "Press Lev Remx100[mmHg] , Pr Lev Locx100[mmHg], Pr Filt Rem[mmHg] , Pr Filt Loc[mmHg] , Pr Oxy Rem[mmHg] , Pr Oxy Loc[mmHg]\r\n");
+			PC_DEBUG_COMM_SendBlock(stringPtr, strlen(stringPtr), &sent_data);
+			break;
+		case 'T':
+			LogMode = 4;
+			sprintf(stringPtr, "\"sep=,\"\r\n Tempx10 Ven Rem[mmHg] , Tempx10 Ven Loc[mmHg], Tempx10 Art Rem[mmHg] , Tempx10 Art Loc[mmHg] , Tempx10 Recycle Rem[mmHg] , Tempx10 Recycle Loc[mmHg], Tempx10 Plate Rem[mmHg] , Tempx10 Plate Loc[mmHg] , Heat ON , Refrig ON\r\n");
+			PC_DEBUG_COMM_SendBlock(stringPtr, strlen(stringPtr), &sent_data);
+			break;
+		case 'C':
+			LogMode = 7;
+			sprintf(stringPtr, "\"sep=,\"\r\n Pinch 1 Rem , Pinch 1 Loc, Pinch 2 Rem , Pinch 2 Loc , Pinch 3 Rem , Pinch 3 Loc \r\n");
+			PC_DEBUG_COMM_SendBlock(stringPtr, strlen(stringPtr), &sent_data);
+			break;
+		case 'M':
+			LogMode = 10;
+			sprintf(stringPtr, "\"sep=,\"\r\n Pump 1 Rem [rpm], Pump 1 Loc[rpm], Pump 2 Rem[rpm], Pump 2 Loc[rpm], Pump 3 Rem[rpm], Pump 3 Loc[rpm], "
+					"						  Pump 4 Rem[rpm], Pump4 Loc[rpm]\r\n");
+			PC_DEBUG_COMM_SendBlock(stringPtr, strlen(stringPtr), &sent_data);
+			break;
+		case 'E': // log errors
+			LogMode = 13;
+			sprintf(stringPtr, "\"sep=,\"\r\n Error Ctrl , Error Prot \r\n");
+			PC_DEBUG_COMM_SendBlock(stringPtr, strlen(stringPtr), &sent_data);
+			break;
+		case 'H': // log pumps hall
+			LogMode = 16;
+			sprintf(stringPtr, "   Pump1         Pump2      Pump3     Pump4 \r\n");
+			PC_DEBUG_COMM_SendBlock(stringPtr, strlen(stringPtr), &sent_data);
+			break;
 	}
+	cmd = '_';
 
 	switch(LogMode){
 	case 1: // pressure
@@ -830,6 +900,9 @@ word sent_data;
 		break;
 	case 13: // log errors
 		LogMode = 14;
+		break;
+	case 16: // log errors
+		LogMode = 17;
 		break;
 	case 2: // pressure
 		TxDebugPressures();
@@ -857,6 +930,12 @@ word sent_data;
 			TxDebugErrors();
 		}
 		PrescalerCnt = (PrescalerCnt + 1) % 20;
+		break;
+	case 17: // log errors
+		if( PrescalerCnt == 0){
+			TxPumpsHall();
+		}
+		PrescalerCnt = (PrescalerCnt + 1) % 3;
 		break;
 	}
 }
@@ -996,6 +1075,38 @@ void TxDebugErrors(void)
 
 }
 
+void TxPumpsHall(void)
+{
+word sent_data;
+
+char PFilt1[10]; // "|   ." if 0 , or ".    |" if 1;
+char PFilt2[10];
+char PArt1[10];
+char PArt2[10];
+char POxy11[10];
+char POxy12[10];
+char POxy21[10];
+char POxy22[10];
+char ResultStr[200];
+
+	  if( HallSens.PumpFilter_HSens1 ) strcpy(PFilt1,".  |");  else strcpy(PFilt1,"|  .");
+	  if( HallSens.PumpFilter_HSens2 ) strcpy(PFilt2,".  |");  else strcpy(PFilt2,"|  .");
+	  if( HallSens.PumpArt_Liver_HSens1 ) strcpy(PArt1,".  |");  else strcpy(PArt1,"|  .");
+	  if( HallSens.PumpArt_Liver_HSens2 ) strcpy(PArt2,".  |");  else strcpy(PArt2,"|  .");
+	  if( HallSens.PumpOxy_1_HSens1 ) strcpy(POxy11,".  |");  else strcpy(POxy11,"|  .");
+	  if( HallSens.PumpOxy_1_HSens2 ) strcpy(POxy12,".  |");  else strcpy(POxy12,"|  .");
+	  if( HallSens.PumpOxy_2_HSens1 ) strcpy(POxy21,".  |");  else strcpy(POxy21,"|  .");
+	  if( HallSens.PumpOxy_2_HSens2 ) strcpy(POxy22,".  |\r\n");  else strcpy(POxy22,"|  .\r\n");
+
+	  strcpy(ResultStr, "        "); strcat(ResultStr, PFilt1); 	  strcat(ResultStr, "        "); strcat(ResultStr, PFilt2);
+	  strcat(ResultStr, "        "); strcat(ResultStr, PArt1); 	  strcat(ResultStr, "        "); strcat(ResultStr, PArt2);
+	  strcat(ResultStr, "        "); strcat(ResultStr, POxy11);   strcat(ResultStr, "        "); strcat(ResultStr, POxy12);
+	  strcat(ResultStr, "        "); strcat(ResultStr, POxy21);   strcat(ResultStr, "        "); strcat(ResultStr, POxy22);
+
+	  PC_DEBUG_COMM_SendBlock(ResultStr, strlen(ResultStr) , &sent_data);
+
+}
+
 uint8_t CharReceived(void)
 {
 uint8_t rxchr;
@@ -1004,7 +1115,6 @@ uint8_t rxchr;
 	else return 0xFF;
 
 }
-
 
 
 

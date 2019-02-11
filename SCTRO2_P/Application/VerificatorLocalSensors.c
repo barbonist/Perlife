@@ -50,9 +50,9 @@ TAlarmTimer HighArtTempAlarmTimer = {0,10,false,false, HighArtTempAlarmAct , 0 ,
 TAlarmTimer HighVenTempAlarmTimer = {0,10,false,false, HighVenTempAlarmAct , 0 , 65 , PumpsOrPinchNotRespond_EmergAct}; // alarm after 1 s alarm
 TAlarmTimer HighFluidTempAlarmTimer = {0,10,false,false, HighFluidTempAlarmAct , 0 , 65 , PumpsOrPinchNotRespond_EmergAct}; // alarm after 1 s alarm
 TAlarmTimer LowPlateTempAlarmTimer = {0,10,false,false, LowPlateTempAlarmAct , 0 , 65 , PumpsOrPinchNotRespond_EmergAct}; // alarm after 1 s alarm
-TAlarmTimer LowArtTempAlarmTimer = {0,10,false,false, LowArtTempAlarmAct , 0 , 65 , PumpsOrPinchNotRespond_EmergAct}; // alarm after 1 s alarm
-TAlarmTimer LowVenTempAlarmTimer = {0,10,false,false, LowVenTempAlarmAct , 0 , 65 , PumpsOrPinchNotRespond_EmergAct}; // alarm after 1 s alarm
-TAlarmTimer LowFluidTempAlarmTimer = {0,10,false,false, LowFluidTempAlarmAct , 0 , 65 , PumpsOrPinchNotRespond_EmergAct}; // alarm after 1 s alarm
+TAlarmTimer LowArtTempAlarmTimer = {0,200,false,false, LowArtTempAlarmAct , 0 , 65 , PumpsOrPinchNotRespond_EmergAct}; // alarm after 1 s alarm
+TAlarmTimer LowVenTempAlarmTimer = {0,200,false,false, LowVenTempAlarmAct , 0 , 65 , PumpsOrPinchNotRespond_EmergAct}; // alarm after 1 s alarm
+TAlarmTimer LowFluidTempAlarmTimer = {0,200,false,false, LowFluidTempAlarmAct , 0 , 65 , PumpsOrPinchNotRespond_EmergAct}; // alarm after 1 s alarm
 
 static TAlarmTimer	*AlarmTimerList[] = {
 		&HighArterPressAlarmTimer,
@@ -275,7 +275,7 @@ void LowVenTempAlarmAct(void)
 
 void LowFluidTempAlarmAct(void)
 {
-	if( GetControlFSMState() == STATE_TREATMENT)
+	if  (SomePinchIsInPerfusionPosition() && ( GetControlFSMState() == STATE_TREATMENT))
 	{
 		ShowNewAlarmError(CODE_ALARM_TEMP_FLUID_XLOW);
 		DisablePinchNPumps();

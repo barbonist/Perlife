@@ -252,8 +252,8 @@ void verificaTempPlate(void)
 #else
 
 #define VERS_1 1
-#define VERS_2 0
-#define VERS_3 8
+#define VERS_2 1
+#define VERS_3 0
 
 #endif
 uint16_t GetFwVersionProtective(void)
@@ -495,6 +495,10 @@ int main(void)
 		- Modificata la funzione
 			bool PinchesAreInSafetyMode(void)
 			per considerare in sicurezza anche una  pinch chiusa da entrambi i lati.
+	Versione 1.1.000
+		- inserito il command processor su seriale per accettare comandi tipo >get temp ... >set heater on 65 ...
+		- aumentato il tempo per scatenare l'errore di temperatura troppo bassa . Infatti succede a volte T troppo bassa in
+		  ipotermia quando si fermano i motori per input utente.
 
   */
 
