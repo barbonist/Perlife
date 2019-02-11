@@ -1294,7 +1294,7 @@ void PlateStateFrigo(void)
 			break;
 		case PLATE_STATE_DIS_FRIGO:
 			// controllo disabilitazione raffreddamento
-			if(T_PLATE_C_GRADI_CENT < (float)MIN_PLATE_TEMP)
+			if(T_PLATE_C_GRADI_CENT < MIN_PLATE_TEMP)
 			{
 				if(timeIntervalPlate10 && (msTick10_elapsed(timeIntervalPlate10) >= 300))
 				{
@@ -1311,7 +1311,7 @@ void PlateStateFrigo(void)
 			break;
 		case PLATE_STATE_EN_FRIGO:
 			// controllo abilitazione raffreddamento
-			if(T_PLATE_C_GRADI_CENT > (float)MIN_PLATE_TEMP)
+			if(T_PLATE_C_GRADI_CENT > MIN_PLATE_TEMP)
 			{
 				if(timeIntervalPlate10 && (msTick10_elapsed(timeIntervalPlate10) >= 300))
 				{
@@ -1340,7 +1340,7 @@ void PlateStateHeating(void)
 			break;
 		case PLATE_HEAT_DIS:
 			// controllo disabilitazione riscaldamento, raffreddamento
-			if(T_PLATE_C_GRADI_CENT > (float)MAX_PLATE_TEMP)
+			if(T_PLATE_C_GRADI_CENT > MAX_PLATE_TEMP)
 			{
 				if(timeIntervalPlate10_r && (msTick10_elapsed(timeIntervalPlate10_r) >= 300))
 				{
@@ -1355,7 +1355,7 @@ void PlateStateHeating(void)
 			break;
 		case PLATE_HEAT_EN:
 			// controllo abilitazione riscaldamento, raffreddamento
-			if(T_PLATE_C_GRADI_CENT < (float)MAX_PLATE_TEMP)
+			if(T_PLATE_C_GRADI_CENT < MAX_PLATE_TEMP)
 			{
 				if(timeIntervalPlate10_r && (msTick10_elapsed(timeIntervalPlate10_r) >= 300))
 				{

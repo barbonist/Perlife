@@ -341,7 +341,7 @@ void CalcVenSistDiastPress(word Press)
 	if (PR_VEN_Sistolyc_mmHg < 0)
 		PR_VEN_Sistolyc_mmHg = 0;
 
-	PR_VEN_Med_mmHg = (int) ( 2 * PR_VEN_Sistolyc_mmHg + PR_VEN_Diastolyc_mmHg)/3;
+	PR_VEN_Med_mmHg = (int) ( 2 * PR_VEN_Diastolyc_mmHg + PR_VEN_Sistolyc_mmHg )/3;
 
 //	Press_flow_extimated = CalcolaPresVen_with_Flow(1);
 //
@@ -519,7 +519,7 @@ void CalcArtSistDiastPress(word Press)
 	if (PR_ART_Sistolyc_mmHg < 0)
 		PR_ART_Sistolyc_mmHg = 0;
 
-	PR_ART_Med_mmHg = (int) ( 2 * PR_ART_Sistolyc_mmHg + PR_ART_Diastolyc_mmHg)/3;
+	PR_ART_Med_mmHg = (int) ( 2 * PR_ART_Diastolyc_mmHg + PR_ART_Sistolyc_mmHg )/3;
 
 	//	Press_flow_extimated = CalcolaPresArt_with_Flow(1);
 //

@@ -27,9 +27,10 @@
 	 *0x0804 --> 1.0.4
 	 *0x0805 --> 1.0.5
 	 *0x0806 --> 1.0.6
-	 *0x0807 --> 1.0.7*/
+	 *0x0807 --> 1.0.7
+	 *0x0808 --> 1.0.8*/
 
-#define REVISION_FW_CONTROL 0x0807
+#define REVISION_FW_CONTROL 0x0808
 
 /* Syncronization flag */
 char	iflag_pc_rx;
@@ -1188,7 +1189,7 @@ struct ultrsndFlowSens{
 
 //#define SAMPLE 								64          // se uso un campinamento di 50 msec
 #define SAMPLE 							16 		    //numero di campioni su cui mediare il flusso istantaneo letto da usare nelle rotine interne come il PID
-#define SAMPLE_FOR_GUI 					256//64 		    //numero di campioni su cui mediare il flusso istantaneo letto da trasmettere alla GUI
+#define SAMPLE_FOR_GUI 					64 		    //numero di campioni su cui mediare il flusso istantaneo letto da trasmettere alla GUI
 #define TOT_UF_SENSOR 						2
 #define BYTE_COUNT_GET_VAL_CODE 			0x17 		//numero di byte che mi aspetto in ricezione col comando di GET_VAL_CODE customizzato con 3 byte di richesta 0x82 -- 0x88 -- 0x8B
 float buffer_flow_value         [TOT_UF_SENSOR][SAMPLE];
@@ -2389,20 +2390,20 @@ typedef enum
 // tempo di attesa massimo per lo start frigo o heating.
 // trascorso questo tempo se non ho avuto nessuno start frigo o riscaldamento vado a ricontrollare il
 // il tipo di azione da fare (in tick da 10msec)
+#define MAX_TEMP_CNTRL_DELAY 2000
 
 // massima temperatura raggiungibile nella base riscaldante (al di sopra spengo
-#define MAX_TEMP_CNTRL_DELAY 2000
 // le resistenze riscaldanti) in gradi C
-// massima temperatura raggiungibile nella base riscaldante (al di sopra spengo
-// le resistenze riscaldanti) in gradi C
-#define MAX_PLATE_TEMP  70
+//#define MAX_PLATE_TEMP  58 //70
+float MAX_PLATE_TEMP;
 // minima temperatura raggiungibile nella base riscaldante (al di sotto spengo
 // il frigo) in gradi C
 
 // stati per gestire il pilotaggio delle resistenze di riscaldamento
 // il frigo) in gradi C
 // Filippo - ridefinito il minimo di piastra per non far staccare subito il frigo
-#define MIN_PLATE_TEMP  -10//-16 la metto a -5 per evitare la formazione di ghiaccio
+//#define MIN_PLATE_TEMP  -10//-16 la metto a -5 per evitare la formazione di ghiaccio
+float MIN_PLATE_TEMP;
 
 
 // Filippo - intervallo di tempo in cui il riscaldatore rimane accesso durante il nuovo PID che usa il frigo e il riscaldatore

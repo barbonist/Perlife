@@ -36,7 +36,7 @@ union UTxCan {
 		uint16_t PressFilter;	uint16_t PressArt;	uint16_t PressVen;	uint16_t PressLevelx100;
 	} STxCan1;
 	struct {
-		uint16_t PressOxy;	uint16_t TempFluidx10;	uint16_t TempArtx10;	uint16_t TempVenx10;
+		uint16_t PressOxy;	int16_t TempFluidx10;	int16_t TempArtx10;	int16_t TempVenx10;
 	} STxCan2;
 	struct {
 		uint16_t AlarmCode; uint8_t AirAlarm; uint8_t FilterPinchPos; uint8_t ArtPinchPos; uint8_t OxygPinchPos; uint8_t Offset_Press_Ven; uint8_t Offset_Press_Art;
@@ -245,13 +245,13 @@ void onNewSensPressVal(uint16_t PressFilt, uint16_t PressArt,
 }
 
 
-void onNewSensTempVal(uint16_t PressOxyg, uint16_t TempRes,
-		               uint16_t TempArt, uint16_t TempVen)
+void onNewSensTempVal(uint16_t PressOxyg, float TempRes,
+		               float TempArt, float TempVen)
 {
 	TxCan2.STxCan2.PressOxy = PressOxyg;
-	TxCan2.STxCan2.TempFluidx10 = TempRes * 10;
-	TxCan2.STxCan2.TempArtx10 = TempArt * 10;
-	TxCan2.STxCan2.TempVenx10 = TempVen * 10;
+	TxCan2.STxCan2.TempFluidx10 = (int16_t) (TempRes * 10);
+	TxCan2.STxCan2.TempArtx10   = (int16_t) (TempArt * 10);
+	TxCan2.STxCan2.TempVenx10   = (int16_t) (TempVen * 10);
 
     // SB added plate temperature
 
