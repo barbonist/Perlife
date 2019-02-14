@@ -976,34 +976,92 @@ void ShowParameterStr(struct parWordSetFromGUI *ParamGuiArray, unsigned char id)
  * e la stessa sta ancora girando, nel qual caso si reinoltra il comando di stop*/
 void CheckStopPump(void)
 {
+	word speed_PPAF, speed_PPAR, speed_PPV1, speed_PPV2;
+
+	speed_PPV1 = modbusData[2][17];
+	speed_PPV2 = modbusData[3][17];
+
+	/*Per le pompe arteriose e filtro differenzio in base l tipo
+	 * di terapia in quanto hanno un indirizzo differente*/
 	if (GetTherapyType() == LiverTreat)
 	{
-		if (pumpPerist[0].pmpSpeed == 0 &&  modbusData[1][17] !=0)
-			setPumpSpeedValueHighLevel(PPAF, 0);
-
-		if (pumpPerist[1].pmpSpeed == 0 &&  modbusData[2][17] !=0)
-			setPumpSpeedValueHighLevel(PPV1, 0);
-
-		if (pumpPerist[2].pmpSpeed == 0 &&  modbusData[3][17] !=0)
-			setPumpSpeedValueHighLevel(PPV2, 0);
-
-		if (pumpPerist[3].pmpSpeed == 0 &&  modbusData[0][17] !=0)
-			setPumpSpeedValueHighLevel(PPAR, 0);
-
+		speed_PPAF = modbusData[1][17];
+		speed_PPAR = modbusData[0][17];
 	}
 	else if (GetTherapyType() == KidneyTreat)
 	{
-		if (pumpPerist[0].pmpSpeed == 0 &&  modbusData[0][17] !=0)
-			setPumpSpeedValueHighLevel(PPAF, 0);
-
-		if (pumpPerist[1].pmpSpeed == 0 &&  modbusData[2][17] !=0)
-			setPumpSpeedValueHighLevel(PPV1, 0);
-
-		if (pumpPerist[2].pmpSpeed == 0 &&  modbusData[3][17] !=0)
-			setPumpSpeedValueHighLevel(PPV2, 0);
-
-		if (pumpPerist[3].pmpSpeed == 0 &&  modbusData[1][17] !=0)
-			setPumpSpeedValueHighLevel(PPAR, 0);
+		speed_PPAF = modbusData[0][17];
+		speed_PPAR = modbusData[1][17];
 	}
 
+	if (pumpPerist[0].pmpSpeed == 0 &&  speed_PPAF !=0)
+		setPumpSpeedValueHighLevel(PPAF, 0);
+
+	if (pumpPerist[3].pmpSpeed == 0 &&  speed_PPAR !=0)
+		setPumpSpeedValueHighLevel(PPAR, 0);
+
+	/*le due pompe venose sono al livello logico una sola, quindi se
+	 * ad una delle due ho mandato il comando di stop (velocità pari a 0)
+	 * questo comando deve essere valido per entrambe quindi se almeno una
+	 * delle due mi risponde con una veloictà diversa da zero le rifermo entrambe*/
+	if ( (pumpPerist[1].pmpSpeed == 0 || pumpPerist[2].pmpSpeed == 0) && (speed_PPV1 !=0 || speed_PPV2 !=0) )
+		setPumpSpeedValueHighLevel(PPV1, 0);
+
+}
+
+void updateMaxTempPlate (void)
+{
+	word T0l = sensorIR_TM[1].tempSensValue * 10;
+	word T1l = parameterWordSetFromGUI[PAR_SET_PRIMING_TEMPERATURE_PERFUSION].value + 10; //aggiungo un grado al target
+	float Ktp = 0.6;
+
+	MAX_PLATE_TEMP = (T1l - (T0l * Ktp)) / (1-Ktp);
+
+	/*se le pompe anteriori sono entrambe ferme, non conosco
+	 * più il valore corretto della tempratura del liquido,
+	 * quindi metto la temperatura di piastra = al target + 1 °C
+	 */
+	if (modbusData[0][17] == 0 && modbusData[1][17] == 0)
+		MAX_PLATE_TEMP = T1l / 10;
+
+	MAX_PLATE_TEMP = MAX_PLATE_TEMP / 10;
+
+	/*faccio in modo comunque da non superare 58 ° sulla piastraC*/
+	if (MAX_PLATE_TEMP >= 58.0)
+		MAX_PLATE_TEMP = 58.0;
+}
+
+void updateMinTempPlate (void)
+{
+	word T0l = sensorIR_TM[1].tempSensValue * 10;
+	word T1l = parameterWordSetFromGUI[PAR_SET_PRIMING_TEMPERATURE_PERFUSION].value - 10; //aggiungo un grado al target
+	float Ktp = 0.85;
+
+//	/*Se sono in priming do maggiore boost al frigo alzando Ktp*/
+//	if (ptrCurrentState->state == STATE_PRIMING_PH_1   ||
+//		ptrCurrentState->state == STATE_PRIMING_PH_2   ||
+//		ptrCurrentState->state ==  STATE_PRIMING_WAIT  ||
+//		ptrCurrentState->state ==  STATE_PRIMING_RICIRCOLO )
+//	{
+//		Ktp = 0.85;
+//	}
+//	else
+//	{
+//		Ktp = 0.7;
+//	}
+
+	MIN_PLATE_TEMP = (T1l - (T0l * Ktp)) / (1-Ktp);
+
+	/*se le pompe anteriori sono entrambe ferme, non conosco
+	 * più il valore corretto della tempratura del liquido,
+	 * quindi metto la temperatura di piastra = al target - 1 °C
+	 */
+	if (modbusData[0][17] == 0 && modbusData[1][17] == 0)
+		MIN_PLATE_TEMP = T1l / 10;
+
+	MIN_PLATE_TEMP = MIN_PLATE_TEMP / 10;
+
+	/*faccio in modo comunque da non andare sotto -10 °C sulla piastra*/
+	if (MIN_PLATE_TEMP <= -10.0)
+		MIN_PLATE_TEMP = -10.0;
 }

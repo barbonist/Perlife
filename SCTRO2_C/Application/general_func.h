@@ -37,4 +37,7 @@ void ShowParameterStr(struct parWordSetFromGUI *ParamGuiArray, unsigned char id)
  * sta ancora girando, nel qual caso reinotlra il comando con velocità pari a '0'*/
 void CheckStopPump(void);
 
+void updateMaxTempPlate(void);
+void updateMinTempPlate(void);
+
 #endif /* APPLICATION_GENERAL_FUNC_H_ */

@@ -367,6 +367,9 @@ int main(void)
   Frigo_ON = FALSE;
   Heat_ON  = FALSE;
 
+  MAX_PLATE_TEMP = 0;
+  MIN_PLATE_TEMP = 0;
+
   iFlag_actuatorCheck = IFLAG_IDLE;
   iFlag_modbusDataStorage = FALSE;
 
@@ -680,6 +683,9 @@ int main(void)
 		        {
 					CheckStopPump();
 					Prescaler_CheckStopPump = 0;
+
+			        updateMaxTempPlate();
+			        updateMinTempPlate();
 		        }
 	         }
 
