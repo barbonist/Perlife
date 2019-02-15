@@ -1877,6 +1877,7 @@ typedef struct
 	unsigned int EnableMachineCovers        : 1;    // abilitazione allarme sportelli macchina
 	unsigned int EnableArtResAlarm          : 1;    // abilitazione allarme resistenza arteriosa
 	unsigned int EnableTempArtOORAlm        : 1;    // abilito allarme di temperatura arteriosa fuori range
+	unsigned int EnableFlowAndPressSetAlm   : 1;    // abilito allarmi di pressione e flusso relativi ai SET operatore
 }FLAGS_DEF;
 
 typedef struct

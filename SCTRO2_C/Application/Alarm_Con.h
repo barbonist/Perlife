@@ -15,9 +15,11 @@
 //#define CODE_ALARM2		0x02
 //#define ALARM_ACTIVE_IN_STRUCT					31
 // Filippo - aggiunto allarme tasto di stop e allarme T1
-#define ALARM_ACTIVE_IN_STRUCT					39
+#define ALARM_ACTIVE_IN_STRUCT					41
 #define CODE_ALARM_PRESS_ART_HIGH				0X01
+#define CODE_ALARM_PRESS_ART_SET				0X02
 #define CODE_ALARM_PRESS_VEN_HIGH				0X03
+#define CODE_ALARM_PRESS_VEN_SET				0X04
 #define CODE_ALARM_PRESS_ADS_FILTER_HIGH		0X05
 #define CODE_ALARM_PRESS_PLASMA_FILTER_HIGH		0X06
 #define CODE_ALARM_PRESS_FRACTION_FILTER_HIGH	0X07
@@ -163,6 +165,11 @@
 #define PR_ART_HIGH_PRIMING_KIDNEY							250
 #define PR_ART_HIGH_TREATMENT_KIDNEY						110
 
+//Allarmi relativi ai set della pressione target
+#define DELTA_TARGET_PRESS_VEN_LIVER						  5 //mmHg rispetto al Target
+#define DELTA_TARGET_PRESS_ART_LIVER						 10 //mmHg rispetto al Target
+#define DELTA_TARGET_PRESS_ART_KIDNEY						 10 //mmHg rispetto al Target
+
 // Allarmi pressione ossigenatore [mmHg]
 #define PR_OXYG_HIGH                                        500
 #define PR_OXYG_LOW                                          10
@@ -180,6 +187,7 @@
 enum ALARM
 {
 	 PRESS_ART_HIGH = 0,
+	 PRESS_ART_SET,
 	 AIR_PRES_ART,
 	 AIR_PRES_VEN,
 	 SAF_AIR_SENSOR,
@@ -188,6 +196,7 @@ enum ALARM
 	 FLOW_PERF_ART_HIGH,
 	 FLOW_SENS_NOT_DETECTED,
 	 PRESS_VEN_HIGH,
+	 PRESS_VEN_SET,
 	 PRESS_OXYG_HIGH,
 	 IR_SENS_NOT_DETECTED,
 	 PERF_COVER_OPEN,
@@ -243,6 +252,7 @@ void manageAlarmActuatorWRModbusNotRespond(void);
 void manageAlarmFromProtective(void);
 
 void manageAlarmPhysicPressSensHigh(void);
+void manageAlarmPhysicSetFlowAndPressures(void);
 void manageAlarmPhysicPressSensLow(void);
 
 void manageAlarmPhysicTempSens(void);
@@ -267,6 +277,10 @@ void manageAlarmDeltaTempRecVen(void);
 void manageAlarmArterialResistance(void);
 
 void SetAllAlarmEnableFlags(void);
+
+// Allarmi di SET pressione e flusso
+void EnableFlowAndPressSetAlarmEnableFlags(void);
+void DisableFlowAndPressSetAlarmEnableFlags(void);
 
 void ForceAlarmOff(uint16_t code);
 void ForceCurrentAlarmOff(void);

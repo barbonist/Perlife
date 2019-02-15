@@ -30,6 +30,7 @@ struct alarm alarmList[] =
 {
 		//{CODE_ALARM0, PHYSIC_TRUE, TYPE_ALARM_CONTROL, PRIORITY_LOW, OVRD_ENABLE, SILENCE_ALLOWED},
 		{CODE_ALARM_PRESS_ART_HIGH,        PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH, 1000, 1000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull}, 		/* 0 */
+		{CODE_ALARM_PRESS_ART_SET,         PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH,60000, 1000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_ALLOWED,     &alarmManageNull}, 		/* 2 */
 		{CODE_ALARM_AIR_PRES_ART,          PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_SFA_AIR_DET,           PRIORITY_HIGH, 1000, 1000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_ALLOWED,     &alarmManageNull}, 		/* 2 */
 		{CODE_ALARM_AIR_PRES_VEN,          PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_SFV_AIR_DET,           PRIORITY_HIGH, 1000, 1000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_ALLOWED,     &alarmManageNull}, 		/* 3 */
 		{CODE_ALARM_AIR_PRES_ADSRB_FILTER, PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_SAF_AIR_FILTER,        PRIORITY_HIGH, 1000, 1000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_ALLOWED,     &alarmManageNull}, 		/* 4 */
@@ -38,6 +39,7 @@ struct alarm alarmList[] =
 		{CODE_ALARM_FLOW_PERF_ART_HIGH,    PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH, 2000, 2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull}, 		/* 7 */
 		{CODE_ALARM_FLOW_ART_NOT_DETECTED, PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH, 2000, 2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull}, 		/* 8 */
 		{CODE_ALARM_PRESS_VEN_HIGH, 	   PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH, 1000, 1000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull}, 		/* 9 */
+		{CODE_ALARM_PRESS_VEN_SET,         PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH,60000, 1000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_ALLOWED,     &alarmManageNull}, 		/* 2 */
 
 		// allarme pressione filtro ossigenazione alta
 		{CODE_ALARM_PRESS_OXYG_INLET, 	   PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH, 1000, 1000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull}, 		/* 11 */
@@ -166,7 +168,15 @@ void DisableAllAlarm()
 	//GlobalFlags.FlagsDef.EnableAllAlarms = 1;
 }
 
+void EnableFlowAndPressSetAlarmEnableFlags(void)
+{
+   GlobalFlags.FlagsDef.EnableFlowAndPressSetAlm = 1;    // abilito allarmi di pressione e flusso di SET operatore
+}
 
+void DisableFlowAndPressSetAlarmEnableFlags(void)
+{
+   GlobalFlags.FlagsDef.EnableFlowAndPressSetAlm = 0;    // disabilito allarmi di pressione e flusso di SET operatore
+}
 
 void SetAllAlarmEnableFlags(void)
 {
@@ -286,7 +296,12 @@ void ForceAlarmOff(uint16_t code)
         case CODE_ALARM_T_ART_OUT_OF_RANGE:
             GlobalFlags.FlagsDef.EnableTempArtOORAlm = 0;
             break;
-
+		case CODE_ALARM_PRESS_ART_SET:
+			GlobalFlags.FlagsDef.EnablePressSensHighAlm = 0; // forzo allarme pressione e flusso SET a off
+			break;
+		case CODE_ALARM_PRESS_VEN_SET:
+			GlobalFlags.FlagsDef.EnablePressSensHighAlm = 0; // forzo allarme pressione e flusso SET a off
+			break;
 	}
 }
 
@@ -464,6 +479,16 @@ void ShowAlarmStr(int i, char * str)
 			strcat(s, str);
 			DebugStringStr(s);
             break;
+		case CODE_ALARM_PRESS_ART_SET:
+			strcpy(s, "AL_PRESS_ART_SET");
+			strcat(s, str);
+			DebugStringStr(s);
+			break;
+        case CODE_ALARM_PRESS_VEN_SET:
+			strcpy(s, "AL_PRESS_VEN_SET");
+			strcat(s, str);
+			DebugStringStr(s);
+            break;
 	}
 }
 
@@ -622,6 +647,7 @@ void CalcAlarmActive(void)
 			//verifica physic pressioni
 			manageAlarmPhysicPressSensHigh();
 			manageAlarmPhysicPressSensLow();
+			manageAlarmPhysicSetFlowAndPressures();
 
 			//verifica physic flow sensor (presenza aria)
 			manageAlarmPhysicUFlowSens();
@@ -1225,6 +1251,45 @@ void manageAlarmPhysicPressSensHigh(void)
 	}
 }
 
+// Allarmi di Pressione e Flusso di SET
+void manageAlarmPhysicSetFlowAndPressures(void)
+{
+	word pressureTargetArt = parameterWordSetFromGUI[PAR_SET_PRESS_ART_TARGET].value;
+	word pressureTargetVen = parameterWordSetFromGUI[PAR_SET_VENOUS_PRESS_TARGET].value;
+
+	//Abilitazione allarmi di SET
+	if(GlobalFlags.FlagsDef.EnableFlowAndPressSetAlm)
+	{
+		//Liver, considero anche la pressione venosa
+		if (GetTherapyType() == LiverTreat)
+		{
+			if (PR_VEN_mmHg_Filtered > pressureTargetVen + DELTA_TARGET_PRESS_VEN_LIVER)
+				alarmList[PRESS_VEN_SET].physic = PHYSIC_TRUE;
+			else
+				alarmList[PRESS_VEN_SET].physic = PHYSIC_FALSE;
+
+
+			if (PR_ART_mmHg_Filtered > pressureTargetArt + DELTA_TARGET_PRESS_ART_LIVER)
+				alarmList[PRESS_ART_SET].physic = PHYSIC_TRUE;
+			else
+				alarmList[PRESS_ART_SET].physic = PHYSIC_FALSE;
+		}
+		else //Kidney, solo arteriosa
+		{
+			if (PR_ART_mmHg_Filtered > pressureTargetArt + DELTA_TARGET_PRESS_ART_KIDNEY)
+				alarmList[PRESS_ART_SET].physic = PHYSIC_TRUE;
+			else
+				alarmList[PRESS_ART_SET].physic = PHYSIC_FALSE;
+		}
+	}
+	else
+	{
+		alarmList[PRESS_ART_SET].physic = PHYSIC_FALSE;
+		alarmList[PRESS_VEN_SET].physic = PHYSIC_FALSE;
+	}
+}
+
+//Hook sensori reservoir
 void manageCover_Hook_Sensor(void)
 {
 	if (GlobalFlags.FlagsDef.EnableHooksReservoir)
