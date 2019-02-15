@@ -228,7 +228,6 @@ void CallInIdleState(void)
 	OxygenFlowRpm = 0;
 	LastDepurationSpeed = 0;
 	TreatSetPinchPosTask((TREAT_SET_PINCH_POS_CMD)T_SET_PINCH_DISABLE_CMD);
-	DisablePumpNotStillAlmFunc();
 	DisableBadPinchPosAlmFunc();
 	DisablePrimAlmSFAAirDetAlmFunc();
 	ClearAlarmState();
@@ -694,7 +693,6 @@ void manageStateEmptyDisp(void)
 		// ho selezionato il fegato, quindi devo chiudere anche questa
 		setPinchPositionHighLevel(PINCH_2WPVV, MODBUS_PINCH_LEFT_OPEN);
 	}
-	DisablePumpNotStillAlmFunc();
 	DisableBadPinchPosAlmFunc();
 	DisablePrimAlmSFAAirDetAlmFunc();
 }
@@ -2442,8 +2440,6 @@ bool StopMotorTimeOut;
 // controllo che tutte le pompe siano ferme altrimenti do un allarme (gestione dello stato PARENT_PRIM_WAIT_MOT_STOP)
 void manageParPrimWaitMotStopEntry(void)
 {
-	// abilito allarme di pompe non ferme
-	EnablePumpNotStillAlmFunc();
 	CheckPumpStopTask((CHECK_PUMP_STOP_CMD)INIT_CHECK_SEQ_CMD);
 	MotStopTicksElapsed = 0;
 	StopMotorTimeOut = FALSE;
@@ -2458,7 +2454,6 @@ void manageParPrimWaitMotStopEntryAlways(void)
 		// passo alla chiusura totale delle due pinch connesse all'organo
 		currentGuard[GUARD_EN_CLOSE_ALL_PINCH].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
 		// disabilito allarme di pompe non ferme
-		DisablePumpNotStillAlmFunc();
 		// disabilito allarme di aria nel filtro durante il priming
 		DisablePrimAlmSFAAirDetAlmFunc();
 
@@ -2478,7 +2473,6 @@ void manageParPrimWaitMotStopEntryAlways(void)
 		//currentGuard[GUARD_ABANDON_PRIMING].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
 		SetAbandonGuard();
 		// disabilito allarme di pompe non ferme
-		DisablePumpNotStillAlmFunc();
 		// disabilito allarme di aria nel filtro durante il priming
 		DisablePrimAlmSFAAirDetAlmFunc();
 	}

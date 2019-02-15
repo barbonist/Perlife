@@ -1859,9 +1859,7 @@ typedef struct
 	unsigned int EnableSFAAir               : 1;    // abilito allarme aria su circuito arterioso
 
 	unsigned int TankLevelHigh              : 1;    // livello del liquido supera il massimo
-	unsigned int ChildAlmAndWaitCmdActive   : 1;
-	unsigned int EnablePumpNotStillAlm      : 1;    // Abilito allarme di pompe non ferme. Viene preso in considerazione alla fine
-	                                                // del ricircolo prima di attaccare l'organo.
+	unsigned int ChildAlmAndWaitCmdActive   : 1;	                                                // del ricircolo prima di attaccare l'organo.
 	unsigned int EnableBadPinchPosAlm       : 1;    // abilito allarme di pinch non posizionate correttamente. Viene preso in
 	                                                // considerazione alla fine del ricircolo prima di attaccare l'organo e prima di
 	                                                // iniziare un trattamento.

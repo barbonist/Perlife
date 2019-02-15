@@ -204,7 +204,6 @@ enum ALARM
 	 DELTA_TEMP_REC_ART,
 	 DELTA_TEMP_REC_VEN,
 	 CAN_BUS_ERROR,
-	 PUMP_NOT_STILL,
 	 BAD_PINCH_POS,
 	 PRIM_AIR_ON_FILTER,
 	 PRESS_ADS_FILTER_LOW,
@@ -278,14 +277,10 @@ void ForceCurrentAlarmOff(void);
 void DisableAllAlarm();
 void DisableAllAirAlarm(bool dis);
 void manageAlarmCanBus(void);
-void manageAlarmPumpNotStill(void);
 void manageAlarmBadPinchPos(void);
 void manageAlarmPrimSFAAirDet(void);
-
-void EnablePumpNotStillAlmFunc(void);
 void EnableBadPinchPosAlmFunc(void);
 void EnablePrimAlmSFAAirDetAlmFunc(void);
-void DisablePumpNotStillAlmFunc(void);
 void DisableBadPinchPosAlmFunc(void);
 void DisablePrimAlmSFAAirDetAlmFunc(void);
 void DisablePrimAirAlarm(bool dis);

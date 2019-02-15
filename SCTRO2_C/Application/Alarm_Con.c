@@ -64,9 +64,6 @@ struct alarm alarmList[] =
 		{CODE_ALARM_DELTA_TEMP_REC_VEN,    PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH,  3000,  3000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull},	    /* 21 */
 		// allarme comunicazione canbus
 		{CODE_ALARM_CAN_BUS_ERROR,         PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH,  3000,  3000,   OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull},	    /* 22 */
-
-		// allarme pompe non completamente ferme (usato nello stato di trattamento)
-		{CODE_ALARM_PUMPS_NOT_STILL,       PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_PUMPS_NOT_STILL,       PRIORITY_HIGH,  500,  500, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull},	    /* 23 */
 		// allarme pinch non posizionate correttamente (usato nello stato di trattamento)
 		{CODE_ALARM_BAD_PINCH_POS,         PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_BAD_PINCH_POS,         PRIORITY_HIGH,  500,  500, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull},	    /* 24 */
 		// allarme aria nel filtro (usato nello stato di trattamento)
@@ -117,10 +114,6 @@ void DisableDeltaTHighAlmFunc(void)
 }
 
 
-void EnablePumpNotStillAlmFunc(void)
-{
-	GlobalFlags.FlagsDef.EnablePumpNotStillAlm = 1;
-}
 void EnableBadPinchPosAlmFunc(void)
 {
 	GlobalFlags.FlagsDef.EnableBadPinchPosAlm = 1;
@@ -130,10 +123,6 @@ void EnablePrimAlmSFAAirDetAlmFunc(void)
 	GlobalFlags.FlagsDef.EnablePrimAlmSFAAirDetAlm = 1;
 }
 
-void DisablePumpNotStillAlmFunc(void)
-{
-	GlobalFlags.FlagsDef.EnablePumpNotStillAlm = 0;
-}
 void DisableBadPinchPosAlmFunc(void)
 {
 	GlobalFlags.FlagsDef.EnableBadPinchPosAlm = 0;
@@ -205,7 +194,6 @@ void SetAllAlarmEnableFlags(void)
 #else
 	GlobalFlags.FlagsDef.EnableCANBUSErr = 0;
 #endif
-	GlobalFlags.FlagsDef.EnablePumpNotStillAlm = 0;       // viene attivato in un'altro momento
 	GlobalFlags.FlagsDef.EnableBadPinchPosAlm = 0;        // viene attivato in un'altro momento
 	GlobalFlags.FlagsDef.EnablePrimAlmSFAAirDetAlm = 0;   // viene attivato in un'altro momento
 
@@ -277,9 +265,6 @@ void ForceAlarmOff(uint16_t code)
 			break;
 		case CODE_ALARM_CAN_BUS_ERROR:
 			GlobalFlags.FlagsDef.EnableCANBUSErr = 0;
-			break;
-		case CODE_ALARM_PUMPS_NOT_STILL:
-			GlobalFlags.FlagsDef.EnablePumpNotStillAlm = 0;
 			break;
 		case CODE_ALARM_BAD_PINCH_POS:
 			GlobalFlags.FlagsDef.EnableBadPinchPosAlm = 0;
@@ -729,7 +714,6 @@ void CalcAlarmActive(void)
 			else if(GetTherapyType() == KidneyTreat)
 				manageAlarmCoversPumpKidney();
 			manageAlarmCanBus();
-			manageAlarmPumpNotStill();  // controllo allarme di pompe ferme alla fine del ricircolo
 			manageAlarmBadPinchPos();   // allarme di pinch posizionate correttamente
 			manageAlarmPrimSFAAirDet();
 			manageAlarmActuatorModbusNotRespond();
@@ -890,26 +874,6 @@ void manageAlarmBadPinchPos(void)
 
 
 bool IsPumpStopAlarmActive(void);
-
-// Allarme generato dalla condizione di pompe non ferme. Viene preso in considerazione alla fine
-// del ricircolo prima di attaccare l'organo.
-void manageAlarmPumpNotStill(void)
-{
-	if(!GlobalFlags.FlagsDef.EnablePumpNotStillAlm)
-		alarmList[PUMP_NOT_STILL].physic = PHYSIC_FALSE;
-	else
-	{
-		if(IsPumpStopAlarmActive() )
-		{
-			alarmList[PUMP_NOT_STILL].physic = PHYSIC_TRUE;
-		}
-		else
-		{
-			alarmList[PUMP_NOT_STILL].physic = PHYSIC_FALSE;
-		}
-	}
-}
-
 
 bool IsCanBusError(void);
 
