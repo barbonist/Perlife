@@ -735,17 +735,17 @@ void PC_DEBUG_COMM_OnRxChar(void)
   /* Write your code here ... */
 
 	//ptr = &pc_rx_data[0]; /* questa riga va messa dove si inizialiiza la comunicazione col pc */
-	PC_DEBUG_COMM_RecvChar(ptrPCDebug);
-
-	ptrPCDebug = ptrPCDebug + 1;
-	ptrPCDebugCount = ptrPCDebugCount + 1;
-	if(ptrPCDebugCount >= 16)
-	{
-		iflag_pc_rx |= IFLAG_PC_RX;
-		ptrPCDebug = &msgPcDebug[0];
-		ptrPCDebugCount = 0;
-	}
-		//ptr = ptr + 1;
+//	PC_DEBUG_COMM_RecvChar(ptrPCDebug);
+//
+//	ptrPCDebug = ptrPCDebug + 1;
+//	ptrPCDebugCount = ptrPCDebugCount + 1;
+//	if(ptrPCDebugCount >= 16)
+//	{
+//		iflag_pc_rx |= IFLAG_PC_RX;
+//		ptrPCDebug = &msgPcDebug[0];
+//		ptrPCDebugCount = 0;
+//	}
+//		//ptr = ptr + 1;
 }
 
 /*
