@@ -30,7 +30,6 @@ struct alarm alarmList[] =
 {
 		//{CODE_ALARM0, PHYSIC_TRUE, TYPE_ALARM_CONTROL, PRIORITY_LOW, OVRD_ENABLE, SILENCE_ALLOWED},
 		{CODE_ALARM_PRESS_ART_HIGH,        PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH, 1000, 1000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull}, 		/* 0 */
-		{CODE_ALARM_PRESS_ART_LOW,         PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH, 1000, 1000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull}, 		/* 1 */
 		{CODE_ALARM_AIR_PRES_ART,          PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_SFA_AIR_DET,           PRIORITY_HIGH, 1000, 1000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_ALLOWED,     &alarmManageNull}, 		/* 2 */
 		{CODE_ALARM_AIR_PRES_VEN,          PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_SFV_AIR_DET,           PRIORITY_HIGH, 1000, 1000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_ALLOWED,     &alarmManageNull}, 		/* 3 */
 		{CODE_ALARM_AIR_PRES_ADSRB_FILTER, PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_SAF_AIR_FILTER,        PRIORITY_HIGH, 1000, 1000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_ALLOWED,     &alarmManageNull}, 		/* 4 */
@@ -39,7 +38,6 @@ struct alarm alarmList[] =
 		{CODE_ALARM_FLOW_PERF_ART_HIGH,    PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH, 2000, 2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull}, 		/* 7 */
 		{CODE_ALARM_FLOW_ART_NOT_DETECTED, PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH, 2000, 2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull}, 		/* 8 */
 		{CODE_ALARM_PRESS_VEN_HIGH, 	   PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH, 1000, 1000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull}, 		/* 9 */
-		{CODE_ALARM_PRESS_VEN_LOW, 		   PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH, 1000, 1000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull}, 		/* 10 */
 
 		// allarme pressione filtro ossigenazione alta
 		{CODE_ALARM_PRESS_OXYG_INLET, 	   PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH, 1000, 1000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull}, 		/* 11 */
@@ -226,8 +224,6 @@ void ForceAlarmOff(uint16_t code)
 		case CODE_ALARM_PUMP_OXYG_COVER_OPEN:
 			GlobalFlags.FlagsDef.EnableCoversAlarm = 0;    // forzo allarme di cover a off
 			break;
-		case CODE_ALARM_PRESS_ART_LOW:
-		case CODE_ALARM_PRESS_VEN_LOW:
 		case CODE_ALARM_PRESS_ADS_FILTER_LOW:
 		case CODE_ALARM_PRESS_OXYG_LOW:
 			GlobalFlags.FlagsDef.EnablePressSensLowAlm = 0;  // forzo allarme pressione bassa off
@@ -322,11 +318,6 @@ void ShowAlarmStr(int i, char * str)
 			strcat(s, str);
 			DebugStringStr(s);
 			break;
-		case CODE_ALARM_PRESS_ART_LOW:
-			strcpy(s, "AL_PRESS_ART_LOW");
-			strcat(s, str);
-			DebugStringStr(s);
-			break;
 		case CODE_ALARM_AIR_PRES_ART:
 			strcpy(s, "AL_AIR_PRES_ART");
 			strcat(s, str);
@@ -370,11 +361,6 @@ void ShowAlarmStr(int i, char * str)
 			break;
 		case CODE_ALARM_PRESS_VEN_HIGH:
 			strcpy(s, "AL_PRESS_VEN_HIGH");
-			strcat(s, str);
-			DebugStringStr(s);
-			break;
-		case CODE_ALARM_PRESS_VEN_LOW:
-			strcpy(s, "AL_PRESS_VEN_LOW");
 			strcat(s, str);
 			DebugStringStr(s);
 			break;
@@ -1131,43 +1117,6 @@ void manageAlarmPhysicPressSensLow(void)
 		{
 			alarmList[PRESS_OXYG_LOW].physic = PHYSIC_FALSE;
 		}
-/*
-		// se il sensore di pressione arteriosa misura la pressione subito prima dell'organo
-		// questo codice va commentato perche' la pressione prima di andare in trattamento e' sempre 0
-		// Per ora faccio una prova mettendo PR_ART_LOW a 0
-		// se il sensore di pressione arteriosa misura la pressione subito prima dell'organo
-		// questo codice va commentato perche' la pressione prima di andare in trattamento e' sempre 0
-		// Per ora faccio una prova mettendo PR_ART_LOW a 0
-		if(PR_ART_mmHg_Filtered < PR_ART_LOW)
-		{
-			alarmList[PRESS_ART_LOW].physic = PHYSIC_TRUE;
-		}
-		else
-		{
-			alarmList[PRESS_ART_LOW].physic = PHYSIC_FALSE;
-		}
-
-		if(PR_VEN_mmHg_Filtered <= PR_VEN_LOW && GetTherapyType() == LiverTreat)
-		{
-			alarmList[PRESS_VEN_LOW].physic = PHYSIC_TRUE;
-		}
-		else
-		{
-			alarmList[PRESS_VEN_LOW].physic = PHYSIC_FALSE;
-		}
-	*/
-
-		/*abilito l'allarme di pressione OXY bassa solo se almeno una delle due pompe OXY si sta muovendo  a velocità superiore a 5 RPM*/
-//		if(PR_VEN_mmHg_Filtered <= PR_VEN_LOW && GetTherapyType() == LiverTreat &&
-//		     (modbusData[1][17] > 500 || modbusData[2][17] > 500))
-//		{
-//			alarmList[PRESS_VEN_LOW].physic = PHYSIC_TRUE;
-//		}
-//		else
-//		{
-//			alarmList[PRESS_VEN_LOW].physic = PHYSIC_FALSE;
-//		}
-
 	}
 	else
 	{
