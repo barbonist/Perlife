@@ -2041,13 +2041,6 @@ void manageAlarmChildGuard(struct alarm * ptrAlarm){
 		else
 			currentGuard[GUARD_ALARM_STOP_ALL_ACT_WAIT_CMD].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
 		break;
-
-	case SECURITY_PUMPS_NOT_STILL:
-		if(myAlarmPointer->active == ACTIVE_TRUE)
-			currentGuard[GUARD_ALARM_PUMPS_NOT_STILL].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
-		else
-			currentGuard[GUARD_ALARM_PUMPS_NOT_STILL].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
-		break;
 	case SECURITY_BAD_PINCH_POS:
 		if(myAlarmPointer->active == ACTIVE_TRUE)
 			currentGuard[GUARD_ALARM_BAD_PINCH_POS].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;

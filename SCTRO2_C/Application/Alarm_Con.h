@@ -15,7 +15,7 @@
 //#define CODE_ALARM2		0x02
 //#define ALARM_ACTIVE_IN_STRUCT					31
 // Filippo - aggiunto allarme tasto di stop e allarme T1
-#define ALARM_ACTIVE_IN_STRUCT					42
+#define ALARM_ACTIVE_IN_STRUCT					41
 #define CODE_ALARM_PRESS_ART_HIGH				0X01
 #define CODE_ALARM_PRESS_ART_LOW				0X02
 #define CODE_ALARM_PRESS_VEN_HIGH				0X03
@@ -129,7 +129,7 @@
 #define SECURITY_SAF_AIR_FILTER         0x80
 #define SECURITY_SFV_AIR_DET            0x100
 #define SECURITY_SFA_AIR_DET            0x200
-#define SECURITY_PUMPS_NOT_STILL        0x400
+#define SECURITY_FREE_SLOT_1            0x400
 #define SECURITY_BAD_PINCH_POS          0x800
 #define SECURITY_SFA_PRIM_AIR_DET       0x1000
 #define SECURITY_STOP_ALL_ACT_WAIT_CMD  0x2000
