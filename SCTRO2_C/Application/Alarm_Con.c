@@ -37,6 +37,7 @@ struct alarm alarmList[] =
 		{CODE_ALARM_TEMP_ART_HIGH,         PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH, 1000, 1000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull}, 	    /* 5 */
 		{CODE_ALARM_PRESS_ADS_FILTER_HIGH, PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH, 1000, 1000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull},	    /* 6 */
 		{CODE_ALARM_FLOW_PERF_ART_HIGH,    PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH, 2000, 2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull}, 		/* 7 */
+		{CODE_ALARM_FLOW_PERF_VEN_HIGH,    PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH, 2000, 2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull}, 		/* 7 */
 		{CODE_ALARM_FLOW_ART_NOT_DETECTED, PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH, 2000, 2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull}, 		/* 8 */
 		{CODE_ALARM_PRESS_VEN_HIGH, 	   PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH, 1000, 1000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull}, 		/* 9 */
 		{CODE_ALARM_PRESS_VEN_SET,         PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH,60000, 1000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_ALLOWED,     &alarmManageNull}, 		/* 2 */
@@ -176,6 +177,16 @@ void EnableFlowAndPressSetAlarmEnableFlags(void)
 void DisableFlowAndPressSetAlarmEnableFlags(void)
 {
    GlobalFlags.FlagsDef.EnableFlowAndPressSetAlm = 0;    // disabilito allarmi di pressione e flusso di SET operatore
+}
+
+void SetFlowHigAlarmEnableFlags(void)
+{
+   GlobalFlags.FlagsDef.EnableFlowHighAlm = 1;    // abilito allarmi di flusso massimi
+}
+
+void DisableFlowHigAlarmEnableFlags(void)
+{
+   GlobalFlags.FlagsDef.EnableFlowHighAlm = 0;    // disabilito allarmi di flusso massimi
 }
 
 void SetAllAlarmEnableFlags(void)
@@ -660,8 +671,8 @@ void CalcAlarmActive(void)
 			manageAlarmPhysicTempSensInTreat();
 			manageAlarmPhysicTempSensOOR();
 
-			//verifica physic flusso di perfusione arteriosa alto
-			manageAlarmPhysicFlowPerfArtHigh();
+			//verifica physic flusso di perfusione arteriosa e venosa massimi
+			manageAlarmPhysicFlowHigh();
 
 			//verifica  flusso  non rilevato
 			manageAlarmFlowSensNotDetected();
@@ -1257,7 +1268,6 @@ void manageAlarmPhysicSetFlowAndPressures(void)
 	word pressureTargetArt = parameterWordSetFromGUI[PAR_SET_PRESS_ART_TARGET].value;
 	word pressureTargetVen = parameterWordSetFromGUI[PAR_SET_VENOUS_PRESS_TARGET].value;
 
-	//Abilitazione allarmi di SET
 	if(GlobalFlags.FlagsDef.EnableFlowAndPressSetAlm)
 	{
 		//Liver, considero anche la pressione venosa
@@ -1709,44 +1719,52 @@ void ClearNonPhysicalAlm( int AlarmCode)
 	}
 }
 
-void manageAlarmPhysicFlowPerfArtHigh(void)
+// Gestione allarmi di flusso arterioso e venoso massimi
+void manageAlarmPhysicFlowHigh(void)
 {
+	int flowMaxArt = 0;
+	int flowMaxVen = 0;
 
-	int FlowMax = 0;
-	bool chekFlow = FALSE;
-
-
-	switch (GetTherapyType())
+	if (GlobalFlags.FlagsDef.EnableFlowHighAlm)
 	{
-		case LiverTreat:
-			FlowMax = FLOW_LIVER_MAX;
-			chekFlow = TRUE;
-			break;
-
-		case KidneyTreat:
-			FlowMax = FLOW_KIDNEY_MAX;
-			chekFlow = TRUE;
-			break;
-
-		default:
-			chekFlow = FALSE;
-			break;
-
-	}
-
-	if (chekFlow)
-	{
-		if(sensor_UFLOW[0].Average_Flow_Val > FlowMax)
+		switch (GetTherapyType())
 		{
-			/*l'indice dell'array deve corrispondere all'indice della riga della tabella alarmList*/
+			case LiverTreat:
+				flowMaxArt = FLOW_PERF_ART_LIVER_MAX;
+				flowMaxVen = FLOW_PERF_VEN_LIVER_MAX;
+				break;
+
+			case KidneyTreat:
+			default:
+				flowMaxArt = FLOW_PERF_ART_KIDNEY_MAX;
+				flowMaxVen = FLOW_PERF_OXY_KIDNEY_MAX;
+				break;
+		}
+		// UF Sensor 0 è il sensore di perfusione arteriosa
+		if (sensor_UFLOW[0].Average_Flow_Val > flowMaxArt)
+		{
 			alarmList[FLOW_PERF_ART_HIGH].physic = PHYSIC_TRUE;
 		}
 		else
 		{
 			alarmList[FLOW_PERF_ART_HIGH].physic = PHYSIC_FALSE;
 		}
-	}
 
+		// UF Sensor 1 è il sensore di perfusione venosa / oxy
+		if (sensor_UFLOW[1].Average_Flow_Val > flowMaxVen)
+		{
+			alarmList[FLOW_PERF_VEN_HIGH].physic = PHYSIC_TRUE;
+		}
+		else
+		{
+			alarmList[FLOW_PERF_VEN_HIGH].physic = PHYSIC_FALSE;
+		}
+	}
+	else
+	{
+		alarmList[FLOW_PERF_ART_HIGH].physic = PHYSIC_FALSE;
+		alarmList[FLOW_PERF_VEN_HIGH].physic = PHYSIC_FALSE;
+	}
 }
 
 // Filippo - funzione che gestisce l'allarme di pressione del tasto di stop

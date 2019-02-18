@@ -1878,6 +1878,7 @@ typedef struct
 	unsigned int EnableArtResAlarm          : 1;    // abilitazione allarme resistenza arteriosa
 	unsigned int EnableTempArtOORAlm        : 1;    // abilito allarme di temperatura arteriosa fuori range
 	unsigned int EnableFlowAndPressSetAlm   : 1;    // abilito allarmi di pressione e flusso relativi ai SET operatore
+	unsigned int EnableFlowHighAlm          : 1;    // abilito allarmi di flusso massimi
 }FLAGS_DEF;
 
 typedef struct

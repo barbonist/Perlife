@@ -3055,6 +3055,7 @@ void manageParentTreatAlways(void)
 			//GlobalFlags.FlagsDef.EnableAllAlarms = 1;
 			SetAllAlarmEnableFlags();
 			EnableFlowAndPressSetAlarmEnableFlags();
+			SetFlowHigAlarmEnableFlags();
 			EnableBadPinchPosAlmFunc();
 			// disabilito allarme di livello alto in trattamento (per ora)
 			GlobalFlags.FlagsDef.EnableLevHighAlarm = 0;
@@ -3330,6 +3331,7 @@ void manageParentTreatAlways(void)
 			SetAllAlarmEnableFlags();
 			EnableBadPinchPosAlmFunc();
 			EnableFlowAndPressSetAlarmEnableFlags();
+			SetFlowHigAlarmEnableFlags();
 			// disabilito allarme di livello alto in trattamento (per ora)
 			GlobalFlags.FlagsDef.EnableLevHighAlarm = 0;
 			//GlobalFlags.FlagsDef.TankLevelHigh = 0;

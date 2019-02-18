@@ -15,7 +15,7 @@
 //#define CODE_ALARM2		0x02
 //#define ALARM_ACTIVE_IN_STRUCT					31
 // Filippo - aggiunto allarme tasto di stop e allarme T1
-#define ALARM_ACTIVE_IN_STRUCT					41
+#define ALARM_ACTIVE_IN_STRUCT					42
 #define CODE_ALARM_PRESS_ART_HIGH				0X01
 #define CODE_ALARM_PRESS_ART_SET				0X02
 #define CODE_ALARM_PRESS_VEN_HIGH				0X03
@@ -46,9 +46,7 @@
 #define CODE_ALARM_TEMP_ART_HIGH_IN_TRT         0x1a
 
 #define CODE_ALARM_FLOW_PERF_ART_HIGH			0x20
-#define CODE_ALARM_FLOW_PERF_ART_LOW			0x21
-#define CODE_ALARM_FLOW_VEN_HIGH				0x22
-#define CODE_ALARM_FLOW_VEN_LOW					0x23
+#define CODE_ALARM_FLOW_PERF_VEN_HIGH			0x21
 #define CODE_ALARM_FLOW_ART_NOT_DETECTED		0x24
 #define CODE_ALARM_DELTA_FLOW_ART       		0x25
 #define CODE_ALARM_DELTA_FLOW_VEN       		0x26
@@ -148,9 +146,13 @@
 #define MEMO_ALLOWED			0xA5
 #define MEMO_NOT_ALLOWED		0x5A
 
+// Flussi massimi di perfusione arteriosa
+#define FLOW_PERF_ART_LIVER_MAX    550 // ml/min
+#define FLOW_PERF_ART_KIDNEY_MAX   550 // ml/min
 
-#define FLOW_LIVER_MAX   2500
-#define FLOW_KIDNEY_MAX  2500
+// Flussi massimi di ossigenazione/perfusione venosa
+#define FLOW_PERF_VEN_LIVER_MAX    2800 // ml/min
+#define FLOW_PERF_OXY_KIDNEY_MAX   2800 // ml/min
 
 #define MAX_MSG_CONSECUTIVE_FLOW_SENS_NOT_DETECTED 			10
 #define MAX_MSG_CONSECUTIVE_IR_TEMP_SENS_NOT_DETECTED 		10
@@ -194,6 +196,7 @@ enum ALARM
 	 TEMP_ART_HIGH,
 	 PRESS_ADS_FILTER_HIGH,
 	 FLOW_PERF_ART_HIGH,
+	 FLOW_PERF_VEN_HIGH,
 	 FLOW_SENS_NOT_DETECTED,
 	 PRESS_VEN_HIGH,
 	 PRESS_VEN_SET,
@@ -244,7 +247,7 @@ void alarmConInit(void);
 void alarmEngineAlways(void);
 void alarmManageNull(void);
 void manageAlarmChildGuard(struct alarm * ptrAlarm);
-void manageAlarmPhysicFlowPerfArtHigh(void);
+void manageAlarmPhysicFlowHigh(void);
 void manageAlarmFlowSensNotDetected(void);
 void manageAlarmIrTempSensNotDetected(void);
 void manageAlarmActuatorModbusNotRespond(void);
@@ -281,6 +284,10 @@ void SetAllAlarmEnableFlags(void);
 // Allarmi di SET pressione e flusso
 void EnableFlowAndPressSetAlarmEnableFlags(void);
 void DisableFlowAndPressSetAlarmEnableFlags(void);
+
+// Allarmi di flusso massimi
+void SetFlowHigAlarmEnableFlags(void);
+void DisableFlowHigAlarmEnableFlags(void);
 
 void ForceAlarmOff(uint16_t code);
 void ForceCurrentAlarmOff(void);

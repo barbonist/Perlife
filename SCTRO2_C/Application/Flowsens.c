@@ -164,8 +164,6 @@ void Manage_UFlow_Sens()
 					sensor_UFLOW[Id_Buffer].Average_Flow_Val_for_GUI = sensor_UFLOW[Id_Buffer].Average_Flow_Val_for_GUI * config_data.FlowSensor_Art_Gain - config_data.FlowSensor_Art_Offset;
 				}
 
-
-
 				/*se sul flusso ricevo un valore neativo lo metto a zero
 				 * in quanto il sensore di flusso ha un verso e non
 				 * può leggere flussi negativi*/
