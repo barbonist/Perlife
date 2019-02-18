@@ -15,7 +15,7 @@
 //#define CODE_ALARM2		0x02
 //#define ALARM_ACTIVE_IN_STRUCT					31
 // Filippo - aggiunto allarme tasto di stop e allarme T1
-#define ALARM_ACTIVE_IN_STRUCT					42
+#define ALARM_ACTIVE_IN_STRUCT					45
 #define CODE_ALARM_PRESS_ART_HIGH				0X01
 #define CODE_ALARM_PRESS_ART_SET				0X02
 #define CODE_ALARM_PRESS_VEN_HIGH				0X03
@@ -26,6 +26,9 @@
 #define CODE_ALARM_PRESS_OXYG_INLET				0x08
 #define CODE_ALARM_PRESS_ADS_FILTER_LOW         0x09
 #define CODE_ALARM_PRESS_OXYG_LOW               0x0a
+#define CODE_ALARM_FLOW_ART_SET					0x0b
+#define CODE_ALARM_FLOW_VEN_SET                 0x0c
+#define CODE_ALARM_FLOW_DEP_SET                 0x0d
 
 // codice per allarme di superamento della temperatura massima o minima
 // Viene usato in priming\ricircolo
@@ -172,6 +175,12 @@
 #define DELTA_TARGET_PRESS_ART_LIVER						 10 //mmHg rispetto al Target
 #define DELTA_TARGET_PRESS_ART_KIDNEY						 10 //mmHg rispetto al Target
 
+//Allarmi relativi ai set di flusso
+#define DELTA_TARGET_FLOW_ART_LIVER							50 // ml/min
+#define DELTA_TARGET_FLOW_VEN_LIVER							100 // ml/min
+#define DELTA_TARGET_FLOW_DEP_LIVER							50 // ml/min
+#define DELTA_TARGET_FLOW_ART_KIDNEY						50 // ml/min
+
 // Allarmi pressione ossigenatore [mmHg]
 #define PR_OXYG_HIGH                                        500
 #define PR_OXYG_LOW                                          10
@@ -216,6 +225,9 @@ enum ALARM
 	 PRIM_AIR_ON_FILTER,
 	 PRESS_ADS_FILTER_LOW,
 	 PRESS_OXYG_LOW,
+	 FLOW_ART_SET,
+	 FLOW_VEN_SET,
+	 FLOW_DEP_SET,
 	 MODBUS_ACTUATOR_SEND,
 	 ALARM_FROM_PROTECTIVE,
 

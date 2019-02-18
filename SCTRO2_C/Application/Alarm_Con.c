@@ -72,6 +72,9 @@ struct alarm alarmList[] =
 
 		{CODE_ALARM_PRESS_ADS_FILTER_LOW,  PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH, 60000, 2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull},	    /* 26 */
 		{CODE_ALARM_PRESS_OXYG_LOW, 	   PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH, 60000, 2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull}, 		/* 27 */
+		{CODE_ALARM_FLOW_ART_SET,          PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH, 60000, 2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull}, 		/* 7 */
+		{CODE_ALARM_FLOW_VEN_SET,          PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH, 60000, 2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull}, 		/* 7 */
+		{CODE_ALARM_FLOW_DEP_SET,          PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH, 60000, 2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull}, 		/* 7 */
 
 		//Allarme per errore nella lettura e scrittura modbus. Se dopo 10 ripetizioni non ottengo risposta alla lettura o scrittura genero un allarme.
 		// Per questo allarme uso la stessa procedura per le pompe non ferme. (Dovrei tolgliere direttamente l'enable alle pompe.
@@ -312,6 +315,15 @@ void ForceAlarmOff(uint16_t code)
 			break;
 		case CODE_ALARM_PRESS_VEN_SET:
 			GlobalFlags.FlagsDef.EnablePressSensHighAlm = 0; // forzo allarme pressione e flusso SET a off
+			break;
+		case CODE_ALARM_FLOW_ART_SET:
+			GlobalFlags.FlagsDef.EnableFlowAndPressSetAlm = 0; // forzo allarme pressione e flusso SET a off
+			break;
+		case CODE_ALARM_FLOW_VEN_SET:
+			GlobalFlags.FlagsDef.EnableFlowAndPressSetAlm = 0; // forzo allarme pressione e flusso SET a off
+			break;
+		case CODE_ALARM_FLOW_DEP_SET:
+			GlobalFlags.FlagsDef.EnableFlowAndPressSetAlm = 0; // forzo allarme pressione e flusso SET a off
 			break;
 	}
 }
@@ -1268,34 +1280,68 @@ void manageAlarmPhysicSetFlowAndPressures(void)
 	word pressureTargetArt = parameterWordSetFromGUI[PAR_SET_PRESS_ART_TARGET].value;
 	word pressureTargetVen = parameterWordSetFromGUI[PAR_SET_VENOUS_PRESS_TARGET].value;
 
+	word flowTargetArt = parameterWordSetFromGUI[PAR_SET_MAX_FLOW_PERFUSION].value;
+	word flowTargetDep = parameterWordSetFromGUI[PAR_SET_PURIF_FLOW_TARGET].value;
+	word flowTargetVen = parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value;
+
+	//Abilitazione allarmi di SET
 	if(GlobalFlags.FlagsDef.EnableFlowAndPressSetAlm)
 	{
 		//Liver, considero anche la pressione venosa
 		if (GetTherapyType() == LiverTreat)
 		{
+			// Allarme di SET pressione venosa
 			if (PR_VEN_mmHg_Filtered > pressureTargetVen + DELTA_TARGET_PRESS_VEN_LIVER)
 				alarmList[PRESS_VEN_SET].physic = PHYSIC_TRUE;
 			else
 				alarmList[PRESS_VEN_SET].physic = PHYSIC_FALSE;
 
-
+			// Allarme di SET pressione arteriosa
 			if (PR_ART_mmHg_Filtered > pressureTargetArt + DELTA_TARGET_PRESS_ART_LIVER)
 				alarmList[PRESS_ART_SET].physic = PHYSIC_TRUE;
 			else
 				alarmList[PRESS_ART_SET].physic = PHYSIC_FALSE;
+
+			// Allarme di SET flusso arterioso
+			if (sensor_UFLOW[0].Average_Flow_Val  > flowTargetArt + DELTA_TARGET_FLOW_ART_LIVER) //50
+				alarmList[FLOW_ART_SET].physic = PHYSIC_TRUE;
+			else
+				alarmList[FLOW_ART_SET].physic = PHYSIC_FALSE;
+
+			// Allarme di SET flusso venoso
+			if (sensor_UFLOW[1].Average_Flow_Val  > flowTargetVen + DELTA_TARGET_FLOW_VEN_LIVER) //solo fegato
+				alarmList[FLOW_VEN_SET].physic = PHYSIC_TRUE;
+			else
+				alarmList[FLOW_VEN_SET].physic = PHYSIC_FALSE;
+
+			// Allarme di SET flusso depurazione
+			if (FilterFlowVal > flowTargetDep + DELTA_TARGET_FLOW_DEP_LIVER) //solo fegato
+				alarmList[FLOW_DEP_SET].physic = PHYSIC_TRUE;
+			else
+				alarmList[FLOW_DEP_SET].physic = PHYSIC_FALSE;
 		}
 		else //Kidney, solo arteriosa
 		{
+			// Allarme di SET pressione arteriosa
 			if (PR_ART_mmHg_Filtered > pressureTargetArt + DELTA_TARGET_PRESS_ART_KIDNEY)
 				alarmList[PRESS_ART_SET].physic = PHYSIC_TRUE;
 			else
 				alarmList[PRESS_ART_SET].physic = PHYSIC_FALSE;
+
+			// Allarme di SET flusso arterioso
+			if (sensor_UFLOW[0].Average_Flow_Val  > flowTargetArt + DELTA_TARGET_FLOW_ART_KIDNEY)
+				alarmList[FLOW_ART_SET].physic = PHYSIC_TRUE;
+			else
+				alarmList[FLOW_ART_SET].physic = PHYSIC_FALSE;
 		}
 	}
 	else
 	{
 		alarmList[PRESS_ART_SET].physic = PHYSIC_FALSE;
 		alarmList[PRESS_VEN_SET].physic = PHYSIC_FALSE;
+		alarmList[FLOW_ART_SET].physic = PHYSIC_FALSE;
+		alarmList[FLOW_VEN_SET].physic = PHYSIC_FALSE;
+		alarmList[FLOW_DEP_SET].physic = PHYSIC_FALSE;
 	}
 }
 
