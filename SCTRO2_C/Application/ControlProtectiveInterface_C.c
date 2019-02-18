@@ -5,6 +5,9 @@
  *      Author: W5
  */
 
+#include <stdio.h>
+#include <float.h>
+#include "stdint.h"
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
@@ -15,6 +18,7 @@
 #include "Alarm_Con.h"
 #include "App_Ges.h"
 #include "ModBusCommProt.h"
+#include "PC_DEBUG_COMM.h"
 
 
 #define VAL_JOLLY16	0x5A5A
@@ -22,6 +26,19 @@
 #define SIZE_CAN_BUFFER	8
 #define LAST_INDEX_TXBUFF2SEND 7	//
 
+#define ESC 27
+#define CR  0x0D
+#define LF  0x0A
+
+uint8_t CharReceived(void);
+void ManageTxDebug(void);
+void ManageGetParams(void);
+void TxDebugPressures(void);
+void TxDebugTemperatures(void);
+void TxDebugPinch(void);
+void TxDebugErrors(void);
+void SetLogCommand( uint8_t Command);
+void TxDebugPumpSpeed(void);
 
 
 union UTxCan {
@@ -177,6 +194,9 @@ void InitControlProtectiveInterface(void)
 
 	//AddSwTimer(ManageTxCan10ms,1,TM_REPEAT);
 	AddSwTimer(ManageTxCan50ms,5,TM_REPEAT);
+	AddSwTimer(ManageTxDebug,5,TM_REPEAT);
+	AddSwTimer(ManageGetParams,5,TM_REPEAT);
+
 }
 
 #ifdef CAN_DEBUG
@@ -685,3 +705,276 @@ void HandleProtectiveAlarm_old(void)
 
 #endif
 
+
+//////////////////////////////////////////////////////////
+//
+//  debug routines using debug serial interface
+//
+//////////////////////////////////////////////////////////
+
+
+//
+//	T or t Pressed --> generate head line for csv file and temperatures headers
+//  P or p pressed --> generate head line for csv file and pressures headers
+//  esc --> stop logging
+//
+#define GREEN_TEXT   "\033[32;1m"
+#define YELLOW_TEXT  "\033[33;1m"
+#define BLUE_TEXT    "\033[34;1m"
+#define MAGENTA_TEXT "\033[35;1m"
+#define CYAN_TEXT    "\033[36;1m"
+#define WHITE_TEXT   "\033[37;1m"
+void ParseNExecuteCommand( char* CommadnNParamsString);
+bool FirstTime = true;
+uint8_t LogMode = 0;  // 0: don't log , 4 log temp, 2 log press ..
+
+void ManageTxDebug(void)
+{
+	word sent_data;
+	uint8_t ch1;
+	static char CommandBuff[100];
+	static int BuffCnt = 0;
+	int ii;
+	char StrPrompt[40];
+
+	char * pointer_StrPrompt = &StrPrompt[0];
+
+	strcpy(pointer_StrPrompt,GREEN_TEXT) ;
+	strcat(pointer_StrPrompt,(const char *)"\r\nPerlife>") ;
+	strcat(pointer_StrPrompt, WHITE_TEXT);
+
+	if(FirstTime){
+		PC_DEBUG_COMM_SendBlock((PC_DEBUG_COMM_TComData*)pointer_StrPrompt, strlen(pointer_StrPrompt) , &sent_data);
+		FirstTime = false;
+	}
+	ch1 = CharReceived();
+
+	if( LogMode != 0){
+		if( ch1 == ESC ) SetLogCommand(ESC);
+		return;
+	}
+
+	int CmdBuff;
+	if(ch1 != 0xFF){
+		CommandBuff[BuffCnt++] = ch1;
+ 		PC_DEBUG_COMM_SendChar(ch1);
+ 		if( ch1 == CR ){
+ 			PC_DEBUG_COMM_SendChar(LF);
+ 			if( BuffCnt > 2) {
+	 			ParseNExecuteCommand( CommandBuff );
+			}
+ 			if( LogMode == 0){
+ 				// if logging data have been triggered , avoid showing prompt
+ 	 			PC_DEBUG_COMM_SendBlock((PC_DEBUG_COMM_TComData*)StrPrompt, strlen(StrPrompt) , &sent_data);
+ 			}
+ 			for( ii = 0; ii< BuffCnt; ii++){
+ 	 			CommandBuff[ii] = 0;
+ 			}
+ 			BuffCnt = 0;
+ 		}
+	}
+}
+
+
+
+uint8_t cmd = '_' ; // nothing
+
+void SetLogCommand( uint8_t Command)
+{
+	cmd = Command;
+	ManageGetParams();
+}
+
+int PrescalerCnt = 0;
+void ManageGetParams(void)
+{
+static char stringPtr[200];
+word sent_data;
+
+	//uint8_t cmd;
+
+	switch(cmd){
+		case ESC:
+			LogMode = 0;
+			break;
+		case 'P':
+			LogMode = 1;
+			sprintf(stringPtr, "\"sep=,\"\r\n Press Ven [mmHg] , Pr Art [mmHg] , Pr Filt [mmHg], Pr Oxy [mmHg], Press Lev [Count]");
+			PC_DEBUG_COMM_SendBlock(stringPtr, strlen(stringPtr), &sent_data);
+			break;
+		case 'T':
+			LogMode = 4;
+			sprintf(stringPtr, "\"sep=,\"\r\n TempArt [C] , TempReservoire [C], TempVen [C] , TempPlate [C] , Frigo ON , Heater ON\r\n");
+			PC_DEBUG_COMM_SendBlock(stringPtr, strlen(stringPtr), &sent_data);
+			break;
+		case 'C':
+			LogMode = 7;
+			sprintf(stringPtr, "\"sep=,\"\r\n Pinch FILT , Pinch ART, Pinch VEN \r\n");
+			PC_DEBUG_COMM_SendBlock(stringPtr, strlen(stringPtr), &sent_data);
+			break;
+		case 'M':
+			LogMode = 10;
+			sprintf(stringPtr, "\"sep=,\"\r\n Pump FILT LIVER / ART KIDNEY [rpm], Pump ART LIVER[rpm], Pump OXY 1[rpm], Pump OXY 2[rpm] \r\n");
+			PC_DEBUG_COMM_SendBlock(stringPtr, strlen(stringPtr), &sent_data);
+			break;
+		case 'E': // log errors
+			LogMode = 13;
+			sprintf(stringPtr, "\"sep=,\"\r\n Error Ctrl , Error Prot \r\n");
+			PC_DEBUG_COMM_SendBlock(stringPtr, strlen(stringPtr), &sent_data);
+			break;
+	}
+	cmd = '_';
+
+	switch(LogMode){
+	case 1: // pressure
+		LogMode = 2;
+		break;
+	case 4: // temp
+		LogMode = 5;
+		break;
+	case 7: // pinch
+		LogMode = 8;
+		break;
+	case 10: // pumps
+		LogMode = 11;
+		break;
+	case 13: // log errors
+		LogMode = 14;
+		break;
+	case 2: // pressure
+		if( PrescalerCnt == 0){
+			TxDebugPressures();
+		}
+		PrescalerCnt = (PrescalerCnt + 1) % 10;
+		break;
+	case 5: // temperature
+		if( PrescalerCnt == 0){
+			TxDebugTemperatures();
+		}
+		PrescalerCnt = (PrescalerCnt + 1) % 10;
+		break;
+	case 8: // pinc
+		if( PrescalerCnt == 0){
+			TxDebugPinch();
+		}
+		PrescalerCnt = (PrescalerCnt + 1) % 10;
+		break;
+	case 11: // pumps speed
+		if( PrescalerCnt == 0){
+			TxDebugPumpSpeed();
+		}
+		PrescalerCnt = (PrescalerCnt + 1) % 10;
+		break;
+	case 14: // log errors
+		if( PrescalerCnt == 0){
+			TxDebugErrors();
+		}
+		PrescalerCnt = (PrescalerCnt + 1) % 20;
+		break;
+	}
+}
+
+/////////////////////////////////////////////
+// send data on serial debug
+// escpressed true or false
+////////////////////////////////////////////
+void TxDebugPressures(void)
+{
+    static char stringPtr[200];
+	word sent_data;
+
+    sprintf(stringPtr, " %03u ,  %03u , %03u , %03u , %05u \r\n", PR_VEN_mmHg_Filtered, PR_ART_mmHg_Filtered, PR_ADS_FLT_mmHg_Filtered, PR_OXYG_mmHg_Filtered,PR_LEVEL_ADC_Filtered);
+    PC_DEBUG_COMM_SendBlock(stringPtr, strlen(stringPtr) , &sent_data);
+}
+
+void TxDebugTemperatures(void)
+{
+    static char stringPtr[200];
+    float TempArt          = sensorIR_TM[0].tempSensValue;
+    float TempReservoire   = sensorIR_TM[1].tempSensValue;
+    float TempVen          = sensorIR_TM[2].tempSensValue;
+    float TempPlate        = T_PLATE_C_GRADI_CENT;
+
+	word sent_data;
+
+	short int FrigoOn = GetFrigoOn();
+	short int HeaterOn = GetHeaterOn();
+
+	/*per motivi di visualizzazione su excel metto 100 se acceso e 0 se spento*/
+	if (FrigoOn)
+		FrigoOn = 100;
+	else
+		FrigoOn = 0;
+
+	if (HeaterOn)
+		HeaterOn = 100;
+	else
+		HeaterOn = 0;
+
+    sprintf(stringPtr, "% 4.1f , % 4.1f  ,  % 4.1f , % 4.1f  ,  %03u , %03u \r\n", TempArt, TempReservoire,TempVen,TempPlate,FrigoOn,HeaterOn);
+
+    PC_DEBUG_COMM_SendBlock(stringPtr, strlen(stringPtr) , &sent_data);
+
+}
+
+void TxDebugPinch(void)
+{
+    static char stringPtr[200];
+    word Pinch_Filt = modbusData[4][0];
+	word Pinch_Art  = modbusData[5][0];
+	word Pinch_Ven  = modbusData[6][0];
+
+	word sent_data;
+
+    sprintf(stringPtr, " %02x , %02x , %02x \r\n", Pinch_Filt, Pinch_Art , Pinch_Ven);
+
+    PC_DEBUG_COMM_SendBlock(stringPtr, strlen(stringPtr) , &sent_data);
+}
+
+
+void TxDebugPumpSpeed(void)
+{
+    static char stringPtr[200];
+
+    float speed1 = modbusData[0][17];
+    	  speed1 /=  100;
+
+    float speed2 = modbusData[1][17];
+          speed2 /= 100;
+
+    float speed3 = modbusData[2][17];
+    	  speed3 /= 100;
+
+    float speed4 = modbusData[3][17];
+		  speed4 /= 100;
+
+	word sent_data;
+
+	sprintf(stringPtr, "% 5.1f , % 5.1f , % 5.1f , % 5.1f \r\n", speed1, speed2 , speed3, speed4);
+
+    PC_DEBUG_COMM_SendBlock(stringPtr, strlen(stringPtr) , &sent_data);
+}
+
+void TxDebugErrors(void)
+{
+    static char stringPtr[200];
+    word sent_data;
+    word ControlError    = alarmCurrent.code;
+    word ProtectiveError = GetAlarmCodeProt();
+
+    sprintf(stringPtr, " %05u , %05u \r\n", ControlError, ProtectiveError);
+    PC_DEBUG_COMM_SendBlock(stringPtr, strlen(stringPtr) , &sent_data);
+
+}
+
+
+uint8_t CharReceived(void)
+{
+	uint8_t rxchr;
+
+	if ( PC_DEBUG_COMM_RecvChar(&rxchr) == ERR_OK )
+		return rxchr;
+	else
+		return 0xFF;
+
+}

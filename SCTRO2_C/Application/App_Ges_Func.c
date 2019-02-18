@@ -815,9 +815,63 @@ bool EnableHeatingFromControl = FALSE;
 bool EnableFrigoFromPlate = FALSE;
 bool EnableFrigoFromControl = FALSE;
 int HeatingPwmPerc = 0;
+
 bool HeaterOn = FALSE;
 bool FrigoOn = FALSE;
 
+int GetHeatingPwmPerc(void)
+{
+	return (HeatingPwmPerc);
+}
+
+int GetFrigoPercDebug(void)
+{
+	return (Prescaler_Freq_Signal_AMS);
+}
+void setHeatingPwmPerc(char value)
+{
+	if (value > 100)
+		value = 100;
+	else if (value <= 0)
+		value = 0;
+
+	HeatingPwmPerc = value;
+}
+void setFrigoPercDebug(char value)
+{
+
+	if (value == 0)
+		Prescaler_Freq_Signal_AMS = 0;
+	else
+		Prescaler_Freq_Signal_AMS = 1000 / value;
+
+
+	if (Prescaler_Freq_Signal_AMS <= 10 && Prescaler_Freq_Signal_AMS > 0)
+		Prescaler_Freq_Signal_AMS = 10;
+
+	if (Prescaler_Freq_Signal_AMS >= 50)
+		Prescaler_Freq_Signal_AMS = 0;
+
+}
+bool GetHeaterOn(void)
+{
+	return (HeaterOn);
+}
+
+bool GetFrigoOn(void)
+{
+	return (FrigoOn);
+}
+
+void setHeaterOn (bool value)
+{
+	HeaterOn = value;
+}
+
+void setFrigoOn (bool value)
+{
+	FrigoOn = value;
+}
 
 void SetFan(bool On)
 {
@@ -1095,7 +1149,7 @@ void HeatingPwm(int Perc)
 	{
 		HEAT_ON_C_ClrVal();  // per sicurezza
 		/*se sono entrato qui, spengo il riscaldatore
-		 * q	uindi devo mettere la percentuale a zero*/
+		 * quindi devo mettere la percentuale a zero*/
 		OldPerc = 0;
 		return;
 	}
@@ -1113,6 +1167,102 @@ void HeatingPwm(int Perc)
 			HEAT_ON_C_ClrVal();
 			HeatingPwmPerc = 0;
 			HeatingPwmState = HEAT_PWM_ALWAYS_OFF;
+		}
+		else
+		{
+			TOn = Perc;
+			TOff = 100 - Perc;
+			if((HeatingPwmState == HEAT_PWM_ALWAYS_OFF) || (HeatingPwmState == HEAT_PWM_ALWAYS_ON))
+				HeatingPwmState = HEAT_PWM_IDLE;
+		}
+	}
+
+	switch (HeatingPwmState)
+	{
+		case HEAT_PWM_ALWAYS_OFF:
+		    HeaterOn = 0;
+			break;
+		case HEAT_PWM_IDLE:
+			timeIntervalHeating = FreeRunCnt10msec;
+			HeatingPwmState = HEAT_PWM_ON;
+			HEAT_ON_C_SetVal();
+			HeaterOn = 1;
+
+			break;
+		case HEAT_PWM_ON:
+			// On
+			if(timeIntervalHeating && (msTick10_elapsed(timeIntervalHeating) >= TOn))
+			{
+				HEAT_ON_C_ClrVal();
+				HeatingPwmState = HEAT_PWM_OFF;
+				timeIntervalHeating = FreeRunCnt10msec;
+			}
+			break;
+		case HEAT_PWM_OFF:
+			// off
+			if(timeIntervalHeating && (msTick10_elapsed(timeIntervalHeating) >= TOff))
+			{
+				HEAT_ON_C_SetVal();
+				HeatingPwmState = HEAT_PWM_ON;
+				timeIntervalHeating = FreeRunCnt10msec;
+			}
+			break;
+		case HEAT_PWM_ALWAYS_ON:
+			HeaterOn = 1;
+			break;
+	}
+}
+
+void Start_Frigo_AMSDebug(int Perc)
+{
+	static unsigned char power_old = 0;
+
+
+	if (Perc == 0 || T_PLATE_C_GRADI_CENT < MIN_PLATE_TEMP)
+	{
+		Enable_AMS = FALSE;
+	    COMP_PWM_ClrVal();
+	}
+	else if (Perc != power_old)
+	{
+		Enable_AMS = TRUE;
+		/* a power = 10 corrisponde la massima frequenza pari
+		 * a 200 Hz quindi non posso andare sotto 10*/
+		if (Perc <= 10)
+			Perc = 10;
+		Prescaler_Freq_Signal_AMS = Perc;
+	    FrigoOn = 1;
+
+	}
+
+	power_old = Perc;
+
+}
+
+void HeatingPwmDebug(int Perc)
+{
+	static int OldPerc = 0;
+	static int TOn = 0;
+	static int TOff = 0;
+	static unsigned long timeIntervalHeating = 0;
+	static HEAT_PWM_STATE HeatingPwmState = HEAT_PWM_ALWAYS_OFF;
+
+
+
+	if(OldPerc != Perc)
+	{
+		OldPerc = Perc;
+		if(Perc == 100 && T_PLATE_C_GRADI_CENT < MAX_PLATE_TEMP)
+		{
+			HEAT_ON_C_SetVal();
+			HeatingPwmState = HEAT_PWM_ALWAYS_ON;
+		}
+		else if(Perc == 0 || T_PLATE_C_GRADI_CENT > MAX_PLATE_TEMP)
+		{
+			HEAT_ON_C_ClrVal();
+			HeatingPwmPerc = 0;
+			HeatingPwmState = HEAT_PWM_ALWAYS_OFF;
+			HeaterOn = 0;
 		}
 		else
 		{

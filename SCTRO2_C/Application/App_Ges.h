@@ -370,4 +370,16 @@ void StopFrigoNewPID(unsigned char spegniFrigo);
 // staccare l'alimentazione al frigo
 bool Start_Frigo_AMSNewPID(float DeltaT,unsigned char spegniFrigo);
 
+bool GetHeaterOn(void);
+bool GetFrigoOn(void);
+int  GetHeatingPwmPerc(void);
+void setHeatingPwmPerc(char value);
+void HeatingPwmDebug(int Perc);
+void Start_Frigo_AMSDebug(int Perc);
+int  GetFrigoPercDebug(void);
+void setFrigoPercDebug(char value);
+void setHeaterOn (bool value);
+void setFrigoOn  (bool value);
+
+
 #endif /* APPLICATION_APP_GES_H_ */

@@ -5612,7 +5612,7 @@ void processMachineState(void)
 		// (FM) DOPO LA PRIMA VOLTA PASSA AUTOMATICAMENTE NELLO STATO IDLE,ACTION_ALWAYS
 		manageStateEntryAndStateAlways(4);
 
-		DebugStringStr("reach idle state");
+	//	DebugStringStr("reach idle state");
 		break;
 
 	case STATE_SELECT_TREAT:     // NON E' USATO CON LA GESTIONE DA SERVICE

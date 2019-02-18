@@ -250,7 +250,8 @@ int main(void)
 /*lint -restore Enable MISRA rule (6.3) checking. */
 {
   /* Write your local variable definition here */
-  bool MOTORE_ACCESO = FALSE;
+
+	bool MOTORE_ACCESO = FALSE;
   bool MOTORE_ACCESO_2 = FALSE;
   bool Status_Board;
   THERAPY_TYPE TreatType = Undef;
@@ -369,6 +370,8 @@ int main(void)
 
   MAX_PLATE_TEMP = 0;
   MIN_PLATE_TEMP = 0;
+  START_HEAT_ON_DEBUG = FALSE;
+  START_FRIGO_ON_DEBUG = FALSE;
 
   iFlag_actuatorCheck = IFLAG_IDLE;
   iFlag_modbusDataStorage = FALSE;
@@ -681,7 +684,10 @@ int main(void)
 		        Prescaler_CheckStopPump++;
 		        if (Prescaler_CheckStopPump > 20)
 		        {
-					CheckStopPump();
+					/*Se è sttaa selezionata almeno una terapia*/
+		        	if (GetTherapyType() != Undef)
+						CheckStopPump();
+
 					Prescaler_CheckStopPump = 0;
 
 			        updateMaxTempPlate();
@@ -877,14 +883,28 @@ int main(void)
 	      	// aggiorno il valore del flusso sul filtro
 	      	UpdateFilterFlowVal();
 
-#ifdef	 DEBUG_FRIGO_AMS
+//#ifdef	 DEBUG_FRIGO_AMS
 	      	// task di controllo della temperatura del liquido nel reservoir
 	      	// non posso mettere questo codice al posto di quello delle peltier perche' non
 	      	// lavorerebbe bene il pwm del riscaldatore
 	      	// Filippo - cambio funzione per gestire nuovo PID che usa frigo e riscaldatore insieme
 //	      	FrigoHeatTempControlTask((LIQ_TEMP_CONTR_TASK_CMD)LIQ_T_CONTR_TASK_NO_CMD);
-	      	FrigoHeatTempControlTaskNewPID((LIQ_TEMP_CONTR_TASK_CMD)LIQ_T_CONTR_TASK_NO_CMD);
-#endif
+	      	/*se non sono state comandate le accensione ne di frigo ne di riscaldatore in debug*/
+	      	if (START_HEAT_ON_DEBUG == FALSE && START_FRIGO_ON_DEBUG == FALSE)
+	      	{
+	      		FrigoHeatTempControlTaskNewPID((LIQ_TEMP_CONTR_TASK_CMD)LIQ_T_CONTR_TASK_NO_CMD);
+	      	}
+	      	/*se è stata comandata l'accensione del riscaldatore in debug*/
+	      	else if (START_HEAT_ON_DEBUG == TRUE)
+	      	{
+	      		HeatingPwmDebug(GetHeatingPwmPerc());
+	      	}
+	      	/*se è stata comandata l'accensione del FRIGO in debug*/
+	      	else if (START_FRIGO_ON_DEBUG == TRUE)
+	      	{
+	      		Start_Frigo_AMSDebug(GetFrigoPercDebug());
+	      	}
+//#endif
   }
   /**********MAIN LOOP END**************/
 

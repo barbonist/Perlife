@@ -272,6 +272,8 @@ void DebugStringPID()
 
 void DebugStringStr(char *s)
 {
+	return;
+
 	static char stringPr[STR_DBG_LENGHT];
 	if(strstr(s, "ABBANDONA"))
 	{
@@ -824,7 +826,7 @@ void GenerateSBCComm(void)
 	if(msTick_elapsed(timerCounterGenSBCComm) >= 20)
 	{
 		timerCounterGenSBCComm = timerCounterModBus;
-		DebugString();
+	//	DebugString();
 	}
 
 	// viene chiamata ogni 50 msec
@@ -1011,6 +1013,14 @@ void CheckStopPump(void)
 
 void updateMaxTempPlate (void)
 {
+	/*se mi è arrivato un coando di far partire il
+	 * riscaldatore in debug fisso la t massima
+	 * di piastra a 50 °C*/
+	if (START_HEAT_ON_DEBUG)
+	{
+		MAX_PLATE_TEMP = 50.0;
+		return;
+	}
 	word T0l = sensorIR_TM[1].tempSensValue * 10;
 	word T1l = parameterWordSetFromGUI[PAR_SET_PRIMING_TEMPERATURE_PERFUSION].value + 10; //aggiungo un grado al target
 	float Ktp = 0.6;
@@ -1033,6 +1043,16 @@ void updateMaxTempPlate (void)
 
 void updateMinTempPlate (void)
 {
+
+	/*se mi è arrivato un comando di far partire il
+	 * frigo in debug fisso la t minima
+	 * di piastra a -10 °C*/
+	if (START_FRIGO_ON_DEBUG)
+	{
+		MIN_PLATE_TEMP = -10.0;
+		return;
+	}
+
 	word T0l = sensorIR_TM[1].tempSensValue * 10;
 	word T1l = parameterWordSetFromGUI[PAR_SET_PRIMING_TEMPERATURE_PERFUSION].value - 10; //aggiungo un grado al target
 	float Ktp = 0.85;

@@ -40,4 +40,7 @@ void CheckStopPump(void);
 void updateMaxTempPlate(void);
 void updateMinTempPlate(void);
 
+bool START_HEAT_ON_DEBUG;
+bool START_FRIGO_ON_DEBUG;
+
 #endif /* APPLICATION_GENERAL_FUNC_H_ */
