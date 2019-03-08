@@ -176,7 +176,7 @@ void SetHeater(int NParams, char** Params)
 	else if(strcmp_cr(Params[0],"off") == 0) HeaterOn = false;
 	else {
 		//ErrorParamsNotOk( NParams, Params);
-		CommandAnswer("SetHeater on/off [percent]");
+		CommandAnswer("SetHeater on [percent --> 0 for stop]");
 		return;
 	}
 	// param percent , must be a number
@@ -190,7 +190,7 @@ void SetHeater(int NParams, char** Params)
 			}
 		}
 		else {
-			CommandAnswer("set heater on/off [percent]");
+			CommandAnswer("set heater onf [percent --> 0 for stop]");
 			return;
 		}
 	}
@@ -381,9 +381,9 @@ void GetDoorsStat(int NParams, char** Params)
 	if (FRONTAL_COVER_1_STATUS == FALSE && FRONTAL_COVER_2_STATUS == FALSE)
 		CommandAnswer("Doors are CLOSED");
 	else if (FRONTAL_COVER_1_STATUS == TRUE && FRONTAL_COVER_2_STATUS == FALSE)
-		CommandAnswer("Doors --> left are OPENED, right are CLOSED ");
+		CommandAnswer("Doors --> left is OPENED, right is CLOSED ");
 	else if (FRONTAL_COVER_1_STATUS == FALSE && FRONTAL_COVER_2_STATUS == TRUE)
-		CommandAnswer("Reservoir hook --> left are CLOSED, right are OPENED ");
+		CommandAnswer("Doors --> left is CLOSED, right is OPENED ");
 	else if (FRONTAL_COVER_1_STATUS == TRUE && FRONTAL_COVER_2_STATUS == TRUE)
 		CommandAnswer("Doors are OPENED");
 }
@@ -393,9 +393,9 @@ void GetReservoirHooks(int NParams, char** Params)
 	if (HOOK_SENSOR_1_STATUS == FALSE && HOOK_SENSOR_2_STATUS == FALSE)
 		CommandAnswer("Reservoir hooks are hooked");
 	else if (HOOK_SENSOR_1_STATUS == TRUE && HOOK_SENSOR_2_STATUS == FALSE)
-		CommandAnswer("Reservoir hook --> left are hooked, right are NOT hooked ");
+		CommandAnswer("Reservoir hook --> left is hooked, right is NOT hooked ");
 	else if (HOOK_SENSOR_1_STATUS == FALSE && HOOK_SENSOR_2_STATUS == TRUE)
-		CommandAnswer("Reservoir hook --> left are NOT hooked, right are hooked ");
+		CommandAnswer("Reservoir hook --> left is NOT hooked, right is hooked ");
 	else if (HOOK_SENSOR_1_STATUS == TRUE && HOOK_SENSOR_2_STATUS == TRUE)
 		CommandAnswer("Reservoir hooks are NOT hooked");
 }

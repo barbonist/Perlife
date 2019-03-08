@@ -849,7 +849,9 @@ void setFrigoPercDebug(char value)
 	if (Prescaler_Freq_Signal_AMS <= 10 && Prescaler_Freq_Signal_AMS > 0)
 		Prescaler_Freq_Signal_AMS = 10;
 
-	if (Prescaler_Freq_Signal_AMS >= 50)
+	/*con prescaler sopra i 100 vuol dire che sono sotto al
+	 * 10 % quindi sotto i 20 Hz quindi è come spegnere*/
+	if (Prescaler_Freq_Signal_AMS > 100 )
 		Prescaler_Freq_Signal_AMS = 0;
 
 }
@@ -1218,7 +1220,7 @@ void Start_Frigo_AMSDebug(int Perc)
 	static unsigned char power_old = 0;
 
 
-	if (Perc == 0 || T_PLATE_C_GRADI_CENT < MIN_PLATE_TEMP)
+	if (Perc == 0 /*|| T_PLATE_C_GRADI_CENT < MIN_PLATE_TEMP*/)
 	{
 		Enable_AMS = FALSE;
 	    COMP_PWM_ClrVal();
