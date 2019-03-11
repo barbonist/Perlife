@@ -21,6 +21,7 @@
 
 extern bool FilterSelected;
 extern bool AtLeastoneButResRcvd;
+extern bool gDigitalTest;
 
 // FM questa lista devo costruirla mettendo prima i PHYSIC_TRUE e poi i PHYSIC_FALSE,
 // ognuno deve poi essere ordinato in base alla priorita' ???
@@ -738,6 +739,7 @@ void CalcAlarmActive(void)
 			break;
 
 		case STATE_PRIMING_RICIRCOLO:
+			manageResultT1TestDigital(); //Valutazione finale dei check sui sensori digitali
 			//verifica physic pressioni
 			manageAlarmPhysicPressSensHigh();
 			manageAlarmPhysicPressSensLow();
@@ -1852,6 +1854,23 @@ void manageAlarmT1Test(void)
 	}
 
 }
+
+//Allarme T1 test relativo ai segnali digitali
+//Cover pompe 1-2-3-4, coperchi frontali sx e dx, segnali gancio sx e dx
+void manageResultT1TestDigital(void)
+{
+    #ifdef T1_TEST_ENABLED
+		//Quando questa funzione viene chiamata, si controlla che il risultato del test sia positivo.
+		//In caso contrario viene generato un allarme T1 Test
+		if (gDigitalTest)
+			alarmList[ALARM_T1_TEST].physic = PHYSIC_FALSE; //Check OK
+		else
+			alarmList[ALARM_T1_TEST].physic = PHYSIC_TRUE; //Almeno un check sui segnali digitali non è passato
+    #endif
+}
+
+
+
 // Filippo - funzione che gestisce l'allarme per il fallimento del test del sensore aria
 void manageAlarmAirSensorTestKO(void)
 {

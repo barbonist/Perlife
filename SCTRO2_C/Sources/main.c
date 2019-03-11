@@ -606,7 +606,7 @@ int main(void)
 #endif
 
    AlarmCheckFlag = 0;
-
+   InitDigitalT1Test(); //Inizializzazione dei T1 Test segnali digitali
 
   /**********MAIN LOOP START************/
   for(;;) {
@@ -646,6 +646,8 @@ int main(void)
         	 if(timerCounterMState >= 1)
 	         {
 	        	timerCounterMState = 0;
+
+	        	manageParentDigitalT1Test(); //Check sui segnali digitali, la valutazione dei risultati avverrà successivamente
 
 	        	computeMachineStateGuard();
 

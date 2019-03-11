@@ -65,7 +65,19 @@ void processMachineState(void);
 void ManageMuteButton(void);
 static void manageStateEntryAndStateAlways(unsigned short stateId);
 
+//Definizioni usate per i T1 Test sensori digitali
+enum {
+	HOOK1 = 0,
+	HOOK2,
+	PUMP_COVER1,
+	PUMP_COVER2,
+	PUMP_COVER3,
+	PUMP_COVER4,
+	FRONTAL_COVER1,
+	FRONTAL_COVER2,
 
+	NUM_SENSORI_DIGITALI
+};
 
 /* STATE LEVEL FUNCTION */
 /**************************************************************************************/
@@ -165,6 +177,8 @@ void manageParentChkPress(void);
 void manageParentTempSensIR(void);
 void mangeParentUFlowSens(void);
 void manageParentAir(void);
+void InitDigitalT1Test(void);
+void manageParentDigitalT1Test(void);
 void manageParenT1PinchInit(void);
 void manageParenT1Pinch(void);
 void manageParentT1PumpInit(void);

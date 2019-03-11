@@ -19,6 +19,12 @@
 #include "string.h"
 #include "App_Ges.h"
 
+//Bitmask contenente lo stato delle quattro cover delle pompe (primi 4 bit del char)
+//bit0 depurazione
+//bit1 perfusione fegato
+//bit2 oxy left
+//bit3 oxy right
+unsigned char coverStateGlobal = 0;
 
 extern int MyArrayIdx;
 
@@ -2220,6 +2226,7 @@ void StorageModbusDataInit(void)
 unsigned char CheckCoverPump()
 {
 	unsigned char MaxCoverNum = 4;
+	unsigned char id = 0;
 //#ifdef PUMP_EVER
 //	// evito che con le nuove pompe ever venga controllato il segnale di cover che non c'e'
 //	MaxCoverNum = 2;
@@ -2263,6 +2270,11 @@ unsigned char CheckCoverPump()
 			}
 		}
 	}
+
+	//Valorizza la variabile che contiene lo stato delle 4 cover
+	coverStateGlobal = 0;
+	for (id = 0; id < MaxCoverNum; id++)
+		coverStateGlobal |= (CoverState[id]<<id);
 
 	for (unsigned char i= 0; i<MaxCoverNum; i++)
 	{
