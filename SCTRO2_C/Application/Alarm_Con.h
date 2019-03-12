@@ -337,6 +337,7 @@ void warningManageNull(void);
 // Filippo - aggiunta gestione dell'allarme del tasto di stop
 void manageAlarmStopButtonPressed(void);
 void manageAlarmT1Test(void);
+void manageResultT1TestDigital(void);
 // Filippo - funzione che gestisce l'allarme per il fallimento del test del sensore aria
 void manageAlarmAirSensorTestKO(void);
 void manageCover_Hook_Sensor(void);
@@ -358,6 +359,14 @@ typedef enum
 	WRN_WAIT_END_ALARM,
 	WRN_WAIT_LOWER_LEV
 }WARNING_STATE;
+
+// Struttura utilizzata per i T1 Test sui segnali digitali
+typedef struct
+{
+	unsigned char previous;
+	unsigned char current;
+	bool pass;
+} DigitalTestStruct;
 
 #define PR_ADS_FILTER_WARN_LOWER_LEV    90
 // tempo di pompa depurazione ferma prima di dare la warning in msec

@@ -80,6 +80,11 @@
 
 bool IsPinchPosOk(unsigned char *pArrPinchPos);
 
+// Variabili usate per i T1 Test sui segnali digitali
+extern unsigned char coverStateGlobal;
+bool gDigitalTest = FALSE; //Risultato finale dei T1 test sui sensori digitali
+
+DigitalTestStruct digitalStruct[NUM_SENSORI_DIGITALI];
 // Flags usati nel processo di svuotamento
 extern CHILD_EMPTY_FLAGS ChildEmptyFlags;
 
@@ -1194,6 +1199,58 @@ void mangeParentUFlowSens(void){
 	}
 }
 
+// Inizializzazione delle strutture dati usate per i T1 test sui sensori digitali
+void InitDigitalT1Test(void)
+{
+	unsigned char id = 0;
+
+	for (id = 0; id < NUM_SENSORI_DIGITALI; id ++)
+	{
+		digitalStruct[id].pass = FALSE;
+		digitalStruct[id].current = 0;
+		digitalStruct[id].previous = 0;
+	}
+}
+
+//T1 test relativo ai segnali digitali
+//Cover pompe 1-2-3-4, coperchi frontali sx e dx, segnali gancio sx e dx
+void manageParentDigitalT1Test(void)
+{
+	char id = 0;
+
+	//Acquisizione degli stati dei sensori digitali
+	digitalStruct[HOOK1].current = HOOK_SENSOR_1_STATUS;						// 1 --> premuto
+	digitalStruct[HOOK2].current = HOOK_SENSOR_2_STATUS;						// 1 --> premuto
+	digitalStruct[PUMP_COVER1].current = (coverStateGlobal & 0x01);				// 1 --> open, 0 --> close
+	digitalStruct[PUMP_COVER2].current = ((coverStateGlobal & 0x02) >> 1);		// 1 --> open, 0 --> close
+	digitalStruct[PUMP_COVER3].current = ((coverStateGlobal & 0x04) >> 2);		// 1 --> open, 0 --> close
+	digitalStruct[PUMP_COVER4].current = ((coverStateGlobal & 0x08) >> 3);		// 1 --> open, 0 --> close
+	digitalStruct[FRONTAL_COVER1].current = FRONTAL_COVER_1_STATUS;				// 1 --> chiuso
+	digitalStruct[FRONTAL_COVER2].current = FRONTAL_COVER_2_STATUS;				// 1 --> chiuso
+
+    // Viene eseguita una scansione su 8 sensori digitali
+	for (id = 0; id < NUM_SENSORI_DIGITALI; id ++)
+	{
+		//Stato attuale: 0 --> premuto oppure chiuso mentre lo stato precedente era NON premuto oppure aperto <-- 1
+		if ((digitalStruct[id].current == 0) && (digitalStruct[id].previous == 1))
+			digitalStruct[id].pass = TRUE;
+		//Aggiorna il valore precedente
+		digitalStruct[id].previous = digitalStruct[id].current;
+	}
+
+	// Il test, nella sua interezza (gDigitalTest), è considerato PASS solo se tutti i test sono a loro volta passati.
+	for (id = 0; id < NUM_SENSORI_DIGITALI; id ++)
+	{
+		if (digitalStruct[id].pass == FALSE)
+		{
+			gDigitalTest = FALSE;
+			return; // Al primo test NON passato, esce anzitempo
+		}
+	}
+
+	// Se sono arrivato qui significa che tutti i test sono passati
+	gDigitalTest = TRUE;
+}
 
 void manageParenT1PinchInit(void){
 	t1Test_pinch_state = 0;
