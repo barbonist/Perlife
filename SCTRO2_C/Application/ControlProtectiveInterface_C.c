@@ -19,7 +19,8 @@
 #include "App_Ges.h"
 #include "ModBusCommProt.h"
 #include "PC_DEBUG_COMM.h"
-
+#include "VOLTAGE_B_CHK.h"
+#include "VOLTAGE_M_CHK.h"
 
 #define VAL_JOLLY16	0x5A5A
 #define VAL_JOLLY8	0x5A
@@ -39,7 +40,13 @@ void TxDebugPinch(void);
 void TxDebugErrors(void);
 void SetLogCommand( uint8_t Command);
 void TxDebugPumpSpeed(void);
-
+void TxPumpCovers(void);
+void TxAirSensors(void);
+void TxCanBus(void);
+void TxPowerVoltage(void);
+void TxDoors(void);
+void TxReservorireHooks(void);
+void TxFWVersion(void);
 
 union UTxCan {
 	uint8_t RawCanBuffer[SIZE_CAN_BUFFER];
@@ -822,6 +829,44 @@ word sent_data;
 			sprintf(stringPtr, "\"sep=,\"\r\n Error Ctrl , Error Prot \r\n");
 			PC_DEBUG_COMM_SendBlock(stringPtr, strlen(stringPtr), &sent_data);
 			break;
+		case '1': // log pumps cover
+			LogMode = 16;
+			sprintf(stringPtr, "\"sep=,\"\r\n Cover filt , Cover art , Cover oxy1 , Cover oxy2 \r\n");
+			PC_DEBUG_COMM_SendBlock(stringPtr, strlen(stringPtr), &sent_data);
+			break;
+		case '2': // log air sensors
+			LogMode = 19;
+			sprintf(stringPtr, "\"sep=,\"\r\n Air filt , Air art , Air Ven \r\n");
+			PC_DEBUG_COMM_SendBlock(stringPtr, strlen(stringPtr), &sent_data);
+			break;
+		case '3': // log can bus status
+			LogMode = 22;
+			sprintf(stringPtr, "\"sep=,\"\r\n Can Bus Status \r\n");
+			PC_DEBUG_COMM_SendBlock(stringPtr, strlen(stringPtr), &sent_data);
+			break;
+		case '4': // log Power Voltage
+			LogMode = 25;
+			sprintf(stringPtr, "\"sep=,\"\r\n Power: 5V_Board,  5V_Analogic, 24V_Motor, 24V_Board, 48V_Ever_Motor \r\n");
+			PC_DEBUG_COMM_SendBlock(stringPtr, strlen(stringPtr), &sent_data);
+			break;
+		case '5': // log Door sensors
+			LogMode = 28;
+			sprintf(stringPtr, "\"sep=,\"\r\n Door SX , Doors DX \r\n");
+			PC_DEBUG_COMM_SendBlock(stringPtr, strlen(stringPtr), &sent_data);
+			break;
+		case '6': // log Hook Reservoire sensors
+			LogMode = 31;
+			sprintf(stringPtr, "\"sep=,\"\r\n Reservorie Hook SX , Reservore Hook DX \r\n");
+			PC_DEBUG_COMM_SendBlock(stringPtr, strlen(stringPtr), &sent_data);
+			break;
+		case '7': // log FW Version
+			LogMode = 34;
+			sprintf(stringPtr, "\"sep=,\"\r\n FW VERSION: Control, Protective, PMP FLT, PMP ART, Pinch FLT, Pinch ART, Pinch VEN \r\n");
+			PC_DEBUG_COMM_SendBlock(stringPtr, strlen(stringPtr), &sent_data);
+			break;
+		default:
+			break;
+
 	}
 	cmd = '_';
 
@@ -841,6 +886,28 @@ word sent_data;
 	case 13: // log errors
 		LogMode = 14;
 		break;
+	case 16: // log pump cover
+		LogMode = 17;
+		break;
+	case 19: // log Air Sensors
+		LogMode = 20;
+		break;
+	case 22: // log CanBus
+		LogMode = 23;
+		break;
+	case 25: // log Voltage power
+		LogMode = 26;
+		break;
+	case 28: // log doors
+		LogMode = 29;
+		break;
+	case 31: // log reservoire hooks
+		LogMode = 32;
+		break;
+	case 34: // log FW Version
+		LogMode = 35;
+		break;
+	/*-----------------*/
 	case 2: // pressure
 		if( PrescalerCnt == 0){
 			TxDebugPressures();
@@ -870,6 +937,48 @@ word sent_data;
 			TxDebugErrors();
 		}
 		PrescalerCnt = (PrescalerCnt + 1) % 20;
+		break;
+	case 17: // log pump cover status
+		if( PrescalerCnt == 0){
+			TxPumpCovers();
+		}
+		PrescalerCnt = (PrescalerCnt + 1) % 20;
+		break;
+	case 20: // log Air Sensors
+		if( PrescalerCnt == 0){
+			TxAirSensors();
+		}
+		PrescalerCnt = (PrescalerCnt + 1) % 20;
+		break;
+	case 23: // log Can Bus
+		if( PrescalerCnt == 0){
+			TxCanBus();
+		}
+		PrescalerCnt = (PrescalerCnt + 1) % 20;
+		break;
+	case 26: // log Voltage
+		if( PrescalerCnt == 0){
+			TxPowerVoltage();
+		}
+		PrescalerCnt = (PrescalerCnt + 1) % 20;
+		break;
+	case 29: // log doors
+		if( PrescalerCnt == 0){
+			TxDoors();
+		}
+		PrescalerCnt = (PrescalerCnt + 1) % 20;
+		break;
+	case 32: // log Reservorire Hooks
+		if( PrescalerCnt == 0){
+			TxReservorireHooks();
+		}
+		PrescalerCnt = (PrescalerCnt + 1) % 20;
+		break;
+	case 35: // log Reservorire Hooks
+		if( PrescalerCnt == 0){
+			TxFWVersion();
+		}
+		PrescalerCnt = (PrescalerCnt + 1) % 300;
 		break;
 	}
 }
@@ -967,6 +1076,259 @@ void TxDebugErrors(void)
 
 }
 
+
+void TxPumpCovers(void)
+{
+    static char stringPtr[200];
+    word sent_data;
+    unsigned char * pumps_cover;
+    pumps_cover = GetCoverState();
+	char spump_filt[7];
+	char spump_art[7];
+	char spump_oxy1[7];
+	char spump_oxy2[7];
+
+	if( pumps_cover[0] == 0)
+		strcpy(spump_filt, "closed");
+	else if (pumps_cover[0] == 1)
+		strcpy(spump_filt, "opened");
+	else
+		strcpy(spump_filt, "undef");
+
+	if( pumps_cover[1] == 0)
+		strcpy(spump_art, "closed");
+	else if (pumps_cover[1] == 1)
+		strcpy(spump_art, "opened");
+	else
+		strcpy(spump_art, "undef");
+
+	if( pumps_cover[2] == 0)
+		strcpy(spump_oxy1, "closed");
+	else if (pumps_cover[2] == 1)
+		strcpy(spump_oxy1, "opened");
+	else
+		strcpy(spump_oxy1, "undef");
+
+	if( pumps_cover[3] == 0)
+		strcpy(spump_oxy2, "closed");
+	else if (pumps_cover[3] == 1)
+		strcpy(spump_oxy2, "opened");
+	else
+		strcpy(spump_oxy2, "undef");
+
+    sprintf(stringPtr, " %s , %s , %s , %s \r\n", spump_filt, spump_art , spump_oxy1, spump_oxy2);
+
+    PC_DEBUG_COMM_SendBlock(stringPtr, strlen(stringPtr) , &sent_data);
+}
+
+void TxAirSensors(void)
+{
+	static char stringPtr[200];
+	word sent_data;
+
+	char air_filt[7];
+	char air_art[7];
+	char air_ven[7];
+
+	if( Air_1_Status == AIR)
+		strcpy(air_filt, "AIR");
+	else if (Air_1_Status == LIQUID)
+		strcpy(air_filt, "LIQUID");
+	else
+		strcpy(air_filt, "undef");
+
+	if( Air_Arterious == AIR)
+		strcpy(air_art, "AIR");
+	else if (Air_Arterious == LIQUID)
+		strcpy(air_art, "LIQUID");
+	else
+		strcpy(air_art, "undef");
+
+	if( Air_Venous == AIR)
+		strcpy(air_ven, "AIR");
+	else if (Air_Venous == LIQUID)
+		strcpy(air_ven, "LIQUID");
+	else
+		strcpy(air_ven, "undef");
+
+    sprintf(stringPtr, " %s , %s , %s \r\n", air_filt, air_art , air_ven);
+
+    PC_DEBUG_COMM_SendBlock(stringPtr, strlen(stringPtr) , &sent_data);
+
+}
+
+void TxCanBus(void)
+{
+	static char stringPtr[200];
+	word sent_data;
+
+	char communication_status[19];
+
+	if (IsCanBusError())
+		 strcpy(communication_status, "COMMUNICATION FAIL");
+	else
+		 strcpy(communication_status, "COMMUNICATION OK");
+
+	sprintf(stringPtr, " %s \r\n", communication_status);
+
+	PC_DEBUG_COMM_SendBlock(stringPtr, strlen(stringPtr) , &sent_data);
+}
+
+void TxPowerVoltage(void)
+{
+	static char stringPtr[200];
+	word sent_data;
+
+	unsigned char V24Motor;
+	unsigned char V24Board;
+
+	if (VOLTAGE_M_CHK_GetVal())
+		V24Motor = 24;
+	else
+		V24Motor = 0;
+
+	if (VOLTAGE_B_CHK_GetVal())
+		V24Board = 24;
+	else
+		V24Board = 0;
+
+	sprintf(stringPtr, "% 4.2f , % 4.2f , % u , % u, % 4.2f \r\n", V5_B_Value, V5_An_Value , V24Motor, V24Board, V24_Ever_Motor_Value);
+
+    PC_DEBUG_COMM_SendBlock(stringPtr, strlen(stringPtr) , &sent_data);
+
+}
+
+void TxDoors(void)
+{
+	static char stringPtr[200];
+	word sent_data;
+	char DoorSX[7];
+	char DoorDX[7];
+
+	if (FRONTAL_COVER_1_STATUS == FALSE)
+		strcpy(DoorSX, "closed");
+	else
+		strcpy(DoorSX, "opened");
+
+	if (FRONTAL_COVER_2_STATUS == FALSE)
+		strcpy(DoorDX, "closed");
+	else
+		strcpy(DoorDX, "opened");
+
+    sprintf(stringPtr, " %s , %s \r\n", DoorSX, DoorDX);
+
+    PC_DEBUG_COMM_SendBlock(stringPtr, strlen(stringPtr) , &sent_data);
+
+}
+
+void TxReservorireHooks(void)
+{
+	static char stringPtr[200];
+	word sent_data;
+	char HookSX[7];
+	char HookDX[7];
+
+	if (HOOK_SENSOR_2_STATUS == FALSE)
+		strcpy(HookSX, "closed");
+	else
+		strcpy(HookSX, "opened");
+
+	if (HOOK_SENSOR_1_STATUS == FALSE)
+		strcpy(HookDX, "closed");
+	else
+		strcpy(HookDX, "opened");
+
+    sprintf(stringPtr, " %s , %s \r\n", HookSX, HookDX);
+
+    PC_DEBUG_COMM_SendBlock(stringPtr, strlen(stringPtr) , &sent_data);
+}
+
+void TxFWVersion(void)
+{
+	static char stringPtr[200];
+	word sent_data;
+
+	int FirstRevNumCon;
+	int SecondRevNumCon;
+	int ThirdRevNumCon;
+
+	int FirstRevNumPro;
+	int SecondRevNumPro;
+	int ThirdRevNumPro;
+
+	int FirstRevNumPmpFlt;
+	int SecondRevNumPmpFlt;
+	int ThirdRevNumPmpFlt;
+
+	int FirstRevNumPmpArt;
+	int SecondRevNumPmpArt;
+	int ThirdRevNumPmpArt;
+
+	int FirstRevNumPinchFlt;
+	int SecondRevNumPinchFlt;
+	int ThirdRevNumPinchFlt;
+
+	int FirstRevNumPinchArt;
+	int SecondRevNumPinchArt;
+	int ThirdRevNumPinchArt;
+
+	int FirstRevNumPinchVen;
+	int SecondRevNumPinchVen;
+	int ThirdRevNumPinchVen;
+
+	FirstRevNumCon  = REVISION_FW_CONTROL & 0xF800;
+	FirstRevNumCon  = FirstRevNumCon >> 11;
+	SecondRevNumCon = REVISION_FW_CONTROL & 0x07C0;
+	SecondRevNumCon = SecondRevNumCon >> 6;
+	ThirdRevNumCon  = REVISION_FW_CONTROL & 0x003F;
+
+	FirstRevNumPro  = GetRevisionFWProt() & 0xF800;
+	FirstRevNumPro  = FirstRevNumCon >> 11;
+	SecondRevNumPro = GetRevisionFWProt() & 0x07C0;
+	SecondRevNumPro = SecondRevNumCon >> 6;
+	ThirdRevNumPro  = GetRevisionFWProt() & 0x003F;
+
+	FirstRevNumPmpFlt  = modbusData[0][31] & 0xF000;
+	FirstRevNumPmpFlt = FirstRevNumPmpFlt >> 12;
+	SecondRevNumPmpFlt = modbusData[0][31] & 0x0F00;
+	SecondRevNumPmpFlt = SecondRevNumPmpFlt >> 8;
+	ThirdRevNumPmpFlt  = modbusData[0][31] & 0x00FF;
+
+	FirstRevNumPmpArt  = modbusData[1][31] & 0xF000;
+	FirstRevNumPmpArt = FirstRevNumPmpArt >> 12;
+	SecondRevNumPmpArt = modbusData[1][31] & 0x0F00;
+	SecondRevNumPmpArt = SecondRevNumPmpArt >> 8;
+	ThirdRevNumPmpArt  = modbusData[1][31] & 0x00FF;
+
+	FirstRevNumPinchFlt  = modbusData[4][31] & 0xF000;
+	FirstRevNumPinchFlt = FirstRevNumPinchFlt >> 12;
+	SecondRevNumPinchFlt = modbusData[4][31] & 0x0F00;
+	SecondRevNumPinchFlt = SecondRevNumPinchFlt >> 8;
+	ThirdRevNumPinchFlt  = modbusData[4][31] & 0x00FF;
+
+	FirstRevNumPinchArt  = modbusData[5][31] & 0xF000;
+	FirstRevNumPinchArt = FirstRevNumPinchArt >> 12;
+	SecondRevNumPinchArt = modbusData[5][31] & 0x0F00;
+	SecondRevNumPinchArt = SecondRevNumPinchArt >> 8;
+	ThirdRevNumPinchArt  = modbusData[5][31] & 0x00FF;
+
+	FirstRevNumPinchVen  = modbusData[6][31] & 0xF000;
+	FirstRevNumPinchVen= FirstRevNumPinchVen >> 12;
+	SecondRevNumPinchVen = modbusData[6][31] & 0x0F00;
+	SecondRevNumPinchVen= SecondRevNumPinchVen >> 8;
+	ThirdRevNumPinchVen  = modbusData[6][31] & 0x00FF;
+
+    sprintf(stringPtr, " %d.%d.%d , %d.%d.%d , %d.%d.%d , %d.%d.%d ,%d.%d.%d , %d.%d.%d ,%d.%d.%d \r\n",
+    		           FirstRevNumCon, SecondRevNumCon, ThirdRevNumCon,
+					   FirstRevNumPro, SecondRevNumPro, ThirdRevNumPro,
+					   FirstRevNumPmpFlt, SecondRevNumPmpFlt,ThirdRevNumPmpFlt,
+					   FirstRevNumPmpArt, SecondRevNumPmpArt, ThirdRevNumPmpArt,
+					   FirstRevNumPinchFlt, SecondRevNumPinchFlt, ThirdRevNumPinchFlt,
+					   FirstRevNumPinchArt, SecondRevNumPinchArt, ThirdRevNumPinchArt,
+					   FirstRevNumPinchVen, SecondRevNumPinchVen, ThirdRevNumPinchVen);
+
+    PC_DEBUG_COMM_SendBlock(stringPtr, strlen(stringPtr) , &sent_data);
+}
 
 uint8_t CharReceived(void)
 {

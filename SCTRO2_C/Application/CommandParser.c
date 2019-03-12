@@ -28,6 +28,10 @@ void ErrorNParamsNotOk( int NParams, char** Params);
 void ErrorParamsNotOk( int NParams, char** Params);
 void GetDoorsStat(int NParams, char** Params);
 void GetReservoirHooks(int NParams, char** Params);
+void GetPumps_covers(int NParams, char** Params);
+void GetAirSensors(int NParams, char** Params);
+void GetCanBus(int NParams, char** Params);
+void GetVoltage(int NParams, char** Params);
 
 int strcmp_cr(char* strToCheck, char* strReference );
 int str_NoCr(char* strToCheck);
@@ -43,6 +47,7 @@ void GetPumps(int NParams, char** Params);
 void GetPinches(int NParams, char** Params);
 void GetErrors(int NParams, char** Params);
 void GetPumpsHall(int NParams, char** Params);
+void GetFWVersion(int NParams, char** Params);
 
 void DrawLion(int NParams, char** Params);
 
@@ -150,12 +155,16 @@ void GetMulti(int NParams, char** Params)
 		else if(strcmp_cr(Params[0],"pumps") == 0) GetPumps(NParams-1, Params+1) ;
 		else if(strcmp_cr(Params[0],"pinch") == 0) GetPinches(NParams-1, Params+1) ;
 		else if(strcmp_cr(Params[0],"errors") == 0) GetErrors(NParams-1, Params+1) ;
+		else if(strcmp_cr(Params[0],"covers") == 0) GetPumps_covers(NParams-1, Params+1) ;
+		else if(strcmp_cr(Params[0],"air") == 0) GetAirSensors(NParams-1, Params+1) ;
+		else if(strcmp_cr(Params[0],"canbus") == 0) GetCanBus(NParams-1, Params+1) ;
+		else if(strcmp_cr(Params[0],"voltage") == 0) GetVoltage(NParams-1, Params+1) ;
 		else if(strcmp_cr(Params[0],"doors") == 0) GetDoorsStat(NParams-1, Params+1) ;
-		else if(strcmp_cr(Params[0],"reservoir_hooks") == 0) GetReservoirHooks(NParams-1, Params+1) ;
-		else if(strcmp_cr(Params[0],"pumps_hall") == 0) GetPumpsHall(NParams-1, Params+1) ;
+		else if(strcmp_cr(Params[0],"hooks") == 0) GetReservoirHooks(NParams-1, Params+1) ;
+		else if(strcmp_cr(Params[0],"FW_version") == 0) GetFWVersion(NParams-1, Params+1) ;
 		else {
 			//ErrorParamsNotOk( NParams, Params);
-			CommandAnswer("get temp/press/pumps/pinch/errors/doors/reservoir_hooks  params ");
+			CommandAnswer("get temp/press/pumps/pinch/errors/covers/air/canbus/voltage/doors/hooks/FW_version  params ");
 			return;
 		}
 }
@@ -275,9 +284,39 @@ void GetErrors(int NParams, char** Params)
 	SetLogCommand('E');
 }
 
-void GetPumpsHall(int NParams, char** Params)
+void GetPumps_covers(int NParams, char** Params)
 {
-	SetLogCommand('H');
+	SetLogCommand('1');
+}
+
+void GetAirSensors(int NParams, char** Params)
+{
+	SetLogCommand('2');
+}
+
+void GetCanBus(int NParams, char** Params)
+{
+	SetLogCommand('3');
+}
+
+void GetVoltage(int NParams, char** Params)
+{
+	SetLogCommand('4');
+}
+
+void GetDoorsStat(int NParams, char** Params)
+{
+	SetLogCommand('5');
+}
+
+void GetReservoirHooks(int NParams, char** Params)
+{
+	SetLogCommand('6');
+}
+
+void GetFWVersion(int NParams, char** Params)
+{
+	SetLogCommand('7');
 }
 
 void DrawLion(int NParams, char** Params)
@@ -376,29 +415,7 @@ void CoolerOnOff(int CoolerPower)
 
 }
 
-void GetDoorsStat(int NParams, char** Params)
-{
-	if (FRONTAL_COVER_1_STATUS == FALSE && FRONTAL_COVER_2_STATUS == FALSE)
-		CommandAnswer("Doors are CLOSED");
-	else if (FRONTAL_COVER_1_STATUS == TRUE && FRONTAL_COVER_2_STATUS == FALSE)
-		CommandAnswer("Doors --> left is OPENED, right is CLOSED ");
-	else if (FRONTAL_COVER_1_STATUS == FALSE && FRONTAL_COVER_2_STATUS == TRUE)
-		CommandAnswer("Doors --> left is CLOSED, right is OPENED ");
-	else if (FRONTAL_COVER_1_STATUS == TRUE && FRONTAL_COVER_2_STATUS == TRUE)
-		CommandAnswer("Doors are OPENED");
-}
 
-void GetReservoirHooks(int NParams, char** Params)
-{
-	if (HOOK_SENSOR_1_STATUS == FALSE && HOOK_SENSOR_2_STATUS == FALSE)
-		CommandAnswer("Reservoir hooks are hooked");
-	else if (HOOK_SENSOR_1_STATUS == TRUE && HOOK_SENSOR_2_STATUS == FALSE)
-		CommandAnswer("Reservoir hook --> left is hooked, right is NOT hooked ");
-	else if (HOOK_SENSOR_1_STATUS == FALSE && HOOK_SENSOR_2_STATUS == TRUE)
-		CommandAnswer("Reservoir hook --> left is NOT hooked, right is hooked ");
-	else if (HOOK_SENSOR_1_STATUS == TRUE && HOOK_SENSOR_2_STATUS == TRUE)
-		CommandAnswer("Reservoir hooks are NOT hooked");
-}
 
 //
 // if str to check include final cr , neglect it to avoid

@@ -707,7 +707,7 @@ void CalcAlarmActive(void)
 			// i due allarmi che seguono devo essere gestiti attentamente perche' potrei avere delle
 			// segnalazioni di allarme anche durante la fase di accelerazione e decelerazione del pid
 			// Per ora li commento.
-			//manageAlarmDeltaFlowArt();
+			//get();
 			//manageAlarmDeltaFlowVen();
 			manageAlarmDeltaTempRecArt();
 			manageAlarmDeltaTempRecVen();
@@ -910,7 +910,6 @@ void manageAlarmBadPinchPos(void)
 
 bool IsPumpStopAlarmActive(void);
 
-bool IsCanBusError(void);
 
 void manageAlarmCanBus(void)
 {

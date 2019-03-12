@@ -128,10 +128,14 @@ void Manange_ADC1(void)
 	 * che saranno sempre aggiornate*/
 	if (END_ADC1)
   	  {
+		/*5 Volt Board sta su AD1 channel 9; passando l'indirizzo della variabile, la valorizzo*/
+		AD1_GetChanValue16(V5_B_CHK_ADC_CHANNEL, &V5_B_CHK_ADC);
 		/*Peltier Voltage 2 sta su AD1 channel 10; passando l'indirizzo della variabile, la valorizzo*/
 		AD1_GetChanValue16(V24_P2_CHK_ADC_CHANNEL, &V24_P2_CHK_ADC);
 		/*Peltier Voltage 1 sta su AD1 channel 11; passando l'indirizzo della variabile, la valorizzo*/
 		AD1_GetChanValue16(V24_P1_CHK_ADC_CHANNEL, &V24_P1_CHK_ADC);
+		/*5 Volt Analogic sta su AD1 channel 12; passando l'indirizzo della variabile, la valorizzo*/
+		AD1_GetChanValue16(V5_An_CHK_ADC_CHANNEL, &V5_An_CHK_ADC);
 		/*DP_SW2 sta su AD1 channel 13; passando l'indirizzo della variabile, la valorizzo*/
 		AD1_GetChanValue16(DipSwitch_2_ADC_CHANNEL, &DipSwitch_2_ADC);
 
@@ -556,6 +560,24 @@ void Coversion_From_ADC_To_Voltage()
 	// Filippo - messo tensioni uguali in modo da passare il test visto che la 24V della Peltier1 non c'è più
 	V24_P1_CHK_VOLT=V24_P2_CHK_VOLT;
 //	V24_P2_CHK_VOLT = (float)(V24_P2_CHK_ADC * T1_TEST_DIG_TO_VOLT);
+
+	V24_Ever_Motor_Value = V24_P2_CHK_ADC * 3.3;
+	V24_Ever_Motor_Value = V24_Ever_Motor_Value * 12.480;
+	V24_Ever_Motor_Value = V24_Ever_Motor_Value / 0.680;
+	V24_Ever_Motor_Value = V24_Ever_Motor_Value / 65535;
+	/*Aggiungo un fattore correttivo per tolleranza su resisternze su scheda sulla scheda*/
+	V24_Ever_Motor_Value = V24_Ever_Motor_Value * 0.9764;
+
+	V5_B_Value = V5_B_CHK_ADC * 3.3;
+	V5_B_Value = V5_B_Value * 2;
+	V5_B_Value = V5_B_Value / 65535;
+
+	V5_An_Value = V5_An_CHK_ADC * 3.3;
+	V5_An_Value = V5_An_Value * 2;
+	V5_An_Value = V5_An_Value / 65535;
+
+
+
 }
 
 // Filippo - funzione per la calibrazione del sensore PT1000
@@ -575,7 +597,7 @@ void Plate_Temp_Sensor_Calibration(float value)
 
 /*---FUNZIONE DI CALIBRAZIONE DEI SENSORI DI PRESSIONE
  * NAME: Pressure_Sensor_Calibration
- * INPUT: ID_sens (quale sensore), value (valore in mmHg passato dal PC, point (se è il primo o il secondo punto du calibrazione)
+ * INPUT: ID_sens (quale sensore), value (valore in mmHg passato dal PC), point (se è il primo o il secondo punto du calibrazione)
  * */
 void Pressure_Sensor_Calibration(Press_sens ID_sens, float value, unsigned char point)
 {

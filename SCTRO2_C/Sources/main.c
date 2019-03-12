@@ -251,7 +251,7 @@ int main(void)
 {
   /* Write your local variable definition here */
 
-	bool MOTORE_ACCESO = FALSE;
+  bool MOTORE_ACCESO   = FALSE;
   bool MOTORE_ACCESO_2 = FALSE;
   bool Status_Board;
   THERAPY_TYPE TreatType = Undef;
@@ -520,12 +520,18 @@ int main(void)
    * quando avrò tutti gli attuatori sarà da rimettere TOT_NUMBER_OF_ACTAUTOR al posto di 0x03*/
   slvAddr = FIRST_ACTUATOR;
 
-  while (slvAddr <= LAST_ACTUATOR && timerCounterCheckModBus <= 20)
+  unsigned char Ritrasmissioni = 0;
+
+  /*accetto un numero massimo di ritrasmissioni pari a 40, altrimenti esco dal while*/
+  while (slvAddr <= LAST_ACTUATOR && Ritrasmissioni <= 40)
   {
 	  /*se ho ricevuto opp sono in IDLE quindi non ho ancora inviato il primo messaggio, invio il messaggio*/
-	  if (iFlag_actuatorCheck == IFLAG_COMMAND_RECEIVED || iFlag_actuatorCheck == IFLAG_IDLE)
+	  /*Se è scaduto il timer da 1 sec (timerCounterCheckModBus >= 20) e non ho ricevuto risposta, ritrasmetto*/
+	  if (iFlag_actuatorCheck == IFLAG_COMMAND_RECEIVED || iFlag_actuatorCheck == IFLAG_IDLE || timerCounterCheckModBus >= 20)
 	  {
 		  iFlag_actuatorCheck = IFLAG_COMMAND_SENT;
+
+		  timerCounterCheckModBus = 0;
 
 		  /*L'indirizzo slvAddr = 6 non è usato*/
 		  if (slvAddr == 6)
@@ -541,7 +547,10 @@ int main(void)
 		else
 			/*funzione che mi legge lo stato delle pinch*/
 			Check_Actuator_Status (slvAddr,funcCode,readAddrStartReadRevision,numberOfAddressReadRevision);
+
+		Ritrasmissioni++;
 	  }
+
 	  /*Se ho ricevuto vado a salvarmi i dati nella matrice 'modbusData'*/
 	  if (iFlag_actuatorCheck == IFLAG_COMMAND_RECEIVED)
 	  {

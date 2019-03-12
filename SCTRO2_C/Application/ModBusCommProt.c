@@ -1838,7 +1838,7 @@ void Manage_and_Storage_ModBus_Actuator_Data(void)
  		StorageModbusData(LastActuatslvAddr);
  		iFlag_modbusDataStorage = TRUE;
  		ReadActive = FALSE;
- 		iflag_pmp1_rx = IFLAG_IDLE; //libero la flafg di ricezione per la alwaysModBusActuator
+ 		iflag_pmp1_rx = IFLAG_IDLE; //libero la flag di ricezione per la alwaysModBusActuator
  	}
 
 
@@ -2117,11 +2117,14 @@ void StorageModbusDataInit(void)
 				  Serial_Number 		= 0,
 				  FW_Version    		= 0;
 
+	unsigned char *ptr_msg =&msgToRecvFrame3[0];
+
 	/*copio nell'array temporaneo i dati ricevuti*/
 	for (i=0; i<MAX_DATA_MODBUS_RX; i++)
 	{
-		/*copio il dato*/
-		dataTemp[i] = * (_funcRetVal.slvresRetPtr+i); //così sposto non sposto il puntatore, ma leggo direttamente quello che mi serve senza spostarlo
+//		/*copio il dato*/
+//		dataTemp[i] = * (_funcRetVal.slvresRetPtr+i); //così sposto non sposto il puntatore, ma leggo direttamente quello che mi serve senza spostarlo
+		dataTemp[i] = * (ptr_msg + i);
 	}
 
 	Address = dataTemp[0];
@@ -2216,7 +2219,7 @@ void StorageModbusDataInit(void)
 
 /* funzione che ritorna il numero della pompa con il
  * cover aperto oppure 4 se tutti i cover sono chiusi
- * viene chimata dal main ogni 560 msec*/
+ * viene chimata dal main ogni 100 msec*/
 unsigned char CheckCoverPump()
 {
 	unsigned char MaxCoverNum = 4;
@@ -2270,6 +2273,11 @@ unsigned char CheckCoverPump()
 			return(i);
 	}
 	return(4);
+}
+
+unsigned char* GetCoverState(void)
+{
+	return &CoverState[0];
 }
 
 /*funzione del CheckSum usata anche per la EEPROM e per il protocollo con SBC*/

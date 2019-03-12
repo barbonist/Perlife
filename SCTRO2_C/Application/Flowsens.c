@@ -11,6 +11,7 @@
 #include "Flowsens.h"
 #include "FLOWSENS_RE.h"
 #include "FLOWSENS_DE.h"
+#include "Alarm_Con.h"
 
 
 
@@ -205,11 +206,25 @@ void Manage_UFlow_Sens()
 			}
 		}
 
+		/*valorizzo le variabili globali per definire aria o liquido sui due sensori*/
+		if ((sensor_UFLOW[ARTERIOUS_AIR_SENSOR].bubbleSize >= MAX_BUBBLE_SIZE) ||
+					(sensor_UFLOW[ARTERIOUS_AIR_SENSOR].bubblePresence == MASK_ERROR_BUBBLE_ALARM))
+			Air_Arterious = LIQUID;
+		else
+			Air_Arterious = AIR;
+
+		if ((sensor_UFLOW[VENOUS_AIR_SENSOR].bubbleSize >= MAX_BUBBLE_SIZE) ||
+					(sensor_UFLOW[VENOUS_AIR_SENSOR].bubblePresence == MASK_ERROR_BUBBLE_ALARM))
+			Air_Venous = LIQUID;
+		else
+			Air_Venous = AIR;
+
+
 		//...e se un guasto del sensore lo fa derivare verso valori negativi? -->questo if deve essere assolutamente tolto
 		// e sostituito da un controllo sul valore del flusso negativo
 		//per verificare i t1 test la devo commentare
-		//if (sensor_UFLOW[Id_Buffer].Average_Flow_Val < 0)
-			//sensor_UFLOW[Id_Buffer].Average_Flow_Val = 0;
+//		if (sensor_UFLOW[Id_Buffer].Average_Flow_Val < 0)
+//			sensor_UFLOW[Id_Buffer].Average_Flow_Val = 0;
 	}
 	/***************FINE MEMORIZZAZIONE MESSAGGIO RICEVUTO*****************/
 }

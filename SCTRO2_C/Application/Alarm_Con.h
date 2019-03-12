@@ -344,6 +344,7 @@ bool ResetAlmHandleFunc(uint16_t code);
 
 void EnableDeltaTHighAlmFunc(void);
 void DisableDeltaTHighAlmFunc(void);
+bool IsCanBusError(void);
 
 
 #define START_WARNING_CODE		255

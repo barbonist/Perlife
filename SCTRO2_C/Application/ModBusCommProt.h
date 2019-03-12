@@ -249,4 +249,6 @@ void EN_Motor_Control(unsigned char action);
 void setPumpSpeedValueEVER(unsigned char slaveAddr, int speedValue, int acceleration, ActionPumpEver Action);
 #endif
 
+unsigned char* GetCoverState(void);
+
 #endif /* APPLICATION_MODBUSCOMMPROT_H_ */

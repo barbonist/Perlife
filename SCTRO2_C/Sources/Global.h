@@ -1411,12 +1411,17 @@ word DipSwitch_2_ADC;		//Variabile globale col valore ADC del DIP_SWITCH_3
 #define T_PLATE_P_ADC_CHANNEL		6
 #define DipSwitch_2_ADC_CHANNEL 	13
 
+word V5_B_CHK_ADC;
+float V5_B_Value;
 word V24_P1_CHK_ADC;
 //word V24_P1_CHK_VOLT;
 float V24_P1_CHK_VOLT;
 word V24_P2_CHK_ADC;
+word V5_An_CHK_ADC;
+float V5_An_Value;
 //word V24_P2_CHK_VOLT;
 float V24_P2_CHK_VOLT;
+float V24_Ever_Motor_Value;
 
 /*V24_P1_CHK:	 to 24 Volt --> 49764 ADC count; to 22 Volt 45576 ADC count*/
 #define V24_P1_CHK_GAIN 		0.00047755492
@@ -1438,8 +1443,10 @@ float V24_P2_CHK_VOLT;
 #define T1_TEST_PRESS_TRKNG_THRSLD	5 //mmHg
 /* t1 test */
 
+#define V5_B_CHK_ADC_CHANNEL		9
 #define V24_P2_CHK_ADC_CHANNEL 		10
 #define V24_P1_CHK_ADC_CHANNEL 		11
+#define V5_An_CHK_ADC_CHANNEL		12
 
 
 #define PR_OXYG_ADC_CHANNEL		0
@@ -1487,6 +1494,8 @@ unsigned char CHANGE_ADDRESS_IR_SENS;
 #define TREAT			0x00
 
 unsigned char Air_1_Status;				//variabile globale per vedere lo stato del sensore di aria SONOTEC; può assumere valire AIR opp LIQUID
+unsigned char Air_Arterious;			//variabile globale per vedere lo stato del sensore di aria Analogico Arterioso
+unsigned char Air_Venous;				//variabile globale per vedere lo stato del sensore di aria Analogico Venoso
 unsigned char slvAddr;					//variabile globale per l'indirizzo degli attuatori: FIRST_ACTUATOR = 0x02, LAST_ACTUATOR = 0x09, Addr 0x06 not used (last pump 0x05, first pinch 0x07, last pinch 0x09)
 unsigned char * ptrDataTemperatureIR;
 
