@@ -538,6 +538,11 @@ void NotifyCanOnline(bool Online)
 	}
 }
 
+bool GetCanOk(void)
+{
+	return OldStatusOnline;
+}
+
 
 bool ValueIsInRangePerc(uint16_t RefValue, uint16_t Val2Test, uint16_t IPercent) {
 	uint16_t max;

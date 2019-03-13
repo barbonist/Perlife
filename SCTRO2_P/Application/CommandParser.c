@@ -36,6 +36,9 @@ void GetPumps(int NParams, char** Params);
 void GetPinches(int NParams, char** Params);
 void GetErrors(int NParams, char** Params);
 void GetPumpsHall(int NParams, char** Params);
+void GetDoorsStat(int NParams, char** Params);
+void GetHooksStat(int NParams, char** Params);
+void GetIfCanOk(int NParams, char** Params);
 
 void DrawLion(int NParams, char** Params);
 
@@ -144,11 +147,12 @@ void GetMulti(int NParams, char** Params)
 		else if(strcmp_cr(Params[0],"pinch") == 0) GetPinches(NParams-1, Params+1) ;
 		else if(strcmp_cr(Params[0],"errors") == 0) GetErrors(NParams-1, Params+1) ;
 		else if(strcmp_cr(Params[0],"doors") == 0) GetDoorsStat(NParams-1, Params+1) ;
-		else if(strcmp_cr(Params[0],"reservoir_hooks") == 0) GetReservoirHooks(NParams-1, Params+1) ;
 		else if(strcmp_cr(Params[0],"pumps_hall") == 0) GetPumpsHall(NParams-1, Params+1) ;
+		else if(strcmp_cr(Params[0],"hooks") == 0) GetHooksStat(NParams-1, Params+1);
+		else if(strcmp_cr(Params[0],"can") == 0) GetIfCanOk(NParams-1, Params+1);
 		else {
 			//ErrorParamsNotOk( NParams, Params);
-			CommandAnswer("get temp/press/pumps/pinch/errors/doors/reservoir_hooks  params ");
+			CommandAnswer("get temp/press/pumps/pinch/errors/doors/pumps_hall/hooks/can  [params] ");
 			return;
 		}
 }
@@ -273,6 +277,23 @@ void GetPumpsHall(int NParams, char** Params)
 	SetLogCommand('H');
 }
 
+void GetDoorsStat(int NParams, char** Params)
+{
+	SetLogCommand('1');
+}
+
+void GetHooksStat(int NParams, char** Params)
+{
+	SetLogCommand('2');
+}
+
+void GetIfCanOk(int NParams, char** Params)
+{
+	SetLogCommand('3');
+}
+
+
+
 void DrawLion(int NParams, char** Params)
 {
 	CommandAnswer("\r\n\r\n\r\n");
@@ -320,15 +341,6 @@ void CoolerOnOff(bool CoolerOn, int CoolerPower )
 {
 }
 
-void GetDoorsStat(int NParams, char** Params)
-{
-	CommandAnswer("Doors are CLOSED");
-}
-
-void GetReservoirHooks(int NParams, char** Params)
-{
-	CommandAnswer("Reservoir hooks are hooked");
-}
 
 //
 // if str to check include final cr , neglect it to avoid

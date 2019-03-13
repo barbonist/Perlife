@@ -252,7 +252,7 @@ void verificaTempPlate(void)
 #else
 
 #define VERS_1 1
-#define VERS_2 1
+#define VERS_2 2
 #define VERS_3 0
 
 #endif
@@ -499,6 +499,10 @@ int main(void)
 		- inserito il command processor su seriale per accettare comandi tipo >get temp ... >set heater on 65 ...
 		- aumentato il tempo per scatenare l'errore di temperatura troppo bassa . Infatti succede a volte T troppo bassa in
 		  ipotermia quando si fermano i motori per input utente.
+
+	Versione 1.2.000
+		- inseriti nuovi comandi command processore : get doors ( per posizione ante delle pompe laterali ) ,  get hooks ( per stato ganci reservoir )
+		  get can ( per stato can-bus : ok / not ok )
 
   */
 

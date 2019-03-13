@@ -24,15 +24,22 @@
 #include "IncomingAlarmsManager.h"
 #include "ControlProtectiveInterface.h"
 #include "PC_DEBUG_COMM.h"
+#include "FRONTAL_COVER_1.h"
+#include "FRONTAL_COVER_2.h"
+#include "HOOK_SENSOR_1.h"
+#include "HOOK_SENSOR_2.h"
+
 
 #define VAL_JOLLY16	0x5A5A
 #define VAL_JOLLY8	0x5A
 #define SIZE_CAN_BUFFER	8
 #define LAST_INDEX_TXBUFF2SEND 15	//
 
-#define ESC 27
+#define ESC 0x1B
 #define CR  0x0D
 #define LF  0x0A
+#define BS  0x08
+#define DEL 0x7F
 
 //#define CAN_DEBUG 1
 
@@ -123,6 +130,10 @@ void TxDebugPressures(void);
 void TxDebugTemperatures(void);
 void TxDebugPinch(void);
 void TxDebugErrors(void);
+void TxPumpsHall(void);
+void TxDoorsStatus(void);
+void TxHooksStatus(void);
+void TxIfCanOk(void);
 
 uint8_t CharReceived(void);
 
@@ -882,10 +893,26 @@ word sent_data;
 			sprintf(stringPtr, "   Pump1         Pump2      Pump3     Pump4 \r\n");
 			PC_DEBUG_COMM_SendBlock(stringPtr, strlen(stringPtr), &sent_data);
 			break;
+		case '1': // log doors stat
+			LogMode = 19;
+			sprintf(stringPtr, "   Door1	 Door2 \r\n");
+			PC_DEBUG_COMM_SendBlock(stringPtr, strlen(stringPtr), &sent_data);
+			break;
+		case '2': // log hooks stat
+			LogMode = 22;
+			sprintf(stringPtr, "   Hook1     Hook2 \r\n");
+			PC_DEBUG_COMM_SendBlock(stringPtr, strlen(stringPtr), &sent_data);
+			break;
+		case '3': // log if can is OK
+			LogMode = 25;
+			sprintf(stringPtr, "  CAN bus communication  \r\n");
+			PC_DEBUG_COMM_SendBlock(stringPtr, strlen(stringPtr), &sent_data);
+			break;
 	}
 	cmd = '_';
 
 	switch(LogMode){
+
 	case 1: // pressure
 		LogMode = 2;
 		break;
@@ -903,6 +930,15 @@ word sent_data;
 		break;
 	case 16: // log errors
 		LogMode = 17;
+		break;
+	case 19: // log doors
+		LogMode = 20;
+		break;
+	case 22: // log hooks
+		LogMode = 23;
+		break;
+	case 25: // log if can ok
+		LogMode = 26;
 		break;
 	case 2: // pressure
 		TxDebugPressures();
@@ -931,11 +967,29 @@ word sent_data;
 		}
 		PrescalerCnt = (PrescalerCnt + 1) % 20;
 		break;
-	case 17: // log errors
+	case 17: // log hall sensors pumps
 		if( PrescalerCnt == 0){
 			TxPumpsHall();
 		}
 		PrescalerCnt = (PrescalerCnt + 1) % 3;
+		break;
+	case 20: // log doors
+		if( PrescalerCnt == 0){
+			TxDoorsStatus();
+		}
+		PrescalerCnt = (PrescalerCnt + 1) % 20;
+		break;
+	case 24: // log hooks
+		if( PrescalerCnt == 0){
+			TxHooksStatus();
+		}
+		PrescalerCnt = (PrescalerCnt + 1) % 20;
+		break;
+	case 26: // log if can status ok
+		if( PrescalerCnt == 0){
+			TxIfCanOk();
+		}
+		PrescalerCnt = (PrescalerCnt + 1) % 20;
 		break;
 	}
 }
@@ -1106,6 +1160,47 @@ char ResultStr[200];
 	  PC_DEBUG_COMM_SendBlock(ResultStr, strlen(ResultStr) , &sent_data);
 
 }
+
+
+void TxDoorsStatus(void)
+{
+static char ResultStr[200];
+word sent_data;
+char fc1stat[8];
+char fc2stat[8];
+
+	strcpy(fc1stat,	FRONTAL_COVER_1_GetVal() ? "opened" : "closed");
+	strcpy(fc2stat,	FRONTAL_COVER_2_GetVal() ? "opened" : "closed");
+	sprintf(ResultStr, "%s  ,  %s \r\n", fc1stat, fc2stat);
+	PC_DEBUG_COMM_SendBlock(ResultStr, strlen(ResultStr) , &sent_data);
+}
+
+void TxHooksStatus(void)
+{
+	static char ResultStr[200];
+	word sent_data;
+	char hs1stat[8];
+	char hs2stat[8];
+
+		strcpy(hs1stat,	HOOK_SENSOR_1_GetVal() ? "clamped" : "released");
+		strcpy(hs2stat,	HOOK_SENSOR_2_GetVal()  ? "clamped" : "released");
+		sprintf(ResultStr, "%s  ,  %s \r\n", hs1stat, hs2stat);
+		PC_DEBUG_COMM_SendBlock(ResultStr, strlen(ResultStr) , &sent_data);
+}
+
+bool GetCanOk(void);
+
+void TxIfCanOk(void)
+{
+	static char ResultStr[200];
+	word sent_data;
+	char sCanOk[8];
+
+	if(GetCanOk()) strcpy(ResultStr,"can communication OK\r\n");
+	else strcpy(ResultStr,"can communication NOT OK\r\n");
+	PC_DEBUG_COMM_SendBlock(ResultStr, strlen(ResultStr) , &sent_data);
+}
+
 
 uint8_t CharReceived(void)
 {
