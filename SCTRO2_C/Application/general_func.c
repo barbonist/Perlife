@@ -1016,7 +1016,7 @@ void updateMaxTempPlate (void)
 	/*se mi è arrivato un coando di far partire il
 	 * riscaldatore in debug fisso la t massima
 	 * di piastra a 50 °C*/
-	if (START_HEAT_ON_DEBUG)
+	if (START_HEAT_ON_DEBUG || GetTherapyType() == Undef)
 	{
 		MAX_PLATE_TEMP = 50.0;
 		return;
@@ -1047,7 +1047,7 @@ void updateMinTempPlate (void)
 	/*se mi è arrivato un comando di far partire il
 	 * frigo in debug fisso la t minima
 	 * di piastra a -10 °C*/
-	if (START_FRIGO_ON_DEBUG)
+	if (START_FRIGO_ON_DEBUG || GetTherapyType() == Undef)
 	{
 		MIN_PLATE_TEMP = -10.0;
 		return;
