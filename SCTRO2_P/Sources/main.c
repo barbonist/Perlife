@@ -503,6 +503,10 @@ int main(void)
 	Versione 1.2.000
 		- inseriti nuovi comandi command processore : get doors ( per posizione ante delle pompe laterali ) ,  get hooks ( per stato ganci reservoir )
 		  get can ( per stato can-bus : ok / not ok )
+	Versione 1.2.100
+		- gestita ricezione valori di aria in linea venosa e arteriosa da control
+		- se si riceve valore di aria >= 50 , si fa partire un timer di 5 sec.
+		- trascorsi 5 sec , se non si sono fermate le pompe e le pinch in sicurezza , si da allarme e si va in sicurezza
 
   */
 

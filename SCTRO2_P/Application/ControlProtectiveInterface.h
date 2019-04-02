@@ -21,6 +21,7 @@ void GetPressures(uint16_t* PressFilter, uint16_t* PressArt,  uint16_t* PressVen
 void GetPressOffsets( uint8_t *OffsetPressArt, uint8_t *OffsetPressVen );
 void GetPumpsSpeedRpmx100(int16_t *SpeedPump0x100, int16_t *SpeedPump1x100,int16_t *SpeedPump2x100,int16_t *SpeedPump3x100);
 void GetTemperatures(uint16_t *TempArtx10, uint16_t *TempFluidx10, uint16_t *TempVenx10, uint16_t *TempPlatex10);
+uint8_t GetTherapyType(void);
 
 uint16_t GetOffsetPressArt(void);
 uint16_t GetOffsetPressVen(void);

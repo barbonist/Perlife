@@ -62,7 +62,7 @@ union URxCan {
 	} SRxCan4;
 	// Filippo - messo campo per lo scambio del valore di temperatura piatto
 	struct {
-		uint8_t Free1;	uint8_t Free2;	int16_t tempPlateC;	uint8_t TherapyType ;	uint8_t Free6;	uint8_t Free7;	uint8_t Free8;
+		uint8_t Free1;	uint8_t Free2;	int16_t tempPlateC;	uint8_t TherapyType ;	uint8_t AirArtLevel;	uint8_t AirVenLevel;	uint8_t Free8;
 	} SRxCan5;
 	struct {
 		uint8_t Free1;	uint8_t Free2;	uint8_t Free3;	uint8_t Free4;	uint8_t Free5;	uint8_t Free6;	uint8_t Free7;	uint8_t Free8;
@@ -364,6 +364,11 @@ uint16_t GetOffsetPressVen(void)
 	return (uint16_t) RxCan3.SRxCan3.OffsetPrVen;
 }
 
+
+uint8_t GetTherapyType(void)
+{
+	return RxCan5.SRxCan5.TherapyType;
+}
 
 /* 6 RPM is the minimum speed value calculate by protective */
 /*
@@ -719,9 +724,10 @@ void NewDataRxChannel5(void)
 
 	//if (RxCan5.SRxCan5.tempPlateC != OldRxCan5.SRxCan5.tempPlateC) {
 		// temp plate changed
-		if( IsVerifyRequired() )
-			VerifyRxTemperatures(RxCan2.SRxCan2.TempArtx10, RxCan2.SRxCan2.TempFluidx10, RxCan2.SRxCan2.TempVenx10, RxCan5.SRxCan5.tempPlateC);
+	if( IsVerifyRequired() )
+		VerifyRxTemperatures(RxCan2.SRxCan2.TempArtx10, RxCan2.SRxCan2.TempFluidx10, RxCan2.SRxCan2.TempVenx10, RxCan5.SRxCan5.tempPlateC);
 	//}
+	VerifyRxAirLevels(RxCan5.SRxCan5.AirArtLevel, RxCan5.SRxCan5.AirVenLevel);
 }
 
 void DebugFillTxBuffers(void)

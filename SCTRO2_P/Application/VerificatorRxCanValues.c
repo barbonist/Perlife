@@ -45,7 +45,9 @@ void MismatchTempPlateAlarmAct(void);
 void MismatchTempArtAlarmAct(void);
 void MismatchTempVenAlarmAct(void);
 void MismatchTempFluidAlarmAct(void);
+void AirPresentAlarmAct(void);
 
+void PumpsOrPinchNotRespond_EmergAct_AirAlarm(void);
 
 TAlarmTimer PumpMismatchAlarmTimer = {0,80,false,false,MismatchPumpSpeedAlarmAct , 0 , 65 , PumpsOrPinchNotRespond_EmergAct }; // alarm after 7 s mismatch
 TAlarmTimer CanOfflineAlarmTimer = {0,20,false,false,NoCanCommunicationAlarmAct , 0 , 65 , PumpsOrPinchNotRespond_EmergAct }; // alarm after 2 s mismatch
@@ -60,7 +62,9 @@ TAlarmTimer PressLevelMismatchAlarmTimer = {0,70,false,false, MismatchPressLevel
 TAlarmTimer TempArtMismatchAlarmTimer = {0,20,false,false, MismatchTempArtAlarmAct , 0 , 65 , PumpsOrPinchNotRespond_EmergAct }; // alarm after 2 s mismatch
 TAlarmTimer TempVenMismatchAlarmTimer = {0,20,false,false, MismatchTempVenAlarmAct , 0 , 65 , PumpsOrPinchNotRespond_EmergAct }; // alarm after 2 s mismatch
 TAlarmTimer TempFluidMismatchAlarmTimer = {0,20,false,false, MismatchTempFluidAlarmAct , 0 , 65 , PumpsOrPinchNotRespond_EmergAct }; // alarm after 2 s mismatch
-TAlarmTimer TempPlateMismatchAlarmTimer = {0,20,false,false, MismatchTempPlateAlarmAct , 0 , 65 , PumpsOrPinchNotRespond_EmergAct }; // alarm after 2 s mismatch
+TAlarmTimer TempPlateMismatchAlarmTimer = {0,20,false,false, MismatchTempPlateAlarmAct , 0 , 50 , PumpsOrPinchNotRespond_EmergAct }; // alarm after 2 s mismatch
+
+TAlarmTimer AirPresentAlarmTimer = {0,03,false,false, AirPresentAlarmAct , 0 , 65 , PumpsOrPinchNotRespond_EmergAct_AirAlarm }; // alarm after 300ms s mismatch , then check pumps stop
 
 static TAlarmTimer	*AlarmTimerList[] = {
 		&PumpMismatchAlarmTimer ,
@@ -76,7 +80,9 @@ static TAlarmTimer	*AlarmTimerList[] = {
 		&TempArtMismatchAlarmTimer,
 		&TempVenMismatchAlarmTimer,
 		&TempFluidMismatchAlarmTimer,
-		&TempPlateMismatchAlarmTimer
+		&TempPlateMismatchAlarmTimer,
+
+		&AirPresentAlarmTimer  // 2-4-2019 new spex
 };
 
 static void ManageVerificatorAlarms100ms(void);
@@ -278,6 +284,45 @@ void MismatchTempPlateAlarmAct(void)
 	}
 }
 
+void AirPresentAlarmAct(void)
+{
+	if(GetControlFSMState() == STATE_TREATMENT)
+	{
+		// do nothing , just trigger later check on pinch and pumps
+		TriggerSecondaryAction(&AirPresentAlarmTimer);
+	}
+}
+
+//
+// if 5 seconds elapsed after air alarm from control and motors or pinch not stopped
+// issue special alarm , stop pumps.
+// This error should'nt never occur , but ... never say never  :(
+//
+void PumpsOrPinchNotRespond_EmergAct_AirAlarm(void)
+{
+bool some_error = false;
+
+	//DIS HEAT , DIS COOL if pinch not safety , OFF 24V  if motors not stopped within 6,5 seconds
+	if( !PinchesAreInSafetyMode() ){
+		some_error = true;
+		Enable_Heater(FALSE);
+		Enable_Frigo(FALSE);
+	}
+	if( !PumpsAreStopped() ){
+		some_error = true;
+		SwitchOFFPinchNPumps();
+	}
+	if( some_error ){
+		ShowNewAlarmError(CODE_ALARM_ON_ALARMS_FSM);
+	}
+	else {
+		// reset err condition if control stopped motors / pinch and acted as expected
+		AirPresentAlarmTimer.AlarmAction = false;
+		AirPresentAlarmTimer.AlarmActive = false;
+	}
+}
+
+
 void MismatchTempArtAlarmAct(void)
 {
 
@@ -367,6 +412,24 @@ void VerifyRxTemperatures(uint16_t TempArtx10, uint16_t TempFluidx10, uint16_t T
 	// causa inaccuratezza della misura ,  porto l'errore accettabile da 4 a 8 gradi , no a 15 gradi ( ah ah )
 	TempPlateMismatchAlarmTimer.AlarmConditionPending = ValueIsInRange(tempPlatex10_p, TempPlatex10, 150 ) ? false : true ;
 }
+
+void VerifyRxAirLevels(uint8_t AirArtLevel, uint8_t AirVenLevel)
+{
+	if (GetControlFSMState() == STATE_TREATMENT) {
+		if (GetTherapyType() == 0x01) {
+			// liever therap
+			if ((AirArtLevel > 50) || (AirVenLevel > 50))
+				AirPresentAlarmTimer.AlarmConditionPending = true; // don't clear
+		}
+
+		if (GetTherapyType() == 0x02) {
+			// kidney therapy
+			if (AirArtLevel > 50)
+				AirPresentAlarmTimer.AlarmConditionPending = true; // don't clear
+		}
+	}
+}
+
 
 void VerifyRxAirAlarm( uint8_t RxAirAlarm )
 {
