@@ -764,6 +764,7 @@ enum MachineStateGuardId {
 	GUARD_TEMP_RESTORE_END,
 	GUARD_TEMP_RESTART_TREAT,   // riprendo il trattamento dopo aver ripristinato la temperatura nella la fase di trattamento
 	GUARD_TEMP_NEW_RECOVERY,    // ricomincio una nuova fase di ripristino temperatura
+	GUARD_PRIMING_STOPPED,
 	GUARD_END_NUMBER
 };
 

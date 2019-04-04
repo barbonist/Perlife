@@ -254,26 +254,29 @@ void ParentFunc(void)
 					releaseGUIButton(BUTTON_RESET_ALARM);
 					AtLeastoneButResRcvd = TRUE;
 					EnableNextAlarmFunc(); //EnableNextAlarm = TRUE;
-//					if(GlobalFlags.FlagsDef.TankLevelHigh)
-//					{
-//						// era un allarme di troppo pieno, forzo uscita dal priming
-//						setGUIButton(BUTTON_PRIMING_END_CONFIRM);
-//						GlobalFlags.FlagsDef.TankLevelHigh = 0;
-//					}
-//					else
-//					{
-						// forzo anche una pressione del tasto BUTTON_START_PRIMING START per fare in modo che
-						// il priming riprenda automaticamente
-						setGUIButton(BUTTON_START_PRIMING);
-//					}
 
-					/* (FM) finita la situazione di allarme posso ritornare in PARENT_PRIMING_TREAT_KIDNEY_1_INIT*/
-					// nella nuova gestione il priming viene fatto partendo direttamente dallo stato PARENT_PRIMING_TREAT_KIDNEY_1_RUN
-					// e non da PARENT_PRIMING_TREAT_KIDNEY_1_INIT
-					//ptrFutureParent = &stateParentPrimingTreatKidney1[1];
-					ptrFutureParent = &stateParentPrimingTreatKidney1[3];
-					ptrFutureChild = ptrFutureParent->ptrChild;
-					LevelBuzzer = SILENT;//0;
+					if (currentGuard[GUARD_PRIMING_STOPPED].guardValue == GUARD_VALUE_TRUE)
+					{
+						currentGuard[GUARD_PRIMING_STOPPED].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
+						currentGuard[GUARD_PRIMING_STOPPED].guardValue = GUARD_VALUE_FALSE;
+
+						ptrFutureParent = &stateParentPrimingTreatKidney1[9];
+						ptrFutureChild = ptrFutureParent->ptrChild;
+						LevelBuzzer = SILENT;//0;
+					}
+					else
+					{
+						setGUIButton(BUTTON_START_PRIMING);
+
+						/* (FM) finita la situazione di allarme posso ritornare in PARENT_PRIMING_TREAT_KIDNEY_1_INIT*/
+						// nella nuova gestione il priming viene fatto partendo direttamente dallo stato PARENT_PRIMING_TREAT_KIDNEY_1_RUN
+						// e non da PARENT_PRIMING_TREAT_KIDNEY_1_INIT
+						//ptrFutureParent = &stateParentPrimingTreatKidney1[1];
+						ptrFutureParent = &stateParentPrimingTreatKidney1[3];
+						ptrFutureChild = ptrFutureParent->ptrChild;
+						LevelBuzzer = SILENT;//0;
+					}
+
 				}
 				else if(!IsAlarmActive())
 				{
@@ -338,6 +341,7 @@ void ParentFunc(void)
 			break;
 
 		case PARENT_PRIM_WAIT_PAUSE:
+			currentGuard[GUARD_PRIMING_STOPPED].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
 			if(currentGuard[GUARD_ENABLE_STATE_KIDNEY_1_PRIM_RUN].guardValue == GUARD_VALUE_TRUE)
 			{
 				ptrFutureParent = &stateParentPrimingTreatKidney1[3];
@@ -345,10 +349,22 @@ void ParentFunc(void)
 				// forzo anche una pressione del tasto TREATMENT START per fare in modo che
 				// il trattamento riprenda automaticamente
 				setGUIButton(BUTTON_START_PRIMING);
+
 				currentGuard[GUARD_ENABLE_STATE_KIDNEY_1_PRIM_RUN].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
 				currentGuard[GUARD_ENABLE_STATE_KIDNEY_1_PRIM_RUN].guardValue = GUARD_VALUE_FALSE;
+
+				currentGuard[GUARD_PRIMING_STOPPED].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
+				currentGuard[GUARD_PRIMING_STOPPED].guardValue = GUARD_VALUE_FALSE;
 				break;
 			}
+			else if(currentGuard[GUARD_ALARM_ACTIVE].guardValue == GUARD_VALUE_TRUE)
+			{
+				ptrFutureParent = &stateParentPrimingTreatKidney1[5];
+				ptrFutureChild = ptrFutureParent->ptrChild;
+				LevelBuzzer = HIGH;//2;
+				break;
+			}
+
 			if(ptrCurrentParent->action == ACTION_ON_ENTRY)
 			{
 				/* compute future parent */
@@ -1147,7 +1163,15 @@ void ParentFunc(void)
 			break;
 
 		case PARENT_TREAT_WAIT_PAUSE:
-			if(currentGuard[GUARD_ENABLE_STATE_KIDNEY_1_PUMP_ON].guardValue == GUARD_VALUE_TRUE)
+			if(currentGuard[GUARD_ALARM_ACTIVE].guardValue == GUARD_VALUE_TRUE)
+			{
+				ptrFutureParent = &stateParentPrimingTreatKidney1[5];
+				ptrFutureChild = ptrFutureParent->ptrChild;
+
+				LevelBuzzer = HIGH;//2;
+				break;
+			}
+			else if(currentGuard[GUARD_ENABLE_STATE_KIDNEY_1_PRIM_RUN].guardValue == GUARD_VALUE_TRUE)
 			{
 				ptrFutureParent = &stateParentTreatKidney1[3];
 				ptrFutureChild = ptrFutureParent->ptrChild;

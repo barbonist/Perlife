@@ -4474,13 +4474,12 @@ void manageParentTreatEndAlways(void)
 // funzione entry dello stato PARENT_TREAT_WAIT_PAUSE
 void manageParentTreatWaitPauseEntry(void)
 {
-	// disabilito gli allarmi delle cover perche' quando entro in questo stato tutte le pompe si fermano
-	GlobalFlags.FlagsDef.EnableCoversAlarm = 0;
 	// disabilito allarmi di temperatura arteriosa
 	GlobalFlags.FlagsDef.EnableTempArtHighAlm = 0;
 	GlobalFlags.FlagsDef.EnableTempArtOORAlm = 0;
-	// Filippo - sospendo il PID in attesa di farlo partire
+    // Filippo - sospendo il PID in attesa di farlo partire
 	FrigoHeatTempControlTaskNewPID((LIQ_TEMP_CONTR_TASK_CMD)TEMP_MANAGER_SUSPEND_CMD);
+
 }
 
 // funzione entry dello stato PARENT_TREAT_WAIT_START
