@@ -87,7 +87,6 @@
 
 // Filippo - definisco codice allarme per il tasto di stop
 #define CODE_ALARM_EMERGENCY_BUTTON             0x93
-#define CODE_ALARM_TEST_T1		  				0x94
 #define CODE_ALARM_AIR_SENSOR_TEST_KO			0x95
 
 #define CODE_ALARM_MACHINE_COVERS               0xA0
@@ -106,6 +105,9 @@
 #define CODE_ALARM_PERF_ART_PUMP_STILL_WARN		0x107
 #define CODE_ALARM_OXYG_PUMP_STILL_WARN         0x108
 
+// Allarme T1 Test (600 dec)
+// I valori superiori a 448 generano sulla GUI una finestra senza tasto RESET
+#define CODE_ALARM_TEST_T1		  				0x258
 
 #define	PHYSIC_TRUE		0xA5
 #define PHYSIC_FALSE	0x5A

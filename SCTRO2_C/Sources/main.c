@@ -661,6 +661,9 @@ int main(void)
 	        	computeMachineStateGuard();
 
 	        	processMachineState();
+				
+				//Gestione Allarme dovuto al fallimento di un T1 Test
+	        	manageAlarmT1Test();
 
 	        	ManageMuteButton();
 
