@@ -51,7 +51,7 @@
 #include "string.h"
 #include "general_func.h"
 
-extern struct alarm alarmList[];
+extern typeAlarmS alarmList[];
 
 void Heater_ON()
 {

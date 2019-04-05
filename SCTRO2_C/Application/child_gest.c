@@ -325,11 +325,6 @@ void manageChildPrimAlmBadPinchPosAlways(void)
 		ResetPrimPinchAlm();
 		// se l'allarme era stato generato da qualche problema quando il priming era gia' attivo (pompe in movimento)
 		ResetTreatCurrPinchPosOk();
-
-		// in questo caso posso rilasciare il tasto BUTTON_RESET_ALARM perche' per uscire dallo stato
-		// di allarme PARENT_PRIMING_END_RECIRC_ALARM controllo solo
-		// currentGuard[GUARD_ALARM_ACTIVE].guardValue == GUARD_VALUE_FALSE e non mi aspetto un comando
-		// di reset
 		releaseGUIButton(BUTTON_RESET_ALARM);
 		EnableNextAlarmFunc(); //EnableNextAlarm = TRUE;
 	}
@@ -346,17 +341,7 @@ void manageChildPrimAlmBadPinchPosAlways(void)
 //--------------------------------------------------------------------------------------------------
 
 //--------------------------------------------------------------------------------------------------
-// L'allarme viene generato quando viene rilevata aria nella linea del filtro e sono in priming
-/* Manage CHILD_PRIM_ALARM_SFA_AIR_DET entry state in priming*/
-//void manageChildPrimAlmSFAAirDetEntry(void)
-//{
-//	manageChildTreatAlm1StopAllActEntry();
-//}
-//
-//void manageChildPrimAlmSFAAirDetAlways(void)
-//{
-//	manageChildTreatAlm1StopAllActAlways();
-//}
+
 
 void manageChildPrimAlmSFAAirDetEntry(void)
 {

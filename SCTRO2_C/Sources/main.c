@@ -604,7 +604,7 @@ int main(void)
 #ifdef ENABLE_PROTECTIVE_ALARM_RESET
    ProAlmCodeToreset = 0;                         // codice dell'allarme protective da resettare (RxBuffCanP[2]->SRxCan2.AlarmCode).
 		                                          // 0 nessun allarme da resettare
-   memset(&ProtectiveAlarmStruct, 0, sizeof(struct alarm));
+   memset(&ProtectiveAlarmStruct, 0, sizeof(typeAlarmS));
 #endif
 
 #ifdef DEBUG_FRIGO_AMS
@@ -664,11 +664,18 @@ int main(void)
 				
 				//Gestione Allarme dovuto al fallimento di un T1 Test
 	        	manageAlarmT1Test();
+	        	//Gestione allarme di STOP display
+	        	manageAlarmStopButtonPressed();
 
 	        	ManageMuteButton();
+				//manageAlarmPhysicPressSensHigh();
+				//manageAlarmPhysicPressSensLow();
+	        	CalcAlarmActive();
 
 	        	alarmEngineAlways();
-	        	warningsEngineAlways();
+
+
+//	        	warningsEngineAlways();
 		        GenerateSBCComm();
 		        ProtectiveTask();
 		        // Filippo - devo verificare che le temperature piatto lette dalla control e dalla protective siano le stesse

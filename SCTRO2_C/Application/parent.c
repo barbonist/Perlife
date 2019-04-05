@@ -101,7 +101,6 @@ void ParentFunc(void)
 					currentGuard[GUARD_ALARM_ACTIVE].guardValue = GUARD_VALUE_FALSE;
 				}
 			}
-
 			break;
 		case PARENT_PRIMING_TREAT_KIDNEY_1_INIT:
 			if(buttonGUITreatment[BUTTON_CONFIRM].state == GUI_BUTTON_RELEASED)
@@ -142,7 +141,7 @@ void ParentFunc(void)
 //				}
 				LevelBuzzer = HIGH;//2;
 			}
-			// per sicurezza resetto la flag di reset alarm premuto, nel caso mi fosse rimasto settato
+			// per sicurezza resetto la flag di reset alarm premuto, nel caso mi fosse rimasto settato //NOTA_ML: privo di senso
 			releaseGUIButton(BUTTON_RESET_ALARM);
 			break;
 
@@ -1797,14 +1796,14 @@ void ParentFuncT1Test(void)
 		{
 			// qui devo controllare se qualcuno ha spedito il tasto di reset per annullarne l'effetto e fare in modo che rimanga in
 			// allarme
-			if(currentGuard[GUARD_ALARM_ACTIVE].guardValue == GUARD_VALUE_FALSE)
-			{
-				// se hanno resettato l'allarme lo ripristino e resto lì
-				if(buttonGUITreatment[BUTTON_RESET_ALARM].state == GUI_BUTTON_RELEASED)
-				{
-					releaseGUIButton(BUTTON_RESET_ALARM);
-				}
-			}
+//			if(currentGuard[GUARD_ALARM_ACTIVE].guardValue == GUARD_VALUE_FALSE)
+//			{
+//				// se hanno resettato l'allarme lo ripristino e resto lì
+//				if(buttonGUITreatment[BUTTON_RESET_ALARM].state == GUI_BUTTON_RELEASED)
+//				{
+//					releaseGUIButton(BUTTON_RESET_ALARM);
+//				}
+//			}
 		}
 
 		break;

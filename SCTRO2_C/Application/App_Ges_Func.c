@@ -389,7 +389,7 @@ void CheckAlarmForGuiStateMsg(void)
 	if(!AmJInAlarmState())
 	{
 		if(alarmCurrent.code)
-			memset(&alarmCurrent, 0, sizeof(struct alarm));
+			memset(&alarmCurrent, 0, sizeof(typeAlarmS));
 	}
 }
 // ritorna TRUE se lo stato child ha bisogno del button reset per fare qualcosa

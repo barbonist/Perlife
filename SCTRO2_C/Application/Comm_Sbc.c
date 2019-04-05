@@ -25,6 +25,7 @@
 extern int PinchFilterCurrValue;
 extern word MedForArteriousPid;
 extern word MedForVenousPid;
+extern typeAlarmS* GetCurrentAlarmActiveListA(void);;
 
 void buildModBusWriteRegActResponseMsg(char *ptrMsgSbcRx)
 {
@@ -1162,7 +1163,7 @@ void buildRDMachineStateResponseMsg(char code, char subcode)
 		if (GetAlarmCodeProt() != 0)
 			wd = GetAlarmCodeProt();
 		else
-			wd = alarmCurrent.code;
+			wd = GetCurrentAlarmActiveListA()->code;
 
 	    /*14*/	sbc_tx_data[index++] = ( wd >> 8) & 0xFF; // (alarmCurrent.code >> 8 ) & 0xFF;
 		/*15*/	sbc_tx_data[index++] = ( wd )     & 0xFF; // (alarmCurrent.code 	    ) & 0xFF;

@@ -10,6 +10,11 @@
 
 #include "Global.h"
 
+typedef struct {
+	typeAlarmS *ptr;
+	unsigned char status;
+} sActiveListAS;
+
 //#define CODE_ALARM0		0x00
 //#define CODE_ALARM1		0x01
 //#define CODE_ALARM2		0x02
@@ -260,7 +265,7 @@ enum ALARM
 void alarmConInit(void);
 void alarmEngineAlways(void);
 void alarmManageNull(void);
-void manageAlarmChildGuard(struct alarm * ptrAlarm);
+void manageAlarmChildGuard(typeAlarmS * ptrAlarm);
 void manageAlarmPhysicFlowHigh(void);
 void manageAlarmFlowSensNotDetected(void);
 void manageAlarmIrTempSensNotDetected(void);
