@@ -656,7 +656,6 @@ int main(void)
 	         {
 	        	timerCounterMState = 0;
 
-	        	manageParentDigitalT1Test(); //Check sui segnali digitali, la valutazione dei risultati avverrà successivamente
 
 	        	computeMachineStateGuard();
 
@@ -670,6 +669,7 @@ int main(void)
 		        ProtectiveTask();
 		        // Filippo - devo verificare che le temperature piatto lette dalla control e dalla protective siano le stesse
 		        verificaTempPlate();
+		        manageAlarmT1Test();
 
 		        updateDurationToSendSBC();
 
