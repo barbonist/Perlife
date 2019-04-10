@@ -1395,10 +1395,30 @@ bool StartHeating(float DeltaT)
 		Heat_ON  = TRUE;
 		DeltaT = -DeltaT;
 		DeltaTInt = DeltaT / 10.0 + 0.5;
-		if (DeltaTInt <= 2)
-			HeatingPwmPerc = 70;
+		if (ptrCurrentState->state == STATE_TREATMENT_KIDNEY_1)
+		{
+			if (DeltaTInt >= 3.0)
+				HeatingPwmPerc = 100;
+			else if (DeltaTInt >= 2.5)
+				HeatingPwmPerc = 90;
+			else if (DeltaTInt >= 2.0)
+				HeatingPwmPerc = 70;
+			else if (DeltaTInt >= 1.5)
+				HeatingPwmPerc = 60;
+			else if (DeltaTInt >= 1.0)
+				HeatingPwmPerc = 50;
+			else if (DeltaTInt >= 0.5)
+				HeatingPwmPerc = 30;
+		}
 		else
-			HeatingPwmPerc = 100;
+		{
+			if (DeltaTInt <= 0.8)
+				HeatingPwmPerc = 50;
+			else if (DeltaTInt <= 1.6)
+				HeatingPwmPerc = 70;
+			else
+				HeatingPwmPerc = 100;
+		}
 //		if(DeltaTInt >= 9)
 //			HeatingPwmPerc = 90; // 90%
 //		else if(DeltaTInt >= 8)

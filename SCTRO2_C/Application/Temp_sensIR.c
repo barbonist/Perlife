@@ -130,6 +130,8 @@ void Manage_IR_Sens_Temp(void)
  			sensorIR_TM[index_array].tempSensValue = (float)((BYTES_TO_WORD(sensorIR_TM[index_array].bufferReceived[1], sensorIR_TM[index_array].bufferReceived[0]))*((float)0.02)) - (float)273.15;
  			/*correggo il valore di OfFset se sono sotto LOWER_RANGE_IR_CORRECTION o sopra HIGHER_RANGE_IR_CORRECTION*/
  			sensorIR_TM[index_array].tempSensValue = Ir_Temperature_correction_offset (sensorIR_TM[index_array].tempSensValue);
+ 			/*aggiorno il valore filtrato di temperatura, filtro su 25 campioni quindi tengo la storia su 15 secondi (ogni sensore viene letto ogni 600 msec*/
+ 			sensorIR_TM[index_array].tempSensValueFiltered = meanWATempSensorIR(25,sensorIR_TM[index_array].tempSensValue,index_array);
  			/*ho ricevuto bene, resetto il contatore consecutivo di errore*/
  			sensorIR_TM[index_array].ErrorMSG = 0;
  		}
@@ -162,6 +164,35 @@ float Ir_Temperature_correction_offset (float Temp_value)
 	}
 
 	return (Temp_correct);
+}
+
+float meanWATempSensorIR(unsigned char dimNum, float newSensVal, char IdSens)
+{
+	static float circularBuffer[3] [255]; //uso una matrice di 3 array, uno per ogni sensore
+	static float circBuffAdd[3] [255];    //uso una matrice di 3 array, uno per ogni sensore
+	float numSumValue = 0;
+	float denValue=0;
+	float numTotal=0;
+
+	if(dimNum <= 255){
+	for(int i=(dimNum-1); i>0; i--)
+	{
+		denValue = denValue + i;
+
+		circularBuffer[IdSens] [i] = circularBuffer [IdSens] [i-1];
+		circBuffAdd [IdSens] [i] = circularBuffer[IdSens] [i]*(dimNum-i);
+		numSumValue = numSumValue + circBuffAdd [IdSens] [i];
+
+	}
+	circularBuffer[IdSens] [0] = newSensVal;
+	numSumValue = numSumValue + (circularBuffer [IdSens] [0]*dimNum);
+	denValue = denValue + dimNum;
+	numTotal = (numSumValue/denValue);
+
+	return numTotal;
+	}
+	else
+		return 0;
 }
 
 //void alwaysIRTempSensRead(void){

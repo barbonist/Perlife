@@ -1134,6 +1134,7 @@ struct tempIRSensor{
 	float tempSensOffsetVal;
 	float tempSensGain;
 	float tempSensValue;
+	float tempSensValueFiltered;
 	word  tempSensAdc;
 	word * tempSensAdcPtr;
 	float tempSensValueOld;

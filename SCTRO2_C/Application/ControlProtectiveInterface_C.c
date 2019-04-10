@@ -76,7 +76,7 @@ union UTxCan {
 #else
 	// Filippo - messo campo per lo scambio della temperatura di piatto
 	struct {
-		uint8_t Free1;	uint8_t Free2;	int16_t tempPlateC;	uint8_t TerapyType;	uint8_t Free6;	uint8_t Free7;	uint8_t Free8;
+		int16_t AlarmCodeToReset;	int16_t tempPlateC;	uint8_t TerapyType;	uint8_t ArtLineAirMeasure;	uint8_t VenLineAirMeasure;	uint8_t Free8;
 	} STxCan5;
 #endif
 	struct {
@@ -291,6 +291,8 @@ void onNewSensTempVal(uint16_t PressOxyg, float TempRes,
 void onNewTherapyType()
 {
     TxCan5.STxCan5.TerapyType = (THERAPY_TYPE) GetTherapyType();
+    TxCan5.STxCan5.ArtLineAirMeasure = sensor_UFLOW[ARTERIOUS_AIR_SENSOR].bubbleSize;
+	TxCan5.STxCan5.VenLineAirMeasure = sensor_UFLOW[VENOUS_AIR_SENSOR].bubbleSize;
 }
 void onNewPinchVal(uint8_t AirFiltStat, uint16_t AlarmCode,
 		           uint8_t Pinch2WPVF, uint8_t Pinch2WPVA, uint8_t Pinch2WPVV)

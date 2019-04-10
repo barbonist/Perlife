@@ -73,36 +73,36 @@ struct alarm alarmList[] =
 
 		{CODE_ALARM_PRESS_ADS_FILTER_LOW,  PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH, 60000, 2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull},	    /* 26 */
 		{CODE_ALARM_PRESS_OXYG_LOW, 	   PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH, 60000, 2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull}, 		/* 27 */
-		{CODE_ALARM_FLOW_ART_SET,          PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH, 60000, 2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull}, 		/* 7 */
-		{CODE_ALARM_FLOW_VEN_SET,          PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH, 60000, 2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull}, 		/* 7 */
-		{CODE_ALARM_FLOW_DEP_SET,          PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH, 60000, 2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull}, 		/* 7 */
+		{CODE_ALARM_FLOW_ART_SET,          PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH, 60000, 2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull}, 		/* 28 */
+		{CODE_ALARM_FLOW_VEN_SET,          PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH, 60000, 2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull}, 		/* 29 */
+		{CODE_ALARM_FLOW_DEP_SET,          PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH, 60000, 2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull}, 		/* 30 */
 
 		//Allarme per errore nella lettura e scrittura modbus. Se dopo 10 ripetizioni non ottengo risposta alla lettura o scrittura genero un allarme.
 		// Per questo allarme uso la stessa procedura per le pompe non ferme. (Dovrei tolgliere direttamente l'enable alle pompe.
-		//{CODE_ALARM_MODBUS_ACTUATOR_SEND,  PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_WAIT_CONFIRM,        PRIORITY_LOW,     0, 100, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull},	        /* 28 */
-		{CODE_ALARM_MODBUS_ACTUATOR_SEND,  PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_MOD_BUS_ERROR,         PRIORITY_HIGH,    0, 500, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull},	        /* 28 */
+		//{CODE_ALARM_MODBUS_ACTUATOR_SEND,  PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_WAIT_CONFIRM,        PRIORITY_LOW,     0, 100, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull},	        /* 31 */
+		{CODE_ALARM_MODBUS_ACTUATOR_SEND,  PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_MOD_BUS_ERROR,         PRIORITY_HIGH,    0, 500, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull},	        /* 31 */
 
 		// allarmi provenienti dalla protective. Serve per fare in modo che quando la protective e' in allarme le pompe vengano fermate e le pinch
 		// messe in sicurezza
-		{CODE_ALARM_PROT_START_VAL,        PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_PROTECTION, SECURITY_STOP_ALL_ACTUATOR,  PRIORITY_HIGH,    0, 500, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull},	        /* 29 */
+		{CODE_ALARM_PROT_START_VAL,        PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_PROTECTION, SECURITY_STOP_ALL_ACTUATOR,  PRIORITY_HIGH,    0, 500, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull},	        /* 32 */
 
 		// Filippo - inserito allarme per il tasto di stop
-		{CODE_ALARM_EMERGENCY_BUTTON, PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH, 0, 500, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_ALLOWED, &alarmManageNull},	        /* 30 allarme tasto di stop*/
+		{CODE_ALARM_EMERGENCY_BUTTON, PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH, 0, 500, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_ALLOWED, &alarmManageNull},	        /* 33 allarme tasto di stop*/
 
 		// Filippo - inserito allarme per test T1
-		{CODE_ALARM_TEST_T1, PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH, 0, 500, OVRD_NOT_ENABLED, RESET_NOT_ALLOWED, SILENCE_ALLOWED, MEMO_ALLOWED, &alarmManageNull},	        /* 31 allarme tasto di stop*/
+		{CODE_ALARM_TEST_T1, PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH, 0, 500, OVRD_NOT_ENABLED, RESET_NOT_ALLOWED, SILENCE_ALLOWED, MEMO_ALLOWED, &alarmManageNull},	        /* 34 allarme tasto di stop*/
 		// Filippo - inserito allarme per test sensore aria fallito
-		{CODE_ALARM_AIR_SENSOR_TEST_KO,PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,PRIORITY_HIGH, 0, 2000, OVRD_NOT_ENABLED, RESET_NOT_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull}, 		/* 32 */
-        {CODE_ALARM_MACHINE_COVERS,       PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH,    0,  100, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull},         /* 33 */
-        {CODE_ALARM_HOOKS_RESERVOIR,      PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH,    0,  100, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull},         /* 34 */
-        {CODE_ALARM_ART_RES_HIGH,         PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH,    0,  100, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull},         /* 35 */
-		{CODE_ALARM_T_ART_OUT_OF_RANGE,   PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_DELTA_TEMP_HIGH,       PRIORITY_HIGH, 2000,    0, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull}, 	    /* 36*/
-		{CODE_ALARM_TEMP_ART_HIGH_IN_TRT, PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_DELTA_TEMP_HIGH,       PRIORITY_HIGH, 2000,    0, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull}, 	    /* 37*/
+		{CODE_ALARM_AIR_SENSOR_TEST_KO,PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,PRIORITY_HIGH, 0, 2000, OVRD_NOT_ENABLED, RESET_NOT_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull}, 		/* 35 */
+        {CODE_ALARM_MACHINE_COVERS,       PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH,    0,  100, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull},         /* 36 */
+        {CODE_ALARM_HOOKS_RESERVOIR,      PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH,    0,  100, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull},         /* 37 */
+        {CODE_ALARM_ART_RES_HIGH,         PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH,    0,  100, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull},         /* 38 */
+		{CODE_ALARM_T_ART_OUT_OF_RANGE,   PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_DELTA_TEMP_HIGH,       PRIORITY_HIGH, 2000,    0, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull}, 	    /* 39*/
+		{CODE_ALARM_TEMP_ART_HIGH_IN_TRT, PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_DELTA_TEMP_HIGH,       PRIORITY_HIGH, 2000,    0, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull}, 	    /* 40*/
 		// da qui in avanti solo le warning
-		{CODE_ALARM_PRESS_ADS_FILTER_WARN,    PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR, PRIORITY_LOW,  2000,  2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull},	    /* 38 esempio di warning*/
-		{CODE_ALARM_DEP_PUMP_STILL_WARN,      PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR, PRIORITY_LOW,  2000,  2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull},	    /* 39 */
-		{CODE_ALARM_PERF_ART_PUMP_STILL_WARN, PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR, PRIORITY_LOW,  2000,  2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull},	    /* 40 */
-		{CODE_ALARM_OXYG_PUMP_STILL_WARN,     PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR, PRIORITY_LOW,  2000,  2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull},	    /* 41 */
+		{CODE_ALARM_PRESS_ADS_FILTER_WARN,    PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR, PRIORITY_LOW,  2000,  2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull},	    /* 41 esempio di warning*/
+		{CODE_ALARM_DEP_PUMP_STILL_WARN,      PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR, PRIORITY_LOW,  2000,  2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull},	    /* 42 */
+		{CODE_ALARM_PERF_ART_PUMP_STILL_WARN, PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR, PRIORITY_LOW,  2000,  2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull},	    /* 43 */
+		{CODE_ALARM_OXYG_PUMP_STILL_WARN,     PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR, PRIORITY_LOW,  2000,  2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull},	    /* 44 */
 		{}
 };
 
@@ -704,7 +704,9 @@ void CalcAlarmActive(void)
 			 * sensore di livello che sarà Soglia_minima_ADC_allarme_Livello e controllando solo
 			 * in trattamento se Gli ADC del sensore di livello vanno sotto tale soglia
 			 */
+
 			manageAlarmLiquidLevelLow();
+
 			// i due allarmi che seguono devo essere gestiti attentamente perche' potrei avere delle
 			// segnalazioni di allarme anche durante la fase di accelerazione e decelerazione del pid
 			// Per ora li commento.
@@ -1285,52 +1287,57 @@ void manageAlarmPhysicSetFlowAndPressures(void)
 	word flowTargetDep = parameterWordSetFromGUI[PAR_SET_PURIF_FLOW_TARGET].value;
 	word flowTargetVen = parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value;
 
+	/*vado a leggere la posizione della pinch così come è stata inviata dal driver*/
+    word Pinch_Filt_Position = modbusData[4][0];
+	word Pinch_Art_Position  = modbusData[5][0];
+	word Pinch_Ven_Position  = modbusData[6][0];
+
 	//Abilitazione allarmi di SET
 	if(GlobalFlags.FlagsDef.EnableFlowAndPressSetAlm)
 	{
 		//Liver, considero anche la pressione venosa
 		if (GetTherapyType() == LiverTreat)
 		{
-			// Allarme di SET pressione venosa
-			if (PR_VEN_mmHg_Filtered > pressureTargetVen + DELTA_TARGET_PRESS_VEN_LIVER)
+			// Allarme di SET pressione venosa -- Vincenzo: lo attivo solo se la pinch venosa è aperta sull'organo
+			if (PR_VEN_mmHg_Filtered > pressureTargetVen + DELTA_TARGET_PRESS_VEN_LIVER && Pinch_Ven_Position == MODBUS_PINCH_LEFT_OPEN)
 				alarmList[PRESS_VEN_SET].physic = PHYSIC_TRUE;
 			else
 				alarmList[PRESS_VEN_SET].physic = PHYSIC_FALSE;
 
-			// Allarme di SET pressione arteriosa
-			if (PR_ART_mmHg_Filtered > pressureTargetArt + DELTA_TARGET_PRESS_ART_LIVER)
+			// Allarme di SET pressione arteriosa -- Vincenzo: lo attivo solo se la pinch arteriosa è aperta sull'organo
+			if (PR_ART_mmHg_Filtered > pressureTargetArt + DELTA_TARGET_PRESS_ART_LIVER && Pinch_Art_Position == MODBUS_PINCH_LEFT_OPEN)
 				alarmList[PRESS_ART_SET].physic = PHYSIC_TRUE;
 			else
 				alarmList[PRESS_ART_SET].physic = PHYSIC_FALSE;
 
-			// Allarme di SET flusso arterioso
-			if (sensor_UFLOW[0].Average_Flow_Val  > flowTargetArt + DELTA_TARGET_FLOW_ART_LIVER) //50
+			// Allarme di SET flusso arterioso -- Vincenzo: lo attivo solo se la pinch arteriosa è aperta sull'organo
+			if (sensor_UFLOW[0].Average_Flow_Val  > flowTargetArt + DELTA_TARGET_FLOW_ART_LIVER && Pinch_Art_Position == MODBUS_PINCH_LEFT_OPEN) //50
 				alarmList[FLOW_ART_SET].physic = PHYSIC_TRUE;
 			else
 				alarmList[FLOW_ART_SET].physic = PHYSIC_FALSE;
 
-			// Allarme di SET flusso venoso
-			if (sensor_UFLOW[1].Average_Flow_Val  > flowTargetVen + DELTA_TARGET_FLOW_VEN_LIVER) //solo fegato
+			// Allarme di SET flusso venoso -- Vincenzo: lo attivo solo se la pinch venosa è aperta sull'organo
+			if (sensor_UFLOW[1].Average_Flow_Val  > flowTargetVen + DELTA_TARGET_FLOW_VEN_LIVER && Pinch_Ven_Position == MODBUS_PINCH_LEFT_OPEN) //solo fegato
 				alarmList[FLOW_VEN_SET].physic = PHYSIC_TRUE;
 			else
 				alarmList[FLOW_VEN_SET].physic = PHYSIC_FALSE;
 
-			// Allarme di SET flusso depurazione
-			if (FilterFlowVal > flowTargetDep + DELTA_TARGET_FLOW_DEP_LIVER) //solo fegato
+			// Allarme di SET flusso depurazione -- Vincenzo: lo attivo solo se la pinch filtro è aperta sul filtro
+			if (FilterFlowVal > flowTargetDep + DELTA_TARGET_FLOW_DEP_LIVER && Pinch_Filt_Position == MODBUS_PINCH_RIGHT_OPEN) //solo fegato
 				alarmList[FLOW_DEP_SET].physic = PHYSIC_TRUE;
 			else
 				alarmList[FLOW_DEP_SET].physic = PHYSIC_FALSE;
 		}
 		else //Kidney, solo arteriosa
 		{
-			// Allarme di SET pressione arteriosa
-			if (PR_ART_mmHg_Filtered > pressureTargetArt + DELTA_TARGET_PRESS_ART_KIDNEY)
+			// Allarme di SET pressione arteriosa -- Vincenzo: lo attivo solo se la pinch arteriosa è aperta sull'organo
+			if (PR_ART_mmHg_Filtered > pressureTargetArt + DELTA_TARGET_PRESS_ART_KIDNEY && Pinch_Art_Position == MODBUS_PINCH_LEFT_OPEN)
 				alarmList[PRESS_ART_SET].physic = PHYSIC_TRUE;
 			else
 				alarmList[PRESS_ART_SET].physic = PHYSIC_FALSE;
 
-			// Allarme di SET flusso arterioso
-			if (sensor_UFLOW[0].Average_Flow_Val  > flowTargetArt + DELTA_TARGET_FLOW_ART_KIDNEY)
+			// Allarme di SET flusso arterioso -- Vincenzo: lo attivo solo se la pinch arteriosa è aperta sull'organo
+			if (sensor_UFLOW[0].Average_Flow_Val  > flowTargetArt + DELTA_TARGET_FLOW_ART_KIDNEY && Pinch_Art_Position == MODBUS_PINCH_LEFT_OPEN)
 				alarmList[FLOW_ART_SET].physic = PHYSIC_TRUE;
 			else
 				alarmList[FLOW_ART_SET].physic = PHYSIC_FALSE;
@@ -1649,7 +1656,8 @@ void manageAlarmPhysicUFlowSensVen(void)
 }
 
 
-void manageAlarmPhysicUFlowSens(void){
+void manageAlarmPhysicUFlowSens(void)
+{
 	if(!GlobalFlags.FlagsDef.EnableSFAAir)
 	{
 		alarmList[AIR_PRES_ART].physic = PHYSIC_FALSE;

@@ -1694,6 +1694,14 @@ void ParentFuncT1Test(void)
 			{
 				currentGuard[GUARD_ENABLE_T1_PUMP].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
 			}
+			else if (t1Test_pinch_state == 5)
+			{
+				ptrFutureParent = &stateParentT1TNoDisposable[25]; //alarm
+				ptrFutureChild = ptrFutureParent->ptrChild;
+				DebugStringStr("alarm t1 test");
+				allarmeTestT1Attivo=TRUE;
+				break;
+			}
 		}
 		break;
 
@@ -1717,6 +1725,14 @@ void ParentFuncT1Test(void)
 			if (t1Test_pump_state==4)
 			{
 				currentGuard[GUARD_ENABLE_T1_TERMO].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+			}
+			else if (t1Test_pump_state == 5)
+			{
+				ptrFutureParent = &stateParentT1TNoDisposable[25]; //alarm
+				ptrFutureChild = ptrFutureParent->ptrChild;
+				DebugStringStr("alarm t1 test");
+				allarmeTestT1Attivo=TRUE;
+				break;
 			}
 		}
 		break;

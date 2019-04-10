@@ -7,7 +7,7 @@
 
 #ifndef APPLICATION_GENERAL_FUNC_H_
 #define APPLICATION_GENERAL_FUNC_H_
-
+#define TIMER_TEMP_STAZIONARIA	    1200  //multipli di 50 msec ---> 1200 = 60 sec
 
 
 unsigned char ReadKey1(void);
@@ -39,6 +39,8 @@ void CheckStopPump(void);
 
 void updateMaxTempPlate(void);
 void updateMinTempPlate(void);
+bool TempStazionariaRisc(void);
+bool TempStazionariaRaff(void);
 
 bool START_HEAT_ON_DEBUG;
 bool START_FRIGO_ON_DEBUG;
