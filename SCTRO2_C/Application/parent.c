@@ -249,11 +249,6 @@ void ParentFunc(void)
 				}
 				else if(buttonGUITreatment[BUTTON_RESET_ALARM].state == GUI_BUTTON_RELEASED)
 				{
-					// Il ritorno al priming viene fatto solo dopo la pressione del tasto BUTTON_RESET_ALARM
-					releaseGUIButton(BUTTON_RESET_ALARM);
-					AtLeastoneButResRcvd = TRUE;
-					EnableNextAlarmFunc(); //EnableNextAlarm = TRUE;
-
 					if (currentGuard[GUARD_PRIMING_STOPPED].guardValue == GUARD_VALUE_TRUE)
 					{
 						currentGuard[GUARD_PRIMING_STOPPED].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
@@ -261,67 +256,46 @@ void ParentFunc(void)
 
 						ptrFutureParent = &stateParentPrimingTreatKidney1[9];
 						ptrFutureChild = ptrFutureParent->ptrChild;
-						LevelBuzzer = SILENT;//0;
 					}
 					else
 					{
 						setGUIButton(BUTTON_START_PRIMING);
 
-						/* (FM) finita la situazione di allarme posso ritornare in PARENT_PRIMING_TREAT_KIDNEY_1_INIT*/
-						// nella nuova gestione il priming viene fatto partendo direttamente dallo stato PARENT_PRIMING_TREAT_KIDNEY_1_RUN
-						// e non da PARENT_PRIMING_TREAT_KIDNEY_1_INIT
-						//ptrFutureParent = &stateParentPrimingTreatKidney1[1];
 						ptrFutureParent = &stateParentPrimingTreatKidney1[3];
 						ptrFutureChild = ptrFutureParent->ptrChild;
-						LevelBuzzer = SILENT;//0;
 					}
 
-				}
-				else if(!IsAlarmActive())
-				{
-					// in questa situazione ci posso finire per errore o per questioni di timing tra button reset
-					// e le guard
-					if(AtLeastoneButResRcvd)
-					{
-						ptrFutureParent = &stateParentPrimingTreatKidney1[3];
-						ptrFutureChild = ptrFutureParent->ptrChild;
-						LevelBuzzer = SILENT;//0;
-						setGUIButton(BUTTON_START_PRIMING);
-					}
+					releaseGUIButton(BUTTON_RESET_ALARM);
+					AtLeastoneButResRcvd = TRUE;
+					EnableNextAlarmFunc();
+					LevelBuzzer = SILENT;//0;
 				}
 			}
 			else if(buttonGUITreatment[BUTTON_RESET_ALARM].state == GUI_BUTTON_RELEASED)
 			{
+				if (currentGuard[GUARD_PRIMING_STOPPED].guardValue == GUARD_VALUE_TRUE)
+				{
+					currentGuard[GUARD_PRIMING_STOPPED].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
+					currentGuard[GUARD_PRIMING_STOPPED].guardValue = GUARD_VALUE_FALSE;
+
+					ptrFutureParent = &stateParentPrimingTreatKidney1[9];
+					ptrFutureChild = ptrFutureParent->ptrChild;
+				}
+				else
+				{
+					setGUIButton(BUTTON_START_PRIMING);
+
+					ptrFutureParent = &stateParentPrimingTreatKidney1[3];
+					ptrFutureChild = ptrFutureParent->ptrChild;
+				}
+
+				releaseGUIButton(BUTTON_RESET_ALARM);
 				AtLeastoneButResRcvd = TRUE;
-				// ho ricevuto un reset allarme ma la condizione fisica di allarme non e' ancora andata via
-				//  se lo stato child non e' in SECURITY_STOP_ALL_ACTUATOR il tasto reset potrebbe servire a lui per
-				// disabilitare l'allarme.
-				if(!IsButtResUsedByChild())
-				{
-					releaseGUIButton(BUTTON_RESET_ALARM);
-					// qui non serve perche' l'allarme non e' ancora terminato
-					//EnableNextAlarmFunc(); //EnableNextAlarm = TRUE;
-					ptrFutureParent = &stateParentPrimingTreatKidney1[3];
-					ptrFutureChild = ptrFutureParent->ptrChild;
-					LevelBuzzer = SILENT;//0;
-					setGUIButton(BUTTON_START_PRIMING);
-					break;
-				}
-			}
-			else if(!IsAlarmActive())
-			{
-				// in questa situazione ci posso finire per errore o per questioni di timing tra button reset
-				// e le guard
-				if(AtLeastoneButResRcvd)
-				{
-					currentGuard[GUARD_ALARM_ACTIVE].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
-					ptrFutureParent = &stateParentPrimingTreatKidney1[3];
-					ptrFutureChild = ptrFutureParent->ptrChild;
-					LevelBuzzer = SILENT;//0;
-					setGUIButton(BUTTON_START_PRIMING);
-				}
+				EnableNextAlarmFunc();
+				LevelBuzzer = SILENT;//0;
 				break;
 			}
+
 			if(ptrCurrentParent->action == ACTION_ON_ENTRY)
 			{
 				/* execute parent callback function */

@@ -2486,8 +2486,6 @@ void manageParentPrimingAlways(void){
 // Chiamata all'entry dello stato PARENT_PRIM_WAIT_PAUSE
 void manageParentPrimWaitPauseEntry(void)
 {
-	// disabilito gli allarmi delle cover perche' quando entro in questo stato tutte le pompe si fermano
-	GlobalFlags.FlagsDef.EnableCoversAlarm = 0;
 }
 
 
@@ -4485,8 +4483,6 @@ void manageParentTreatWaitPauseEntry(void)
 // funzione entry dello stato PARENT_TREAT_WAIT_START
 void manageParentTreatWaitStartEntry(void)
 {
-	// disabilito gli allarmi delle cover perche' quando entro in questo stato tutte le pompe si fermano
-	GlobalFlags.FlagsDef.EnableCoversAlarm = 0;
 	// disabilito allarmi di temperatura arteriosa
 	GlobalFlags.FlagsDef.EnableTempArtHighAlm = 0;
 	GlobalFlags.FlagsDef.EnableTempArtOORAlm = 0;

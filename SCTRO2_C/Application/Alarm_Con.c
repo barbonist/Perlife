@@ -22,17 +22,17 @@
 extern bool FilterSelected;
 extern bool AtLeastoneButResRcvd;
 extern bool gDigitalTest;
-unsigned char arteriosaAlta = 0;
-unsigned char venosaAlta = 0;
-unsigned char ciccio = 0;
-static signed int sIndexCurrentAlarmActiveListA = -1;
-static signed int sIndexLastAlarmActiveList = -1;
-static signed int sSizeAlarmActiveListaA = 0;
 
-unsigned char LengthActiveListA(void);
-typeAlarmS* GetCurrentAlarmActiveListA(void);
-bool AlarmPresentInActiveListA(typeAlarmS *alarmPtr);
-sActiveListAS sActiveListA[10];
+// Gestione allarmi: aprile 2019 -- begin
+static signed int sIdxCurrentAlmActiveListA = EMPTY_LIST_A;
+static signed int sIdxLastAlmActiveList = EMPTY_LIST_A;
+static signed int sSizeAlmActiveListaA = 0;
+
+bool processingAlarm = FALSE;
+
+sActiveListAS sActiveListA[MAX_ALARMS_ACTIVE_LIST_A];
+// Gestione allarmi: aprile 2019 -- end
+
 
 // FM questa lista devo costruirla mettendo prima i PHYSIC_TRUE e poi i PHYSIC_FALSE,
 // ognuno deve poi essere ordinato in base alla priorita' ???
@@ -3473,62 +3473,79 @@ void AlmLisStateAlways(void)
 	int pos_alm;
 	int CurrAlarmIDX;
 	int SearchNextAlarmFlag;
-
-
-
-
-
-
-
-
 }
 
+//Inserisce un nuovo elemento nella lista, in fondo alla lista (posizione Last)
 void InsertAlarmInActiveListA(typeAlarmS *alarmPtr)
 {
-	unsigned char idx = 0;
-
-	if (sIndexCurrentAlarmActiveListA == -1) //Il primo
+	// Lista vuota: inizializzo i puntatori Current e Last, inizializzo dimensione lista
+	if (sIdxCurrentAlmActiveListA == EMPTY_LIST_A)
 	{
-		sIndexCurrentAlarmActiveListA = 0;
-		sIndexLastAlarmActiveList = 0;
-		sSizeAlarmActiveListaA = 1;
-        sActiveListA[sIndexCurrentAlarmActiveListA].ptr = alarmPtr;
+		sIdxCurrentAlmActiveListA = 0;
+		sIdxLastAlmActiveList = 0;
+		sSizeAlmActiveListaA = 1;
+        sActiveListA[sIdxCurrentAlmActiveListA].ptr = alarmPtr;
 	}
-	else
+	else // Lista con almeno un elemento: incremento Last e dimensione lista
 	{
-		sIndexLastAlarmActiveList ++;
-		sSizeAlarmActiveListaA ++;
-		sActiveListA[sIndexLastAlarmActiveList].ptr = alarmPtr;
+        sIdxLastAlmActiveList ++;
+
+		sSizeAlmActiveListaA ++;
+		sActiveListA[sIdxLastAlmActiveList].ptr = alarmPtr;
 	}
 }
 
-void RemoveAlarmFromActiveListA(typeAlarmS *alarmPtr)
+//Rimuove il primo elemento dalla lista
+void RemoveAlarmFromActiveListA(void)
 {
+	//Lista non vuota?
+	if (sSizeAlmActiveListaA > 0)
+	{
+		sActiveListA[sIdxCurrentAlmActiveListA].ptr->active = ACTIVE_FALSE;
+		sActiveListA[sIdxCurrentAlmActiveListA].ptr = (typeAlarmS *)0; //clear
 
+		// Ho un solo elemento?
+		if (sSizeAlmActiveListaA == 1)
+		{
+
+			//Reset dei puntatori
+			sIdxCurrentAlmActiveListA = EMPTY_LIST_A;
+			sIdxLastAlmActiveList = EMPTY_LIST_A;
+			sSizeAlmActiveListaA = 0;
+		}
+		else
+		{
+			sIdxCurrentAlmActiveListA ++;
+			sSizeAlmActiveListaA --;
+		}
+	}
 }
 
 
-
+// Fornisce il codice dell'allarme corrente (primo elemento della lista FIFO)
 typeAlarmS* GetCurrentAlarmActiveListA(void)
 {
 	if (LengthActiveListA() > 0)
-		return sActiveListA[sIndexCurrentAlarmActiveListA].ptr;
+		return sActiveListA[sIdxCurrentAlmActiveListA].ptr;
 	else
-		return 0;
+		return (typeAlarmS*)0;
 }
 
+//Restituisce TRUE se un allarme è già presente in lista
 bool AlarmPresentInActiveListA(typeAlarmS *alarmPtr)
 {
 	bool retValue = FALSE;
 	unsigned char idx = 0;
 
-	if (sSizeAlarmActiveListaA > 0)
+	//Lista non deve essere vuota
+	if (sSizeAlmActiveListaA > 0)
 	{
-		for (idx = 0; idx < sSizeAlarmActiveListaA; idx ++)
+		//Scansione da Current a Last
+		for (idx = sIdxCurrentAlmActiveListA; idx <= sIdxLastAlmActiveList; idx ++)
 		{
-			if (sActiveListA[sIndexCurrentAlarmActiveListA].ptr->code == alarmPtr->code)
+			if (sActiveListA[idx].ptr->code == alarmPtr->code)
 			{
-				retValue = TRUE;
+				retValue = TRUE; //Trovato: esco
 				break;
 			}
 		}
@@ -3537,62 +3554,72 @@ bool AlarmPresentInActiveListA(typeAlarmS *alarmPtr)
 	return retValue;
 }
 
+//Rimuove il primo elemento dalla lista degli allarmi e considera l'allarme processato
 void EnableNextAlarmFunc(void)
 {
-	sActiveListAS* punt;
-
-	punt = &sActiveListA[sIndexCurrentAlarmActiveListA];
-	punt->ptr->active = ACTIVE_FALSE;
+	RemoveAlarmFromActiveListA();
+	processingAlarm = FALSE;
+	currentGuard[GUARD_ALARM_ACTIVE].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
 }
 
-
+//Restituisce il numero degli elementi in lista
 unsigned char LengthActiveListA(void)
 {
-	return sSizeAlarmActiveListaA;
+	return sSizeAlmActiveListaA;
 }
 
+//Gestore principale degli allarmi
 void alarmEngineAlways(void)
 {
 	unsigned char scanAlarm = 0;
 	typeAlarmS *alarmPtr = 0;
 
+	// Scansione di tutta la struttura degli allarmi
 	for (scanAlarm = 0; scanAlarm < ALARM_ACTIVE_IN_STRUCT; scanAlarm++)
 	{
+		// puntatore alla singola riga della struttura degli allarmi
 		alarmPtr = &alarmList[scanAlarm];
-		if (alarmPtr->active != ACTIVE_TRUE)
+		if (alarmPtr->active != ACTIVE_TRUE) //L'allarme specifico NON è attivo
 		{
+			// La condizione di allarme è presente
 			if (alarmPtr->physic == PHYSIC_TRUE)
 			{
+				//Incremento lo specifico timer della condizione di allarme, se supera la soglia di intervento pongo l'allarme ATTIVO
 				if ((alarmPtr->faultConditionTimer += ALARM_TICK) >= alarmPtr->entryTime)
 					alarmPtr->active = ACTIVE_TRUE;
 			}
-			else if (alarmPtr->faultConditionTimer >= ALARM_TICK )
-				alarmPtr->faultConditionTimer -= ALARM_TICK;
+			else if (alarmPtr->faultConditionTimer >= ALARM_TICK)
+				alarmPtr->faultConditionTimer -= ALARM_TICK; //Decremento il timer se la condizione di allarme non è più presente
+			    // ma solo se l'allarme nel frattempo non è diventato ATTIVO
 		}
 	}
     // Al termine della scansione la struttura alarmList[] conterrà gli eventuali allarmi che sono diventati ACTIVE_TRUE
 
+	// Scansione di tutta la struttura degli allarmi
 	for (scanAlarm = 0; scanAlarm < ALARM_ACTIVE_IN_STRUCT; scanAlarm++)
 	{
+		// puntatore alla singola riga della struttura degli allarmi
 		alarmPtr = &alarmList[scanAlarm];
 		if (alarmPtr->active == ACTIVE_TRUE)
 		{
+			//Per ogni allarme attivo verifico se è già presente nella lista allarmi attivi "ACTIVE LIST A"
 			if (FALSE == AlarmPresentInActiveListA(alarmPtr))
-				InsertAlarmInActiveListA(alarmPtr);
-		}
-		else if (alarmPtr->active == ACTIVE_FALSE)
-		{
-			if (TRUE == AlarmPresentInActiveListA(alarmPtr))
-				RemoveAlarmFromActiveListA(alarmPtr);
+				InsertAlarmInActiveListA(alarmPtr); //in caso non sia presente, lo inserisco
 		}
 	}
 	// Al termine della scansione, la struttura alarmListActive[] contiene gli allarmi attivi
 
+	// Se ho una lista di allarmi attivi non vuota, processo un singolo allarme (il primo in lista)
 	if (LengthActiveListA() > 0)
 	{
-		sActiveListAS* punt;
-		punt = &sActiveListA[sIndexCurrentAlarmActiveListA];
-		punt->ptr->prySafetyActionFunc();
+		//Se non sto già processando un allarme, prelevo il primo in lista
+		if (FALSE == processingAlarm)
+		{
+			sActiveListAS* punt;
+			punt = &sActiveListA[sIdxCurrentAlmActiveListA];
+			punt->ptr->prySafetyActionFunc();
+			processingAlarm = TRUE;
+		}
 	}
 }
 
@@ -3600,7 +3627,7 @@ void alarmEngineAlways(void)
 void alarmManageNull(void)
 {
 	currentGuard[GUARD_ALARM_ACTIVE].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
-	manageAlarmChildGuard(GetCurrentAlarmActiveListA()); //Gestisce allarme
+	manageAlarmChildGuard(GetCurrentAlarmActiveListA()); //Gestisce le sicurezze associate all'allarme
 }
 
 

@@ -10,10 +10,13 @@
 
 #include "Global.h"
 
-typedef struct {
+struct elementActiveListA {
 	typeAlarmS *ptr;
-	unsigned char status;
-} sActiveListAS;
+	struct elementActiveListA* next;
+};
+#define 	EMPTY_LIST_A 				(-1)
+#define     MAX_ALARMS_ACTIVE_LIST_A 	10
+typedef struct elementActiveListA sActiveListAS;
 
 //#define CODE_ALARM0		0x00
 //#define CODE_ALARM1		0x01
@@ -262,6 +265,11 @@ enum ALARM
 	 OXYG_PUMP_STILL_WRN
 };
 
+// Nuova gestione allarmi: aprile 2019
+unsigned char LengthActiveListA(void);
+typeAlarmS* GetCurrentAlarmActiveListA(void);
+bool AlarmPresentInActiveListA(typeAlarmS *alarmPtr);
+
 void alarmConInit(void);
 void alarmEngineAlways(void);
 void alarmManageNull(void);
@@ -297,7 +305,7 @@ void manageAlarmDeltaFlowVen(void);
 void manageAlarmDeltaTempRecArt(void);
 void manageAlarmDeltaTempRecVen(void);
 void manageAlarmArterialResistance(void);
-
+void CalcAlarmActive(void);
 void SetAllAlarmEnableFlags(void);
 
 // Allarmi di SET pressione e flusso
