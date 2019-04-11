@@ -22,6 +22,7 @@
 extern bool FilterSelected;
 extern bool AtLeastoneButResRcvd;
 extern bool gDigitalTest;
+extern unsigned char coverStateGlobal;
 
 // FM questa lista devo costruirla mettendo prima i PHYSIC_TRUE e poi i PHYSIC_FALSE,
 // ognuno deve poi essere ordinato in base alla priorita' ???
@@ -1073,37 +1074,22 @@ void manageAlarmLiquidLevelHigh(void)
 // pompa arteriosa in kidney
 void manageAlarmCoversPumpLiver(void)
 {
-	static unsigned char alarmList_physic_OLD = PHYSIC_FALSE;
-
 	if(GlobalFlags.FlagsDef.EnableCoversAlarm)
 	{
-		if(CoversState == 4)
-		{
-			alarmList[PURIF_COVER_OPEN].physic = PHYSIC_FALSE;
-			alarmList[PERF_COVER_OPEN].physic = PHYSIC_FALSE;
-			alarmList[OXYG_COVER_OPEN].physic = PHYSIC_FALSE;
-		}
+		if (coverStateGlobal & 0x01)
+			alarmList[PURIF_COVER_OPEN].physic = PHYSIC_TRUE;
 		else
-		{
-			if(CoversState == 0)
-				alarmList[PURIF_COVER_OPEN].physic = PHYSIC_TRUE;
-			else
-				alarmList[PURIF_COVER_OPEN].physic = PHYSIC_FALSE;
+			alarmList[PURIF_COVER_OPEN].physic = PHYSIC_FALSE;
 
-			if(CoversState == 1)
-				alarmList[PERF_COVER_OPEN].physic = PHYSIC_TRUE;
-			else
-				alarmList[PERF_COVER_OPEN].physic = PHYSIC_FALSE;
+		if (coverStateGlobal & 0x02)
+			alarmList[PERF_COVER_OPEN].physic = PHYSIC_TRUE;
+		else
+			alarmList[PERF_COVER_OPEN].physic = PHYSIC_FALSE;
 
-			if((CoversState == 2) || (CoversState == 3))
-				alarmList[OXYG_COVER_OPEN].physic = PHYSIC_TRUE;
-			else
-				alarmList[OXYG_COVER_OPEN].physic = PHYSIC_FALSE;
-		}
-
-		if((alarmList_physic_OLD == PHYSIC_TRUE) && (alarmList[PERF_COVER_OPEN].physic == PHYSIC_FALSE))
-			alarmList_physic_OLD = alarmList[PERF_COVER_OPEN].physic;
-		alarmList_physic_OLD = alarmList[PERF_COVER_OPEN].physic;
+		if (coverStateGlobal & 0x04 || coverStateGlobal & 0x08)
+			alarmList[OXYG_COVER_OPEN].physic = PHYSIC_TRUE;
+		else
+			alarmList[OXYG_COVER_OPEN].physic = PHYSIC_FALSE;
 	}
 	else
 	{
@@ -1118,29 +1104,22 @@ void manageAlarmCoversPumpKidney(void)
 {
 	if(GlobalFlags.FlagsDef.EnableCoversAlarm)
 	{
-		if(CoversState == 4)
-		{
-			alarmList[PERF_COVER_OPEN].physic = PHYSIC_FALSE;
-			alarmList[OXYG_COVER_OPEN].physic = PHYSIC_FALSE;
-		}
+		if (coverStateGlobal & 0x01)
+			alarmList[PURIF_COVER_OPEN].physic = PHYSIC_TRUE;
 		else
-		{
-			if(CoversState == 0)
-				alarmList[PERF_COVER_OPEN].physic = PHYSIC_TRUE;
-			else
-				alarmList[PERF_COVER_OPEN].physic = PHYSIC_FALSE;
+			alarmList[PURIF_COVER_OPEN].physic = PHYSIC_FALSE;
 
-			if((CoversState == 2) || (CoversState == 3))
-				alarmList[OXYG_COVER_OPEN].physic = PHYSIC_TRUE;
-			else
-				alarmList[OXYG_COVER_OPEN].physic = PHYSIC_FALSE;
-		}
+		if (coverStateGlobal & 0x04 || coverStateGlobal & 0x08)
+			alarmList[OXYG_COVER_OPEN].physic = PHYSIC_TRUE;
+		else
+			alarmList[OXYG_COVER_OPEN].physic = PHYSIC_FALSE;
 	}
 	else
 	{
-		alarmList[PERF_COVER_OPEN].physic = PHYSIC_FALSE;
+		alarmList[PURIF_COVER_OPEN].physic = PHYSIC_FALSE;
 		alarmList[OXYG_COVER_OPEN].physic = PHYSIC_FALSE;
 	}
+	alarmList[PERF_COVER_OPEN].physic = PHYSIC_FALSE;
 }
 
 void manageAlarmPhysicPressSensLow(void)
