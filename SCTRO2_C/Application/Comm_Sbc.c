@@ -25,7 +25,8 @@
 extern int PinchFilterCurrValue;
 extern word MedForArteriousPid;
 extern word MedForVenousPid;
-extern typeAlarmS* GetCurrentAlarmActiveListA(void);;
+extern typeAlarmS* GetCurrentAlarmActiveListAlm(void);
+extern typeAlarmS* GetCurrentWarningActiveListWrn(void);
 
 void buildModBusWriteRegActResponseMsg(char *ptrMsgSbcRx)
 {
@@ -1158,12 +1159,16 @@ void buildRDMachineStateResponseMsg(char code, char subcode)
 //	{
 
 		/* status parameters: alarm code  se GetAlarmCodeProt() != 0
-		 * oppre GetAlarmCodeProt() dando prioirità alla visualizzazione
+		 * oppre GetAlarmCodeProt() dando priorità alla visualizzazione
 		 * degli alalrmi protective*/
 		if (GetAlarmCodeProt() != 0)
 			wd = GetAlarmCodeProt();
+		else if (LengthActiveListAlm() > 0)
+			wd = GetCurrentAlarmActiveListAlm()->code;
+		else if (LengthActiveListWrn() > 0)
+			wd = GetCurrentWarningActiveListWrn()->code;
 		else
-			wd = GetCurrentAlarmActiveListA()->code;
+			wd = 0;
 
 	    /*14*/	sbc_tx_data[index++] = ( wd >> 8) & 0xFF; // (alarmCurrent.code >> 8 ) & 0xFF;
 		/*15*/	sbc_tx_data[index++] = ( wd )     & 0xFF; // (alarmCurrent.code 	    ) & 0xFF;
@@ -1559,31 +1564,32 @@ void initGUIButton(void){
 // Facendo questa inversione non cambio tutto il resto del codice.
 void setGUIButton(unsigned char buttonId)
 {
-	if((buttonId == BUTTON_RESET_ALARM) && !ResetAlmHandleFunc(alarmCurrent.code))
-	{
-		// butto via il reset perche' ci sono altri allarmi o warning da resettare
-	}
-	else
-	{
+//	if((buttonId == BUTTON_RESET_ALARM) && !ResetAlmHandleFunc(alarmCurrent.code))
+//	{
+//		// butto via il reset perche' ci sono altri allarmi o warning da resettare
+//	}
+//	else
+//	{
 		//buttonGUITreatment[buttonId].state = GUI_BUTTON_PRESSED;
 		buttonGUITreatment[buttonId].state = GUI_BUTTON_RELEASED;
 		actionFlag = 2;
-		if((buttonId == BUTTON_RESET_ALARM) || (buttonId == BUTTON_OVERRIDE_ALARM))
-		{
-			actionFlag = 2;
-			// serve per abilitare la ricezione del successivo allarme
-			//EnableNextAlarm = TRUE;
-		}
-
-		if((buttonId == BUTTON_RESET_ALARM) && alarmCurrent.code)
-		{
-			// dovro' uscire dalla condizione di allarme e quindi azzero subito l'allarme
-			// inviato alla gui
-			SuspendInvioAlarmCode = 1;
-		}
-	}
+//		if((buttonId == BUTTON_RESET_ALARM) /*|| (buttonId == BUTTON_OVERRIDE_ALARM)*/)
+//		{
+//			actionFlag = 2;
+//			// serve per abilitare la ricezione del successivo allarme
+//			//EnableNextAlarm = TRUE;
+//		}
+//
+//		if((buttonId == BUTTON_RESET_ALARM) && alarmCurrent.code)
+//		{
+//			// dovro' uscire dalla condizione di allarme e quindi azzero subito l'allarme
+//			// inviato alla gui
+//			SuspendInvioAlarmCode = 1;
+//		}
+//	}
 	/*se mi è arrivato il primo start treatment faccio la tara delle pressioni*/
-	if (buttonId == BUTTON_START_TREATMENT && TARA_PRESS_DONE == FALSE && ptrCurrentState->state == STATE_TREATMENT_KIDNEY_1)
+
+if (buttonId == BUTTON_START_TREATMENT && TARA_PRESS_DONE == FALSE && ptrCurrentState->state == STATE_TREATMENT_KIDNEY_1)
 	{
 
 		/*calcolo la tara della pressione arteriosa dopo la connessione dell'organo*/

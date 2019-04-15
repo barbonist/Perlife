@@ -10,13 +10,24 @@
 
 #include "Global.h"
 
-struct elementActiveListA {
+struct elementActiveListAlm {
 	typeAlarmS *ptr;
-	struct elementActiveListA* next;
+	struct elementActiveListAlm* next;
 };
-#define 	EMPTY_LIST_A 				(-1)
-#define     MAX_ALARMS_ACTIVE_LIST_A 	10
-typedef struct elementActiveListA sActiveListAS;
+
+struct elementActiveListWrn {
+	typeAlarmS *ptr;
+	struct elementActiveListWrn* next;
+};
+
+#define 	EMPTY_LIST_ALM 				(-1)
+#define     MAX_ALARMS_ACTIVE_LIST_ALM 	10
+
+#define 	EMPTY_LIST_WRN 				(-1)
+#define     MAX_ALARMS_ACTIVE_LIST_WRN 	10
+
+typedef struct elementActiveListAlm sActiveListAlmS;
+typedef struct elementActiveListWrn sActiveListWrnS;
 
 //#define CODE_ALARM0		0x00
 //#define CODE_ALARM1		0x01
@@ -207,7 +218,8 @@ typedef struct elementActiveListA sActiveListAS;
 
 enum ALARM
 {
-	 PRESS_ART_HIGH = 0,
+	 FIRST_ALARM = 0,
+	 PRESS_ART_HIGH = FIRST_ALARM,
 	 PRESS_ART_SET,
 	 AIR_PRES_ART,
 	 AIR_PRES_VEN,
@@ -258,20 +270,27 @@ enum ALARM
 	 TEMP_ART_OOR,
 	 TEMP_ART_HIGH_IN_TREAT,
 
+	 FIRST_WARNING,
 	 // da qui in avanti i codici delle warning
-	 PRESS_ADS_FILTER_WARN,
+	 PRESS_ADS_FILTER_WARN = FIRST_WARNING,
 	 DEP_PUMP_STILL_WARN,
 	 PERF_ART_PUMP_STILL_WRN,
 	 OXYG_PUMP_STILL_WRN
 };
 
 // Nuova gestione allarmi: aprile 2019
-unsigned char LengthActiveListA(void);
-typeAlarmS* GetCurrentAlarmActiveListA(void);
-bool AlarmPresentInActiveListA(typeAlarmS *alarmPtr);
+unsigned char LengthActiveListAlm(void);
+typeAlarmS* GetCurrentAlarmActiveListAlm(void);
+bool AlarmPresentInActiveListAlm(typeAlarmS *alarmPtr);
 
+unsigned char LengthActiveListWrn(void);
+typeAlarmS* GetCurrentWarningActiveListWrn(void);
+bool WarningPresentInActiveListWrn(typeAlarmS *alarmPtr);
+
+void CalcWarningActive(void);
 void alarmConInit(void);
 void alarmEngineAlways(void);
+void WarningEngineAlways(void);
 void alarmManageNull(void);
 void manageAlarmChildGuard(typeAlarmS * ptrAlarm);
 void manageAlarmPhysicFlowHigh(void);

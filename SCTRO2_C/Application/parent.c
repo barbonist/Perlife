@@ -192,8 +192,6 @@ void ParentFunc(void)
 				currentGuard[GUARD_CHK_FOR_ALL_MOT_STOP].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
 				currentGuard[GUARD_CHK_FOR_ALL_MOT_STOP].guardValue = GUARD_VALUE_FALSE;
 			}
-			// per sicurezza resetto la flag di reset alarm premuto, nel caso mi fosse rimasto settato
-			releaseGUIButton(BUTTON_RESET_ALARM);
 			break;
 
 		case PARENT_PRIMING_TREAT_KIDNEY_1_ALARM:
@@ -476,16 +474,22 @@ void ParentFunc(void)
 					// guardando a questo valore posso vedere il tipo di azione di sicurezza
 					// e quindi posso decidere di andare anche in un qualche altro stato ad hoc
 					// di allarme
-					//ptrAlarmCurrent->secActType
-					//TotalTimeToRejAir += msTick_elapsed(StarTimeToRejAir);
+					LevelBuzzer = HIGH;
 				}
 				break;
 			case PARENT_PRIM_KIDNEY_1_ALM_AIR_REC:
+				if (buttonGUITreatment[BUTTON_RESET_ALARM].state == GUI_BUTTON_RELEASED)
+				{
+					releaseGUIButton(BUTTON_RESET_ALARM);
+					EnableNextAlarmFunc();
+					LevelBuzzer = SILENT;//0;
+				}
+
 				if(currentGuard[GUARD_ALARM_ACTIVE].guardValue == GUARD_VALUE_FALSE)
 				{
 					/* FM allarme finito posso ritornare nello stato di partenza
 					 * quando si e' verificato l'allarme */
-					if(AirParentState == PARENT_TREAT_KIDNEY_1_AIR_FILT)
+					if (AirParentState == PARENT_TREAT_KIDNEY_1_AIR_FILT)
 					{
 						// ero nello stato recupero da allarme aria nel sensore aria on/off
 						ptrFutureParent = &stateParentPrimingTreatKidney1[17];
@@ -510,10 +514,7 @@ void ParentFunc(void)
 				}
 				else if(ptrCurrentParent->action == ACTION_ALWAYS)
 				{
-					// (FM) chiamo la funzione child che gestisce lo stato di allarme
-					//ManageStateChildAlarmTreat1();
-					// LA FUNZIONE CHILD CHE GESTISCE LO STATO DI ALLARME, IN QUESTO CASO, SI TROVA NELLA FUNZIONE
-					// ProcessMachineState
+
 				}
 				break;
 			//---------------------------------------------------------------------------------------------

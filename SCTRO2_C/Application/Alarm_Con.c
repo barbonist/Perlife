@@ -22,15 +22,22 @@
 extern bool FilterSelected;
 extern bool AtLeastoneButResRcvd;
 extern bool gDigitalTest;
+extern unsigned char coverStateGlobal;
 
 // Gestione allarmi: aprile 2019 -- begin
-static signed int sIdxCurrentAlmActiveListA = EMPTY_LIST_A;
-static signed int sIdxLastAlmActiveList = EMPTY_LIST_A;
-static signed int sSizeAlmActiveListaA = 0;
+static signed int sIdxCurrentActiveListAlm = EMPTY_LIST_ALM;
+static signed int sIdxLastActiveListAlm = EMPTY_LIST_ALM;
+static signed int sSizeActiveListaAlm = 0;
+
+static signed int sIdxCurrentActiveListWrn = EMPTY_LIST_WRN;
+static signed int sIdxLastActiveListWrn = EMPTY_LIST_WRN;
+static signed int sSizeActiveListaWrn = 0;
 
 bool processingAlarm = FALSE;
+bool processingWarning = FALSE;
 
-sActiveListAS sActiveListA[MAX_ALARMS_ACTIVE_LIST_A];
+sActiveListAlmS sActiveListAlm[MAX_ALARMS_ACTIVE_LIST_ALM];
+sActiveListWrnS sActiveListWrn[MAX_ALARMS_ACTIVE_LIST_WRN];
 // Gestione allarmi: aprile 2019 -- end
 
 
@@ -41,79 +48,81 @@ sActiveListAS sActiveListA[MAX_ALARMS_ACTIVE_LIST_A];
 typeAlarmS alarmList[] =
 {
 		//{CODE_ALARM0, PHYSIC_TRUE, TYPE_ALARM_CONTROL, PRIORITY_LOW, OVRD_ENABLE, SILENCE_ALLOWED},
-		{CODE_ALARM_PRESS_ART_HIGH,        PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH, 1000, 1000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0}, 		/* 0 */
-		{CODE_ALARM_PRESS_ART_SET,         PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH,60000, 1000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_ALLOWED,     &alarmManageNull, 0}, 		/* 2 */
-		{CODE_ALARM_AIR_PRES_ART,          PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_SFA_AIR_DET,           PRIORITY_HIGH, 1000, 1000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_ALLOWED,     &alarmManageNull, 0}, 		/* 2 */
-		{CODE_ALARM_AIR_PRES_VEN,          PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_SFV_AIR_DET,           PRIORITY_HIGH, 1000, 1000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_ALLOWED,     &alarmManageNull, 0}, 		/* 3 */
-		{CODE_ALARM_AIR_PRES_ADSRB_FILTER, PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_SAF_AIR_FILTER,        PRIORITY_HIGH, 1000, 1000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_ALLOWED,     &alarmManageNull, 0}, 		/* 4 */
-		{CODE_ALARM_TEMP_ART_HIGH,         PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH, 1000, 1000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0}, 	    /* 5 */
-		{CODE_ALARM_PRESS_ADS_FILTER_HIGH, PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH, 1000, 1000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0},	    /* 6 */
-		{CODE_ALARM_FLOW_PERF_ART_HIGH,    PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH, 2000, 2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0}, 		/* 7 */
-		{CODE_ALARM_FLOW_PERF_VEN_HIGH,    PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH, 2000, 2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0}, 		/* 7 */
-		{CODE_ALARM_FLOW_ART_NOT_DETECTED, PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH, 2000, 2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0}, 		/* 8 */
-		{CODE_ALARM_PRESS_VEN_HIGH, 	   PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH, 1000, 1000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0}, 		/* 9 */
-		{CODE_ALARM_PRESS_VEN_SET,         PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH,60000, 1000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_ALLOWED,     &alarmManageNull, 0}, 		/* 2 */
+		{CODE_ALARM_PRESS_ART_HIGH,        PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH, 1000, 1000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, TRUE}, 		/* 0 */
+		{CODE_ALARM_PRESS_ART_SET,         PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH,60000, 1000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_ALLOWED,     &alarmManageNull, 0, TRUE}, 		/* 2 */
+		{CODE_ALARM_AIR_PRES_ART,          PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_SFA_AIR_DET,           PRIORITY_HIGH, 1000, 1000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_ALLOWED,     &alarmManageNull, 0, TRUE}, 		/* 2 */
+		{CODE_ALARM_AIR_PRES_VEN,          PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_SFV_AIR_DET,           PRIORITY_HIGH, 1000, 1000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_ALLOWED,     &alarmManageNull, 0, TRUE}, 		/* 3 */
+		{CODE_ALARM_AIR_PRES_ADSRB_FILTER, PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_SAF_AIR_FILTER,        PRIORITY_HIGH, 1000, 1000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_ALLOWED,     &alarmManageNull, 0, TRUE}, 		/* 4 */
+		{CODE_ALARM_TEMP_ART_HIGH,         PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH, 1000, 1000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, TRUE}, 	    /* 5 */
+		{CODE_ALARM_PRESS_ADS_FILTER_HIGH, PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH, 1000, 1000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, TRUE},	    /* 6 */
+		{CODE_ALARM_FLOW_PERF_ART_HIGH,    PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH, 2000, 2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, TRUE}, 		/* 7 */
+		{CODE_ALARM_FLOW_PERF_VEN_HIGH,    PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH, 2000, 2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, TRUE}, 		/* 7 */
+		{CODE_ALARM_FLOW_ART_NOT_DETECTED, PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH, 2000, 2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, TRUE}, 		/* 8 */
+		{CODE_ALARM_PRESS_VEN_HIGH, 	   PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH, 1000, 1000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, TRUE}, 		/* 9 */
+		{CODE_ALARM_PRESS_VEN_SET,         PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH,60000, 1000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_ALLOWED,     &alarmManageNull, 0, TRUE}, 		/* 2 */
 
 		// allarme pressione filtro ossigenazione alta
-		{CODE_ALARM_PRESS_OXYG_INLET, 	   PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH, 1000, 1000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0}, 		/* 11 */
-		{CODE_ALARM_TEMP_SENS_NOT_DETECTED,PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH, 2000, 2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0}, 		/* 12 */
+		{CODE_ALARM_PRESS_OXYG_INLET, 	   PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH, 1000, 1000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, TRUE}, 		/* 11 */
+		{CODE_ALARM_TEMP_SENS_NOT_DETECTED,PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH, 2000, 2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, TRUE}, 		/* 12 */
 
 		// allarmi di cover aperte
-		{CODE_ALARM_PUMP_PERF_COVER_OPEN,  PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH,    0,  100, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0},	    /* 13 */
-		{CODE_ALARM_PUMP_PURIF_COVER_OPEN, PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH,    0,  100, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0},	    /* 14 */
-		{CODE_ALARM_PUMP_OXYG_COVER_OPEN,  PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH,    0,  100, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0},	    /* 15 */
+		{CODE_ALARM_PUMP_PERF_COVER_OPEN,  PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH,    0,  100, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, TRUE},	    /* 13 */
+		{CODE_ALARM_PUMP_PURIF_COVER_OPEN, PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH,    0,  100, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, TRUE},	    /* 14 */
+		{CODE_ALARM_PUMP_OXYG_COVER_OPEN,  PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH,    0,  100, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, TRUE},	    /* 15 */
 		// allarme di livello liquido troppo basso
-		{CODE_ALARM_TANK_LEVEL_LOW,        PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH,30000, 30000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0},	    /* 16 */
+		{CODE_ALARM_TANK_LEVEL_LOW,        PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH,30000, 30000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, TRUE},	    /* 16 */
 		// allarme livello del liquido troppo alto
-		{CODE_ALARM_TANK_LEVEL_HIGH,       PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACT_WAIT_CMD, PRIORITY_HIGH,  500,  500, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0},	    /* 17 */
+		{CODE_ALARM_TANK_LEVEL_HIGH,       PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACT_WAIT_CMD, PRIORITY_HIGH,  500,  500, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, TRUE},	    /* 17 */
 
 		// allarme differenza tra flusso venoso misurato e flusso calcolato in base al guadagno pompa troppo alto
-		{CODE_ALARM_DELTA_FLOW_ART,        PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH,  3000,  3000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0},	    /* 18 */
+		{CODE_ALARM_DELTA_FLOW_ART,        PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH,  3000,  3000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, TRUE},	    /* 18 */
 		// allarme differenza tra flusso arterioso misurato e flusso calcolato in base al guadagno pompa troppo alto
-		{CODE_ALARM_DELTA_FLOW_VEN,        PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH,  3000,  3000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0},	    /* 19 */
+		{CODE_ALARM_DELTA_FLOW_VEN,        PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH,  3000,  3000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, TRUE},	    /* 19 */
 		// allarme differenza tra temperatura vaschetta e temperatura fluido arterioso troppo alta
-		{CODE_ALARM_DELTA_TEMP_REC_ART,    PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH,  3000, 3000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0},	    /* 20 */
+		{CODE_ALARM_DELTA_TEMP_REC_ART,    PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH,  3000, 3000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, TRUE},	    /* 20 */
 		// allarme differenza tra temperatura vaschetta e temperatura fluido venoso troppo alta
-		{CODE_ALARM_DELTA_TEMP_REC_VEN,    PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH,  3000,  3000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0},	    /* 21 */
+		{CODE_ALARM_DELTA_TEMP_REC_VEN,    PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH,  3000,  3000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, TRUE},	    /* 21 */
 		// allarme comunicazione canbus
-		{CODE_ALARM_CAN_BUS_ERROR,         PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH,  3000,  3000,   OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0},	    /* 22 */
+		{CODE_ALARM_CAN_BUS_ERROR,         PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH,  3000,  3000,   OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, TRUE},	    /* 22 */
 		// allarme pinch non posizionate correttamente (usato nello stato di trattamento)
-		{CODE_ALARM_BAD_PINCH_POS,         PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_BAD_PINCH_POS,         PRIORITY_HIGH,  500,  500, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0},	    /* 24 */
+		{CODE_ALARM_BAD_PINCH_POS,         PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_BAD_PINCH_POS,         PRIORITY_HIGH,  500,  500, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, TRUE},	    /* 24 */
 		// allarme aria nel filtro (usato nello stato di trattamento)
-		{CODE_ALARM_SFA_PRIM_AIR_DET,      PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_SFA_PRIM_AIR_DET,      PRIORITY_HIGH,  1000, 0,   OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0},	    /* 25 */
+		{CODE_ALARM_SFA_PRIM_AIR_DET,      PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_SFA_PRIM_AIR_DET,      PRIORITY_HIGH,  1000, 0,   OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, TRUE},	    /* 25 */
 
-		{CODE_ALARM_PRESS_ADS_FILTER_LOW,  PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH, 60000, 2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0},	    /* 26 */
-		{CODE_ALARM_PRESS_OXYG_LOW, 	   PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH, 60000, 2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0}, 		/* 27 */
-		{CODE_ALARM_FLOW_ART_SET,          PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH, 60000, 2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0}, 		/* 7 */
-		{CODE_ALARM_FLOW_VEN_SET,          PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH, 60000, 2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0}, 		/* 7 */
-		{CODE_ALARM_FLOW_DEP_SET,          PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH, 60000, 2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0}, 		/* 7 */
+		{CODE_ALARM_PRESS_ADS_FILTER_LOW,  PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH, 60000, 2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, TRUE},	    /* 26 */
+		{CODE_ALARM_PRESS_OXYG_LOW, 	   PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH, 60000, 2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, TRUE}, 		/* 27 */
+		{CODE_ALARM_FLOW_ART_SET,          PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH, 60000, 2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, TRUE}, 		/* 7 */
+		{CODE_ALARM_FLOW_VEN_SET,          PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH, 60000, 2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, TRUE}, 		/* 7 */
+		{CODE_ALARM_FLOW_DEP_SET,          PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH, 60000, 2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, TRUE}, 		/* 7 */
 
 		//Allarme per errore nella lettura e scrittura modbus. Se dopo 10 ripetizioni non ottengo risposta alla lettura o scrittura genero un allarme.
 		// Per questo allarme uso la stessa procedura per le pompe non ferme. (Dovrei tolgliere direttamente l'enable alle pompe.
 		//{CODE_ALARM_MODBUS_ACTUATOR_SEND,  PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_WAIT_CONFIRM,        PRIORITY_LOW,     0, 100, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull},	        /* 28 */
-		{CODE_ALARM_MODBUS_ACTUATOR_SEND,  PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_MOD_BUS_ERROR,         PRIORITY_HIGH,    0, 500, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0},	        /* 28 */
+		{CODE_ALARM_MODBUS_ACTUATOR_SEND,  PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_MOD_BUS_ERROR,         PRIORITY_HIGH,    0, 500, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, TRUE},	        /* 28 */
 
 		// allarmi provenienti dalla protective. Serve per fare in modo che quando la protective e' in allarme le pompe vengano fermate e le pinch
 		// messe in sicurezza
-		{CODE_ALARM_PROT_START_VAL,        PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_PROTECTION, SECURITY_STOP_ALL_ACTUATOR,  PRIORITY_HIGH,    0, 500, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0},	        /* 29 */
+		{CODE_ALARM_PROT_START_VAL,        PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_PROTECTION, SECURITY_STOP_ALL_ACTUATOR,  PRIORITY_HIGH,    0, 500, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, TRUE},	        /* 29 */
 
 		// Filippo - inserito allarme per il tasto di stop
-		{CODE_ALARM_EMERGENCY_BUTTON, PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH, 0, 500, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_ALLOWED, &alarmManageNull, 0},	        /* 30 allarme tasto di stop*/
+		{CODE_ALARM_EMERGENCY_BUTTON, PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH, 0, 500, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_ALLOWED, &alarmManageNull, 0, TRUE},	        /* 30 allarme tasto di stop*/
 
 		// Filippo - inserito allarme per test T1
-		{CODE_ALARM_TEST_T1, PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH, 0, 500, OVRD_NOT_ENABLED, RESET_NOT_ALLOWED, SILENCE_ALLOWED, MEMO_ALLOWED, &alarmManageNull, 0},	        /* 31 allarme tasto di stop*/
+		{CODE_ALARM_TEST_T1, PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH, 0, 500, OVRD_NOT_ENABLED, RESET_NOT_ALLOWED, SILENCE_ALLOWED, MEMO_ALLOWED, &alarmManageNull, 0, TRUE},	        /* 31 allarme tasto di stop*/
+
 		// Filippo - inserito allarme per test sensore aria fallito
-		{CODE_ALARM_AIR_SENSOR_TEST_KO,PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,PRIORITY_HIGH, 0, 2000, OVRD_NOT_ENABLED, RESET_NOT_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0}, 		/* 32 */
-        {CODE_ALARM_MACHINE_COVERS,       PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH,    0,  100, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0},         /* 33 */
-        {CODE_ALARM_HOOKS_RESERVOIR,      PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH,    0,  100, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0},         /* 34 */
-        {CODE_ALARM_ART_RES_HIGH,         PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH,    0,  100, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0},         /* 35 */
-		{CODE_ALARM_T_ART_OUT_OF_RANGE,   PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_DELTA_TEMP_HIGH,       PRIORITY_HIGH, 2000,    0, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0}, 	    /* 36*/
-		{CODE_ALARM_TEMP_ART_HIGH_IN_TRT, PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_DELTA_TEMP_HIGH,       PRIORITY_HIGH, 2000,    0, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0}, 	    /* 37*/
+		{CODE_ALARM_AIR_SENSOR_TEST_KO,PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,PRIORITY_HIGH, 0, 2000, OVRD_NOT_ENABLED, RESET_NOT_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, TRUE},/* 32 */
+        {CODE_ALARM_MACHINE_COVERS,       PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH,    0,  100, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, TRUE},         /* 33 */
+        {CODE_ALARM_HOOKS_RESERVOIR,      PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH,    0,  100, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, TRUE},         /* 34 */
+        {CODE_ALARM_ART_RES_HIGH,         PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH,    0,  100, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, TRUE},         /* 35 */
+		{CODE_ALARM_T_ART_OUT_OF_RANGE,   PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_DELTA_TEMP_HIGH,       PRIORITY_HIGH, 2000,    0, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, TRUE}, 	    /* 36*/
+		{CODE_ALARM_TEMP_ART_HIGH_IN_TRT, PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_DELTA_TEMP_HIGH,       PRIORITY_HIGH, 2000,    0, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, TRUE}, 	    /* 37*/
+
 		// da qui in avanti solo le warning
-		{CODE_ALARM_PRESS_ADS_FILTER_WARN,    PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR, PRIORITY_LOW,  2000,  2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0},	    /* 38 esempio di warning*/
-		{CODE_ALARM_DEP_PUMP_STILL_WARN,      PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR, PRIORITY_LOW,  2000,  2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0},	    /* 39 */
-		{CODE_ALARM_PERF_ART_PUMP_STILL_WARN, PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR, PRIORITY_LOW,  2000,  2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0},	    /* 40 */
-		{CODE_ALARM_OXYG_PUMP_STILL_WARN,     PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR, PRIORITY_LOW,  2000,  2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0},	    /* 41 */
+		{CODE_ALARM_PRESS_ADS_FILTER_WARN,    PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR, PRIORITY_LOW,  2000,  2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, TRUE},	    /* 38 esempio di warning*/
+		{CODE_ALARM_DEP_PUMP_STILL_WARN,      PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR, PRIORITY_LOW,  2000,  2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, TRUE},	    /* 39 */
+		{CODE_ALARM_PERF_ART_PUMP_STILL_WARN, PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR, PRIORITY_LOW,  2000,  2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, TRUE},	    /* 40 */
+		{CODE_ALARM_OXYG_PUMP_STILL_WARN,     PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR, PRIORITY_LOW,  2000,  2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, TRUE},	    /* 41 */
 		{}
 };
 
@@ -1084,37 +1093,22 @@ void manageAlarmLiquidLevelHigh(void)
 // pompa arteriosa in kidney
 void manageAlarmCoversPumpLiver(void)
 {
-	static unsigned char alarmList_physic_OLD = PHYSIC_FALSE;
-
 	if(GlobalFlags.FlagsDef.EnableCoversAlarm)
 	{
-		if(CoversState == 4)
-		{
-			alarmList[PURIF_COVER_OPEN].physic = PHYSIC_FALSE;
-			alarmList[PERF_COVER_OPEN].physic = PHYSIC_FALSE;
-			alarmList[OXYG_COVER_OPEN].physic = PHYSIC_FALSE;
-		}
+		if (coverStateGlobal & 0x01)
+			alarmList[PURIF_COVER_OPEN].physic = PHYSIC_TRUE;
 		else
-		{
-			if(CoversState == 0)
-				alarmList[PURIF_COVER_OPEN].physic = PHYSIC_TRUE;
-			else
-				alarmList[PURIF_COVER_OPEN].physic = PHYSIC_FALSE;
+			alarmList[PURIF_COVER_OPEN].physic = PHYSIC_FALSE;
 
-			if(CoversState == 1)
-				alarmList[PERF_COVER_OPEN].physic = PHYSIC_TRUE;
-			else
-				alarmList[PERF_COVER_OPEN].physic = PHYSIC_FALSE;
+		if (coverStateGlobal & 0x02)
+			alarmList[PERF_COVER_OPEN].physic = PHYSIC_TRUE;
+		else
+			alarmList[PERF_COVER_OPEN].physic = PHYSIC_FALSE;
 
-			if((CoversState == 2) || (CoversState == 3))
-				alarmList[OXYG_COVER_OPEN].physic = PHYSIC_TRUE;
-			else
-				alarmList[OXYG_COVER_OPEN].physic = PHYSIC_FALSE;
-		}
-
-		if((alarmList_physic_OLD == PHYSIC_TRUE) && (alarmList[PERF_COVER_OPEN].physic == PHYSIC_FALSE))
-			alarmList_physic_OLD = alarmList[PERF_COVER_OPEN].physic;
-		alarmList_physic_OLD = alarmList[PERF_COVER_OPEN].physic;
+		if (coverStateGlobal & 0x04 || coverStateGlobal & 0x08)
+			alarmList[OXYG_COVER_OPEN].physic = PHYSIC_TRUE;
+		else
+			alarmList[OXYG_COVER_OPEN].physic = PHYSIC_FALSE;
 	}
 	else
 	{
@@ -1129,31 +1123,23 @@ void manageAlarmCoversPumpKidney(void)
 {
 	if(GlobalFlags.FlagsDef.EnableCoversAlarm)
 	{
-		if(CoversState == 4)
-		{
-			alarmList[PERF_COVER_OPEN].physic = PHYSIC_FALSE;
-			alarmList[OXYG_COVER_OPEN].physic = PHYSIC_FALSE;
-		}
+		if (coverStateGlobal & 0x01)
+			alarmList[PURIF_COVER_OPEN].physic = PHYSIC_TRUE;
 		else
-		{
-			if(CoversState == 0)
-				alarmList[PERF_COVER_OPEN].physic = PHYSIC_TRUE;
-			else
-				alarmList[PERF_COVER_OPEN].physic = PHYSIC_FALSE;
+			alarmList[PURIF_COVER_OPEN].physic = PHYSIC_FALSE;
 
-			if((CoversState == 2) || (CoversState == 3))
-				alarmList[OXYG_COVER_OPEN].physic = PHYSIC_TRUE;
-			else
-				alarmList[OXYG_COVER_OPEN].physic = PHYSIC_FALSE;
-		}
+		if (coverStateGlobal & 0x04 || coverStateGlobal & 0x08)
+			alarmList[OXYG_COVER_OPEN].physic = PHYSIC_TRUE;
+		else
+			alarmList[OXYG_COVER_OPEN].physic = PHYSIC_FALSE;
 	}
 	else
 	{
-		alarmList[PERF_COVER_OPEN].physic = PHYSIC_FALSE;
+		alarmList[PURIF_COVER_OPEN].physic = PHYSIC_FALSE;
 		alarmList[OXYG_COVER_OPEN].physic = PHYSIC_FALSE;
 	}
+	alarmList[PERF_COVER_OPEN].physic = PHYSIC_FALSE;
 }
-
 void manageAlarmPhysicPressSensLow(void)
 {
 
@@ -2383,61 +2369,6 @@ void SetAllWarningEnableFlags(void)
 
 void SetWarningEnableFlag(uint16_t WrnCode)
 {
-	switch (WrnCode)
-	{
-		case CODE_ALARM_PRESS_ADS_FILTER_WARN:
-			WrnGlobalFlags.WrnFlagsDef.GenEnableAdsPressHigk = 1;          // Abilito warning ads filter
-			WrnPressSensHighState = WRN_INIT;
-			break;
-		case CODE_ALARM_DEP_PUMP_STILL_WARN:
-			WrnGlobalFlags.WrnFlagsDef.GenEnablePumpDepStill = 1;
-			WrnDepPumpStillState = WRN_INIT;
-			break;
-		case CODE_ALARM_PERF_ART_PUMP_STILL_WARN:
-			WrnGlobalFlags.WrnFlagsDef.GenEnablePumpPerfArtStill = 1;
-			WrnPerfArtPumpStillState = WRN_INIT;
-			break;
-		case CODE_ALARM_OXYG_PUMP_STILL_WARN:
-			WrnGlobalFlags.WrnFlagsDef.GenEnablePumpOxygStill = 1;
-			WrnOxygPumpStillState = WRN_INIT;
-			break;
-	}
-}
-
-void ResetFromUserReceived(uint16_t WrnCode)
-{
-	switch (WrnCode)
-	{
-		case CODE_ALARM_PRESS_ADS_FILTER_WARN:
-			if( WrnPressSensHighState == WRN_CONTROL)
-			{
-				// forzo attesa del livello basso di pressione o ripartenza normale
-				WrnGlobalFlags.WrnFlagsDef.EnableAdsPressHigh = 0;
-			}
-			break;
-		case CODE_ALARM_DEP_PUMP_STILL_WARN:
-			if(WrnDepPumpStillState == WRN_CONTROL_DELAY)
-			{
-				// la pompa non e' ripartita da sola quando mi arriva il reset dell'allarme
-				// faccio ripartire il conteggio di due minuti
-				WrnGlobalFlags.WrnFlagsDef.EnablePumpDepStill = 0;
-			}
-			break;
-		case CODE_ALARM_PERF_ART_PUMP_STILL_WARN:
-			if(WrnPerfArtPumpStillState == WRN_CONTROL_DELAY)
-			{
-				// la pompa non e' ripartita da sola quando mi arriva il reset dell'allarme
-				WrnGlobalFlags.WrnFlagsDef.EnablePumpPerfArtStill = 0;
-			}
-			break;
-		case CODE_ALARM_OXYG_PUMP_STILL_WARN:
-			if(WrnOxygPumpStillState == WRN_CONTROL_DELAY)
-			{
-				// la pompa non e' ripartita da sola quando mi arriva il reset dell'allarme
-				WrnGlobalFlags.WrnFlagsDef.EnablePumpOxygStill = 0;
-			}
-			break;
-	}
 }
 
 void InitWarningsStates(void)
@@ -2460,45 +2391,53 @@ bool IsAlamActiveAndNotWrn(void)
 
 void WarningPhysicPressSensHigh(void)
 {
+	typeAlarmS* warningPtr = &alarmList[PRESS_ADS_FILTER_WARN];
 	switch (WrnPressSensHighState)
 	{
 		case WRN_INIT:
-			alarmList[PRESS_ADS_FILTER_WARN].physic = PHYSIC_FALSE;
+			warningPtr->physic = PHYSIC_FALSE;
+			warningPtr->faultConditionTimer = 0;
+
 			if(WrnGlobalFlags.WrnFlagsDef.EnableAdsPressHigh)
 				WrnPressSensHighState = WRN_CONTROL;
 			break;
+
 		case WRN_CONTROL:
-			if(WrnGlobalFlags.WrnFlagsDef.EnableAdsPressHigh)
+			if(PR_ADS_FLT_mmHg_Filtered > PR_ADS_FILTER_WARN)
 			{
-				if(PR_ADS_FLT_mmHg_Filtered > PR_ADS_FILTER_WARN)
-					alarmList[PRESS_ADS_FILTER_WARN].physic = PHYSIC_TRUE;
-				else
-					alarmList[PRESS_ADS_FILTER_WARN].physic = PHYSIC_FALSE;
+				warningPtr->faultConditionTimer += ALARM_TICK;
+				if ( warningPtr->faultConditionTimer >  warningPtr->entryTime)
+				//if ((warningPtr->faultConditionTimer += ALARM_TICK) >= warningPtr->entryTime)
+					warningPtr->active = ACTIVE_TRUE;
 			}
-			else
+			else if (warningPtr->faultConditionTimer >= ALARM_TICK)
+				warningPtr->faultConditionTimer -= ALARM_TICK;
+
+			if (warningPtr->active == ACTIVE_TRUE)
 			{
-				// se l'allarme e' scattato e viene resettato dall'utente
-				if(PR_ADS_FLT_mmHg_Filtered > PR_ADS_FILTER_WARN_LOWER_LEV)
-				{
-					// dopo che e' scattato l'allarme devo aspettare che la pressione
-					// scenda al di sotto di PR_ADS_FILTER_WARN_LOWER_LEV
-					WrnPressSensHighState = WRN_WAIT_LOWER_LEV;
-					alarmList[PRESS_ADS_FILTER_WARN].physic = PHYSIC_FALSE;
-				}
-				else
-				{
-					// la condizione fisica di warning se ne era gia' andata da sola
-					WrnGlobalFlags.WrnFlagsDef.EnableAdsPressHigh = 1;
-				}
+				warningPtr->faultConditionTimer = 0;
+				WrnPressSensHighState = WRN_WAIT_LOWER_LEV;
 			}
+
+			//Shortcut
+			if (!WrnGlobalFlags.WrnFlagsDef.EnableAdsPressHigh)
+				WrnPressSensHighState = WRN_INIT;
 			break;
+
 		case WRN_WAIT_LOWER_LEV:
-			alarmList[PRESS_ADS_FILTER_WARN].physic = PHYSIC_FALSE;
 			if(PR_ADS_FLT_mmHg_Filtered < PR_ADS_FILTER_WARN_LOWER_LEV)
 			{
-				WrnPressSensHighState = WRN_INIT;
-				WrnGlobalFlags.WrnFlagsDef.EnableAdsPressHigh = 1;
+				if ((warningPtr->faultConditionTimer += ALARM_TICK) >= warningPtr->entryTime)
+				{
+					WrnPressSensHighState = WRN_INIT;
+				}
 			}
+			else if (warningPtr->faultConditionTimer >= ALARM_TICK)
+				warningPtr->faultConditionTimer -= ALARM_TICK;
+
+			//Shortcut
+			if (!WrnGlobalFlags.WrnFlagsDef.EnableAdsPressHigh)
+				WrnPressSensHighState = WRN_INIT;
 			break;
 	}
 }
@@ -3476,74 +3415,152 @@ void AlmLisStateAlways(void)
 }
 
 //Inserisce un nuovo elemento nella lista, in fondo alla lista (posizione Last)
-void InsertAlarmInActiveListA(typeAlarmS *alarmPtr)
+void InsertElementInActiveListAlm(typeAlarmS *alarmPtr)
 {
 	// Lista vuota: inizializzo i puntatori Current e Last, inizializzo dimensione lista
-	if (sIdxCurrentAlmActiveListA == EMPTY_LIST_A)
+	if (sIdxCurrentActiveListAlm == EMPTY_LIST_ALM)
 	{
-		sIdxCurrentAlmActiveListA = 0;
-		sIdxLastAlmActiveList = 0;
-		sSizeAlmActiveListaA = 1;
-        sActiveListA[sIdxCurrentAlmActiveListA].ptr = alarmPtr;
+		sIdxCurrentActiveListAlm = 0;
+		sIdxLastActiveListAlm = 0;
+		sSizeActiveListaAlm = 1;
+        sActiveListAlm[sIdxCurrentActiveListAlm].ptr = alarmPtr;
 	}
 	else // Lista con almeno un elemento: incremento Last e dimensione lista
 	{
-        sIdxLastAlmActiveList ++;
+        sIdxLastActiveListAlm ++;
 
-		sSizeAlmActiveListaA ++;
-		sActiveListA[sIdxLastAlmActiveList].ptr = alarmPtr;
+		sSizeActiveListaAlm ++;
+		sActiveListAlm[sIdxLastActiveListAlm].ptr = alarmPtr;
+	}
+}
+
+//Inserisce un nuovo elemento nella lista, in fondo alla lista (posizione Last)
+void InsertElementInActiveListWrn(typeAlarmS *warningPtr)
+{
+	// Lista vuota: inizializzo i puntatori Current e Last, inizializzo dimensione lista
+	if (sIdxCurrentActiveListWrn == EMPTY_LIST_WRN)
+	{
+		sIdxCurrentActiveListWrn = 0;
+		sIdxLastActiveListWrn = 0;
+		sSizeActiveListaWrn = 1;
+        sActiveListWrn[sIdxCurrentActiveListWrn].ptr = warningPtr;
+	}
+	else // Lista con almeno un elemento: incremento Last e dimensione lista
+	{
+        sIdxLastActiveListWrn ++;
+
+		sSizeActiveListaWrn ++;
+		sActiveListWrn[sIdxLastActiveListWrn].ptr = warningPtr;
 	}
 }
 
 //Rimuove il primo elemento dalla lista
-void RemoveAlarmFromActiveListA(void)
+void RemoveElementFromActiveListAlm(void)
 {
 	//Lista non vuota?
-	if (sSizeAlmActiveListaA > 0)
+	if (sSizeActiveListaAlm > 0)
 	{
-		sActiveListA[sIdxCurrentAlmActiveListA].ptr->active = ACTIVE_FALSE;
-		sActiveListA[sIdxCurrentAlmActiveListA].ptr = (typeAlarmS *)0; //clear
+		sActiveListAlm[sIdxCurrentActiveListAlm].ptr->active = ACTIVE_FALSE;
+		manageAlarmChildGuard(GetCurrentAlarmActiveListAlm());
+		sActiveListAlm[sIdxCurrentActiveListAlm].ptr = (typeAlarmS *)0; //clear
 
 		// Ho un solo elemento?
-		if (sSizeAlmActiveListaA == 1)
+		if (sSizeActiveListaAlm == 1)
 		{
 
 			//Reset dei puntatori
-			sIdxCurrentAlmActiveListA = EMPTY_LIST_A;
-			sIdxLastAlmActiveList = EMPTY_LIST_A;
-			sSizeAlmActiveListaA = 0;
+			sIdxCurrentActiveListAlm = EMPTY_LIST_ALM;
+			sIdxLastActiveListAlm = EMPTY_LIST_ALM;
+			sSizeActiveListaAlm = 0;
 		}
 		else
 		{
-			sIdxCurrentAlmActiveListA ++;
-			sSizeAlmActiveListaA --;
+			sIdxCurrentActiveListAlm ++;
+			sSizeActiveListaAlm --;
 		}
 	}
 }
 
+//Rimuove il primo elemento dalla lista
+void RemoveElementFromActiveListWrn(void)
+{
+	//Lista non vuota?
+	if (sSizeActiveListaWrn > 0)
+	{
+		sActiveListWrn[sIdxCurrentActiveListWrn].ptr->active = ACTIVE_FALSE;
+		sActiveListWrn[sIdxCurrentActiveListWrn].ptr = (typeAlarmS *)0; //clear
+
+		// Ho un solo elemento?
+		if (sSizeActiveListaWrn == 1)
+		{
+
+			//Reset dei puntatori
+			sIdxCurrentActiveListWrn = EMPTY_LIST_WRN;
+			sIdxLastActiveListWrn = EMPTY_LIST_WRN;
+			sSizeActiveListaWrn = 0;
+		}
+		else
+		{
+			sIdxCurrentActiveListWrn ++;
+			sSizeActiveListaWrn --;
+		}
+	}
+}
 
 // Fornisce il codice dell'allarme corrente (primo elemento della lista FIFO)
-typeAlarmS* GetCurrentAlarmActiveListA(void)
+typeAlarmS* GetCurrentAlarmActiveListAlm(void)
 {
-	if (LengthActiveListA() > 0)
-		return sActiveListA[sIdxCurrentAlmActiveListA].ptr;
+	if (LengthActiveListAlm() > 0)
+		return sActiveListAlm[sIdxCurrentActiveListAlm].ptr;
+	else
+		return (typeAlarmS*)0;
+}
+
+// Fornisce il codice dell'allarme corrente (primo elemento della lista FIFO)
+typeAlarmS* GetCurrentWarningActiveListWrn(void)
+{
+	if (LengthActiveListWrn() > 0)
+		return sActiveListWrn[sIdxCurrentActiveListWrn].ptr;
 	else
 		return (typeAlarmS*)0;
 }
 
 //Restituisce TRUE se un allarme è già presente in lista
-bool AlarmPresentInActiveListA(typeAlarmS *alarmPtr)
+bool AlarmPresentInActiveListAlm(typeAlarmS *alarmPtr)
 {
 	bool retValue = FALSE;
 	unsigned char idx = 0;
 
 	//Lista non deve essere vuota
-	if (sSizeAlmActiveListaA > 0)
+	if (sSizeActiveListaAlm > 0)
 	{
 		//Scansione da Current a Last
-		for (idx = sIdxCurrentAlmActiveListA; idx <= sIdxLastAlmActiveList; idx ++)
+		for (idx = sIdxCurrentActiveListAlm; idx <= sIdxLastActiveListAlm; idx ++)
 		{
-			if (sActiveListA[idx].ptr->code == alarmPtr->code)
+			if (sActiveListAlm[idx].ptr->code == alarmPtr->code)
+			{
+				retValue = TRUE; //Trovato: esco
+				break;
+			}
+		}
+	}
+
+	return retValue;
+}
+
+//Restituisce TRUE se un allarme è già presente in lista
+bool WarningPresentInActiveListWrn(typeAlarmS *warningPtr)
+{
+	bool retValue = FALSE;
+	unsigned char idx = 0;
+
+	//Lista non deve essere vuota
+	if (sSizeActiveListaWrn > 0)
+	{
+		//Scansione da Current a Last
+		for (idx = sIdxCurrentActiveListWrn; idx <= sIdxLastActiveListWrn; idx ++)
+		{
+			if (sActiveListWrn[idx].ptr->code == warningPtr->code)
 			{
 				retValue = TRUE; //Trovato: esco
 				break;
@@ -3557,15 +3574,20 @@ bool AlarmPresentInActiveListA(typeAlarmS *alarmPtr)
 //Rimuove il primo elemento dalla lista degli allarmi e considera l'allarme processato
 void EnableNextAlarmFunc(void)
 {
-	RemoveAlarmFromActiveListA();
+	RemoveElementFromActiveListAlm();
 	processingAlarm = FALSE;
 	currentGuard[GUARD_ALARM_ACTIVE].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
 }
 
 //Restituisce il numero degli elementi in lista
-unsigned char LengthActiveListA(void)
+unsigned char LengthActiveListAlm(void)
 {
-	return sSizeAlmActiveListaA;
+	return sSizeActiveListaAlm;
+}
+
+unsigned char LengthActiveListWrn(void)
+{
+	return sSizeActiveListaWrn;
 }
 
 //Gestore principale degli allarmi
@@ -3575,7 +3597,7 @@ void alarmEngineAlways(void)
 	typeAlarmS *alarmPtr = 0;
 
 	// Scansione di tutta la struttura degli allarmi
-	for (scanAlarm = 0; scanAlarm < ALARM_ACTIVE_IN_STRUCT; scanAlarm++)
+	for (scanAlarm = 0; scanAlarm < FIRST_WARNING; scanAlarm++)
 	{
 		// puntatore alla singola riga della struttura degli allarmi
 		alarmPtr = &alarmList[scanAlarm];
@@ -3596,29 +3618,112 @@ void alarmEngineAlways(void)
     // Al termine della scansione la struttura alarmList[] conterrà gli eventuali allarmi che sono diventati ACTIVE_TRUE
 
 	// Scansione di tutta la struttura degli allarmi
-	for (scanAlarm = 0; scanAlarm < ALARM_ACTIVE_IN_STRUCT; scanAlarm++)
+	for (scanAlarm = 0; scanAlarm < FIRST_WARNING; scanAlarm++)
 	{
 		// puntatore alla singola riga della struttura degli allarmi
 		alarmPtr = &alarmList[scanAlarm];
 		if (alarmPtr->active == ACTIVE_TRUE)
 		{
 			//Per ogni allarme attivo verifico se è già presente nella lista allarmi attivi "ACTIVE LIST A"
-			if (FALSE == AlarmPresentInActiveListA(alarmPtr))
-				InsertAlarmInActiveListA(alarmPtr); //in caso non sia presente, lo inserisco
+			if (FALSE == AlarmPresentInActiveListAlm(alarmPtr))
+				InsertElementInActiveListAlm(alarmPtr); //in caso non sia presente, lo inserisco
 		}
 	}
 	// Al termine della scansione, la struttura alarmListActive[] contiene gli allarmi attivi
 
 	// Se ho una lista di allarmi attivi non vuota, processo un singolo allarme (il primo in lista)
-	if (LengthActiveListA() > 0)
+	if (LengthActiveListAlm() > 0)
 	{
 		//Se non sto già processando un allarme, prelevo il primo in lista
 		if (FALSE == processingAlarm)
 		{
-			sActiveListAS* punt;
-			punt = &sActiveListA[sIdxCurrentAlmActiveListA];
+			sActiveListAlmS* punt;
+			punt = &sActiveListAlm[sIdxCurrentActiveListAlm];
 			punt->ptr->prySafetyActionFunc();
 			processingAlarm = TRUE;
+		}
+	}
+}
+
+void WarningEngineAlways(void)
+{
+	unsigned char scanWarning = 0;
+	typeAlarmS *warningPtr = 0;
+
+//	// Scansione di tutta la struttura degli allarmi
+//	for (scanWarning = FIRST_WARNING; scanWarning < ALARM_ACTIVE_IN_STRUCT; scanWarning++)
+//	{
+//		// puntatore alla singola riga della struttura degli allarmi
+//		warningPtr = &warningPtr[scanWarning];
+//		if (warningPtr->active != ACTIVE_TRUE) //L'allarme specifico NON è attivo
+//		{
+//			// La condizione di allarme è presente
+//			if (warningPtr->physic == PHYSIC_TRUE)
+//			{
+//				//Incremento lo specifico timer della condizione di allarme, se supera la soglia di intervento pongo l'allarme ATTIVO
+//				if ((warningPtr->faultConditionTimer += ALARM_TICK) >= warningPtr->entryTime)
+//					warningPtr->active = ACTIVE_TRUE;
+//			}
+//			else if (warningPtr->faultConditionTimer >= ALARM_TICK)
+//				warningPtr->faultConditionTimer -= ALARM_TICK; //Decremento il timer se la condizione di allarme non è più presente
+//			    // ma solo se l'allarme nel frattempo non è diventato ATTIVO
+//		}
+//	}
+    // Al termine della scansione la struttura alarmList[] conterrà gli eventuali allarmi che sono diventati ACTIVE_TRUE
+
+	// Scansione di tutta la struttura degli allarmi
+	for (scanWarning = FIRST_WARNING; scanWarning < ALARM_ACTIVE_IN_STRUCT; scanWarning++)
+	{
+		// puntatore alla singola riga della struttura degli allarmi
+		warningPtr = &alarmList[scanWarning];
+		if (warningPtr->active == ACTIVE_TRUE)
+		{
+			//Per ogni allarme attivo verifico se è già presente nella lista allarmi attivi "ACTIVE LIST A"
+			if (FALSE == WarningPresentInActiveListWrn(warningPtr))
+				InsertElementInActiveListWrn(warningPtr); //in caso non sia presente, lo inserisco
+		}
+	}
+	// Al termine della scansione, la struttura alarmListActive[] contiene gli allarmi attivi
+
+
+
+	// reset allarme
+	if (LengthActiveListAlm() == 0)
+	{
+		if (LengthActiveListWrn() > 0)
+		{
+			sActiveListWrnS *warningPtr = 0;
+			uint16_t warningCode = 0;
+
+			warningPtr = &sActiveListWrn[sIdxCurrentActiveListWrn];
+			warningCode = warningPtr->ptr->code;
+
+			if(buttonGUITreatment[BUTTON_RESET_ALARM].state == GUI_BUTTON_RELEASED)
+			{
+				releaseGUIButton(BUTTON_RESET_ALARM);
+
+//				switch (warningCode)
+//				{
+//					case CODE_ALARM_PRESS_ADS_FILTER_WARN:
+//						WrnGlobalFlags.WrnFlagsDef.GenEnableAdsPressHigk = 1;          // Abilito warning ads filter
+//
+//						//WrnPressSensHighState = WRN_INIT;
+//						break;
+//					case CODE_ALARM_DEP_PUMP_STILL_WARN:
+//						WrnGlobalFlags.WrnFlagsDef.GenEnablePumpDepStill = 1;
+//						WrnDepPumpStillState = WRN_INIT;
+//						break;
+//					case CODE_ALARM_PERF_ART_PUMP_STILL_WARN:
+//						WrnGlobalFlags.WrnFlagsDef.GenEnablePumpPerfArtStill = 1;
+//						WrnPerfArtPumpStillState = WRN_INIT;
+//						break;
+//					case CODE_ALARM_OXYG_PUMP_STILL_WARN:
+//						WrnGlobalFlags.WrnFlagsDef.GenEnablePumpOxygStill = 1;
+//						WrnOxygPumpStillState = WRN_INIT;
+//						break;
+//				}
+				RemoveElementFromActiveListWrn();
+			}
 		}
 	}
 }
@@ -3627,7 +3732,7 @@ void alarmEngineAlways(void)
 void alarmManageNull(void)
 {
 	currentGuard[GUARD_ALARM_ACTIVE].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
-	manageAlarmChildGuard(GetCurrentAlarmActiveListA()); //Gestisce le sicurezze associate all'allarme
+	manageAlarmChildGuard(GetCurrentAlarmActiveListAlm()); //Gestisce le sicurezze associate all'allarme
 }
 
 
@@ -3704,7 +3809,7 @@ void ResetWarninigWithCode(uint16_t code)
 	DeleteFromWarningCodeArray(code);
 	// cancello dalla lista di ricerca (MAX_NUM_WARNING elementi) degli allarmi
 	ResetWarningFromList(code);
-	ResetFromUserReceived(code);
+	//ResetFromUserReceived(code);
 }
 
 

@@ -819,6 +819,7 @@ typedef struct {
 	unsigned char	memo;			/* memo property: the system remain in the alarm state even if the alarm condition is no longer present */
 	void (*prySafetyActionFunc)(void); /* safety action: funzione che esegue la funzione di sicurezza in base alla priorità dell'allarme */
 	unsigned long int faultConditionTimer;
+	bool init;
 } typeAlarmS;
 
 /* alarm */
