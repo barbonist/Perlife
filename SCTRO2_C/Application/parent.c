@@ -681,113 +681,122 @@ void ParentFunc(void)
 					currentGuard[GUARD_ALARM_DELTA_TEMP_HIGH_RECV].guardValue = GUARD_VALUE_FALSE;
 					GoToRecoveryParentState(PARENT_TREAT_KIDNEY_1_DELTA_T_HIGH_RECV);
 				}
-				else
-				{
-					if(ButtonResetRcvd)
-					{
-						ButtonResetRcvd = FALSE;
-//						if(GlobalFlags.FlagsDef.TankLevelHigh)
-//						{
-//							// era un allarme di troppo pieno, riprendo il trattamento
-//							// TODO DA VEDERE MEGLIO COME TRATTARLO, ABORTIRE IL TRATTAMENTO  O NO?
-//							GlobalFlags.FlagsDef.TankLevelHigh = 0;
-//							ptrFutureParent = &stateParentTreatKidney1[1];
-//							ptrFutureChild = ptrFutureParent->ptrChild;
-//							setGUIButton(BUTTON_START_TREATMENT);
-//						}
-//						else
-//						{
-							// FM allarme finito posso ritornare nella fase iniziale del trattamento
-							ptrFutureParent = &stateParentTreatKidney1[1];
-							ptrFutureChild = ptrFutureParent->ptrChild;
-							// forzo anche una pressione del tasto TREATMENT START per fare in modo che
-							// il trattamento riprenda automaticamente
-							setGUIButton(BUTTON_START_TREATMENT);
-//						}
-					}
-					else if(!IsAlarmActive())
-					{
-						// in questa situazione ci posso finire per errore o per questioni di timing tra button reset
-						// e le guard. In realta' l'allarme no e' attivo.
-						if(AtLeastoneButResRcvd)
-						{
-							ptrFutureParent = &stateParentTreatKidney1[1];
-							ptrFutureChild = ptrFutureParent->ptrChild;
-							LevelBuzzer = SILENT;//0;
-
-							// preparo la macchina a stati per il controllo delle pinch aperte nella posizione richiesta
-							// per lo stato di trattamento
-							TreatSetPinchPosTask((TREAT_SET_PINCH_POS_CMD)T_SET_PINCH_RESET_CMD);
-							// forzo anche una pressione del tasto TREATMENT START per fare in modo che
-							// il trattamento riprenda automaticamente
-							setGUIButton(BUTTON_START_TREATMENT);
-						}
-						break;
-					}
-				}
 			}
-			else if(buttonGUITreatment[BUTTON_RESET_ALARM].state == GUI_BUTTON_RELEASED)
+
+			if(buttonGUITreatment[BUTTON_RESET_ALARM].state == GUI_BUTTON_RELEASED)
 			{
-				// ho ricevuto un reset allarme ma la condizione fisica di allarme non e' ancora andata via.
-				// Se lo stato child non e' in SECURITY_STOP_ALL_ACTUATOR il tasto reset potrebbe servire a lui per
-				// disabilitare l'allarme.
+				releaseGUIButton(BUTTON_RESET_ALARM);
+
+				ptrFutureParent = &stateParentTreatKidney1[1];
+				ptrFutureChild = ptrFutureParent->ptrChild;
+
+				TreatSetPinchPosTask((TREAT_SET_PINCH_POS_CMD)T_SET_PINCH_RESET_CMD);
+				setGUIButton(BUTTON_START_TREATMENT);
 				AtLeastoneButResRcvd = TRUE;
-				if(!IsButtResUsedByChild())
-				{
-					releaseGUIButton(BUTTON_RESET_ALARM);
-					// qui non serve perche' l'allarme non e' ancora terminato
-					//EnableNextAlarmFunc(); //EnableNextAlarm = TRUE;
-					ptrFutureParent = &stateParentTreatKidney1[1];
-					ptrFutureChild = ptrFutureParent->ptrChild;
-					LevelBuzzer = SILENT;//0;
-
-					// preparo la macchina a stati per il controllo delle pinch aperte nella posizione richiesta
-					// per lo stato di trattamento
-					TreatSetPinchPosTask((TREAT_SET_PINCH_POS_CMD)T_SET_PINCH_RESET_CMD);
-					// forzo anche una pressione del tasto TREATMENT START per fare in modo che
-					// il trattamento riprenda automaticamente
-					setGUIButton(BUTTON_START_TREATMENT);
-					break;
-				}
-			}
-			else if(!IsAlarmActive())
-			{
-				// in questa situazione ci posso finire per errore o per questioni di timing tra button reset
-				// e le guard. In realta' l'allarme no e' attivo.
-				if(AtLeastoneButResRcvd)
-				{
-					currentGuard[GUARD_ALARM_ACTIVE].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
-					ptrFutureParent = &stateParentTreatKidney1[1];
-					ptrFutureChild = ptrFutureParent->ptrChild;
-					LevelBuzzer = SILENT;//0;
-
-					// preparo la macchina a stati per il controllo delle pinch aperte nella posizione richiesta
-					// per lo stato di trattamento
-					TreatSetPinchPosTask((TREAT_SET_PINCH_POS_CMD)T_SET_PINCH_RESET_CMD);
-					// forzo anche una pressione del tasto TREATMENT START per fare in modo che
-					// il trattamento riprenda automaticamente
-					setGUIButton(BUTTON_START_TREATMENT);
-				}
+				EnableNextAlarmFunc();
+				LevelBuzzer = SILENT;//0;
 				break;
 			}
 
+//
+//
+//					if(ButtonResetRcvd)
+//					{
+//						ButtonResetRcvd = FALSE;
+////						if(GlobalFlags.FlagsDef.TankLevelHigh)
+////						{
+////							// era un allarme di troppo pieno, riprendo il trattamento
+////							// TODO DA VEDERE MEGLIO COME TRATTARLO, ABORTIRE IL TRATTAMENTO  O NO?
+////							GlobalFlags.FlagsDef.TankLevelHigh = 0;
+////							ptrFutureParent = &stateParentTreatKidney1[1];
+////							ptrFutureChild = ptrFutureParent->ptrChild;
+////							setGUIButton(BUTTON_START_TREATMENT);
+////						}
+////						else
+////						{
+//							// FM allarme finito posso ritornare nella fase iniziale del trattamento
+//							ptrFutureParent = &stateParentTreatKidney1[1];
+//							ptrFutureChild = ptrFutureParent->ptrChild;
+//							// forzo anche una pressione del tasto TREATMENT START per fare in modo che
+//							// il trattamento riprenda automaticamente
+//							setGUIButton(BUTTON_START_TREATMENT);
+////						}
+//					}
+//					else if(!IsAlarmActive())
+//					{
+//						// in questa situazione ci posso finire per errore o per questioni di timing tra button reset
+//						// e le guard. In realta' l'allarme no e' attivo.
+//						if(AtLeastoneButResRcvd)
+//						{
+//							ptrFutureParent = &stateParentTreatKidney1[1];
+//							ptrFutureChild = ptrFutureParent->ptrChild;
+//							LevelBuzzer = SILENT;//0;
+//
+//							// preparo la macchina a stati per il controllo delle pinch aperte nella posizione richiesta
+//							// per lo stato di trattamento
+//
+//							// forzo anche una pressione del tasto TREATMENT START per fare in modo che
+//							// il trattamento riprenda automaticamente
+//							setGUIButton(BUTTON_START_TREATMENT);
+//						}
+//						break;
+//					}
+//				}
+//			}
+//			else if(buttonGUITreatment[BUTTON_RESET_ALARM].state == GUI_BUTTON_RELEASED)
+//			{
+//				// ho ricevuto un reset allarme ma la condizione fisica di allarme non e' ancora andata via.
+//				// Se lo stato child non e' in SECURITY_STOP_ALL_ACTUATOR il tasto reset potrebbe servire a lui per
+//				// disabilitare l'allarme.
+//				AtLeastoneButResRcvd = TRUE;
+//				if(!IsButtResUsedByChild())
+//				{
+//					releaseGUIButton(BUTTON_RESET_ALARM);
+//					// qui non serve perche' l'allarme non e' ancora terminato
+//					//EnableNextAlarmFunc(); //EnableNextAlarm = TRUE;
+//					ptrFutureParent = &stateParentTreatKidney1[1];
+//					ptrFutureChild = ptrFutureParent->ptrChild;
+//					LevelBuzzer = SILENT;//0;
+//
+//					// preparo la macchina a stati per il controllo delle pinch aperte nella posizione richiesta
+//					// per lo stato di trattamento
+//					TreatSetPinchPosTask((TREAT_SET_PINCH_POS_CMD)T_SET_PINCH_RESET_CMD);
+//					// forzo anche una pressione del tasto TREATMENT START per fare in modo che
+//					// il trattamento riprenda automaticamente
+//					setGUIButton(BUTTON_START_TREATMENT);
+//					break;
+//				}
+//			}
+//			else if(!IsAlarmActive())
+//			{
+//				// in questa situazione ci posso finire per errore o per questioni di timing tra button reset
+//				// e le guard. In realta' l'allarme no e' attivo.
+//				if(AtLeastoneButResRcvd)
+//				{
+//					currentGuard[GUARD_ALARM_ACTIVE].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
+//					ptrFutureParent = &stateParentTreatKidney1[1];
+//					ptrFutureChild = ptrFutureParent->ptrChild;
+//					LevelBuzzer = SILENT;//0;
+//
+//					// preparo la macchina a stati per il controllo delle pinch aperte nella posizione richiesta
+//					// per lo stato di trattamento
+//					TreatSetPinchPosTask((TREAT_SET_PINCH_POS_CMD)T_SET_PINCH_RESET_CMD);
+//					// forzo anche una pressione del tasto TREATMENT START per fare in modo che
+//					// il trattamento riprenda automaticamente
+//					setGUIButton(BUTTON_START_TREATMENT);
+//				}
+//				break;
+//			}
+
 			if(ptrCurrentParent->action == ACTION_ON_ENTRY)
 			{
-				/* execute parent callback function */
-				//ptrCurrentParent->callBackFunct(); NON SERVE QUESTO
-				/* compute future parent */
 				/* (FM) passo alla gestione ACTION_ALWAYS dell'allarme */
 				ptrFutureParent = &stateParentTreatKidney1[6];
 				ptrFutureChild = ptrFutureParent->ptrChild;
 
-				// reinserire queste due istruzioni se si vuole fermare il conteggio del tempo di
-				// trattamento durante un allarme
-//    			TotalTreatDuration += TreatDuration;
-//    			TreatDuration = 0;
 			}
 			else if(ptrCurrentParent->action == ACTION_ALWAYS)
 			{
-				//ptrCurrentParent->callBackFunct(); NON SERVE QUESTO
 				// (FM) chiamo la funzione child che gestisce lo stato di allarme durante il trattamento
 				// Dovra fare tutte le attuazioni sulle pompe, pinch necessarie per risolvere la condizione
 				// di allarme

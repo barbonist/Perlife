@@ -33,8 +33,8 @@ static signed int sIdxCurrentActiveListWrn = EMPTY_LIST_WRN;
 static signed int sIdxLastActiveListWrn = EMPTY_LIST_WRN;
 static signed int sSizeActiveListaWrn = 0;
 
-bool processingAlarm = FALSE;
-bool processingWarning = FALSE;
+static bool sProcessingAlarm = FALSE;
+static bool sProcessingWarning = FALSE;
 
 sActiveListAlmS sActiveListAlm[MAX_ALARMS_ACTIVE_LIST_ALM];
 sActiveListWrnS sActiveListWrn[MAX_ALARMS_ACTIVE_LIST_WRN];
@@ -3414,6 +3414,18 @@ void AlmLisStateAlways(void)
 	int SearchNextAlarmFlag;
 }
 
+
+void SetProcessingAlarm(bool statusProcessing)
+{
+	sProcessingAlarm = statusProcessing;
+}
+
+bool ProcessingAlarm(void)
+{
+	return sProcessingAlarm;
+}
+
+
 //Inserisce un nuovo elemento nella lista, in fondo alla lista (posizione Last)
 void InsertElementInActiveListAlm(typeAlarmS *alarmPtr)
 {
@@ -3432,6 +3444,7 @@ void InsertElementInActiveListAlm(typeAlarmS *alarmPtr)
 		sSizeActiveListaAlm ++;
 		sActiveListAlm[sIdxLastActiveListAlm].ptr = alarmPtr;
 	}
+
 }
 
 //Inserisce un nuovo elemento nella lista, in fondo alla lista (posizione Last)
@@ -3575,7 +3588,7 @@ bool WarningPresentInActiveListWrn(typeAlarmS *warningPtr)
 void EnableNextAlarmFunc(void)
 {
 	RemoveElementFromActiveListAlm();
-	processingAlarm = FALSE;
+	SetProcessingAlarm(FALSE);
 	currentGuard[GUARD_ALARM_ACTIVE].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
 }
 
@@ -3635,12 +3648,12 @@ void alarmEngineAlways(void)
 	if (LengthActiveListAlm() > 0)
 	{
 		//Se non sto già processando un allarme, prelevo il primo in lista
-		if (FALSE == processingAlarm)
+		if (!ProcessingAlarm())
 		{
 			sActiveListAlmS* punt;
 			punt = &sActiveListAlm[sIdxCurrentActiveListAlm];
 			punt->ptr->prySafetyActionFunc();
-			processingAlarm = TRUE;
+			SetProcessingAlarm(TRUE);
 		}
 	}
 }

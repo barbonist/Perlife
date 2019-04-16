@@ -21,10 +21,10 @@ struct elementActiveListWrn {
 };
 
 #define 	EMPTY_LIST_ALM 				(-1)
-#define     MAX_ALARMS_ACTIVE_LIST_ALM 	10
+#define     MAX_ALARMS_ACTIVE_LIST_ALM 	100
 
 #define 	EMPTY_LIST_WRN 				(-1)
-#define     MAX_ALARMS_ACTIVE_LIST_WRN 	10
+#define     MAX_ALARMS_ACTIVE_LIST_WRN 	100
 
 typedef struct elementActiveListAlm sActiveListAlmS;
 typedef struct elementActiveListWrn sActiveListWrnS;
@@ -286,6 +286,9 @@ bool AlarmPresentInActiveListAlm(typeAlarmS *alarmPtr);
 unsigned char LengthActiveListWrn(void);
 typeAlarmS* GetCurrentWarningActiveListWrn(void);
 bool WarningPresentInActiveListWrn(typeAlarmS *alarmPtr);
+
+void SetProcessingAlarm(bool statusProcessing);
+bool ProcessingAlarm(void);
 
 void CalcWarningActive(void);
 void alarmConInit(void);
