@@ -2676,6 +2676,7 @@ void manageParentPrimAirFiltEntry(void)
 {
 	AirAlarmRecoveryState = INIT_AIR_ALARM_RECOVERY;
 }
+/*Vincenzo: funzione che gestisce lo sbollamento dopo alarme aria*/
 void manageParentPrimAirFiltAlways(void)
 {
 	AirAlarmRecoveryStateMach();
@@ -4174,9 +4175,14 @@ void AirAlarmRecoveryStateMach(void)
 
 	THERAPY_TYPE TherType = GetTherapyType();
 
-	if(buttonGUITreatment[BUTTON_START_TREATMENT].state == GUI_BUTTON_RELEASED)
+	if(buttonGUITreatment[BUTTON_START_TREATMENT].state == GUI_BUTTON_RELEASED ||
+	   buttonGUITreatment[BUTTON_START_PRIMING].state == GUI_BUTTON_RELEASED	 )
 	{
-		releaseGUIButton(BUTTON_START_TREATMENT);
+		if (buttonGUITreatment[BUTTON_START_TREATMENT].state == GUI_BUTTON_RELEASED)
+			releaseGUIButton(BUTTON_START_TREATMENT);
+		else //if (buttonGUITreatment[BUTTON_START_PRIMING].state == GUI_BUTTON_RELEASED)
+			releaseGUIButton(BUTTON_START_PRIMING);
+
 		if( AirAlarmRecoveryState == AIR_REJECT_STOPPED )
 		{
 			AirAlarmRecoveryState =	LastAirAlarmRecoveryState;
@@ -4223,9 +4229,13 @@ void AirAlarmRecoveryStateMach(void)
 
 		}
 	}
-	else if(buttonGUITreatment[BUTTON_STOP_TREATMENT].state == GUI_BUTTON_RELEASED)
+	else if(buttonGUITreatment[BUTTON_STOP_TREATMENT].state == GUI_BUTTON_RELEASED ||
+			buttonGUITreatment[BUTTON_STOP_PRIMING].state == GUI_BUTTON_RELEASED   )
 	{
-		releaseGUIButton(BUTTON_STOP_TREATMENT);
+		if (buttonGUITreatment[BUTTON_STOP_TREATMENT].state == GUI_BUTTON_RELEASED)
+			releaseGUIButton(BUTTON_STOP_TREATMENT);
+		else //if (buttonGUITreatment[BUTTON_STOP_PRIMING].state == GUI_BUTTON_RELEASED)
+			releaseGUIButton(BUTTON_STOP_PRIMING);
 
 		if( (AirAlarmRecoveryState == START_AIR_PUMP) ||
 			(AirAlarmRecoveryState == AIR_CHANGE_START_TIME) ||

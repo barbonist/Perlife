@@ -3615,15 +3615,7 @@ void alarmEngineAlways(void)
 	 * attivo o una condizione di recovery da un allarme*/
 	manageAlarmStopButtonPressed();
 
-	int i;
-
- // Vincenzo: aggiunta la gestione del tasto di stop che deve
- //           essere gestito sempre, anche con un eventuale allarme
- //           in corso, o condizione di recovery
-
-	manageAlarmStopButtonPressed();
-
-	for(i = 0; i < MAX_NUM_ALARM; i++)
+	for(int i = 0; i < MAX_NUM_ALARM; i++)
 	{
 		CurrAlmLisStateArrdx = i;
 		AlmLisStateAlways();

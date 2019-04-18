@@ -1040,7 +1040,7 @@ void updateMaxTempPlate (void)
 	 */
 	if (modbusData[0][17] == 0 && modbusData[1][17] == 0)
 	{
-		MAX_PLATE_TEMP = parameterWordSetFromGUI[PAR_SET_PRIMING_TEMPERATURE_PERFUSION].value + 70;
+		MAX_PLATE_TEMP = parameterWordSetFromGUI[PAR_SET_PRIMING_TEMPERATURE_PERFUSION].value + 10;
 	}
 	/* Se la temp del liquido è sotto al set - 0.5°C e non sale di almeno 0.3 °C in un minuto
 	 * e sono o nel ricircolo del priming o nel trattamento e la temperatura massima di piastra è
@@ -1144,7 +1144,7 @@ void updateMinTempPlate (void)
 	 */
 	if (modbusData[0][17] == 0 && modbusData[1][17] == 0)
 	{
-		MIN_PLATE_TEMP = T1l / 10;
+		MIN_PLATE_TEMP = parameterWordSetFromGUI[PAR_SET_PRIMING_TEMPERATURE_PERFUSION].value - 40;
 	}
 	/* Se la temp del liquido è sopra al set + 0.5°C e non sscende di almeno 0.3 °C in un minuto
 	 * e sono o nel ricircolo del priming o nel trattamento e la temperatura massima di piastra è
@@ -1165,8 +1165,10 @@ void updateMinTempPlate (void)
 
 	MIN_PLATE_TEMP = MIN_PLATE_TEMP / 10;
 
-	/*faccio in modo comunque da non andare sotto -12 °C sulla piastra*/
-	if (MIN_PLATE_TEMP <= -12.0)
+	/*faccio in modo comunque da non andare sotto -12 °C sulla piastra
+	 * se ho ricevuto una temperatura di sette <= 8 Gradi, lascio la temperatura
+	 * minina di piastra alla minima possibile*/
+	if (MIN_PLATE_TEMP <= -12.0 || parameterWordSetFromGUI[PAR_SET_PRIMING_TEMPERATURE_PERFUSION].value <= 80)
 		MIN_PLATE_TEMP = -12.0;
 }
 
