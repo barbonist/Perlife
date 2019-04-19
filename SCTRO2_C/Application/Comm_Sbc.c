@@ -1564,34 +1564,11 @@ void initGUIButton(void){
 // Facendo questa inversione non cambio tutto il resto del codice.
 void setGUIButton(unsigned char buttonId)
 {
-//	if((buttonId == BUTTON_RESET_ALARM) && !ResetAlmHandleFunc(alarmCurrent.code))
-//	{
-//		// butto via il reset perche' ci sono altri allarmi o warning da resettare
-//	}
-//	else
-//	{
-		//buttonGUITreatment[buttonId].state = GUI_BUTTON_PRESSED;
-		buttonGUITreatment[buttonId].state = GUI_BUTTON_RELEASED;
-		actionFlag = 2;
-//		if((buttonId == BUTTON_RESET_ALARM) /*|| (buttonId == BUTTON_OVERRIDE_ALARM)*/)
-//		{
-//			actionFlag = 2;
-//			// serve per abilitare la ricezione del successivo allarme
-//			//EnableNextAlarm = TRUE;
-//		}
-//
-//		if((buttonId == BUTTON_RESET_ALARM) && alarmCurrent.code)
-//		{
-//			// dovro' uscire dalla condizione di allarme e quindi azzero subito l'allarme
-//			// inviato alla gui
-//			SuspendInvioAlarmCode = 1;
-//		}
-//	}
+	buttonGUITreatment[buttonId].state = GUI_BUTTON_RELEASED;
+
 	/*se mi è arrivato il primo start treatment faccio la tara delle pressioni*/
-
-if (buttonId == BUTTON_START_TREATMENT && TARA_PRESS_DONE == FALSE && ptrCurrentState->state == STATE_TREATMENT_KIDNEY_1)
+    if (buttonId == BUTTON_START_TREATMENT && TARA_PRESS_DONE == FALSE && ptrCurrentState->state == STATE_TREATMENT_KIDNEY_1)
 	{
-
 		/*calcolo la tara della pressione arteriosa dopo la connessione dell'organo*/
 		PR_ART_TARA_mmHg = PR_ART_mmHg_Filtered;
 
@@ -1617,8 +1594,6 @@ if (buttonId == BUTTON_START_TREATMENT && TARA_PRESS_DONE == FALSE && ptrCurrent
 			Soglia_minima_ADC_allarme_Livello = SOGLIA_ADC_MINIMA;
 		/*trovato il valore percentuale di ADC calcolo la soglia minima di ADC rispetto al valore di ADC dopo il priming*/
 		Soglia_minima_ADC_allarme_Livello = PR_LEVEL_ADC_Filtered - Soglia_minima_ADC_allarme_Livello;
-
-
 
 		TARA_PRESS_DONE = TRUE;
 	}

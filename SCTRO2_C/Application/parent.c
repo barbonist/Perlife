@@ -192,6 +192,11 @@ void ParentFunc(void)
 				currentGuard[GUARD_CHK_FOR_ALL_MOT_STOP].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
 				currentGuard[GUARD_CHK_FOR_ALL_MOT_STOP].guardValue = GUARD_VALUE_FALSE;
 			}
+
+			//Il Reset è un evento gestito ora in modo asincrono, per gli warning
+			//cancello eventuali reset pendenti se e solo se non ho warning in lista d'attesa
+			if (NoWarningsPresent())
+				releaseGUIButton(BUTTON_RESET_ALARM);
 			break;
 
 		case PARENT_PRIMING_TREAT_KIDNEY_1_ALARM:
@@ -346,6 +351,11 @@ void ParentFunc(void)
 			else if(ptrCurrentParent->action == ACTION_ALWAYS)
 			{
 			}
+
+			//Il Reset è un evento gestito ora in modo asincrono, per gli warning
+			//cancello eventuali reset pendenti se e solo se non ho warning in lista d'attesa
+			if (NoWarningsPresent())
+				releaseGUIButton(BUTTON_RESET_ALARM);
 			break;
 
 		// STATO PER LA GESTIONE DELL'ATTESA DELLE POMPE FERME. SE NON SI FERMANO
@@ -551,16 +561,6 @@ void ParentFunc(void)
 				ptrFutureChild = ptrFutureParent->ptrChild;
 				DisableAllAirAlarm(FALSE);
 				LevelBuzzer = HIGH;//2;
-				// guardando a questo valore posso vedere il tipo di azione di sicurezza
-				// e quindi posso decidere di andare anche in un qualche altro stato ad hoc
-				// di allarme
-				//ptrAlarmCurrent->secActType
-//				if(ptrAlarmCurrent->code == CODE_ALARM_TANK_LEVEL_HIGH)
-//				{
-//					// si e' verificato un allarme di troppo pieno, fermo tutto ed al successivo
-//					// reset termino la procedura di priming e passo direttamente al ricircolo
-//					GlobalFlags.FlagsDef.TankLevelHigh = 1;
-//				}
 			}
 			else if(currentGuard[GUARD_ENT_PAUSE_STATE_TREAT_KIDNEY_1_INIT].guardValue == GUARD_VALUE_TRUE)
 			{
@@ -569,12 +569,15 @@ void ParentFunc(void)
 				currentGuard[GUARD_ENT_PAUSE_STATE_TREAT_KIDNEY_1_INIT].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
 				currentGuard[GUARD_ENT_PAUSE_STATE_TREAT_KIDNEY_1_INIT].guardValue = GUARD_VALUE_FALSE;
 			}
-			// per sicurezza resetto la flag di reset alarm premuto, nel caso mi fosse rimasto settato
-			releaseGUIButton(BUTTON_RESET_ALARM);
+
+			//Il Reset è un evento gestito ora in modo asincrono, per gli warning
+			//cancello eventuali reset pendenti se e solo se non ho warning in lista d'attesa
+			if (NoWarningsPresent())
+				releaseGUIButton(BUTTON_RESET_ALARM);
 			break;
 
 		case PARENT_TREAT_KIDNEY_1_PUMP_ON:
-			if(ptrCurrentParent->action == ACTION_ON_ENTRY)
+			if (ptrCurrentParent->action == ACTION_ON_ENTRY)
 			{
 				/* execute parent callback function */
 				//ptrCurrentParent->callBackFunct(); NON SERVE QUESTO
@@ -588,7 +591,7 @@ void ParentFunc(void)
 				//ptrCurrentParent->callBackFunct(); NON SERVE QUESTO
 			}
 
-			if(currentGuard[GUARD_ALARM_ACTIVE].guardValue == GUARD_VALUE_TRUE)
+			if (currentGuard[GUARD_ALARM_ACTIVE].guardValue == GUARD_VALUE_TRUE)
 			{
 				/* (FM) si e' verificato un allarme, passo alla sua gestione */
 				ptrFutureParent = &stateParentTreatKidney1[5];
@@ -613,8 +616,11 @@ void ParentFunc(void)
 				currentGuard[GUARD_ENT_PAUSE_STATE_KIDNEY_1_PUMP_ON].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
 				currentGuard[GUARD_ENT_PAUSE_STATE_KIDNEY_1_PUMP_ON].guardValue = GUARD_VALUE_FALSE;
 			}
-			// per sicurezza resetto la flag di reset alarm premuto, nel caso mi fosse rimasto settato
-			releaseGUIButton(BUTTON_RESET_ALARM);
+
+			//Il Reset è un evento gestito ora in modo asincrono, per gli warning
+			//cancello eventuali reset pendenti se e solo se non ho warning in lista d'attesa
+			if (NoWarningsPresent())
+				releaseGUIButton(BUTTON_RESET_ALARM);
 			break;
 
 		case PARENT_TREAT_KIDNEY_1_ALARM:
@@ -682,111 +688,29 @@ void ParentFunc(void)
 					GoToRecoveryParentState(PARENT_TREAT_KIDNEY_1_DELTA_T_HIGH_RECV);
 				}
 			}
-
-			if(buttonGUITreatment[BUTTON_RESET_ALARM].state == GUI_BUTTON_RELEASED)
+			else if(buttonGUITreatment[BUTTON_RESET_ALARM].state == GUI_BUTTON_RELEASED)
 			{
+				if (currentGuard[GUARD_TREATMENT_STOPPED].guardValue == GUARD_VALUE_TRUE)
+				{
+					currentGuard[GUARD_TREATMENT_STOPPED].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
+					currentGuard[GUARD_TREATMENT_STOPPED].guardValue = GUARD_VALUE_FALSE;
+
+					ptrFutureParent = &stateParentTreatKidney1[17];
+					ptrFutureChild = ptrFutureParent->ptrChild;
+				}
+				else
+				{
+					ptrFutureParent = &stateParentTreatKidney1[1];
+					ptrFutureChild = ptrFutureParent->ptrChild;
+					TreatSetPinchPosTask((TREAT_SET_PINCH_POS_CMD)T_SET_PINCH_RESET_CMD);
+					setGUIButton(BUTTON_START_TREATMENT);
+				}
+
 				releaseGUIButton(BUTTON_RESET_ALARM);
-
-				ptrFutureParent = &stateParentTreatKidney1[1];
-				ptrFutureChild = ptrFutureParent->ptrChild;
-
-				TreatSetPinchPosTask((TREAT_SET_PINCH_POS_CMD)T_SET_PINCH_RESET_CMD);
-				setGUIButton(BUTTON_START_TREATMENT);
-				AtLeastoneButResRcvd = TRUE;
 				EnableNextAlarmFunc();
 				LevelBuzzer = SILENT;//0;
 				break;
 			}
-
-//
-//
-//					if(ButtonResetRcvd)
-//					{
-//						ButtonResetRcvd = FALSE;
-////						if(GlobalFlags.FlagsDef.TankLevelHigh)
-////						{
-////							// era un allarme di troppo pieno, riprendo il trattamento
-////							// TODO DA VEDERE MEGLIO COME TRATTARLO, ABORTIRE IL TRATTAMENTO  O NO?
-////							GlobalFlags.FlagsDef.TankLevelHigh = 0;
-////							ptrFutureParent = &stateParentTreatKidney1[1];
-////							ptrFutureChild = ptrFutureParent->ptrChild;
-////							setGUIButton(BUTTON_START_TREATMENT);
-////						}
-////						else
-////						{
-//							// FM allarme finito posso ritornare nella fase iniziale del trattamento
-//							ptrFutureParent = &stateParentTreatKidney1[1];
-//							ptrFutureChild = ptrFutureParent->ptrChild;
-//							// forzo anche una pressione del tasto TREATMENT START per fare in modo che
-//							// il trattamento riprenda automaticamente
-//							setGUIButton(BUTTON_START_TREATMENT);
-////						}
-//					}
-//					else if(!IsAlarmActive())
-//					{
-//						// in questa situazione ci posso finire per errore o per questioni di timing tra button reset
-//						// e le guard. In realta' l'allarme no e' attivo.
-//						if(AtLeastoneButResRcvd)
-//						{
-//							ptrFutureParent = &stateParentTreatKidney1[1];
-//							ptrFutureChild = ptrFutureParent->ptrChild;
-//							LevelBuzzer = SILENT;//0;
-//
-//							// preparo la macchina a stati per il controllo delle pinch aperte nella posizione richiesta
-//							// per lo stato di trattamento
-//
-//							// forzo anche una pressione del tasto TREATMENT START per fare in modo che
-//							// il trattamento riprenda automaticamente
-//							setGUIButton(BUTTON_START_TREATMENT);
-//						}
-//						break;
-//					}
-//				}
-//			}
-//			else if(buttonGUITreatment[BUTTON_RESET_ALARM].state == GUI_BUTTON_RELEASED)
-//			{
-//				// ho ricevuto un reset allarme ma la condizione fisica di allarme non e' ancora andata via.
-//				// Se lo stato child non e' in SECURITY_STOP_ALL_ACTUATOR il tasto reset potrebbe servire a lui per
-//				// disabilitare l'allarme.
-//				AtLeastoneButResRcvd = TRUE;
-//				if(!IsButtResUsedByChild())
-//				{
-//					releaseGUIButton(BUTTON_RESET_ALARM);
-//					// qui non serve perche' l'allarme non e' ancora terminato
-//					//EnableNextAlarmFunc(); //EnableNextAlarm = TRUE;
-//					ptrFutureParent = &stateParentTreatKidney1[1];
-//					ptrFutureChild = ptrFutureParent->ptrChild;
-//					LevelBuzzer = SILENT;//0;
-//
-//					// preparo la macchina a stati per il controllo delle pinch aperte nella posizione richiesta
-//					// per lo stato di trattamento
-//					TreatSetPinchPosTask((TREAT_SET_PINCH_POS_CMD)T_SET_PINCH_RESET_CMD);
-//					// forzo anche una pressione del tasto TREATMENT START per fare in modo che
-//					// il trattamento riprenda automaticamente
-//					setGUIButton(BUTTON_START_TREATMENT);
-//					break;
-//				}
-//			}
-//			else if(!IsAlarmActive())
-//			{
-//				// in questa situazione ci posso finire per errore o per questioni di timing tra button reset
-//				// e le guard. In realta' l'allarme no e' attivo.
-//				if(AtLeastoneButResRcvd)
-//				{
-//					currentGuard[GUARD_ALARM_ACTIVE].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
-//					ptrFutureParent = &stateParentTreatKidney1[1];
-//					ptrFutureChild = ptrFutureParent->ptrChild;
-//					LevelBuzzer = SILENT;//0;
-//
-//					// preparo la macchina a stati per il controllo delle pinch aperte nella posizione richiesta
-//					// per lo stato di trattamento
-//					TreatSetPinchPosTask((TREAT_SET_PINCH_POS_CMD)T_SET_PINCH_RESET_CMD);
-//					// forzo anche una pressione del tasto TREATMENT START per fare in modo che
-//					// il trattamento riprenda automaticamente
-//					setGUIButton(BUTTON_START_TREATMENT);
-//				}
-//				break;
-//			}
 
 			if(ptrCurrentParent->action == ACTION_ON_ENTRY)
 			{
@@ -942,6 +866,13 @@ void ParentFunc(void)
 			break;
 
 		case PARENT_TREAT_KIDNEY_1_ALM_AIR_REC:
+			if (buttonGUITreatment[BUTTON_RESET_ALARM].state == GUI_BUTTON_RELEASED)
+			{
+				releaseGUIButton(BUTTON_RESET_ALARM);
+				EnableNextAlarmFunc();
+				LevelBuzzer = SILENT;//0;
+			}
+
 			if(currentGuard[GUARD_ALARM_ACTIVE].guardValue == GUARD_VALUE_FALSE)
 			{
 				/* FM allarme finito posso ritornare nello stato di partenza
@@ -1026,6 +957,13 @@ void ParentFunc(void)
 			break;
 
 		case PARENT_TREAT_KIDNEY_1_ALM_DELTA_T_H_RECV:
+			if (buttonGUITreatment[BUTTON_RESET_ALARM].state == GUI_BUTTON_RELEASED)
+			{
+				releaseGUIButton(BUTTON_RESET_ALARM);
+				EnableNextAlarmFunc();
+				LevelBuzzer = SILENT;//0;
+			}
+
 			if(currentGuard[GUARD_ALARM_ACTIVE].guardValue == GUARD_VALUE_FALSE)
 			{
 				/* FM allarme finito posso ritornare nello stato di partenza
@@ -1120,6 +1058,7 @@ void ParentFunc(void)
 
 
 		case PARENT_TREAT_WAIT_START:
+			currentGuard[GUARD_TREATMENT_STOPPED].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
 			if(currentGuard[GUARD_ENABLE_STATE_TREAT_KIDNEY_1_INIT].guardValue == GUARD_VALUE_TRUE)
 			{
 				ptrFutureParent = &stateParentTreatKidney1[1];
@@ -1129,8 +1068,19 @@ void ParentFunc(void)
 				setGUIButton(BUTTON_START_TREATMENT);
 				// preparo la macchina a stati per il controllo delle pinch aperte nella posizione richiesta per lo stato di trattamento
 				TreatSetPinchPosTask((TREAT_SET_PINCH_POS_CMD)T_SET_PINCH_RESET_CMD);
+
 				currentGuard[GUARD_ENABLE_STATE_TREAT_KIDNEY_1_INIT].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
 				currentGuard[GUARD_ENABLE_STATE_TREAT_KIDNEY_1_INIT].guardValue = GUARD_VALUE_FALSE;
+
+				currentGuard[GUARD_TREATMENT_STOPPED].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
+				currentGuard[GUARD_TREATMENT_STOPPED].guardValue = GUARD_VALUE_FALSE;
+				break;
+			}
+			else if(currentGuard[GUARD_ALARM_ACTIVE].guardValue == GUARD_VALUE_TRUE)
+			{
+				ptrFutureParent = &stateParentTreatKidney1[5];
+				ptrFutureChild = ptrFutureParent->ptrChild;
+				LevelBuzzer = HIGH;//2;
 				break;
 			}
 			if(ptrCurrentParent->action == ACTION_ON_ENTRY)
@@ -1146,9 +1096,10 @@ void ParentFunc(void)
 			break;
 
 		case PARENT_TREAT_WAIT_PAUSE:
+			currentGuard[GUARD_TREATMENT_STOPPED].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
 			if(currentGuard[GUARD_ALARM_ACTIVE].guardValue == GUARD_VALUE_TRUE)
 			{
-				ptrFutureParent = &stateParentPrimingTreatKidney1[5];
+				ptrFutureParent = &stateParentTreatKidney1[5];
 				ptrFutureChild = ptrFutureParent->ptrChild;
 
 				LevelBuzzer = HIGH;//2;

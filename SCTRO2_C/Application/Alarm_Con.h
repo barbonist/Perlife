@@ -21,10 +21,13 @@ struct elementActiveListWrn {
 };
 
 #define 	EMPTY_LIST_ALM 				(-1)
-#define     MAX_ALARMS_ACTIVE_LIST_ALM 	100
+#define     MAX_ALARMS_ACTIVE_LIST_ALM 	10
 
 #define 	EMPTY_LIST_WRN 				(-1)
-#define     MAX_ALARMS_ACTIVE_LIST_WRN 	100
+#define     MAX_ALARMS_ACTIVE_LIST_WRN 	10
+
+#define    NoWarningsPresent()			(LengthActiveListWrn() == 0)
+#define    NoAlarmsPresent()			(LengthActiveListAlm() == 0)
 
 typedef struct elementActiveListAlm sActiveListAlmS;
 typedef struct elementActiveListWrn sActiveListWrnS;
@@ -369,8 +372,6 @@ bool IsAlarmCodeActive(uint16_t code);
 void warningConInit(void);
 void InitWarningsStates(void);
 void EnableNextWarningFunc(void);
-void warningsEngineAlways(void);
-void warningManageNull(void);
 // Filippo - aggiunta gestione dell'allarme del tasto di stop
 void manageAlarmStopButtonPressed(void);
 void manageAlarmT1Test(void);
@@ -378,7 +379,6 @@ void manageResultT1TestDigital(void);
 // Filippo - funzione che gestisce l'allarme per il fallimento del test del sensore aria
 void manageAlarmAirSensorTestKO(void);
 void manageCover_Hook_Sensor(void);
-bool ResetAlmHandleFunc(uint16_t code);
 
 void EnableDeltaTHighAlmFunc(void);
 void DisableDeltaTHighAlmFunc(void);
