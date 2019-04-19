@@ -6071,6 +6071,10 @@ void processMachineState(void)
 		break;
 
 	case STATE_EMPTY_DISPOSABLE:
+
+		/*in svuotamento fermo la termica*/
+		FrigoHeatTempControlTaskNewPID((LIQ_TEMP_CONTR_TASK_CMD)TEMP_MANAGER_STOPPED_CMD);
+
 		if((currentGuard[GUARD_EMPTY_DISPOSABLE_END].guardValue == GUARD_VALUE_TRUE) ||
 			(currentGuard[GUARD_ABANDON_EMPTY].guardValue == GUARD_VALUE_TRUE))
 		{
@@ -6102,6 +6106,10 @@ void processMachineState(void)
 		break;
 
 	case STATE_UNMOUNT_DISPOSABLE:
+
+		/*in smontaggio fermo la termica*/
+		FrigoHeatTempControlTaskNewPID((LIQ_TEMP_CONTR_TASK_CMD)TEMP_MANAGER_STOPPED_CMD);
+
 		if((currentGuard[GUARD_ENABLE_UNMOUNT_END].guardValue == GUARD_VALUE_TRUE) ||
 			(currentGuard[GUARD_ABANDON_UNMOUNT].guardValue == GUARD_VALUE_TRUE))
 		{
@@ -6131,15 +6139,23 @@ void processMachineState(void)
 		break;
 
 		case STATE_EMPTY_DISPOSABLE_1:
+			/*in STATE_EMPTY_DISPOSABLE_1 fermo la termica*/
+			FrigoHeatTempControlTaskNewPID((LIQ_TEMP_CONTR_TASK_CMD)TEMP_MANAGER_STOPPED_CMD);
 			break;
 
 		case STATE_EMPTY_DISPOSABLE_2:
+			/*in STATE_EMPTY_DISPOSABLE_2 fermo la termica*/
+			FrigoHeatTempControlTaskNewPID((LIQ_TEMP_CONTR_TASK_CMD)TEMP_MANAGER_STOPPED_CMD);
 			break;
 
 		case STATE_WASHING:
+			/*in STATE_WASHING fermo la termica*/
+			FrigoHeatTempControlTaskNewPID((LIQ_TEMP_CONTR_TASK_CMD)TEMP_MANAGER_STOPPED_CMD);
 			break;
 
 		case STATE_FATAL_ERROR:
+			/*in STATE_FATAL_ERROR fermo la termica*/
+			FrigoHeatTempControlTaskNewPID((LIQ_TEMP_CONTR_TASK_CMD)TEMP_MANAGER_STOPPED_CMD);
 			break;
 
 		default:
