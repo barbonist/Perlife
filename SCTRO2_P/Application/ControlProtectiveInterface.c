@@ -364,7 +364,10 @@ uint16_t GetOffsetPressVen(void)
 	return (uint16_t) RxCan3.SRxCan3.OffsetPrVen;
 }
 
-
+//
+// 0x50 liever
+// 0x10 kidney
+//
 uint8_t GetTherapyType(void)
 {
 	return RxCan5.SRxCan5.TherapyType;

@@ -1,5 +1,6 @@
 /*
- * VerificatorRx.c
+
+. * VerificatorRx.c
  *
  *  Created on: 02/mag/2018
  *      Author: W5
@@ -326,8 +327,7 @@ bool some_error = false;
 void MismatchTempArtAlarmAct(void)
 {
 
-//	if(GetControlFSMState() == STATE_TREATMENT)
-	if(true) // 16/1/2018
+	if(GetControlFSMState() == STATE_TREATMENT)
 	{
 		ShowNewAlarmError(CODE_ALARM_TEMP_ART_DONTMATCH);
 		DisablePinchNPumps();
@@ -416,16 +416,15 @@ void VerifyRxTemperatures(uint16_t TempArtx10, uint16_t TempFluidx10, uint16_t T
 void VerifyRxAirLevels(uint8_t AirArtLevel, uint8_t AirVenLevel)
 {
 	if (GetControlFSMState() == STATE_TREATMENT) {
-		if (GetTherapyType() == 0x01) {
+		if (GetTherapyType() == 0x50) {
 			// liever therap
 			if ((AirArtLevel > 50) || (AirVenLevel > 50))
-				AirPresentAlarmTimer.AlarmConditionPending = true; // don't clear
+				AirPresentAlarmTimer.AlarmConditionPending = true; // only set , deliberately don't clear if falling below treshold
 		}
-
-		if (GetTherapyType() == 0x02) {
+		else if (GetTherapyType() == 0x10) {
 			// kidney therapy
 			if (AirArtLevel > 50)
-				AirPresentAlarmTimer.AlarmConditionPending = true; // don't clear
+				AirPresentAlarmTimer.AlarmConditionPending = true; // only set , deliberately  don't clear if falling below treshold
 		}
 	}
 }
