@@ -665,6 +665,7 @@ int main(void)
 
 	        	alarmEngineAlways();
 	        	warningsEngineAlways();
+	        	manageAlarmT1Test();
 		        GenerateSBCComm();
 		        ProtectiveTask();
 		        // Filippo - devo verificare che le temperature piatto lette dalla control e dalla protective siano le stesse

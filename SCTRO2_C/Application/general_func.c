@@ -1021,24 +1021,98 @@ void updateMaxTempPlate (void)
 		MAX_PLATE_TEMP = 50.0;
 		return;
 	}
+
+	static int delta = 0;
+	int TempLiquid = sensorIR_TM[1].tempSensValueFiltered*10;
+
 	word T0l = sensorIR_TM[1].tempSensValue * 10;
 	word T1l = parameterWordSetFromGUI[PAR_SET_PRIMING_TEMPERATURE_PERFUSION].value + 10; //aggiungo un grado al target
 	float Ktp = 0.6;
 
 	MAX_PLATE_TEMP = (T1l - (T0l * Ktp)) / (1-Ktp);
 
+	/*incremento il valore di delta se servisse in priming*/
+	MAX_PLATE_TEMP = MAX_PLATE_TEMP + delta;
+
 	/*se le pompe anteriori sono entrambe ferme, non conosco
-	 * più il valore corretto della tempratura del liquido,
+	 * più il valore corretto della temperatura del liquido,
 	 * quindi metto la temperatura di piastra = al target + 1 °C
 	 */
 	if (modbusData[0][17] == 0 && modbusData[1][17] == 0)
-		MAX_PLATE_TEMP = T1l / 10;
+	{
+		MAX_PLATE_TEMP = parameterWordSetFromGUI[PAR_SET_PRIMING_TEMPERATURE_PERFUSION].value + 10;
+	}
+	/* Se la temp del liquido è sotto al set - 0.5°C e non sale di almeno 0.3 °C in un minuto
+	 * e sono o nel ricircolo del priming o nel trattamento e la temperatura massima di piastra è
+	 * minore della temperatura di piatra sovrastimata di 1°C incremento il delta*/
+	else if (TempLiquid < (parameterWordSetFromGUI[PAR_SET_PRIMING_TEMPERATURE_PERFUSION].value - 5) &&
+			(ptrCurrentState->state == STATE_PRIMING_RICIRCOLO || ptrCurrentState->state == STATE_TREATMENT_KIDNEY_1) &&
+			TempStazionariaRisc() && MAX_PLATE_TEMP < ((T_PLATE_C_GRADI_CENT*10)+10)
+	         )
+	{
+		/*Se MAX_PLATE_TEMP è > di 48 °C aumento solo di mezzo grado*/
+		if (MAX_PLATE_TEMP >= 480)
+			delta = delta + 5;
+		/*altrimenti aumento di un grado*/
+		else
+			delta = delta + 10;
+	}
 
 	MAX_PLATE_TEMP = MAX_PLATE_TEMP / 10;
 
 	/*faccio in modo comunque da non superare 58 ° sulla piastraC*/
 	if (MAX_PLATE_TEMP >= 58.0)
 		MAX_PLATE_TEMP = 58.0;
+}
+
+int timerCounterTempStazionariaRisc;
+
+bool TempStazionariaRisc(void)
+{
+	static char stato = 0;
+	int TempLiquid = sensorIR_TM[1].tempSensValueFiltered*10;
+	static int TempLiquidOld = 0;
+	static bool TempStazionaria = FALSE;
+
+	switch (stato)
+	{
+		case 0:
+			//se trovo una differenza minore di 3 decimi di grado setto il timer e vado allo stato 1
+			if ( (TempLiquid - TempLiquidOld) <= 3 )
+			{
+				timerCounterTempStazionariaRisc = timerCounterModBus;
+				stato = 1;
+			}
+			else
+				TempStazionaria = FALSE;
+
+			TempLiquidOld = TempLiquid;
+		break;
+
+		case 1:
+			if ( (TempLiquid - TempLiquidOld) > 3 )
+			{
+				stato = 0;
+			}
+			else if (msTick_elapsed(timerCounterTempStazionariaRisc) >= TIMER_TEMP_STAZIONARIA)
+			{
+				TempStazionaria = TRUE;
+				stato = 2;
+			}
+		break;
+		case 2:
+			/*se ho trovato una temperatura stazionaria, la prossima la devi vedere dopo un altro minuto*/
+			TempStazionaria = FALSE;
+			stato = 0;
+		break;
+
+		default:
+			TempStazionaria = FALSE;
+		break;
+
+	}
+
+	return (TempStazionaria);
 }
 
 void updateMinTempPlate (void)
@@ -1052,36 +1126,98 @@ void updateMinTempPlate (void)
 		MIN_PLATE_TEMP = -10.0;
 		return;
 	}
+	static int delta = 0;
+	int TempLiquid = sensorIR_TM[1].tempSensValueFiltered*10;
 
 	word T0l = sensorIR_TM[1].tempSensValue * 10;
 	word T1l = parameterWordSetFromGUI[PAR_SET_PRIMING_TEMPERATURE_PERFUSION].value - 10; //aggiungo un grado al target
-	float Ktp = 0.85;
-
-//	/*Se sono in priming do maggiore boost al frigo alzando Ktp*/
-//	if (ptrCurrentState->state == STATE_PRIMING_PH_1   ||
-//		ptrCurrentState->state == STATE_PRIMING_PH_2   ||
-//		ptrCurrentState->state ==  STATE_PRIMING_WAIT  ||
-//		ptrCurrentState->state ==  STATE_PRIMING_RICIRCOLO )
-//	{
-//		Ktp = 0.85;
-//	}
-//	else
-//	{
-//		Ktp = 0.7;
-//	}
+	float Ktp = 0.75;
 
 	MIN_PLATE_TEMP = (T1l - (T0l * Ktp)) / (1-Ktp);
+
+	/*decremento il valore di delta se servisse*/
+	MIN_PLATE_TEMP = MIN_PLATE_TEMP - delta;
 
 	/*se le pompe anteriori sono entrambe ferme, non conosco
 	 * più il valore corretto della tempratura del liquido,
 	 * quindi metto la temperatura di piastra = al target - 1 °C
 	 */
 	if (modbusData[0][17] == 0 && modbusData[1][17] == 0)
-		MIN_PLATE_TEMP = T1l / 10;
+	{
+		MIN_PLATE_TEMP = parameterWordSetFromGUI[PAR_SET_PRIMING_TEMPERATURE_PERFUSION].value - 40;
+	}
+	/* Se la temp del liquido è sopra al set + 0.5°C e non sscende di almeno 0.3 °C in un minuto
+	 * e sono o nel ricircolo del priming o nel trattamento e la temperatura massima di piastra è
+	 * maggiore della temperatura di piatra sottostimata di 1°C incremento il delta*/
+	else if (TempLiquid > (parameterWordSetFromGUI[PAR_SET_PRIMING_TEMPERATURE_PERFUSION].value + 5) &&
+			(ptrCurrentState->state == STATE_PRIMING_RICIRCOLO || ptrCurrentState->state == STATE_TREATMENT_KIDNEY_1) &&
+			TempStazionariaRaff()  && MIN_PLATE_TEMP > ((T_PLATE_C_GRADI_CENT*10)-10)
+	         )
+	{
+		/*Se MIN_PLATE_TEMP è già a -5 °C decremento solo di mezzo grado*/
+		if (MIN_PLATE_TEMP <= -50)
+			delta = delta + 5;
+		/*altrimenti decremento di un gradi*/
+		else
+			delta = delta + 10;
+	}
+
 
 	MIN_PLATE_TEMP = MIN_PLATE_TEMP / 10;
 
-	/*faccio in modo comunque da non andare sotto -10 °C sulla piastra*/
-	if (MIN_PLATE_TEMP <= -10.0)
-		MIN_PLATE_TEMP = -10.0;
+	/*faccio in modo comunque da non andare sotto -12 °C sulla piastra
+	 * se ho ricevuto una temperatura di sette <= 8 Gradi, lascio la temperatura
+	 * minina di piastra alla minima possibile*/
+	if (MIN_PLATE_TEMP <= -12.0 || parameterWordSetFromGUI[PAR_SET_PRIMING_TEMPERATURE_PERFUSION].value <= 80)
+		MIN_PLATE_TEMP = -12.0;
+}
+
+int timerCounterTempStazionariaRaff;
+
+bool TempStazionariaRaff(void)
+{
+	static char stato = 0;
+	int TempLiquid = sensorIR_TM[1].tempSensValueFiltered*10;
+	static int TempLiquidOld = 0;
+	static bool TempStazionaria = FALSE;
+
+	switch (stato)
+	{
+		case 0:
+			//se trovo una differenza minore di 3 decimi di grado setto il timer e vado allo stato 1
+			if ( (TempLiquidOld - TempLiquid) <= 3 )
+			{
+				timerCounterTempStazionariaRaff = timerCounterModBus;
+				stato = 1;
+			}
+			else
+				TempStazionaria = FALSE;
+
+			TempLiquidOld = TempLiquid;
+		break;
+
+		case 1:
+			if ( (TempLiquidOld - TempLiquid) > 3 )
+			{
+				stato = 0;
+			}
+			else if (msTick_elapsed(timerCounterTempStazionariaRaff) >= TIMER_TEMP_STAZIONARIA)
+			{
+				TempStazionaria = TRUE;
+				stato = 2;
+			}
+		break;
+		case 2:
+			/*se ho trovato una temperatura stazionaria, la prossima la devi vedere dopo un altro minuto*/
+			TempStazionaria = FALSE;
+			stato = 0;
+		break;
+
+		default:
+			TempStazionaria = FALSE;
+		break;
+
+	}
+
+	return (TempStazionaria);
 }

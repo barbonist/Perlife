@@ -1465,7 +1465,7 @@ void ParentFuncT1Test(void)
 		if (T_PLATE_C_GRADI_CENT>=38)
 			T1_Test_Frigo_Before_Heater = TRUE;
 #else
-		ptrFutureParent = &stateParentT1TNoDisposable[23]; //con il 23 salto di netto tutti i T1 TEST
+		ptrFutureParent = &stateParentT1TNoDisposable[23]; //con il 23 salto di netto tutti i T1 TEST e vado nel case: PARENT_T1_NO_DISP_END
 		// lo mando al test dell'heater
 //		ptrFutureParent = &stateParentT1TNoDisposable[29]; //con il 29 passo al T1 TEST dsel FRIGO
 //		ptrFutureParent = &stateParentT1TNoDisposable[3];	// lo mando al test della EEPROM quindi eseguo il T1 TEST
@@ -1694,6 +1694,14 @@ void ParentFuncT1Test(void)
 			{
 				currentGuard[GUARD_ENABLE_T1_PUMP].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
 			}
+			else if (t1Test_pinch_state == 5)
+			{
+				ptrFutureParent = &stateParentT1TNoDisposable[25]; //alarm
+				ptrFutureChild = ptrFutureParent->ptrChild;
+				DebugStringStr("alarm t1 test");
+				allarmeTestT1Attivo=TRUE;
+				break;
+			}
 		}
 		break;
 
@@ -1717,6 +1725,14 @@ void ParentFuncT1Test(void)
 			if (t1Test_pump_state==4)
 			{
 				currentGuard[GUARD_ENABLE_T1_TERMO].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+			}
+			else if (t1Test_pump_state == 5)
+			{
+				ptrFutureParent = &stateParentT1TNoDisposable[25]; //alarm
+				ptrFutureChild = ptrFutureParent->ptrChild;
+				DebugStringStr("alarm t1 test");
+				allarmeTestT1Attivo=TRUE;
+				break;
 			}
 		}
 		break;

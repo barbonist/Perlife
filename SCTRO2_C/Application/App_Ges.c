@@ -1121,6 +1121,7 @@ void manageParentChk24Vbrk(void){
 	voltageBoard = VOLTAGE_B_CHK_GetVal();
 	voltageMotor = VOLTAGE_M_CHK_GetVal();
 
+	
 	if(
 	   (V24_P1_CHK_VOLT <= V24BRK_LOW_THRSLD) ||
 	   (V24_P1_CHK_VOLT >= V24BRK_HIGH_THRSLD) ||
@@ -1128,7 +1129,9 @@ void manageParentChk24Vbrk(void){
 	   (V24_P2_CHK_VOLT >= V24BRK_HIGH_THRSLD) ||
 	   (voltageBoard != 0x01) ||
 	   (voltageMotor != 0x01)
-	   ){
+	   )
+
+	{
 		ptrT1Test->result_T1_24vbrk = T1_TEST_KO;
 		currentGuard[GUARD_ENABLE_T1_ALARM].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
 		DebugStringStr("alarm from chk 24vbrk");
@@ -1278,18 +1281,20 @@ void manageParenT1Pinch(void)
 			(*FilterPinchPos == MODBUS_PINCH_POS_CLOSED) &&
 			(*ArtPinchPos == MODBUS_PINCH_POS_CLOSED) &&
 			(*OxygPinchPos == MODBUS_PINCH_POS_CLOSED) &&
-			(timerCounterT1Test > 200)
+			(timerCounterT1Test > 60)
 			)
-		{ //200*10ms equal 2 sec
+		{ //60*50ms equal 3 sec
 			t1Test_pinch_state = 2;
 			t1Test_pinch_cmd = 0;
 			timerCounterT1Test = 0;
 		}
-		else if(timerCounterT1Test > 500)
-		{
+		else if(timerCounterT1Test > 200)
+		{//200*50ms equal 10 sec
 			timerCounterT1Test = 0;
 			currentGuard[GUARD_ENABLE_T1_ALARM].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
 			DebugStringStr("alarm from chk pinch_c");
+			t1Test_pinch_state = 5; //ho avuto un'errore, finisco nello stato d'errore per sincornizzarmi cn la macchina a stati del parent.c
+			t1Test_pinch_cmd = 0;
 		}
 		else{
 
@@ -1308,20 +1313,20 @@ void manageParenT1Pinch(void)
 			(*FilterPinchPos == MODBUS_PINCH_LEFT_OPEN) &&
 			(*ArtPinchPos == MODBUS_PINCH_LEFT_OPEN) &&
 			(*OxygPinchPos == MODBUS_PINCH_LEFT_OPEN) &&
-			(timerCounterT1Test > 200)
+			(timerCounterT1Test > 60)
 			)
-		{ //200*10ms equal 2 sec
+		{ //60*50ms equal 3 sec
 			t1Test_pinch_state = 3;
 			t1Test_pinch_cmd = 0;
 			timerCounterT1Test = 0;
 		}
-		else if(timerCounterT1Test > 500){
+		else if(timerCounterT1Test > 200)
+		{//200*50ms equal 10 sec
 			timerCounterT1Test = 0;
 			currentGuard[GUARD_ENABLE_T1_ALARM].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
 			DebugStringStr("alarm from chk pinch_l");
-		}
-		else{
-
+			t1Test_pinch_state = 5; //ho avuto un'errore, finisco nello stato d'errore per sincornizzarmi cn la macchina a stati del parent.c
+			t1Test_pinch_cmd = 0;
 		}
 		break;
 
@@ -1337,24 +1342,33 @@ void manageParenT1Pinch(void)
 			(*FilterPinchPos == MODBUS_PINCH_RIGHT_OPEN) &&
 			(*ArtPinchPos == MODBUS_PINCH_RIGHT_OPEN) &&
 			(*OxygPinchPos == MODBUS_PINCH_RIGHT_OPEN) &&
-			(timerCounterT1Test > 200)
-			){ //200*10ms equal 2 sec
-			t1Test_pinch_state = 4;
+			(timerCounterT1Test > 60)
+			)
+		{ //60*50ms equal 3 sec
+			t1Test_pinch_state = 4; //test finito con esito positivo
 			t1Test_pinch_cmd = 0;
 			timerCounterT1Test = 0;
+			//chiudo nuovamente tutte le pinch per tornare nella situazione di partenza
+			setPinchPositionHighLevel(PINCH_2WPVF, MODBUS_PINCH_POS_CLOSED); //7: pinch filtro
+			setPinchPositionHighLevel(PINCH_2WPVA, MODBUS_PINCH_POS_CLOSED); //8: pinch art
+			setPinchPositionHighLevel(PINCH_2WPVV, MODBUS_PINCH_POS_CLOSED); //9: pinch ven
 		}
-		else if(timerCounterT1Test > 500){
+		else if(timerCounterT1Test > 200)
+		{//200*50ms equal 10 sec
 			timerCounterT1Test = 0;
 			currentGuard[GUARD_ENABLE_T1_ALARM].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
 			DebugStringStr("alarm from chk pinch_r");
-		}
-		else{
-
+			t1Test_pinch_state = 5; //ho avuto un'errore, finisco nello stato d'errore per sincornizzarmi cn la macchina a stati del parent.c
+			t1Test_pinch_cmd = 0;
 		}
 		break;
 
 	case 4:
 		//fine test positivo
+		break;
+
+	case 5:
+		//fine test con esito negativo
 		break;
 
 	default:
@@ -1383,8 +1397,8 @@ void manageParentT1Pump(void){
 			setPumpSpeedValueHighLevel(PPV2, T1TEST_PUMP_SPEED);
 			t1Test_pump_cmd = 1;
 		}
-
-		if(timerCounterT1Test > 300){
+		//aspetto 10 secondi prima di cambiar stato
+		if(timerCounterT1Test > 200){
 			t1Test_pump_state = 2;
 			timerCounterT1Test = 0;
 		}
@@ -1400,15 +1414,16 @@ void manageParentT1Pump(void){
 			(*SpeedPump3Rpmx10 >= (T1TEST_PUMP_SPEED - 500) ) &&
 			(*SpeedPump3Rpmx10 <= (T1TEST_PUMP_SPEED + 500) ) &&
 			(*SpeedPump4Rpmx10 >= (T1TEST_PUMP_SPEED - 500) ) &&
-			(*SpeedPump4Rpmx10 <= (T1TEST_PUMP_SPEED + 500) ) &&
-			(timerCounterT1Test > 200)
+			(*SpeedPump4Rpmx10 <= (T1TEST_PUMP_SPEED + 500) ) /*&&
+			(timerCounterT1Test > 200)*/
 			)
 		{
 			t1Test_pump_state = 3;
 			t1Test_pump_cmd = 0;
 			timerCounterT1Test = 0;
 		}
-		else if(timerCounterT1Test > 500){
+		//se passati 10 secondi la PRO non vede uan velocità corretta vado in allarme
+		else if(timerCounterT1Test > 200){
 			setPumpSpeedValueHighLevel(PPAR, 0);
 			setPumpSpeedValueHighLevel(PPAF, 0);
 			setPumpSpeedValueHighLevel(PPV1, 0);
@@ -1416,9 +1431,8 @@ void manageParentT1Pump(void){
 			timerCounterT1Test = 0;
 			currentGuard[GUARD_ENABLE_T1_ALARM].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
 			DebugStringStr("alarm from chk pump");
-		}
-		else{
-
+			t1Test_pump_state = 5;//vado nello stato 5 che identifica un fail per sincornizzarmi con la macchina a stati nel parent.c
+			t1Test_pump_cmd = 0;
 		}
 		break;
 
@@ -1434,6 +1448,9 @@ void manageParentT1Pump(void){
 		break;
 
 	case 4: //end
+		break;
+
+	case 5:  //end with fail
 		break;
 
 	default:
@@ -2659,6 +2676,7 @@ void manageParentPrimAirFiltEntry(void)
 {
 	AirAlarmRecoveryState = INIT_AIR_ALARM_RECOVERY;
 }
+/*Vincenzo: funzione che gestisce lo sbollamento dopo alarme aria*/
 void manageParentPrimAirFiltAlways(void)
 {
 	AirAlarmRecoveryStateMach();
@@ -4157,9 +4175,14 @@ void AirAlarmRecoveryStateMach(void)
 
 	THERAPY_TYPE TherType = GetTherapyType();
 
-	if(buttonGUITreatment[BUTTON_START_TREATMENT].state == GUI_BUTTON_RELEASED)
+	if(buttonGUITreatment[BUTTON_START_TREATMENT].state == GUI_BUTTON_RELEASED ||
+	   buttonGUITreatment[BUTTON_START_PRIMING].state == GUI_BUTTON_RELEASED	 )
 	{
-		releaseGUIButton(BUTTON_START_TREATMENT);
+		if (buttonGUITreatment[BUTTON_START_TREATMENT].state == GUI_BUTTON_RELEASED)
+			releaseGUIButton(BUTTON_START_TREATMENT);
+		else //if (buttonGUITreatment[BUTTON_START_PRIMING].state == GUI_BUTTON_RELEASED)
+			releaseGUIButton(BUTTON_START_PRIMING);
+
 		if( AirAlarmRecoveryState == AIR_REJECT_STOPPED )
 		{
 			AirAlarmRecoveryState =	LastAirAlarmRecoveryState;
@@ -4206,9 +4229,13 @@ void AirAlarmRecoveryStateMach(void)
 
 		}
 	}
-	else if(buttonGUITreatment[BUTTON_STOP_TREATMENT].state == GUI_BUTTON_RELEASED)
+	else if(buttonGUITreatment[BUTTON_STOP_TREATMENT].state == GUI_BUTTON_RELEASED ||
+			buttonGUITreatment[BUTTON_STOP_PRIMING].state == GUI_BUTTON_RELEASED   )
 	{
-		releaseGUIButton(BUTTON_STOP_TREATMENT);
+		if (buttonGUITreatment[BUTTON_STOP_TREATMENT].state == GUI_BUTTON_RELEASED)
+			releaseGUIButton(BUTTON_STOP_TREATMENT);
+		else //if (buttonGUITreatment[BUTTON_STOP_PRIMING].state == GUI_BUTTON_RELEASED)
+			releaseGUIButton(BUTTON_STOP_PRIMING);
 
 		if( (AirAlarmRecoveryState == START_AIR_PUMP) ||
 			(AirAlarmRecoveryState == AIR_CHANGE_START_TIME) ||
@@ -6044,6 +6071,10 @@ void processMachineState(void)
 		break;
 
 	case STATE_EMPTY_DISPOSABLE:
+
+		/*in svuotamento fermo la termica*/
+		FrigoHeatTempControlTaskNewPID((LIQ_TEMP_CONTR_TASK_CMD)TEMP_MANAGER_STOPPED_CMD);
+
 		if((currentGuard[GUARD_EMPTY_DISPOSABLE_END].guardValue == GUARD_VALUE_TRUE) ||
 			(currentGuard[GUARD_ABANDON_EMPTY].guardValue == GUARD_VALUE_TRUE))
 		{
@@ -6075,6 +6106,10 @@ void processMachineState(void)
 		break;
 
 	case STATE_UNMOUNT_DISPOSABLE:
+
+		/*in smontaggio fermo la termica*/
+		FrigoHeatTempControlTaskNewPID((LIQ_TEMP_CONTR_TASK_CMD)TEMP_MANAGER_STOPPED_CMD);
+
 		if((currentGuard[GUARD_ENABLE_UNMOUNT_END].guardValue == GUARD_VALUE_TRUE) ||
 			(currentGuard[GUARD_ABANDON_UNMOUNT].guardValue == GUARD_VALUE_TRUE))
 		{
@@ -6104,15 +6139,23 @@ void processMachineState(void)
 		break;
 
 		case STATE_EMPTY_DISPOSABLE_1:
+			/*in STATE_EMPTY_DISPOSABLE_1 fermo la termica*/
+			FrigoHeatTempControlTaskNewPID((LIQ_TEMP_CONTR_TASK_CMD)TEMP_MANAGER_STOPPED_CMD);
 			break;
 
 		case STATE_EMPTY_DISPOSABLE_2:
+			/*in STATE_EMPTY_DISPOSABLE_2 fermo la termica*/
+			FrigoHeatTempControlTaskNewPID((LIQ_TEMP_CONTR_TASK_CMD)TEMP_MANAGER_STOPPED_CMD);
 			break;
 
 		case STATE_WASHING:
+			/*in STATE_WASHING fermo la termica*/
+			FrigoHeatTempControlTaskNewPID((LIQ_TEMP_CONTR_TASK_CMD)TEMP_MANAGER_STOPPED_CMD);
 			break;
 
 		case STATE_FATAL_ERROR:
+			/*in STATE_FATAL_ERROR fermo la termica*/
+			FrigoHeatTempControlTaskNewPID((LIQ_TEMP_CONTR_TASK_CMD)TEMP_MANAGER_STOPPED_CMD);
 			break;
 
 		default:
