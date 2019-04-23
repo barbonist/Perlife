@@ -677,10 +677,12 @@ int main(void)
 
 	        	CalcWarningActive();
 	        	WarningEngineAlways();
+	        	manageAlarmT1Test();
 		        GenerateSBCComm();
 		        ProtectiveTask();
 		        // Filippo - devo verificare che le temperature piatto lette dalla control e dalla protective siano le stesse
 		        verificaTempPlate();
+		        manageAlarmT1Test();
 
 		        updateDurationToSendSBC();
 

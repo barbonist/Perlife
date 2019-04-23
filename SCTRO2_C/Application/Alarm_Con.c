@@ -722,7 +722,9 @@ void CalcAlarmActive(void)
 			 * sensore di livello che sarà Soglia_minima_ADC_allarme_Livello e controllando solo
 			 * in trattamento se Gli ADC del sensore di livello vanno sotto tale soglia
 			 */
+
 			manageAlarmLiquidLevelLow();
+
 			// i due allarmi che seguono devo essere gestiti attentamente perche' potrei avere delle
 			// segnalazioni di allarme anche durante la fase di accelerazione e decelerazione del pid
 			// Per ora li commento.
@@ -1279,52 +1281,57 @@ void manageAlarmPhysicSetFlowAndPressures(void)
 	word flowTargetDep = parameterWordSetFromGUI[PAR_SET_PURIF_FLOW_TARGET].value;
 	word flowTargetVen = parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value;
 
+	/*vado a leggere la posizione della pinch così come è stata inviata dal driver*/
+    word Pinch_Filt_Position = modbusData[4][0];
+	word Pinch_Art_Position  = modbusData[5][0];
+	word Pinch_Ven_Position  = modbusData[6][0];
+
 	//Abilitazione allarmi di SET
 	if(GlobalFlags.FlagsDef.EnableFlowAndPressSetAlm)
 	{
 		//Liver, considero anche la pressione venosa
 		if (GetTherapyType() == LiverTreat)
 		{
-			// Allarme di SET pressione venosa
-			if (PR_VEN_mmHg_Filtered > pressureTargetVen + DELTA_TARGET_PRESS_VEN_LIVER)
+			// Allarme di SET pressione venosa -- Vincenzo: lo attivo solo se la pinch venosa è aperta sull'organo
+			if (PR_VEN_mmHg_Filtered > pressureTargetVen + DELTA_TARGET_PRESS_VEN_LIVER && Pinch_Ven_Position == MODBUS_PINCH_LEFT_OPEN)
 				alarmList[PRESS_VEN_SET].physic = PHYSIC_TRUE;
 			else
 				alarmList[PRESS_VEN_SET].physic = PHYSIC_FALSE;
 
-			// Allarme di SET pressione arteriosa
-			if (PR_ART_mmHg_Filtered > pressureTargetArt + DELTA_TARGET_PRESS_ART_LIVER)
+			// Allarme di SET pressione arteriosa -- Vincenzo: lo attivo solo se la pinch arteriosa è aperta sull'organo
+			if (PR_ART_mmHg_Filtered > pressureTargetArt + DELTA_TARGET_PRESS_ART_LIVER && Pinch_Art_Position == MODBUS_PINCH_LEFT_OPEN)
 				alarmList[PRESS_ART_SET].physic = PHYSIC_TRUE;
 			else
 				alarmList[PRESS_ART_SET].physic = PHYSIC_FALSE;
 
-			// Allarme di SET flusso arterioso
-			if (sensor_UFLOW[0].Average_Flow_Val  > flowTargetArt + DELTA_TARGET_FLOW_ART_LIVER) //50
+			// Allarme di SET flusso arterioso -- Vincenzo: lo attivo solo se la pinch arteriosa è aperta sull'organo
+			if (sensor_UFLOW[0].Average_Flow_Val  > flowTargetArt + DELTA_TARGET_FLOW_ART_LIVER && Pinch_Art_Position == MODBUS_PINCH_LEFT_OPEN) //50
 				alarmList[FLOW_ART_SET].physic = PHYSIC_TRUE;
 			else
 				alarmList[FLOW_ART_SET].physic = PHYSIC_FALSE;
 
-			// Allarme di SET flusso venoso
-			if (sensor_UFLOW[1].Average_Flow_Val  > flowTargetVen + DELTA_TARGET_FLOW_VEN_LIVER) //solo fegato
+			// Allarme di SET flusso venoso -- Vincenzo: lo attivo solo se la pinch venosa è aperta sull'organo
+			if (sensor_UFLOW[1].Average_Flow_Val  > flowTargetVen + DELTA_TARGET_FLOW_VEN_LIVER && Pinch_Ven_Position == MODBUS_PINCH_LEFT_OPEN) //solo fegato
 				alarmList[FLOW_VEN_SET].physic = PHYSIC_TRUE;
 			else
 				alarmList[FLOW_VEN_SET].physic = PHYSIC_FALSE;
 
-			// Allarme di SET flusso depurazione
-			if (FilterFlowVal > flowTargetDep + DELTA_TARGET_FLOW_DEP_LIVER) //solo fegato
+			// Allarme di SET flusso depurazione -- Vincenzo: lo attivo solo se la pinch filtro è aperta sul filtro
+			if (FilterFlowVal > flowTargetDep + DELTA_TARGET_FLOW_DEP_LIVER && Pinch_Filt_Position == MODBUS_PINCH_RIGHT_OPEN) //solo fegato
 				alarmList[FLOW_DEP_SET].physic = PHYSIC_TRUE;
 			else
 				alarmList[FLOW_DEP_SET].physic = PHYSIC_FALSE;
 		}
 		else //Kidney, solo arteriosa
 		{
-			// Allarme di SET pressione arteriosa
-			if (PR_ART_mmHg_Filtered > pressureTargetArt + DELTA_TARGET_PRESS_ART_KIDNEY)
+			// Allarme di SET pressione arteriosa -- Vincenzo: lo attivo solo se la pinch arteriosa è aperta sull'organo
+			if (PR_ART_mmHg_Filtered > pressureTargetArt + DELTA_TARGET_PRESS_ART_KIDNEY && Pinch_Art_Position == MODBUS_PINCH_LEFT_OPEN)
 				alarmList[PRESS_ART_SET].physic = PHYSIC_TRUE;
 			else
 				alarmList[PRESS_ART_SET].physic = PHYSIC_FALSE;
 
-			// Allarme di SET flusso arterioso
-			if (sensor_UFLOW[0].Average_Flow_Val  > flowTargetArt + DELTA_TARGET_FLOW_ART_KIDNEY)
+			// Allarme di SET flusso arterioso -- Vincenzo: lo attivo solo se la pinch arteriosa è aperta sull'organo
+			if (sensor_UFLOW[0].Average_Flow_Val  > flowTargetArt + DELTA_TARGET_FLOW_ART_KIDNEY && Pinch_Art_Position == MODBUS_PINCH_LEFT_OPEN)
 				alarmList[FLOW_ART_SET].physic = PHYSIC_TRUE;
 			else
 				alarmList[FLOW_ART_SET].physic = PHYSIC_FALSE;
@@ -1643,7 +1650,8 @@ void manageAlarmPhysicUFlowSensVen(void)
 }
 
 
-void manageAlarmPhysicUFlowSens(void){
+void manageAlarmPhysicUFlowSens(void)
+{
 	if(!GlobalFlags.FlagsDef.EnableSFAAir)
 	{
 		alarmList[AIR_PRES_ART].physic = PHYSIC_FALSE;
