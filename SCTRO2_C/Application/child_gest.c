@@ -1510,13 +1510,15 @@ void ManageStateChildAlarmTreat1(void)
 			break;
 
 		case CHILD_TREAT_ALARM_1_DELTA_TEMP_HIGH:
-			if(ptrCurrentChild->action == ACTION_ON_ENTRY)
+			if (ptrCurrentChild->action == ACTION_ON_ENTRY)
 			{
 				ptrFutureChild = &stateChildAlarmTreat1[28];
 			}
-            else if( currentGuard[GUARD_ALARM_DELTA_TEMP_HIGH].guardValue == GUARD_VALUE_FALSE )
+            else if (currentGuard[GUARD_ALARM_DELTA_TEMP_HIGH].guardValue == GUARD_VALUE_FALSE)
+            {
                 ptrFutureChild = &stateChildAlarmTreat1[19]; /* FM allarme chiuso */
-			else if(ptrCurrentChild->action == ACTION_ALWAYS)
+            }
+            else if(ptrCurrentChild->action == ACTION_ALWAYS)
 			{
 			}
 			break;

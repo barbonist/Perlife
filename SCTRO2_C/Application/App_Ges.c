@@ -3552,7 +3552,7 @@ void manageParentTreatAlways(void)
 			// ripristino allarmi delle cover
 			GlobalFlags.FlagsDef.EnableCoversAlarm = 1;
 			// ripristino allarmi di temperatura arteriosa
-			GlobalFlags.FlagsDef.EnableTempArtHighAlm = 1;
+			GlobalFlags.FlagsDef.EnableTempMaxMin = 1;
 			GlobalFlags.FlagsDef.EnableTempArtOORAlm = 1;
 			if(ptrCurrentParent->parent == PARENT_TREAT_WAIT_START)
 			{
@@ -3583,7 +3583,7 @@ void manageParentTreatAlways(void)
 			// ripristino allarmi delle cover
 			GlobalFlags.FlagsDef.EnableCoversAlarm = 1;
 			// ripristino allarmi di temperatura arteriosa
-			GlobalFlags.FlagsDef.EnableTempArtHighAlm = 1;
+			GlobalFlags.FlagsDef.EnableTempMaxMin = 1;
 			GlobalFlags.FlagsDef.EnableTempArtOORAlm = 1;
 		}
 
@@ -4499,7 +4499,7 @@ void manageParentTreatEndAlways(void)
 void manageParentTreatWaitPauseEntry(void)
 {
 	// disabilito allarmi di temperatura arteriosa
-	GlobalFlags.FlagsDef.EnableTempArtHighAlm = 0;
+	GlobalFlags.FlagsDef.EnableTempMaxMin = 0;
 	GlobalFlags.FlagsDef.EnableTempArtOORAlm = 0;
     // Filippo - sospendo il PID in attesa di farlo partire
 	FrigoHeatTempControlTaskNewPID((LIQ_TEMP_CONTR_TASK_CMD)TEMP_MANAGER_SUSPEND_CMD);
@@ -4510,7 +4510,7 @@ void manageParentTreatWaitPauseEntry(void)
 void manageParentTreatWaitStartEntry(void)
 {
 	// disabilito allarmi di temperatura arteriosa
-	GlobalFlags.FlagsDef.EnableTempArtHighAlm = 0;
+	GlobalFlags.FlagsDef.EnableTempMaxMin = 0;
 	GlobalFlags.FlagsDef.EnableTempArtOORAlm = 0;
 	// Filippo - sospendo il PID in attesa di farlo partire
 	FrigoHeatTempControlTaskNewPID((LIQ_TEMP_CONTR_TASK_CMD)TEMP_MANAGER_SUSPEND_CMD);

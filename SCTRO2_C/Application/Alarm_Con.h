@@ -54,7 +54,6 @@ typedef struct elementActiveListWrn sActiveListWrnS;
 
 // codice per allarme di superamento della temperatura massima o minima
 // Viene usato in priming\ricircolo
-#define CODE_ALARM_TEMP_ART_HIGH				0x10
 #define CODE_ALARM_TEMP_ART_LOW					0x11
 #define CODE_ALARM_TEMP_VEN_HIGH				0x12
 #define CODE_ALARM_TEMP_VEN_LOW					0x13
@@ -68,7 +67,8 @@ typedef struct elementActiveListWrn sActiveListWrnS;
 #define CODE_ALARM_T_ART_OUT_OF_RANGE           0x19
 // codice per allarme di superamento della temperatura massima o minima
 // Viene usato in trattamento
-#define CODE_ALARM_TEMP_ART_HIGH_IN_TRT         0x1a
+#define CODE_ALARM_TEMP_MAX_IN_TRT              0x1a
+#define CODE_ALARM_TEMP_MIN_IN_TRT              0x1b
 
 #define CODE_ALARM_FLOW_PERF_ART_HIGH			0x20
 #define CODE_ALARM_FLOW_PERF_VEN_HIGH			0x21
@@ -227,7 +227,6 @@ enum ALARM
 	 AIR_PRES_ART,
 	 AIR_PRES_VEN,
 	 SAF_AIR_SENSOR,
-	 TEMP_ART_HIGH,
 	 PRESS_ADS_FILTER_HIGH,
 	 FLOW_PERF_ART_HIGH,
 	 FLOW_PERF_VEN_HIGH,
@@ -271,7 +270,8 @@ enum ALARM
 	 ALARM_HOOKS_RESERVOIR,
      ARTERIAL_RESIST_HIGH,
 	 TEMP_ART_OOR,
-	 TEMP_ART_HIGH_IN_TREAT,
+	 TEMP_MAX_IN_TREAT,
+	 TEMP_MIN_IN_TREAT,
 
 	 FIRST_WARNING,
 	 // da qui in avanti i codici delle warning
