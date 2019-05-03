@@ -164,18 +164,6 @@ void LiquidTempContrTask(LIQUID_TEMP_CONTR_CMD LiqTempContrCmd)
 }
 
 
-
-
-bool IsPumpStopAlarmActive(void)
-{
-	CHECK_PUMP_STOP_STATE st;
-	st = CheckPumpStopTask((CHECK_PUMP_STOP_CMD)NO_CHECK_PUMP_READ_ALM_CMD);
-	if((st == PUMP_WRITE_ALARM) || StopMotorTimeOut)
-		return TRUE;
-	else
-		return FALSE;
-}
-
 void ClearPumpStopAlarm(void)
 {
 	CheckPumpStopTask((CHECK_PUMP_STOP_CMD)RESET_ALARM);

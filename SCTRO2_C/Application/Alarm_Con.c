@@ -642,9 +642,6 @@ void CalcAlarmActive(void)
 			manageAlarmPhysicPressSensHigh();
 			//manageAlarmPhysicPressSensLow(); non serve questo allarme in priming
 
-			//verifica physic ir temp sens
-			manageAlarmPhysicTempSens();
-
 			/*22/01/19 VINCY togliamo al momento l'allarme di livello liquido eccessivo*/
 				//	manageAlarmLiquidLevelHigh();
 			if(GetTherapyType() == LiverTreat)
@@ -669,9 +666,6 @@ void CalcAlarmActive(void)
 			//verifica physic pressioni
 			manageAlarmPhysicPressSensHigh();
 			//manageAlarmPhysicPressSensLow(); non serve questo allarme in priming
-
-			//verifica physic ir temp sens
-			//manageAlarmPhysicTempSens();
 
 		/*22/01/19 VINCY togliamo al momento l'allarme di livello liquido eccessivo*/
 			//	manageAlarmLiquidLevelHigh();
@@ -742,7 +736,7 @@ void CalcAlarmActive(void)
 			manageAlarmActuatorModbusNotRespond();
 			manageAlarmActuatorWRModbusNotRespond();
 			manageAlarmFromProtective();
-				// Filippo - aggiungo la gestione del tasto di stop come allarme
+			// Filippo - aggiungo la gestione del tasto di stop come allarme
 		//		manageAlarmStopButtonPressed();
 
 			// Filippo - aggiunto allarme per test sensore aria sbagliato
@@ -757,7 +751,6 @@ void CalcAlarmActive(void)
 			//verifica physic pressioni
 			//manageAlarmPhysicPressSensHigh();
 			//manageAlarmPhysicPressSensLow();
-
 			manageAlarmActuatorModbusNotRespond();
 			manageAlarmActuatorWRModbusNotRespond();
 
@@ -769,7 +762,6 @@ void CalcAlarmActive(void)
 			manageAlarmPhysicPressSensLow();
 
 			//verifica physic ir temp sens
-			//manageAlarmPhysicTempSens();
 			if(GetTherapyType() == LiverTreat)
 				manageAlarmCoversPumpLiver();
 			else if(GetTherapyType() == KidneyTreat)
@@ -934,12 +926,9 @@ void manageAlarmBadPinchPos(void)
 }
 
 
-bool IsPumpStopAlarmActive(void);
-
-
 void manageAlarmCanBus(void)
 {
-	if(!GlobalFlags.FlagsDef.EnableCANBUSErr)
+	if (!GlobalFlags.FlagsDef.EnableCANBUSErr)
 		alarmList[CAN_BUS_ERROR].physic = PHYSIC_FALSE;
 	else
 	{
@@ -958,7 +947,7 @@ void manageAlarmCanBus(void)
 // troppo elevato
 void manageAlarmDeltaFlowArt(void)
 {
-	if(GlobalFlags.FlagsDef.EnableDeltaFlowArtAlarm)
+	if (GlobalFlags.FlagsDef.EnableDeltaFlowArtAlarm)
 	{
 		/*TODO Vincenzo: credo che il controllo vcada fatto anche, anzi soprattutto, se il flusso letto è+ zero (esempio tubo tolto)*/
 		if(sensor_UFLOW[ARTERIOUS_AIR_SENSOR].Average_Flow_Val > 0.0)
@@ -986,7 +975,7 @@ void manageAlarmDeltaFlowArt(void)
 // troppo elevato
 void manageAlarmDeltaFlowVen(void)
 {
-	if(GlobalFlags.FlagsDef.EnableDeltaFlowVenAlarm)
+	if (GlobalFlags.FlagsDef.EnableDeltaFlowVenAlarm)
 	{
 		/*TODO Vincenzo: credo che il controllo vcada fatto anche, anzi soprattutto, se il flusso letto è+ zero (esempio tubo tolto)*/
 		if(sensor_UFLOW[VENOUS_AIR_SENSOR].Average_Flow_Val > 0.0)
@@ -1013,10 +1002,11 @@ void manageAlarmDeltaFlowVen(void)
 // controllo se il delta di temperatura tra recipiente e liquido arterioso e' troppo alta
 void manageAlarmDeltaTempRecArt(void)
 {
-	if(GlobalFlags.FlagsDef.EnableDeltaTempRecArtAlarm)
+	if (GlobalFlags.FlagsDef.EnableDeltaTempRecArtAlarm)
 	{
 		float tart = sensorIR_TM[0].tempSensValue;
 		float trec = sensorIR_TM[1].tempSensValue;
+
 		float delta = tart - trec;
 		if((delta > MAX_DELTA_TEMP_ART_AND_REC) || (delta < (-MAX_DELTA_TEMP_ART_AND_REC)) )
 		{
@@ -1034,10 +1024,11 @@ void manageAlarmDeltaTempRecArt(void)
 // controllo se il delta di temperatura tra recipiente e liquido venoso e' troppo alta
 void manageAlarmDeltaTempRecVen(void)
 {
-	if(GlobalFlags.FlagsDef.EnableDeltaTempRecVenAlarm)
+	if (GlobalFlags.FlagsDef.EnableDeltaTempRecVenAlarm)
 	{
-		float tven = sensorIR_TM[2].tempSensValue;
 		float trec = sensorIR_TM[1].tempSensValue;
+		float tven = sensorIR_TM[2].tempSensValue;
+
 		float delta = tven - trec;
 		if((delta > MAX_DELTA_TEMP_VEN_AND_REC) || (delta < (-MAX_DELTA_TEMP_VEN_AND_REC)) )
 		{
@@ -1056,11 +1047,12 @@ void manageAlarmDeltaTempRecVen(void)
 // controlla se sono al di sotto del livello minimo
 void manageAlarmLiquidLevelLow(void)
 {
+#if 0
 	/*controllo l'alamre solo se ho calcolato la soglia Soglia_minima_ADC_allarme_Livello*/
-	if(GlobalFlags.FlagsDef.EnableLevLowAlarm && TARA_PRESS_DONE)
+	if (GlobalFlags.FlagsDef.EnableLevLowAlarm && TARA_PRESS_DONE)
 	{
 		//if(LiquidAmount <= MIN_LIQUID_LEV_IN_PERC)
-		if(PR_LEVEL_ADC_Filtered <= Soglia_minima_ADC_allarme_Livello)
+		if (PR_LEVEL_ADC_Filtered <= Soglia_minima_ADC_allarme_Livello)
 		{
 			alarmList[LIQUID_LEVEL_LOW].physic = PHYSIC_TRUE;
 		}
@@ -1071,15 +1063,17 @@ void manageAlarmLiquidLevelLow(void)
 	}
 	else
 		alarmList[LIQUID_LEVEL_LOW].physic = PHYSIC_FALSE;
+#endif
 }
 
 
 // controlla se supera il livello massimo
 void manageAlarmLiquidLevelHigh(void)
 {
-	if(GlobalFlags.FlagsDef.EnableLevHighAlarm)
+#if 0
+	if (GlobalFlags.FlagsDef.EnableLevHighAlarm)
 	{
-		if(LiquidAmount >= MAX_LIQUID_LEV_IN_PERC)
+		if (LiquidAmount >= MAX_LIQUID_LEV_IN_PERC)
 		{
 			alarmList[LIQUID_LEVEL_HIGH].physic = PHYSIC_TRUE;
 		}
@@ -1090,6 +1084,7 @@ void manageAlarmLiquidLevelHigh(void)
 	}
 	else
 		alarmList[LIQUID_LEVEL_HIGH].physic = PHYSIC_FALSE;
+#endif
 }
 
 
@@ -1097,7 +1092,7 @@ void manageAlarmLiquidLevelHigh(void)
 // pompa arteriosa in kidney
 void manageAlarmCoversPumpLiver(void)
 {
-	if(GlobalFlags.FlagsDef.EnableCoversAlarm)
+	if (GlobalFlags.FlagsDef.EnableCoversAlarm)
 	{
 		if (coverStateGlobal & 0x01)
 			alarmList[PURIF_COVER_OPEN].physic = PHYSIC_TRUE;
@@ -1125,7 +1120,7 @@ void manageAlarmCoversPumpLiver(void)
 // cover della pompa arteriosa  nel fegato (non usata in kidney)
 void manageAlarmCoversPumpKidney(void)
 {
-	if(GlobalFlags.FlagsDef.EnableCoversAlarm)
+	if (GlobalFlags.FlagsDef.EnableCoversAlarm)
 	{
 		if (coverStateGlobal & 0x01)
 			alarmList[PURIF_COVER_OPEN].physic = PHYSIC_TRUE;
@@ -1142,15 +1137,16 @@ void manageAlarmCoversPumpKidney(void)
 		alarmList[PURIF_COVER_OPEN].physic = PHYSIC_FALSE;
 		alarmList[OXYG_COVER_OPEN].physic = PHYSIC_FALSE;
 	}
+
 	alarmList[PERF_COVER_OPEN].physic = PHYSIC_FALSE;
 }
+
 void manageAlarmPhysicPressSensLow(void)
 {
-
-	if(GlobalFlags.FlagsDef.EnablePressSensLowAlm)
+	if (GlobalFlags.FlagsDef.EnablePressSensLowAlm)
 	{
 		/*abilito l'allarme di pressione filtro bassa solo se la pompa filtro si sta muovendo a velocità superiore a 5 RPM*/
-		if(PR_ADS_FLT_mmHg_Filtered < PR_ADS_FILTER_LOW && modbusData[3][17] > 500)
+		if (PR_ADS_FLT_mmHg_Filtered < PR_ADS_FILTER_LOW && modbusData[3][17] > 500)
 		{
 			alarmList[PRESS_ADS_FILTER_LOW].physic = PHYSIC_TRUE;
 		}
@@ -1160,7 +1156,7 @@ void manageAlarmPhysicPressSensLow(void)
 		}
 
 		/*abilito l'allarme di pressione OXY bassa solo se almeno una delle due pompe OXY si sta muovendo  a velocità superiore a 5 RPM*/
-		if(PR_OXYG_mmHg_Filtered < PR_OXYG_LOW && (modbusData[1][17] > 500 || modbusData[2][17] > 500))
+		if (PR_OXYG_mmHg_Filtered < PR_OXYG_LOW && (modbusData[1][17] > 500 || modbusData[2][17] > 500))
 		{
 			alarmList[PRESS_OXYG_LOW].physic = PHYSIC_TRUE;
 		}
@@ -1175,9 +1171,6 @@ void manageAlarmPhysicPressSensLow(void)
 		alarmList[PR_OXYG_LOW].physic = PHYSIC_FALSE;
 	}
 }
-
-int ForcePressArtHigh = 0;
-int ForcePressAdsFiltHigh = 0;
 
 void manageAlarmPhysicPressSensHigh(void)
 {
@@ -1215,7 +1208,7 @@ void manageAlarmPhysicPressSensHigh(void)
 		}
 	}
 
-	if(GlobalFlags.FlagsDef.EnablePressSensHighAlm)
+	if (GlobalFlags.FlagsDef.EnablePressSensHighAlm)
 	{
 		if(PR_ART_Sistolyc_mmHg > MaxPressArt)
 		{
@@ -1235,16 +1228,8 @@ void manageAlarmPhysicPressSensHigh(void)
 			alarmList[PRESS_ADS_FILTER_HIGH].physic = PHYSIC_FALSE;
 		}
 
-		//--------------------------------------------------------
-		if(ForcePressArtHigh)  // DEBUG !!!!!!!!!!!!!!!!!!!
-			alarmList[PRESS_ART_HIGH].physic = PHYSIC_TRUE;
-		if(ForcePressAdsFiltHigh)  // DEBUG !!!!!!!!!!!!!!!!!!!
-			alarmList[PRESS_ADS_FILTER_HIGH].physic = PHYSIC_TRUE;
-		//--------------------------------------------------------
-
-
 		/*il sensore Venoso è usato solo nel trattamento Liver, il Kidney non ha la linea Venosa*/
-		if((PR_VEN_Sistolyc_mmHg /*PR_VEN_mmHg_Filtered*/ > MaxPressVen) && (GetTherapyType() == LiverTreat))
+		if ((PR_VEN_Sistolyc_mmHg /*PR_VEN_mmHg_Filtered*/ > MaxPressVen) && (GetTherapyType() == LiverTreat))
 		{
 			/*aggiungo controllo che non fa alzare allarem di sovrapressione
 			 * venosa in trattamento se lo stesso non è ancora partito
@@ -1258,7 +1243,7 @@ void manageAlarmPhysicPressSensHigh(void)
 			alarmList[PRESS_VEN_HIGH].physic = PHYSIC_FALSE;
 		}
 
-		if(PR_OXYG_mmHg_Filtered > PR_OXYG_HIGH)
+		if (PR_OXYG_mmHg_Filtered > PR_OXYG_HIGH)
 		{
 			alarmList[PRESS_OXYG_HIGH].physic = PHYSIC_TRUE;
 		}
@@ -1292,7 +1277,7 @@ void manageAlarmPhysicSetFlowAndPressures(void)
 	word Pinch_Ven_Position  = modbusData[6][0];
 
 	//Abilitazione allarmi di SET
-	if(GlobalFlags.FlagsDef.EnableFlowAndPressSetAlm)
+	if (GlobalFlags.FlagsDef.EnableFlowAndPressSetAlm)
 	{
 		//Liver, considero anche la pressione venosa
 		if (GetTherapyType() == LiverTreat)
@@ -1407,7 +1392,7 @@ void checkAlmPhysicTempOOR(void)
 	static float CurrMaxDeltaT = 0.0;
 
 	TargetT = (float)parameterWordSetFromGUI[PAR_SET_PRIMING_TEMPERATURE_PERFUSION].value / 10;  // (gradi Centigradi * 10)
-	deltaT = TargetT - sensorIR_TM[0].tempSensValue;
+	deltaT = TargetT - sensorIR_TM[0].tempSensValue;  //Differenza sensore arterioso e target
 	if(deltaT < 0)
 		deltaT = -deltaT;
 	switch (checkAlmPhysicTempOORState)
@@ -1456,16 +1441,6 @@ void checkAlmPhysicTempOOR(void)
 }
 
 //-----------------------------------------------------------------------------------------
-
-
-
-// usata durante la fase di priming/ricircolo genera un allarme che blocca tutto
-// e mette in bypass il filtro
-void manageAlarmPhysicTempSens(void)
-{
-
-}
-
 
 // usata durante la fase di trattamento genera un allarme che cerchera' di ripristinare
 // la temperatura target
@@ -3116,7 +3091,6 @@ void RemoveElementFromActiveListWrn(void)
 		// Ho un solo elemento?
 		if (sSizeActiveListaWrn == 1)
 		{
-
 			//Reset dei puntatori
 			sIdxCurrentActiveListWrn = EMPTY_LIST_WRN;
 			sIdxLastActiveListWrn = EMPTY_LIST_WRN;

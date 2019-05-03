@@ -1777,16 +1777,16 @@ AIR_ALARM_RECOVERY_STATE AirAlarmRecoveryState;
 
 // memorizza lo stato ptrCurrentParent->parent nel momento in cui comincio a cercare
 // di uscire dallo stato di allarme aria
-unsigned short AirParentState;
+unsigned short recoveryParentState;
 
 // Questa flag viene usata per disabilitare gli allarmi aria durante la fase di recupero da
 // un allarme aria precedente
 // E' STATA SOSTITUITA CON UNA FUNZIONE CON LO STESSO NOME
 //bool DisableAllAirAlarm;
 
-unsigned long StarTimeToRejAir;
+unsigned long startTimeToRecovery;
 // serve per misurare il tempo per l'eliminazione della bolla d'aria
-unsigned long TotalTimeToRejAir;
+unsigned long totalTimeToRecovery;
 
 //volume del liquido in vaschetta come percentuale rispetto al suo valore massimo
 word LiquidAmount;

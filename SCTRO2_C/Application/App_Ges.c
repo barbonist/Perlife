@@ -4063,7 +4063,7 @@ void AirAlarmRecoveryStateMach_originale(void)
 		TimeoutAirEjection = 0;
 		break;
 	case START_AIR_PUMP:
-		if(AirParentState == PARENT_TREAT_KIDNEY_1_AIR_FILT)
+		if(recoveryParentState == PARENT_TREAT_KIDNEY_1_AIR_FILT)
 		{
 			if(TherType == KidneyTreat)
 				setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, AIR_REJECT_SPEED);
@@ -4072,14 +4072,14 @@ void AirAlarmRecoveryStateMach_originale(void)
 			AirAlarmRecoveryState = AIR_CHANGE_START_TIME;
 			StarDelay = timerCounterModBus;
 		}
-		else if(AirParentState == PARENT_TREAT_KIDNEY_1_SFV)
+		else if(recoveryParentState == PARENT_TREAT_KIDNEY_1_SFV)
 		{
 			// faccio partire la coppia di pompe per la venosa nel fegato e per l'ossigenazione nel rene
 			setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, AIR_REJECT_SPEED);
 			AirAlarmRecoveryState = AIR_CHANGE_START_TIME;
 			StarDelay = timerCounterModBus;
 		}
-		else if(AirParentState == PARENT_TREAT_KIDNEY_1_SFA)
+		else if(recoveryParentState == PARENT_TREAT_KIDNEY_1_SFA)
 		{
 			// parte la sempre la pompa a cui si riferisce la struttura pumpPerist 0
 			setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, AIR_REJECT_SPEED);
@@ -4088,22 +4088,22 @@ void AirAlarmRecoveryStateMach_originale(void)
 		}
 		break;
 	case AIR_CHANGE_START_TIME:
-		if((AirParentState == PARENT_TREAT_KIDNEY_1_AIR_FILT) && (Air_1_Status == LIQUID))
+		if((recoveryParentState == PARENT_TREAT_KIDNEY_1_AIR_FILT) && (Air_1_Status == LIQUID))
 		{
 			//  la bolla se ne e' andata faccio; ripartire il timer per misurare il tempo a partire da ora
-			StarTimeToRejAir = timerCounterModBus;
+			startTimeToRecovery = timerCounterModBus;
 			AirAlarmRecoveryState = STOP_AIR_PUMP;
 		}
-		else if((AirParentState == PARENT_TREAT_KIDNEY_1_SFV) && (sensor_UFLOW[VENOUS_AIR_SENSOR].bubbleSize < MAX_BUBBLE_SIZE))
+		else if((recoveryParentState == PARENT_TREAT_KIDNEY_1_SFV) && (sensor_UFLOW[VENOUS_AIR_SENSOR].bubbleSize < MAX_BUBBLE_SIZE))
 		{
 			//  la bolla se ne e' andata faccio; ripartire il timer per misurare il tempo a partire da ora
-			StarTimeToRejAir = timerCounterModBus;
+			startTimeToRecovery = timerCounterModBus;
 			AirAlarmRecoveryState = STOP_AIR_PUMP;
 		}
-		else if((AirParentState == PARENT_TREAT_KIDNEY_1_SFA) && (sensor_UFLOW[ARTERIOUS_AIR_SENSOR].bubbleSize < MAX_BUBBLE_SIZE))
+		else if((recoveryParentState == PARENT_TREAT_KIDNEY_1_SFA) && (sensor_UFLOW[ARTERIOUS_AIR_SENSOR].bubbleSize < MAX_BUBBLE_SIZE))
 		{
 			//  la bolla se ne e' andata faccio; ripartire il timer per misurare il tempo a partire da ora
-			StarTimeToRejAir = timerCounterModBus;
+			startTimeToRecovery = timerCounterModBus;
 			AirAlarmRecoveryState = STOP_AIR_PUMP;
 		}
 		else
@@ -4113,18 +4113,18 @@ void AirAlarmRecoveryStateMach_originale(void)
 			{
 				// sono passati 10 secondi la bolla d'aria non si e' ancora spostata
 				// forzo il passaggio allo stato successivo.
-				StarTimeToRejAir = timerCounterModBus;
+				startTimeToRecovery = timerCounterModBus;
 				AirAlarmRecoveryState = STOP_AIR_PUMP;
 				TimeoutAirEjection = 1;
 			}
 		}
 		break;
 	case STOP_AIR_PUMP:
-		if(StarTimeToRejAir && ((msTick_elapsed(StarTimeToRejAir) + TotalTimeToRejAir) * 50L >= TIME_TO_REJECT_AIR))
+		if(startTimeToRecovery && ((msTick_elapsed(startTimeToRecovery) + totalTimeToRecovery) * 50L >= TIME_TO_REJECT_AIR))
 		{
 			// la pompa per l'espulsione dell'aria ha fatto 10 giri, che ritengo sufficienti per
 			// buttare fuori l'aria
-			if(AirParentState == PARENT_TREAT_KIDNEY_1_AIR_FILT)
+			if(recoveryParentState == PARENT_TREAT_KIDNEY_1_AIR_FILT)
 			{
 				if(TherType == KidneyTreat)
 					setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
@@ -4134,7 +4134,7 @@ void AirAlarmRecoveryStateMach_originale(void)
 				//currentGuard[GUARD_AIR_RECOVERY_END].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
 				StarDelay = timerCounterModBus;
 			}
-			else if(AirParentState == PARENT_TREAT_KIDNEY_1_SFV)
+			else if(recoveryParentState == PARENT_TREAT_KIDNEY_1_SFV)
 			{
 				// fermo la coppia di pompe per la venosa nel fegato e per l'ossigenazione nel rene
 				setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 0);
@@ -4142,7 +4142,7 @@ void AirAlarmRecoveryStateMach_originale(void)
 				//currentGuard[GUARD_AIR_RECOVERY_END].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
 				StarDelay = timerCounterModBus;
 			}
-			else if(AirParentState == PARENT_TREAT_KIDNEY_1_SFA)
+			else if(recoveryParentState == PARENT_TREAT_KIDNEY_1_SFA)
 			{
 				// fermo la pompa a cui si riferisce la struttura pumpPerist 0
 				setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
@@ -4199,16 +4199,16 @@ void AirAlarmRecoveryStateMach(void)
 //				setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, TEMP_RESTORE_SPEED);
 //			}
 //
-//			if(AirParentState == PARENT_TREAT_KIDNEY_1_AIR_FILT)
+//			if(recoveryParentState == PARENT_TREAT_KIDNEY_1_AIR_FILT)
 //			{
 //				if(TherType == KidneyTreat)
 //					setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, AIR_REJECT_SPEED);
 //				else if(TherType == LiverTreat)
 //					setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, AIR_REJECT_SPEED);
 //			}
-//			else if(AirParentState == PARENT_TREAT_KIDNEY_1_SFV)
+//			else if(recoveryParentState == PARENT_TREAT_KIDNEY_1_SFV)
 //				setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, AIR_REJECT_SPEED);
-//			else if(AirParentState == PARENT_TREAT_KIDNEY_1_SFA)
+//			else if(recoveryParentState == PARENT_TREAT_KIDNEY_1_SFA)
 //				setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, AIR_REJECT_SPEED);
 			/*end*/
 
@@ -4246,19 +4246,19 @@ void AirAlarmRecoveryStateMach(void)
 			else if(TimeRemaining < 0)
 				TimeRemaining = TIME_TO_REJECT_AIR;
 /*originale*/
-//			if(AirParentState == PARENT_TREAT_KIDNEY_1_AIR_FILT)
+//			if(recoveryParentState == PARENT_TREAT_KIDNEY_1_AIR_FILT)
 //			{
 //				if(TherType == KidneyTreat)
 //					setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
 //				else if(TherType == LiverTreat)
 //					setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, 0);
 //			}
-//			else if(AirParentState == PARENT_TREAT_KIDNEY_1_SFV)
+//			else if(recoveryParentState == PARENT_TREAT_KIDNEY_1_SFV)
 //			{
 //				// fermo la coppia di pompe per la venosa nel fegato e per l'ossigenazione nel rene
 //				setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 0);
 //			}
-//			else if(AirParentState == PARENT_TREAT_KIDNEY_1_SFA)
+//			else if(recoveryParentState == PARENT_TREAT_KIDNEY_1_SFA)
 //			{
 //				// fermo la pompa a cui si riferisce la struttura pumpPerist 0
 //				setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
@@ -4285,7 +4285,7 @@ void AirAlarmRecoveryStateMach(void)
 		break;
 	case START_AIR_PUMP:
 /*originale*/
-//		if(AirParentState == PARENT_TREAT_KIDNEY_1_AIR_FILT)
+//		if(recoveryParentState == PARENT_TREAT_KIDNEY_1_AIR_FILT)
 //		{
 //			if(TherType == KidneyTreat)
 //				setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, AIR_REJECT_SPEED);
@@ -4294,14 +4294,14 @@ void AirAlarmRecoveryStateMach(void)
 //			AirAlarmRecoveryState = AIR_CHANGE_START_TIME;
 //			StarDelay = timerCounterModBus;
 //		}
-//		else if(AirParentState == PARENT_TREAT_KIDNEY_1_SFV)
+//		else if(recoveryParentState == PARENT_TREAT_KIDNEY_1_SFV)
 //		{
 //			// faccio partire la coppia di pompe per la venosa nel fegato e per l'ossigenazione nel rene
 //			setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, AIR_REJECT_SPEED);
 //			AirAlarmRecoveryState = AIR_CHANGE_START_TIME;
 //			StarDelay = timerCounterModBus;
 //		}
-//		else if(AirParentState == PARENT_TREAT_KIDNEY_1_SFA)
+//		else if(recoveryParentState == PARENT_TREAT_KIDNEY_1_SFA)
 //		{
 //			// parte la sempre la pompa a cui si riferisce la struttura pumpPerist 0
 //			setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, AIR_REJECT_SPEED);
@@ -4329,22 +4329,22 @@ void AirAlarmRecoveryStateMach(void)
 
 	case AIR_CHANGE_START_TIME:
 /*originale*/
-//		if((AirParentState == PARENT_TREAT_KIDNEY_1_AIR_FILT) && (Air_1_Status == LIQUID))
+//		if((recoveryParentState == PARENT_TREAT_KIDNEY_1_AIR_FILT) && (Air_1_Status == LIQUID))
 //		{
 //			//  la bolla se ne e' andata faccio; ripartire il timer per misurare il tempo a partire da ora
-//			StarTimeToRejAir = timerCounterModBus;
+//			startTimeToRecovery = timerCounterModBus;
 //			AirAlarmRecoveryState = STOP_AIR_PUMP;
 //		}
-//		else if((AirParentState == PARENT_TREAT_KIDNEY_1_SFV) && (sensor_UFLOW[VENOUS_AIR_SENSOR].bubbleSize < 25))
+//		else if((recoveryParentState == PARENT_TREAT_KIDNEY_1_SFV) && (sensor_UFLOW[VENOUS_AIR_SENSOR].bubbleSize < 25))
 //		{
 //			//  la bolla se ne e' andata faccio; ripartire il timer per misurare il tempo a partire da ora
-//			StarTimeToRejAir = timerCounterModBus;
+//			startTimeToRecovery = timerCounterModBus;
 //			AirAlarmRecoveryState = STOP_AIR_PUMP;
 //		}
-//		else if((AirParentState == PARENT_TREAT_KIDNEY_1_SFA) && (sensor_UFLOW[ARTERIOUS_AIR_SENSOR].bubbleSize < 25))
+//		else if((recoveryParentState == PARENT_TREAT_KIDNEY_1_SFA) && (sensor_UFLOW[ARTERIOUS_AIR_SENSOR].bubbleSize < 25))
 //		{
 //			//  la bolla se ne e' andata faccio; ripartire il timer per misurare il tempo a partire da ora
-//			StarTimeToRejAir = timerCounterModBus;
+//			startTimeToRecovery = timerCounterModBus;
 //			AirAlarmRecoveryState = STOP_AIR_PUMP;
 //		}
 //		else
@@ -4354,7 +4354,7 @@ void AirAlarmRecoveryStateMach(void)
 //			{
 //				// sono passati 10 secondi la bolla d'aria non si e' ancora spostata
 //				// forzo il passaggio allo stato successivo.
-//				StarTimeToRejAir = timerCounterModBus;
+//				startTimeToRecovery = timerCounterModBus;
 //				AirAlarmRecoveryState = STOP_AIR_PUMP;
 //				TimeoutAirEjection = 1;
 //			}
@@ -4363,7 +4363,7 @@ void AirAlarmRecoveryStateMach(void)
 		/*se no vedo più aria su tutti e tre i sensori cambio stato e faccio partire il timer per misurare il tempo a partire da ora*/
 		if (Air_1_Status == LIQUID && (sensor_UFLOW[VENOUS_AIR_SENSOR].bubbleSize < MAX_BUBBLE_SIZE) && (sensor_UFLOW[VENOUS_AIR_SENSOR].bubbleSize < MAX_BUBBLE_SIZE) )
 		{
-			StarTimeToRejAir = timerCounterModBus;
+			startTimeToRecovery = timerCounterModBus;
 			AirAlarmRecoveryState = STOP_AIR_PUMP;
 		}
 		// Dopo un timeout esco comunque e vado avanti dopo aver segnalato alla gui il fatto
@@ -4371,18 +4371,18 @@ void AirAlarmRecoveryStateMach(void)
 		{
 			// sono passati 10 secondi la bolla d'aria non si e' ancora spostata
 			// forzo il passaggio allo stato successivo.
-			StarTimeToRejAir = timerCounterModBus;
+			startTimeToRecovery = timerCounterModBus;
 			AirAlarmRecoveryState = STOP_AIR_PUMP;
 			TimeoutAirEjection = 1;
 		}
 		break;
 	case STOP_AIR_PUMP:
-		if(StarTimeToRejAir && ((msTick_elapsed(StarTimeToRejAir) + TotalTimeToRejAir) * 50L >= TimeRemaining))
+		if(startTimeToRecovery && ((msTick_elapsed(startTimeToRecovery) + totalTimeToRecovery) * 50L >= TimeRemaining))
 		{
 /*originale*/
 //			// la pompa per l'espulsione dell'aria ha fatto 10 giri, che ritengo sufficienti per
 //			// buttare fuori l'aria
-//			if(AirParentState == PARENT_TREAT_KIDNEY_1_AIR_FILT)
+//			if(recoveryParentState == PARENT_TREAT_KIDNEY_1_AIR_FILT)
 //			{
 //				if(TherType == KidneyTreat)
 //					setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
@@ -4392,7 +4392,7 @@ void AirAlarmRecoveryStateMach(void)
 //				//currentGuard[GUARD_AIR_RECOVERY_END].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
 //				StarDelay = timerCounterModBus;
 //			}
-//			else if(AirParentState == PARENT_TREAT_KIDNEY_1_SFV)
+//			else if(recoveryParentState == PARENT_TREAT_KIDNEY_1_SFV)
 //			{
 //				// fermo la coppia di pompe per la venosa nel fegato e per l'ossigenazione nel rene
 //				setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, 0);
@@ -4400,7 +4400,7 @@ void AirAlarmRecoveryStateMach(void)
 //				//currentGuard[GUARD_AIR_RECOVERY_END].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
 //				StarDelay = timerCounterModBus;
 //			}
-//			else if(AirParentState == PARENT_TREAT_KIDNEY_1_SFA)
+//			else if(recoveryParentState == PARENT_TREAT_KIDNEY_1_SFA)
 //			{
 //				// fermo la pompa a cui si riferisce la struttura pumpPerist 0
 //				setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 0);
@@ -4535,7 +4535,7 @@ void DeltaTHighAlarmRecoveryStateMach(void)
 	if(deltaT < 0)
 		deltaT = -deltaT;
 
-	if(buttonGUITreatment[BUTTON_START_TREATMENT].state == GUI_BUTTON_RELEASED)
+	if (buttonGUITreatment[BUTTON_START_TREATMENT].state == GUI_BUTTON_RELEASED)
 	{
 		releaseGUIButton(BUTTON_START_TREATMENT);
 		if( DeltaTHighAlarmRecvrState == TEMP_RESTORE_STOPPED )
@@ -5339,28 +5339,28 @@ void ParentEmptyDispStateMach(void)
 // cerchera' di eliminare la condizione di allarme.
 void GoToRecoveryParentState(int MachineParentState)
 {
-	switch(MachineParentState)
+	switch (MachineParentState)
 	{
 	case PARENT_TREAT_KIDNEY_1_SFA:
-		AirParentState = PARENT_TREAT_KIDNEY_1_SFA;
-		StarTimeToRejAir = timerCounterModBus;
-		TotalTimeToRejAir = 0;
+		recoveryParentState = PARENT_TREAT_KIDNEY_1_SFA;
+		startTimeToRecovery = timerCounterModBus;
+		totalTimeToRecovery = 0;
 		/* (FM) passo nello stato per la risoluzione dell'allarme aria nella linea arteriosa*/
 		ptrFutureParent = &stateParentTreatKidney1[11];
 		ptrFutureChild = ptrFutureParent->ptrChild;
 		break;
 	case PARENT_TREAT_KIDNEY_1_SFV:
-		AirParentState = PARENT_TREAT_KIDNEY_1_SFV;
-		StarTimeToRejAir = timerCounterModBus;
-		TotalTimeToRejAir = 0;
+		recoveryParentState = PARENT_TREAT_KIDNEY_1_SFV;
+		startTimeToRecovery = timerCounterModBus;
+		totalTimeToRecovery = 0;
 		/* (FM) passo nello stato per la risoluzione dell'allarme aria nella linea venosa*/
 		ptrFutureParent = &stateParentTreatKidney1[9];
 		ptrFutureChild = ptrFutureParent->ptrChild;
 		break;
 	case PARENT_TREAT_KIDNEY_1_AIR_FILT:
-		AirParentState = PARENT_TREAT_KIDNEY_1_AIR_FILT;
-		StarTimeToRejAir = timerCounterModBus;
-		TotalTimeToRejAir = 0;
+		recoveryParentState = PARENT_TREAT_KIDNEY_1_AIR_FILT;
+		startTimeToRecovery = timerCounterModBus;
+		totalTimeToRecovery = 0;
 		/* (FM) passo nello stato per la risoluzione dell'allarme aria nella linea del filtro*/
 		ptrFutureParent = &stateParentTreatKidney1[7];
 		ptrFutureChild = ptrFutureParent->ptrChild;
@@ -5368,9 +5368,9 @@ void GoToRecoveryParentState(int MachineParentState)
 
 	// vado nello stato di recupero della temperatura del liquido
 	case PARENT_TREAT_KIDNEY_1_DELTA_T_HIGH_RECV:
-		AirParentState = PARENT_TREAT_KIDNEY_1_DELTA_T_HIGH_RECV;
-		StarTimeToRejAir = timerCounterModBus;
-		TotalTimeToRejAir = 0;
+		recoveryParentState = PARENT_TREAT_KIDNEY_1_DELTA_T_HIGH_RECV;
+		startTimeToRecovery = timerCounterModBus;
+		totalTimeToRecovery = 0;
 		/* (FM) passo nello stato per la risoluzione dell'allarme di delta temperatura eccessivo*/
 		ptrFutureParent = &stateParentTreatKidney1[21];
 		ptrFutureChild = ptrFutureParent->ptrChild;

@@ -310,7 +310,6 @@ void manageAlarmPhysicPressSensHigh(void);
 void manageAlarmPhysicSetFlowAndPressures(void);
 void manageAlarmPhysicPressSensLow(void);
 
-void manageAlarmPhysicTempSens(void);
 void manageAlarmPhysicTempSensOOR(void);
 void manageAlarmPhysicTempSensInTreat(void);
 

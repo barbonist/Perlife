@@ -316,8 +316,8 @@ int main(void)
   TreatAlm1SFVActive = FALSE;
 
   LiquidAmount = 0;
-  StarTimeToRejAir = 0;
-  TotalTimeToRejAir = 0;
+  startTimeToRecovery = 0;
+  totalTimeToRecovery = 0;
   AirAlarmRecoveryState = INIT_AIR_ALARM_RECOVERY;
   DisableAllAirAlarm(FALSE);
   DisableCheckPumpStopTask = 0;
