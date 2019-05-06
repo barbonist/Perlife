@@ -1443,11 +1443,9 @@ float V24_Ever_Motor_Value;
 
 /* t1 test */
 #define T1_TEST_DIG_TO_VOLT			0.00005 // (3300/65536)/1000 (float)(3300/4096)/1000 //digit to volt
-// Filippo - modificati i limiti per passare il test  - da ripristinare
-//#define V24BRK_LOW_THRSLD			2.3 //volt
-//#define V24BRK_HIGH_THRSLD			2.7 //volt
-#define V24BRK_LOW_THRSLD			2.3 //volt
-#define V24BRK_HIGH_THRSLD			4 //volt
+#define V24BRK_LOW_THRSLD			1.34 //volt
+#define V24BRK_HIGH_THRSLD			2.33 //volt
+
 #define T1_TEST_PRESS_LOW_THRSLD	-5 //mmHg
 #define T1_TEST_PRESS_HIGH_THRSLD	5 //mmHg
 #define T1_TEST_PRESS_TRKNG_THRSLD	5 //mmHg
