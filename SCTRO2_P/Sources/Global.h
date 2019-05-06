@@ -12,7 +12,7 @@
 typedef unsigned short	word;
 
 
-// #define PROTECTIVE_SLEEPS
+//#define PROTECTIVE_SLEEPS
 
 /* Syncronization flag */
 char	iflag_pc_rx;

@@ -81,7 +81,8 @@ bool SomePinchNotDisabled = false;
 		TimeSecsFromControlAlarm--;
 		if(TimeSecsFromControlAlarm == 0)
 		{
-			if( !PumpsAreStopped() || !PinchesAreInSafetyMode()){
+			// if( !PumpsAreStopped() || !PinchesAreInSafetyMode()){ // da rivedere
+			if( !PinchesAreInSafetyMode() ){
 				// hardware error --> must remove supply to pinch and motors
 				SwitchOFFPinchNPumps();
 				UnrecoverableAlarm = true;

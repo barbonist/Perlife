@@ -253,7 +253,7 @@ void verificaTempPlate(void)
 
 #define VERS_1 1
 #define VERS_2 2
-#define VERS_3 1
+#define VERS_3 2
 
 #endif
 uint16_t GetFwVersionProtective(void)
@@ -507,6 +507,10 @@ int main(void)
 		- gestita ricezione valori di aria in linea venosa e arteriosa da control
 		- se si riceve valore di aria >= 50 , si fa partire un timer di 5 sec.
 		- trascorsi 5 sec , se non si sono fermate le pompe e le pinch in sicurezza , si da allarme e si va in sicurezza
+	Versione 1.2.200
+		-- SB 2-5-2019 sometimes error occurs if control changes fast from 0 RPM to non 0 RPM and back , to overcome this issue
+		-- change CountTreshold depdnding on control RMP and local RPM vales.
+		-- if some values is too low then wait longer time before error
 
   */
 

@@ -166,14 +166,18 @@ int ii;
 //  actions to be performed upon alarm condition
 /////////////////////////////////////////////////
 
+#define IGNORE_CAN_ALARM
+
 void NoCanCommunicationAlarmAct(void)
 {
+#ifndef IGNORE_CAN_ALARM
 	ShowNewAlarmError(CODE_ALARM_NOCAN_COMMUNICATION);
 	DisablePinchNPumps();
 	Enable_Heater(false);
 	Enable_Frigo(false);
 	// trigger sec action
 	TriggerSecondaryAction(&CanOfflineAlarmTimer);
+#endif
 }
 
 void MismatchPumpSpeedAlarmAct(void)
@@ -309,10 +313,10 @@ bool some_error = false;
 		Enable_Heater(FALSE);
 		Enable_Frigo(FALSE);
 	}
-	if( !PumpsAreStopped() ){
-		some_error = true;
-		SwitchOFFPinchNPumps();
-	}
+//	if( !PumpsAreStopped() ){  / don't check since it is possible that user reset alarm in the meantime
+//		some_error = true;
+//		SwitchOFFPinchNPumps();
+//	}
 	if( some_error ){
 		ShowNewAlarmError(CODE_ALARM_ON_ALARMS_FSM);
 	}
@@ -570,6 +574,17 @@ bool Pump3Ok = true;
 		 PumpMismatchAlarmTimer.AlarmConditionPending = false;
 	}
 	else {
+		// SB 2-5-2019 sometimes error occurs if control changes fast from 0 RPM to non 0 RPM and back , to overcome this issue
+		// change CountTreshold depdnding on control RMP and local RPM vales.
+		// if some values is too low then wait longer time before error
+		if ( (SpeedPump0Rpmx100 > 610 ) && (SpeedPump1Rpmx100 > 610 ) &&
+			 (SpeedPump2Rpmx100 > 610 ) && (SpeedPump3Rpmx100 > 610 ) &&
+			 (GetMeasuredPumpSpeed(0) > 610) && (GetMeasuredPumpSpeed(1) > 610) &&
+			 (GetMeasuredPumpSpeed(2) > 610) && (GetMeasuredPumpSpeed(3) > 610) )
+			PumpMismatchAlarmTimer.CountTreshold = 80;
+		else
+			PumpMismatchAlarmTimer.CountTreshold = 140;
+
 		 PumpMismatchAlarmTimer.AlarmConditionPending = true;
 	}
 }
