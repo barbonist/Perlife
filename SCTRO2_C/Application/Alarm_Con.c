@@ -2283,10 +2283,10 @@ void WarningPhysicPressSensHigh(void)
 			break;
 
 		case WRN_CONTROL:
-			if (PR_ADS_FLT_mmHg_Filtered > PR_ADS_FILTER_WARN)
+			if ((PR_ADS_FLT_mmHg_Filtered > PR_ADS_FILTER_WARN) && (PR_ADS_FLT_mmHg_Filtered < PR_ADS_FILTER_HIGH))
 			{
 				warningPtr->faultConditionTimer += ALARM_TICK;
-				if ( warningPtr->faultConditionTimer >  warningPtr->entryTime)
+				if (warningPtr->faultConditionTimer >  warningPtr->entryTime)
 				//if ((warningPtr->faultConditionTimer += ALARM_TICK) >= warningPtr->entryTime)
 					warningPtr->active = ACTIVE_TRUE;
 			}
@@ -3288,7 +3288,7 @@ void WarningEngineAlways(void)
 			warningCode = warningPtr->ptr->code;
 
 			//Intercetto la pressione del tasto reset per rimuovere lo warning corrente
-			if(buttonGUITreatment[BUTTON_RESET_ALARM].state == GUI_BUTTON_RELEASED)
+			if (buttonGUITreatment[BUTTON_RESET_ALARM].state == GUI_BUTTON_RELEASED)
 			{
 				releaseGUIButton(BUTTON_RESET_ALARM);
 				RemoveElementFromActiveListWrn();
