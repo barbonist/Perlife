@@ -1283,31 +1283,31 @@ void manageAlarmPhysicSetFlowAndPressures(void)
 		if (GetTherapyType() == LiverTreat)
 		{
 			// Allarme di SET pressione venosa -- Vincenzo: lo attivo solo se la pinch venosa è aperta sull'organo
-			if (PR_VEN_mmHg_Filtered > pressureTargetVen + DELTA_TARGET_PRESS_VEN_LIVER && Pinch_Ven_Position == MODBUS_PINCH_LEFT_OPEN)
+			if ((PR_VEN_mmHg_Filtered > pressureTargetVen + DELTA_TARGET_PRESS_VEN_LIVER) && (Pinch_Ven_Position == MODBUS_PINCH_LEFT_OPEN))
 				alarmList[PRESS_VEN_SET].physic = PHYSIC_TRUE;
 			else
 				alarmList[PRESS_VEN_SET].physic = PHYSIC_FALSE;
 
 			// Allarme di SET pressione arteriosa -- Vincenzo: lo attivo solo se la pinch arteriosa è aperta sull'organo
-			if (PR_ART_mmHg_Filtered > pressureTargetArt + DELTA_TARGET_PRESS_ART_LIVER && Pinch_Art_Position == MODBUS_PINCH_LEFT_OPEN)
+			if ((PR_ART_mmHg_Filtered > pressureTargetArt + DELTA_TARGET_PRESS_ART_LIVER) && (Pinch_Art_Position == MODBUS_PINCH_LEFT_OPEN))
 				alarmList[PRESS_ART_SET].physic = PHYSIC_TRUE;
 			else
 				alarmList[PRESS_ART_SET].physic = PHYSIC_FALSE;
 
 			// Allarme di SET flusso arterioso -- Vincenzo: lo attivo solo se la pinch arteriosa è aperta sull'organo
-			if (sensor_UFLOW[0].Average_Flow_Val  > flowTargetArt + DELTA_TARGET_FLOW_ART_LIVER && Pinch_Art_Position == MODBUS_PINCH_LEFT_OPEN) //50
+			if ((sensor_UFLOW[0].Average_Flow_Val  > flowTargetArt + DELTA_TARGET_FLOW_ART_LIVER) && (Pinch_Art_Position == MODBUS_PINCH_LEFT_OPEN)) //50
 				alarmList[FLOW_ART_SET].physic = PHYSIC_TRUE;
 			else
 				alarmList[FLOW_ART_SET].physic = PHYSIC_FALSE;
 
 			// Allarme di SET flusso venoso -- Vincenzo: lo attivo solo se la pinch venosa è aperta sull'organo
-			if (sensor_UFLOW[1].Average_Flow_Val  > flowTargetVen + DELTA_TARGET_FLOW_VEN_LIVER && Pinch_Ven_Position == MODBUS_PINCH_LEFT_OPEN) //solo fegato
+			if ((sensor_UFLOW[1].Average_Flow_Val  > flowTargetVen + DELTA_TARGET_FLOW_VEN_LIVER) && (Pinch_Ven_Position == MODBUS_PINCH_LEFT_OPEN)) //solo fegato
 				alarmList[FLOW_VEN_SET].physic = PHYSIC_TRUE;
 			else
 				alarmList[FLOW_VEN_SET].physic = PHYSIC_FALSE;
 
 			// Allarme di SET flusso depurazione -- Vincenzo: lo attivo solo se la pinch filtro è aperta sul filtro
-			if (FilterFlowVal > flowTargetDep + DELTA_TARGET_FLOW_DEP_LIVER && Pinch_Filt_Position == MODBUS_PINCH_RIGHT_OPEN) //solo fegato
+			if ((FilterFlowVal > flowTargetDep + DELTA_TARGET_FLOW_DEP_LIVER) && (Pinch_Filt_Position == MODBUS_PINCH_RIGHT_OPEN)) //solo fegato
 				alarmList[FLOW_DEP_SET].physic = PHYSIC_TRUE;
 			else
 				alarmList[FLOW_DEP_SET].physic = PHYSIC_FALSE;
@@ -1315,13 +1315,13 @@ void manageAlarmPhysicSetFlowAndPressures(void)
 		else //Kidney, solo arteriosa
 		{
 			// Allarme di SET pressione arteriosa -- Vincenzo: lo attivo solo se la pinch arteriosa è aperta sull'organo
-			if (PR_ART_mmHg_Filtered > pressureTargetArt + DELTA_TARGET_PRESS_ART_KIDNEY && Pinch_Art_Position == MODBUS_PINCH_LEFT_OPEN)
+			if ((PR_ART_mmHg_Filtered > pressureTargetArt + DELTA_TARGET_PRESS_ART_KIDNEY) && (Pinch_Art_Position == MODBUS_PINCH_LEFT_OPEN))
 				alarmList[PRESS_ART_SET].physic = PHYSIC_TRUE;
 			else
 				alarmList[PRESS_ART_SET].physic = PHYSIC_FALSE;
 
 			// Allarme di SET flusso arterioso -- Vincenzo: lo attivo solo se la pinch arteriosa è aperta sull'organo
-			if (sensor_UFLOW[0].Average_Flow_Val  > flowTargetArt + DELTA_TARGET_FLOW_ART_KIDNEY && Pinch_Art_Position == MODBUS_PINCH_LEFT_OPEN)
+			if ((sensor_UFLOW[0].Average_Flow_Val  > flowTargetArt + DELTA_TARGET_FLOW_ART_KIDNEY) && (Pinch_Art_Position == MODBUS_PINCH_LEFT_OPEN))
 				alarmList[FLOW_ART_SET].physic = PHYSIC_TRUE;
 			else
 				alarmList[FLOW_ART_SET].physic = PHYSIC_FALSE;
