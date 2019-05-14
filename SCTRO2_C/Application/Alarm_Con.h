@@ -174,8 +174,8 @@ typedef struct elementActiveListWrn sActiveListWrnS;
 #define MEMO_NOT_ALLOWED		0x5A
 
 // Flussi massimi di perfusione arteriosa
-#define FLOW_PERF_ART_LIVER_MAX    550 // ml/min
-#define FLOW_PERF_ART_KIDNEY_MAX   550 // ml/min
+#define FLOW_PERF_ART_LIVER_MAX    600 // ml/min
+#define FLOW_PERF_ART_KIDNEY_MAX   600 // ml/min
 
 // Flussi massimi di ossigenazione/perfusione venosa
 #define FLOW_PERF_VEN_LIVER_MAX    2800 // ml/min
@@ -214,7 +214,7 @@ typedef struct elementActiveListWrn sActiveListWrnS;
 #define PR_ADS_FILTER_LOW                                    10
 #define PR_ADS_FILTER_WARN									100
 
-#define MAX_MSG_CONSECUTIVE_ACTUATOR_MODBUS_NOT_RESPOND 	10
+#define MAX_MSG_CONSECUTIVE_ACTUATOR_MODBUS_NOT_RESPOND 	 10
 
 
 #define MAX_BUBBLE_SIZE		50
