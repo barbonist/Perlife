@@ -2102,6 +2102,11 @@ void StorageModbusData(unsigned char LastActuatslvAddr)
 			CountErrorModbusMSG[Address-2] = 0;
 		}
 
+	/*aggiorno ad ogni lettura la variabile pumpPerist[X].actualSpeed con l'ultima velocità letta*/
+	pumpPerist[0].actualSpeed =  modbusData[pumpPerist[0].pmpMySlaveAddress-2][17] /100;
+	pumpPerist[1].actualSpeed = modbusData[pumpPerist[1].pmpMySlaveAddress-2][17] /100;
+	pumpPerist[2].actualSpeed = modbusData[pumpPerist[2].pmpMySlaveAddress-2][17] /100;
+	pumpPerist[3].actualSpeed = modbusData[pumpPerist[3].pmpMySlaveAddress-2][17] /100;
 }
 
 void StorageModbusDataInit(void)

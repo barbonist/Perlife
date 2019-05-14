@@ -31,9 +31,10 @@
 	 *0x0808 --> 1.0.8
 	 *0x0809 --> 1.0.9
 	 *0x080A --> 1.0.10
-	 *0x080B --> 1.0.11*/
+	 *0x080B --> 1.0.11
+	 *0x080C --> 1.0.12*/
 
-#define REVISION_FW_CONTROL 0x080B
+#define REVISION_FW_CONTROL 0x080C
 
 /* Syncronization flag */
 char	iflag_pc_rx;

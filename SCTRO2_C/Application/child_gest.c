@@ -837,10 +837,6 @@ void manageChildTreatAlmT1StopAllActAlways(void)
 //		readPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress);
 //	}
 
-	pumpPerist[0].actualSpeed =  modbusData[pumpPerist[0].pmpMySlaveAddress-2][17];
-	pumpPerist[1].actualSpeed = modbusData[pumpPerist[1].pmpMySlaveAddress-2][17];
-	pumpPerist[2].actualSpeed = modbusData[pumpPerist[2].pmpMySlaveAddress-2][17];
-	pumpPerist[3].actualSpeed = modbusData[pumpPerist[3].pmpMySlaveAddress-2][17];
 }
 
 
@@ -1014,10 +1010,6 @@ void manageChildTreatAlm1StopAllActAlways(void)
 //		readPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress);
 //	}
 
-	pumpPerist[0].actualSpeed =  modbusData[pumpPerist[0].pmpMySlaveAddress-2][17];
-	pumpPerist[1].actualSpeed = modbusData[pumpPerist[1].pmpMySlaveAddress-2][17];
-	pumpPerist[2].actualSpeed = modbusData[pumpPerist[2].pmpMySlaveAddress-2][17];
-	pumpPerist[3].actualSpeed = modbusData[pumpPerist[3].pmpMySlaveAddress-2][17];
 }
 
 
