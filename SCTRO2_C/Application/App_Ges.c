@@ -1130,7 +1130,6 @@ void manageParentChk24Vbrk(void){
 	   (voltageBoard != 0x01) ||
 	   (voltageMotor != 0x01)
 	   )
-
 	{
 		ptrT1Test->result_T1_24vbrk = T1_TEST_KO;
 		currentGuard[GUARD_ENABLE_T1_ALARM].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
@@ -3836,6 +3835,10 @@ void EmptyDispStateMach(void)
 		else if(buttonGUITreatment[StopAllPumpButId].state == GUI_BUTTON_RELEASED)
 		{
 			releaseGUIButton(StopAllPumpButId);
+
+			/*tengo traccia che è stato premuto un tasto di stop*/
+			emptyStopButtonPressed = TRUE;
+
 			if(GetTherapyType() == LiverTreat)
 				setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, 0);
 			else if(GetTherapyType() == KidneyTreat)
@@ -3843,6 +3846,11 @@ void EmptyDispStateMach(void)
 		}
 		else if(buttonGUITreatment[StarEmptyDispButId].state == GUI_BUTTON_RELEASED)
 		{
+			if (emptyStopButtonPressed == TRUE)
+			{
+				emptyStopButtonPressed = FALSE;
+				RestartPumpsEmptyState();
+			}
 			// faccio ripartire le pompe per lo svuotamento
 			releaseGUIButton(StarEmptyDispButId);
 			if(GetTherapyType() == LiverTreat)
@@ -5296,8 +5304,12 @@ void ParentEmptyDispStateMach(void)
 
 			// Il ritorno allo svuotamento viene fatto solo dopo la pressione del tasto BUTTON_RESET_ALARM
 			releaseGUIButton(BUTTON_RESET_ALARM);
-			// faccio ripartire le pompe per lo svuotamento
-			RestartPumpsEmptyState();
+			/* faccio ripartire le pompe per lo svuotamento a
+			 * meno che non sia stato precedentemento premuto lo stop
+			 */
+			if (emptyStopButtonPressed == FALSE)
+				RestartPumpsEmptyState();
+
 			ptrFutureParent = &stateParentEmptyDisp[3];
 			ptrFutureChild = ptrFutureParent->ptrChild;
 			LevelBuzzer = SILENT;//0;
@@ -7302,10 +7314,6 @@ void verificaTempPlate(void)
 	{
 		// troppi errori consecutivi - allarme
 		contaErroriTempPlate=3;		// evito che la variabile rolli in caso di numero eccessivo di errori
-
-
-
-
 	}
 }
 

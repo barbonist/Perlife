@@ -256,6 +256,7 @@ int main(void)
   bool Status_Board;
   THERAPY_TYPE TreatType = Undef;
   EnableNextAlarm = FALSE;
+  emptyStopButtonPressed = FALSE;
 
   pollingDataFromSBC = 0;
   pollingDataToSBC = 0;
