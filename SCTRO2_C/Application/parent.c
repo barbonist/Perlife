@@ -219,9 +219,9 @@ void ParentFunc(void)
 					// vado nello stato parent dove posso cercare di recuperare la condizione di allarme
 					currentGuard[GUARD_ALARM_PRIM_AIR_FILT_RECOVERY].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
 					currentGuard[GUARD_ALARM_PRIM_AIR_FILT_RECOVERY].guardValue = GUARD_VALUE_FALSE;
-					AirParentState = PARENT_TREAT_KIDNEY_1_AIR_FILT;
-					StarTimeToRejAir = timerCounterModBus;
-					TotalTimeToRejAir = 0;
+					recoveryParentState = PARENT_TREAT_KIDNEY_1_AIR_FILT;
+					startTimeToRecovery = timerCounterModBus;
+					totalTimeToRecovery = 0;
 					/* (FM) passo nello stato per la risoluzione dell'allarme aria nella linea arteriosa*/
 					ptrFutureParent = &stateParentPrimingTreatKidney1[17];
 					ptrFutureChild = ptrFutureParent->ptrChild;
@@ -499,12 +499,12 @@ void ParentFunc(void)
 				{
 					/* FM allarme finito posso ritornare nello stato di partenza
 					 * quando si e' verificato l'allarme */
-					if (AirParentState == PARENT_TREAT_KIDNEY_1_AIR_FILT)
+					if (recoveryParentState == PARENT_TREAT_KIDNEY_1_AIR_FILT)
 					{
 						// ero nello stato recupero da allarme aria nel sensore aria on/off
 						ptrFutureParent = &stateParentPrimingTreatKidney1[17];
 						ptrFutureChild = ptrFutureParent->ptrChild;
-						StarTimeToRejAir = timerCounterModBus;
+						startTimeToRecovery = timerCounterModBus;
 						break;
 					}
 					else
@@ -598,16 +598,6 @@ void ParentFunc(void)
 				ptrFutureChild = ptrFutureParent->ptrChild;
 				DisableAllAirAlarm(FALSE);
 				LevelBuzzer = HIGH;//2;
-				// guardando a questo valore posso vedere il tipo di azione di sicurezza
-				// e quindi posso decidere di andare anche in un qualche altro stato ad hoc
-				// di allarme
-				//ptrAlarmCurrent->secActType
-//				if(ptrAlarmCurrent->code == CODE_ALARM_TANK_LEVEL_HIGH)
-//				{
-//					// si e' verificato un allarme di troppo pieno, fermo tutto ed al successivo
-//					// reset abortisco il trattamento
-//					GlobalFlags.FlagsDef.TankLevelHigh = 1;
-//				}
 			}
 			else if(currentGuard[GUARD_ENT_PAUSE_STATE_KIDNEY_1_PUMP_ON].guardValue == GUARD_VALUE_TRUE)
 			{
@@ -771,7 +761,7 @@ void ParentFunc(void)
 				// e quindi posso decidere di andare anche in un qualche altro stato ad hoc
 				// di allarme
 				//ptrAlarmCurrent->secActType
-				TotalTimeToRejAir += msTick_elapsed(StarTimeToRejAir);
+				totalTimeToRecovery += msTick_elapsed(startTimeToRecovery);
 			}
 			break;
 		case PARENT_TREAT_KIDNEY_1_SFV:
@@ -816,7 +806,7 @@ void ParentFunc(void)
 				// e quindi posso decidere di andare anche in un qualche altro stato ad hoc
 				// di allarme
 				//ptrAlarmCurrent->secActType
-				TotalTimeToRejAir += msTick_elapsed(StarTimeToRejAir);
+				totalTimeToRecovery += msTick_elapsed(startTimeToRecovery);
 			}
 			break;
 		case PARENT_TREAT_KIDNEY_1_SFA:
@@ -861,7 +851,7 @@ void ParentFunc(void)
 				// e quindi posso decidere di andare anche in un qualche altro stato ad hoc
 				// di allarme
 				//ptrAlarmCurrent->secActType
-				TotalTimeToRejAir += msTick_elapsed(StarTimeToRejAir);
+				totalTimeToRecovery += msTick_elapsed(startTimeToRecovery);
 			}
 			break;
 
@@ -877,28 +867,28 @@ void ParentFunc(void)
 			{
 				/* FM allarme finito posso ritornare nello stato di partenza
 				 * quando si e' verificato l'allarme */
-				if(AirParentState == PARENT_TREAT_KIDNEY_1_AIR_FILT)
+				if(recoveryParentState == PARENT_TREAT_KIDNEY_1_AIR_FILT)
 				{
 					// ero nello stato recupero da allarme aria nel sensore aria on/off
 					ptrFutureParent = &stateParentTreatKidney1[7];
 					ptrFutureChild = ptrFutureParent->ptrChild;
-					StarTimeToRejAir = timerCounterModBus;
+					startTimeToRecovery = timerCounterModBus;
 					break;
 				}
-				else if(AirParentState == PARENT_TREAT_KIDNEY_1_SFV)
+				else if(recoveryParentState == PARENT_TREAT_KIDNEY_1_SFV)
 				{
 					// ero nello stato recupero da allarme aria nel sensore aria venoso
 					ptrFutureParent = &stateParentTreatKidney1[9];
 					ptrFutureChild = ptrFutureParent->ptrChild;
-					StarTimeToRejAir = timerCounterModBus;
+					startTimeToRecovery = timerCounterModBus;
 					break;
 				}
-				else if(AirParentState == PARENT_TREAT_KIDNEY_1_SFA)
+				else if(recoveryParentState == PARENT_TREAT_KIDNEY_1_SFA)
 				{
 					// ero nello stato recupero da allarme aria nel sensore aria arterioso
 					ptrFutureParent = &stateParentTreatKidney1[11];
 					ptrFutureChild = ptrFutureParent->ptrChild;
-					StarTimeToRejAir = timerCounterModBus;
+					startTimeToRecovery = timerCounterModBus;
 					break;
 				}
 				else
@@ -968,11 +958,11 @@ void ParentFunc(void)
 			{
 				/* FM allarme finito posso ritornare nello stato di partenza
 				 * quando si e' verificato l'allarme */
-				if(AirParentState == PARENT_TREAT_KIDNEY_1_DELTA_T_HIGH_RECV)
+				if(recoveryParentState == PARENT_TREAT_KIDNEY_1_DELTA_T_HIGH_RECV)
 				{
 					ptrFutureParent = &stateParentTreatKidney1[21];
 					ptrFutureChild = ptrFutureParent->ptrChild;
-					StarTimeToRejAir = timerCounterModBus;
+					startTimeToRecovery = timerCounterModBus;
 					break;
 				}
 				else

@@ -316,8 +316,8 @@ int main(void)
   TreatAlm1SFVActive = FALSE;
 
   LiquidAmount = 0;
-  StarTimeToRejAir = 0;
-  TotalTimeToRejAir = 0;
+  startTimeToRecovery = 0;
+  totalTimeToRecovery = 0;
   AirAlarmRecoveryState = INIT_AIR_ALARM_RECOVERY;
   DisableAllAirAlarm(FALSE);
   DisableCheckPumpStopTask = 0;
@@ -523,7 +523,7 @@ int main(void)
   unsigned char Ritrasmissioni = 0;
 
   /*accetto un numero massimo di ritrasmissioni pari a 40, altrimenti esco dal while*/
-  while (slvAddr <= LAST_ACTUATOR && Ritrasmissioni <= 40)
+  while (slvAddr <= LAST_ACTUATOR && Ritrasmissioni <= 4)
   {
 	  /*se ho ricevuto opp sono in IDLE quindi non ho ancora inviato il primo messaggio, invio il messaggio*/
 	  /*Se è scaduto il timer da 1 sec (timerCounterCheckModBus >= 20) e non ho ricevuto risposta, ritrasmetto*/
@@ -656,6 +656,7 @@ int main(void)
 	         {
 	        	timerCounterMState = 0;
 
+	        	manageParentDigitalT1Test(); //Check sui segnali digitali, la valutazione dei risultati avverrà successivamente
 
 	        	computeMachineStateGuard();
 

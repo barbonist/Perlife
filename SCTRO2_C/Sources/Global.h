@@ -1444,11 +1444,9 @@ float V24_Ever_Motor_Value;
 
 /* t1 test */
 #define T1_TEST_DIG_TO_VOLT			0.00005 // (3300/65536)/1000 (float)(3300/4096)/1000 //digit to volt
-// Filippo - modificati i limiti per passare il test  - da ripristinare
-//#define V24BRK_LOW_THRSLD			2.3 //volt
-//#define V24BRK_HIGH_THRSLD			2.7 //volt
-#define V24BRK_LOW_THRSLD			2.3 //volt
-#define V24BRK_HIGH_THRSLD			4 //volt
+#define V24BRK_LOW_THRSLD			1.34 //volt
+#define V24BRK_HIGH_THRSLD			2.33 //volt
+
 #define T1_TEST_PRESS_LOW_THRSLD	-5 //mmHg
 #define T1_TEST_PRESS_HIGH_THRSLD	5 //mmHg
 #define T1_TEST_PRESS_TRKNG_THRSLD	5 //mmHg
@@ -1778,16 +1776,16 @@ AIR_ALARM_RECOVERY_STATE AirAlarmRecoveryState;
 
 // memorizza lo stato ptrCurrentParent->parent nel momento in cui comincio a cercare
 // di uscire dallo stato di allarme aria
-unsigned short AirParentState;
+unsigned short recoveryParentState;
 
 // Questa flag viene usata per disabilitare gli allarmi aria durante la fase di recupero da
 // un allarme aria precedente
 // E' STATA SOSTITUITA CON UNA FUNZIONE CON LO STESSO NOME
 //bool DisableAllAirAlarm;
 
-unsigned long StarTimeToRejAir;
+unsigned long startTimeToRecovery;
 // serve per misurare il tempo per l'eliminazione della bolla d'aria
-unsigned long TotalTimeToRejAir;
+unsigned long totalTimeToRecovery;
 
 //volume del liquido in vaschetta come percentuale rispetto al suo valore massimo
 word LiquidAmount;
@@ -1869,7 +1867,7 @@ typedef struct
 	unsigned int EnableCoversAlarm          : 1;    // Abilito allarme di cover
 	unsigned int EnablePressSensLowAlm      : 1;    // abilito allarme pressione bassa
 	unsigned int EnablePressSensHighAlm     : 1;    // abilito allarme pressione alta
-	unsigned int EnableTempArtHighAlm       : 1;    // abilito allarme temperatura alta
+	unsigned int EnableTempMaxMin           : 1;    // abilito allarme temperatura massima o minima
 	unsigned int EnableDeltaFlowArtAlarm    : 1;    // abilito allarme delta flusso arterioso troppo alto
 	unsigned int EnableDeltaFlowVenAlarm    : 1;    // abilito allarme delta flusso venoso troppo alto
 	unsigned int EnableDeltaTempRecVenAlarm : 1;    // abilito allarme delta temperatura recipiente e line venosa troppo alta
@@ -1954,10 +1952,10 @@ unsigned char CoversState;
 #define MAX_VEN_FLOW_DIFF_FROM_CALC_AND_MIS 300.0
 
 // massima differenza di temperatura tra recevoir e liquido arterioso
-#define MAX_DELTA_TEMP_ART_AND_REC  10.0
+#define MAX_DELTA_TEMP_ART_AND_REC  5.0
 
 // massima differenza di temperatura tra recevoir e liquido venoso
-#define MAX_DELTA_TEMP_VEN_AND_REC  10.0
+#define MAX_DELTA_TEMP_VEN_AND_REC  5.0
 
 // valore massimo del parametro di resitenza arteriosa
 #define RENAL_RESIST_HIGH_LEVEL   600 // 0.60 mmHg/ml/min
@@ -2494,7 +2492,9 @@ DELTA_T_HIGH_ALM_RECVR_STATE DeltaTHighAlarmRecvrState;
 // al di sopra di questo valore viene generato un allarme
 #define MAX_DELTA_T_ART               2
 // valore minimo di temperatura in gradi del liquido al di sotto del quale non si deve andare
-#define MIN_LIQUID_TEMP               2
+#define MIN_TEMPERATURE_VALUE_IN_TREAT               3
+#define MAX_TEMPERATURE_VALUE_IN_TREAT              39
+
 // delta di temperatura rispetto al target per considerare il target raggiunto
 #define DELTA_T_ART_IF_OK             1.5
 // tempo in msec per far scattare l'allarme in caso di temperatura massima o minima superate

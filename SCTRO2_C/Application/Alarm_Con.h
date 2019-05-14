@@ -54,7 +54,6 @@ typedef struct elementActiveListWrn sActiveListWrnS;
 
 // codice per allarme di superamento della temperatura massima o minima
 // Viene usato in priming\ricircolo
-#define CODE_ALARM_TEMP_ART_HIGH				0x10
 #define CODE_ALARM_TEMP_ART_LOW					0x11
 #define CODE_ALARM_TEMP_VEN_HIGH				0x12
 #define CODE_ALARM_TEMP_VEN_LOW					0x13
@@ -68,7 +67,8 @@ typedef struct elementActiveListWrn sActiveListWrnS;
 #define CODE_ALARM_T_ART_OUT_OF_RANGE           0x19
 // codice per allarme di superamento della temperatura massima o minima
 // Viene usato in trattamento
-#define CODE_ALARM_TEMP_ART_HIGH_IN_TRT         0x1a
+#define CODE_ALARM_TEMP_MAX_IN_TRT              0x1a
+#define CODE_ALARM_TEMP_MIN_IN_TRT              0x1b
 
 #define CODE_ALARM_FLOW_PERF_ART_HIGH			0x20
 #define CODE_ALARM_FLOW_PERF_VEN_HIGH			0x21
@@ -114,7 +114,6 @@ typedef struct elementActiveListWrn sActiveListWrnS;
 #define CODE_ALARM_MACHINE_COVERS               0xA0
 #define CODE_ALARM_HOOKS_RESERVOIR              0xA1
 
-
 // fissato a 200 ed e' il codice di errore di partenza degli allarmi protective
 #define CODE_ALARM_PROT_START_VAL               0xc8
 
@@ -126,9 +125,8 @@ typedef struct elementActiveListWrn sActiveListWrnS;
 // warning di pompa arteriosa ferma (valido per rene e fegato)
 #define CODE_ALARM_PERF_ART_PUMP_STILL_WARN		0x107
 #define CODE_ALARM_OXYG_PUMP_STILL_WARN         0x108
-
-// Allarme T1 Test (600 dec)
-// I valori superiori a 448 generano sulla GUI una finestra senza tasto RESET
+// A partire dal codice 448 gli allarmi vengono visualizzati a GUI senza il tasto RESET
+// L'allarme T1 Test è bloccante per il momento, in futuro potrebbe essere resettabile per forzare una riesecuzione del test fallito
 #define CODE_ALARM_TEST_T1		  				0x258
 
 #define	PHYSIC_TRUE		0xA5
@@ -174,8 +172,8 @@ typedef struct elementActiveListWrn sActiveListWrnS;
 #define MEMO_NOT_ALLOWED		0x5A
 
 // Flussi massimi di perfusione arteriosa
-#define FLOW_PERF_ART_LIVER_MAX    550 // ml/min
-#define FLOW_PERF_ART_KIDNEY_MAX   550 // ml/min
+#define FLOW_PERF_ART_LIVER_MAX    600 // ml/min
+#define FLOW_PERF_ART_KIDNEY_MAX   600 // ml/min
 
 // Flussi massimi di ossigenazione/perfusione venosa
 #define FLOW_PERF_VEN_LIVER_MAX    2800 // ml/min
@@ -214,7 +212,7 @@ typedef struct elementActiveListWrn sActiveListWrnS;
 #define PR_ADS_FILTER_LOW                                    10
 #define PR_ADS_FILTER_WARN									100
 
-#define MAX_MSG_CONSECUTIVE_ACTUATOR_MODBUS_NOT_RESPOND 	10
+#define MAX_MSG_CONSECUTIVE_ACTUATOR_MODBUS_NOT_RESPOND 	 10
 
 
 #define MAX_BUBBLE_SIZE		50
@@ -227,7 +225,6 @@ enum ALARM
 	 AIR_PRES_ART,
 	 AIR_PRES_VEN,
 	 SAF_AIR_SENSOR,
-	 TEMP_ART_HIGH,
 	 PRESS_ADS_FILTER_HIGH,
 	 FLOW_PERF_ART_HIGH,
 	 FLOW_PERF_VEN_HIGH,
@@ -271,7 +268,8 @@ enum ALARM
 	 ALARM_HOOKS_RESERVOIR,
      ARTERIAL_RESIST_HIGH,
 	 TEMP_ART_OOR,
-	 TEMP_ART_HIGH_IN_TREAT,
+	 TEMP_MAX_IN_TREAT,
+	 TEMP_MIN_IN_TREAT,
 
 	 FIRST_WARNING,
 	 // da qui in avanti i codici delle warning
@@ -310,7 +308,6 @@ void manageAlarmPhysicPressSensHigh(void);
 void manageAlarmPhysicSetFlowAndPressures(void);
 void manageAlarmPhysicPressSensLow(void);
 
-void manageAlarmPhysicTempSens(void);
 void manageAlarmPhysicTempSensOOR(void);
 void manageAlarmPhysicTempSensInTreat(void);
 
