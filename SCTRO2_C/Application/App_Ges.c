@@ -2503,8 +2503,6 @@ void manageParentPrimingAlways(void){
 // Chiamata all'entry dello stato PARENT_PRIM_WAIT_PAUSE
 void manageParentPrimWaitPauseEntry(void)
 {
-	// disabilito gli allarmi delle cover perche' quando entro in questo stato tutte le pompe si fermano
-	GlobalFlags.FlagsDef.EnableCoversAlarm = 0;
 }
 
 
@@ -3036,7 +3034,7 @@ void manageParentTreatAlways(void)
 			StartTreatmentTime = 0;
 			StartPrimingTime = 0;
 			//GlobalFlags.FlagsDef.EnableAllAlarms = 0;
-			DisableAllAlarm();
+			//DisableAllAlarm();
 			//FilterFlowVal = 0;
 			// Filippo - devo spegnere il PID
 			FrigoHeatTempControlTaskNewPID((LIQ_TEMP_CONTR_TASK_CMD)TEMP_MANAGER_STOPPED_CMD);
@@ -3140,9 +3138,8 @@ void manageParentTreatAlways(void)
 		//	if (IsFrigoStoppedInAlarm())
 			FrigoHeatTempControlTaskNewPID(LIQ_T_CONTR_TASK_RESET_CMD);
 		}
-
-			else if (buttonGUITreatment[BUTTON_START_PERF_PUMP].state
-				       == GUI_BUTTON_RELEASED) {
+		else if (buttonGUITreatment[BUTTON_START_PERF_PUMP].state == GUI_BUTTON_RELEASED)
+		{
 			releaseGUIButton(BUTTON_START_PERF_PUMP);
 
 			setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, 2000); //pump 0: start value = 20 rpm than pressure loop
@@ -3307,7 +3304,7 @@ void manageParentTreatAlways(void)
 			TreatDuration = 0;
 			StartTreatmentTime = 0;
 			//GlobalFlags.FlagsDef.EnableAllAlarms = 0;
-			DisableAllAlarm();
+			//DisableAllAlarm();
 			//FilterFlowVal = 0;
 			// Filippo - devo spegnere il PID
 			FrigoHeatTempControlTaskNewPID((LIQ_TEMP_CONTR_TASK_CMD)TEMP_MANAGER_STOPPED_CMD);
@@ -4501,20 +4498,17 @@ void manageParentTreatEndAlways(void)
 // funzione entry dello stato PARENT_TREAT_WAIT_PAUSE
 void manageParentTreatWaitPauseEntry(void)
 {
-	// disabilito gli allarmi delle cover perche' quando entro in questo stato tutte le pompe si fermano
-	GlobalFlags.FlagsDef.EnableCoversAlarm = 0;
 	// disabilito allarmi di temperatura arteriosa
 	GlobalFlags.FlagsDef.EnableTempArtHighAlm = 0;
 	GlobalFlags.FlagsDef.EnableTempArtOORAlm = 0;
-	// Filippo - sospendo il PID in attesa di farlo partire
+    // Filippo - sospendo il PID in attesa di farlo partire
 	FrigoHeatTempControlTaskNewPID((LIQ_TEMP_CONTR_TASK_CMD)TEMP_MANAGER_SUSPEND_CMD);
+
 }
 
 // funzione entry dello stato PARENT_TREAT_WAIT_START
 void manageParentTreatWaitStartEntry(void)
 {
-	// disabilito gli allarmi delle cover perche' quando entro in questo stato tutte le pompe si fermano
-	GlobalFlags.FlagsDef.EnableCoversAlarm = 0;
 	// disabilito allarmi di temperatura arteriosa
 	GlobalFlags.FlagsDef.EnableTempArtHighAlm = 0;
 	GlobalFlags.FlagsDef.EnableTempArtOORAlm = 0;
@@ -5166,7 +5160,6 @@ static void manageStateEntryAndStateAlways(unsigned short stateId){
 		ptrCurrentChild->callBackFunct();
 		/* compute future child */
 		ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
-		actionFlag = 1;
 	}
 	else if(ptrCurrentState->action == ACTION_ALWAYS)
 	{
@@ -5291,19 +5284,30 @@ void ParentEmptyDispStateMach(void)
 		if((currentGuard[GUARD_ALARM_ACTIVE].guardValue == GUARD_VALUE_FALSE) &&
 		   (buttonGUITreatment[BUTTON_RESET_ALARM].state == GUI_BUTTON_RELEASED))
 		{
-			if(buttonGUITreatment[BUTTON_RESET_ALARM].state == GUI_BUTTON_RELEASED)
-				EnableNextAlarmFunc(); //EnableNextAlarm = TRUE;
-
 			// Il ritorno allo svuotamento viene fatto solo dopo la pressione del tasto BUTTON_RESET_ALARM
 			releaseGUIButton(BUTTON_RESET_ALARM);
+			EnableNextAlarmFunc(); //EnableNextAlarm = TRUE;
+
 			// faccio ripartire le pompe per lo svuotamento
 			RestartPumpsEmptyState();
 			ptrFutureParent = &stateParentEmptyDisp[3];
 			ptrFutureChild = ptrFutureParent->ptrChild;
 			LevelBuzzer = SILENT;//0;
 		}
+		else if (buttonGUITreatment[BUTTON_RESET_ALARM].state == GUI_BUTTON_RELEASED)
+		{
+			// Il ritorno allo svuotamento viene fatto solo dopo la pressione del tasto BUTTON_RESET_ALARM
+			releaseGUIButton(BUTTON_RESET_ALARM);
+			EnableNextAlarmFunc(); //EnableNextAlarm = TRUE;
+			// faccio ripartire le pompe per lo svuotamento
+			RestartPumpsEmptyState();
+			ptrFutureParent = &stateParentEmptyDisp[3];
+			ptrFutureChild = ptrFutureParent->ptrChild;
+			LevelBuzzer = SILENT;//0;
+			break;
+		}
 
-		if(ptrCurrentParent->action == ACTION_ON_ENTRY)
+		if (ptrCurrentParent->action == ACTION_ON_ENTRY)
 		{
 			/* (FM) passo alla gestione ACTION_ALWAYS dell'allarme */
 			ptrFutureParent = &stateParentEmptyDisp[6];
@@ -5562,7 +5566,6 @@ void processMachineState(void)
 		if(ptrCurrentState->action == ACTION_ON_ENTRY)
 		{
 			ptrCurrentState->callBackFunct();
-			actionFlag = 1;
 
 			// (FM) faccio in modo che dopo un aprima inizializzazione esca subito e vada
 			// nello stato STATE_ENTRY
@@ -6441,7 +6444,6 @@ void initAllState(void)
 	  ptrPreviousChild = &stateChildIdle[0];
 	  ptrFutureChild = &stateChildIdle[0];
 
-	  actionFlag = 0;
 	  PidFirstTime[0] = 0;
 	  PidFirstTime[1] = 0;
 	  PidFirstTime[2] = 0;

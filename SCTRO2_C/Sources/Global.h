@@ -83,6 +83,10 @@ char    iFlag_modbusDataStorage;
 /* DEBUG */
 
 #define SERVICE_ACTIVE_TOGETHER_THERAPY
+#define ALARM_TICK					50 //msec
+#define ALARM_PROCESSED             1
+#define ALARM_NOT_PROCESSED         2
+
 
 #define STR_DBG_LENGHT				100
 
@@ -340,7 +344,6 @@ struct machineChild * ptrFutureChild;
 
 //struct machineState stateState[26];
 
-unsigned short	actionFlag;
 /* Machine State Structure */
 
 /**/
@@ -766,6 +769,8 @@ enum MachineStateGuardId {
 	GUARD_TEMP_RESTORE_END,
 	GUARD_TEMP_RESTART_TREAT,   // riprendo il trattamento dopo aver ripristinato la temperatura nella la fase di trattamento
 	GUARD_TEMP_NEW_RECOVERY,    // ricomincio una nuova fase di ripristino temperatura
+	GUARD_PRIMING_STOPPED,
+	GUARD_TREATMENT_STOPPED,
 	GUARD_END_NUMBER
 };
 
@@ -800,7 +805,7 @@ enum MachineStateGuardEntry
 /* Machine state guard */
 
 /* alarm */
-struct alarm {
+typedef struct {
 	uint16_t 	    code; 		    /* alarm code */
 	unsigned char	physic;			/* alarm physic condition */
 	unsigned char	active;			/* alarm active condition */
@@ -815,15 +820,17 @@ struct alarm {
 	unsigned char	silence;		/* silence property: the alarm acoustic signal can be silenced for a limited period of time */
 	unsigned char	memo;			/* memo property: the system remain in the alarm state even if the alarm condition is no longer present */
 	void (*prySafetyActionFunc)(void); /* safety action: funzione che esegue la funzione di sicurezza in base alla priorità dell'allarme */
-};
+	unsigned long int faultConditionTimer;
+	bool init;
+} typeAlarmS;
 
 /* alarm */
-struct alarm	alarmCurrent;
-struct alarm * ptrAlarmCurrent;
+typeAlarmS	alarmCurrent;
+typeAlarmS * ptrAlarmCurrent;
 
 /* warning */
-struct alarm	warningCurrent;
-struct alarm * ptrWarningCurrent;
+typeAlarmS	warningCurrent;
+typeAlarmS * ptrWarningCurrent;
 
 /* sensors values */
 typedef unsigned short	word;
@@ -2201,7 +2208,7 @@ typedef enum
 #define START_PROTECTIVE_ALARM_CODE 200
 
 // struttura usata per memorizzare gli allarmi della protective
-struct alarm ProtectiveAlarmStruct;
+typeAlarmS ProtectiveAlarmStruct;
 
 #endif //ENABLE_PROTECTIVE_ALARM_RESET
 //-------------------------------------------------------------------------------------------------

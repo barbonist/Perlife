@@ -696,7 +696,7 @@ void HandleProtectiveAlarm_old(void)
 			if(!RxBuffCanP[2]->SRxCan2.AlarmCode)
 			{
 				ProAlmCodeToreset = 0;
-				memset(&alarmCurrent, 0, sizeof(struct alarm));
+				memset(&alarmCurrent, 0, sizeof(typeAlarmS));
 				RestoreAllCntrlAlarm(&gbf);
 				// ritorno in attesa di un nuovo allarme
 				HandleProtectiveAlarmState = INIT_HNDLE_PROT_ALM;

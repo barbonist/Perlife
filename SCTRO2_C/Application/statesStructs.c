@@ -405,8 +405,8 @@ struct machineParent stateParentPrimingTreatKidney1[] =
 		{STATE_NULL, PARENT_PRIMING_TREAT_KIDNEY_1_END,   CHILD_IDLE, ACTION_ALWAYS,   &stateChildIdle[0],         &manageParentPrimingAlways},		  /* 8 */
 
 		/* stato di pausa del priming attivato partendo da PARENT_PRIMING_TREAT_KIDNEY_1_RUN mediante pressione del tasto priming stop */
-		{STATE_NULL, PARENT_PRIM_WAIT_PAUSE,              CHILD_IDLE, ACTION_ON_ENTRY, &stateChildIdle[0],         &manageParentPrimWaitPauseEntry},  /* 9 */
-		{STATE_NULL, PARENT_PRIM_WAIT_PAUSE,              CHILD_IDLE, ACTION_ALWAYS,   &stateChildIdle[0],         &manageParentPrimingAlways},       /* 10 */
+		{STATE_NULL, PARENT_PRIM_WAIT_PAUSE,              CHILD_IDLE, ACTION_ON_ENTRY, &stateChildAlarmPriming[1],         &manageParentPrimWaitPauseEntry},  /* 9 */
+		{STATE_NULL, PARENT_PRIM_WAIT_PAUSE,              CHILD_IDLE, ACTION_ALWAYS,   &stateChildAlarmPriming[1],         &manageParentPrimingAlways},       /* 10 */
 
 		/* stato attivato alla fine del ricircolo per aspettare che i motori siano completamente fermi. Alla fine del ricircolo ora non va piu'
 		 * in trattamento diretto

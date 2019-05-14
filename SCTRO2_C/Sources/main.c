@@ -604,7 +604,7 @@ int main(void)
 #ifdef ENABLE_PROTECTIVE_ALARM_RESET
    ProAlmCodeToreset = 0;                         // codice dell'allarme protective da resettare (RxBuffCanP[2]->SRxCan2.AlarmCode).
 		                                          // 0 nessun allarme da resettare
-   memset(&ProtectiveAlarmStruct, 0, sizeof(struct alarm));
+   memset(&ProtectiveAlarmStruct, 0, sizeof(typeAlarmS));
 #endif
 
 #ifdef DEBUG_FRIGO_AMS
@@ -660,11 +660,22 @@ int main(void)
 	        	computeMachineStateGuard();
 
 	        	processMachineState();
+				
+				//Gestione Allarme dovuto al fallimento di un T1 Test
+	        	manageAlarmT1Test();
+	        	//Gestione allarme di STOP display
+	        	manageAlarmStopButtonPressed();
 
 	        	ManageMuteButton();
+				//manageAlarmPhysicPressSensHigh();
+				//manageAlarmPhysicPressSensLow();
+	        	CalcAlarmActive();
 
 	        	alarmEngineAlways();
-	        	warningsEngineAlways();
+
+
+	        	CalcWarningActive();
+	        	WarningEngineAlways();
 	        	manageAlarmT1Test();
 		        GenerateSBCComm();
 		        ProtectiveTask();

@@ -32,11 +32,9 @@
 #define TIMEOUT_TEMPERATURE_RICIRC					10000 //2000L passo da 2 seocndi a 60 secondi
 #else
 
-//messo il DELTA_TEMP_TERGET_FOR_STABILITY_PRIMING a 0.7 °C per Test in Lean 11-04-2019 e richiesta ML/AFERETICA 14-05-2019
-#define DELTA_TEMP_TERGET_FOR_STABILITY_PRIMING		7//5 //range per identificare il raggungimento della tmeperatura target esperro in decimi di grado (es 4 = 0.4°C)
+#define DELTA_TEMP_TERGET_FOR_STABILITY_PRIMING		15 //range per identificare il raggungimento della tmeperatura target esperro in decimi di grado (es 4 = 0.4°C)
 //TODO messo a 10 sec invece che un minuto solo per Test Bergamo --> da ripristinare a 60000 ovvero un minuto
-//messo il TIMEOUT_TEMPERATURE_RICIRC a 30 sec per Test in Lean 11-04-2019 e richiesta ML/AFERETICA 14-05-2019
-#define TIMEOUT_TEMPERATURE_RICIRC					30000//60000 //2000L passo da 2 seocndi a 60 secondi
+#define TIMEOUT_TEMPERATURE_RICIRC					10000 //2000L passo da 2 seocndi a 60 secondi
 
 #endif
 

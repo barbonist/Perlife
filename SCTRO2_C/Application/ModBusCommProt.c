@@ -28,7 +28,7 @@ unsigned char coverStateGlobal = 0;
 
 extern int MyArrayIdx;
 
-THERAPY_TYPE TherapyType = KidneyTreat;
+THERAPY_TYPE TherapyType = Undef;
 bool WriteActive = FALSE;
 bool ReadActive = FALSE;
 char LasActuatorWriteID = 0;      // id dell'attuatore modbus con scrittura in corso
@@ -649,7 +649,7 @@ void modbusDataInit (void)
 			modbusData [TOTAL_ACTUATOR] [TOTAL_MODBUS_DATA] = 0;
 	}
 
-	TherapyType = KidneyTreat;
+	TherapyType = Undef;
 	WriteActive = FALSE;
 	ReadActive = FALSE;
 	LasActuatorWriteID = 0;      // id dell'attuatore modbus con scrittura in corso

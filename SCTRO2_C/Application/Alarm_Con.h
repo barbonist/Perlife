@@ -10,6 +10,28 @@
 
 #include "Global.h"
 
+struct elementActiveListAlm {
+	typeAlarmS *ptr;
+	struct elementActiveListAlm* next;
+};
+
+struct elementActiveListWrn {
+	typeAlarmS *ptr;
+	struct elementActiveListWrn* next;
+};
+
+#define 	EMPTY_LIST_ALM 				(-1)
+#define     MAX_ALARMS_ACTIVE_LIST_ALM 	10
+
+#define 	EMPTY_LIST_WRN 				(-1)
+#define     MAX_ALARMS_ACTIVE_LIST_WRN 	10
+
+#define    NoWarningsPresent()			(LengthActiveListWrn() == 0)
+#define    NoAlarmsPresent()			(LengthActiveListAlm() == 0)
+
+typedef struct elementActiveListAlm sActiveListAlmS;
+typedef struct elementActiveListWrn sActiveListWrnS;
+
 //#define CODE_ALARM0		0x00
 //#define CODE_ALARM1		0x01
 //#define CODE_ALARM2		0x02
@@ -87,7 +109,6 @@
 
 // Filippo - definisco codice allarme per il tasto di stop
 #define CODE_ALARM_EMERGENCY_BUTTON             0x93
-//#define CODE_ALARM_TEST_T1		  				0x94
 #define CODE_ALARM_AIR_SENSOR_TEST_KO			0x95
 
 #define CODE_ALARM_MACHINE_COVERS               0xA0
@@ -105,10 +126,10 @@
 // warning di pompa arteriosa ferma (valido per rene e fegato)
 #define CODE_ALARM_PERF_ART_PUMP_STILL_WARN		0x107
 #define CODE_ALARM_OXYG_PUMP_STILL_WARN         0x108
-// A partire dal codice 448 gli allarmi vengono visualizzati a GUI senza il tasto RESET
-// L'allarme T1 Test è bloccante per il momento, in futuro potrebbe essere resettabile per forzare una riesecuzione del test fallito
-#define CODE_ALARM_TEST_T1		  				600
 
+// Allarme T1 Test (600 dec)
+// I valori superiori a 448 generano sulla GUI una finestra senza tasto RESET
+#define CODE_ALARM_TEST_T1		  				0x258
 
 #define	PHYSIC_TRUE		0xA5
 #define PHYSIC_FALSE	0x5A
@@ -200,7 +221,8 @@
 
 enum ALARM
 {
-	 PRESS_ART_HIGH = 0,
+	 FIRST_ALARM = 0,
+	 PRESS_ART_HIGH = FIRST_ALARM,
 	 PRESS_ART_SET,
 	 AIR_PRES_ART,
 	 AIR_PRES_VEN,
@@ -251,17 +273,32 @@ enum ALARM
 	 TEMP_ART_OOR,
 	 TEMP_ART_HIGH_IN_TREAT,
 
+	 FIRST_WARNING,
 	 // da qui in avanti i codici delle warning
-	 PRESS_ADS_FILTER_WARN,
+	 PRESS_ADS_FILTER_WARN = FIRST_WARNING,
 	 DEP_PUMP_STILL_WARN,
 	 PERF_ART_PUMP_STILL_WRN,
 	 OXYG_PUMP_STILL_WRN
 };
 
+// Nuova gestione allarmi: aprile 2019
+unsigned char LengthActiveListAlm(void);
+typeAlarmS* GetCurrentAlarmActiveListAlm(void);
+bool AlarmPresentInActiveListAlm(typeAlarmS *alarmPtr);
+
+unsigned char LengthActiveListWrn(void);
+typeAlarmS* GetCurrentWarningActiveListWrn(void);
+bool WarningPresentInActiveListWrn(typeAlarmS *alarmPtr);
+
+void SetProcessingAlarm(bool statusProcessing);
+bool ProcessingAlarm(void);
+
+void CalcWarningActive(void);
 void alarmConInit(void);
 void alarmEngineAlways(void);
+void WarningEngineAlways(void);
 void alarmManageNull(void);
-void manageAlarmChildGuard(struct alarm * ptrAlarm);
+void manageAlarmChildGuard(typeAlarmS * ptrAlarm);
 void manageAlarmPhysicFlowHigh(void);
 void manageAlarmFlowSensNotDetected(void);
 void manageAlarmIrTempSensNotDetected(void);
@@ -293,7 +330,7 @@ void manageAlarmDeltaFlowVen(void);
 void manageAlarmDeltaTempRecArt(void);
 void manageAlarmDeltaTempRecVen(void);
 void manageAlarmArterialResistance(void);
-
+void CalcAlarmActive(void);
 void SetAllAlarmEnableFlags(void);
 
 // Allarmi di SET pressione e flusso
@@ -335,8 +372,6 @@ bool IsAlarmCodeActive(uint16_t code);
 void warningConInit(void);
 void InitWarningsStates(void);
 void EnableNextWarningFunc(void);
-void warningsEngineAlways(void);
-void warningManageNull(void);
 // Filippo - aggiunta gestione dell'allarme del tasto di stop
 void manageAlarmStopButtonPressed(void);
 void manageAlarmT1Test(void);
@@ -344,7 +379,6 @@ void manageResultT1TestDigital(void);
 // Filippo - funzione che gestisce l'allarme per il fallimento del test del sensore aria
 void manageAlarmAirSensorTestKO(void);
 void manageCover_Hook_Sensor(void);
-bool ResetAlmHandleFunc(uint16_t code);
 
 void EnableDeltaTHighAlmFunc(void);
 void DisableDeltaTHighAlmFunc(void);
