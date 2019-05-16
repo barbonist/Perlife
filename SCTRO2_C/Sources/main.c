@@ -277,6 +277,9 @@ int main(void)
   /*inizializzo il flag che mi dice che non ho ancora fatto la tara delle pressioni che va fatta dopo la connessione dell'organo*/
   TARA_PRESS_DONE = FALSE;
 
+  /*inizializzo il flag che mi dice se in svuotamento è stato premuto il bottone di stop*/
+  emptyStopButtonPressed = FALSE;
+
   // Filippo - inizializzo il flag di test del frigo e riscaldatore
   testT1HeatFridge=0;
   airSensorTestKO=FALSE;

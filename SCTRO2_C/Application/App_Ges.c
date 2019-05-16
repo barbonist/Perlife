@@ -3833,6 +3833,10 @@ void EmptyDispStateMach(void)
 		else if(buttonGUITreatment[StopAllPumpButId].state == GUI_BUTTON_RELEASED)
 		{
 			releaseGUIButton(StopAllPumpButId);
+
+			/*tengo traccia che è stato premuto un tasto di stop*/
+			emptyStopButtonPressed = TRUE;
+
 			if(GetTherapyType() == LiverTreat)
 				setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, 0);
 			else if(GetTherapyType() == KidneyTreat)
@@ -3840,6 +3844,12 @@ void EmptyDispStateMach(void)
 		}
 		else if(buttonGUITreatment[StarEmptyDispButId].state == GUI_BUTTON_RELEASED)
 		{
+			if (emptyStopButtonPressed == TRUE)
+			{
+				emptyStopButtonPressed = FALSE;
+				RestartPumpsEmptyState();
+			}
+
 			// faccio ripartire le pompe per lo svuotamento
 			releaseGUIButton(StarEmptyDispButId);
 			if(GetTherapyType() == LiverTreat)
@@ -3892,6 +3902,10 @@ void EmptyDispStateMach(void)
 		else if(buttonGUITreatment[StopAllPumpButId].state == GUI_BUTTON_RELEASED)
 		{
 			releaseGUIButton(StopAllPumpButId);
+
+			/*tengo traccia che è stato premuto un tasto di stop*/
+			emptyStopButtonPressed = TRUE;
+
 			if(GetTherapyType() == LiverTreat)
 			{
 				setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, 0);
@@ -3906,6 +3920,12 @@ void EmptyDispStateMach(void)
 		}
 		else if(buttonGUITreatment[StarEmptyDispButId].state == GUI_BUTTON_RELEASED)
 		{
+			if (emptyStopButtonPressed == TRUE)
+			{
+				emptyStopButtonPressed = FALSE;
+				RestartPumpsEmptyState();
+			}
+
 			// faccio ripartire le pompe per lo svuotamento
 			releaseGUIButton(StarEmptyDispButId);
 			if(GetTherapyType() == LiverTreat)
@@ -3976,6 +3996,10 @@ void EmptyDispStateMach(void)
 		else if(buttonGUITreatment[StopAllPumpButId].state == GUI_BUTTON_RELEASED)
 		{
 			releaseGUIButton(StopAllPumpButId);
+
+			/*tengo traccia che è stato premuto un tasto di stop*/
+			emptyStopButtonPressed = TRUE;
+
 			if(GetTherapyType() == LiverTreat)
 				setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, 0);
 			else if(GetTherapyType() == KidneyTreat)
@@ -3983,6 +4007,12 @@ void EmptyDispStateMach(void)
 		}
 		else if(buttonGUITreatment[StarEmptyDispButId].state == GUI_BUTTON_RELEASED)
 		{
+			if (emptyStopButtonPressed == TRUE)
+			{
+				emptyStopButtonPressed = FALSE;
+				RestartPumpsEmptyState();
+			}
+
 			// faccio ripartire le pompe per lo svuotamento
 			releaseGUIButton(StarEmptyDispButId);
 			if(GetTherapyType() == LiverTreat)
@@ -5288,8 +5318,11 @@ void ParentEmptyDispStateMach(void)
 			releaseGUIButton(BUTTON_RESET_ALARM);
 			EnableNextAlarmFunc(); //EnableNextAlarm = TRUE;
 
-			// faccio ripartire le pompe per lo svuotamento
-			RestartPumpsEmptyState();
+			/* faccio ripartire le pompe per lo svuotamento
+			 * a patto che non sia stato premuto il tasto di stop */
+			if (emptyStopButtonPressed == FALSE)
+				RestartPumpsEmptyState();
+
 			ptrFutureParent = &stateParentEmptyDisp[3];
 			ptrFutureChild = ptrFutureParent->ptrChild;
 			LevelBuzzer = SILENT;//0;
