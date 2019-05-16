@@ -34,9 +34,10 @@
 	 *0x080B --> 1.0.11
 	 *0x080C --> 1.0.12
 	 *0x080D --> 1.0.13
-	 *0x080E --> 1.0.14*/
+	 *0x080E --> 1.0.14
+	 *0x080F --> 1.0.15*/
 
-#define REVISION_FW_CONTROL 0x080E
+#define REVISION_FW_CONTROL 0x080F
 
 /* Syncronization flag */
 char	iflag_pc_rx;

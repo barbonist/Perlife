@@ -217,6 +217,14 @@ void alwaysPumpPressLoopArt(unsigned char pmpId, unsigned char *PidFirstTime)
     pressSample0_Art = PR_ART_Sistolyc_mmHg;
 	errPress = Target_PID_ART - pressSample0_Art;
 
+	/*nel caso in cui l'errore sia troppo grande
+	 * potrei avere delle sovraelongazioni di flusso
+	 * e delle oscillazioni per cui meglio bloccare l'errore
+	 * a 10 tanto se calcolo uyn delta speed troppo piccolo
+	 * e serve aumentare la velocità ancora lo farò al giro dopo*/
+	if (errPress >= 10)
+		errPress = 10;
+
 
 	/*se la velocità resta costante ed inferiore alla massima, sono in equilibrio, provo ad aumentarla per
 	 * vedere se trovo un equilibrio andando + forte e avvicindandomi al massimo flusso impostato*/
