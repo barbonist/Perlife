@@ -253,7 +253,7 @@ void verificaTempPlate(void)
 
 #define VERS_1 1
 #define VERS_2 2
-#define VERS_3 2
+#define VERS_3 3
 
 #endif
 uint16_t GetFwVersionProtective(void)
@@ -314,27 +314,8 @@ int main(void)
    // di piatto spedita dalla control
    timerConfrontaTempPlate=0;
 
-//   int DebCount = 0;
-//   debug del relè della protective.
-//for (;;)
-//{
-//	if((timerCounterCheckTempIRSens % 20 ) == 0)
-//	{
-//		timerCounterCheckTempIRSens = 1;
-//		DebCount++;
-//	}
-//	if( DebCount == 1) {
-//		//HEAT_ON_P_SetVal();
-//		COMP_ENABLE_SetVal();
-//	}
-//	else if ( DebCount == 2) {
-//		DebCount = 0;
-//		//HEAT_ON_P_ClrVal();
-//		COMP_ENABLE_ClrVal();
-//	}
-//}
 
-
+  int DebugCounter = 0;
   for(;;)
   {
   	  if (Service)
@@ -394,7 +375,12 @@ int main(void)
      /*funzione che aggiorna lo stato del sesnore si aria filtro (digitale)*/
      Manage_Air_Sensor_1();
 
-  }
+//     DebugCounter = (DebugCounter + 1) % 100000;
+//     if(DebugCounter == 0)
+//    	 Set7SegAscii(' ');
+//     else if( DebugCounter == 50000)
+//    	 Set7SegAscii('1');
+}
 
 
 
@@ -509,8 +495,11 @@ int main(void)
 		- trascorsi 5 sec , se non si sono fermate le pompe e le pinch in sicurezza , si da allarme e si va in sicurezza
 	Versione 1.2.200
 		-- SB 2-5-2019 sometimes error occurs if control changes fast from 0 RPM to non 0 RPM and back , to overcome this issue
-		-- change CountTreshold depdnding on control RMP and local RPM vales.
-		-- if some values is too low then wait longer time before error
+		-- change CountTreshold depending on control RPM and local RPM vales.
+		-- if some values of RPM control or RPM protective is too low then wait longer time before error
+	Versione 1.2.300
+		-- SB 16-5-2019 high pressure alarms intervention time changed from 1 to 2 seconds.
+
 
   */
 

@@ -40,10 +40,10 @@ void LowArtTempAlarmAct(void);
 void LowVenTempAlarmAct(void);
 void LowFluidTempAlarmAct(void);
 
-TAlarmTimer HighArterPressAlarmTimer = {0,10,false,false,  HighArterPressAlarmAct , 0 , 65 , PumpsOrPinchNotRespond_EmergAct}; // alarm after 1 s alarm
-TAlarmTimer HighVenousPressAlarmTimer = {0,10,false,false, HighVenousPressAlarmAct , 0 ,  65 , PumpsOrPinchNotRespond_EmergAct}; // alarm after 1 s alarm
-TAlarmTimer HighAdsFiltPressAlarmTimer = {0,10,false,false, HighAdsFiltPressAlarmAct , 0 , 65 , PumpsOrPinchNotRespond_EmergAct}; // alarm after 1 s alarm
-TAlarmTimer HighOxygenPressAlarmTimer = {0,10,false,false, HighOxygenPressAlarmAct , 0 , 65 , PumpsOrPinchNotRespond_EmergAct}; // alarm after 1 s alarm
+TAlarmTimer HighArterPressAlarmTimer = {0,20,false,false,  HighArterPressAlarmAct , 0 , 65 , PumpsOrPinchNotRespond_EmergAct}; // alarm after 1 s alarm
+TAlarmTimer HighVenousPressAlarmTimer = {0,20,false,false, HighVenousPressAlarmAct , 0 ,  65 , PumpsOrPinchNotRespond_EmergAct}; // alarm after 1 s alarm
+TAlarmTimer HighAdsFiltPressAlarmTimer = {0,20,false,false, HighAdsFiltPressAlarmAct , 0 , 65 , PumpsOrPinchNotRespond_EmergAct}; // alarm after 1 s alarm
+TAlarmTimer HighOxygenPressAlarmTimer = {0,20,false,false, HighOxygenPressAlarmAct , 0 , 65 , PumpsOrPinchNotRespond_EmergAct}; // alarm after 1 s alarm
 TAlarmTimer HighLevelPressAlarmTimer = {0,40,false,false, HighLevelPressAlarmAct , 0 , 65 , PumpsOrPinchNotRespond_EmergAct}; // alarm after 4 s alarm
 TAlarmTimer HighPlateTempAlarmTimer = {0,10,false,false, HighPlateTempAlarmAct , 0 , 65 , PumpsOrPinchNotRespond_EmergAct}; // alarm after 1 s alarm
 TAlarmTimer HighArtTempAlarmTimer = {0,10,false,false, HighArtTempAlarmAct , 0 , 65 , PumpsOrPinchNotRespond_EmergAct}; // alarm after 1 s alarm
