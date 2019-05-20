@@ -210,7 +210,7 @@ void ProtectiveTask(void);
 void InitCAN(void);
 void InitTest(void);
 int FreeRunCnt10msecOld;
-
+unsigned long int gCounterTimerBuzzer = 0;
 int timerCounterModBusOld = 0;
 
 
@@ -765,7 +765,14 @@ int main(void)
 	        	 TestPinch();     // BOTTOM_PINCH_ID = 7, LEFT_PINCH_ID = 8, RIGHT_PINCH_ID = 9
 	         }
 	         */
-			Buzzer_Management(LevelBuzzer);
+
+	         if (timerCounterBuzzer >= 1)
+	         {
+	        	 timerCounterBuzzer = 0;
+	        	 gCounterTimerBuzzer ++;
+	         }
+
+	         Buzzer_Management(LevelBuzzer);
 
 			if(timerCounterPeltier >= 2)
 			{

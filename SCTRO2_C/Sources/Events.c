@@ -1256,6 +1256,8 @@ void System_Tick_OnInterrupt(void)
 	  /*interrupt usato per i timer che scatta ogni 50 ms*/
 	  timerCounter = timerCounter + 1;
 
+	  timerCounterBuzzer = timerCounterBuzzer + 1;
+
 	  timerCounterADC0 = timerCounterADC0 + 1;
 
 	  timerCounterPID = timerCounterPID + 1;

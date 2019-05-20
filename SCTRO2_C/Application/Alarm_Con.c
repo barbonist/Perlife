@@ -2141,12 +2141,14 @@ unsigned long msTick10_elapsed( unsigned long last )
 
 void Buzzer_Management(BUZZER_LEVEL level)
 {
+	extern unsigned long int gCounterTimerBuzzer;
 	switch (level)
 	{
 		case SILENT:
 			BUZZER_LOW_C_ClrVal(); 		//disattiva il buzzer low
 			BUZZER_MEDIUM_C_ClrVal();	//disattiva il buzzer Medium
 			BUZZER_HIGH_C_ClrVal();		//disattiva il buzzer HIGH
+			gCounterTimerBuzzer = 0;
 			break;
 
 		case LOW:
@@ -2158,7 +2160,20 @@ void Buzzer_Management(BUZZER_LEVEL level)
 			break;
 
 		case HIGH:
-			BUZZER_HIGH_C_SetVal();		//attiva il buzzer High
+		{
+			if (gCounterTimerBuzzer < 2)
+			{
+				; //Silenzio per 100 msec
+			}
+			else if (gCounterTimerBuzzer >= 2 && gCounterTimerBuzzer < 5)
+			{
+				BUZZER_LOW_C_SetVal(); 		//attiva il buzzer low
+			}
+			else
+			{
+				BUZZER_HIGH_C_SetVal();		//attiva il buzzer High (insieme a low, già attivo)
+			}
+		}
 			break;
 
 		default:

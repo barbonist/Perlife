@@ -1386,6 +1386,7 @@ struct volumeTreatmentKidney{
 struct volumeTreatmentKidney myVolumeTreatmentKidney;
 
 int timerCounter;
+int timerCounterBuzzer;
 unsigned int timerCounterADC0;
 unsigned int timerCounterADC1;
 int timerCounterPID;
