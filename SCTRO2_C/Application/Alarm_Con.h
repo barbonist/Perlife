@@ -82,8 +82,10 @@ typedef struct elementActiveListWrn sActiveListWrnS;
 
 #define CODE_ALARM_AIR_PRES_ART					0x50
 #define CODE_ALARM_AIR_PRES_VEN					0x51
-#define CODE_ALARM_AIR_PRES_ADSRB_FILTER		0x53
-#define CODE_ALARM_SFA_PRIM_AIR_DET             0x54
+#define CODE_ALARM_AIR_PRES_FILTER      		0x52
+#define CODE_ALARM_PRIM_AIR_PRES_ART            0x53
+#define CODE_ALARM_PRIM_AIR_PRES_VEN			0x54
+#define CODE_ALARM_PRIM_AIR_PRES_FILTER      	0x55
 
 
 #define CODE_ALARM_STOP_ALL_ACTUATOR			0X60 /* pump, pinch, peltier */
@@ -244,6 +246,8 @@ enum ALARM
 	 DELTA_TEMP_REC_VEN,
 	 CAN_BUS_ERROR,
 	 BAD_PINCH_POS,
+	 PRIM_AIR_ON_ART,
+	 PRIM_AIR_ON_VEN,
 	 PRIM_AIR_ON_FILTER,
 	 PRESS_ADS_FILTER_LOW,
 	 PRESS_OXYG_LOW,
@@ -344,7 +348,9 @@ void DisableAllAlarm();
 void DisableAllAirAlarm(bool dis);
 void manageAlarmCanBus(void);
 void manageAlarmBadPinchPos(void);
-void manageAlarmPrimSFAAirDet(void);
+void manageAlarmPrimAirPresFilter(void);
+void manageAlarmPrimAirPresArt(void);
+void manageAlarmPrimAirPresVen(void);
 void EnableBadPinchPosAlmFunc(void);
 void EnablePrimAlmSFAAirDetAlmFunc(void);
 void DisableBadPinchPosAlmFunc(void);

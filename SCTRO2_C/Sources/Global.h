@@ -1887,7 +1887,7 @@ typedef struct
 	unsigned int EnableBadPinchPosAlm       : 1;    // abilito allarme di pinch non posizionate correttamente. Viene preso in
 	                                                // considerazione alla fine del ricircolo prima di attaccare l'organo e prima di
 	                                                // iniziare un trattamento.
-	unsigned int EnablePrimAlmSFAAirDetAlm  : 1;    // abilito allarme di possibile aria nel filtro. Viene preso in
+	unsigned int EnableAlmPrimAirDetection  : 1;    // abilito allarme di possibile aria in priming. Viene preso in
 	                                                // considerazione dal momento in cui viene installato il filtro alla fine del
 	                                                // priming
 	unsigned int EnableModbusNotRespAlm     : 1;    // abilito l'allarme dovuto ad un cattivo funzionamento del modbus (almeno 10 richieste

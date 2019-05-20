@@ -49,9 +49,12 @@ typeAlarmS alarmList[] =
 {
    {CODE_ALARM_PRESS_ART_HIGH,        PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH, 1000, 1000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, FALSE},
    {CODE_ALARM_PRESS_ART_SET,         PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH,60000, 1000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_ALLOWED,     &alarmManageNull, 0,  TRUE},
-   {CODE_ALARM_AIR_PRES_ART,          PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_SFA_AIR_DET,           PRIORITY_HIGH, 1000, 1000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_ALLOWED,     &alarmManageNull, 0, FALSE},
-   {CODE_ALARM_AIR_PRES_VEN,          PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_SFV_AIR_DET,           PRIORITY_HIGH, 1000, 1000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_ALLOWED,     &alarmManageNull, 0, FALSE},
-   {CODE_ALARM_AIR_PRES_ADSRB_FILTER, PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_SAF_AIR_FILTER,        PRIORITY_HIGH, 1000, 1000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_ALLOWED,     &alarmManageNull, 0, FALSE},
+
+   // allarmi di aria nel trattamento
+   {CODE_ALARM_AIR_PRES_ART,          PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_SFA_AIR_DET,           PRIORITY_HIGH,  100,    0, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_ALLOWED,     &alarmManageNull, 0, FALSE},
+   {CODE_ALARM_AIR_PRES_VEN,          PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_SFV_AIR_DET,           PRIORITY_HIGH,  100,    0, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_ALLOWED,     &alarmManageNull, 0, FALSE},
+   {CODE_ALARM_AIR_PRES_FILTER,       PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_SAF_AIR_FILTER,        PRIORITY_HIGH,  100,    0, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_ALLOWED,     &alarmManageNull, 0, FALSE},
+
    {CODE_ALARM_PRESS_ADS_FILTER_HIGH, PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH, 1000, 1000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, FALSE},
    {CODE_ALARM_FLOW_PERF_ART_HIGH,    PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH, 2000, 2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, FALSE},
    {CODE_ALARM_FLOW_PERF_VEN_HIGH,    PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH, 2000, 2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, FALSE},
@@ -83,8 +86,11 @@ typeAlarmS alarmList[] =
    {CODE_ALARM_CAN_BUS_ERROR,         PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH,  3000, 3000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, FALSE},
    // allarme pinch non posizionate correttamente (usato nello stato di trattamento)
    {CODE_ALARM_BAD_PINCH_POS,         PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_BAD_PINCH_POS,         PRIORITY_HIGH,   500,  500, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, FALSE},
-   // allarme aria nel filtro (usato nello stato di trattamento)
-   {CODE_ALARM_SFA_PRIM_AIR_DET,      PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_SFA_PRIM_AIR_DET,      PRIORITY_HIGH,  1000,    0, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, FALSE},
+
+   // allarmi di aria nel priming
+   {CODE_ALARM_PRIM_AIR_PRES_ART,     PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_SFA_PRIM_AIR_DET,      PRIORITY_HIGH,  100,     0, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_ALLOWED,     &alarmManageNull, 0, FALSE},
+   {CODE_ALARM_PRIM_AIR_PRES_VEN,     PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_SFA_PRIM_AIR_DET,      PRIORITY_HIGH,  100,     0, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_ALLOWED,     &alarmManageNull, 0, FALSE},
+   {CODE_ALARM_PRIM_AIR_PRES_FILTER,  PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_SFA_PRIM_AIR_DET,      PRIORITY_HIGH,  100,     0, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, FALSE},
 
    {CODE_ALARM_PRESS_ADS_FILTER_LOW,  PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH, 60000, 2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0,  TRUE},
    {CODE_ALARM_PRESS_OXYG_LOW,        PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH, 60000, 2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0,  TRUE},
@@ -147,7 +153,7 @@ void EnableBadPinchPosAlmFunc(void)
 }
 void EnablePrimAlmSFAAirDetAlmFunc(void)
 {
-	GlobalFlags.FlagsDef.EnablePrimAlmSFAAirDetAlm = 1;
+	GlobalFlags.FlagsDef.EnableAlmPrimAirDetection = 1;
 }
 
 void DisableBadPinchPosAlmFunc(void)
@@ -156,18 +162,18 @@ void DisableBadPinchPosAlmFunc(void)
 }
 void DisablePrimAlmSFAAirDetAlmFunc(void)
 {
-	GlobalFlags.FlagsDef.EnablePrimAlmSFAAirDetAlm = 0;
+	GlobalFlags.FlagsDef.EnableAlmPrimAirDetection = 0;
 }
 
 void DisablePrimAirAlarm(bool dis)
 {
 	if(dis)
 	{
-		GlobalFlags.FlagsDef.EnablePrimAlmSFAAirDetAlm = 0;
+		GlobalFlags.FlagsDef.EnableAlmPrimAirDetection = 0;
 	}
 	else
 	{
-		GlobalFlags.FlagsDef.EnablePrimAlmSFAAirDetAlm = 1;
+		GlobalFlags.FlagsDef.EnableAlmPrimAirDetection = 1;
 	}
 }
 
@@ -240,7 +246,7 @@ void SetAllAlarmEnableFlags(void)
 	GlobalFlags.FlagsDef.EnableCANBUSErr = 0;
 #endif
 	GlobalFlags.FlagsDef.EnableBadPinchPosAlm = 0;        // viene attivato in un'altro momento
-	GlobalFlags.FlagsDef.EnablePrimAlmSFAAirDetAlm = 0;   // viene attivato in un'altro momento
+	GlobalFlags.FlagsDef.EnableAlmPrimAirDetection = 0;   // viene attivato in un'altro momento
 
 	GlobalFlags.FlagsDef.EnableModbusNotRespAlm = 1;      // abilito l'allarme dovuto ad un cattivo funzionamento del modbus
 	GlobalFlags.FlagsDef.EnableFromProtectiveAlm = 0;
@@ -297,7 +303,7 @@ void ForceAlarmOff(uint16_t code)
 		case CODE_ALARM_DELTA_TEMP_REC_ART:
 			GlobalFlags.FlagsDef.EnableDeltaTempRecArtAlarm = 0;  // forzo allarme delta temperatura recipiente e line arteriosa troppo alta off
 			break;
-		case CODE_ALARM_AIR_PRES_ADSRB_FILTER:
+		case CODE_ALARM_AIR_PRES_FILTER:
 			GlobalFlags.FlagsDef.EnableSAFAir = 0;     // forzo allarme aria sul filtro off
 			break;
 		case CODE_ALARM_AIR_PRES_VEN:
@@ -312,8 +318,10 @@ void ForceAlarmOff(uint16_t code)
 		case CODE_ALARM_BAD_PINCH_POS:
 			GlobalFlags.FlagsDef.EnableBadPinchPosAlm = 0;
 			break;
-		case CODE_ALARM_SFA_PRIM_AIR_DET:
-			GlobalFlags.FlagsDef.EnablePrimAlmSFAAirDetAlm = 0; // disabilito allarme aria su filtro durante il priming
+		case CODE_ALARM_PRIM_AIR_PRES_ART:
+		case CODE_ALARM_PRIM_AIR_PRES_VEN:
+		case CODE_ALARM_PRIM_AIR_PRES_FILTER:
+			GlobalFlags.FlagsDef.EnableAlmPrimAirDetection = 0; // disabilito allarmi aria durante il priming
 			break;
 		case CODE_ALARM_MODBUS_ACTUATOR_SEND:
 			GlobalFlags.FlagsDef.EnableModbusNotRespAlm = 0;    // disabilito allarme modbus
@@ -389,7 +397,7 @@ void ShowAlarmStr(int i, char * str)
 			strcat(s, str);
 			DebugStringStr(s);
 			break;
-		case CODE_ALARM_AIR_PRES_ADSRB_FILTER:
+		case CODE_ALARM_AIR_PRES_FILTER:
 			strcpy(s, "AL_AIR_PRES_ADSRB_FILT");
 			strcat(s, str);
 			DebugStringStr(s);
@@ -500,7 +508,7 @@ void ShowAlarmStr(int i, char * str)
 			strcat(s, str);
 			DebugStringStr(s);
 			break;
-		case CODE_ALARM_SFA_PRIM_AIR_DET:
+		case CODE_ALARM_PRIM_AIR_PRES_FILTER:
 			strcpy(s, "AL_SFA_PRIM_AIR_DET");
 			strcat(s, str);
 			DebugStringStr(s);
@@ -674,7 +682,7 @@ void CalcAlarmActive(void)
 			else if(GetTherapyType() == KidneyTreat)
 				manageAlarmCoversPumpKidney();
 			manageAlarmCanBus();
-			manageAlarmPrimSFAAirDet();
+			manageAlarmPrimAirPresFilter();
 			manageAlarmActuatorModbusNotRespond();
 			manageAlarmActuatorWRModbusNotRespond();
 			manageAlarmFromProtective();
@@ -768,7 +776,9 @@ void CalcAlarmActive(void)
 				manageAlarmCoversPumpKidney();
 			manageAlarmCanBus();
 			manageAlarmBadPinchPos();   // allarme di pinch posizionate correttamente
-			manageAlarmPrimSFAAirDet();
+			manageAlarmPrimAirPresFilter();
+			manageAlarmPrimAirPresArt();
+			manageAlarmPrimAirPresVen();
 			manageAlarmActuatorModbusNotRespond();
 			manageAlarmActuatorWRModbusNotRespond();
 			manageAlarmFromProtective();
@@ -877,9 +887,9 @@ void CalcAlarmActive(void)
 
 // Allarme generato dalla condizione di aria nel filtro durante il priming. Viene preso in considerazione
 // dal momento in cui il filtro viene installato alla fine del priming
-void manageAlarmPrimSFAAirDet(void)
+void manageAlarmPrimAirPresFilter(void)
 {
-	if(!GlobalFlags.FlagsDef.EnablePrimAlmSFAAirDetAlm)
+	if(!GlobalFlags.FlagsDef.EnableAlmPrimAirDetection)
 		alarmList[PRIM_AIR_ON_FILTER].physic = PHYSIC_FALSE;
 	else if(!FilterSelected)
 		alarmList[PRIM_AIR_ON_FILTER].physic = PHYSIC_FALSE;
@@ -896,6 +906,51 @@ void manageAlarmPrimSFAAirDet(void)
 	}
 }
 
+// Allarme generato dalla condizione di aria in linea arteriosa durante il priming. Viene preso in considerazione
+// dal momento in cui il filtro viene installato alla fine del priming
+void manageAlarmPrimAirPresArt(void)
+{
+	if(!GlobalFlags.FlagsDef.EnableAlmPrimAirDetection)
+	{
+		alarmList[PRIM_AIR_ON_ART].physic = PHYSIC_FALSE;
+		return;
+	}
+	else
+	{
+		if((sensor_UFLOW[ARTERIOUS_AIR_SENSOR].bubbleSize >= MAX_BUBBLE_SIZE) ||
+		   (sensor_UFLOW[ARTERIOUS_AIR_SENSOR].bubblePresence == MASK_ERROR_BUBBLE_ALARM))
+		{
+			alarmList[PRIM_AIR_ON_ART].physic = PHYSIC_TRUE;
+		}
+		else
+		{
+			alarmList[PRIM_AIR_ON_ART].physic = PHYSIC_FALSE;
+		}
+	}
+}
+
+// Allarme generato dalla condizione di aria in linea venosa durante il priming. Viene preso in considerazione
+// dal momento in cui il filtro viene installato alla fine del priming
+void manageAlarmPrimAirPresVen(void)
+{
+	if((!GlobalFlags.FlagsDef.EnableAlmPrimAirDetection) || (GetTherapyType() == KidneyTreat))
+	{
+		alarmList[PRIM_AIR_ON_VEN].physic = PHYSIC_FALSE;
+		return;
+	}
+	else
+	{
+		if((sensor_UFLOW[VENOUS_AIR_SENSOR].bubbleSize >= MAX_BUBBLE_SIZE) ||
+		   (sensor_UFLOW[VENOUS_AIR_SENSOR].bubblePresence == MASK_ERROR_BUBBLE_ALARM))
+		{
+			alarmList[PRIM_AIR_ON_VEN].physic = PHYSIC_TRUE;
+		}
+		else
+		{
+			alarmList[PRIM_AIR_ON_VEN].physic = PHYSIC_FALSE;
+		}
+	}
+}
 
 bool IsTreatSetPinchPosTaskAlm(void);
 
