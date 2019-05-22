@@ -1095,7 +1095,7 @@ void ParentFunc(void)
 				LevelBuzzer = HIGH;//2;
 				break;
 			}
-			else if(currentGuard[GUARD_ENABLE_STATE_KIDNEY_1_PRIM_RUN].guardValue == GUARD_VALUE_TRUE)
+			else if(currentGuard[GUARD_ENABLE_STATE_KIDNEY_1_PUMP_ON].guardValue == GUARD_VALUE_TRUE)
 			{
 				ptrFutureParent = &stateParentTreatKidney1[3];
 				ptrFutureChild = ptrFutureParent->ptrChild;
