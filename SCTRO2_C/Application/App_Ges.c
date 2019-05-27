@@ -1228,10 +1228,12 @@ void manageParentDigitalT1Test(void)
 	digitalStruct[PUMP_COVER2].current = ((coverStateGlobal & 0x02) >> 1);		// 1 --> open, 0 --> close
 	digitalStruct[PUMP_COVER3].current = ((coverStateGlobal & 0x04) >> 2);		// 1 --> open, 0 --> close
 	digitalStruct[PUMP_COVER4].current = ((coverStateGlobal & 0x08) >> 3);		// 1 --> open, 0 --> close
+#ifdef FRONTAL_COVERS_T1_TEST_ENABLED
 	digitalStruct[FRONTAL_COVER1].current = FRONTAL_COVER_1_STATUS;				// 1 --> chiuso
 	digitalStruct[FRONTAL_COVER2].current = FRONTAL_COVER_2_STATUS;				// 1 --> chiuso
+#endif
 
-    // Viene eseguita una scansione su 8 sensori digitali
+    // Viene eseguita una scansione sui sensori digitali
 	for (id = 0; id < NUM_SENSORI_DIGITALI; id ++)
 	{
 		//Stato attuale: 0 --> premuto oppure chiuso mentre lo stato precedente era NON premuto oppure aperto <-- 1
