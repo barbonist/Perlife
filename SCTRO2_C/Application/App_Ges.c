@@ -5485,7 +5485,7 @@ void ManageMuteButton (void)
 
 	 			releaseGUIButton(BUTTON_SILENT_ALARM);
 	 			/*tengo traccia di quale allarme è stato generato*/
-	 			AlarmCode = alarmCurrent.code;
+	 			AlarmCode = GetCurrentAlarmActiveListAlm()->code;
 
 	 			/*faccio partire il timer*/
 	 			timeoutMute = FreeRunCnt10msec;
@@ -5502,18 +5502,18 @@ void ManageMuteButton (void)
 		case 1:
 		{
 			/*Se non ci sono allrmi attivi perchè è stato fatto un reset torno allo stato precedente*/
-			if (alarmCurrent.code == 0)
+			if (GetCurrentAlarmActiveListAlm()->code == 0)
 			{
 				State = 0;
 				AlarmCode = 0;
 			}
 			/*altrimenti controllo se è arrivato un allarme diverso da quello che mi ha portato qui
 			 * in tal caso riattivo il buzzer e torno nello stato precedente aggiornando AlarmCode*/
-			else if(AlarmCode != alarmCurrent.code)
+			else if(AlarmCode != GetCurrentAlarmActiveListAlm()->code)
 			{
 				LevelBuzzer = HIGH;
 				State = 0;
-				AlarmCode = alarmCurrent.code;
+				AlarmCode = GetCurrentAlarmActiveListAlm()->code;
 			}
 			/*altrimenti controllo se sono trascorsi DELAY_FOR_RESTART_BUZZER/100 secondi nel qual
 			 * caso riattivo il buzzer e torno nello stato precedente azzerando AlarmCode*/
