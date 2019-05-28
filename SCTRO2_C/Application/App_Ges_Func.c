@@ -1847,10 +1847,10 @@ LIQ_TEMP_CONTR_TASK_STATE FrigoHeatTempControlTaskNewPID(LIQ_TEMP_CONTR_TASK_CMD
 		case LIQ_T_CONTR_IDLE:
 			LiqTempContrTaskSt = LIQ_T_CONTR_DETECT_LIQ_IN_DISP;
 			timeInterval10 = FreeRunCnt10msec;
-			EnableHeatingFromPlate = FALSE;
+		//	EnableHeatingFromPlate = FALSE;
 			EnableHeatingFromControl = FALSE;
 			EnableFrigoFromControl = FALSE;
-			EnableFrigoFromPlate = FALSE;
+		//	EnableFrigoFromPlate = FALSE;
 			HeatingPwmPerc = 0;
 			StopHeating();
 //			StopFrigo();
