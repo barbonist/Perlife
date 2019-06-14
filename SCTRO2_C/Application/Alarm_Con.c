@@ -1544,12 +1544,26 @@ void manageAlarmPhysicTempSensInTreat(void)
 // allarme di temperatura fuori range di almeno due gradi
 void manageAlarmPhysicTempSensOOR(void)
 {
-	if(GlobalFlags.FlagsDef.EnableTempArtOORAlm)
+	bool pompeInMovimento = FALSE;
+
+	if (GetTherapyType() == LiverTreat)
+	{
+		pompeInMovimento = (modbusData[1][17] > 500) ? TRUE : FALSE;	//PPAF in movimento, rpm*100
+	}
+	else if (GetTherapyType() == KidneyTreat)
+	{
+		pompeInMovimento = (modbusData[0][17] > 500) ? TRUE : FALSE;	//PPAR in movimento, rpm*100
+	}
+
+	if (GlobalFlags.FlagsDef.EnableTempArtOORAlm && pompeInMovimento)
 	{
 		checkAlmPhysicTempOOR();
 	}
 	else
+	{
 		alarmList[TEMP_ART_OOR].physic = PHYSIC_FALSE;
+		checkAlmPhysicTempOORState = ALM_INIT;
+	}
 }
 
 
