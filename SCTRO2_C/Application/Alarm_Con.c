@@ -1057,6 +1057,7 @@ void manageAlarmDeltaFlowVen(void)
 // controllo se il delta di temperatura tra recipiente e liquido arterioso e' troppo alta
 void manageAlarmDeltaTempRecArt(void)
 {
+#if 0
 	if (GlobalFlags.FlagsDef.EnableDeltaTempRecArtAlarm)
 	{
 		float tart = sensorIR_TM[0].tempSensValue;
@@ -1073,12 +1074,14 @@ void manageAlarmDeltaTempRecArt(void)
 		}
 	}
 	else
+#endif
 		alarmList[DELTA_TEMP_REC_ART].physic = PHYSIC_FALSE;
 }
 
 // controllo se il delta di temperatura tra recipiente e liquido venoso e' troppo alta
 void manageAlarmDeltaTempRecVen(void)
 {
+#if 0
 	if (GlobalFlags.FlagsDef.EnableDeltaTempRecVenAlarm)
 	{
 		float trec = sensorIR_TM[1].tempSensValue;
@@ -1095,6 +1098,7 @@ void manageAlarmDeltaTempRecVen(void)
 		}
 	}
 	else
+#endif
 		alarmList[DELTA_TEMP_REC_VEN].physic = PHYSIC_FALSE;
 }
 
