@@ -1566,6 +1566,15 @@ void setGUIButton(unsigned char buttonId)
 {
 	buttonGUITreatment[buttonId].state = GUI_BUTTON_RELEASED;
 
+	/*tengo traccia della pressione del tasto di stop col flag ButtonStopPressed (serve per la gestione dello sbollamento) */
+	if (buttonId == BUTTON_STOP_TREATMENT || buttonId == BUTTON_STOP_PRIMING)
+	{
+		ButtonStopPressed =TRUE;
+	}
+	else if (buttonId == BUTTON_START_TREATMENT || buttonId == BUTTON_START_PRIMING)
+	{
+		ButtonStopPressed = FALSE;
+	}
 	/*se mi è arrivato il primo start treatment faccio la tara delle pressioni*/
     if (buttonId == BUTTON_START_TREATMENT && TARA_PRESS_DONE == FALSE && ptrCurrentState->state == STATE_TREATMENT_KIDNEY_1)
 	{

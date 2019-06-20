@@ -17,7 +17,7 @@
      * uso 5 bit per il primo numero
 	 * 5 bit per il secondo numero e 6 bit per il
 	 * terzo numero avendo quindi una versione massima
-	 * pari a 32.32.64  */
+	 * pari a 31.31.63  */
 
 	/*ESEMPI
 	 * 0x0800 --> 1.0.0
@@ -36,7 +36,8 @@
 	 *0x080D --> 1.0.13
 	 *0x080E --> 1.0.14
 	 *0x080F --> 1.0.15
-	 *0x0810 --> 1.0.16*/
+	 *0x0810 --> 1.0.16
+	 *0x0811 --> 1.0.17*/
 
 #define REVISION_FW_CONTROL 0x0810
 
@@ -1103,6 +1104,9 @@ int  PR_VEN_Med_mmHg_ORG;			//variabile globale per il valore medio in mmHg del 
 int PR_VEN_TARA_mmHg;			//variabile globale che serve a fare la tara di pressione dopo la connessione dell'organo, all'inizio del trattamento
 int PR_ART_TARA_mmHg;			//variabile globale che serve a fare la tara di pressione dopo la connessione dell'organo, all'inizio del trattamento
 bool TARA_PRESS_DONE;
+
+/*flag che tiene traccia della pressione del tasto di stop sia in trattamento che in priming---serve pèer la corretta gestione della procedura di sbollamento*/
+bool ButtonStopPressed;
 
 word Soglia_minima_ADC_allarme_Livello;
 #define Percentuale_Massima_perdita_liquido 0.4f //con 0.4 accetto una perdita del liquido non superiore al 40% oltre la quale andrò in allarme

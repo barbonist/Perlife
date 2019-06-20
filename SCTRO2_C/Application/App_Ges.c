@@ -4202,7 +4202,14 @@ void AirAlarmRecoveryStateMach(void)
 	static DELTA_T_HIGH_ALM_RECVR_STATE LastAirAlarmRecoveryState = INIT_AIR_ALARM_RECOVERY;
 	static int TimeRemaining = TIME_TO_REJECT_AIR;
 
+	/*flag che mi dice se la procedura di rimozione aria è partita*/
+	static bool AirRejectedStarted = FALSE;
+
 	THERAPY_TYPE TherType = GetTherapyType();
+
+	/*se è stato premuto il tasto di stop prima di arrivare qui, non faccio nulla*/
+	if (ButtonStopPressed && AirRejectedStarted == FALSE)
+		return;
 
 	if(buttonGUITreatment[BUTTON_START_TREATMENT].state == GUI_BUTTON_RELEASED ||
 	   buttonGUITreatment[BUTTON_START_PRIMING].state == GUI_BUTTON_RELEASED	 )
@@ -4341,15 +4348,31 @@ void AirAlarmRecoveryStateMach(void)
 //			StarDelay = timerCounterModBus;
 //		}
 /*end*/
+		AirRejectedStarted = TRUE;
+
+//		/*Per sicurezza, metto le pinch venosa (solo per liver) e arteriosa sullo scarico e bypass
+		/*per la filtro nel caso non fossero nella corretta posizione solo se sono in uno di priming PH 2 opp treatment*/
+		if (ptrCurrentState->state == STATE_PRIMING_PH_2 || ptrCurrentState->state == STATE_TREATMENT_KIDNEY_1)
+		{
+		if ( (modbusData[PINCH_2WPVF-3][0] & 0x0F) != MODBUS_PINCH_LEFT_OPEN)
+			setPinchPosValue(PINCH_2WPVF,MODBUS_PINCH_LEFT_OPEN);
+
+		if( (modbusData[PINCH_2WPVA-3][0] & 0x0F) != MODBUS_PINCH_RIGHT_OPEN)
+			setPinchPosValue(PINCH_2WPVA,MODBUS_PINCH_RIGHT_OPEN);
+
+		if( (modbusData[PINCH_2WPVV-3][0] & 0x0F) != MODBUS_PINCH_RIGHT_OPEN && GetTherapyType() == LiverTreat)
+			setPinchPosValue(PINCH_2WPVV,MODBUS_PINCH_RIGHT_OPEN);
+		}
 		/*faccio ripartire tutte le pompe perchè la rimozione d'aria la faccio su
 		 * tutte le linee indipendentemente dal sensore che ha rilevato aria*/
-		setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, AIR_REJECT_SPEED); // pompa forntale sinistra per kidney e destra per liver
+
+		setPumpSpeedValueHighLevel(pumpPerist[0].pmpMySlaveAddress, AIR_REJECT_SPEED); // pompa frontale sinistra per kidney e destra per liver
 
 		if ( TherType == LiverTreat ||
 		    (TherType == KidneyTreat && (PARAMETER_ACTIVE_TYPE)parameterWordSetFromGUI[PAR_SET_DEPURATION_ACTIVE].value == YES) )
 		setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, AIR_REJECT_SPEED);	//pompe OXY
 
-		/*la pompa frontale detsra nel kidney ha indirizzo 3 e la faccio mentre nel liver 0
+		/*la pompa frontale destra nel kidney ha indirizzo 3 e la faccio mentre nel liver 0
 		 * questa pompa viene usata solo per se il trattamento è il liver*/
 		if(TherType == LiverTreat)
 			setPumpSpeedValueHighLevel(pumpPerist[3].pmpMySlaveAddress, AIR_REJECT_SPEED); // pompa frontale sinistra er liver e non usata per Kidney
@@ -4461,6 +4484,7 @@ void AirAlarmRecoveryStateMach(void)
 		{
 			AirAlarmRecoveryState = AIR_REJECTED1;
 			currentGuard[GUARD_AIR_RECOVERY_END].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+			AirRejectedStarted = FALSE;
 		}
 		break;
 	case AIR_REJECTED1:
