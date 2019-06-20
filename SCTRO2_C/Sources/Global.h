@@ -37,9 +37,10 @@
 	 *0x080E --> 1.0.14
 	 *0x080F --> 1.0.15
 	 *0x0810 --> 1.0.16
-	 *0x0811 --> 1.0.17*/
+	 *0x0811 --> 1.0.17
+	 *0x0812 --> 1.0.18*/
 
-#define REVISION_FW_CONTROL 0x0811
+#define REVISION_FW_CONTROL 0x0812
 
 /* Syncronization flag */
 char	iflag_pc_rx;
@@ -1909,6 +1910,9 @@ typedef struct
 	unsigned int EnableTempArtOORAlm        : 1;    // abilito allarme di temperatura arteriosa fuori range
 	unsigned int EnableFlowAndPressSetAlm   : 1;    // abilito allarmi di pressione e flusso relativi ai SET operatore
 	unsigned int EnableFlowHighAlm          : 1;    // abilito allarmi di flusso massimi
+	unsigned int EnableArtPressDisconnect   : 1;    // abilito allarmi di mancata connessione della linea sul sensore di pressione artersioso
+	unsigned int EnableVenPressDisconnect   : 1;    // abilito allarmi di mancata connessione della linea sul sensore di pressione venoso
+
 }FLAGS_DEF;
 
 typedef struct

@@ -116,6 +116,9 @@ typedef struct elementActiveListWrn sActiveListWrnS;
 #define CODE_ALARM_MACHINE_COVERS               0xA0
 #define CODE_ALARM_HOOKS_RESERVOIR              0xA1
 
+#define CODE_ALARM_TUBE_ART_DISCONNECTED		0xA2
+#define CODE_ALARM_TUBE_VEN_DISCONNECTED		0xA3
+
 // fissato a 200 ed e' il codice di errore di partenza degli allarmi protective
 #define CODE_ALARM_PROT_START_VAL               0xc8
 
@@ -274,6 +277,8 @@ enum ALARM
 	 TEMP_ART_OOR,
 	 TEMP_MAX_IN_TREAT,
 	 TEMP_MIN_IN_TREAT,
+	 TUBE_ART_DISCONNECTED,
+	 TUBE_VEN_DISCONNECTED,
 
 	 FIRST_WARNING,
 	 // da qui in avanti i codici delle warning
@@ -382,6 +387,9 @@ void manageResultT1TestDigital(void);
 // Filippo - funzione che gestisce l'allarme per il fallimento del test del sensore aria
 void manageAlarmAirSensorTestKO(void);
 void manageCover_Hook_Sensor(void);
+
+void manageCheckConnectionTubeArtSensPress(void);
+void manageCheckConnectionTubeVenSensPress(void);
 
 void EnableDeltaTHighAlmFunc(void);
 void DisableDeltaTHighAlmFunc(void);

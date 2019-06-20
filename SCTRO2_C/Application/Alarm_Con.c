@@ -121,6 +121,9 @@ typeAlarmS alarmList[] =
    {CODE_ALARM_T_ART_OUT_OF_RANGE,   PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_DELTA_TEMP_HIGH,       PRIORITY_HIGH, 1000,    0, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, FALSE},
    {CODE_ALARM_TEMP_MAX_IN_TRT,      PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_DELTA_TEMP_HIGH,       PRIORITY_HIGH, 1000,    0, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, TRUE},
    {CODE_ALARM_TEMP_MIN_IN_TRT,      PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_DELTA_TEMP_HIGH,       PRIORITY_HIGH, 1000,    0, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, TRUE},
+   {CODE_ALARM_TUBE_ART_DISCONNECTED,PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH, 10000,    0, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, TRUE},
+   {CODE_ALARM_TUBE_VEN_DISCONNECTED,PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH, 10000,    0, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, TRUE},
+
 
    // da qui in avanti solo le warning
    {CODE_ALARM_PRESS_ADS_FILTER_WARN,    PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR, PRIORITY_LOW,  2000,  2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, FALSE},
@@ -258,6 +261,8 @@ void SetAllAlarmEnableFlags(void)
 
 	GlobalFlags.FlagsDef.EnableArtResAlarm = 1;
 	GlobalFlags.FlagsDef.EnableTempArtOORAlm = 1;
+	GlobalFlags.FlagsDef.EnableArtPressDisconnect = 1;
+	GlobalFlags.FlagsDef.EnableVenPressDisconnect = 1;
 }
 
 // Questa funzione serve per forzare ad off un eventuale allarme.
@@ -688,6 +693,7 @@ void CalcAlarmActive(void)
 			manageAlarmFromProtective();
 			//manageAlarmBadPinchPos();   // allarme di pinch posizionate correttamente
 			manageCover_Hook_Sensor();
+
 			break;
 		}
 
@@ -785,6 +791,12 @@ void CalcAlarmActive(void)
 			manageCover_Hook_Sensor();
 				// Filippo - aggiungo la gestione del tasto di stop come allarme
 		//		manageAlarmStopButtonPressed();
+
+			manageCheckConnectionTubeArtSensPress();
+
+			if (GetTherapyType() == LiverTreat)
+				manageCheckConnectionTubeVenSensPress();
+
 			break;
 
 		case STATE_WAIT_TREATMENT:
@@ -1425,6 +1437,43 @@ void manageCover_Hook_Sensor(void)
     }
 }
 
+/*funzione che durante il ricircolo del priming
+ * intercetta una mancata connessione del disposible
+ * al sensore di pressione Arteriosa della macchina*/
+void manageCheckConnectionTubeArtSensPress(void)
+{
+	if (GlobalFlags.FlagsDef.EnableArtPressDisconnect)
+	{
+		/*attivo l'allarme se la pompa arteriosa sta girando e la pressione sta sotto 10 mmHg*/
+		if (PR_ART_mmHg_Filtered < 10 && modbusData[0][17] != 0)
+		{
+			alarmList[TUBE_ART_DISCONNECTED].physic = PHYSIC_TRUE;
+		}
+		else
+		{
+			alarmList[TUBE_ART_DISCONNECTED].physic = PHYSIC_FALSE;
+		}
+	}
+}
+
+/*funzione che durante il ricircolo del priming
+ * intercetta una mancata connessione del disposible
+ * al sensore di pressione Venosa della macchina*/
+void manageCheckConnectionTubeVenSensPress(void)
+{
+	if (GlobalFlags.FlagsDef.EnableVenPressDisconnect)
+	{
+		/*attivo l'allarme se la pompa arteriosa sta girando e la pressione sta sotto 10 mmHg*/
+		if (PR_VEN_mmHg_Filtered < 10 && modbusData[2][17] != 0 && modbusData[3][17] != 0)
+		{
+			alarmList[TUBE_VEN_DISCONNECTED].physic = PHYSIC_TRUE;
+		}
+		else
+		{
+			alarmList[TUBE_VEN_DISCONNECTED].physic = PHYSIC_FALSE;
+		}
+	}
+}
 //------------------------------------------------------------------------------------------
 ALARM_STATE checkAlmPhysicTempState;
 ALARM_STATE checkAlmPhysicTempOORState;
