@@ -39,7 +39,7 @@
 	 *0x0810 --> 1.0.16
 	 *0x0811 --> 1.0.17*/
 
-#define REVISION_FW_CONTROL 0x0810
+#define REVISION_FW_CONTROL 0x0811
 
 /* Syncronization flag */
 char	iflag_pc_rx;
