@@ -272,7 +272,7 @@ void DebugStringPID()
 
 void DebugStringStr(char *s)
 {
-	return;
+	//return;
 
 	static char stringPr[STR_DBG_LENGHT];
 	if(strstr(s, "ABBANDONA"))
@@ -921,43 +921,59 @@ void ShowParameterStr(struct parWordSetFromGUI *ParamGuiArray, unsigned char id)
 //		case PAR_SET_PRIMING_VOL_PERFUSION = 0x10:
 //			break;
 		case PAR_SET_THERAPY_TYPE:
-			sprintf(stringPr, "\rTherapy=%d", ParamGuiArray[id].value );
+			if (ParamGuiArray[id].value == LiverTreat)
+				sprintf(stringPr, "\r Therapy = LIVER");
+			else if (ParamGuiArray[id].value == KidneyTreat)
+				sprintf(stringPr, "\r Therapy = KIDNEY");
+			break;
+		case PAR_SET_PRIMING_VOL_PERFUSION:
+			sprintf(stringPr, "\r PrimVolPerfusion=%d ml", ParamGuiArray[id].value );
 			break;
 		case PAR_SET_PRIMING_VOL_PURIFICATION:
-			sprintf(stringPr, "\rPrimVolPur=%d", ParamGuiArray[id].value );
+			sprintf(stringPr, "\r PrimVolPur=%d", ParamGuiArray[id].value );
 			break;
 //		case PAR_SET_PRIMING_TEMPERATURE_PERFUSION:
 //			break;
 		case PAR_SET_PRIMING_VOL_OXYGENATION:
-			sprintf(stringPr, "\rPrimVolOxyg=%d", ParamGuiArray[id].value );
+			sprintf(stringPr, "\r PrimVolOxyg=%d", ParamGuiArray[id].value );
 			break;
-//		case PAR_SET_OXYGENATOR_ACTIVE:
-//				break;
+		case PAR_SET_OXYGENATOR_ACTIVE:
+			if (ParamGuiArray[id].value == YES)
+				sprintf(stringPr, "\r OXY_ACTIVE = YES");
+			else if (ParamGuiArray[id].value == NO)
+				sprintf(stringPr, "\r OXY_ACTIVE = NO");
+				break;
 		case PAR_SET_OXYGENATOR_FLOW:
 			sprintf(stringPr, "\rOxygFlow=%d", ParamGuiArray[id].value );
 			break;
-//		case PAR_SET_DEPURATION_ACTIVE:
-//				break;
+		case PAR_SET_DEPURATION_ACTIVE:
+			if (ParamGuiArray[id].value == YES)
+				sprintf(stringPr, "\r DEPURATION_ACTIVE = YES");
+			else if (ParamGuiArray[id].value == NO)
+				sprintf(stringPr, "\r DEPURATION_ACTIVE = NO");
+				break;
 		case PAR_SET_PRIMING_TEMPERATURE_PERFUSION:
-			sprintf(stringPr, "\rTemp=%d", ParamGuiArray[id].value );
+		{ 	float temp = ParamGuiArray[id].value/10;
+			sprintf(stringPr, "\r Temp=%4.1f °C", temp );
 			break;
+		}
 		case PAR_SET_PRESS_ART_TARGET:
-			sprintf(stringPr, "\rPressArtTrgt=%d", ParamGuiArray[id].value );
+			sprintf(stringPr, "\r PressArtTrgt=%d mmHg", ParamGuiArray[id].value );
 			break;
 		case PAR_SET_DESIRED_DURATION:
-			sprintf(stringPr, "\rDuration=%d", ParamGuiArray[id].value );
+			sprintf(stringPr, "\r Duration=%d", ParamGuiArray[id].value );
 			break;
 		case PAR_SET_MAX_FLOW_PERFUSION:
-			sprintf(stringPr, "\rMaxFlowPerf=%d", ParamGuiArray[id].value );
+			sprintf(stringPr, "\r MaxFlowPerf=%d ml/min", ParamGuiArray[id].value );
 			break;
 		case PAR_SET_PRESS_VEN_TARGET:
-			sprintf(stringPr, "\rPressVenTrgt=%d", ParamGuiArray[id].value );
+			sprintf(stringPr, "\r PressVenTrgt=%d mmHg", ParamGuiArray[id].value );
 			break;
 		case PAR_SET_PURIF_FLOW_TARGET:
-			sprintf(stringPr, "\rPurFlowTrgt=%d", ParamGuiArray[id].value );
+			sprintf(stringPr, "\r PurFlowTrgt=%d ml/min", ParamGuiArray[id].value );
 			break;
 		case PAR_SET_VENOUS_PRESS_TARGET:
-			sprintf(stringPr, "\rPressVenTrgt=%d", ParamGuiArray[id].value );
+			sprintf(stringPr, "\r PressVenTrgt=%d mmHg", ParamGuiArray[id].value );
 			break;
 	}
 

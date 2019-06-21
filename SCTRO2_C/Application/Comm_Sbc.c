@@ -21,6 +21,7 @@
 #include "general_func.h"
 #include "Alarm_Con.h"
 #include "ControlProtectiveInterface_C.h"
+#include "PC_DEBUG_COMM.h"
 
 extern int PinchFilterCurrValue;
 extern word MedForArteriousPid;
@@ -1564,6 +1565,8 @@ void initGUIButton(void){
 // Facendo questa inversione non cambio tutto il resto del codice.
 void setGUIButton(unsigned char buttonId)
 {
+	static char Button[10];
+
 	buttonGUITreatment[buttonId].state = GUI_BUTTON_RELEASED;
 
 	/*tengo traccia della pressione del tasto di stop col flag ButtonStopPressed (serve per la gestione dello sbollamento) */
@@ -1653,6 +1656,19 @@ void setGUIButton(unsigned char buttonId)
 			Stop_Button_clicked = FALSE;
 	}
 
+
+/*invio l'eco sulla seriale di servizio del comando ricevuto*/
+	sprintf(Button, "\r %d;", buttonId);
+
+	for(int i=0; i<10; i++)
+	{
+		if(Button[i])
+			PC_DEBUG_COMM_SendChar(Button[i]);
+		else
+			break;
+	}
+	PC_DEBUG_COMM_SendChar(0x0A);
+
 //BSW8 STOP:
 
 }
@@ -1696,6 +1712,8 @@ void initSetParamInSourceCode(void)
 
 void setParamWordFromGUI(unsigned char parId, int value)
 {
+	static char ParamValue[30];
+
 	if (parId == PAR_SET_THERAPY_TYPE)
 	{
 		if (value == LiverTreat || value == KidneyTreat)
@@ -1850,6 +1868,18 @@ void setParamWordFromGUI(unsigned char parId, int value)
 		timesec =  CalcPrimingDuration(vol);
 		ExpectedPrimDuration = CalcHoursMin(timesec);
 	}
+
+	/*invio l'eco sulla seriale di servizio del parametro e del valore ricevuto*/
+	sprintf(ParamValue, "\r %d; %i ", parId, value);
+
+	for(int i=0; i<30; i++)
+	{
+		if(ParamValue[i])
+			PC_DEBUG_COMM_SendChar(ParamValue[i]);
+		else
+			break;
+	}
+	PC_DEBUG_COMM_SendChar(0x0A);
 
 //	// TODO DA RIMUOVERE SOLO PER DEBUG GUI !!!!
 //	parameterWordSetFromGUI[PAR_SET_DESIRED_DURATION].value = 0x0000; // due ore
