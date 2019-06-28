@@ -65,6 +65,7 @@ unsigned char computeCRC8TempSens(unsigned char buffer[]);
 bool computeCRC8TempSensRx(unsigned char buffer[],unsigned char command, unsigned char TempSensAddr);
 void Manage_IR_Sens_Temp(void);
 float Ir_Temperature_correction_offset (float Temp_value);
+float Ir_Measured_Temperature_correction(int index_array);
 float meanWATempSensorIR(unsigned char dimNum, float newSensVal, char IdSens);
 unsigned char * buildCmdReadTempSensIR(unsigned char  tempSensAddress,
 										   unsigned char  command,
@@ -74,5 +75,6 @@ unsigned char * buildCmdWriteTempSensIR(unsigned char  tempSensAddress,
 										word dataWordTx);
 
 void alwaysIRTempSensRead(void);
+
 
 #endif /* APPLICATION_TEMP_SENSIR_H_ */

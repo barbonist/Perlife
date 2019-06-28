@@ -2125,7 +2125,7 @@ void manageParentPrimingAlways(void){
 
 			}
 		}
-	/*25-10-2018 Vincenzo --> partenza pompe a RAMPA all0inizio del priming END*/
+	/*25-10-2018 Vincenzo --> partenza pompe a RAMPA all'inizio del priming END*/
 
 		if(buttonGUITreatment[BUTTON_START_PRIMING].state == GUI_BUTTON_RELEASED )
 		{
@@ -6673,6 +6673,21 @@ void Set_Data_EEPROM_Default(void)
 
 		 config_data.FlowSensor_Art_Gain              = GAIN_FLOW_SENS_ART;
 		 config_data.FlowSensor_Art_Offset            = OFFSET_FLOW_SENS_ART;
+
+		 config_data.T_sensor_ART_Real_Low 			  = T_SESOR_ART_REAL_LOW_DEF;
+		 config_data.T_sensor_ART_Real_High			  = T_SESOR_ART_REAL_HIGH_DEF;
+		 config_data.T_sensor_ART_Meas_Low 			  = T_SESOR_ART_MEAS_LOW_DEF;
+		 config_data.T_sensor_ART_Meas_High			  = T_SESOR_ART_MEAS_HIGH_DEF;
+
+		 config_data.T_sensor_RIC_Real_Low 			  = T_SESOR_RIC_REAL_LOW_DEF;
+		 config_data.T_sensor_RIC_Real_High			  = T_SESOR_RIC_REAL_HIGH_DEF;
+		 config_data.T_sensor_RIC_Meas_Low 			  = T_SESOR_RIC_MEAS_LOW_DEF;
+		 config_data.T_sensor_RIC_Meas_High			  = T_SESOR_RIC_MEAS_HIGH_DEF;
+
+		 config_data.T_sensor_VEN_Real_Low 			  = T_SESOR_VEN_REAL_LOW_DEF;
+		 config_data.T_sensor_VEN_Real_High			  = T_SESOR_VEN_REAL_HIGH_DEF;
+		 config_data.T_sensor_VEN_Meas_Low 			  = T_SESOR_VEN_MEAS_LOW_DEF;
+		 config_data.T_sensor_VEN_Meas_High			  = T_SESOR_VEN_MEAS_HIGH_DEF;
 
 		 //revsione della EEPROM
 		 config_data.EEPROM_Revision 				  = EEPROM_REVISION;

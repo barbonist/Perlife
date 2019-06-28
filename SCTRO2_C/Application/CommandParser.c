@@ -13,6 +13,7 @@
 #include "PC_DEBUG_COMM.h"
 #include "App_Ges.h"
 #include "general_func.h"
+#include "ModBusCommProt.h"
 
 
 
@@ -22,6 +23,7 @@ void SetMulti(int NParams, char** Params);
 void GetMulti(int NParams, char** Params);
 void SetHeater(int NParams, char** Params);
 void SetCooler(int NParams, char** Params);
+void SetCalibTemp(int NParams, char** Params);
 
 void ErrorCommandNotFound( int NParams, char** Params);
 void ErrorNParamsNotOk( int NParams, char** Params);
@@ -135,9 +137,10 @@ void SetMulti(int NParams, char** Params)
 		// parse what to set
 		if(strcmp_cr(Params[0],"heater") == 0) SetHeater(NParams-1, Params+1) ;
 		else if(strcmp_cr(Params[0],"cooler") == 0) SetCooler(NParams-1, Params+1) ;
+		else if (strcmp_cr(Params[0],"calibtemp") == 0) SetCalibTemp(NParams-1, Params+1) ;
 		else {
 			//ErrorParamsNotOk( NParams, Params);
-			CommandAnswer("set heater/cooler");
+			CommandAnswer("set heater/cooler/calibtemp");
 			return;
 		}
 }
@@ -199,7 +202,7 @@ void SetHeater(int NParams, char** Params)
 			}
 		}
 		else {
-			CommandAnswer("set heater onf [percent --> 0 for stop]");
+			CommandAnswer("set heater on [percent --> 0 for stop]");
 			return;
 		}
 	}
@@ -212,7 +215,81 @@ void SetHeater(int NParams, char** Params)
 }
 
 
+void SetCalibTemp(int NParams, char** Params)
+{
+	unsigned char SensNum = 0;
+	float TempVal1, TempVal2 = 0;
+	unsigned char *ptr_EEPROM = (EEPROM_TDataAddress)&config_data;
 
+	if (NParams == 3)
+	{
+		if (strcmp_cr(Params[0],"1") == 0)
+		{
+			SensNum = 1;
+		}
+		else if (strcmp_cr(Params[0],"2") == 0)
+		{
+			SensNum = 2;
+		}
+		else if (strcmp_cr(Params[0],"3") == 0)
+		{
+			SensNum = 3;
+		}
+		else{
+			CommandAnswer("Sensor Number should be 1, 2 or 3");
+			return;
+		}
+
+		str_NoCr(Params[2]);
+
+		if(strspn(Params[1], "0123456789.") == strlen(Params[1])){
+			sscanf(Params[1] , "%f" , &TempVal1);
+		}
+		else{
+			CommandAnswer("First temperature not ok");
+			return;
+		}
+		if(strspn(Params[2], "0123456789.") == strlen(Params[2]))
+		{
+			sscanf(Params[2] , "%f" , &TempVal2);
+		}
+		else
+		{
+			CommandAnswer("Second temperature not ok");
+			return;
+		}
+
+		switch(SensNum){
+		case 1:
+			config_data.T_sensor_ART_Meas_Low = TempVal1;
+			config_data.T_sensor_ART_Meas_High = TempVal2;
+			break;
+		case 2:
+			config_data.T_sensor_RIC_Meas_Low = TempVal1;
+			config_data.T_sensor_RIC_Meas_High = TempVal2;
+			break;
+		case 3:
+			config_data.T_sensor_VEN_Meas_Low = TempVal1;
+			config_data.T_sensor_VEN_Meas_High = TempVal2;
+			break;
+		}
+		/*carico il CRC della EEPROM (usata la stessa funzione di CRC del MOD_BUS
+		* IL CRC lo clacolo su tutta la struttura meno i due byte ndel CRC stesso*/
+		config_data.EEPROM_CRC = ComputeChecksum(ptr_EEPROM, sizeof(config_data)-2);
+		/*finita la calibrazione di un sensore la vado subito a salvare in EEPROM*/
+		EEPROM_write((EEPROM_TDataAddress)&config_data, START_ADDRESS_EEPROM, sizeof(config_data));
+	}
+	else if (NParams == 4)
+	{
+		str_NoCr(Params[3]);
+		//TODO
+	}
+	else
+	{
+		//messaggio di errore
+		CommandAnswer("wrong number of parameters");
+	}
+}
 
 void SetCooler(int NParams, char** Params)
 {

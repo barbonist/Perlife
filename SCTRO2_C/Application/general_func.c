@@ -1018,11 +1018,11 @@ void CheckStopPump(void)
 	if (pumpPerist[3].pmpSpeed == 0 &&  speed_PPAR !=0)
 		setPumpSpeedValueHighLevel(PPAR, 0);
 
-	/*le due pompe venose sono al livello logico una sola, quindi se
-	 * ad una delle due ho mandato il comando di stop (velocità pari a 0)
-	 * questo comando deve essere valido per entrambe quindi se almeno una
+	/*le due pompe venose sono al livello logico una sola, quindi il comando di
+	 * velocità è per entrambe pumpPerist[1].pmpSpeed == 0.
+	 * Se ho mandato il comando di stop (velocità pari a 0) e almeno una
 	 * delle due mi risponde con una veloictà diversa da zero le rifermo entrambe*/
-	if ( (pumpPerist[1].pmpSpeed == 0 || pumpPerist[2].pmpSpeed == 0) && (speed_PPV1 !=0 || speed_PPV2 !=0) )
+	if ( (pumpPerist[1].pmpSpeed == 0 /*commentato per bug fixing || pumpPerist[2].pmpSpeed == 0*/) && (speed_PPV1 !=0 || speed_PPV2 !=0) )
 		setPumpSpeedValueHighLevel(PPV1, 0);
 
 }

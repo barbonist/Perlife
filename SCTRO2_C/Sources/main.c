@@ -455,15 +455,6 @@ int main(void)
   // ripristinando il sw.
   EN_P_2_C_SetVal();
 
-  /*leggo tutta la struttura dati salvata nella parte di flash usata come EEPROM (ci saranno ad esmepio i coefficienti di claibrazione)*/
-   EEPROM_Read(START_ADDRESS_EEPROM, (EEPROM_TDataAddress)&config_data, sizeof(config_data));
-
-  /*scrivo i dati di default sulla flash usata come eeprom
-   * (tra cui i coef di calibrazione dei sensori) solo
-   * se la flash usata come eeprom non è mai stata scritta.
-   * TODO quando sarà fatta la funzione per la calibrazione,
-   * dovrà essere fatta in modo simile per sovrascrivere i coefficienti*/
-   Set_Data_EEPROM_Default();
 
   /*attendo 5 s prima di entrare nell main loop
    * per dare il tempo ai sensori di alimentarsi e
@@ -592,6 +583,16 @@ int main(void)
    peltierCell2.readAlwaysEnable = 1;
    ArteriousPumpGainForPid = DEFAULT_ART_PUMP_GAIN;
    VenousPumpGainForPid = DEFAULT_VEN_PUMP_GAIN;
+
+   /*leggo tutta la struttura dati salvata nella parte di flash usata come EEPROM (ci saranno ad esmepio i coefficienti di claibrazione)*/
+    EEPROM_Read(START_ADDRESS_EEPROM, (EEPROM_TDataAddress)&config_data, sizeof(config_data));
+
+   /*scrivo i dati di default sulla flash usata come eeprom
+    * (tra cui i coef di calibrazione dei sensori) solo
+    * se la flash usata come eeprom non è mai stata scritta.
+    * TODO quando sarà fatta la funzione per la calibrazione,
+    * dovrà essere fatta in modo simile per sovrascrivere i coefficienti*/
+    Set_Data_EEPROM_Default();
 
    InitCAN();
    SwTimerInit();

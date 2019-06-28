@@ -129,7 +129,9 @@ void Manage_IR_Sens_Temp(void)
  			/*Copio il valore ricevuto*/
  			sensorIR_TM[index_array].tempSensValue = (float)((BYTES_TO_WORD(sensorIR_TM[index_array].bufferReceived[1], sensorIR_TM[index_array].bufferReceived[0]))*((float)0.02)) - (float)273.15;
  			/*correggo il valore di OfFset se sono sotto LOWER_RANGE_IR_CORRECTION o sopra HIGHER_RANGE_IR_CORRECTION*/
- 			sensorIR_TM[index_array].tempSensValue = Ir_Temperature_correction_offset (sensorIR_TM[index_array].tempSensValue);
+ 			//sensorIR_TM[index_array].tempSensValue = Ir_Temperature_correction_offset (sensorIR_TM[index_array].tempSensValue);
+ 			/*correggo la temperatura sulla base dell'algoritmo di SB vedi mail del 21/6/2019*/
+ 			sensorIR_TM[index_array].tempSensValue = Ir_Measured_Temperature_correction(index_array);
  			/*aggiorno il valore filtrato di temperatura, filtro su 25 campioni quindi tengo la storia su 15 secondi (ogni sensore viene letto ogni 600 msec*/
  			sensorIR_TM[index_array].tempSensValueFiltered = meanWATempSensorIR(25,sensorIR_TM[index_array].tempSensValue,index_array);
  			/*ho ricevuto bene, resetto il contatore consecutivo di errore*/
@@ -140,6 +142,43 @@ void Manage_IR_Sens_Temp(void)
 
  	}
 }
+
+
+float Ir_Measured_Temperature_correction(int index_array)
+
+{
+	float MeasuredTemp;
+	float E5;  // error at 5 degrees
+	float E30; //error at 30 degrees
+	float a,b,Err;
+
+    MeasuredTemp = sensorIR_TM[index_array].tempSensValue;
+
+    switch(index_array)
+    {
+		case 0:
+			E5 = config_data.T_sensor_ART_Meas_Low - config_data.T_sensor_ART_Real_Low;
+			E30 =  config_data.T_sensor_ART_Meas_High - config_data.T_sensor_ART_Real_High;
+			break;
+
+		case 1:
+			E5 = config_data.T_sensor_RIC_Meas_Low - config_data.T_sensor_RIC_Real_Low;
+			E30 =  config_data.T_sensor_RIC_Meas_High - config_data.T_sensor_RIC_Real_High;
+			break;
+
+		case 2:
+			E5 = config_data.T_sensor_VEN_Meas_Low - config_data.T_sensor_VEN_Real_Low;
+			E30 =  config_data.T_sensor_VEN_Meas_High - config_data.T_sensor_VEN_Real_High;
+			break;
+    }
+
+    a = (E30 - E5)/25;
+    b = (6*E5 - E30)/5;
+    Err = MeasuredTemp*a + b;
+
+    return (MeasuredTemp - Err);
+}
+
 
 /*funzione che serve a correggere la temperatura letta col sensore IR con un
  * Offset via via crescente quando la temperatura letta è <= 10 opp >= 31*/
