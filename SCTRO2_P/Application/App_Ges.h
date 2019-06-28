@@ -100,6 +100,6 @@ void EEPROM_write(EEPROM_TDataAddress Src, EEPROM_TAddress Dst, word Count);
 void EEPROM_Read(LDD_FLASH_TAddress Source, LDD_TData *Dest, LDD_FLASH_TDataSize Count);
 unsigned int ComputeChecksum(unsigned char * data, int size);
 
-void DebugString(void);
+void DebugString_TEST(void);
 
 #endif /* APPLICATION_APP_GES_H_ */

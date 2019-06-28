@@ -23,8 +23,30 @@ void Enable_Pump_OXY(bool status);
 void Enable_Pinch_Filter(bool status);
 void Enable_Pinch_Arterial(bool status);
 void Enable_Pinch_Venous(bool status);
+
+bool Pinch_Filter_IsEnabled(void);
+bool Pinch_Arterial_IsEnabled(void);
+bool Pinch_Venous_IsEnabled(void);
+
 void Enable_Heater(bool status);
 void Enable_Frigo (bool status);
+
+typedef void(*TAlarmAction)(void);// TAlarmAction;
+
+typedef struct {
+	uint8_t AlarmCounter;
+	uint8_t	CountTreshold;
+	bool AlarmConditionPending;
+	bool AlarmActive;
+	TAlarmAction AlarmAction;
+	uint8_t SecondaryActionTimer;
+	uint8_t SecondaryActionTimerTreshold; // if 0 , never execute 2nd action
+	TAlarmAction SecondaryAlarmAction;
+} TAlarmTimer;
+
+
+void TriggerSecondaryAction(TAlarmTimer* AlarmTimer);
+void PumpsOrPinchNotRespond_EmergAct(void);
 
 
 #endif /* APPLICATION_ACTIONSPROTECTIVE_H_ */

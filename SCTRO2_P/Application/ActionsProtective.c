@@ -6,113 +6,17 @@
  */
 
 
-/*
-Possible events and Protective Reactions
-
-e001)	Communication with master is no longer available --> (a001) Cosa fare cosa fare ??
-e002)   State transition not expected ( state parent child guard ) --> (a002)
-e003)	Mismatch Received parameter and measured parameter	--> (a003)
-	PressFilter	--> (a003-A)
-	PressArt--> (a003-B)
-	PressVen--> (a003-C)
-	PressLevelx100;--> (a003-D)
-	PressOxy--> (a003-E)
-
-	TempFluidx10--> (a003-F)
-	TempArtx10--> (a003-G)
-	TempVenx10--> (a003-H)
-
-	Pimch1Pos--> (a003-I)
-	Pimch2Pos--> (a003-L)
-
-	SpeedPump1Rpmx10--> (a003-M)
-	SpeedPump2Rpmx10--> (a003-N)
-	SpeedPump3Rpmx10--> (a003-O)
-	SpeedPump4Rpmx10--> (a003-P)
-
-e004)	Received AirAlarm; 	--> (a004)
-e005)	Received AlarmCode	--> (a005)
-
-*/
-
-
-
-/*
-cosa fa la protective:
-specifiche derivate da risk analysis
-
-I sensori di pressione SPA2 e SPV2 vengono letti e differiscono del 20%
-	--> invia l'allarme alla control.
-
----------------------------------------
-Viene superato il valore di pressione del 20% oltre il  limite
-
-1) comunica l'allarme alla CONTROL
-2) Toglie la coppia (enable) ad uno o + motori
-3) toglie l'enable ad una o + pinch che (in base al FW custom delle pinch) farà si che la stessa si porti in stato di sicurezza ossia aperta a sinistra (bypas organo e/o bypass filtro)
-4) togliere l'alimentazione ai motori e/o alle pinch
-5) Disalimenta il frogo /riscaldatore tramite relè"
----------------------------------------
-
-T incongruente o T piastra troppo bassa (< -15 )
---> 1) disattivare il frigo ,
-	2) segnala allarme
-	3) dirottare il fluido su reservoir
-
----------------------------------------
-
-Se STA2 o STV2 incongruenti  o valore < 2 gradi
-	1) disattivare il frigo ,
-	2) segnala allarme , quale ?
-	3) dirottare il fluido su reservoir
-	4) fermare pompe
-
----------------------------------------
-
-Se STV2 o STA2  > 40 gradi
---> segnala un allarme
-	disabilita la Pinch per dirottare il fluido sul reservoir
-	fermare pompe
-	disalimentare riscaldatore
-	bloccare il frigo ( fosse mai acceso )
-
------------------------------------------
-
-sensori di posizione delle Pinch , se incongruenza
---> segnala un allarme
-	disabilita la Pinch per dirottare il fluido sul reservoir
-	fermare pompe
-	disalimenta riscandatore
-	blocca il frigo
-
-------------------------------------------
-sensori di velocità della Pompe incongruenti:
---> segnala un allarme
-	disattiva la piompa
-	pilota la Pinch per dirottare il fluido sul reservoir
-	ferma il frigo
-	ferma il riscandatore
-
----------------------------------------------
-
-sensore SPL2 livello incongruente con SPL1
-	1) inviare allarme
-	2) bloccare pompe.
-	3) pinch dirotatte su reservoir
-
-	ATTENZIONE , FILTRARE E METTERE UNA DIFFERENZA MOLTO ALTA PER EVITARE FALSI ALLARMI dati i valori molto bassi di pressione
-
---------------------------------------------
-
-*/
 #include "Cpu.h"
 #include "Events.h"
 #include "Global.h"
 #include "ActionsProtective.h"
 #include "ControlProtectiveInterface.h"
 
-//#define NO_DISABLE_FORTEST 1
-#undef NO_DISABLE_FORTEST
+#ifdef PROTECTIVE_SLEEPS
+	#define NO_DISABLE_FORTEST 1
+#else
+	#undef NO_DISABLE_FORTEST
+#endif
 
 void InitActuators(void)
 {
@@ -264,12 +168,13 @@ void Enable_Pump_OXY(bool status)
 #endif
 }
 
+
 void Enable_Pinch_Filter(bool status)
 {
 #ifndef NO_DISABLE_FORTEST
-	if (status && !EN_CLAMP_P_1_GetVal())
+	if (status && !EN_CLAMP_P_1_GetVal()){
 		EN_CLAMP_P_1_SetVal();
-
+	}
 	if (!status && EN_CLAMP_P_1_GetVal())
 		EN_CLAMP_P_1_ClrVal();
 #else
@@ -277,6 +182,7 @@ void Enable_Pinch_Filter(bool status)
 #endif
 
 }
+
 
 void Enable_Pinch_Arterial(bool status)
 {
@@ -304,8 +210,30 @@ void Enable_Pinch_Venous(bool status)
 #endif
 }
 
-//#define DISABLE_HEATER_FRIGO_CONTROL
-#undef DISABLE_HEATER_FRIGO_CONTROL
+
+bool Pinch_Filter_IsEnabled(void)
+{
+	return EN_CLAMP_P_1_GetVal();
+}
+
+
+bool Pinch_Arterial_IsEnabled(void)
+{
+	return EN_CLAMP_P_2_GetVal();
+}
+
+
+bool Pinch_Venous_IsEnabled(void)
+{
+	return EN_CLAMP_P_3_GetVal();
+}
+
+#ifdef PROTECTIVE_SLEEPS
+	#define DISABLE_HEATER_FRIGO_CONTROL
+#else
+	#undef DISABLE_HEATER_FRIGO_CONTROL
+#endif
+
 
 void Enable_Heater(bool status)
 {
@@ -372,6 +300,8 @@ void Enable_Frigo_CommandCAN(bool status)
 		Frigo_ON = FALSE;
 	}
 }
+
+
 
 
 

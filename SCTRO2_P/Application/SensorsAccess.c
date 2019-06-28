@@ -19,14 +19,14 @@ void InitSensorsAccess(void)
 	ADC1_Calibration();
 	PR_Sens_ADC_Init();
 	AD1_Start();
-    AddSwTimer((TAction)AD1_Start,1,TM_REPEAT);
+    //AddSwTimer((TAction)AD1_Start,1,TM_REPEAT);
 }
 
 
-void LoopSensorsAccess(void)
-{
-	 Manange_ADC1();
-}
+//void LoopSensorsAccess(void)
+//{
+//	 Manange_ADC1();
+//}
 
 
 

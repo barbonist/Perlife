@@ -235,6 +235,37 @@ void verificaTempPlate(void)
 	onNewTempPlateValue((int16_t)(T_PLATE_P_GRADI_CENT*10));
 }
 
+
+//
+//  returns firmware version in the following format using 16 bits
+//  z z z z z z , y y y y y , x x x x x     where z is the 3rd number of version , y the 2nd ,  x the 1st
+//  a version of 1.0.6 is shown as   0000110 00000 00001  ->  00011000 00000001 -> 0x1F 0x01
+//  NB : in this processor , msb is the second ( oxo1
+//
+
+#ifdef PROTECTIVE_SLEEPS
+
+#define VERS_1 0
+#define VERS_2 0
+#define VERS_3 1
+
+#else
+
+#define VERS_1 1
+#define VERS_2 2
+#define VERS_3 3
+
+#endif
+uint16_t GetFwVersionProtective(void)
+{
+uint16_t v1,v2,v3;
+
+v1 = VERS_1; v2=VERS_2 ; v3 = VERS_3;
+
+	return (v3  & 0x003F)   |   ((v2  << 6) & 0x07C0) | (( v1 << 11 ) & 0xF800);
+
+}
+
 int main(void)
 /*lint -restore Enable MISRA rule (6.3) checking. */
 {
@@ -283,8 +314,8 @@ int main(void)
    // di piatto spedita dalla control
    timerConfrontaTempPlate=0;
 
-   //printf("provo di scrivere sulla console \r\n");
 
+  int DebugCounter = 0;
   for(;;)
   {
   	  if (Service)
@@ -303,7 +334,7 @@ int main(void)
 	  /*END funzioni per leggere i canali AD*/
 
 	 /*faccio lo start della conversione sul canale AD0 ogni 50 msec*/
-	 if (timerCounterADC0 >=1)
+	 if (timerCounterADC0 >=5)
 	 {
 		Phase = 6;
 		timerCounterADC0 = 0;
@@ -316,17 +347,17 @@ int main(void)
 		if (Timer_printf_debug >= 10)
 		{
 			Timer_printf_debug = 1;
-			DebugString();
+			//DebugString_TEST();
 		}
 	 }
 	 /*faccio lo start della conversione sul canale AD1 ogni 10 msec
 	  * per avere le pressioni a 100 HZ (timerCounterADC1 si incremente ogni msec*/
 	 if (timerCounterADC1 >=10)
 	 {
-		//EnterCritical();
+		EnterCritical();
 		Phase = 7;
 		timerCounterADC1 = 0;
-		//ExitCritical();
+		ExitCritical();
 		AD1_Start();
 	 }
 
@@ -344,7 +375,14 @@ int main(void)
      /*funzione che aggiorna lo stato del sesnore si aria filtro (digitale)*/
      Manage_Air_Sensor_1();
 
-  }
+//     DebugCounter = (DebugCounter + 1) % 100000;
+//     if(DebugCounter == 0)
+//    	 Set7SegAscii(' ');
+//     else if( DebugCounter == 50000)
+//    	 Set7SegAscii('1');
+}
+
+
 
 
   /******************************************************
@@ -378,6 +416,89 @@ int main(void)
 	Per la piastra --> Allarme SEMPRE se supera 85 gradi.
 	Aggiornati anche i valori limite per la pressione
 	Temp bassa piastra per allarme , -20
+
+	Versione 1.0.002 20/12/2018
+	- Correzione void NotifyCanOnline(bool Online) nel file VerificatorRxCanValues.c , resettava sempre l'errore
+	- Correzione in Comm_Sbc.c , non inviava il valore della pressione venosa e arteriosa a SBC
+	- Modifica nella gestione dell'errore pinch non corrispondenti:
+
+		 Nel messaggio can inviato da Control a Protective saranno presenti 2 informazioni per ogni PINCH:
+		 - La posizione reale della pinch : POS_RE_CONTROL ( LS nibble )
+		 - La posizione comandata dalla Control tramite il modbus :POS_CMD  ( MS nibble)
+
+		 La posizione letta dalla protective è POS_RE_PROTE ( letta dai sensori di hall )
+
+		Algoritmo sulla protective:
+		 -(PinchVerifierStat = 1)  ENABLE_PINCH = ON :   POS_RE e POS_CMD devono corrispondere tra loro e devono corrispondere con il valore rilevato dalla protective stessa mediante i sensori di Hall.
+		   Se non corrispondono --> Allarme
+
+		 -(PinchVerifierStat = 2) ENABLE_PINCH = OFF :   POS_RE_CONTROL e POS_RE_PROTE devono corrispondere . Non valutare POS_CMD perchè sopravanzato da ENABLE= OFF.
+		 - se dopo ENABLE_PINC = OFF , torna ENABLE_PINCH = ON vai a (PinchVerifierStat = 3)
+
+		 -(PinchVerifierStat = 3)
+		 COntinua a comportarsi come quando ENABLE_PINCH = OFF fino a quando si verifica un nuovo comando che riporta allo stato (PinchVerifierStat = 1)
+
+		 tutto questo per ogni pinch
+
+	Versione 1.0.002 8/1/2019
+		Modificati i valori di allarme per pressione extrema
+		P Arteriosa max = 110 + 30 mmHg
+		P Venosa max = 10 + 2 mmHg
+		P filtro assorbente = 450 + 75 mmHg
+		P filtro ossigenazione = 500 + 80 mmHg
+
+		Modificati i valori di allarme per temperatura extrema
+		T flusso arterioso = 40 gradi + 2
+		T flusso venoso = 40 gradi + 2
+		T flusso ricircolo = 40 gradi + 2
+
+	Versione 1.0.003 9/1/2019
+		Comunicazione CAN , scambiati air alarm byte e Alarm code nel buffer #3 Control --> protective per prevenire errore allineamento.
+		Aggiunto campo per offset pressione da considerare in allarmi pressione venosa e arteriosa ( vaschetta sollevata )
+		Inserito il calcolo offset nella generazione allarme press. arteriosa alta e press venosa alta.
+		Migliorato il debug seriale con visualizzazione pressioni e temperature Contr e Prot
+
+	Versione 1.0.004 16/1/2019
+		Aggiunta la gestione dell'allarme hardware failure ( non si fermano pinch o pompe dopo disable ) per tutti
+		gli allarmi su cui è richiesto , ovvero tutti gli allarmi protective che prevedono blocco pompe e pinch in sicurezza
+
+	Versione 1.0.005 16/1/2019
+		Allarmi per mismatch parametri emessi sempre e non soltanto in trattamento
+		Allarmi Protective in genere causano sempre spegnimento frigo e riscaldatore
+
+	Versione 1.0.006 17/1/2019
+		Inserita trasmissione su seriale di debug di informazioni su stato PINCH ( comando C ) e velocità pompe ( comando M )
+
+	Versione 1.0.007 29/1/2019
+		Inserita trasmissione su seriale di debug di informazioni su stato errori control e protective ( comando E )
+
+	Versione 1.0.008 31/1/2009
+		- Modificata la funzione
+			bool ValueIsInRange(uint16_t RefValue, uint16_t Val2Test, uint16_t IDelta) // VerificatorRxCanValues
+			in questa funzuione
+			bool ValueIsInRange(short int RefValue, short int Val2Test, short unsigned int IDelta)
+			per gestire correttamente anche i valori negativi dei parametri.
+		- Modificata la funzione
+			bool PinchesAreInSafetyMode(void)
+			per considerare in sicurezza anche una  pinch chiusa da entrambi i lati.
+	Versione 1.1.000
+		- inserito il command processor su seriale per accettare comandi tipo >get temp ... >set heater on 65 ...
+		- aumentato il tempo per scatenare l'errore di temperatura troppo bassa . Infatti succede a volte T troppo bassa in
+		  ipotermia quando si fermano i motori per input utente.
+
+	Versione 1.2.000
+		- inseriti nuovi comandi command processore : get doors ( per posizione ante delle pompe laterali ) ,  get hooks ( per stato ganci reservoir )
+		  get can ( per stato can-bus : ok / not ok )
+	Versione 1.2.100
+		- gestita ricezione valori di aria in linea venosa e arteriosa da control
+		- se si riceve valore di aria >= 50 , si fa partire un timer di 5 sec.
+		- trascorsi 5 sec , se non si sono fermate le pompe e le pinch in sicurezza , si da allarme e si va in sicurezza
+	Versione 1.2.200
+		-- SB 2-5-2019 sometimes error occurs if control changes fast from 0 RPM to non 0 RPM and back , to overcome this issue
+		-- change CountTreshold depending on control RPM and local RPM vales.
+		-- if some values of RPM control or RPM protective is too low then wait longer time before error
+	Versione 1.2.300
+		-- SB 16-5-2019 high pressure alarms intervention time changed from 1 to 2 seconds.
 
 
   */

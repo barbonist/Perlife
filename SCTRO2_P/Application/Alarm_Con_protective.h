@@ -102,11 +102,10 @@
 #define CODE_ALARM_TEMP_ART_XLOW				0x1E7
 #define CODE_ALARM_TEMP_VEN_XLOW				0x1E8
 #define CODE_ALARM_TEMP_FLUID_XLOW				0x1E9
+#define CODE_ALARM_ON_ALARMS_FSM				0x1EA
 
 #define CODE_ALARM_GEN_HWFAILURE				0x1F0
 
-
-#define CODE_ALARM_
 
 #define	PHYSIC_TRUE		0xA5
 #define PHYSIC_FALSE	0x5A
@@ -176,20 +175,18 @@
 #define PR_ADS_FILTER_WARN									100
 
 #else
-#define PR_ART_HIGH											350  //100
-#define PR_ART_XHIGH										(PR_ART_HIGH	+ 30)
-#define PR_ART_LOW											0
+#define PR_ART_HIGH											110
+#define PR_ART_XHIGH										(PR_ART_HIGH	+ 40)
+#define PR_ART_LOW											2
 
-#define PR_VEN_HIGH											350
-#define PR_VEN_XHIGH										(PR_VEN_HIGH	+ 2)
+#define PR_VEN_HIGH											10
+#define PR_VEN_XHIGH										(PR_VEN_HIGH	+ 5)
 
-//#define PR_OXYG_HIGH                                        800
-#define PR_OXYG_HIGH                                        700
+#define PR_OXYG_HIGH                                        500
+#define PR_OXYG_XHIGH										(PR_OXYG_HIGH + 150)
 
-#define PR_OXYG_XHIGH										(PR_OXYG_HIGH + 80)
-
-#define PR_ADS_FILTER_HIGH									250
-#define PR_ADS_FILTER_XHIGH									(PR_ADS_FILTER_HIGH + 75)
+#define PR_ADS_FILTER_HIGH									450
+#define PR_ADS_FILTER_XHIGH									(PR_ADS_FILTER_HIGH + 150)
 
 #define PR_TUB_XHIGH										4
 
@@ -202,17 +199,17 @@
 
 // temperature
 #define TEMPER_ART_HIGH										40.0
-#define TEMPER_ART_XHIGH									(TEMPER_ART_HIGH	+1)
+#define TEMPER_ART_XHIGH									(TEMPER_ART_HIGH	+2)
 #define TEMPER_ART_LOW										3.0
 #define TEMPER_ART_XLOW										(TEMPER_ART_LOW	-1)
 
 #define TEMPER_VEN_HIGH										40.0
-#define TEMPER_VEN_XHIGH									(TEMPER_VEN_HIGH + 1)
+#define TEMPER_VEN_XHIGH									(TEMPER_VEN_HIGH + 2)
 #define TEMPER_VEN_LOW										3.0
 #define TEMPER_VEN_XLOW										(TEMPER_VEN_LOW	-1)
 
 #define TEMPER_FLUID_HIGH									40.0
-#define TEMPER_FLUID_XHIGH									(TEMPER_FLUID_HIGH + 1)
+#define TEMPER_FLUID_XHIGH									(TEMPER_FLUID_HIGH + 2)
 #define TEMPER_FLUID_LOW									3.0
 #define TEMPER_FLUID_XLOW									(TEMPER_FLUID_LOW - 1)
 

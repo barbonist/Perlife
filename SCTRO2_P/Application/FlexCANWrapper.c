@@ -80,7 +80,7 @@ LDD_TError  SendCAN(uint8_t *txbuff, int txsize, LDD_CAN_TMBIndex ChIndex)
 }
 
 
-uint8_t RxBuff004[10];
+uint8_t RxBuff004[12];
 void TestReceiveCan( LDD_CAN_TMBIndex BufferIdx ){
 
 	CAN_C_P_ReadFrame(pUserData, BufferIdx, &RxFrame);
