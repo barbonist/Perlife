@@ -115,21 +115,20 @@ typeAlarmS alarmList[] =
    // Filippo - inserito allarme per test sensore aria fallito
    {CODE_ALARM_AIR_SENSOR_TEST_KO,   PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH,    0, 2000, OVRD_NOT_ENABLED, RESET_NOT_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, FALSE},
 
-   {CODE_ALARM_MACHINE_COVERS,       PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH,    0,  100, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, FALSE},
-   {CODE_ALARM_HOOKS_RESERVOIR,      PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH,    0,  100, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, FALSE},
-   {CODE_ALARM_ART_RES_HIGH,         PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH,    0,  100, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, FALSE},
-   {CODE_ALARM_T_ART_OUT_OF_RANGE,   PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_DELTA_TEMP_HIGH,       PRIORITY_HIGH, 1000,    0, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, FALSE},
-   {CODE_ALARM_TEMP_MAX_IN_TRT,      PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_DELTA_TEMP_HIGH,       PRIORITY_HIGH, 1000,    0, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, TRUE},
-   {CODE_ALARM_TEMP_MIN_IN_TRT,      PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_DELTA_TEMP_HIGH,       PRIORITY_HIGH, 1000,    0, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, TRUE},
+   {CODE_ALARM_MACHINE_COVERS,       PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH,    0,   100, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, FALSE},
+   {CODE_ALARM_HOOKS_RESERVOIR,      PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH,    0,   100, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, FALSE},
+   {CODE_ALARM_ART_RES_HIGH,         PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH,    0,   100, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, FALSE},
+   {CODE_ALARM_T_ART_OUT_OF_RANGE,   PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_DELTA_TEMP_HIGH,       PRIORITY_HIGH, 1000,     0, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, FALSE},
+   {CODE_ALARM_TEMP_MAX_IN_TRT,      PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_DELTA_TEMP_HIGH,       PRIORITY_HIGH, 1000,     0, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, TRUE},
+   {CODE_ALARM_TEMP_MIN_IN_TRT,      PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_DELTA_TEMP_HIGH,       PRIORITY_HIGH, 1000,     0, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, TRUE},
    {CODE_ALARM_TUBE_ART_DISCONNECTED,PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH, 10000,    0, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, TRUE},
    {CODE_ALARM_TUBE_VEN_DISCONNECTED,PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH, 10000,    0, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, TRUE},
-
+   {CODE_ALARM_DEP_PUMP_STILL,       PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH, 120000,  500, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, TRUE},
+   {CODE_ALARM_PERF_ART_PUMP_STILL,  PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH, 120000,  500, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, TRUE},
+   {CODE_ALARM_OXYG_PUMP_STILL,      PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH, 120000,  500, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, TRUE},
 
    // da qui in avanti solo le warning
-   {CODE_ALARM_PRESS_ADS_FILTER_WARN,    PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR, PRIORITY_LOW,  2000,  2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, FALSE},
-   {CODE_ALARM_DEP_PUMP_STILL_WARN,      PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR, PRIORITY_LOW,  2000,  2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, FALSE},
-   {CODE_ALARM_PERF_ART_PUMP_STILL_WARN, PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR, PRIORITY_LOW,  2000,  2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, FALSE},
-   {CODE_ALARM_OXYG_PUMP_STILL_WARN,     PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR, PRIORITY_LOW,  2000,  2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, FALSE},
+   {CODE_ALARM_PRESS_ADS_FILTER_WARN, PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR, PRIORITY_LOW,  2000,  2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, FALSE},
 };
 
 void EnableDeltaTHighAlmFunc(void)
@@ -214,6 +213,20 @@ void DisableFlowAndPressSetAlarmEnableFlags(void)
    GlobalFlags.FlagsDef.EnableFlowAndPressSetAlm = 0;    // disabilito allarmi di pressione e flusso di SET operatore
 }
 
+void EnableLongPumpStopAlarms(void)
+{
+	GlobalFlags2.FlagsDef2.EnableOxyPumpStopAlarms = 1; // abilito allarmi pompe ferme a lungo
+	GlobalFlags2.FlagsDef2.EnableArtPumpStopAlarms = 1; // abilito allarmi pompe ferme a lungo
+	GlobalFlags2.FlagsDef2.EnableDepPumpStopAlarms = 1; // abilito allarmi pompe ferme a lungo
+}
+
+void DisableLongPumpStopAlarms(void)
+{
+   GlobalFlags2.FlagsDef2.EnableOxyPumpStopAlarms = 0; // disabilito allarmi pompe ferme a lungo
+   GlobalFlags2.FlagsDef2.EnableArtPumpStopAlarms = 0; // disabilito allarmi pompe ferme a lungo
+   GlobalFlags2.FlagsDef2.EnableDepPumpStopAlarms = 0; // disabilito allarmi pompe ferme a lungo
+}
+
 void SetFlowHigAlarmEnableFlags(void)
 {
    GlobalFlags.FlagsDef.EnableFlowHighAlm = 1;    // abilito allarmi di flusso massimi
@@ -263,6 +276,8 @@ void SetAllAlarmEnableFlags(void)
 	GlobalFlags.FlagsDef.EnableTempArtOORAlm = 1;
 	GlobalFlags.FlagsDef.EnableArtPressDisconnect = 1;
 	GlobalFlags.FlagsDef.EnableVenPressDisconnect = 1;
+
+	EnableLongPumpStopAlarms();
 }
 
 // Questa funzione serve per forzare ad off un eventuale allarme.
@@ -360,6 +375,15 @@ void ForceAlarmOff(uint16_t code)
 			break;
 		case CODE_ALARM_FLOW_DEP_SET:
 			GlobalFlags.FlagsDef.EnableFlowAndPressSetAlm = 0; // forzo allarme pressione e flusso SET a off
+			break;
+		case CODE_ALARM_DEP_PUMP_STILL:
+			GlobalFlags2.FlagsDef2.EnableDepPumpStopAlarms = 0; //Forzo allarme pompa dep a OFF
+			break;
+		case CODE_ALARM_PERF_ART_PUMP_STILL:
+			GlobalFlags2.FlagsDef2.EnableArtPumpStopAlarms = 0; //Forzo allarme pompa art a OFF
+			break;
+		case CODE_ALARM_OXYG_PUMP_STILL:
+			GlobalFlags2.FlagsDef2.EnableOxyPumpStopAlarms = 0; //Forzo allarme pompa oxy a OFF
 			break;
 	}
 }
@@ -1928,6 +1952,11 @@ void manageAlarmFlowSensNotDetected(void)
 	}
 }
 
+
+
+
+
+
 void manageAlarmIrTempSensNotDetected(void)
 {
 	int i;
@@ -2461,312 +2490,26 @@ void WarningPhysicPressSensHigh(void)
 
 void WarningDepPumpStill(void)
 {
-	static uint32_t StartTime50Msec;
-	switch (WrnDepPumpStillState)
-	{
-		case WRN_INIT:
-			alarmList[DEP_PUMP_STILL_WARN].physic = PHYSIC_FALSE;
-			if(WrnGlobalFlags.WrnFlagsDef.EnablePumpDepStill)
-			{
-				if((((PARAMETER_ACTIVE_TYPE)parameterWordSetFromGUI[PAR_SET_DEPURATION_ACTIVE].value) == YES) &&
-										(parameterWordSetFromGUI[PAR_SET_PURIF_FLOW_TARGET].value != 0))
-					WrnDepPumpStillState = WRN_CONTROL;
-			}
-			if(IsAlamActiveAndNotWrn())
-				WrnDepPumpStillState = WRN_WAIT_END_ALARM;
-			break;
-		case WRN_CONTROL:
-			if((((PARAMETER_ACTIVE_TYPE)parameterWordSetFromGUI[PAR_SET_DEPURATION_ACTIVE].value) != YES) ||
-									(parameterWordSetFromGUI[PAR_SET_PURIF_FLOW_TARGET].value == 0))
-			{
-				WrnDepPumpStillState = WRN_INIT;
-				break;
-			}
-			if(IsAlamActiveAndNotWrn())
-			{
-				WrnDepPumpStillState = WRN_WAIT_END_ALARM;
-				break;
-			}
-			if(WrnGlobalFlags.WrnFlagsDef.EnablePumpDepStill)
-			{
-				if(((int)(modbusData[pumpPerist[3].pmpMySlaveAddress-2][17] / 100)) <= (int)PUMP_STOPPED_SPEED_VAL)
-				{
-					alarmList[DEP_PUMP_STILL_WARN].physic = PHYSIC_FALSE;
-					StartTime50Msec = timerCounterModBus;
-					WrnDepPumpStillState = WRN_CONTROL_DELAY;
-				}
-				else
-					alarmList[DEP_PUMP_STILL_WARN].physic = PHYSIC_FALSE;
-			}
-			else
-				alarmList[DEP_PUMP_STILL_WARN].physic = PHYSIC_FALSE;
-			break;
-		case WRN_CONTROL_DELAY:
-			if((((PARAMETER_ACTIVE_TYPE)parameterWordSetFromGUI[PAR_SET_DEPURATION_ACTIVE].value) != YES) ||
-									(parameterWordSetFromGUI[PAR_SET_PURIF_FLOW_TARGET].value == 0))
-			{
-				WrnDepPumpStillState = WRN_INIT;
-				break;
-			}
-			if(IsAlamActiveAndNotWrn())
-			{
-				WrnDepPumpStillState = WRN_WAIT_END_ALARM;
-				break;
-			}
-			if(WrnGlobalFlags.WrnFlagsDef.EnablePumpDepStill)
-			{
-				if(((int)(modbusData[pumpPerist[3].pmpMySlaveAddress-2][17] / 100)) <= (int)PUMP_STOPPED_SPEED_VAL)
-				{
-					if((msTick_elapsed(StartTime50Msec) * 50L) >= DEPURATION_PUMP_STILL_TOUT)
-						alarmList[DEP_PUMP_STILL_WARN].physic = PHYSIC_TRUE;
-					else
-						alarmList[DEP_PUMP_STILL_WARN].physic = PHYSIC_FALSE;
-				}
-				else
-				{
-					// la pompa e' ripartita. Riparte il conteggio del tempo per pompa ferma
-					alarmList[DEP_PUMP_STILL_WARN].physic = PHYSIC_FALSE;
-					WrnDepPumpStillState = WRN_CONTROL;
-				}
-			}
-			else
-			{
-				// ho ricevuto il reset dell'allarme
-				alarmList[DEP_PUMP_STILL_WARN].physic = PHYSIC_FALSE;
-				// faccio ripartire il controllo dei due minuti
-				WrnGlobalFlags.WrnFlagsDef.EnablePumpDepStill = 1;
-				WrnDepPumpStillState = WRN_CONTROL;
-			}
-			break;
-		case WRN_WAIT_END_ALARM:
-			if(!IsAlamActiveAndNotWrn())
-			{
-				// allarme finito le pompe dovrebbero essere in fase di
-				// ripartenza
-				WrnDepPumpStillState = WRN_INIT;
-				WrnGlobalFlags.WrnFlagsDef.EnablePumpDepStill = 1;
-			}
-			break;
-		case WRN_WAIT_LOWER_LEV:
-			break;
-	}
+
 }
 
 
 // allarme di pompa arteriosa ferma (valida per rene e fegato)
 void WarningPerfArtPumpStill(void)
 {
-	static uint32_t StartTime50Msec;
-	switch (WrnPerfArtPumpStillState)
-	{
-		case WRN_INIT:
-			alarmList[PERF_ART_PUMP_STILL_WRN].physic = PHYSIC_FALSE;
-			if(WrnGlobalFlags.WrnFlagsDef.EnablePumpPerfArtStill)
-			{
-				if(parameterWordSetFromGUI[PAR_SET_MAX_FLOW_PERFUSION].value != 0)
-					WrnPerfArtPumpStillState = WRN_CONTROL;
-			}
-			if(IsAlamActiveAndNotWrn())
-				WrnPerfArtPumpStillState = WRN_WAIT_END_ALARM;
-			break;
-		case WRN_CONTROL:
-			if(parameterWordSetFromGUI[PAR_SET_MAX_FLOW_PERFUSION].value == 0)
-			{
-				WrnPerfArtPumpStillState = WRN_INIT;
-				break;
-			}
-			if(IsAlamActiveAndNotWrn())
-			{
-				WrnPerfArtPumpStillState = WRN_WAIT_END_ALARM;
-				break;
-			}
-			if(WrnGlobalFlags.WrnFlagsDef.EnablePumpPerfArtStill)
-			{
-				if(((int)(modbusData[pumpPerist[0].pmpMySlaveAddress-2][17] / 100)) <= (int)PUMP_STOPPED_SPEED_VAL)
-				{
-					alarmList[PERF_ART_PUMP_STILL_WRN].physic = PHYSIC_FALSE;
-					StartTime50Msec = timerCounterModBus;
-					WrnPerfArtPumpStillState = WRN_CONTROL_DELAY;
-				}
-				else
-					alarmList[PERF_ART_PUMP_STILL_WRN].physic = PHYSIC_FALSE;
-			}
-			else
-				alarmList[PERF_ART_PUMP_STILL_WRN].physic = PHYSIC_FALSE;
-			break;
-		case WRN_CONTROL_DELAY:
-			if(parameterWordSetFromGUI[PAR_SET_MAX_FLOW_PERFUSION].value == 0)
-			{
-				WrnPerfArtPumpStillState = WRN_INIT;
-				break;
-			}
-			if(IsAlamActiveAndNotWrn())
-			{
-				WrnPerfArtPumpStillState = WRN_WAIT_END_ALARM;
-				break;
-			}
-			if(WrnGlobalFlags.WrnFlagsDef.EnablePumpPerfArtStill)
-			{
-				if(((int)(modbusData[pumpPerist[0].pmpMySlaveAddress-2][17] / 100)) <= (int)PUMP_STOPPED_SPEED_VAL)
-				{
-					if((msTick_elapsed(StartTime50Msec) * 50L) >= DEPURATION_PUMP_STILL_TOUT)
-						alarmList[PERF_ART_PUMP_STILL_WRN].physic = PHYSIC_TRUE;
-					else
-						alarmList[PERF_ART_PUMP_STILL_WRN].physic = PHYSIC_FALSE;
-				}
-				else
-				{
-					// la pompa e' ripartita. Riparte il conteggio del tempo per pompa ferma
-					alarmList[PERF_ART_PUMP_STILL_WRN].physic = PHYSIC_FALSE;
-					WrnPerfArtPumpStillState = WRN_CONTROL;
-				}
-			}
-			else
-			{
-				// ho ricevuto il reset dell'allarme
-				alarmList[PERF_ART_PUMP_STILL_WRN].physic = PHYSIC_FALSE;
-				// faccio ripartire il controllo dei due minuti
-				WrnGlobalFlags.WrnFlagsDef.EnablePumpPerfArtStill = 1;
-				WrnPerfArtPumpStillState = WRN_CONTROL;
-			}
-			break;
-		case WRN_WAIT_END_ALARM:
-			if(!IsAlamActiveAndNotWrn())
-			{
-				// allarme finito le pompe dovrebbero essere in fase di
-				// ripartenza
-				WrnPerfArtPumpStillState = WRN_INIT;
-				WrnGlobalFlags.WrnFlagsDef.EnablePumpPerfArtStill = 1;
-			}
-			break;
-		case WRN_WAIT_LOWER_LEV:
-			break;
-	}
+
 }
 
 
 // allarme di pompa ossigenazione ferma (valida per rene e fegato)
 void WarningOxygPumpStill(void)
 {
-	static uint32_t StartTime50Msec;
-	switch (WrnOxygPumpStillState)
-	{
-		case WRN_INIT:
-			alarmList[OXYG_PUMP_STILL_WRN].physic = PHYSIC_FALSE;
-			if(WrnGlobalFlags.WrnFlagsDef.EnablePumpOxygStill)
-			{
-				if(GetTherapyType() == KidneyTreat)
-				{
-					// nel caso di rene posso scegliere se applicare l'ossigenazione o no
-					if((((PARAMETER_ACTIVE_TYPE)parameterWordSetFromGUI[PAR_SET_OXYGENATOR_ACTIVE].value) == YES) &&
-					   (parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value != 0))
-						WrnOxygPumpStillState = WRN_CONTROL;
-				}
-				else if(parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value != 0)
-				{
-					// nel caso del fegato controllo solo il valore del flusso
-					WrnOxygPumpStillState = WRN_CONTROL;
-				}
-			}
-			if(IsAlamActiveAndNotWrn())
-				WrnOxygPumpStillState = WRN_WAIT_END_ALARM;
-			break;
-		case WRN_CONTROL:
-			if(GetTherapyType() == KidneyTreat)
-			{
-				if((((PARAMETER_ACTIVE_TYPE)parameterWordSetFromGUI[PAR_SET_OXYGENATOR_ACTIVE].value) != YES) ||
-				   (parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value == 0))
-				{
-					WrnOxygPumpStillState = WRN_INIT;
-					break;
-				}
-			}
-			else if(parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value == 0)
-			{
-				WrnOxygPumpStillState = WRN_INIT;
-				break;
-			}
-			if(IsAlamActiveAndNotWrn())
-			{
-				WrnOxygPumpStillState = WRN_WAIT_END_ALARM;
-				break;
-			}
-			if(WrnGlobalFlags.WrnFlagsDef.EnablePumpOxygStill)
-			{
-				if(((int)(modbusData[pumpPerist[1].pmpMySlaveAddress-2][17] / 100)) <= (int)PUMP_STOPPED_SPEED_VAL)
-				{
-					alarmList[OXYG_PUMP_STILL_WRN].physic = PHYSIC_FALSE;
-					StartTime50Msec = timerCounterModBus;
-					WrnOxygPumpStillState = WRN_CONTROL_DELAY;
-				}
-				else
-					alarmList[OXYG_PUMP_STILL_WRN].physic = PHYSIC_FALSE;
-			}
-			else
-				alarmList[OXYG_PUMP_STILL_WRN].physic = PHYSIC_FALSE;
-			break;
-		case WRN_CONTROL_DELAY:
-			if(GetTherapyType() == KidneyTreat)
-			{
-				if((((PARAMETER_ACTIVE_TYPE)parameterWordSetFromGUI[PAR_SET_OXYGENATOR_ACTIVE].value) != YES) ||
-				   (parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value == 0))
-				{
-					WrnOxygPumpStillState = WRN_INIT;
-					break;
-				}
-			}
-			else if(parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value == 0)
-			{
-				WrnOxygPumpStillState = WRN_INIT;
-				break;
-			}
-			if(IsAlamActiveAndNotWrn())
-			{
-				WrnOxygPumpStillState = WRN_WAIT_END_ALARM;
-				break;
-			}
-			if(WrnGlobalFlags.WrnFlagsDef.EnablePumpOxygStill)
-			{
-				if(((int)(modbusData[pumpPerist[1].pmpMySlaveAddress-2][17] / 100)) <= (int)PUMP_STOPPED_SPEED_VAL)
-				{
-					if((msTick_elapsed(StartTime50Msec) * 50L) >= DEPURATION_PUMP_STILL_TOUT)
-						alarmList[OXYG_PUMP_STILL_WRN].physic = PHYSIC_TRUE;
-					else
-						alarmList[OXYG_PUMP_STILL_WRN].physic = PHYSIC_FALSE;
-				}
-				else
-				{
-					// la pompa e' ripartita. Riparte il conteggio del tempo per pompa ferma
-					alarmList[OXYG_PUMP_STILL_WRN].physic = PHYSIC_FALSE;
-					WrnOxygPumpStillState = WRN_CONTROL;
-				}
-			}
-			else
-			{
-				// ho ricevuto il reset dell'allarme
-				alarmList[OXYG_PUMP_STILL_WRN].physic = PHYSIC_FALSE;
-				// faccio ripartire il controllo dei due minuti
-				WrnGlobalFlags.WrnFlagsDef.EnablePumpOxygStill = 1;
-				WrnOxygPumpStillState = WRN_CONTROL;
-			}
-			break;
-		case WRN_WAIT_END_ALARM:
-			if(!IsAlamActiveAndNotWrn())
-			{
-				// allarme finito le pompe dovrebbero essere in fase di
-				// ripartenza
-				WrnOxygPumpStillState = WRN_INIT;
-				WrnGlobalFlags.WrnFlagsDef.EnablePumpOxygStill = 1;
-			}
-			break;
-		case WRN_WAIT_LOWER_LEV:
-			break;
-	}
+
 }
 
 void manageWarningPhysicPressSensHigh(void)
 {
-	if(WrnGlobalFlags.WrnFlagsDef.GenEnableAdsPressHigk)
+	if (WrnGlobalFlags.WrnFlagsDef.GenEnableAdsPressHigk)
 	{
 		WarningPhysicPressSensHigh();
 	}
@@ -2775,38 +2518,88 @@ void manageWarningPhysicPressSensHigh(void)
 		alarmList[PRESS_ADS_FILTER_WARN].physic = PHYSIC_FALSE;
 	}
 }
-void manageWarningDepPumpStill(void)
+
+void manageAlarmDepPumpStill(void)
 {
-	if(WrnGlobalFlags.WrnFlagsDef.GenEnablePumpDepStill)
+	// Allarme attivo && DEPURAZIONE ON
+	if ((GlobalFlags2.FlagsDef2.EnableDepPumpStopAlarms) && (((PARAMETER_ACTIVE_TYPE)parameterWordSetFromGUI[PAR_SET_DEPURATION_ACTIVE].value) == YES))
 	{
-		WarningDepPumpStill();
+		if (((PARAMETER_ACTIVE_TYPE)parameterWordSetFromGUI[PAR_SET_PURIF_FLOW_TARGET].value > 0) && 			// SET DEPURAZIONE > 0
+		    (((int)(modbusData[pumpPerist[3].pmpMySlaveAddress-2][17] / 100)) <= (int)PUMP_STOPPED_SPEED_VAL))  // Velocità bassa
+		{
+			alarmList[DEP_PUMP_STILL].physic = PHYSIC_TRUE;
+		}
+		else
+		{
+			alarmList[DEP_PUMP_STILL].physic = PHYSIC_FALSE;
+		}
 	}
 	else
 	{
-		alarmList[PRESS_ADS_FILTER_WARN].physic = PHYSIC_FALSE;
+		alarmList[DEP_PUMP_STILL].physic = PHYSIC_FALSE;
 	}
 }
-void manageWarningPerfArtPumpStill(void)
+
+void manageAlarmPerfArtPumpStill(void)
 {
-	if(WrnGlobalFlags.WrnFlagsDef.GenEnablePumpPerfArtStill)
+	// Allarme attivo
+	if (GlobalFlags2.FlagsDef2.EnableArtPumpStopAlarms)
 	{
-		WarningPerfArtPumpStill();
+		// Velocità pompa bassa?
+		if (((int)(modbusData[pumpPerist[0].pmpMySlaveAddress-2][17] / 100)) <= (int)PUMP_STOPPED_SPEED_VAL)
+		{
+			alarmList[PERF_ART_PUMP_STILL].physic = PHYSIC_TRUE;
+		}
+		else
+		{
+			alarmList[PERF_ART_PUMP_STILL].physic = PHYSIC_FALSE;
+		}
 	}
 	else
 	{
-		alarmList[PRESS_ADS_FILTER_WARN].physic = PHYSIC_FALSE;
+		alarmList[PERF_ART_PUMP_STILL].physic = PHYSIC_FALSE;
 	}
 }
-void manageWarningOxygPumpStill(void)
+
+void manageAlarmOxygPumpStill(void)
 {
-	if(WrnGlobalFlags.WrnFlagsDef.GenEnablePumpOxygStill)
+	if (GlobalFlags2.FlagsDef2.EnableOxyPumpStopAlarms)
 	{
-		WarningOxygPumpStill();
+		if (GetTherapyType() == KidneyTreat)
+		{
+			if ((((PARAMETER_ACTIVE_TYPE)parameterWordSetFromGUI[PAR_SET_OXYGENATOR_ACTIVE].value) == YES) && (parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value != 0))
+			{
+				if(((int)(modbusData[pumpPerist[1].pmpMySlaveAddress-2][17] / 100)) <= (int)PUMP_STOPPED_SPEED_VAL)
+				{
+					alarmList[OXYG_PUMP_STILL].physic = PHYSIC_TRUE;
+				}
+				else
+				{
+					alarmList[OXYG_PUMP_STILL].physic = PHYSIC_FALSE;
+				}
+			}
+			else
+				alarmList[OXYG_PUMP_STILL].physic = PHYSIC_FALSE;
+		}
+		else if (GetTherapyType() == LiverTreat)
+		{
+			if (parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value != 0)
+			{
+				if(((int)(modbusData[pumpPerist[1].pmpMySlaveAddress-2][17] / 100)) <= (int)PUMP_STOPPED_SPEED_VAL)
+				{
+					alarmList[OXYG_PUMP_STILL].physic = PHYSIC_TRUE;
+				}
+				else
+				{
+					alarmList[OXYG_PUMP_STILL].physic = PHYSIC_FALSE;
+				}
+			}
+			else
+				alarmList[OXYG_PUMP_STILL].physic = PHYSIC_FALSE;
+		}
 	}
 	else
-	{
-		alarmList[PRESS_ADS_FILTER_WARN].physic = PHYSIC_FALSE;
-	}
+		alarmList[OXYG_PUMP_STILL].physic = PHYSIC_FALSE;
 }
 
 
@@ -2843,10 +2636,10 @@ void CalcWarningActive(void)
 		{
 			manageWarningPhysicPressSensHigh();
 			if(GetTherapyType() == LiverTreat)
-				manageWarningDepPumpStill();
+				manageAlarmDepPumpStill();
 
-			manageWarningPerfArtPumpStill();
-			manageWarningOxygPumpStill();
+			manageAlarmPerfArtPumpStill();
+			manageAlarmOxygPumpStill();
 			break;
 		}
 

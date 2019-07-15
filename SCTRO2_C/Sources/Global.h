@@ -24,7 +24,7 @@
 	 * 0x0807 --> 1.0.7  *0x0808 -->  1.0.8 *0x0809 --> 1.0.9 *0x080A --> 1.0.10  *0x080B --> 1.0.11 *0x080C --> 1.0.12 *0x080D --> 1.0.13
 	 * 0x080E --> 1.0.14 *0x080F --> 1.0.15 *0x0810 --> 1.0.16 *0x0811 --> 1.0.17 *0x0812 --> 1.0.18 *0x0813 --> 1.0.19 *0x0814 --> 1.0.20*/
 
-#define REVISION_FW_CONTROL 0x0814
+#define REVISION_FW_CONTROL 0x0815
 
 /* Syncronization flag */
 char	iflag_pc_rx;
@@ -1923,8 +1923,14 @@ typedef struct
 	unsigned int EnableFlowHighAlm          : 1;    // abilito allarmi di flusso massimi
 	unsigned int EnableArtPressDisconnect   : 1;    // abilito allarmi di mancata connessione della linea sul sensore di pressione artersioso
 	unsigned int EnableVenPressDisconnect   : 1;    // abilito allarmi di mancata connessione della linea sul sensore di pressione venoso
-
 }FLAGS_DEF;
+
+typedef struct
+{
+	unsigned int EnableOxyPumpStopAlarms       : 1;    // abilito allarmi di stop prolungato delle pompe
+	unsigned int EnableArtPumpStopAlarms       : 1;    // abilito allarmi di stop prolungato delle pompe
+	unsigned int EnableDepPumpStopAlarms       : 1;    // abilito allarmi di stop prolungato delle pompe
+}FLAGS_DEF2;
 
 typedef struct
 {
@@ -1946,11 +1952,19 @@ typedef union
 
 typedef union
 {
+    FLAGS_DEF2 FlagsDef2;
+	unsigned int FlagsVal2;
+}GLOBAL_FLAGS2;
+
+
+typedef union
+{
     WRN_FLAGS_DEF WrnFlagsDef;
 	unsigned int WrnFlagsVal;
 }WRN_GLOBAL_FLAGS;
 
 GLOBAL_FLAGS GlobalFlags;
+GLOBAL_FLAGS2 GlobalFlags2;
 WRN_GLOBAL_FLAGS WrnGlobalFlags;
 
 // 0 cover della pompa 0 aperto

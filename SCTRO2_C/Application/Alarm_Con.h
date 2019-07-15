@@ -43,8 +43,6 @@ typedef struct elementActiveListWrn sActiveListWrnS;
 #define CODE_ALARM_PRESS_VEN_HIGH				0X03
 #define CODE_ALARM_PRESS_VEN_SET				0X04
 #define CODE_ALARM_PRESS_ADS_FILTER_HIGH		0X05
-#define CODE_ALARM_PRESS_PLASMA_FILTER_HIGH		0X06
-#define CODE_ALARM_PRESS_FRACTION_FILTER_HIGH	0X07
 #define CODE_ALARM_PRESS_OXYG_INLET				0x08
 #define CODE_ALARM_PRESS_ADS_FILTER_LOW         0x09
 #define CODE_ALARM_PRESS_OXYG_LOW               0x0a
@@ -119,17 +117,19 @@ typedef struct elementActiveListWrn sActiveListWrnS;
 #define CODE_ALARM_TUBE_ART_DISCONNECTED		0xA2
 #define CODE_ALARM_TUBE_VEN_DISCONNECTED		0xA3
 
+// pompa di depurazione ferma
+#define CODE_ALARM_DEP_PUMP_STILL    		    0xA4
+// pompa arteriosa ferma (valido per rene e fegato)
+#define CODE_ALARM_PERF_ART_PUMP_STILL  		0xA5
+// pompa oxy ferma (valido per rene e fegato)
+#define CODE_ALARM_OXYG_PUMP_STILL              0xA6
+
 // fissato a 200 ed e' il codice di errore di partenza degli allarmi protective
 #define CODE_ALARM_PROT_START_VAL               0xc8
 
 // da qui in avanti i codici delle warning
 #define CODE_ALARM_PRESS_ADS_FILTER_WARN		0X105
 
-// warning pompa di depurazione ferma
-#define CODE_ALARM_DEP_PUMP_STILL_WARN		    0x106
-// warning di pompa arteriosa ferma (valido per rene e fegato)
-#define CODE_ALARM_PERF_ART_PUMP_STILL_WARN		0x107
-#define CODE_ALARM_OXYG_PUMP_STILL_WARN         0x108
 // A partire dal codice 448 gli allarmi vengono visualizzati a GUI senza il tasto RESET
 // L'allarme T1 Test è bloccante per il momento, in futuro potrebbe essere resettabile per forzare una riesecuzione del test fallito
 #define CODE_ALARM_TEST_T1		  				0x258
@@ -279,13 +279,12 @@ enum ALARM
 	 TEMP_MIN_IN_TREAT,
 	 TUBE_ART_DISCONNECTED,
 	 TUBE_VEN_DISCONNECTED,
-
+	 DEP_PUMP_STILL,
+	 PERF_ART_PUMP_STILL,
+	 OXYG_PUMP_STILL,
 	 FIRST_WARNING,
 	 // da qui in avanti i codici delle warning
 	 PRESS_ADS_FILTER_WARN = FIRST_WARNING,
-	 DEP_PUMP_STILL_WARN,
-	 PERF_ART_PUMP_STILL_WRN,
-	 OXYG_PUMP_STILL_WRN
 };
 
 // Nuova gestione allarmi: aprile 2019
@@ -342,6 +341,10 @@ void SetAllAlarmEnableFlags(void);
 // Allarmi di SET pressione e flusso
 void EnableFlowAndPressSetAlarmEnableFlags(void);
 void DisableFlowAndPressSetAlarmEnableFlags(void);
+
+// Allarmi di pompe ferme a lungo
+void EnableLongPumpStopAlarms(void);
+void DisableLongPumpStopAlarms(void);
 
 // Allarmi di flusso massimi
 void SetFlowHigAlarmEnableFlags(void);
