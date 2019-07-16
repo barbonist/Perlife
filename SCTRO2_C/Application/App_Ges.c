@@ -3794,6 +3794,8 @@ void EmptyDispStateMach(void)
 			GlobalFlags.FlagsDef.EnableCoversAlarm = 1;
 			// abilito gli allarmi su modbus
 			GlobalFlags.FlagsDef.EnableModbusNotRespAlm = 1;
+			//Abilito allarmi hooks
+			GlobalFlags.FlagsDef.EnableHooksReservoir = 1;
 			//Abilito allarmi di flusso massimo
 			SetFlowHigAlarmEnableFlags();
 			EmptyDispRunAlwaysState = WAIT_FOR_1000ML;
