@@ -77,11 +77,11 @@ typedef struct elementActiveListWrn sActiveListWrnS;
 #define CODE_ALARM_PRIM_AIR_PRES_VEN			84
 #define CODE_ALARM_PRIM_AIR_PRES_FILTER      	85
 
-#define CODE_ALARM_PUMP_PERF_COVER_OPEN			112		//LIVER - perf
-#define CODE_ALARM_PUMP_PERF_COVER_OPEN_KD		113		//KIDNEY - perf
-#define CODE_ALARM_PUMP_PURIF_COVER_OPEN		114		//LIVER - dep
-#define CODE_ALARM_PUMP_VEN_COVER_OPEN			115		//LIVER - ven
-#define CODE_ALARM_PUMP_OXY_COVER_OPEN			116		//KIDNEY - oxy
+#define CODE_ALARM_PUMP_PERF_COVER_OPEN			112		//LIVER  - perfusion
+#define CODE_ALARM_PUMP_PERF_COVER_OPEN_KD		113		//KIDNEY - perfusion
+#define CODE_ALARM_PUMP_PURIF_COVER_OPEN		114		//LIVER  - depuration
+#define CODE_ALARM_PUMP_VEN_COVER_OPEN			115		//LIVER  - venous
+#define CODE_ALARM_PUMP_OXY_COVER_OPEN			116		//KIDNEY - oxygen
 #define CODE_ALARM_ART_RES_HIGH                 117
 
 #define CODE_ALARM_MODBUS_ACTUATOR_SEND         144
@@ -93,9 +93,10 @@ typedef struct elementActiveListWrn sActiveListWrnS;
 
 #define CODE_ALARM_MACHINE_COVERS               160 //NON ATTIVO
 #define CODE_ALARM_HOOKS_RESERVOIR              161
-#define CODE_ALARM_DEP_PUMP_STILL    		    164
-#define CODE_ALARM_PERF_ART_PUMP_STILL  		165
-#define CODE_ALARM_OXYG_PUMP_STILL              166
+#define CODE_ALARM_DEP_PUMP_STILL    		    164		//LIVER 		- depuration
+#define CODE_ALARM_PERF_ART_PUMP_STILL  		165     //LIVER-KIDNEY 	- perfusion
+#define CODE_ALARM_PERF_VEN_PUMP_STILL          166     //LIVER 		- venous
+#define CODE_ALARM_OXYG_PUMP_STILL            	167     //KIDNEY 		- oxygen
 
 // fissato a 200 ed e' il codice di errore di partenza degli allarmi protective
 #define CODE_ALARM_PROT_START_VAL               200
@@ -257,6 +258,7 @@ enum ALARM
 	 TUBE_VEN_DISCONNECTED,					//CODE_ALARM_TUBE_VEN_DISCONNECTED
 	 DEP_PUMP_STILL,						//CODE_ALARM_DEP_PUMP_STILL
 	 PERF_ART_PUMP_STILL,					//CODE_ALARM_PERF_ART_PUMP_STILL
+	 VEN_PUMP_STILL,						//CODE_ALARM_PERF_VEN_PUMP_STILL
 	 OXYG_PUMP_STILL,						//CODE_ALARM_OXYG_PUMP_STILL
 	 FIRST_WARNING,
 	 // da qui in avanti i codici delle warning

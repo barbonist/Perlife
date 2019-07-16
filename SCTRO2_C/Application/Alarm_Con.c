@@ -183,6 +183,9 @@ typeAlarmS alarmList[] =
    // Perfusione Arteriosa Ferma
    {CODE_ALARM_PERF_ART_PUMP_STILL,  PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH, 120000,  500, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, TRUE},
 
+   // Perfusione Venosa Ferma
+   {CODE_ALARM_PERF_VEN_PUMP_STILL,  PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH, 120000,  500, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, TRUE},
+
    // Ossigenazione Ferma
    {CODE_ALARM_OXYG_PUMP_STILL,      PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH, 120000,  500, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, TRUE},
 
@@ -1940,7 +1943,6 @@ void manageAlarmT1Test(void)
 			alarmList[ALARM_T1_TEST].physic = PHYSIC_FALSE;
 		}
 	}
-
 }
 
 //Allarme T1 test relativo ai segnali digitali
@@ -2630,26 +2632,36 @@ void manageAlarmOxygPumpStill(void)
 			}
 			else
 				alarmList[OXYG_PUMP_STILL].physic = PHYSIC_FALSE;
+
+			// perfusione venosa non presente nei trattamenti kidney
+			alarmList[VEN_PUMP_STILL].physic = PHYSIC_FALSE;
 		}
 		else if (GetTherapyType() == LiverTreat)
 		{
+			// Set perfusione venosa
 			if (parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value != 0)
 			{
 				if(((int)(modbusData[pumpPerist[1].pmpMySlaveAddress-2][17] / 100)) <= (int)PUMP_STOPPED_SPEED_VAL)
 				{
-					alarmList[OXYG_PUMP_STILL].physic = PHYSIC_TRUE;
+					alarmList[VEN_PUMP_STILL].physic = PHYSIC_TRUE;
 				}
 				else
 				{
-					alarmList[OXYG_PUMP_STILL].physic = PHYSIC_FALSE;
+					alarmList[VEN_PUMP_STILL].physic = PHYSIC_FALSE;
 				}
 			}
 			else
-				alarmList[OXYG_PUMP_STILL].physic = PHYSIC_FALSE;
+				alarmList[VEN_PUMP_STILL].physic = PHYSIC_FALSE;
+
+			// nei trattamenti liver l'ossigenazione coincide con la perfusione venosa
+			alarmList[OXYG_PUMP_STILL].physic = PHYSIC_FALSE;
 		}
 	}
 	else
+	{
 		alarmList[OXYG_PUMP_STILL].physic = PHYSIC_FALSE;
+		alarmList[VEN_PUMP_STILL].physic = PHYSIC_FALSE;
+	}
 }
 
 
