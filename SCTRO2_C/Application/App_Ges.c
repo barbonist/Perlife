@@ -3035,8 +3035,6 @@ void manageParentTreatAlways(void)
 			TreatDuration = 0;
 			StartTreatmentTime = 0;
 			StartPrimingTime = 0;
-			//GlobalFlags.FlagsDef.EnableAllAlarms = 0;
-			//DisableAllAlarm();
 			//FilterFlowVal = 0;
 			// Filippo - devo spegnere il PID
 			FrigoHeatTempControlTaskNewPID((LIQ_TEMP_CONTR_TASK_CMD)TEMP_MANAGER_STOPPED_CMD);
@@ -3306,8 +3304,6 @@ void manageParentTreatAlways(void)
 			TotalTreatDuration += TreatDuration;
 			TreatDuration = 0;
 			StartTreatmentTime = 0;
-			//GlobalFlags.FlagsDef.EnableAllAlarms = 0;
-			//DisableAllAlarm();
 			//FilterFlowVal = 0;
 			// Filippo - devo spegnere il PID
 			FrigoHeatTempControlTaskNewPID((LIQ_TEMP_CONTR_TASK_CMD)TEMP_MANAGER_STOPPED_CMD);

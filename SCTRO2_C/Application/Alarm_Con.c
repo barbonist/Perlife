@@ -87,8 +87,10 @@ typeAlarmS alarmList[] =
 
    // allarmi di cover aperte
    {CODE_ALARM_PUMP_PERF_COVER_OPEN,  PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH,    0,  100, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, FALSE},
+   {CODE_ALARM_PUMP_PERF_COVER_OPEN_KD,PHYSIC_FALSE,ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH,    0,  100, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, FALSE},
    {CODE_ALARM_PUMP_PURIF_COVER_OPEN, PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH,    0,  100, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, FALSE},
-   {CODE_ALARM_PUMP_OXYG_COVER_OPEN,  PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH,    0,  100, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, FALSE},
+   {CODE_ALARM_PUMP_VEN_COVER_OPEN,   PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH,    0,  100, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, FALSE},
+   {CODE_ALARM_PUMP_OXY_COVER_OPEN,   PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH,    0,  100, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, FALSE},
 
    // Allarme livello BASSO
    {CODE_ALARM_TANK_LEVEL_LOW,        PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH,30000,30000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, FALSE},
@@ -257,7 +259,6 @@ void DisableAllAirAlarm(bool dis)
 void DisableAllAlarm()
 {
 	GlobalFlags.FlagsVal = 0;
-	//GlobalFlags.FlagsDef.EnableAllAlarms = 1;
 }
 
 void EnableFlowAndPressSetAlarmEnableFlags(void)
@@ -351,7 +352,8 @@ void ForceAlarmOff(uint16_t code)
 			break;
 		case CODE_ALARM_PUMP_PERF_COVER_OPEN:
 		case CODE_ALARM_PUMP_PURIF_COVER_OPEN:
-		case CODE_ALARM_PUMP_OXYG_COVER_OPEN:
+		case CODE_ALARM_PUMP_OXY_COVER_OPEN:
+		case CODE_ALARM_PUMP_PERF_COVER_OPEN_KD:
 			GlobalFlags.FlagsDef.EnableCoversAlarm = 0;    // forzo allarme di cover a off
 			break;
 		case CODE_ALARM_PRESS_ADS_FILTER_LOW:
@@ -546,7 +548,7 @@ void ShowAlarmStr(int i, char * str)
 			strcat(s, str);
 			DebugStringStr(s);
 			break;
-		case CODE_ALARM_PUMP_OXYG_COVER_OPEN:
+		case CODE_ALARM_PUMP_OXY_COVER_OPEN:
 			strcpy(s, "OXYG_COVER_OPEN");
 			strcat(s, str);
 			DebugStringStr(s);
@@ -1231,15 +1233,15 @@ void manageAlarmCoversPumpLiver(void)
 			alarmList[PERF_COVER_OPEN].physic = PHYSIC_FALSE;
 
 		if (coverStateGlobal & 0x04 || coverStateGlobal & 0x08)
-			alarmList[OXYG_COVER_OPEN].physic = PHYSIC_TRUE;
+			alarmList[VEN_COVER_OPEN].physic = PHYSIC_TRUE;
 		else
-			alarmList[OXYG_COVER_OPEN].physic = PHYSIC_FALSE;
+			alarmList[VEN_COVER_OPEN].physic = PHYSIC_FALSE;
 	}
 	else
 	{
 		alarmList[PURIF_COVER_OPEN].physic = PHYSIC_FALSE;
 		alarmList[PERF_COVER_OPEN].physic = PHYSIC_FALSE;
-		alarmList[OXYG_COVER_OPEN].physic = PHYSIC_FALSE;
+		alarmList[VEN_COVER_OPEN].physic = PHYSIC_FALSE;
 	}
 }
 
@@ -1249,22 +1251,21 @@ void manageAlarmCoversPumpKidney(void)
 	if (GlobalFlags.FlagsDef.EnableCoversAlarm)
 	{
 		if (coverStateGlobal & 0x01)
-			alarmList[PURIF_COVER_OPEN].physic = PHYSIC_TRUE;
+			alarmList[PERF_COVER_OPEN_KD].physic = PHYSIC_TRUE;
 		else
-			alarmList[PURIF_COVER_OPEN].physic = PHYSIC_FALSE;
+			alarmList[PERF_COVER_OPEN_KD].physic = PHYSIC_FALSE;
 
 		if (coverStateGlobal & 0x04 || coverStateGlobal & 0x08)
-			alarmList[OXYG_COVER_OPEN].physic = PHYSIC_TRUE;
+			alarmList[OXY_COVER_OPEN].physic = PHYSIC_TRUE;
 		else
-			alarmList[OXYG_COVER_OPEN].physic = PHYSIC_FALSE;
+			alarmList[OXY_COVER_OPEN].physic = PHYSIC_FALSE;
 	}
 	else
 	{
-		alarmList[PURIF_COVER_OPEN].physic = PHYSIC_FALSE;
-		alarmList[OXYG_COVER_OPEN].physic = PHYSIC_FALSE;
+		alarmList[PERF_COVER_OPEN_KD].physic = PHYSIC_FALSE;
+		alarmList[OXY_COVER_OPEN].physic = PHYSIC_FALSE;
 	}
 
-	alarmList[PERF_COVER_OPEN].physic = PHYSIC_FALSE;
 }
 
 void manageAlarmPhysicPressSensLow(void)
@@ -1920,7 +1921,6 @@ void manageAlarmStopButtonPressed(void)
 			alarmList[ALARM_STOP_BUTTON].physic = PHYSIC_FALSE;
 		}
 	}
-
 }
 
 // Filippo - funzione che gestisce l'allarme di pressione del tasto di stop
