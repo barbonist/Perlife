@@ -16,7 +16,6 @@
 #include "ModBusCommProt.h"
 
 
-
 void CommandExecute( int argc, char** argv);
 char** ExtractTokens(char* CommandNParamsString);
 void SetMulti(int NParams, char** Params);
@@ -50,6 +49,10 @@ void GetPinches(int NParams, char** Params);
 void GetErrors(int NParams, char** Params);
 void GetPumpsHall(int NParams, char** Params);
 void GetFWVersion(int NParams, char** Params);
+void EnableMulti(int NParams, char** Params);
+void EnablePump(int NParams, char** Params);
+void EnablePinch(int NParams, char** Params);
+void EnablePower(int NParams, char** Params);
 
 void DrawLion(int NParams, char** Params);
 
@@ -71,6 +74,7 @@ struct CommandNParams CommandsAvailable[] =
 {
 		{ "set", 2 , SetMulti },
 		{ "get", 2 , GetMulti },
+		{ "enable", 2 , EnableMulti },
 		{ "DrawLion", 2 , DrawLion }
 };
 
@@ -492,7 +496,102 @@ void CoolerOnOff(int CoolerPower)
 
 }
 
+void EnableMulti(int NParams, char** Params)
 
+{
+       // execute
+             if(NParams < 1){
+                    ErrorNParamsNotOk(NParams, Params);
+                    return;
+             }
+             // parse what to set
+             if(strcmp_cr(Params[0],"pump") == 0) EnablePump(NParams-1, Params+1);
+             else if(strcmp_cr(Params[0],"pinch") == 0) EnablePinch(NParams-1, Params+1);
+             else if (strcmp_cr(Params[0],"power") == 0) EnablePower(NParams-1, Params+1);
+
+             else {
+                    //ErrorParamsNotOk( NParams, Params);
+                    CommandAnswer("enable pumps/pinchs/power on/off");
+                    return;
+             }
+}
+
+void EnablePump(int NParams, char** Params)
+{
+	bool enab_val;
+
+       // parse on off
+       if(NParams != 1)
+       {
+             CommandAnswer("enable pump on/off");
+             return;
+       }
+       if(strcmp_cr(Params[0],"on") == 0) enab_val = TRUE;
+       else if(strcmp_cr(Params[0],"off") == 0) enab_val = FALSE;
+
+       else
+       {
+             //ErrorParamsNotOk( NParams, Params);
+             CommandAnswer("enable pump on/off");
+             return;
+       }
+
+       if( enab_val )
+       	   EN_Motor_Control(ENABLE);
+       else // if (enab_val == FALSE)
+       	   EN_Motor_Control(DISABLE);
+}
+
+void EnablePinch(int NParams, char** Params)
+{
+	bool enab_val;
+
+       // parse on off
+       if(NParams != 1){
+             CommandAnswer("enable power on/off");
+             return;
+       }
+       if(strcmp_cr(Params[0],"on") == 0) enab_val = TRUE;
+       else if(strcmp_cr(Params[0],"off") == 0) enab_val = FALSE;
+
+       else
+       {
+             //ErrorParamsNotOk( NParams, Params);
+             CommandAnswer("enable pinch on/off");
+             return;
+       }
+
+       if( enab_val )
+		   EN_Clamp_Control(ENABLE);
+	   else // if (enab_val == FALSE)
+		   EN_Clamp_Control(DISABLE);
+}
+
+void EnablePower(int NParams, char** Params)
+{
+	bool enab_val;
+
+       // parse on off
+       if(NParams != 1){
+             CommandAnswer("enable power on/off");
+             return;
+       }
+       if(strcmp_cr(Params[0],"on") == 0) enab_val = TRUE;
+       else if(strcmp_cr(Params[0],"off") == 0) enab_val = FALSE;
+
+       else
+       {
+             //ErrorParamsNotOk( NParams, Params);
+             CommandAnswer("enable power on/off");
+             return;
+       }
+
+       if(enab_val)
+    	   EN_24_M_C_Management(ENABLE);
+	   else // if (enab_val == FALSE)
+		   EN_24_M_C_Management(DISABLE);
+
+}
 
 //
 // if str to check include final cr , neglect it to avoid
