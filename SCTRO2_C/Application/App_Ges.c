@@ -3790,7 +3790,7 @@ void EmptyDispStateMach(void)
 				// nel caso del rene sono le pompe di ossigenazione che svuotano il recevoir
 				setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, KIDNEY_EMPTY_PPAR_SPEED);
 			}
-			// nel processo di svuotamento non mi servono tutti gli allarmi ma solo quelli di aria
+			// nel processo di svuotamento non mi servono tutti gli allarmi
 			DisableAllAlarm();
 			// abilito anche gli allarmi di pressione alta
 			GlobalFlags.FlagsDef.EnablePressSensHighAlm = 1;
@@ -3798,6 +3798,8 @@ void EmptyDispStateMach(void)
 			GlobalFlags.FlagsDef.EnableCoversAlarm = 1;
 			// abilito gli allarmi su modbus
 			GlobalFlags.FlagsDef.EnableModbusNotRespAlm = 1;
+			//Abilito allarmi di flusso massimo
+			SetFlowHigAlarmEnableFlags();
 			EmptyDispRunAlwaysState = WAIT_FOR_1000ML;
 		}
 		else if(buttonGUITreatment[BUTTON_PRIMING_ABANDON].state == GUI_BUTTON_RELEASED)
