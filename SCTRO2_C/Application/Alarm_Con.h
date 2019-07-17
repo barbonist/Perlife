@@ -36,7 +36,7 @@ typedef struct elementActiveListWrn sActiveListWrnS;
 //#define CODE_ALARM1		0x01
 //#define CODE_ALARM2		0x02
 
-#define ALARM_ACTIVE_IN_STRUCT					45
+#define ALARM_ACTIVE_IN_STRUCT					53
 
 #define CODE_ALARM_PRESS_ART_HIGH				1
 #define CODE_ALARM_PRESS_ART_SET				2
