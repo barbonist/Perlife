@@ -36,7 +36,7 @@ typedef struct elementActiveListWrn sActiveListWrnS;
 //#define CODE_ALARM1		0x01
 //#define CODE_ALARM2		0x02
 
-#define ALARM_ACTIVE_IN_STRUCT					53
+#define ALARM_ACTIVE_IN_STRUCT					54
 
 #define CODE_ALARM_PRESS_ART_HIGH				1
 #define CODE_ALARM_PRESS_ART_SET				2
@@ -50,7 +50,7 @@ typedef struct elementActiveListWrn sActiveListWrnS;
 #define CODE_ALARM_FLOW_VEN_SET                 12
 #define CODE_ALARM_FLOW_DEP_SET                 13
 #define CODE_ALARM_FLOW_OXY_HIGH                14
-//#define CODE_ALARM_FLOW_OXY_SET                15
+#define CODE_ALARM_FLOW_OXY_SET                 15
 #define CODE_ALARM_TUBE_ART_DISCONNECTED		16
 #define CODE_ALARM_TUBE_VEN_DISCONNECTED		17
 
@@ -179,6 +179,7 @@ typedef struct elementActiveListWrn sActiveListWrnS;
 //Allarmi relativi ai set di flusso
 #define DELTA_TARGET_FLOW_ART_LIVER							50 // ml/min
 #define DELTA_TARGET_FLOW_VEN_LIVER							100 // ml/min
+#define DELTA_TARGET_FLOW_OXY_KIDNEY						100 // ml/min
 #define DELTA_TARGET_FLOW_DEP_LIVER							50 // ml/min
 #define DELTA_TARGET_FLOW_ART_KIDNEY						50 // ml/min
 
@@ -233,6 +234,7 @@ enum ALARM
 	 PRESS_OXYG_LOW,						//CODE_ALARM_PRESS_OXYG_LOW
 	 FLOW_ART_SET,							//CODE_ALARM_FLOW_ART_SET
 	 FLOW_VEN_SET,							//CODE_ALARM_FLOW_VEN_SET
+	 FLOW_OXY_SET,							//CODE_ALARM_FLOW_OXY_SET
 	 FLOW_DEP_SET,							//CODE_ALARM_FLOW_DEP_SET
 	 MODBUS_ACTUATOR_SEND,					//CODE_ALARM_MODBUS_ACTUATOR_SEND
 	 ALARM_FROM_PROTECTIVE,					//CODE_ALARM_PROT_START_VAL

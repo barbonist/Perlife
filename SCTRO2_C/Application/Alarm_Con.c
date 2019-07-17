@@ -133,6 +133,9 @@ typeAlarmS alarmList[] =
    // Flusso Perf. Venosa Alto
    {CODE_ALARM_FLOW_VEN_SET,          PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH, 60000, 2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0,  TRUE},
 
+   // Flusso Ossigenazione a Alto
+   {CODE_ALARM_FLOW_OXY_SET,          PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH, 60000, 2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0,  TRUE},
+
    // Flusso Depurazione Alto
    {CODE_ALARM_FLOW_DEP_SET,          PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH, 60000, 2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0,  TRUE},
 
@@ -1442,7 +1445,7 @@ void manageAlarmPhysicSetFlowAndPressures(void)
 			else
 				alarmList[FLOW_DEP_SET].physic = PHYSIC_FALSE;
 		}
-		else //Kidney, solo arteriosa
+		else //Kidney, pressione arteriosa, flusso arterioso e flusso ossigenazione
 		{
 			// Allarme di SET pressione arteriosa -- Vincenzo: lo attivo solo se la pinch arteriosa è aperta sull'organo
 			if ((PR_ART_mmHg_Filtered > pressureTargetArt + DELTA_TARGET_PRESS_ART_KIDNEY) && (Pinch_Art_Position == MODBUS_PINCH_LEFT_OPEN))
@@ -1455,6 +1458,13 @@ void manageAlarmPhysicSetFlowAndPressures(void)
 				alarmList[FLOW_ART_SET].physic = PHYSIC_TRUE;
 			else
 				alarmList[FLOW_ART_SET].physic = PHYSIC_FALSE;
+
+			// Allarme di SET flusso ossigenazione attivo solo se perfusione attiva
+			// flowTargetVen corrisponde al set ossigenazione
+			if ((sensor_UFLOW[1].Average_Flow_Val  > flowTargetVen + DELTA_TARGET_FLOW_OXY_KIDNEY) && (Pinch_Art_Position == MODBUS_PINCH_LEFT_OPEN))
+				alarmList[FLOW_OXY_SET].physic = PHYSIC_TRUE;
+			else
+				alarmList[FLOW_OXY_SET].physic = PHYSIC_FALSE;
 		}
 	}
 	else
@@ -1464,6 +1474,7 @@ void manageAlarmPhysicSetFlowAndPressures(void)
 		alarmList[FLOW_ART_SET].physic = PHYSIC_FALSE;
 		alarmList[FLOW_VEN_SET].physic = PHYSIC_FALSE;
 		alarmList[FLOW_DEP_SET].physic = PHYSIC_FALSE;
+		alarmList[FLOW_OXY_SET].physic = PHYSIC_FALSE;
 	}
 }
 
