@@ -363,6 +363,7 @@ int main(void)
   Prescaler_Tick_TEST=0;
   FreeRunCnt10msec = 0;
   Service = FALSE;
+  FlowSensCalibDone = FALSE;
   // Filippo - timer per gestire l'eventuale riaccensione del frigo
   timerCounterFrigoOn=ATTESA_FRIGO_OFF_NEW_PID;	// forzo il timer già scaduto perchè alla prima accensione deve partire subito
 

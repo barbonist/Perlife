@@ -1540,6 +1540,7 @@ int pollingDataToSBC;
 unsigned char codeDBG;
 unsigned char subcodeDBG;
 bool Service;
+bool FlowSensCalibDone;
 
 /*variabile globale per il tasto di emergenza; diventa TRUE se tasto premuto*/
 bool EMERGENCY_BUTTON_ACTIVATION;
