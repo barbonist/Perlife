@@ -3035,8 +3035,6 @@ void manageParentTreatAlways(void)
 			TreatDuration = 0;
 			StartTreatmentTime = 0;
 			StartPrimingTime = 0;
-			//GlobalFlags.FlagsDef.EnableAllAlarms = 0;
-			//DisableAllAlarm();
 			//FilterFlowVal = 0;
 			// Filippo - devo spegnere il PID
 			FrigoHeatTempControlTaskNewPID((LIQ_TEMP_CONTR_TASK_CMD)TEMP_MANAGER_STOPPED_CMD);
@@ -3130,6 +3128,7 @@ void manageParentTreatAlways(void)
 			//GlobalFlags.FlagsDef.EnableAllAlarms = 1;
 			SetAllAlarmEnableFlags();
 			EnableFlowAndPressSetAlarmEnableFlags();
+			EnableLongPumpStopAlarms();
 			SetFlowHigAlarmEnableFlags();
 			EnableBadPinchPosAlmFunc();
 			// disabilito allarme di livello alto in trattamento (per ora)
@@ -3305,8 +3304,6 @@ void manageParentTreatAlways(void)
 			TotalTreatDuration += TreatDuration;
 			TreatDuration = 0;
 			StartTreatmentTime = 0;
-			//GlobalFlags.FlagsDef.EnableAllAlarms = 0;
-			//DisableAllAlarm();
 			//FilterFlowVal = 0;
 			// Filippo - devo spegnere il PID
 			FrigoHeatTempControlTaskNewPID((LIQ_TEMP_CONTR_TASK_CMD)TEMP_MANAGER_STOPPED_CMD);
@@ -3405,6 +3402,7 @@ void manageParentTreatAlways(void)
 			SetAllAlarmEnableFlags();
 			EnableBadPinchPosAlmFunc();
 			EnableFlowAndPressSetAlarmEnableFlags();
+			EnableLongPumpStopAlarms();
 			SetFlowHigAlarmEnableFlags();
 			// disabilito allarme di livello alto in trattamento (per ora)
 			GlobalFlags.FlagsDef.EnableLevHighAlarm = 0;
@@ -3788,7 +3786,7 @@ void EmptyDispStateMach(void)
 				// nel caso del rene sono le pompe di ossigenazione che svuotano il recevoir
 				setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, KIDNEY_EMPTY_PPAR_SPEED);
 			}
-			// nel processo di svuotamento non mi servono tutti gli allarmi ma solo quelli di aria
+			// nel processo di svuotamento non mi servono tutti gli allarmi
 			DisableAllAlarm();
 			// abilito anche gli allarmi di pressione alta
 			GlobalFlags.FlagsDef.EnablePressSensHighAlm = 1;
@@ -3796,6 +3794,10 @@ void EmptyDispStateMach(void)
 			GlobalFlags.FlagsDef.EnableCoversAlarm = 1;
 			// abilito gli allarmi su modbus
 			GlobalFlags.FlagsDef.EnableModbusNotRespAlm = 1;
+			//Abilito allarmi hooks
+			GlobalFlags.FlagsDef.EnableHooksReservoir = 1;
+			//Abilito allarmi di flusso massimo
+			SetFlowHigAlarmEnableFlags();
 			EmptyDispRunAlwaysState = WAIT_FOR_1000ML;
 		}
 		else if(buttonGUITreatment[BUTTON_PRIMING_ABANDON].state == GUI_BUTTON_RELEASED)

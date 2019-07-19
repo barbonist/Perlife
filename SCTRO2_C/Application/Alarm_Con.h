@@ -35,104 +35,78 @@ typedef struct elementActiveListWrn sActiveListWrnS;
 //#define CODE_ALARM0		0x00
 //#define CODE_ALARM1		0x01
 //#define CODE_ALARM2		0x02
-//#define ALARM_ACTIVE_IN_STRUCT					31
-// Filippo - aggiunto allarme tasto di stop e allarme T1
-#define ALARM_ACTIVE_IN_STRUCT					45
-#define CODE_ALARM_PRESS_ART_HIGH				0X01
-#define CODE_ALARM_PRESS_ART_SET				0X02
-#define CODE_ALARM_PRESS_VEN_HIGH				0X03
-#define CODE_ALARM_PRESS_VEN_SET				0X04
-#define CODE_ALARM_PRESS_ADS_FILTER_HIGH		0X05
-#define CODE_ALARM_PRESS_PLASMA_FILTER_HIGH		0X06
-#define CODE_ALARM_PRESS_FRACTION_FILTER_HIGH	0X07
-#define CODE_ALARM_PRESS_OXYG_INLET				0x08
-#define CODE_ALARM_PRESS_ADS_FILTER_LOW         0x09
-#define CODE_ALARM_PRESS_OXYG_LOW               0x0a
-#define CODE_ALARM_FLOW_ART_SET					0x0b
-#define CODE_ALARM_FLOW_VEN_SET                 0x0c
-#define CODE_ALARM_FLOW_DEP_SET                 0x0d
 
-// codice per allarme di superamento della temperatura massima o minima
-// Viene usato in priming\ricircolo
-#define CODE_ALARM_TEMP_ART_LOW					0x11
-#define CODE_ALARM_TEMP_VEN_HIGH				0x12
-#define CODE_ALARM_TEMP_VEN_LOW					0x13
-#define CODE_ALARM_TEMP_NTC_HIGH				0x14
-#define CODE_ALARM_TEMP_NTC_LOW					0x15
-#define CODE_ALARM_TEMP_SENS_NOT_DETECTED		0x16
-#define CODE_ALARM_DELTA_TEMP_REC_ART		    0x17
-#define CODE_ALARM_DELTA_TEMP_REC_VEN		    0x18
-// codice per allarme di temperatura fuori range di almeno due gradi.
-// Viene usato in trattamento
-#define CODE_ALARM_T_ART_OUT_OF_RANGE           0x19
-// codice per allarme di superamento della temperatura massima o minima
-// Viene usato in trattamento
-#define CODE_ALARM_TEMP_MAX_IN_TRT              0x1a
-#define CODE_ALARM_TEMP_MIN_IN_TRT              0x1b
+#define ALARM_ACTIVE_IN_STRUCT					54
 
-#define CODE_ALARM_FLOW_PERF_ART_HIGH			0x20
-#define CODE_ALARM_FLOW_PERF_VEN_HIGH			0x21
-#define CODE_ALARM_FLOW_ART_NOT_DETECTED		0x24
-#define CODE_ALARM_DELTA_FLOW_ART       		0x25
-#define CODE_ALARM_DELTA_FLOW_VEN       		0x26
+#define CODE_ALARM_PRESS_ART_HIGH				1
+#define CODE_ALARM_PRESS_ART_SET				2
+#define CODE_ALARM_PRESS_VEN_HIGH				3
+#define CODE_ALARM_PRESS_VEN_SET				4
+#define CODE_ALARM_PRESS_ADS_FILTER_HIGH		5
+#define CODE_ALARM_PRESS_OXYG_INLET				8
+#define CODE_ALARM_PRESS_ADS_FILTER_LOW         9
+#define CODE_ALARM_PRESS_OXYG_LOW               10
+#define CODE_ALARM_FLOW_ART_SET					11
+#define CODE_ALARM_FLOW_VEN_SET                 12
+#define CODE_ALARM_FLOW_DEP_SET                 13
+#define CODE_ALARM_FLOW_OXY_HIGH                14
+#define CODE_ALARM_FLOW_OXY_SET                 15
+#define CODE_ALARM_TUBE_ART_DISCONNECTED		16
+#define CODE_ALARM_TUBE_VEN_DISCONNECTED		17
 
+#define CODE_ALARM_TEMP_SENS_NOT_DETECTED		22
+#define CODE_ALARM_DELTA_TEMP_REC_ART		    23
+#define CODE_ALARM_DELTA_TEMP_REC_VEN		    24
+#define CODE_ALARM_T_ART_OUT_OF_RANGE           25
+#define CODE_ALARM_TEMP_MAX_IN_TRT              26
+#define CODE_ALARM_TEMP_MIN_IN_TRT              27
 
-#define CODE_ALARM_TANK_LEVEL_LOW				0x30
-#define CODE_ALARM_TANK_LEVEL_HIGH				0x31
+#define CODE_ALARM_FLOW_PERF_ART_HIGH			32
+#define CODE_ALARM_FLOW_PERF_VEN_HIGH			33
+#define CODE_ALARM_DELTA_FLOW_ART       		37
+#define CODE_ALARM_DELTA_FLOW_VEN       		38
 
-#define CODE_ALARM_AIR_PRES_ART					0x50
-#define CODE_ALARM_AIR_PRES_VEN					0x51
-#define CODE_ALARM_AIR_PRES_FILTER      		0x52
-#define CODE_ALARM_PRIM_AIR_PRES_ART            0x53
-#define CODE_ALARM_PRIM_AIR_PRES_VEN			0x54
-#define CODE_ALARM_PRIM_AIR_PRES_FILTER      	0x55
+#define CODE_ALARM_TANK_LEVEL_LOW				48
+#define CODE_ALARM_TANK_LEVEL_HIGH				49
+#define CODE_ALARM_FLOW_NOT_DETECTED		    52
 
+#define CODE_ALARM_AIR_PRES_ART					80
+#define CODE_ALARM_AIR_PRES_VEN					81
+#define CODE_ALARM_AIR_PRES_FILTER      		82
+#define CODE_ALARM_PRIM_AIR_PRES_ART            83
+#define CODE_ALARM_PRIM_AIR_PRES_VEN			84
+#define CODE_ALARM_PRIM_AIR_PRES_FILTER      	85
 
-#define CODE_ALARM_STOP_ALL_ACTUATOR			0X60 /* pump, pinch, peltier */
-#define CODE_ALARM_STOP_ALL_PUMP				0X61 /* pump */
-#define CODE_ALARM_STOP_PERF_PUMP				0x62 /* stop perfusion pump*/
-#define CODE_ALARM_STOP_OXYG_PUMP				0x63 /* stop oxygenation pump */
-#define CODE_ALARM_STOP_PURIF_PUMP				0x64 /* stop purification pump */
-#define CODE_ALARM_STOP_PELTIER					0x65 /* stop peltier */
+#define CODE_ALARM_PUMP_PERF_COVER_OPEN			112		//LIVER  - perfusion
+#define CODE_ALARM_PUMP_PERF_COVER_OPEN_KD		113		//KIDNEY - perfusion
+#define CODE_ALARM_PUMP_PURIF_COVER_OPEN		114		//LIVER  - depuration
+#define CODE_ALARM_PUMP_VEN_COVER_OPEN			115		//LIVER  - venous
+#define CODE_ALARM_PUMP_OXY_COVER_OPEN			116		//KIDNEY - oxygen
+#define CODE_ALARM_ART_RES_HIGH                 117
 
-#define CODE_ALARM_PUMP_PERF_COVER_OPEN			0x70
-#define CODE_ALARM_PUMP_PURIF_COVER_OPEN		0x71
-#define CODE_ALARM_PUMP_OXYG_COVER_OPEN			0x73
-#define CODE_ALARM_PUMPS_NOT_STILL              0x74
-#define CODE_ALARM_ART_RES_HIGH                 0x75
-
-#define CODE_ALARM_END_PRIMING_PHASE_1			0x80
-#define CODE_ALARM_END_PRIMING_PHASE_2			0x81
-#define CODE_ALARM_END_TREATMENT				0x85
-
-#define CODE_ALARM_MODBUS_ACTUATOR_SEND         0x90
-#define CODE_ALARM_CAN_BUS_ERROR                0x91
+#define CODE_ALARM_MODBUS_ACTUATOR_SEND         144
+#define CODE_ALARM_CAN_BUS_ERROR                145
 #define CODE_ALARM_BAD_PINCH_POS                0x92
 
-// Filippo - definisco codice allarme per il tasto di stop
-#define CODE_ALARM_EMERGENCY_BUTTON             0x93
-#define CODE_ALARM_AIR_SENSOR_TEST_KO			0x95
+#define CODE_ALARM_EMERGENCY_BUTTON             147 //NON USATO
+#define CODE_ALARM_AIR_SENSOR_TEST_KO			149
 
-#define CODE_ALARM_MACHINE_COVERS               0xA0
-#define CODE_ALARM_HOOKS_RESERVOIR              0xA1
-
-#define CODE_ALARM_TUBE_ART_DISCONNECTED		0xA2
-#define CODE_ALARM_TUBE_VEN_DISCONNECTED		0xA3
+#define CODE_ALARM_MACHINE_COVERS               160 //NON ATTIVO
+#define CODE_ALARM_HOOKS_RESERVOIR              161
+#define CODE_ALARM_DEP_PUMP_STILL    		    164		//LIVER 		- depuration
+#define CODE_ALARM_PERF_ART_PUMP_STILL  		165     //LIVER-KIDNEY 	- perfusion
+#define CODE_ALARM_PERF_VEN_PUMP_STILL          166     //LIVER 		- venous
+#define CODE_ALARM_OXYG_PUMP_STILL            	167     //KIDNEY 		- oxygen
 
 // fissato a 200 ed e' il codice di errore di partenza degli allarmi protective
-#define CODE_ALARM_PROT_START_VAL               0xc8
+#define CODE_ALARM_PROT_START_VAL               200
 
 // da qui in avanti i codici delle warning
-#define CODE_ALARM_PRESS_ADS_FILTER_WARN		0X105
+#define CODE_ALARM_PRESS_ADS_FILTER_WARN		261
 
-// warning pompa di depurazione ferma
-#define CODE_ALARM_DEP_PUMP_STILL_WARN		    0x106
-// warning di pompa arteriosa ferma (valido per rene e fegato)
-#define CODE_ALARM_PERF_ART_PUMP_STILL_WARN		0x107
-#define CODE_ALARM_OXYG_PUMP_STILL_WARN         0x108
 // A partire dal codice 448 gli allarmi vengono visualizzati a GUI senza il tasto RESET
 // L'allarme T1 Test è bloccante per il momento, in futuro potrebbe essere resettabile per forzare una riesecuzione del test fallito
-#define CODE_ALARM_TEST_T1		  				0x258
+#define CODE_ALARM_TEST_T1		  				600
 
 #define	PHYSIC_TRUE		0xA5
 #define PHYSIC_FALSE	0x5A
@@ -205,6 +179,7 @@ typedef struct elementActiveListWrn sActiveListWrnS;
 //Allarmi relativi ai set di flusso
 #define DELTA_TARGET_FLOW_ART_LIVER							50 // ml/min
 #define DELTA_TARGET_FLOW_VEN_LIVER							100 // ml/min
+#define DELTA_TARGET_FLOW_OXY_KIDNEY						100 // ml/min
 #define DELTA_TARGET_FLOW_DEP_LIVER							50 // ml/min
 #define DELTA_TARGET_FLOW_ART_KIDNEY						50 // ml/min
 
@@ -225,40 +200,44 @@ typedef struct elementActiveListWrn sActiveListWrnS;
 enum ALARM
 {
 	 FIRST_ALARM = 0,
-	 PRESS_ART_HIGH = FIRST_ALARM,
-	 PRESS_ART_SET,
-	 AIR_PRES_ART,
-	 AIR_PRES_VEN,
-	 SAF_AIR_SENSOR,
-	 PRESS_ADS_FILTER_HIGH,
-	 FLOW_PERF_ART_HIGH,
-	 FLOW_PERF_VEN_HIGH,
-	 FLOW_SENS_NOT_DETECTED,
-	 PRESS_VEN_HIGH,
-	 PRESS_VEN_SET,
-	 PRESS_OXYG_HIGH,
-	 IR_SENS_NOT_DETECTED,
-	 PERF_COVER_OPEN,
-	 PURIF_COVER_OPEN,
-	 OXYG_COVER_OPEN,
-	 LIQUID_LEVEL_LOW,
-	 LIQUID_LEVEL_HIGH,
-	 DELTA_FLOW_ART,
-	 DELTA_FLOW_VEN,
-	 DELTA_TEMP_REC_ART,
-	 DELTA_TEMP_REC_VEN,
-	 CAN_BUS_ERROR,
-	 BAD_PINCH_POS,
-	 PRIM_AIR_ON_ART,
-	 PRIM_AIR_ON_VEN,
-	 PRIM_AIR_ON_FILTER,
-	 PRESS_ADS_FILTER_LOW,
-	 PRESS_OXYG_LOW,
-	 FLOW_ART_SET,
-	 FLOW_VEN_SET,
-	 FLOW_DEP_SET,
-	 MODBUS_ACTUATOR_SEND,
-	 ALARM_FROM_PROTECTIVE,
+	 PRESS_ART_HIGH = FIRST_ALARM,			//CODE_ALARM_PRESS_ART_HIGH					//OK
+	 PRESS_ART_SET,							//CODE_ALARM_PRESS_ART_SET					//OK
+	 AIR_PRES_ART,							//CODE_ALARM_AIR_PRES_ART					//OK
+	 AIR_PRES_VEN,							//CODE_ALARM_AIR_PRES_VEN					//OK
+	 SAF_AIR_SENSOR,						//CODE_ALARM_AIR_PRES_FILTER				//OK
+	 PRESS_ADS_FILTER_HIGH,					//CODE_ALARM_PRESS_ADS_FILTER_HIGH			//OK
+	 FLOW_PERF_ART_HIGH,					//CODE_ALARM_FLOW_PERF_ART_HIGH				//OK
+	 FLOW_PERF_VEN_HIGH,					//CODE_ALARM_FLOW_PERF_VEN_HIGH				//OK
+	 FLOW_OXY_HIGH,							//CODE_ALARM_OXY_HIGH						//OK
+	 FLOW_SENS_NOT_DETECTED,				//CODE_ALARM_FLOW_NOT_DETECTED
+	 PRESS_VEN_HIGH,						//CODE_ALARM_PRESS_VEN_HIGH
+	 PRESS_VEN_SET,							//CODE_ALARM_PRESS_VEN_SET
+	 PRESS_OXYG_HIGH,						//CODE_ALARM_PRESS_OXYG_INLET
+	 IR_SENS_NOT_DETECTED,					//CODE_ALARM_TEMP_SENS_NOT_DETECTED
+	 PERF_COVER_OPEN,						//CODE_ALARM_PUMP_PERF_COVER_OPEN
+	 PERF_COVER_OPEN_KD,					//CODE_ALARM_PUMP_PERF_COVER_OPEN_KD
+	 PURIF_COVER_OPEN,						//CODE_ALARM_PUMP_PURIF_COVER_OPEN
+	 VEN_COVER_OPEN,						//CODE_ALARM_PUMP_VEN_COVER_OPEN
+	 OXY_COVER_OPEN,						//CODE_ALARM_PUMP_OXY_COVER_OPEN
+	 LIQUID_LEVEL_LOW,						//CODE_ALARM_TANK_LEVEL_LOW
+	 LIQUID_LEVEL_HIGH,						//CODE_ALARM_TANK_LEVEL_HIGH
+	 DELTA_FLOW_ART,						//CODE_ALARM_DELTA_FLOW_ART
+	 DELTA_FLOW_VEN,						//CODE_ALARM_DELTA_FLOW_VEN
+	 DELTA_TEMP_REC_ART,					//CODE_ALARM_DELTA_TEMP_REC_ART
+	 DELTA_TEMP_REC_VEN,					//CODE_ALARM_DELTA_TEMP_REC_VEN
+	 CAN_BUS_ERROR,							//CODE_ALARM_CAN_BUS_ERROR
+	 BAD_PINCH_POS,							//CODE_ALARM_BAD_PINCH_POS
+	 PRIM_AIR_ON_ART,						//CODE_ALARM_PRIM_AIR_PRES_ART
+	 PRIM_AIR_ON_VEN,						//CODE_ALARM_PRIM_AIR_PRES_VEN
+	 PRIM_AIR_ON_FILTER,					//CODE_ALARM_PRIM_AIR_PRES_FILTER
+	 PRESS_ADS_FILTER_LOW,					//CODE_ALARM_PRESS_ADS_FILTER_LOW
+	 PRESS_OXYG_LOW,						//CODE_ALARM_PRESS_OXYG_LOW
+	 FLOW_ART_SET,							//CODE_ALARM_FLOW_ART_SET
+	 FLOW_VEN_SET,							//CODE_ALARM_FLOW_VEN_SET
+	 FLOW_OXY_SET,							//CODE_ALARM_FLOW_OXY_SET
+	 FLOW_DEP_SET,							//CODE_ALARM_FLOW_DEP_SET
+	 MODBUS_ACTUATOR_SEND,					//CODE_ALARM_MODBUS_ACTUATOR_SEND
+	 ALARM_FROM_PROTECTIVE,					//CODE_ALARM_PROT_START_VAL
 
 	 // Filippo - inserisco il codice di allarme
 	 ALARM_STOP_BUTTON,
@@ -272,20 +251,20 @@ enum ALARM
 	 //Allarme per sensori di cover anteriori
      ALARM_MACHINE_COVERS,
 	 //Allarme per sensori dei ganci reservoire
-	 ALARM_HOOKS_RESERVOIR,
-     ARTERIAL_RESIST_HIGH,
-	 TEMP_ART_OOR,
-	 TEMP_MAX_IN_TREAT,
-	 TEMP_MIN_IN_TREAT,
-	 TUBE_ART_DISCONNECTED,
-	 TUBE_VEN_DISCONNECTED,
-
+	 ALARM_HOOKS_RESERVOIR,					//CODE_ALARM_HOOKS_RESERVOIR
+     ARTERIAL_RESIST_HIGH,					//CODE_ALARM_ART_RES_HIGH
+	 TEMP_ART_OOR,							//CODE_ALARM_T_ART_OUT_OF_RANGE
+	 TEMP_MAX_IN_TREAT,						//CODE_ALARM_TEMP_MAX_IN_TRT
+	 TEMP_MIN_IN_TREAT,						//CODE_ALARM_TEMP_MIN_IN_TRT
+	 TUBE_ART_DISCONNECTED,					//CODE_ALARM_TUBE_ART_DISCONNECTED
+	 TUBE_VEN_DISCONNECTED,					//CODE_ALARM_TUBE_VEN_DISCONNECTED
+	 DEP_PUMP_STILL,						//CODE_ALARM_DEP_PUMP_STILL
+	 PERF_ART_PUMP_STILL,					//CODE_ALARM_PERF_ART_PUMP_STILL
+	 VEN_PUMP_STILL,						//CODE_ALARM_PERF_VEN_PUMP_STILL
+	 OXYG_PUMP_STILL,						//CODE_ALARM_OXYG_PUMP_STILL
 	 FIRST_WARNING,
 	 // da qui in avanti i codici delle warning
-	 PRESS_ADS_FILTER_WARN = FIRST_WARNING,
-	 DEP_PUMP_STILL_WARN,
-	 PERF_ART_PUMP_STILL_WRN,
-	 OXYG_PUMP_STILL_WRN
+	 PRESS_ADS_FILTER_WARN = FIRST_WARNING,	//CODE_ALARM_PRESS_ADS_FILTER_WARN
 };
 
 // Nuova gestione allarmi: aprile 2019
@@ -342,6 +321,10 @@ void SetAllAlarmEnableFlags(void);
 // Allarmi di SET pressione e flusso
 void EnableFlowAndPressSetAlarmEnableFlags(void);
 void DisableFlowAndPressSetAlarmEnableFlags(void);
+
+// Allarmi di pompe ferme a lungo
+void EnableLongPumpStopAlarms(void);
+void DisableLongPumpStopAlarms(void);
 
 // Allarmi di flusso massimi
 void SetFlowHigAlarmEnableFlags(void);
