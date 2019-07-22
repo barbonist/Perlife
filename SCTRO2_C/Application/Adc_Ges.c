@@ -221,11 +221,11 @@ void Coversion_From_ADC_To_degree_T_PLATE_Sensor()
 void Coversion_From_ADC_To_mmHg_Pressure_Sensor()
 {
 
-	PR_OXYG_mmHg 	= config_data.sensor_PRx[OXYG].prSensGain    * PR_OXYG_ADC    + config_data.sensor_PRx[OXYG].prSensOffset;
+	PR_OXYG_mmHg 	= (word)(config_data.sensor_PRx[OXYG].prSensGain    * PR_OXYG_ADC    + config_data.sensor_PRx[OXYG].prSensOffset + 0.5);
 	PR_LEVEL_mmHg 	= (word)((config_data.sensor_PRx[LEVEL].prSensGain   * PR_LEVEL_ADC   + config_data.sensor_PRx[LEVEL].prSensOffset) * 100.0 + 0.5);
-	PR_ADS_FLT_mmHg = config_data.sensor_PRx[ADS_FLT].prSensGain * PR_ADS_FLT_ADC + config_data.sensor_PRx[ADS_FLT].prSensOffset;
-	PR_VEN_mmHg 	= config_data.sensor_PRx[VEN].prSensGain     * PR_VEN_ADC     + config_data.sensor_PRx[VEN].prSensOffset;
-	PR_ART_mmHg 	= config_data.sensor_PRx[ART].prSensGain     * PR_ART_ADC     + config_data.sensor_PRx[ART].prSensOffset;
+	PR_ADS_FLT_mmHg = (word)(config_data.sensor_PRx[ADS_FLT].prSensGain * PR_ADS_FLT_ADC + config_data.sensor_PRx[ADS_FLT].prSensOffset + 0.5);
+	PR_VEN_mmHg 	= (word)(config_data.sensor_PRx[VEN].prSensGain     * PR_VEN_ADC     + config_data.sensor_PRx[VEN].prSensOffset + 0.5);
+	PR_ART_mmHg 	= (word)(config_data.sensor_PRx[ART].prSensGain     * PR_ART_ADC     + config_data.sensor_PRx[ART].prSensOffset + 0.5);
 
 }
 
@@ -780,8 +780,9 @@ int meanWA(unsigned char dimNum, int newSensVal, char IdSens)
 	int numSumValue = 0;
 	int denValue=0;
 	int numTotal=0;
+	float numTotalFloat;
 
-	if(dimNum <= 255){
+	if (dimNum <= 255){
 	for(int i=(dimNum-1); i>0; i--)
 	{
 		denValue = denValue + i;
@@ -794,7 +795,8 @@ int meanWA(unsigned char dimNum, int newSensVal, char IdSens)
 	circularBuffer[IdSens] [0] = newSensVal;
 	numSumValue = numSumValue + (circularBuffer [IdSens] [0]*dimNum);
 	denValue = denValue + dimNum;
-	numTotal = (numSumValue/denValue);
+	numTotalFloat = ((float)numSumValue/(float)denValue);
+	numTotal = (int)(numTotalFloat + 0.5);
 
 	return numTotal;
 	}
