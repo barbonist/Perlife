@@ -43,6 +43,8 @@
 
 //#define CAN_DEBUG 1
 
+
+
 union URxCan {
 	uint8_t RawCanBuffer[SIZE_CAN_BUFFER];
 	struct {
@@ -62,7 +64,7 @@ union URxCan {
 	} SRxCan4;
 	// Filippo - messo campo per lo scambio del valore di temperatura piatto
 	struct {
-		uint8_t Free1;	uint8_t Free2;	int16_t tempPlateC;	uint8_t TherapyType ;	uint8_t AirArtLevel;	uint8_t AirVenLevel;	uint8_t Free8;
+		uint8_t Free1;	uint8_t Free2;	int16_t tempPlateC;	uint8_t TherapyType ;	uint8_t AirArtLevel;	uint8_t AirVenLevel;	uint8_t CommandFromControl;
 	} SRxCan5;
 	struct {
 		uint8_t Free1;	uint8_t Free2;	uint8_t Free3;	uint8_t Free4;	uint8_t Free5;	uint8_t Free6;	uint8_t Free7;	uint8_t Free8;
@@ -719,6 +721,20 @@ void NewDataRxChannel4(void) {
 			RxCan4.SRxCan4.SpeedPump3Rpmx100);
 }
 
+
+typedef  enum {
+	C2PCOM_NONE = 00 ,
+	C2PCOM_ENABPUMPS_OFF = 01 ,
+	C2PCOM_ENABPUMPS_ON = 02 ,
+	C2PCOM_ENABPINCH_OFF = 20 ,
+	C2PCOM_ENABPINCH_ON = 21 ,
+	C2PCOM_POWER_OFF = 30 ,
+	C2PCOM_POWER_ON = 31
+} TControl2ProtCommands;
+
+// State == 4 --> T1Test
+#define CTRL_STAT_T1TEST 4
+
 void NewDataRxChannel5(void)
 {
 	// verifichiamo la temperatura di piatto
@@ -731,6 +747,30 @@ void NewDataRxChannel5(void)
 		VerifyRxTemperatures(RxCan2.SRxCan2.TempArtx10, RxCan2.SRxCan2.TempFluidx10, RxCan2.SRxCan2.TempVenx10, RxCan5.SRxCan5.tempPlateC);
 	//}
 	VerifyRxAirLevels(RxCan5.SRxCan5.AirArtLevel, RxCan5.SRxCan5.AirVenLevel);
+
+	// execute possible commands in T1Test Mode
+	if(RxCan0.SRxCan0.State == CTRL_STAT_T1TEST){
+		switch( RxCan5.SRxCan5.CommandFromControl ){
+			case C2PCOM_ENABPUMPS_OFF:
+				DisablePumps();
+			break;
+			case C2PCOM_ENABPUMPS_ON:
+				EnablePumps();
+			break;
+			case C2PCOM_ENABPINCH_OFF:
+				DisablePinches();
+			break;
+			case C2PCOM_ENABPINCH_ON:
+				EnablePinches();
+			break;
+			case C2PCOM_POWER_OFF:
+				SwitchOFFPinchNPumps();
+			break;
+			case C2PCOM_POWER_ON:
+				SwitchONPinchNPumps();
+			break;
+		}
+	}
 }
 
 void DebugFillTxBuffers(void)
@@ -774,7 +814,9 @@ void CanCheckTimer(void)
 		CanAlarmCounter ++;
 		if(CanAlarmCounter == 10){
 			// notify can alarm
-			NotifyCanOnline(false);
+
+			// <SB> disab alarm for test VIncenzo 19 7 2019
+			//NotifyCanOnline(false);
 			// cause repeated notification if alarm persist
 			CanAlarmCounter = 0;
 		}

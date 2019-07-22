@@ -23,7 +23,7 @@ void InitActuators(void)
 	  Enable_Power_EVER_PUMP(TRUE);
 	  Enable_Power_Motor(TRUE);
 	  Enable_Pump_filter(TRUE);
-	  Enable_Pump_Art_Livcer(TRUE);
+	  Enable_Pump_Art_Liver(TRUE);
 	  Enable_Pump_OXY(TRUE);
 	  Enable_Pinch_Filter(TRUE);
 	  Enable_Pinch_Arterial(TRUE);
@@ -39,7 +39,7 @@ void GoTotalSafetyxxdsfdsasddsadsa(void) // mai chiamata
 	  Enable_Power_EVER_PUMP(FALSE);
 	  Enable_Power_Motor(FALSE);
 	  Enable_Pump_filter(FALSE);
-	  Enable_Pump_Art_Livcer(FALSE);
+	  Enable_Pump_Art_Liver(FALSE);
 	  Enable_Pump_OXY(FALSE);
 	  Enable_Pinch_Filter(FALSE);
 	  Enable_Pinch_Arterial(FALSE);
@@ -54,7 +54,7 @@ void DisablePinchNPumps(void )
 {
 #ifndef NO_DISABLE_FORTEST
 	  Enable_Pump_filter(FALSE);
-	  Enable_Pump_Art_Livcer(FALSE);
+	  Enable_Pump_Art_Liver(FALSE);
 	  Enable_Pump_OXY(FALSE);
 	  Enable_Pinch_Filter(FALSE);
 	  Enable_Pinch_Arterial(FALSE);
@@ -65,19 +65,52 @@ void DisablePinchNPumps(void )
 void EnablePinchNPumps(void )
 {
 	  Enable_Pump_filter(TRUE);
-	  Enable_Pump_Art_Livcer(TRUE);
+	  Enable_Pump_Art_Liver(TRUE);
 	  Enable_Pump_OXY(TRUE);
 	  Enable_Pinch_Filter(TRUE);
 	  Enable_Pinch_Arterial(TRUE);
 	  Enable_Pinch_Venous(TRUE);
 }
 
-void SwitchOFFPinchNPumps(void)
+void DisablePinches(void )
 {
 #ifndef NO_DISABLE_FORTEST
+	  Enable_Pinch_Filter(FALSE);
+	  Enable_Pinch_Arterial(FALSE);
+	  Enable_Pinch_Venous(FALSE);
+#endif
+}
+
+void EnablePinches(void )
+{
+	  Enable_Pinch_Filter(TRUE);
+	  Enable_Pinch_Arterial(TRUE);
+	  Enable_Pinch_Venous(TRUE);
+}
+
+void DisablePumps(void )
+{
+#ifndef NO_DISABLE_FORTEST
+	  Enable_Pump_filter(FALSE);
+	  Enable_Pump_Art_Liver(FALSE);
+	  Enable_Pump_OXY(FALSE);
+#endif
+}
+
+void EnablePumps(void )
+{
+	  Enable_Pump_filter(TRUE);
+	  Enable_Pump_Art_Liver(TRUE);
+	  Enable_Pump_OXY(TRUE);
+}
+
+
+void SwitchOFFPinchNPumps(void)
+{
+//#ifndef NO_DISABLE_FORTEST
 	Enable_Power_EVER_PUMP(FALSE);
 	Enable_Power_Motor(FALSE);
-#endif
+//#endif
 }
 
 void SwitchONPinchNPumps(void)
@@ -135,7 +168,7 @@ void Enable_Pump_filter(bool status)
 #endif
 }
 
-void Enable_Pump_Art_Livcer(bool status)
+void Enable_Pump_Art_Liver(bool status)
 {
 #ifndef NO_DISABLE_FORTEST
 	if (status && !EN_MOTOR_P_2_GetVal())
