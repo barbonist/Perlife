@@ -1475,13 +1475,6 @@ void ParentFuncT1Test(void)
 			DebugStringStr("parent chk press");
 			break;
 		}
-		else if(currentGuard[GUARD_ENABLE_T1_ALARM].guardValue == GUARD_VALUE_TRUE){
-			ptrFutureParent = &stateParentT1TNoDisposable[25]; //alarm
-			ptrFutureChild = ptrFutureParent->ptrChild;
-			DebugStringStr("alarm t1 test");
-			allarmeTestT1Attivo=TRUE;
-			break;
-		}
 
 		if(ptrCurrentParent->action == ACTION_ON_ENTRY)
 		{
@@ -1490,7 +1483,19 @@ void ParentFuncT1Test(void)
 		}
 		else if(ptrCurrentParent->action == ACTION_ALWAYS)
 		{
-			currentGuard[GUARD_ENABLE_T1_PRESS].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+			//Vincenzo - messo il congtrollo di fine test 24 V
+			if (t1Test_chk24_state == CHK_VOLTAGE_OK)
+			{
+				currentGuard[GUARD_ENABLE_T1_PRESS].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+			}
+			else if (t1Test_chk24_state == CHK_VOLTAGE_KO)
+			{
+				ptrFutureParent = &stateParentT1TNoDisposable[25]; //alarm
+				ptrFutureChild = ptrFutureParent->ptrChild;
+				DebugStringStr("alarm t1 test");
+				allarmeTestT1Attivo=TRUE;
+				break;
+			}
 		}
 		break;
 
@@ -1638,11 +1643,11 @@ void ParentFuncT1Test(void)
 		else if(ptrCurrentParent->action == ACTION_ALWAYS)
 		{
 			// Filippo - il test deve terminare con successo, altrimenti allarme!!!!
-			if (t1Test_pinch_state==4)
+			if (t1Test_pinch_state == PINCH_OK)
 			{
 				currentGuard[GUARD_ENABLE_T1_PUMP].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
 			}
-			else if (t1Test_pinch_state == 5)
+			else if (t1Test_pinch_state == PINCH_KO)
 			{
 				ptrFutureParent = &stateParentT1TNoDisposable[25]; //alarm
 				ptrFutureChild = ptrFutureParent->ptrChild;
@@ -1670,11 +1675,11 @@ void ParentFuncT1Test(void)
 		else if(ptrCurrentParent->action == ACTION_ALWAYS)
 		{
 			// Filippo - messo il controllo per la fine del test pompe
-			if (t1Test_pump_state==4)
+			if (t1Test_pump_state == PUMP_OK)
 			{
 				currentGuard[GUARD_ENABLE_T1_TERMO].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
 			}
-			else if (t1Test_pump_state == 5)
+			else if (t1Test_pump_state == PUMP_KO)
 			{
 				ptrFutureParent = &stateParentT1TNoDisposable[25]; //alarm
 				ptrFutureChild = ptrFutureParent->ptrChild;

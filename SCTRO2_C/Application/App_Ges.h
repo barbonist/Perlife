@@ -174,6 +174,7 @@ void manageParentT1NoDispAlways(void);
 void manageParentT1EndEntry(void);
 void manageParentChkConfig(void);
 void manageParentChk24Vbrk(void);
+void manageParentChk24Vbrk_init(void);
 void manageParentChkPress(void);
 void manageParentTempSensIR(void);
 void mangeParentUFlowSens(void);
