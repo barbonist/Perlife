@@ -21,6 +21,7 @@
 #include "PC_DEBUG_COMM.h"
 #include "VOLTAGE_B_CHK.h"
 #include "VOLTAGE_M_CHK.h"
+#include "ControlProtectiveInterface_C.h"
 
 #define VAL_JOLLY16	0x5A5A
 #define VAL_JOLLY8	0x5A
@@ -76,7 +77,7 @@ union UTxCan {
 #else
 	// Filippo - messo campo per lo scambio della temperatura di piatto
 	struct {
-		int16_t AlarmCodeToReset;	int16_t tempPlateC;	uint8_t TerapyType;	uint8_t ArtLineAirMeasure;	uint8_t VenLineAirMeasure;	uint8_t Free8;
+		int16_t AlarmCodeToReset;	int16_t tempPlateC;	uint8_t TerapyType;	uint8_t ArtLineAirMeasure;	uint8_t VenLineAirMeasure;	uint8_t Command;
 	} STxCan5;
 #endif
 	struct {
@@ -332,6 +333,11 @@ void onNewPumpSpeed(uint16_t Pump0Speed, uint16_t Pump1Speed ,
 	TxCan4.STxCan4.SpeedPump2Rpmx10 = Pump1Speed;
 	TxCan4.STxCan4.SpeedPump3Rpmx10 = Pump2Speed;
 	TxCan4.STxCan4.SpeedPump4Rpmx10 = Pump3Speed;
+}
+
+void onNewCommadT1TEST(TControl2ProtCommands Command)
+{
+	TxCan5.STxCan5.Command = Command;
 }
 
 #ifdef ENABLE_PROTECTIVE_ALARM_RESET

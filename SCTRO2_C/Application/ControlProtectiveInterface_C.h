@@ -22,6 +22,20 @@ void onNewPinchVal(uint8_t AirFiltStat, uint16_t AlarmCode,
 void onNewOffsetPressInlet(uint8_t Offset_Press_Ven, uint8_t Offset_Press_Art);
 void onNewTherapyType(void);
 
+/*definizione dei comandi da dare alla PRO per il T1_TEST*/
+typedef  enum {
+
+       C2PCOM_NONE = 00 ,
+       C2PCOM_ENABPUMPS_OFF = 01 ,
+       C2PCOM_ENABPUMPS_ON = 02 ,
+       C2PCOM_ENABPINCH_OFF = 20 ,
+       C2PCOM_ENABPINCH_ON = 21 ,
+       C2PCOM_POWER_OFF = 30 ,
+       C2PCOM_POWER_ON = 31 ,
+} TControl2ProtCommands;
+
+void onNewCommadT1TEST(TControl2ProtCommands Command);
+
 #ifdef ENABLE_PROTECTIVE_ALARM_RESET
 void onNewAlmToResetMsg(uint16_t AlmCodeToreset);
 #endif

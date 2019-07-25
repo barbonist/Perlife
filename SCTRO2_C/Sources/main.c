@@ -363,6 +363,7 @@ int main(void)
   Prescaler_Tick_TEST=0;
   FreeRunCnt10msec = 0;
   Service = FALSE;
+  FlowSensCalibDone = FALSE;
   // Filippo - timer per gestire l'eventuale riaccensione del frigo
   timerCounterFrigoOn=ATTESA_FRIGO_OFF_NEW_PID;	// forzo il timer già scaduto perchè alla prima accensione deve partire subito
 
@@ -445,16 +446,6 @@ int main(void)
   EN_Clamp_Control(ENABLE);
   EN_Motor_Control(ENABLE);
   IR_TM_COMM_Enable();
-
-  /*NEL VECCHIO HW abilitava la 24 V sui driver delle celle di peltier.
-   * CON LE MODIFICHE HW PER LE EVER ORA DIVENTA L'ENABLE AL 48 PER LE POMPE EVER*/
-  EN_P_1_C_SetVal();
-  // questo servirebbe solo con le celle di peltier. Ora con le modifiche hw per le
-  // EVER non servirebbe piu' ma, io lo abilito lo stesso. Con le modifiche hw (48 V)
-  // fatte per le ever non e' piu' possibile far funzionare di nuovo le peltier solo
-  // ripristinando il sw.
-  EN_P_2_C_SetVal();
-
 
   /*attendo 5 s prima di entrare nell main loop
    * per dare il tempo ai sensori di alimentarsi e

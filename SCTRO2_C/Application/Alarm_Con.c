@@ -47,62 +47,103 @@ sActiveListWrnS sActiveListWrn[MAX_ALARMS_ACTIVE_LIST_WRN];
 // che definisce il numero di elementi contenuti in alarmList
 typeAlarmS alarmList[] =
 {
+   //Pressione Arteriosa Elevata
    {CODE_ALARM_PRESS_ART_HIGH,        PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH, 1000, 1000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, FALSE},
+
+   // Pressione Arteriosa Alta
    {CODE_ALARM_PRESS_ART_SET,         PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH,60000, 1000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_ALLOWED,     &alarmManageNull, 0,  TRUE},
 
-   // allarmi di aria nel trattamento
+   // allarmi di aria nel TRATTAMENTO
    {CODE_ALARM_AIR_PRES_ART,          PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_SFA_AIR_DET,           PRIORITY_HIGH,  100,    0, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_ALLOWED,     &alarmManageNull, 0, FALSE},
    {CODE_ALARM_AIR_PRES_VEN,          PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_SFV_AIR_DET,           PRIORITY_HIGH,  100,    0, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_ALLOWED,     &alarmManageNull, 0, FALSE},
    {CODE_ALARM_AIR_PRES_FILTER,       PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_SAF_AIR_FILTER,        PRIORITY_HIGH,  100,    0, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_ALLOWED,     &alarmManageNull, 0, FALSE},
 
+   // Pressione Pre-Cartuccia Elevata
    {CODE_ALARM_PRESS_ADS_FILTER_HIGH, PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH, 1000, 1000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, FALSE},
+
+   // Flusso Perf. Arteriosa Elevato
    {CODE_ALARM_FLOW_PERF_ART_HIGH,    PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH, 2000, 2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, FALSE},
+
+   // Flusso Perf. Venosa Elevato
    {CODE_ALARM_FLOW_PERF_VEN_HIGH,    PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH, 2000, 2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, FALSE},
-   {CODE_ALARM_FLOW_ART_NOT_DETECTED, PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH, 2000, 2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, FALSE},
+
+   // Flusso Perf. Venosa Elevato
+   {CODE_ALARM_FLOW_OXY_HIGH,		  PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH, 2000, 2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, FALSE},
+
+   // Flusso non rilevato
+   {CODE_ALARM_FLOW_NOT_DETECTED,     PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH, 2000, 2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, FALSE},
+
+   // Pressione Venosa Elevata
    {CODE_ALARM_PRESS_VEN_HIGH,        PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH, 1000, 1000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, FALSE},
+
+   // Pressione Venosa Alta
    {CODE_ALARM_PRESS_VEN_SET,         PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH,60000, 1000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_ALLOWED,     &alarmManageNull, 0, TRUE},
 
-   // allarme pressione filtro ossigenazione alta
+   // Pressione Ossigenatore Elevata
    {CODE_ALARM_PRESS_OXYG_INLET,      PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH, 1000, 1000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, FALSE},
+
+   // Temperatura non rilevata
    {CODE_ALARM_TEMP_SENS_NOT_DETECTED,PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH, 2000, 2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, FALSE},
 
    // allarmi di cover aperte
    {CODE_ALARM_PUMP_PERF_COVER_OPEN,  PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH,    0,  100, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, FALSE},
+   {CODE_ALARM_PUMP_PERF_COVER_OPEN_KD,PHYSIC_FALSE,ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH,    0,  100, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, FALSE},
    {CODE_ALARM_PUMP_PURIF_COVER_OPEN, PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH,    0,  100, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, FALSE},
-   {CODE_ALARM_PUMP_OXYG_COVER_OPEN,  PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH,    0,  100, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, FALSE},
+   {CODE_ALARM_PUMP_VEN_COVER_OPEN,   PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH,    0,  100, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, FALSE},
+   {CODE_ALARM_PUMP_OXY_COVER_OPEN,   PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH,    0,  100, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, FALSE},
+
+   // Allarme livello BASSO
    {CODE_ALARM_TANK_LEVEL_LOW,        PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH,30000,30000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, FALSE},
-   // allarme livello del liquido troppo alto
+
+   // Allarme livello ALTO (NON USATO AL MOMENTO)
    {CODE_ALARM_TANK_LEVEL_HIGH,       PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACT_WAIT_CMD, PRIORITY_HIGH,  500,  500, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, FALSE},
 
-   // allarme differenza tra flusso venoso misurato e flusso calcolato in base al guadagno pompa troppo alto
+   // allarme differenza tra flusso venoso misurato e flusso calcolato in base al guadagno pompa troppo alto (NON USATO AL MOMENTO)
    {CODE_ALARM_DELTA_FLOW_ART,        PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH,  3000, 3000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, FALSE},
-   // allarme differenza tra flusso arterioso misurato e flusso calcolato in base al guadagno pompa troppo alto
+
+   // allarme differenza tra flusso arterioso misurato e flusso calcolato in base al guadagno pompa troppo alto (NON USATO AL MOMENTO)
    {CODE_ALARM_DELTA_FLOW_VEN,        PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH,  3000, 3000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, FALSE},
+
    // allarme differenza tra temperatura vaschetta e temperatura fluido arterioso troppo alta
    {CODE_ALARM_DELTA_TEMP_REC_ART,    PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_DELTA_TEMP_HIGH,       PRIORITY_HIGH, 10000, 3000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, TRUE},
+
    // allarme differenza tra temperatura vaschetta e temperatura fluido venoso troppo alta
    {CODE_ALARM_DELTA_TEMP_REC_VEN,    PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_DELTA_TEMP_HIGH,       PRIORITY_HIGH, 10000, 3000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, TRUE},
+
    // allarme comunicazione canbus
    {CODE_ALARM_CAN_BUS_ERROR,         PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH,  3000, 3000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, FALSE},
-   // allarme pinch non posizionate correttamente (usato nello stato di trattamento)
+
+   // allarme pinch non posizionate correttamente (NON USATO AL MOMENTO)
    {CODE_ALARM_BAD_PINCH_POS,         PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_BAD_PINCH_POS,         PRIORITY_HIGH,   500,  500, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, FALSE},
 
-   // allarmi di aria nel priming
+   // allarmi di aria nel PRIMING
    {CODE_ALARM_PRIM_AIR_PRES_ART,     PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_SFA_PRIM_AIR_DET,      PRIORITY_HIGH,  100,     0, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_ALLOWED,     &alarmManageNull, 0, FALSE},
    {CODE_ALARM_PRIM_AIR_PRES_VEN,     PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_SFA_PRIM_AIR_DET,      PRIORITY_HIGH,  100,     0, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_ALLOWED,     &alarmManageNull, 0, FALSE},
    {CODE_ALARM_PRIM_AIR_PRES_FILTER,  PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_SFA_PRIM_AIR_DET,      PRIORITY_HIGH,  100,     0, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, FALSE},
 
+   // Pressione filtro basso
    {CODE_ALARM_PRESS_ADS_FILTER_LOW,  PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH, 60000, 2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0,  TRUE},
+
+   // Pressione ossigenatore bassa
    {CODE_ALARM_PRESS_OXYG_LOW,        PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH, 60000, 2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0,  TRUE},
+
+   // Flusso Perf. Arteriosa Alto
    {CODE_ALARM_FLOW_ART_SET,          PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH, 60000, 2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0,  TRUE},
+
+   // Flusso Perf. Venosa Alto
    {CODE_ALARM_FLOW_VEN_SET,          PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH, 60000, 2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0,  TRUE},
+
+   // Flusso Ossigenazione a Alto
+   {CODE_ALARM_FLOW_OXY_SET,          PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH, 60000, 2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0,  TRUE},
+
+   // Flusso Depurazione Alto
    {CODE_ALARM_FLOW_DEP_SET,          PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH, 60000, 2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0,  TRUE},
 
    //Allarme per errore nella lettura e scrittura modbus. Se dopo 10 ripetizioni non ottengo risposta alla lettura o scrittura genero un allarme.
    //Per questo allarme uso la stessa procedura per le pompe non ferme. (Dovrei tolgliere direttamente l'enable alle pompe.
    {CODE_ALARM_MODBUS_ACTUATOR_SEND,  PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_MOD_BUS_ERROR,         PRIORITY_HIGH,    0,   500, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, FALSE},
 
-   // allarmi provenienti dalla protective. Serve per fare in modo che quando la protective e' in allarme le pompe vengano fermate e le pinch
+   // allarmi provenienti dalla protective. Serve per fare in modo che quando la protective e' in allarme le pompe vengano fermate e le pinch (NON USATO AL MOMENTO)
    // messe in sicurezza
    {CODE_ALARM_PROT_START_VAL,        PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_PROTECTION, SECURITY_STOP_ALL_ACTUATOR,  PRIORITY_HIGH,    0,   500, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, FALSE},
 
@@ -112,24 +153,47 @@ typeAlarmS alarmList[] =
    // Filippo - inserito allarme per test T1
    {CODE_ALARM_TEST_T1,               PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH, 0, 500, OVRD_NOT_ENABLED, RESET_NOT_ALLOWED, SILENCE_ALLOWED, MEMO_ALLOWED, &alarmManageNull, 0, FALSE},
 
-   // Filippo - inserito allarme per test sensore aria fallito
+   // Filippo - inserito allarme per test sensore aria fallito (NON USATO AL MOMENTO)
    {CODE_ALARM_AIR_SENSOR_TEST_KO,   PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH,    0, 2000, OVRD_NOT_ENABLED, RESET_NOT_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, FALSE},
 
-   {CODE_ALARM_MACHINE_COVERS,       PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH,    0,  100, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, FALSE},
-   {CODE_ALARM_HOOKS_RESERVOIR,      PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH,    0,  100, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, FALSE},
-   {CODE_ALARM_ART_RES_HIGH,         PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH,    0,  100, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, FALSE},
-   {CODE_ALARM_T_ART_OUT_OF_RANGE,   PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_DELTA_TEMP_HIGH,       PRIORITY_HIGH, 1000,    0, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, FALSE},
-   {CODE_ALARM_TEMP_MAX_IN_TRT,      PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_DELTA_TEMP_HIGH,       PRIORITY_HIGH, 1000,    0, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, TRUE},
-   {CODE_ALARM_TEMP_MIN_IN_TRT,      PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_DELTA_TEMP_HIGH,       PRIORITY_HIGH, 1000,    0, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, TRUE},
+   //Coperchi frontali aperti (NON USATO AL MOMENTO)
+   {CODE_ALARM_MACHINE_COVERS,       PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH,    0,   100, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, FALSE},
+
+   // Distacco Reservoir
+   {CODE_ALARM_HOOKS_RESERVOIR,      PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH,    0,   100, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, FALSE},
+
+   // Resistenza Arteriosa Elevata
+   {CODE_ALARM_ART_RES_HIGH,         PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH,    0,   100, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, FALSE},
+
+   // Elevata Differenza di Temperatura
+   {CODE_ALARM_T_ART_OUT_OF_RANGE,   PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_DELTA_TEMP_HIGH,       PRIORITY_HIGH, 1000,     0, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, FALSE},
+
+   // Temperatura Elevata
+   {CODE_ALARM_TEMP_MAX_IN_TRT,      PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_DELTA_TEMP_HIGH,       PRIORITY_HIGH, 1000,     0, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, TRUE},
+
+   // Temperatura Bassa
+   {CODE_ALARM_TEMP_MIN_IN_TRT,      PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_DELTA_TEMP_HIGH,       PRIORITY_HIGH, 1000,     0, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, TRUE},
+
+   // Sensore Art. non Connesso
    {CODE_ALARM_TUBE_ART_DISCONNECTED,PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH, 10000,    0, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, TRUE},
+
+   // Sensore Ven. non Connesso
    {CODE_ALARM_TUBE_VEN_DISCONNECTED,PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH, 10000,    0, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, TRUE},
 
+   // Depurazione Ferma
+   {CODE_ALARM_DEP_PUMP_STILL,       PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH, 120000,  500, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, TRUE},
+
+   // Perfusione Arteriosa Ferma
+   {CODE_ALARM_PERF_ART_PUMP_STILL,  PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH, 120000,  500, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, TRUE},
+
+   // Perfusione Venosa Ferma
+   {CODE_ALARM_PERF_VEN_PUMP_STILL,  PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH, 120000,  500, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, TRUE},
+
+   // Ossigenazione Ferma
+   {CODE_ALARM_OXYG_PUMP_STILL,      PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH, 120000,  500, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, TRUE},
 
    // da qui in avanti solo le warning
-   {CODE_ALARM_PRESS_ADS_FILTER_WARN,    PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR, PRIORITY_LOW,  2000,  2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, FALSE},
-   {CODE_ALARM_DEP_PUMP_STILL_WARN,      PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR, PRIORITY_LOW,  2000,  2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, FALSE},
-   {CODE_ALARM_PERF_ART_PUMP_STILL_WARN, PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR, PRIORITY_LOW,  2000,  2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, FALSE},
-   {CODE_ALARM_OXYG_PUMP_STILL_WARN,     PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR, PRIORITY_LOW,  2000,  2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, FALSE},
+   {CODE_ALARM_PRESS_ADS_FILTER_WARN, PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR, PRIORITY_LOW,  2000,  2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, FALSE},
 };
 
 void EnableDeltaTHighAlmFunc(void)
@@ -201,7 +265,6 @@ void DisableAllAirAlarm(bool dis)
 void DisableAllAlarm()
 {
 	GlobalFlags.FlagsVal = 0;
-	//GlobalFlags.FlagsDef.EnableAllAlarms = 1;
 }
 
 void EnableFlowAndPressSetAlarmEnableFlags(void)
@@ -212,6 +275,20 @@ void EnableFlowAndPressSetAlarmEnableFlags(void)
 void DisableFlowAndPressSetAlarmEnableFlags(void)
 {
    GlobalFlags.FlagsDef.EnableFlowAndPressSetAlm = 0;    // disabilito allarmi di pressione e flusso di SET operatore
+}
+
+void EnableLongPumpStopAlarms(void)
+{
+	GlobalFlags2.FlagsDef2.EnableOxyPumpStopAlarms = 1; // abilito allarmi pompe ferme a lungo
+	GlobalFlags2.FlagsDef2.EnableArtPumpStopAlarms = 1; // abilito allarmi pompe ferme a lungo
+	GlobalFlags2.FlagsDef2.EnableDepPumpStopAlarms = 1; // abilito allarmi pompe ferme a lungo
+}
+
+void DisableLongPumpStopAlarms(void)
+{
+   GlobalFlags2.FlagsDef2.EnableOxyPumpStopAlarms = 0; // disabilito allarmi pompe ferme a lungo
+   GlobalFlags2.FlagsDef2.EnableArtPumpStopAlarms = 0; // disabilito allarmi pompe ferme a lungo
+   GlobalFlags2.FlagsDef2.EnableDepPumpStopAlarms = 0; // disabilito allarmi pompe ferme a lungo
 }
 
 void SetFlowHigAlarmEnableFlags(void)
@@ -257,12 +334,14 @@ void SetAllAlarmEnableFlags(void)
 	GlobalFlags.FlagsDef.EnableStopButton=1;
 	// Filippo - abilito l'allarme di T1 test
 	GlobalFlags.FlagsDef.EnableT1TestAlarm=1;
-	GlobalFlags.FlagsDef.EnableHooksReservoir = 1;
 
 	GlobalFlags.FlagsDef.EnableArtResAlarm = 1;
 	GlobalFlags.FlagsDef.EnableTempArtOORAlm = 1;
 	GlobalFlags.FlagsDef.EnableArtPressDisconnect = 1;
 	GlobalFlags.FlagsDef.EnableVenPressDisconnect = 1;
+
+	EnableLongPumpStopAlarms();
+	SetFlowHigAlarmEnableFlags();
 }
 
 // Questa funzione serve per forzare ad off un eventuale allarme.
@@ -279,7 +358,8 @@ void ForceAlarmOff(uint16_t code)
 			break;
 		case CODE_ALARM_PUMP_PERF_COVER_OPEN:
 		case CODE_ALARM_PUMP_PURIF_COVER_OPEN:
-		case CODE_ALARM_PUMP_OXYG_COVER_OPEN:
+		case CODE_ALARM_PUMP_OXY_COVER_OPEN:
+		case CODE_ALARM_PUMP_PERF_COVER_OPEN_KD:
 			GlobalFlags.FlagsDef.EnableCoversAlarm = 0;    // forzo allarme di cover a off
 			break;
 		case CODE_ALARM_PRESS_ADS_FILTER_LOW:
@@ -361,6 +441,22 @@ void ForceAlarmOff(uint16_t code)
 		case CODE_ALARM_FLOW_DEP_SET:
 			GlobalFlags.FlagsDef.EnableFlowAndPressSetAlm = 0; // forzo allarme pressione e flusso SET a off
 			break;
+		case CODE_ALARM_DEP_PUMP_STILL:
+			GlobalFlags2.FlagsDef2.EnableDepPumpStopAlarms = 0; //Forzo allarme pompa dep a OFF
+			break;
+		case CODE_ALARM_PERF_ART_PUMP_STILL:
+			GlobalFlags2.FlagsDef2.EnableArtPumpStopAlarms = 0; //Forzo allarme pompa art a OFF
+			break;
+		case CODE_ALARM_OXYG_PUMP_STILL:
+			GlobalFlags2.FlagsDef2.EnableOxyPumpStopAlarms = 0; //Forzo allarme pompa oxy a OFF
+			break;
+		case CODE_ALARM_FLOW_OXY_HIGH:
+		case CODE_ALARM_FLOW_PERF_ART_HIGH:
+		case CODE_ALARM_FLOW_PERF_VEN_HIGH:
+			GlobalFlags.FlagsDef.EnableFlowHighAlm = 0;
+			break;
+
+
 	}
 }
 
@@ -428,8 +524,8 @@ void ShowAlarmStr(int i, char * str)
 			strcat(s, str);
 			DebugStringStr(s);
 			break;
-		case CODE_ALARM_FLOW_ART_NOT_DETECTED:
-			strcpy(s, "AL_FLOW_ART_NOT_DETEC");
+		case CODE_ALARM_FLOW_NOT_DETECTED:
+			strcpy(s, "AL_FLOW_NOT_DETEC");
 			strcat(s, str);
 			DebugStringStr(s);
 			break;
@@ -458,7 +554,7 @@ void ShowAlarmStr(int i, char * str)
 			strcat(s, str);
 			DebugStringStr(s);
 			break;
-		case CODE_ALARM_PUMP_OXYG_COVER_OPEN:
+		case CODE_ALARM_PUMP_OXY_COVER_OPEN:
 			strcpy(s, "OXYG_COVER_OPEN");
 			strcat(s, str);
 			DebugStringStr(s);
@@ -500,11 +596,6 @@ void ShowAlarmStr(int i, char * str)
 			break;
 		case CODE_ALARM_CAN_BUS_ERROR:
 			strcpy(s, "ALARM_CAN_BUS_ERR");
-			strcat(s, str);
-			DebugStringStr(s);
-			break;
-		case CODE_ALARM_PUMPS_NOT_STILL:
-			strcpy(s, "AL_PUMPS_NOT_STILL");
 			strcat(s, str);
 			DebugStringStr(s);
 			break;
@@ -647,16 +738,15 @@ void CalcAlarmActive(void)
 
 		case STATE_PRIMING_PH_1:
 		{
+			//check sul flusso massimo
+			manageAlarmPhysicFlowHigh();
+
 			manageResultT1TestDigital(); //Valutazione finale dei check sui sensori digitali
 			manageAlarmFlowSensNotDetected();
 			manageAlarmIrTempSensNotDetected();
 
 			//verifica physic pressioni
 			manageAlarmPhysicPressSensHigh();
-			//manageAlarmPhysicPressSensLow(); non serve questo allarme in priming
-
-			/*22/01/19 VINCY togliamo al momento l'allarme di livello liquido eccessivo*/
-				//	manageAlarmLiquidLevelHigh();
 			if(GetTherapyType() == LiverTreat)
 				manageAlarmCoversPumpLiver();
 			else if(GetTherapyType() == KidneyTreat)
@@ -666,22 +756,21 @@ void CalcAlarmActive(void)
 			manageAlarmActuatorModbusNotRespond();
 			manageAlarmActuatorWRModbusNotRespond();
 			manageAlarmFromProtective();
-			//manageAlarmBadPinchPos();   // allarme di pinch posizionate correttamente
 			manageCover_Hook_Sensor();
 			break;
 		}
 
 		case STATE_PRIMING_PH_2:
 		{
+			//check sul flusso massimo
+			manageAlarmPhysicFlowHigh();
+
 			manageAlarmFlowSensNotDetected();
 			manageAlarmIrTempSensNotDetected();
 
 			//verifica physic pressioni
 			manageAlarmPhysicPressSensHigh();
-			//manageAlarmPhysicPressSensLow(); non serve questo allarme in priming
 
-		/*22/01/19 VINCY togliamo al momento l'allarme di livello liquido eccessivo*/
-			//	manageAlarmLiquidLevelHigh();
 			if(GetTherapyType() == LiverTreat)
 				manageAlarmCoversPumpLiver();
 			else if(GetTherapyType() == KidneyTreat)
@@ -691,7 +780,6 @@ void CalcAlarmActive(void)
 			manageAlarmActuatorModbusNotRespond();
 			manageAlarmActuatorWRModbusNotRespond();
 			manageAlarmFromProtective();
-			//manageAlarmBadPinchPos();   // allarme di pinch posizionate correttamente
 			manageCover_Hook_Sensor();
 
 			break;
@@ -699,28 +787,38 @@ void CalcAlarmActive(void)
 
 		case STATE_TREATMENT_KIDNEY_1:
 		{
-			//verifica physic pressioni
-			manageAlarmPhysicPressSensHigh();
-			manageAlarmPhysicPressSensLow();
-			manageAlarmPhysicSetFlowAndPressures();
+			/*qui metto gli allarmi che nello stato di trattamento
+			 * devono essere condizionati al fatto che il trattamento
+			 * sia relamente partito quindi che sia stato premuto per
+			 * la prima volta il tasto di start.
+			 * Esiste una flag che identifica questa condizione  che serve
+			 * a fare la 'tara sui sensori di pressione; sfrutto questa flag
+			 * TARA_PRESS_DONE */
 
-			//verifica physic flow sensor (presenza aria)
-			manageAlarmPhysicUFlowSens();
-			manageAlarmSAFAirSens();
+			if (TARA_PRESS_DONE)
+			{
+				//verifica physic pressioni
+				manageAlarmPhysicPressSensHigh();
+				manageAlarmPhysicPressSensLow();
+				manageAlarmSAFAirSens();
+				//verifica physic ir temp sens
+				manageAlarmPhysicTempSensInTreat();
+		        manageAlarmArterialResistance();
+				manageAlarmDeltaTempRecArt();
+				manageAlarmDeltaTempRecVen();
+				manageAlarmPhysicSetFlowAndPressures();
+				//verifica physic flow sensor (presenza aria)
+				manageAlarmPhysicUFlowSens();
+			}
 
 			if(GetTherapyType() == LiverTreat)
 			    manageAlarmPhysicUFlowSensVen();
 
-			//verifica physic ir temp sens
-			manageAlarmPhysicTempSensInTreat();
 			manageAlarmPhysicTempSensOOR();
-
 			//verifica physic flusso di perfusione arteriosa e venosa massimi
 			manageAlarmPhysicFlowHigh();
-
 			//verifica  flusso  non rilevato
 			manageAlarmFlowSensNotDetected();
-
 			//verifica temperatura noin rilevata
 			manageAlarmIrTempSensNotDetected();
 
@@ -743,37 +841,28 @@ void CalcAlarmActive(void)
 			// Per ora li commento.
 			//get();
 			//manageAlarmDeltaFlowVen();
-			manageAlarmDeltaTempRecArt();
-			manageAlarmDeltaTempRecVen();
+
 			manageAlarmCanBus();
-			//manageAlarmBadPinchPos(); // controllo il posizionamento delle pinch prima di iniziare un trattamento
 			manageAlarmActuatorModbusNotRespond();
 			manageAlarmActuatorWRModbusNotRespond();
 			manageAlarmFromProtective();
-			// Filippo - aggiungo la gestione del tasto di stop come allarme
-		//		manageAlarmStopButtonPressed();
-
-			// Filippo - aggiunto allarme per test sensore aria sbagliato
 			manageAlarmAirSensorTestKO();
-            manageAlarmArterialResistance();
             manageCover_Hook_Sensor();
 			break;
 		}
 
 		case STATE_PRIMING_WAIT:
-			// in questo stato non sono gestiti gli allarmi, per ora
-			//verifica physic pressioni
-			//manageAlarmPhysicPressSensHigh();
-			//manageAlarmPhysicPressSensLow();
 			manageAlarmActuatorModbusNotRespond();
 			manageAlarmActuatorWRModbusNotRespond();
-
 			break;
 
 		case STATE_PRIMING_RICIRCOLO:
 			//verifica physic pressioni
 			manageAlarmPhysicPressSensHigh();
 			manageAlarmPhysicPressSensLow();
+
+			//check sul flusso massimo
+			manageAlarmPhysicFlowHigh();
 
 			//verifica physic ir temp sens
 			if(GetTherapyType() == LiverTreat)
@@ -789,9 +878,6 @@ void CalcAlarmActive(void)
 			manageAlarmActuatorWRModbusNotRespond();
 			manageAlarmFromProtective();
 			manageCover_Hook_Sensor();
-				// Filippo - aggiungo la gestione del tasto di stop come allarme
-		//		manageAlarmStopButtonPressed();
-
 			manageCheckConnectionTubeArtSensPress();
 
 			if (GetTherapyType() == LiverTreat)
@@ -800,18 +886,6 @@ void CalcAlarmActive(void)
 			break;
 
 		case STATE_WAIT_TREATMENT:
-			//verifica physic pressioni
-			//manageAlarmPhysicPressSensHigh();
-			//manageAlarmPhysicPressSensLow();
-
-			/*ONLY FOR TEST*/
-//			if(GetTherapyType() == LiverTreat)
-//				manageAlarmCoversPumpLiver();
-//			else if(GetTherapyType() == KidneyTreat)
-//				manageAlarmCoversPumpKidney();
-//			/*END TEST*/
-//			manageAlarmActuatorModbusNotRespond();
-//			manageAlarmActuatorWRModbusNotRespond();
 
 			break;
 
@@ -839,6 +913,9 @@ void CalcAlarmActive(void)
 		case STATE_EMPTY_DISPOSABLE:
 		case STATE_EMPTY_DISPOSABLE_1:
 		{
+			//check sul flusso massimo
+			manageAlarmPhysicFlowHigh();
+
 			manageAlarmFlowSensNotDetected();
 			manageAlarmIrTempSensNotDetected();
 
@@ -846,24 +923,21 @@ void CalcAlarmActive(void)
 			manageAlarmPhysicUFlowSens();
 			manageAlarmSAFAirSens();
 			manageAlarmPhysicUFlowSensVen();
+
 			if(GetTherapyType() == LiverTreat)
 				manageAlarmCoversPumpLiver();
 			else if(GetTherapyType() == KidneyTreat)
 				manageAlarmCoversPumpKidney();
+
 			manageAlarmActuatorModbusNotRespond();
 			manageAlarmActuatorWRModbusNotRespond();
 			manageAlarmFromProtective();
 			manageCover_Hook_Sensor();
-				// Filippo - aggiungo la gestione del tasto di stop come allarme
-		//		manageAlarmStopButtonPressed();
 			break;
 		}
 
 		case STATE_EMPTY_DISPOSABLE_2:
 		{
-			/* DA DEBUGGARE*/
-			//manageAlarmFlowSensNotDetected();
-			//manageAlarmIrTempSensNotDetected();
 			break;
 		}
 
@@ -875,10 +949,6 @@ void CalcAlarmActive(void)
 
 		case STATE_WASHING:
 		{
-			/* DA DEBUGGARE*/
-			//manageAlarmFlowSensNotDetected();
-			//manageAlarmIrTempSensNotDetected();
-
 			break;
 		}
 
@@ -1176,15 +1246,15 @@ void manageAlarmCoversPumpLiver(void)
 			alarmList[PERF_COVER_OPEN].physic = PHYSIC_FALSE;
 
 		if (coverStateGlobal & 0x04 || coverStateGlobal & 0x08)
-			alarmList[OXYG_COVER_OPEN].physic = PHYSIC_TRUE;
+			alarmList[VEN_COVER_OPEN].physic = PHYSIC_TRUE;
 		else
-			alarmList[OXYG_COVER_OPEN].physic = PHYSIC_FALSE;
+			alarmList[VEN_COVER_OPEN].physic = PHYSIC_FALSE;
 	}
 	else
 	{
 		alarmList[PURIF_COVER_OPEN].physic = PHYSIC_FALSE;
 		alarmList[PERF_COVER_OPEN].physic = PHYSIC_FALSE;
-		alarmList[OXYG_COVER_OPEN].physic = PHYSIC_FALSE;
+		alarmList[VEN_COVER_OPEN].physic = PHYSIC_FALSE;
 	}
 }
 
@@ -1194,22 +1264,21 @@ void manageAlarmCoversPumpKidney(void)
 	if (GlobalFlags.FlagsDef.EnableCoversAlarm)
 	{
 		if (coverStateGlobal & 0x01)
-			alarmList[PURIF_COVER_OPEN].physic = PHYSIC_TRUE;
+			alarmList[PERF_COVER_OPEN_KD].physic = PHYSIC_TRUE;
 		else
-			alarmList[PURIF_COVER_OPEN].physic = PHYSIC_FALSE;
+			alarmList[PERF_COVER_OPEN_KD].physic = PHYSIC_FALSE;
 
 		if (coverStateGlobal & 0x04 || coverStateGlobal & 0x08)
-			alarmList[OXYG_COVER_OPEN].physic = PHYSIC_TRUE;
+			alarmList[OXY_COVER_OPEN].physic = PHYSIC_TRUE;
 		else
-			alarmList[OXYG_COVER_OPEN].physic = PHYSIC_FALSE;
+			alarmList[OXY_COVER_OPEN].physic = PHYSIC_FALSE;
 	}
 	else
 	{
-		alarmList[PURIF_COVER_OPEN].physic = PHYSIC_FALSE;
-		alarmList[OXYG_COVER_OPEN].physic = PHYSIC_FALSE;
+		alarmList[PERF_COVER_OPEN_KD].physic = PHYSIC_FALSE;
+		alarmList[OXY_COVER_OPEN].physic = PHYSIC_FALSE;
 	}
 
-	alarmList[PERF_COVER_OPEN].physic = PHYSIC_FALSE;
 }
 
 void manageAlarmPhysicPressSensLow(void)
@@ -1383,7 +1452,7 @@ void manageAlarmPhysicSetFlowAndPressures(void)
 			else
 				alarmList[FLOW_DEP_SET].physic = PHYSIC_FALSE;
 		}
-		else //Kidney, solo arteriosa
+		else //Kidney, pressione arteriosa, flusso arterioso e flusso ossigenazione
 		{
 			// Allarme di SET pressione arteriosa -- Vincenzo: lo attivo solo se la pinch arteriosa è aperta sull'organo
 			if ((PR_ART_mmHg_Filtered > pressureTargetArt + DELTA_TARGET_PRESS_ART_KIDNEY) && (Pinch_Art_Position == MODBUS_PINCH_LEFT_OPEN))
@@ -1396,6 +1465,13 @@ void manageAlarmPhysicSetFlowAndPressures(void)
 				alarmList[FLOW_ART_SET].physic = PHYSIC_TRUE;
 			else
 				alarmList[FLOW_ART_SET].physic = PHYSIC_FALSE;
+
+			// Allarme di SET flusso ossigenazione attivo solo se perfusione attiva
+			// flowTargetVen corrisponde al set ossigenazione
+			if ((sensor_UFLOW[1].Average_Flow_Val  > flowTargetVen + DELTA_TARGET_FLOW_OXY_KIDNEY) && (Pinch_Art_Position == MODBUS_PINCH_LEFT_OPEN))
+				alarmList[FLOW_OXY_SET].physic = PHYSIC_TRUE;
+			else
+				alarmList[FLOW_OXY_SET].physic = PHYSIC_FALSE;
 		}
 	}
 	else
@@ -1405,6 +1481,7 @@ void manageAlarmPhysicSetFlowAndPressures(void)
 		alarmList[FLOW_ART_SET].physic = PHYSIC_FALSE;
 		alarmList[FLOW_VEN_SET].physic = PHYSIC_FALSE;
 		alarmList[FLOW_DEP_SET].physic = PHYSIC_FALSE;
+		alarmList[FLOW_OXY_SET].physic = PHYSIC_FALSE;
 	}
 }
 
@@ -1812,13 +1889,31 @@ void manageAlarmPhysicFlowHigh(void)
 			alarmList[FLOW_PERF_ART_HIGH].physic = PHYSIC_FALSE;
 		}
 
-		// UF Sensor 1 è il sensore di perfusione venosa / oxy
-		if (sensor_UFLOW[1].Average_Flow_Val > flowMaxVen)
+		if (LiverTreat == GetTherapyType())
 		{
-			alarmList[FLOW_PERF_VEN_HIGH].physic = PHYSIC_TRUE;
+			// UF Sensor 1 è il sensore di perfusione venosa / oxy
+			if (sensor_UFLOW[1].Average_Flow_Val > flowMaxVen)
+			{
+				alarmList[FLOW_PERF_VEN_HIGH].physic = PHYSIC_TRUE;
+			}
+			else
+			{
+				alarmList[FLOW_PERF_VEN_HIGH].physic = PHYSIC_FALSE;
+			}
+			alarmList[FLOW_OXY_HIGH].physic = PHYSIC_FALSE;
+
 		}
-		else
+		else if (KidneyTreat == GetTherapyType())
 		{
+			// UF Sensor 1 è il sensore di perfusione venosa / oxy
+			if (sensor_UFLOW[1].Average_Flow_Val > flowMaxVen)
+			{
+				alarmList[FLOW_OXY_HIGH].physic = PHYSIC_TRUE;
+			}
+			else
+			{
+				alarmList[FLOW_OXY_HIGH].physic = PHYSIC_FALSE;
+			}
 			alarmList[FLOW_PERF_VEN_HIGH].physic = PHYSIC_FALSE;
 		}
 	}
@@ -1826,6 +1921,7 @@ void manageAlarmPhysicFlowHigh(void)
 	{
 		alarmList[FLOW_PERF_ART_HIGH].physic = PHYSIC_FALSE;
 		alarmList[FLOW_PERF_VEN_HIGH].physic = PHYSIC_FALSE;
+		alarmList[FLOW_OXY_HIGH].physic = PHYSIC_FALSE;
 	}
 }
 
@@ -1846,7 +1942,6 @@ void manageAlarmStopButtonPressed(void)
 			alarmList[ALARM_STOP_BUTTON].physic = PHYSIC_FALSE;
 		}
 	}
-
 }
 
 // Filippo - funzione che gestisce l'allarme di pressione del tasto di stop
@@ -1866,7 +1961,6 @@ void manageAlarmT1Test(void)
 			alarmList[ALARM_T1_TEST].physic = PHYSIC_FALSE;
 		}
 	}
-
 }
 
 //Allarme T1 test relativo ai segnali digitali
@@ -1927,6 +2021,11 @@ void manageAlarmFlowSensNotDetected(void)
 			sensor_UFLOW[i].RequestMsgProcessed = 0;
 	}
 }
+
+
+
+
+
 
 void manageAlarmIrTempSensNotDetected(void)
 {
@@ -2461,312 +2560,26 @@ void WarningPhysicPressSensHigh(void)
 
 void WarningDepPumpStill(void)
 {
-	static uint32_t StartTime50Msec;
-	switch (WrnDepPumpStillState)
-	{
-		case WRN_INIT:
-			alarmList[DEP_PUMP_STILL_WARN].physic = PHYSIC_FALSE;
-			if(WrnGlobalFlags.WrnFlagsDef.EnablePumpDepStill)
-			{
-				if((((PARAMETER_ACTIVE_TYPE)parameterWordSetFromGUI[PAR_SET_DEPURATION_ACTIVE].value) == YES) &&
-										(parameterWordSetFromGUI[PAR_SET_PURIF_FLOW_TARGET].value != 0))
-					WrnDepPumpStillState = WRN_CONTROL;
-			}
-			if(IsAlamActiveAndNotWrn())
-				WrnDepPumpStillState = WRN_WAIT_END_ALARM;
-			break;
-		case WRN_CONTROL:
-			if((((PARAMETER_ACTIVE_TYPE)parameterWordSetFromGUI[PAR_SET_DEPURATION_ACTIVE].value) != YES) ||
-									(parameterWordSetFromGUI[PAR_SET_PURIF_FLOW_TARGET].value == 0))
-			{
-				WrnDepPumpStillState = WRN_INIT;
-				break;
-			}
-			if(IsAlamActiveAndNotWrn())
-			{
-				WrnDepPumpStillState = WRN_WAIT_END_ALARM;
-				break;
-			}
-			if(WrnGlobalFlags.WrnFlagsDef.EnablePumpDepStill)
-			{
-				if(((int)(modbusData[pumpPerist[3].pmpMySlaveAddress-2][17] / 100)) <= (int)PUMP_STOPPED_SPEED_VAL)
-				{
-					alarmList[DEP_PUMP_STILL_WARN].physic = PHYSIC_FALSE;
-					StartTime50Msec = timerCounterModBus;
-					WrnDepPumpStillState = WRN_CONTROL_DELAY;
-				}
-				else
-					alarmList[DEP_PUMP_STILL_WARN].physic = PHYSIC_FALSE;
-			}
-			else
-				alarmList[DEP_PUMP_STILL_WARN].physic = PHYSIC_FALSE;
-			break;
-		case WRN_CONTROL_DELAY:
-			if((((PARAMETER_ACTIVE_TYPE)parameterWordSetFromGUI[PAR_SET_DEPURATION_ACTIVE].value) != YES) ||
-									(parameterWordSetFromGUI[PAR_SET_PURIF_FLOW_TARGET].value == 0))
-			{
-				WrnDepPumpStillState = WRN_INIT;
-				break;
-			}
-			if(IsAlamActiveAndNotWrn())
-			{
-				WrnDepPumpStillState = WRN_WAIT_END_ALARM;
-				break;
-			}
-			if(WrnGlobalFlags.WrnFlagsDef.EnablePumpDepStill)
-			{
-				if(((int)(modbusData[pumpPerist[3].pmpMySlaveAddress-2][17] / 100)) <= (int)PUMP_STOPPED_SPEED_VAL)
-				{
-					if((msTick_elapsed(StartTime50Msec) * 50L) >= DEPURATION_PUMP_STILL_TOUT)
-						alarmList[DEP_PUMP_STILL_WARN].physic = PHYSIC_TRUE;
-					else
-						alarmList[DEP_PUMP_STILL_WARN].physic = PHYSIC_FALSE;
-				}
-				else
-				{
-					// la pompa e' ripartita. Riparte il conteggio del tempo per pompa ferma
-					alarmList[DEP_PUMP_STILL_WARN].physic = PHYSIC_FALSE;
-					WrnDepPumpStillState = WRN_CONTROL;
-				}
-			}
-			else
-			{
-				// ho ricevuto il reset dell'allarme
-				alarmList[DEP_PUMP_STILL_WARN].physic = PHYSIC_FALSE;
-				// faccio ripartire il controllo dei due minuti
-				WrnGlobalFlags.WrnFlagsDef.EnablePumpDepStill = 1;
-				WrnDepPumpStillState = WRN_CONTROL;
-			}
-			break;
-		case WRN_WAIT_END_ALARM:
-			if(!IsAlamActiveAndNotWrn())
-			{
-				// allarme finito le pompe dovrebbero essere in fase di
-				// ripartenza
-				WrnDepPumpStillState = WRN_INIT;
-				WrnGlobalFlags.WrnFlagsDef.EnablePumpDepStill = 1;
-			}
-			break;
-		case WRN_WAIT_LOWER_LEV:
-			break;
-	}
+
 }
 
 
 // allarme di pompa arteriosa ferma (valida per rene e fegato)
 void WarningPerfArtPumpStill(void)
 {
-	static uint32_t StartTime50Msec;
-	switch (WrnPerfArtPumpStillState)
-	{
-		case WRN_INIT:
-			alarmList[PERF_ART_PUMP_STILL_WRN].physic = PHYSIC_FALSE;
-			if(WrnGlobalFlags.WrnFlagsDef.EnablePumpPerfArtStill)
-			{
-				if(parameterWordSetFromGUI[PAR_SET_MAX_FLOW_PERFUSION].value != 0)
-					WrnPerfArtPumpStillState = WRN_CONTROL;
-			}
-			if(IsAlamActiveAndNotWrn())
-				WrnPerfArtPumpStillState = WRN_WAIT_END_ALARM;
-			break;
-		case WRN_CONTROL:
-			if(parameterWordSetFromGUI[PAR_SET_MAX_FLOW_PERFUSION].value == 0)
-			{
-				WrnPerfArtPumpStillState = WRN_INIT;
-				break;
-			}
-			if(IsAlamActiveAndNotWrn())
-			{
-				WrnPerfArtPumpStillState = WRN_WAIT_END_ALARM;
-				break;
-			}
-			if(WrnGlobalFlags.WrnFlagsDef.EnablePumpPerfArtStill)
-			{
-				if(((int)(modbusData[pumpPerist[0].pmpMySlaveAddress-2][17] / 100)) <= (int)PUMP_STOPPED_SPEED_VAL)
-				{
-					alarmList[PERF_ART_PUMP_STILL_WRN].physic = PHYSIC_FALSE;
-					StartTime50Msec = timerCounterModBus;
-					WrnPerfArtPumpStillState = WRN_CONTROL_DELAY;
-				}
-				else
-					alarmList[PERF_ART_PUMP_STILL_WRN].physic = PHYSIC_FALSE;
-			}
-			else
-				alarmList[PERF_ART_PUMP_STILL_WRN].physic = PHYSIC_FALSE;
-			break;
-		case WRN_CONTROL_DELAY:
-			if(parameterWordSetFromGUI[PAR_SET_MAX_FLOW_PERFUSION].value == 0)
-			{
-				WrnPerfArtPumpStillState = WRN_INIT;
-				break;
-			}
-			if(IsAlamActiveAndNotWrn())
-			{
-				WrnPerfArtPumpStillState = WRN_WAIT_END_ALARM;
-				break;
-			}
-			if(WrnGlobalFlags.WrnFlagsDef.EnablePumpPerfArtStill)
-			{
-				if(((int)(modbusData[pumpPerist[0].pmpMySlaveAddress-2][17] / 100)) <= (int)PUMP_STOPPED_SPEED_VAL)
-				{
-					if((msTick_elapsed(StartTime50Msec) * 50L) >= DEPURATION_PUMP_STILL_TOUT)
-						alarmList[PERF_ART_PUMP_STILL_WRN].physic = PHYSIC_TRUE;
-					else
-						alarmList[PERF_ART_PUMP_STILL_WRN].physic = PHYSIC_FALSE;
-				}
-				else
-				{
-					// la pompa e' ripartita. Riparte il conteggio del tempo per pompa ferma
-					alarmList[PERF_ART_PUMP_STILL_WRN].physic = PHYSIC_FALSE;
-					WrnPerfArtPumpStillState = WRN_CONTROL;
-				}
-			}
-			else
-			{
-				// ho ricevuto il reset dell'allarme
-				alarmList[PERF_ART_PUMP_STILL_WRN].physic = PHYSIC_FALSE;
-				// faccio ripartire il controllo dei due minuti
-				WrnGlobalFlags.WrnFlagsDef.EnablePumpPerfArtStill = 1;
-				WrnPerfArtPumpStillState = WRN_CONTROL;
-			}
-			break;
-		case WRN_WAIT_END_ALARM:
-			if(!IsAlamActiveAndNotWrn())
-			{
-				// allarme finito le pompe dovrebbero essere in fase di
-				// ripartenza
-				WrnPerfArtPumpStillState = WRN_INIT;
-				WrnGlobalFlags.WrnFlagsDef.EnablePumpPerfArtStill = 1;
-			}
-			break;
-		case WRN_WAIT_LOWER_LEV:
-			break;
-	}
+
 }
 
 
 // allarme di pompa ossigenazione ferma (valida per rene e fegato)
 void WarningOxygPumpStill(void)
 {
-	static uint32_t StartTime50Msec;
-	switch (WrnOxygPumpStillState)
-	{
-		case WRN_INIT:
-			alarmList[OXYG_PUMP_STILL_WRN].physic = PHYSIC_FALSE;
-			if(WrnGlobalFlags.WrnFlagsDef.EnablePumpOxygStill)
-			{
-				if(GetTherapyType() == KidneyTreat)
-				{
-					// nel caso di rene posso scegliere se applicare l'ossigenazione o no
-					if((((PARAMETER_ACTIVE_TYPE)parameterWordSetFromGUI[PAR_SET_OXYGENATOR_ACTIVE].value) == YES) &&
-					   (parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value != 0))
-						WrnOxygPumpStillState = WRN_CONTROL;
-				}
-				else if(parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value != 0)
-				{
-					// nel caso del fegato controllo solo il valore del flusso
-					WrnOxygPumpStillState = WRN_CONTROL;
-				}
-			}
-			if(IsAlamActiveAndNotWrn())
-				WrnOxygPumpStillState = WRN_WAIT_END_ALARM;
-			break;
-		case WRN_CONTROL:
-			if(GetTherapyType() == KidneyTreat)
-			{
-				if((((PARAMETER_ACTIVE_TYPE)parameterWordSetFromGUI[PAR_SET_OXYGENATOR_ACTIVE].value) != YES) ||
-				   (parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value == 0))
-				{
-					WrnOxygPumpStillState = WRN_INIT;
-					break;
-				}
-			}
-			else if(parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value == 0)
-			{
-				WrnOxygPumpStillState = WRN_INIT;
-				break;
-			}
-			if(IsAlamActiveAndNotWrn())
-			{
-				WrnOxygPumpStillState = WRN_WAIT_END_ALARM;
-				break;
-			}
-			if(WrnGlobalFlags.WrnFlagsDef.EnablePumpOxygStill)
-			{
-				if(((int)(modbusData[pumpPerist[1].pmpMySlaveAddress-2][17] / 100)) <= (int)PUMP_STOPPED_SPEED_VAL)
-				{
-					alarmList[OXYG_PUMP_STILL_WRN].physic = PHYSIC_FALSE;
-					StartTime50Msec = timerCounterModBus;
-					WrnOxygPumpStillState = WRN_CONTROL_DELAY;
-				}
-				else
-					alarmList[OXYG_PUMP_STILL_WRN].physic = PHYSIC_FALSE;
-			}
-			else
-				alarmList[OXYG_PUMP_STILL_WRN].physic = PHYSIC_FALSE;
-			break;
-		case WRN_CONTROL_DELAY:
-			if(GetTherapyType() == KidneyTreat)
-			{
-				if((((PARAMETER_ACTIVE_TYPE)parameterWordSetFromGUI[PAR_SET_OXYGENATOR_ACTIVE].value) != YES) ||
-				   (parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value == 0))
-				{
-					WrnOxygPumpStillState = WRN_INIT;
-					break;
-				}
-			}
-			else if(parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value == 0)
-			{
-				WrnOxygPumpStillState = WRN_INIT;
-				break;
-			}
-			if(IsAlamActiveAndNotWrn())
-			{
-				WrnOxygPumpStillState = WRN_WAIT_END_ALARM;
-				break;
-			}
-			if(WrnGlobalFlags.WrnFlagsDef.EnablePumpOxygStill)
-			{
-				if(((int)(modbusData[pumpPerist[1].pmpMySlaveAddress-2][17] / 100)) <= (int)PUMP_STOPPED_SPEED_VAL)
-				{
-					if((msTick_elapsed(StartTime50Msec) * 50L) >= DEPURATION_PUMP_STILL_TOUT)
-						alarmList[OXYG_PUMP_STILL_WRN].physic = PHYSIC_TRUE;
-					else
-						alarmList[OXYG_PUMP_STILL_WRN].physic = PHYSIC_FALSE;
-				}
-				else
-				{
-					// la pompa e' ripartita. Riparte il conteggio del tempo per pompa ferma
-					alarmList[OXYG_PUMP_STILL_WRN].physic = PHYSIC_FALSE;
-					WrnOxygPumpStillState = WRN_CONTROL;
-				}
-			}
-			else
-			{
-				// ho ricevuto il reset dell'allarme
-				alarmList[OXYG_PUMP_STILL_WRN].physic = PHYSIC_FALSE;
-				// faccio ripartire il controllo dei due minuti
-				WrnGlobalFlags.WrnFlagsDef.EnablePumpOxygStill = 1;
-				WrnOxygPumpStillState = WRN_CONTROL;
-			}
-			break;
-		case WRN_WAIT_END_ALARM:
-			if(!IsAlamActiveAndNotWrn())
-			{
-				// allarme finito le pompe dovrebbero essere in fase di
-				// ripartenza
-				WrnOxygPumpStillState = WRN_INIT;
-				WrnGlobalFlags.WrnFlagsDef.EnablePumpOxygStill = 1;
-			}
-			break;
-		case WRN_WAIT_LOWER_LEV:
-			break;
-	}
+
 }
 
 void manageWarningPhysicPressSensHigh(void)
 {
-	if(WrnGlobalFlags.WrnFlagsDef.GenEnableAdsPressHigk)
+	if (WrnGlobalFlags.WrnFlagsDef.GenEnableAdsPressHigk)
 	{
 		WarningPhysicPressSensHigh();
 	}
@@ -2775,37 +2588,97 @@ void manageWarningPhysicPressSensHigh(void)
 		alarmList[PRESS_ADS_FILTER_WARN].physic = PHYSIC_FALSE;
 	}
 }
-void manageWarningDepPumpStill(void)
+
+void manageAlarmDepPumpStill(void)
 {
-	if(WrnGlobalFlags.WrnFlagsDef.GenEnablePumpDepStill)
+	// Allarme attivo && DEPURAZIONE ON
+	if ((GlobalFlags2.FlagsDef2.EnableDepPumpStopAlarms) && (((PARAMETER_ACTIVE_TYPE)parameterWordSetFromGUI[PAR_SET_DEPURATION_ACTIVE].value) == YES))
 	{
-		WarningDepPumpStill();
+		if (((PARAMETER_ACTIVE_TYPE)parameterWordSetFromGUI[PAR_SET_PURIF_FLOW_TARGET].value > 0) && 			// SET DEPURAZIONE > 0
+		    (((int)(modbusData[pumpPerist[3].pmpMySlaveAddress-2][17] / 100)) <= (int)PUMP_STOPPED_SPEED_VAL))  // Velocità bassa
+		{
+			alarmList[DEP_PUMP_STILL].physic = PHYSIC_TRUE;
+		}
+		else
+		{
+			alarmList[DEP_PUMP_STILL].physic = PHYSIC_FALSE;
+		}
 	}
 	else
 	{
-		alarmList[PRESS_ADS_FILTER_WARN].physic = PHYSIC_FALSE;
+		alarmList[DEP_PUMP_STILL].physic = PHYSIC_FALSE;
 	}
 }
-void manageWarningPerfArtPumpStill(void)
+
+void manageAlarmPerfArtPumpStill(void)
 {
-	if(WrnGlobalFlags.WrnFlagsDef.GenEnablePumpPerfArtStill)
+	// Allarme attivo
+	if (GlobalFlags2.FlagsDef2.EnableArtPumpStopAlarms)
 	{
-		WarningPerfArtPumpStill();
+		// Velocità pompa bassa?
+		if (((int)(modbusData[pumpPerist[0].pmpMySlaveAddress-2][17] / 100)) <= (int)PUMP_STOPPED_SPEED_VAL)
+		{
+			alarmList[PERF_ART_PUMP_STILL].physic = PHYSIC_TRUE;
+		}
+		else
+		{
+			alarmList[PERF_ART_PUMP_STILL].physic = PHYSIC_FALSE;
+		}
 	}
 	else
 	{
-		alarmList[PRESS_ADS_FILTER_WARN].physic = PHYSIC_FALSE;
+		alarmList[PERF_ART_PUMP_STILL].physic = PHYSIC_FALSE;
 	}
 }
-void manageWarningOxygPumpStill(void)
+
+void manageAlarmOxygPumpStill(void)
 {
-	if(WrnGlobalFlags.WrnFlagsDef.GenEnablePumpOxygStill)
+	if (GlobalFlags2.FlagsDef2.EnableOxyPumpStopAlarms)
 	{
-		WarningOxygPumpStill();
+		if (GetTherapyType() == KidneyTreat)
+		{
+			if ((((PARAMETER_ACTIVE_TYPE)parameterWordSetFromGUI[PAR_SET_OXYGENATOR_ACTIVE].value) == YES) && (parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value != 0))
+			{
+				if(((int)(modbusData[pumpPerist[1].pmpMySlaveAddress-2][17] / 100)) <= (int)PUMP_STOPPED_SPEED_VAL)
+				{
+					alarmList[OXYG_PUMP_STILL].physic = PHYSIC_TRUE;
+				}
+				else
+				{
+					alarmList[OXYG_PUMP_STILL].physic = PHYSIC_FALSE;
+				}
+			}
+			else
+				alarmList[OXYG_PUMP_STILL].physic = PHYSIC_FALSE;
+
+			// perfusione venosa non presente nei trattamenti kidney
+			alarmList[VEN_PUMP_STILL].physic = PHYSIC_FALSE;
+		}
+		else if (GetTherapyType() == LiverTreat)
+		{
+			// Set perfusione venosa
+			if (parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value != 0)
+			{
+				if(((int)(modbusData[pumpPerist[1].pmpMySlaveAddress-2][17] / 100)) <= (int)PUMP_STOPPED_SPEED_VAL)
+				{
+					alarmList[VEN_PUMP_STILL].physic = PHYSIC_TRUE;
+				}
+				else
+				{
+					alarmList[VEN_PUMP_STILL].physic = PHYSIC_FALSE;
+				}
+			}
+			else
+				alarmList[VEN_PUMP_STILL].physic = PHYSIC_FALSE;
+
+			// nei trattamenti liver l'ossigenazione coincide con la perfusione venosa
+			alarmList[OXYG_PUMP_STILL].physic = PHYSIC_FALSE;
+		}
 	}
 	else
 	{
-		alarmList[PRESS_ADS_FILTER_WARN].physic = PHYSIC_FALSE;
+		alarmList[OXYG_PUMP_STILL].physic = PHYSIC_FALSE;
+		alarmList[VEN_PUMP_STILL].physic = PHYSIC_FALSE;
 	}
 }
 
@@ -2841,12 +2714,24 @@ void CalcWarningActive(void)
 
 		case STATE_TREATMENT_KIDNEY_1:
 		{
-			manageWarningPhysicPressSensHigh();
-			if(GetTherapyType() == LiverTreat)
-				manageWarningDepPumpStill();
+			/*qui metto i warning che nello stato di trattamento
+			 * devono essere condizionati al fatto che il trattamento
+			 * sia relamente partito quindi che sia stato premuto per
+			 * la prima volta il tasto di start.
+			 * Esiste una flag che identifica questa condizione  che serve
+			 * a fare la 'tara sui sensori di pressione; sfrutto questa flag
+			 * TARA_PRESS_DONE */
 
-			manageWarningPerfArtPumpStill();
-			manageWarningOxygPumpStill();
+			if (TARA_PRESS_DONE)
+			{
+				manageWarningPhysicPressSensHigh();
+				if(GetTherapyType() == LiverTreat)
+					manageAlarmDepPumpStill();
+
+				manageAlarmPerfArtPumpStill();
+				manageAlarmOxygPumpStill();
+			}
+
 			break;
 		}
 
