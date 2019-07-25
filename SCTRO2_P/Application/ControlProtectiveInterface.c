@@ -735,6 +735,15 @@ typedef  enum {
 // State == 4 --> T1Test
 #define CTRL_STAT_T1TEST 4
 
+void Enable_Power_EVER_PUMP_TestT1(bool status);
+void Enable_Power_Motor_TestT1(bool status);
+void Enable_Pinch_Filter_TestT1(bool status);
+void Enable_Pinch_Arterial_TestT1(bool status);
+void Enable_Pinch_Venous_TestT1(bool status);
+void Enable_Pump_filter_TestT1(bool status);
+void Enable_Pump_Art_Liver_TestT1(bool status);
+void Enable_Pump_OXY_TestT1(bool status);
+
 void NewDataRxChannel5(void)
 {
 	// verifichiamo la temperatura di piatto
@@ -752,22 +761,38 @@ void NewDataRxChannel5(void)
 	if(RxCan0.SRxCan0.State == CTRL_STAT_T1TEST){
 		switch( RxCan5.SRxCan5.CommandFromControl ){
 			case C2PCOM_ENABPUMPS_OFF:
-				DisablePumps();
+				//DisablePumps();
+				Enable_Pump_filter_TestT1(FALSE);
+				Enable_Pump_Art_Liver_TestT1(FALSE);
+				Enable_Pump_OXY_TestT1(FALSE);
 			break;
 			case C2PCOM_ENABPUMPS_ON:
-				EnablePumps();
+				// EnablePumps();
+				Enable_Pump_filter_TestT1(TRUE);
+				Enable_Pump_Art_Liver_TestT1(TRUE);
+				Enable_Pump_OXY_TestT1(TRUE);
 			break;
 			case C2PCOM_ENABPINCH_OFF:
-				DisablePinches();
+				// DisablePinches();
+				Enable_Pinch_Filter_TestT1(FALSE);
+				Enable_Pinch_Arterial_TestT1(FALSE);
+				Enable_Pinch_Venous_TestT1(FALSE);
 			break;
 			case C2PCOM_ENABPINCH_ON:
-				EnablePinches();
+				//EnablePinches();
+				Enable_Pinch_Filter_TestT1(TRUE);
+				Enable_Pinch_Arterial_TestT1(TRUE);
+				Enable_Pinch_Venous_TestT1(TRUE);
 			break;
 			case C2PCOM_POWER_OFF:
-				SwitchOFFPinchNPumps();
+				//SwitchOFFPinchNPumps();
+				Enable_Power_EVER_PUMP_TestT1(false);
+				Enable_Power_Motor_TestT1(false);
 			break;
 			case C2PCOM_POWER_ON:
-				SwitchONPinchNPumps();
+				// SwitchONPinchNPumps();
+				Enable_Power_EVER_PUMP_TestT1(true);
+				Enable_Power_Motor_TestT1(true);
 			break;
 		}
 	}

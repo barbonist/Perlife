@@ -14,6 +14,7 @@
 
 #ifdef PROTECTIVE_SLEEPS
 	#define NO_DISABLE_FORTEST 1
+	#define TEST_T1
 #else
 	#undef NO_DISABLE_FORTEST
 #endif
@@ -105,6 +106,7 @@ void EnablePumps(void )
 }
 
 
+
 void SwitchOFFPinchNPumps(void)
 {
 //#ifndef NO_DISABLE_FORTEST
@@ -142,6 +144,31 @@ void Enable_Power_EVER_PUMP(bool status)
 	EN_P_2_C_SetVal();
 #endif
 }
+
+// temp routines to test T1 , to be replaced later
+void Enable_Power_EVER_PUMP_TestT1(bool status)
+{
+	if (status && !EN_P_1_C_GetVal())
+	{
+		EN_P_1_C_SetVal();
+		EN_P_2_C_SetVal();
+	}
+	if (!status && EN_P_1_C_GetVal())
+	{
+		EN_P_1_C_ClrVal();
+		EN_P_2_C_ClrVal();
+	}
+}
+
+void Enable_Power_Motor_TestT1(bool status)
+{
+	if (status && !EN_24_M_P_GetVal())
+		EN_24_M_P_SetVal();
+	if (!status && EN_24_M_P_GetVal())
+		EN_24_M_P_ClrVal();
+}
+
+
 
 void Enable_Power_Motor(bool status)
 {
@@ -243,6 +270,75 @@ void Enable_Pinch_Venous(bool status)
 #endif
 }
 
+
+//
+// special for T1 test
+//
+
+void Enable_Pinch_Filter_TestT1(bool status)
+{
+	if (status && !EN_CLAMP_P_1_GetVal()){
+		EN_CLAMP_P_1_SetVal();
+	}
+	if (!status && EN_CLAMP_P_1_GetVal())
+		EN_CLAMP_P_1_ClrVal();
+}
+
+void Enable_Pinch_Arterial_TestT1(bool status)
+{
+	if (status && !EN_CLAMP_P_2_GetVal())
+		EN_CLAMP_P_2_SetVal();
+
+	if (!status && EN_CLAMP_P_2_GetVal())
+		EN_CLAMP_P_2_ClrVal();
+}
+
+void Enable_Pinch_Venous_TestT1(bool status)
+{
+	if (status && !EN_CLAMP_P_3_GetVal())
+		EN_CLAMP_P_3_SetVal();
+	if (!status && EN_CLAMP_P_3_GetVal())
+		EN_CLAMP_P_3_ClrVal();
+}
+
+
+void Enable_Pump_filter_TestT1(bool status)
+{
+	if (status && !EN_MOTOR_P_1_GetVal())
+		EN_MOTOR_P_1_SetVal();
+
+	if (!status && EN_MOTOR_P_1_GetVal())
+		EN_MOTOR_P_1_ClrVal();
+
+}
+
+void Enable_Pump_Art_Liver_TestT1(bool status)
+{
+	if (status && !EN_MOTOR_P_2_GetVal())
+		EN_MOTOR_P_2_SetVal();
+
+	if (!status && EN_MOTOR_P_2_GetVal())
+		EN_MOTOR_P_2_ClrVal();
+}
+
+void Enable_Pump_OXY_TestT1(bool status)
+{
+	if (status && !EN_MOTOR_P_3_GetVal())
+		EN_MOTOR_P_3_SetVal();
+
+	if (status && !EN_MOTOR_P_4_GetVal())
+		EN_MOTOR_P_4_SetVal();
+
+	if (!status && EN_MOTOR_P_3_GetVal())
+		EN_MOTOR_P_3_ClrVal();
+
+	if (!status && EN_MOTOR_P_4_GetVal())
+		EN_MOTOR_P_4_ClrVal();
+}
+
+//
+//
+//
 
 bool Pinch_Filter_IsEnabled(void)
 {
