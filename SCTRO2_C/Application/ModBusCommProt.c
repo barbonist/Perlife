@@ -9,9 +9,9 @@
 #include "Global.h"
 #include "ModBusCommProt.h"
 #include "EN_24_M_C.h"
+#include "EN_MOTOR_CONTROL.h"
 #include "EN_P_1_C.h"
 #include "EN_P_2_C.h"
-#include "EN_MOTOR_CONTROL.h"
 #include "EN_CLAMP_CONTROL.h"
 #include "RTS_MOTOR.h"
 #include "MODBUS_COMM.h"
@@ -2396,6 +2396,7 @@ void EN_Motor_Control(unsigned char action)
 	{
 	case ENABLE:
 		EN_MOTOR_CONTROL_SetVal();
+
 		break;
 
 	case DISABLE:
@@ -2413,26 +2414,26 @@ void EN_24_M_C_Management(unsigned char action)
 	{
 	case ENABLE:
 		EN_24_M_C_SetVal();
-	  /*NEL VECCHIO HW abilitava la 24 V sui driver delle celle di peltier.
-	   * CON LE MODIFICHE HW PER LE EVER ORA DIVENTA L'ENABLE AL 48 PER LE POMPE EVER*/
-	  EN_P_1_C_SetVal();
-	  // questo servirebbe solo con le celle di peltier. Ora con le modifiche hw per le
-	  // EVER non servirebbe piu' ma, io lo abilito lo stesso. Con le modifiche hw (48 V)
-	  // fatte per le ever non e' piu' possibile far funzionare di nuovo le peltier solo
-	  // ripristinando il sw.
-	  EN_P_2_C_SetVal();
+		/*NEL VECCHIO HW abilitava la 24 V sui driver delle celle di peltier.
+		* CON LE MODIFICHE HW PER LE EVER ORA DIVENTA L'ENABLE AL 48 PER LE POMPE EVER*/
+		EN_P_1_C_SetVal();
+		// questo servirebbe solo con le celle di peltier. Ora con le modifiche hw per le
+		// EVER non servirebbe piu' ma, io lo abilito lo stesso. Con le modifiche hw (48 V)
+		// fatte per le ever non e' piu' possibile far funzionare di nuovo le peltier solo
+		// ripristinando il sw.
+		EN_P_2_C_SetVal();
 		break;
 
 	case DISABLE:
-	   EN_24_M_C_ClrVal();
-	  /*NEL VECCHIO HW abilitava la 24 V sui driver delle celle di peltier.
-	   * CON LE MODIFICHE HW PER LE EVER ORA DIVENTA L'ENABLE AL 48 PER LE POMPE EVER*/
-	  EN_P_1_C_ClrVal();
-	  // questo servirebbe solo con le celle di peltier. Ora con le modifiche hw per le
-	  // EVER non servirebbe piu' ma, io lo abilito lo stesso. Con le modifiche hw (48 V)
-	  // fatte per le ever non e' piu' possibile far funzionare di nuovo le peltier solo
-	  // ripristinando il sw.
-	  EN_P_2_C_ClrVal();
+		EN_24_M_C_ClrVal();
+		/*NEL VECCHIO HW abilitava la 24 V sui driver delle celle di peltier.
+		* CON LE MODIFICHE HW PER LE EVER ORA DIVENTA L'ENABLE AL 48 PER LE POMPE EVER*/
+		EN_P_1_C_ClrVal();
+		// questo servirebbe solo con le celle di peltier. Ora con le modifiche hw per le
+		// EVER non servirebbe piu' ma, io lo abilito lo stesso. Con le modifiche hw (48 V)
+		// fatte per le ever non e' piu' possibile far funzionare di nuovo le peltier solo
+		// ripristinando il sw.
+		EN_P_2_C_ClrVal();
 		break;
 
 	default:

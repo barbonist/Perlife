@@ -8,14 +8,18 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include "global.h"
+#include "EEPROM.h"
 #include "PC_DEBUG_COMM.h"
 
 
 void CommandExecute( int argc, char** argv);
 char** ExtractTokens(char* CommandNParamsString);
 void SetMulti(int NParams, char** Params);
+void EnableMulti(int NParams, char** Params);
 void GetMulti(int NParams, char** Params);
 void SetHeater(int NParams, char** Params);
+void SetCalibTemp(int NParams, char** Params);
 void SetCooler(int NParams, char** Params);
 
 void ErrorCommandNotFound( int NParams, char** Params);
@@ -60,9 +64,9 @@ struct CommandNParams CommandsAvailable[] =
 {
 		{ "set", 2 , SetMulti },
 		{ "get", 2 , GetMulti },
+		{ "enable", 2 , EnableMulti },
 		{ "DrawLion", 2 , DrawLion }
 };
-
 
 void ParseNExecuteCommand( char* CommadnNParamsString)
 {
@@ -115,7 +119,6 @@ char** ExtractTokens( char* CommandNParamsString)
 ///////////////////////////////////////////////
 // Functions to execute when command received
 ///////////////////////////////////////////////
-
 void SetMulti(int NParams, char** Params)
 {
 	// execute
@@ -126,12 +129,40 @@ void SetMulti(int NParams, char** Params)
 		// parse what to set
 		if(strcmp_cr(Params[0],"heater") == 0) SetHeater(NParams-1, Params+1) ;
 		else if(strcmp_cr(Params[0],"cooler") == 0) SetCooler(NParams-1, Params+1) ;
+		else if (strcmp_cr(Params[0],"calibtemp") == 0) SetCalibTemp(NParams-1, Params+1) ;
 		else {
 			//ErrorParamsNotOk( NParams, Params);
-			CommandAnswer("set heater/cooler");
+			CommandAnswer("set heater/cooler/calibtemp");
 			return;
 		}
 }
+
+
+void EnablePump(int NParams, char** Params , int NPump);
+void EnablePinch(int NParams, char** Params , int NPump);
+
+void EnableMulti(int NParams, char** Params)
+{
+	// execute
+		if(NParams < 1){
+			ErrorNParamsNotOk(NParams, Params);
+			return;
+		}
+		// parse what to set
+		if(strcmp_cr(Params[0],"pump1") == 0) EnablePump(NParams-1, Params+1, 1) ;
+		else if(strcmp_cr(Params[0],"pump2") == 0) EnablePump(NParams-1, Params+1, 2) ;
+		else if(strcmp_cr(Params[0],"pump3") == 0) EnablePump(NParams-1, Params+1, 3) ;
+		else if(strcmp_cr(Params[0],"pump4") == 0) EnablePump(NParams-1, Params+1, 4) ;
+		else if(strcmp_cr(Params[0],"pinch1") == 0) EnablePinch(NParams-1, Params+1, 1) ;
+		else if(strcmp_cr(Params[0],"pinch2") == 0) EnablePinch(NParams-1, Params+1, 2) ;
+		else if(strcmp_cr(Params[0],"pinch3") == 0) EnablePinch(NParams-1, Params+1, 3) ;
+		else {
+			//ErrorParamsNotOk( NParams, Params);
+			CommandAnswer("enable pump1/pump2/pump3/pump4/pinch1/pinch2/pinch3  on/off");
+			return;
+		}
+}
+
 
 void GetMulti(int NParams, char** Params)
 {
@@ -200,6 +231,82 @@ void SetHeater(int NParams, char** Params)
 }
 
 
+void SetCalibTemp(int NParams, char** Params)
+{
+	unsigned char SensNum = 0;
+	float TempVal1, TempVal2 = 0;
+	unsigned char *ptr_EEPROM = (EEPROM_TDataAddress)&config_data;
+
+	if (NParams == 3)
+	{
+		if (strcmp_cr(Params[0],"1") == 0)
+		{
+			SensNum = 1;
+		}
+		else if (strcmp_cr(Params[0],"2") == 0)
+		{
+			SensNum = 2;
+		}
+		else if (strcmp_cr(Params[0],"3") == 0)
+		{
+			SensNum = 3;
+		}
+		else{
+			CommandAnswer("Sensor Number should be 1, 2 or 3");
+			return;
+		}
+
+		str_NoCr(Params[2]);
+
+		if(strspn(Params[1], "0123456789.") == strlen(Params[1])){
+			sscanf(Params[1] , "%f" , &TempVal1);
+		}
+		else{
+			CommandAnswer("First temperature not ok");
+			return;
+		}
+		if(strspn(Params[2], "0123456789.") == strlen(Params[2]))
+		{
+			sscanf(Params[2] , "%f" , &TempVal2);
+		}
+		else
+		{
+			CommandAnswer("Second temperature not ok");
+			return;
+		}
+
+		switch(SensNum){
+		case 1:
+			config_data.T_sensor_ART_Meas_Low = TempVal1;
+			config_data.T_sensor_ART_Meas_High = TempVal2;
+			break;
+		case 2:
+			config_data.T_sensor_RIC_Meas_Low = TempVal1;
+			config_data.T_sensor_RIC_Meas_High = TempVal2;
+			break;
+		case 3:
+			config_data.T_sensor_VEN_Meas_Low = TempVal1;
+			config_data.T_sensor_VEN_Meas_High = TempVal2;
+			break;
+		}
+		/*carico il CRC della EEPROM (usata la stessa funzione di CRC del MOD_BUS
+		* IL CRC lo clacolo su tutta la struttura meno i due byte ndel CRC stesso*/
+		config_data.EEPROM_CRC = ComputeChecksum(ptr_EEPROM, sizeof(config_data)-2);
+		/*finita la calibrazione di un sensore la vado subito a salvare in EEPROM*/
+		EEPROM_write((EEPROM_TDataAddress)&config_data, START_ADDRESS_EEPROM, sizeof(config_data));
+	}
+	else if (NParams == 4)
+	{
+		str_NoCr(Params[3]);
+		//TODO
+	}
+	else
+	{
+		//messaggio di errore
+		CommandAnswer("wrong number of parameters");
+	}
+}
+
 
 
 void SetCooler(int NParams, char** Params)
@@ -244,6 +351,104 @@ void SetCooler(int NParams, char** Params)
 	CommandAnswer("set cooler done");
 
 }
+
+
+#include "events.h"
+
+void EnablePump(int NParams, char** Params , int NPump)
+{
+bool enab_val;
+
+	// parse on off
+	if(NParams != 1){
+		CommandAnswer("enable pinch1..3 on/off");
+		return;
+	}
+	if(strcmp_cr(Params[0],"on") == 0) enab_val = TRUE;
+	else if(strcmp_cr(Params[0],"off") == 0) enab_val = FALSE;
+	else {
+		//ErrorParamsNotOk( NParams, Params);
+		CommandAnswer("enable pump1..4 on/off");
+		return;
+	}
+	if( enab_val ){
+		switch(NPump){
+			case 1:
+				EN_MOTOR_P_1_SetVal();
+				break;
+			case 2:
+				EN_MOTOR_P_2_SetVal();
+				break;
+			case 3:
+				EN_MOTOR_P_3_SetVal();
+				break;
+			case 4:
+				EN_MOTOR_P_4_SetVal();
+				break;
+		}
+	}
+	else{
+		switch(NPump){
+			case 1:
+				EN_MOTOR_P_1_ClrVal();
+				break;
+			case 2:
+				EN_MOTOR_P_2_ClrVal();
+				break;
+			case 3:
+				EN_MOTOR_P_3_ClrVal();
+				break;
+			case 4:
+				EN_MOTOR_P_4_ClrVal();
+				break;
+		}
+	}
+}
+
+void EnablePinch(int NParams, char** Params , int NPinch)
+{
+	bool enab_val;
+
+	// parse on off
+	if(NParams != 1){
+		CommandAnswer("enable pinch1..3 on/off");
+		return;
+	}
+	if(strcmp_cr(Params[0],"on") == 0) enab_val = TRUE;
+	else if(strcmp_cr(Params[0],"off") == 0) enab_val = FALSE;
+	else {
+		CommandAnswer("enable pinch1..3 on/off");
+		return;
+	}
+	if( enab_val ){
+		switch(NPinch){
+			case 1:
+				EN_CLAMP_P_1_SetVal();
+				break;
+			case 2:
+				EN_CLAMP_P_2_SetVal();
+				break;
+			case 3:
+				EN_CLAMP_P_3_SetVal();
+				break;
+		}
+	}
+	else{
+		switch(NPinch){
+			case 1:
+				EN_CLAMP_P_1_ClrVal();
+				break;
+			case 2:
+				EN_CLAMP_P_2_ClrVal();
+				break;
+			case 3:
+				EN_CLAMP_P_3_ClrVal();
+				break;
+		}
+	}
+}
+
+
 
 void SetLogCommand( uint8_t Command);
 

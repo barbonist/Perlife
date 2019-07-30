@@ -22,9 +22,10 @@
 	/*ESEMPI
 	 * 0x0800 --> 1.0.0  *0x0801 -->  1.0.1 *0x0802 --> 1.0.2 *0x0803 --> 1.0.3   *0x0804 --> 1.0.4  *0x0805 --> 1.0.5  *0x0806 --> 1.0.6
 	 * 0x0807 --> 1.0.7  *0x0808 -->  1.0.8 *0x0809 --> 1.0.9 *0x080A --> 1.0.10  *0x080B --> 1.0.11 *0x080C --> 1.0.12 *0x080D --> 1.0.13
-	 * 0x080E --> 1.0.14 *0x080F --> 1.0.15 *0x0810 --> 1.0.16 *0x0811 --> 1.0.17 *0x0812 --> 1.0.18 *0x0813 --> 1.0.19 *0x0814 --> 1.0.20*/
+	 * 0x080E --> 1.0.14 *0x080F --> 1.0.15 *0x0810 --> 1.0.16 *0x0811 --> 1.0.17 *0x0812 --> 1.0.18 *0x0813 --> 1.0.19 *0x0814 --> 1.0.20
+	 * 0x0815 --> 1.0.21 *0x0816 --> 1.0.22 *0x0817 --> 1.0.23 *0x0818 --> 1.0.24*/
 
-#define REVISION_FW_CONTROL 0x0816
+#define REVISION_FW_CONTROL 0x0818
 
 /* Syncronization flag */
 char	iflag_pc_rx;
@@ -346,10 +347,38 @@ typedef enum{
 	PINCH_CLOSE,
 	PINCH_LEFT,
 	PINCH_RIGHT,
-	PINCH_END,
+	PINCH_DIS_CON,
+	CHK_PINCH_DIS_CON,
+	PINCH_EN_CON,
+	CHK_PINCH_EN_CON,
+	PINCH_DIS_PRO,
+	CHK_PINCH_DIS_PRO,
+	PINCH_EN_PRO,
+	CHK_PINCH_EN_PRO,
+	PINCH_OK,
+	PINCH_KO,
 } T1TEST_PINCH_STATE;
 
 T1TEST_PINCH_STATE t1Test_pinch_state;
+
+typedef enum{
+	IDLE,
+	WAIT_1,
+	CHK_VOLTAGE,
+	DISABLE_CON_VOLTAGE,
+	CHK_NO_POWER_1,
+	ENABLE_CON_VOLTAGE,
+	WAIT_2,
+	CHK_VOLTAGE_ENABLED_1,
+	COMMAND_PRO_DISABLE_VOLTAGE,
+	CHEK_NO_POWER_2,
+	COMMAND_PRO_ENABLE_VOLTAGE,
+	CHK_VOLTAGE_ENABLED_2,
+	CHK_VOLTAGE_OK,
+	CHK_VOLTAGE_KO
+} T1TEST_CHK24_STATE;
+
+T1TEST_CHK24_STATE t1Test_chk24_state;
 
 typedef enum{
 	CMD_PINCH_TOSEND,
@@ -362,8 +391,17 @@ typedef enum{
 	PUMP_IDLE,
 	PUMP_RAMP,
 	PUMP_RUNNING,
+	PUMP_DIS_CON,
+	CHK_PUMP_DIS_CON,
+	PUMP_EN_CON,
+	CHK_PUMP_EN_CON,
+	PUMP_DIS_PRO,
+	CHK_PUMP_DIS_PRO,
+	PUMP_EN_PRO,
+	CHK_PUMP_EN_PRO,
 	PUMP_STOP,
-	PUMP_END,
+	PUMP_OK,
+	PUMP_KO
 } T1TEST_PUMP_STATE;
 
 T1TEST_PUMP_STATE t1Test_pump_state;
@@ -1540,6 +1578,7 @@ int pollingDataToSBC;
 unsigned char codeDBG;
 unsigned char subcodeDBG;
 bool Service;
+bool FlowSensCalibDone;
 
 /*variabile globale per il tasto di emergenza; diventa TRUE se tasto premuto*/
 bool EMERGENCY_BUTTON_ACTIVATION;
@@ -2191,6 +2230,8 @@ typedef enum
 	T_SET_PINCH_ALARM_CMD,
 	T_SET_PINCH_RESET_ALARM_CMD
 }TREAT_SET_PINCH_POS_CMD;
+
+
 //-------------------------------------------------------------------------------
 
 // Questa define deve essere attiva se voglio rilevare l'allarme della connessione con la protective

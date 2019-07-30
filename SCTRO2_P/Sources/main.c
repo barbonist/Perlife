@@ -253,7 +253,7 @@ void verificaTempPlate(void)
 
 #define VERS_1 1
 #define VERS_2 2
-#define VERS_3 3
+#define VERS_3 4
 
 #endif
 uint16_t GetFwVersionProtective(void)
@@ -499,8 +499,10 @@ int main(void)
 		-- if some values of RPM control or RPM protective is too low then wait longer time before error
 	Versione 1.2.300
 		-- SB 16-5-2019 high pressure alarms intervention time changed from 1 to 2 seconds.
-
-
+	Versione 1.2.400
+		-- SB command for temperature calibration
+		-- SB command to enable & disable pumps and pinchs
+		-- SB in T1Test Control can send commands to protective for enable and power on off test.
   */
 
 

@@ -153,16 +153,27 @@ void Manage_UFlow_Sens()
 				sensor_UFLOW[Id_Buffer].Average_Flow_Val = Average_Flow_Value(Id_Buffer, sensor_UFLOW[Id_Buffer].Inst_Flow_Value);
 				/*adesso eseguo un filtraggio più pesante per il dato a video*/
 				sensor_UFLOW[Id_Buffer].Average_Flow_Val_for_GUI = Average_Flow_Value_for_GUI(Id_Buffer, sensor_UFLOW[Id_Buffer].Inst_Flow_Value);
+				
 
+				/*Se sono in service e non ho ancora calibrato i sensori di flusso,
+				 * faccio vedere a video il valore non calibrato così come mi arriva dal sensore*/
+				if (Service == TRUE && FlowSensCalibDone == FALSE )
+				{
+					config_data.FlowSensor_Ven_Gain = 1;
+					config_data.FlowSensor_Ven_Offset = 0;
+
+					config_data.FlowSensor_Art_Gain = 1;
+					config_data.FlowSensor_Art_Offset = 0;
+				}
 				if (Id_Buffer == 1)
 				{
-					sensor_UFLOW[Id_Buffer].Average_Flow_Val         = sensor_UFLOW[Id_Buffer].Average_Flow_Val * config_data.FlowSensor_Ven_Gain - config_data.FlowSensor_Ven_Offset;
-					sensor_UFLOW[Id_Buffer].Average_Flow_Val_for_GUI = sensor_UFLOW[Id_Buffer].Average_Flow_Val_for_GUI * config_data.FlowSensor_Ven_Gain - config_data.FlowSensor_Ven_Offset;
+					sensor_UFLOW[Id_Buffer].Average_Flow_Val         = sensor_UFLOW[Id_Buffer].Average_Flow_Val * config_data.FlowSensor_Ven_Gain + config_data.FlowSensor_Ven_Offset;
+					sensor_UFLOW[Id_Buffer].Average_Flow_Val_for_GUI = sensor_UFLOW[Id_Buffer].Average_Flow_Val_for_GUI * config_data.FlowSensor_Ven_Gain + config_data.FlowSensor_Ven_Offset;
 				}
 				else //if (Id_Buffer == 0)
 				{
-					sensor_UFLOW[Id_Buffer].Average_Flow_Val         = sensor_UFLOW[Id_Buffer].Average_Flow_Val * config_data.FlowSensor_Art_Gain - config_data.FlowSensor_Art_Offset;
-					sensor_UFLOW[Id_Buffer].Average_Flow_Val_for_GUI = sensor_UFLOW[Id_Buffer].Average_Flow_Val_for_GUI * config_data.FlowSensor_Art_Gain - config_data.FlowSensor_Art_Offset;
+					sensor_UFLOW[Id_Buffer].Average_Flow_Val         = sensor_UFLOW[Id_Buffer].Average_Flow_Val * config_data.FlowSensor_Art_Gain + config_data.FlowSensor_Art_Offset;
+					sensor_UFLOW[Id_Buffer].Average_Flow_Val_for_GUI = sensor_UFLOW[Id_Buffer].Average_Flow_Val_for_GUI * config_data.FlowSensor_Art_Gain + config_data.FlowSensor_Art_Offset;
 				}
 
 				/*se sul flusso ricevo un valore neativo lo metto a zero

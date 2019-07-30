@@ -338,8 +338,8 @@ struct machineParent stateParentT1TNoDisposable[] =
 		 {STATE_NULL, PARENT_T1_NO_DISP_INIT,         CHILD_IDLE, ACTION_ALWAYS,   &stateChildIdle[1], &manageNull}, /* 2 */ /* init */
 		 {STATE_NULL, PARENT_T1_NO_DISP_CHK_CONFG,    CHILD_IDLE, ACTION_ON_ENTRY, &stateChildIdle[1], &manageParentChkConfig}, /* 3 */ /* t1 check confg data */
 		 {STATE_NULL, PARENT_T1_NO_DISP_CHK_CONFG,    CHILD_IDLE, ACTION_ALWAYS,   &stateChildIdle[1], &manageNull}, /* 4 */ /* t1 check confg data */
-		 {STATE_NULL, PARENT_T1_NO_DISP_CHK_24VBRK,   CHILD_IDLE, ACTION_ON_ENTRY, &stateChildIdle[1], &manageParentChk24Vbrk}, /* 5 */ /* t1 check 24VBRK */
-		 {STATE_NULL, PARENT_T1_NO_DISP_CHK_24VBRK,   CHILD_IDLE, ACTION_ALWAYS,   &stateChildIdle[1], &manageNull}, /* 6 */ /* t1 check 24VBRK */
+		 {STATE_NULL, PARENT_T1_NO_DISP_CHK_24VBRK,   CHILD_IDLE, ACTION_ON_ENTRY, &stateChildIdle[1], &manageParentChk24Vbrk_init}, /* 5 */ /* t1 check 24VBRK */
+		 {STATE_NULL, PARENT_T1_NO_DISP_CHK_24VBRK,   CHILD_IDLE, ACTION_ALWAYS,   &stateChildIdle[1], &manageParentChk24Vbrk}, /* 6 */ /* t1 check 24VBRK */
 		 {STATE_NULL, PARENT_T1_NO_DISP_CHECK_PRESS,  CHILD_IDLE, ACTION_ON_ENTRY, &stateChildIdle[1], &manageParentChkPress}, /* 7 */ /* t1 chk press. sensor */
 		 {STATE_NULL, PARENT_T1_NO_DISP_CHECK_PRESS,  CHILD_IDLE, ACTION_ALWAYS,   &stateChildIdle[1], &manageNull}, /* 8 */ /* t1 chk press. sensor */
 		 {STATE_NULL, PARENT_T1_NO_DISP_CHECK_TEMP,   CHILD_IDLE, ACTION_ON_ENTRY, &stateChildIdle[1], &manageParentTempSensIR}, /* 9 */ /* t1 chk temp. sensor */

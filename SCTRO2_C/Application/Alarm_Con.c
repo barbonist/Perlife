@@ -787,28 +787,38 @@ void CalcAlarmActive(void)
 
 		case STATE_TREATMENT_KIDNEY_1:
 		{
-			//verifica physic pressioni
-			manageAlarmPhysicPressSensHigh();
-			manageAlarmPhysicPressSensLow();
-			manageAlarmPhysicSetFlowAndPressures();
+			/*qui metto gli allarmi che nello stato di trattamento
+			 * devono essere condizionati al fatto che il trattamento
+			 * sia relamente partito quindi che sia stato premuto per
+			 * la prima volta il tasto di start.
+			 * Esiste una flag che identifica questa condizione  che serve
+			 * a fare la 'tara sui sensori di pressione; sfrutto questa flag
+			 * TARA_PRESS_DONE */
 
-			//verifica physic flow sensor (presenza aria)
-			manageAlarmPhysicUFlowSens();
-			manageAlarmSAFAirSens();
+			if (TARA_PRESS_DONE)
+			{
+				//verifica physic pressioni
+				manageAlarmPhysicPressSensHigh();
+				manageAlarmPhysicPressSensLow();
+				manageAlarmSAFAirSens();
+				//verifica physic ir temp sens
+				manageAlarmPhysicTempSensInTreat();
+		        manageAlarmArterialResistance();
+				manageAlarmDeltaTempRecArt();
+				manageAlarmDeltaTempRecVen();
+				manageAlarmPhysicSetFlowAndPressures();
+				//verifica physic flow sensor (presenza aria)
+				manageAlarmPhysicUFlowSens();
+			}
 
 			if(GetTherapyType() == LiverTreat)
 			    manageAlarmPhysicUFlowSensVen();
 
-			//verifica physic ir temp sens
-			manageAlarmPhysicTempSensInTreat();
 			manageAlarmPhysicTempSensOOR();
-
 			//verifica physic flusso di perfusione arteriosa e venosa massimi
 			manageAlarmPhysicFlowHigh();
-
 			//verifica  flusso  non rilevato
 			manageAlarmFlowSensNotDetected();
-
 			//verifica temperatura noin rilevata
 			manageAlarmIrTempSensNotDetected();
 
@@ -831,15 +841,12 @@ void CalcAlarmActive(void)
 			// Per ora li commento.
 			//get();
 			//manageAlarmDeltaFlowVen();
-			manageAlarmDeltaTempRecArt();
-			manageAlarmDeltaTempRecVen();
+
 			manageAlarmCanBus();
 			manageAlarmActuatorModbusNotRespond();
 			manageAlarmActuatorWRModbusNotRespond();
 			manageAlarmFromProtective();
-
 			manageAlarmAirSensorTestKO();
-            manageAlarmArterialResistance();
             manageCover_Hook_Sensor();
 			break;
 		}
@@ -2707,12 +2714,24 @@ void CalcWarningActive(void)
 
 		case STATE_TREATMENT_KIDNEY_1:
 		{
-			manageWarningPhysicPressSensHigh();
-			if(GetTherapyType() == LiverTreat)
-				manageAlarmDepPumpStill();
+			/*qui metto i warning che nello stato di trattamento
+			 * devono essere condizionati al fatto che il trattamento
+			 * sia relamente partito quindi che sia stato premuto per
+			 * la prima volta il tasto di start.
+			 * Esiste una flag che identifica questa condizione  che serve
+			 * a fare la 'tara sui sensori di pressione; sfrutto questa flag
+			 * TARA_PRESS_DONE */
 
-			manageAlarmPerfArtPumpStill();
-			manageAlarmOxygPumpStill();
+			if (TARA_PRESS_DONE)
+			{
+				manageWarningPhysicPressSensHigh();
+				if(GetTherapyType() == LiverTreat)
+					manageAlarmDepPumpStill();
+
+				manageAlarmPerfArtPumpStill();
+				manageAlarmOxygPumpStill();
+			}
+
 			break;
 		}
 

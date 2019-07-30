@@ -149,6 +149,7 @@ int speed_Venous;
 int timerCounterRampaAccPmpFlt;
 int timerCounterRampaAccPmpVenArt;
 int TimeAtStopRiciclo;
+int TimerCHK24V;
 
 
 void CallInIdleState(void)
@@ -1112,6 +1113,12 @@ void manageParentChkConfig(void)
 	}
 }
 
+void manageParentChk24Vbrk_init(void)
+{
+	t1Test_chk24_state = IDLE;
+	TimerCHK24V = 0;
+}
+
 void manageParentChk24Vbrk(void){
 	// attenzione ai guadagni e agli offset delle 24V, che scalate, diventano 2,5V;
 	// modifiche necessarie in global.h
@@ -1121,24 +1128,190 @@ void manageParentChk24Vbrk(void){
 	voltageBoard = VOLTAGE_B_CHK_GetVal();
 	voltageMotor = VOLTAGE_M_CHK_GetVal();
 
+	/*VINCY lavoro T1 Test:
+	 *qui posso mettere anche il test su disattivazione Control e Protective
+	 *qui della 24, alla riattvazione dovrò mettere un'attesa di 5 secondi */
 	
-	if(
-	   (V24_P1_CHK_VOLT <= V24BRK_LOW_THRSLD) ||
-	   (V24_P1_CHK_VOLT >= V24BRK_HIGH_THRSLD) ||
-	   (V24_P2_CHK_VOLT <= V24BRK_LOW_THRSLD) ||
-	   (V24_P2_CHK_VOLT >= V24BRK_HIGH_THRSLD) ||
-	   (voltageBoard != 0x01) ||
-	   (voltageMotor != 0x01)
-	   )
-
+	switch (t1Test_chk24_state)
 	{
-		ptrT1Test->result_T1_24vbrk = T1_TEST_KO;
-		currentGuard[GUARD_ENABLE_T1_ALARM].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
-		DebugStringStr("alarm from chk 24vbrk");
+		case IDLE:
+			/*mi assicuro di abilitare la 24 VOLT sia su OCN che su PRO*/
+			onNewCommadT1TEST(C2PCOM_POWER_ON);
+			EN_24_M_C_Management(ENABLE);
+			t1Test_chk24_state = WAIT_1;
+			TimerCHK24V = timerCounterModBus;
+		break;
+
+		case WAIT_1:
+			/*aspetto 5 secondi poi cambio stato*/
+			if (msTick_elapsed(TimerCHK24V) >= 100)
+				t1Test_chk24_state = CHK_VOLTAGE;
+			break;
+
+		case CHK_VOLTAGE:
+			/*controllo i livelli di alimentazioni per la scheda e i motori*/
+			if(
+			   (V24_P1_CHK_VOLT <= V24BRK_LOW_THRSLD) ||
+			   (V24_P1_CHK_VOLT >= V24BRK_HIGH_THRSLD) ||
+			   (V24_P2_CHK_VOLT <= V24BRK_LOW_THRSLD) ||
+			   (V24_P2_CHK_VOLT >= V24BRK_HIGH_THRSLD) ||
+			   (voltageBoard != 0x01) ||
+			   (voltageMotor != 0x01)
+			   )
+				t1Test_chk24_state = CHK_VOLTAGE_KO;
+			else
+				t1Test_chk24_state = DISABLE_CON_VOLTAGE;
+		break;
+
+		case DISABLE_CON_VOLTAGE:
+			/*spengo la 24 dei motori*/
+			EN_24_M_C_Management(DISABLE);
+			t1Test_chk24_state = CHK_NO_POWER_1;
+			TimerCHK24V = timerCounterModBus;
+		break;
+
+		case CHK_NO_POWER_1:
+			//verifico che perda almeno 10 messaggi su ogni dirver
+			if (CountErrorModbusMSG[0] >= 10 &&
+				CountErrorModbusMSG[1] >= 10 &&
+				CountErrorModbusMSG[2] >= 10 &&
+				CountErrorModbusMSG[3] >= 10 &&
+				CountErrorModbusMSG[5] >= 10 &&
+				CountErrorModbusMSG[6] >= 10 &&
+				CountErrorModbusMSG[7] >= 10 )
+			{
+				t1Test_chk24_state = ENABLE_CON_VOLTAGE;
+			}
+			/*se passano 15 secondi e non perdo più di 10 messaggi vuol dire che almeno un driver è acceso*/
+			else if (msTick_elapsed(TimerCHK24V) >= 300)
+			{
+				t1Test_chk24_state = CHK_VOLTAGE_KO;
+				DebugStringStr("Disable Power Motor CONTROL Failure");
+			}
+		break;
+
+		case ENABLE_CON_VOLTAGE:
+			/*abilito nuovamente la 24 Motor*/
+			EN_24_M_C_Management(ENABLE);
+			TimerCHK24V = timerCounterModBus;
+			t1Test_chk24_state = WAIT_2;
+		break;
+
+		case WAIT_2:
+			/*aspetto un timer di 5 sec (100 volte 50 msec)*/
+			if (msTick_elapsed(TimerCHK24V) >= 100)
+				t1Test_chk24_state = CHK_VOLTAGE_ENABLED_1;
+		break;
+
+		case CHK_VOLTAGE_ENABLED_1:
+			/*verifico che l'alimentazione sia tornata..se ho ancora + di 10 messaggi
+			 * non ricevuti suppongo che l'alimentazione non sia tornata */
+			if (CountErrorModbusMSG[0] >= 10 &&
+				CountErrorModbusMSG[1] >= 10 &&
+				CountErrorModbusMSG[2] >= 10 &&
+				CountErrorModbusMSG[3] >= 10 &&
+				CountErrorModbusMSG[5] >= 10 &&
+				CountErrorModbusMSG[6] >= 10 &&
+				CountErrorModbusMSG[7] >= 10 )
+			{
+				t1Test_chk24_state = CHK_VOLTAGE_KO;
+				DebugStringStr("Enable Power Motor CONTROL Failure");
+			}
+			else
+				t1Test_chk24_state = COMMAND_PRO_DISABLE_VOLTAGE;
+		break;
+
+		case COMMAND_PRO_DISABLE_VOLTAGE:
+			/*mando il comando alla PRO di staccare la 24*/
+			onNewCommadT1TEST(C2PCOM_POWER_OFF);
+			TimerCHK24V = timerCounterModBus;
+			t1Test_chk24_state = CHEK_NO_POWER_2;
+		break;
+
+		case CHEK_NO_POWER_2:
+			/*verifico che la potenza sia andata giù*/
+			if (CountErrorModbusMSG[0] >= 10 &&
+				CountErrorModbusMSG[1] >= 10 &&
+				CountErrorModbusMSG[2] >= 10 &&
+				CountErrorModbusMSG[3] >= 10 &&
+				CountErrorModbusMSG[5] >= 10 &&
+				CountErrorModbusMSG[6] >= 10 &&
+				CountErrorModbusMSG[7] >= 10)
+				t1Test_chk24_state = COMMAND_PRO_ENABLE_VOLTAGE;
+			/*altrimenti se scadono 5 secondi vado in allarme*/
+			else if (msTick_elapsed(TimerCHK24V) >= 100)
+			{
+				t1Test_chk24_state = CHK_VOLTAGE_KO;
+				DebugStringStr("Disable Power Motor PROTECTIVE Failure");
+			}
+		break;
+
+		case COMMAND_PRO_ENABLE_VOLTAGE:
+			/*chiedo alla PRO di riattivare la 24*/
+			onNewCommadT1TEST(C2PCOM_POWER_ON);
+			TimerCHK24V = timerCounterModBus;
+			t1Test_chk24_state = CHK_VOLTAGE_ENABLED_2;
+		break;
+
+		case CHK_VOLTAGE_ENABLED_2:
+			/*verifico che la tensione sia tornata su*/
+			if (CountErrorModbusMSG[0] <= 10 &&
+				CountErrorModbusMSG[1] <= 10 &&
+				CountErrorModbusMSG[2] <= 10 &&
+				CountErrorModbusMSG[3] <= 10 &&
+				CountErrorModbusMSG[5] <= 10 &&
+				CountErrorModbusMSG[6] <= 10 &&
+				CountErrorModbusMSG[7] <= 10)
+			{
+				t1Test_chk24_state = CHK_VOLTAGE_OK;
+			}
+			/*altrimenti se scadono 5 secondi vado in allarme*/
+			else if (msTick_elapsed(TimerCHK24V) >= 100)
+			{
+				t1Test_chk24_state = CHK_VOLTAGE_KO;
+				DebugStringStr("Enable Power Motor PROTECTIVE Failure");
+			}
+		break;
+
+		case CHK_VOLTAGE_OK:
+			/*test superato*/
+			ptrT1Test->result_T1_24vbrk = T1_TEST_OK;
+			t1Test_chk24_state = IDLE;
+		break;
+
+		case CHK_VOLTAGE_KO:
+			ptrT1Test->result_T1_24vbrk = T1_TEST_KO;
+			currentGuard[GUARD_ENABLE_T1_ALARM].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+			DebugStringStr("alarm from chk 24vbrk");
+			t1Test_chk24_state = IDLE;
+		break;
+
+		default:
+			ptrT1Test->result_T1_24vbrk = T1_TEST_KO;
+			currentGuard[GUARD_ENABLE_T1_ALARM].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+			DebugStringStr("alarm from chk 24vbrk --> WRONG MACINE STATE");
+			t1Test_chk24_state = IDLE;
+		break;
+
 	}
-	else{
-		ptrT1Test->result_T1_24vbrk = T1_TEST_OK;
-	}
+
+//	if(
+//	   (V24_P1_CHK_VOLT <= V24BRK_LOW_THRSLD) ||
+//	   (V24_P1_CHK_VOLT >= V24BRK_HIGH_THRSLD) ||
+//	   (V24_P2_CHK_VOLT <= V24BRK_LOW_THRSLD) ||
+//	   (V24_P2_CHK_VOLT >= V24BRK_HIGH_THRSLD) ||
+//	   (voltageBoard != 0x01) ||
+//	   (voltageMotor != 0x01)
+//	   )
+//
+//	{
+//		ptrT1Test->result_T1_24vbrk = T1_TEST_KO;
+//		currentGuard[GUARD_ENABLE_T1_ALARM].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+//		DebugStringStr("alarm from chk 24vbrk");
+//	}
+//	else{
+//		ptrT1Test->result_T1_24vbrk = T1_TEST_OK;
+//	}
 }
 
 void manageParentChkPress(void){
@@ -1267,11 +1440,17 @@ void manageParenT1Pinch(void)
 {
 	switch(t1Test_pinch_state)
 	{
-	case 0: //idle
-		t1Test_pinch_state = 1;
+	case PINCH_IDLE: //idle
+		t1Test_pinch_state = PINCH_CLOSE;
+		onNewCommadT1TEST(C2PCOM_ENABPINCH_ON);
+		EN_Clamp_Control(ENABLE);
 		break;
 
-	case 1: //close
+	case PINCH_CLOSE: //close
+		/*per sicurezza, se ho appena attivato l'enable, attendo 3 secondi*/
+		if (timerCounterT1Test < 60)
+			break;
+
 		if(t1Test_pinch_cmd == 0){
 		setPinchPositionHighLevel(PINCH_2WPVF, MODBUS_PINCH_POS_CLOSED); //7: pinch filtro
 		setPinchPositionHighLevel(PINCH_2WPVA, MODBUS_PINCH_POS_CLOSED); //8: pinch art
@@ -1281,29 +1460,26 @@ void manageParenT1Pinch(void)
 
 		if(
 			(*FilterPinchPos == MODBUS_PINCH_POS_CLOSED) &&
-			(*ArtPinchPos == MODBUS_PINCH_POS_CLOSED) &&
-			(*OxygPinchPos == MODBUS_PINCH_POS_CLOSED) &&
+			(*ArtPinchPos == MODBUS_PINCH_POS_CLOSED)    &&
+			(*OxygPinchPos == MODBUS_PINCH_POS_CLOSED)   &&
+			modbusData[4][0] == MODBUS_PINCH_POS_CLOSED  &&
+			modbusData[5][0] == MODBUS_PINCH_POS_CLOSED  &&
+			modbusData[6][0] == MODBUS_PINCH_POS_CLOSED  &&
 			(timerCounterT1Test > 60)
 			)
 		{ //60*50ms equal 3 sec
-			t1Test_pinch_state = 2;
+			t1Test_pinch_state = PINCH_LEFT;
 			t1Test_pinch_cmd = 0;
 			timerCounterT1Test = 0;
 		}
 		else if(timerCounterT1Test > 200)
 		{//200*50ms equal 10 sec
-			timerCounterT1Test = 0;
-			currentGuard[GUARD_ENABLE_T1_ALARM].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
-			DebugStringStr("alarm from chk pinch_c");
-			t1Test_pinch_state = 5; //ho avuto un'errore, finisco nello stato d'errore per sincornizzarmi cn la macchina a stati del parent.c
-			t1Test_pinch_cmd = 0;
-		}
-		else{
-
+			t1Test_pinch_state = PINCH_KO; //ho avuto un'errore, finisco nello stato d'errore per sincornizzarmi cn la macchina a stati del parent.c
+			DebugStringStr("Pinch not all closed");
 		}
 		break;
 
-	case 2: //left
+	case PINCH_LEFT: //left
 		if(t1Test_pinch_cmd == 0){
 			setPinchPositionHighLevel(PINCH_2WPVF, MODBUS_PINCH_LEFT_OPEN); //7: pinch filtro
 			setPinchPositionHighLevel(PINCH_2WPVA, MODBUS_PINCH_LEFT_OPEN); //8: pinch art
@@ -1313,26 +1489,26 @@ void manageParenT1Pinch(void)
 
 		if(
 			(*FilterPinchPos == MODBUS_PINCH_LEFT_OPEN) &&
-			(*ArtPinchPos == MODBUS_PINCH_LEFT_OPEN) &&
-			(*OxygPinchPos == MODBUS_PINCH_LEFT_OPEN) &&
+			(*ArtPinchPos == MODBUS_PINCH_LEFT_OPEN)    &&
+			(*OxygPinchPos == MODBUS_PINCH_LEFT_OPEN)   &&
+			modbusData[4][0] == MODBUS_PINCH_LEFT_OPEN  &&
+			modbusData[5][0] == MODBUS_PINCH_LEFT_OPEN  &&
+			modbusData[6][0] == MODBUS_PINCH_LEFT_OPEN  &&
 			(timerCounterT1Test > 60)
 			)
 		{ //60*50ms equal 3 sec
-			t1Test_pinch_state = 3;
+			t1Test_pinch_state = PINCH_RIGHT;
 			t1Test_pinch_cmd = 0;
 			timerCounterT1Test = 0;
 		}
 		else if(timerCounterT1Test > 200)
 		{//200*50ms equal 10 sec
-			timerCounterT1Test = 0;
-			currentGuard[GUARD_ENABLE_T1_ALARM].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
-			DebugStringStr("alarm from chk pinch_l");
-			t1Test_pinch_state = 5; //ho avuto un'errore, finisco nello stato d'errore per sincornizzarmi cn la macchina a stati del parent.c
-			t1Test_pinch_cmd = 0;
+			t1Test_pinch_state = PINCH_KO; //ho avuto un'errore, finisco nello stato d'errore per sincornizzarmi cn la macchina a stati del parent.c
+			DebugStringStr("Pinch not all left position");
 		}
 		break;
 
-	case 3: //right
+	case PINCH_RIGHT: //right
 		if(t1Test_pinch_cmd == 0){
 		setPinchPositionHighLevel(PINCH_2WPVF, MODBUS_PINCH_RIGHT_OPEN); //7: pinch filtro
 		setPinchPositionHighLevel(PINCH_2WPVA, MODBUS_PINCH_RIGHT_OPEN); //8: pinch art
@@ -1342,12 +1518,15 @@ void manageParenT1Pinch(void)
 
 		if(
 			(*FilterPinchPos == MODBUS_PINCH_RIGHT_OPEN) &&
-			(*ArtPinchPos == MODBUS_PINCH_RIGHT_OPEN) &&
-			(*OxygPinchPos == MODBUS_PINCH_RIGHT_OPEN) &&
+			(*ArtPinchPos == MODBUS_PINCH_RIGHT_OPEN)    &&
+			(*OxygPinchPos == MODBUS_PINCH_RIGHT_OPEN)   &&
+			modbusData[4][0] == MODBUS_PINCH_RIGHT_OPEN  &&
+			modbusData[5][0] == MODBUS_PINCH_RIGHT_OPEN  &&
+			modbusData[6][0] == MODBUS_PINCH_RIGHT_OPEN  &&
 			(timerCounterT1Test > 60)
 			)
 		{ //60*50ms equal 3 sec
-			t1Test_pinch_state = 4; //test finito con esito positivo
+			t1Test_pinch_state = PINCH_DIS_CON; //test finito con esito positivo
 			t1Test_pinch_cmd = 0;
 			timerCounterT1Test = 0;
 			//chiudo nuovamente tutte le pinch per tornare nella situazione di partenza
@@ -1357,23 +1536,164 @@ void manageParenT1Pinch(void)
 		}
 		else if(timerCounterT1Test > 200)
 		{//200*50ms equal 10 sec
-			timerCounterT1Test = 0;
-			currentGuard[GUARD_ENABLE_T1_ALARM].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
-			DebugStringStr("alarm from chk pinch_r");
-			t1Test_pinch_state = 5; //ho avuto un'errore, finisco nello stato d'errore per sincornizzarmi cn la macchina a stati del parent.c
-			t1Test_pinch_cmd = 0;
+			t1Test_pinch_state = PINCH_KO; //ho avuto un'errore, finisco nello stato d'errore per sincornizzarmi cn la macchina a stati del parent.
+			DebugStringStr("Pinch not all right position");
 		}
 		break;
 
-	case 4:
-		//fine test positivo
+	case PINCH_DIS_CON:
+		/*in questo stato la control toglie l'enable*/
+		EN_Clamp_Control(DISABLE);
+		t1Test_pinch_state = CHK_PINCH_DIS_CON;
+		timerCounterT1Test = 0;
 		break;
 
-	case 5:
+	case CHK_PINCH_DIS_CON:
+		/*verifico che le posizioni viste da pro e inviate dai driver a con
+		 * siano coerenti con le posizioni di disale (filtro a sinistra e le altre due a destra)*/
+		if (
+			(*FilterPinchPos == MODBUS_PINCH_LEFT_OPEN) &&
+			(*ArtPinchPos == MODBUS_PINCH_RIGHT_OPEN) &&
+			(*OxygPinchPos == MODBUS_PINCH_RIGHT_OPEN) &&
+			modbusData[4][0] == MODBUS_PINCH_LEFT_OPEN &&
+			modbusData[5][0] == MODBUS_PINCH_RIGHT_OPEN &&
+			modbusData[6][0] == MODBUS_PINCH_RIGHT_OPEN
+			)
+		{
+			t1Test_pinch_state = PINCH_EN_CON;
+			timerCounterT1Test = 0;
+		}
+		else if (timerCounterT1Test > 60)//60*50ms equal 3 sec
+		{
+			t1Test_pinch_state = PINCH_KO; //ho avuto un'errore, finisco nello stato d'errore per sincornizzarmi cn la macchina a stati del parent.
+			DebugStringStr("Disable Pinch CONTROL not working");
+		}
+		break;
+
+	case PINCH_EN_CON:
+		/*in questo stato la control rimette l'enable e comanda
+		 * la chiusura di tutte le pinch*/
+		EN_Clamp_Control(ENABLE);
+		//aspetto 3 secondi poi chiudo tutte le pinch
+		if (timerCounterT1Test < 60)
+			break;
+
+		setPinchPositionHighLevel(PINCH_2WPVF, MODBUS_PINCH_POS_CLOSED); //7: pinch filtro
+		setPinchPositionHighLevel(PINCH_2WPVA, MODBUS_PINCH_POS_CLOSED); //8: pinch art
+		setPinchPositionHighLevel(PINCH_2WPVV, MODBUS_PINCH_POS_CLOSED); //9: pinch ven
+
+		t1Test_pinch_state = CHK_PINCH_EN_CON;
+		timerCounterT1Test = 0;
+		break;
+
+	case CHK_PINCH_EN_CON:
+		/*verifico che le posizioni viste da pro e inviate dai driver a con
+		 * siano coerenti con le posizioni di chiuso*/
+		if (
+			(*FilterPinchPos == MODBUS_PINCH_POS_CLOSED) &&
+			(*ArtPinchPos == MODBUS_PINCH_POS_CLOSED) &&
+			(*OxygPinchPos == MODBUS_PINCH_POS_CLOSED) &&
+			modbusData[4][0] == MODBUS_PINCH_POS_CLOSED &&
+			modbusData[5][0] == MODBUS_PINCH_POS_CLOSED &&
+			modbusData[6][0] == MODBUS_PINCH_POS_CLOSED
+			)
+		{
+			t1Test_pinch_state = PINCH_DIS_PRO;
+			timerCounterT1Test = 0;
+		}
+		else if (timerCounterT1Test > 60)//60*50ms equal 3 sec
+		{
+			t1Test_pinch_state = PINCH_KO; //ho avuto un'errore, finisco nello stato d'errore per sincornizzarmi cn la macchina a stati del parent.
+			DebugStringStr("Enable Pinch CONTROL not working");
+		}
+		break;
+
+	case PINCH_DIS_PRO:
+		/*in questo stato la Control chiede alla pro di togliere l'enable*/
+		onNewCommadT1TEST(C2PCOM_ENABPINCH_OFF);
+		t1Test_pinch_state = CHK_PINCH_DIS_PRO;
+		timerCounterT1Test = 0;
+		break;
+
+	case CHK_PINCH_DIS_PRO:
+		/*verifico che le posizioni viste da pro e inviate dai driver a con
+		 * siano coerenti con le posizioni di disale (filtro a sinistra e le altre due a destra)*/
+		if (
+			(*FilterPinchPos == MODBUS_PINCH_LEFT_OPEN) &&
+			(*ArtPinchPos == MODBUS_PINCH_RIGHT_OPEN) &&
+			(*OxygPinchPos == MODBUS_PINCH_RIGHT_OPEN) &&
+			modbusData[4][0] == MODBUS_PINCH_LEFT_OPEN &&
+			modbusData[5][0] == MODBUS_PINCH_RIGHT_OPEN &&
+			modbusData[6][0] == MODBUS_PINCH_RIGHT_OPEN
+			)
+		{
+			t1Test_pinch_state = PINCH_EN_PRO;
+			timerCounterT1Test = 0;
+		}
+		else if (timerCounterT1Test > 60)//60*50ms equal 3 sec
+		{
+			t1Test_pinch_state = PINCH_KO; //ho avuto un'errore, finisco nello stato d'errore per sincornizzarmi cn la macchina a stati del parent.
+			DebugStringStr("Disable Pinch PROTECTIVE not working");
+		}
+		break;
+
+	case PINCH_EN_PRO:
+		/*in questo stato la control chiede alla pro di rimettere l'enable e comanda
+		 * la chiusura di tutte le pinch*/
+		onNewCommadT1TEST(C2PCOM_ENABPINCH_ON);
+		//aspetto 3 secondi poi chiudo tutte le pinch
+		if (timerCounterT1Test < 60)
+			break;
+
+		setPinchPositionHighLevel(PINCH_2WPVF, MODBUS_PINCH_POS_CLOSED); //7: pinch filtro
+		setPinchPositionHighLevel(PINCH_2WPVA, MODBUS_PINCH_POS_CLOSED); //8: pinch art
+		setPinchPositionHighLevel(PINCH_2WPVV, MODBUS_PINCH_POS_CLOSED); //9: pinch ven
+
+		t1Test_pinch_state = CHK_PINCH_EN_PRO;
+		timerCounterT1Test = 0;
+		break;
+
+	case CHK_PINCH_EN_PRO:
+		/*verifico che le posizioni viste da pro e inviate dai driver a con
+		 * siano coerenti con le posizioni di chiuso*/
+		if (
+			(*FilterPinchPos == MODBUS_PINCH_POS_CLOSED) &&
+			(*ArtPinchPos == MODBUS_PINCH_POS_CLOSED) &&
+			(*OxygPinchPos == MODBUS_PINCH_POS_CLOSED) &&
+			modbusData[4][0] == MODBUS_PINCH_POS_CLOSED &&
+			modbusData[5][0] == MODBUS_PINCH_POS_CLOSED &&
+			modbusData[6][0] == MODBUS_PINCH_POS_CLOSED
+			)
+		{
+			t1Test_pinch_state = PINCH_OK;
+			timerCounterT1Test = 0;
+		}
+		else if (timerCounterT1Test > 60)//60*50ms equal 3 sec
+		{
+			t1Test_pinch_state = PINCH_KO; //ho avuto un'errore, finisco nello stato d'errore per sincornizzarmi cn la macchina a stati del parent.
+			DebugStringStr("Enable Pinch PROTECTIVE not working");
+		}
+		break;
+	case PINCH_OK:
+		//fine test positivo
+		t1Test_pinch_state = PINCH_IDLE;
+		timerCounterT1Test = 0;
+		break;
+
+	case PINCH_KO:
 		//fine test con esito negativo
+		timerCounterT1Test = 0;
+		currentGuard[GUARD_ENABLE_T1_ALARM].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+		DebugStringStr("alarm from chk pinch");
 		break;
 
 	default:
+		/*se finisco qui c'è un errore nella gesgtione della macchina a stati*/
+		timerCounterT1Test = 0;
+		currentGuard[GUARD_ENABLE_T1_ALARM].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+		DebugStringStr("alarm from chk pinch --> WRONG machine state");
+		t1Test_pinch_state = PINCH_KO; //ho avuto un'errore, finisco nello stato d'errore per sincornizzarmi cn la macchina a stati del parent.c
+		t1Test_pinch_cmd = 0;
 		break;
 	}
 }
@@ -1387,27 +1707,33 @@ void manageParentT1PumpInit(void){
 void manageParentT1Pump(void){
 	//setPumpSpeedValueHighLevel
 	switch(t1Test_pump_state){
-	case 0: //idle
-		t1Test_pump_state = 1;
+	case PUMP_IDLE: //idle
+		t1Test_pump_state = PUMP_RAMP;
+		onNewCommadT1TEST(C2PCOM_ENABPUMPS_ON);
+		EN_Motor_Control(ENABLE);
 		break;
 
-	case 1: //ramp
-		if(t1Test_pump_cmd == 0){
+	case PUMP_RAMP: //ramp
+		/*per sicurezza, se ho appena attivato l'enable, attendo 3 secondi*/
+		if (timerCounterT1Test < 60)
+			break;
+
+		if(t1Test_pump_cmd == PUMP_IDLE){
 			setPumpSpeedValueHighLevel(PPAR, T1TEST_PUMP_SPEED);
 			setPumpSpeedValueHighLevel(PPAF, T1TEST_PUMP_SPEED);
 			setPumpSpeedValueHighLevel(PPV1, T1TEST_PUMP_SPEED);
 			setPumpSpeedValueHighLevel(PPV2, T1TEST_PUMP_SPEED);
-			t1Test_pump_cmd = 1;
+			t1Test_pump_cmd = PUMP_RAMP;
 		}
 		//aspetto 10 secondi prima di cambiar stato
 		if(timerCounterT1Test > 200){
-			t1Test_pump_state = 2;
+			t1Test_pump_state = PUMP_RUNNING;
 			timerCounterT1Test = 0;
 		}
 
 		break;
 
-	case 2: //running
+	case PUMP_RUNNING: //running
 		if(
 			(*SpeedPump1Rpmx10 >= (T1TEST_PUMP_SPEED - 500) ) &&
 			(*SpeedPump1Rpmx10 <= (T1TEST_PUMP_SPEED + 500) ) &&
@@ -1416,15 +1742,23 @@ void manageParentT1Pump(void){
 			(*SpeedPump3Rpmx10 >= (T1TEST_PUMP_SPEED - 500) ) &&
 			(*SpeedPump3Rpmx10 <= (T1TEST_PUMP_SPEED + 500) ) &&
 			(*SpeedPump4Rpmx10 >= (T1TEST_PUMP_SPEED - 500) ) &&
-			(*SpeedPump4Rpmx10 <= (T1TEST_PUMP_SPEED + 500) ) /*&&
+			(*SpeedPump4Rpmx10 <= (T1TEST_PUMP_SPEED + 500) ) &&
+			( modbusData[0][17]>= (T1TEST_PUMP_SPEED - 100) ) &&
+			( modbusData[0][17]<= (T1TEST_PUMP_SPEED + 100) ) &&
+			( modbusData[1][17]>= (T1TEST_PUMP_SPEED - 100) ) &&
+			( modbusData[1][17]<= (T1TEST_PUMP_SPEED + 100) ) &&
+			( modbusData[2][17]>= (T1TEST_PUMP_SPEED - 100) ) &&
+			( modbusData[2][17]<= (T1TEST_PUMP_SPEED + 100) ) &&
+			( modbusData[3][17]>= (T1TEST_PUMP_SPEED - 100) ) &&
+			( modbusData[3][17]<= (T1TEST_PUMP_SPEED + 100) ) /*&&
 			(timerCounterT1Test > 200)*/
 			)
 		{
-			t1Test_pump_state = 3;
+			t1Test_pump_state = PUMP_DIS_CON;
 			t1Test_pump_cmd = 0;
 			timerCounterT1Test = 0;
 		}
-		//se passati 10 secondi la PRO non vede uan velocità corretta vado in allarme
+		//se passati 10 secondi la PRO e la CON non vedono una velocità corretta vado in allarme
 		else if(timerCounterT1Test > 200){
 			setPumpSpeedValueHighLevel(PPAR, 0);
 			setPumpSpeedValueHighLevel(PPAF, 0);
@@ -1433,29 +1767,240 @@ void manageParentT1Pump(void){
 			timerCounterT1Test = 0;
 			currentGuard[GUARD_ENABLE_T1_ALARM].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
 			DebugStringStr("alarm from chk pump");
-			t1Test_pump_state = 5;//vado nello stato 5 che identifica un fail per sincornizzarmi con la macchina a stati nel parent.c
+			t1Test_pump_state = PUMP_KO;//vado nello stato PUMP_KO che identifica un fail per sincornizzarmi con la macchina a stati nel parent.c
 			t1Test_pump_cmd = 0;
 		}
 		break;
 
-	case 3: //stop
+	case PUMP_DIS_CON:
+		/*in questo stato la control toglie l'enable*/
+		EN_Motor_Control(DISABLE);
+		t1Test_pump_state = CHK_PUMP_DIS_CON;
+		timerCounterT1Test = 0;
+		break;
+
+	case CHK_PUMP_DIS_CON:
+		/*verifico che le pompe si siano fermate a causa dell'enable tolto
+		 * e che le vedano ferme sia la Control che la Protective*/
+		if(
+			(*SpeedPump1Rpmx10  == 0 ) &&
+			(*SpeedPump2Rpmx10  == 0 ) &&
+			(*SpeedPump3Rpmx10  == 0 ) &&
+			(*SpeedPump4Rpmx10  == 0 ) &&
+			( modbusData[0][17] == 0 ) &&
+			( modbusData[1][17] == 0 ) &&
+			( modbusData[2][17] == 0 ) &&
+			( modbusData[3][17] == 0 ) /*&&
+			(timerCounterT1Test > 200)*/
+			)
+		{
+			t1Test_pump_state = PUMP_EN_CON;
+			t1Test_pump_cmd = 0;
+			timerCounterT1Test = 0;
+		}
+		//se passati 10 secondi la PRO e la CON non vedono una velocità corretta vado in allarme
+		else if(timerCounterT1Test > 200){
+			setPumpSpeedValueHighLevel(PPAR, 0);
+			setPumpSpeedValueHighLevel(PPAF, 0);
+			setPumpSpeedValueHighLevel(PPV1, 0);
+			setPumpSpeedValueHighLevel(PPV2, 0);
+			timerCounterT1Test = 0;
+			currentGuard[GUARD_ENABLE_T1_ALARM].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+			DebugStringStr("Disable Pump CONTROL not working");
+			t1Test_pump_state = PUMP_KO;//vado nello stato PUMP_KO che identifica un fail per sincornizzarmi con la macchina a stati nel parent.c
+			t1Test_pump_cmd = 0;
+		}
+		break;
+
+	case PUMP_EN_CON:
+		/*ridò l'enable alle pompe aspetto 3 secondi e poi le faccio partire a RPM*/
+		EN_Motor_Control(ENABLE);
+		//aspetto 3 secondi poi fermo tutte le pompe
+		if (timerCounterT1Test < 60)
+			break;
+
+		setPumpSpeedValueHighLevel(PPAR, T1TEST_PUMP_SPEED);
+		setPumpSpeedValueHighLevel(PPAF, T1TEST_PUMP_SPEED);
+		setPumpSpeedValueHighLevel(PPV1, T1TEST_PUMP_SPEED);
+		setPumpSpeedValueHighLevel(PPV2, T1TEST_PUMP_SPEED);
+
+		t1Test_pump_state = CHK_PUMP_EN_CON;
+		timerCounterT1Test = 0;
+		break;
+
+	case CHK_PUMP_EN_CON:
+		/*verifico che sia la Con che la PRO tornino a vedere le pompe alla giusta velocità
+		 * la PRO con una tolleranza di 5 RPM, la CON con uan tolelranza di 1 RPM*/
+		if(
+			(*SpeedPump1Rpmx10 >= (T1TEST_PUMP_SPEED - 500) ) &&
+			(*SpeedPump1Rpmx10 <= (T1TEST_PUMP_SPEED + 500) ) &&
+			(*SpeedPump2Rpmx10 >= (T1TEST_PUMP_SPEED - 500) ) &&
+			(*SpeedPump2Rpmx10 <= (T1TEST_PUMP_SPEED + 500) ) &&
+			(*SpeedPump3Rpmx10 >= (T1TEST_PUMP_SPEED - 500) ) &&
+			(*SpeedPump3Rpmx10 <= (T1TEST_PUMP_SPEED + 500) ) &&
+			(*SpeedPump4Rpmx10 >= (T1TEST_PUMP_SPEED - 500) ) &&
+			(*SpeedPump4Rpmx10 <= (T1TEST_PUMP_SPEED + 500) ) &&
+			( modbusData[0][17]>= (T1TEST_PUMP_SPEED - 100) ) &&
+			( modbusData[0][17]<= (T1TEST_PUMP_SPEED + 100) ) &&
+			( modbusData[1][17]>= (T1TEST_PUMP_SPEED - 100) ) &&
+			( modbusData[1][17]<= (T1TEST_PUMP_SPEED + 100) ) &&
+			( modbusData[2][17]>= (T1TEST_PUMP_SPEED - 100) ) &&
+			( modbusData[2][17]<= (T1TEST_PUMP_SPEED + 100) ) &&
+			( modbusData[3][17]>= (T1TEST_PUMP_SPEED - 100) ) &&
+			( modbusData[3][17]<= (T1TEST_PUMP_SPEED + 100) ) /*&&
+			(timerCounterT1Test > 200)*/
+			)
+		{
+			t1Test_pump_state = PUMP_DIS_PRO;
+			t1Test_pump_cmd = 0;
+			timerCounterT1Test = 0;
+		}
+		//se passati 10 secondi la PRO e la CON non vedono una velocità corretta vado in allarme
+		else if(timerCounterT1Test > 200){
+			setPumpSpeedValueHighLevel(PPAR, 0);
+			setPumpSpeedValueHighLevel(PPAF, 0);
+			setPumpSpeedValueHighLevel(PPV1, 0);
+			setPumpSpeedValueHighLevel(PPV2, 0);
+			timerCounterT1Test = 0;
+			currentGuard[GUARD_ENABLE_T1_ALARM].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+			DebugStringStr("Enable Pump CONTROL not working");
+			t1Test_pump_state = PUMP_KO;//vado nello stato PUMP_KO che identifica un fail per sincornizzarmi con la macchina a stati nel parent.c
+			t1Test_pump_cmd = 0;
+		}
+		break;
+
+	case PUMP_DIS_PRO:
+		/*in questo stato la Control chiede alla pro di togliere l'enable*/
+		onNewCommadT1TEST(C2PCOM_ENABPUMPS_OFF);
+		t1Test_pump_state = CHK_PUMP_DIS_PRO;
+		timerCounterT1Test = 0;
+		break;
+
+	case CHK_PUMP_DIS_PRO:
+		/*verifico che le pompe si siano fermate a causa dell'enable tolto
+		 * e che le vedano ferme sia la Control che la Protective*/
+		if(
+			(*SpeedPump1Rpmx10  == 0 ) &&
+			(*SpeedPump2Rpmx10  == 0 ) &&
+			(*SpeedPump3Rpmx10  == 0 ) &&
+			(*SpeedPump4Rpmx10  == 0 ) &&
+			( modbusData[0][17] == 0 ) &&
+			( modbusData[1][17] == 0 ) &&
+			( modbusData[2][17] == 0 ) &&
+			( modbusData[3][17] == 0 ) /*&&
+			(timerCounterT1Test > 200)*/
+			)
+		{
+			t1Test_pump_state = PUMP_EN_PRO;
+			t1Test_pump_cmd = 0;
+			timerCounterT1Test = 0;
+		}
+		//se passati 10 secondi la PRO e la CON non vedono una velocità corretta vado in allarme
+		else if(timerCounterT1Test > 200){
+			setPumpSpeedValueHighLevel(PPAR, 0);
+			setPumpSpeedValueHighLevel(PPAF, 0);
+			setPumpSpeedValueHighLevel(PPV1, 0);
+			setPumpSpeedValueHighLevel(PPV2, 0);
+			timerCounterT1Test = 0;
+			currentGuard[GUARD_ENABLE_T1_ALARM].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+			DebugStringStr("Disable Pump PROTECTIVE not working");
+			t1Test_pump_state = PUMP_KO;//vado nello stato PUMP_KO che identifica un fail per sincornizzarmi con la macchina a stati nel parent.c
+			t1Test_pump_cmd = 0;
+		}
+		break;
+
+	case PUMP_EN_PRO:
+		/*in questo stato la control chiede alla pro di rimettere l'enable e comanda
+		 * il movimento delle pompe*/
+		onNewCommadT1TEST(C2PCOM_ENABPUMPS_ON);
+		//aspetto 3 secondi poi fermo tutte le pompe
+		if (timerCounterT1Test < 60)
+			break;
+
+		setPumpSpeedValueHighLevel(PPAR, T1TEST_PUMP_SPEED);
+		setPumpSpeedValueHighLevel(PPAF, T1TEST_PUMP_SPEED);
+		setPumpSpeedValueHighLevel(PPV1, T1TEST_PUMP_SPEED);
+		setPumpSpeedValueHighLevel(PPV2, T1TEST_PUMP_SPEED);
+
+		t1Test_pump_state = CHK_PUMP_EN_PRO;
+		timerCounterT1Test = 0;
+		break;
+
+	case CHK_PUMP_EN_PRO:
+		if(
+			(*SpeedPump1Rpmx10 >= (T1TEST_PUMP_SPEED - 500) ) &&
+			(*SpeedPump1Rpmx10 <= (T1TEST_PUMP_SPEED + 500) ) &&
+			(*SpeedPump2Rpmx10 >= (T1TEST_PUMP_SPEED - 500) ) &&
+			(*SpeedPump2Rpmx10 <= (T1TEST_PUMP_SPEED + 500) ) &&
+			(*SpeedPump3Rpmx10 >= (T1TEST_PUMP_SPEED - 500) ) &&
+			(*SpeedPump3Rpmx10 <= (T1TEST_PUMP_SPEED + 500) ) &&
+			(*SpeedPump4Rpmx10 >= (T1TEST_PUMP_SPEED - 100) ) &&
+			(*SpeedPump4Rpmx10 <= (T1TEST_PUMP_SPEED + 100) ) &&
+			( modbusData[0][17]>= (T1TEST_PUMP_SPEED - 100) ) &&
+			( modbusData[0][17]<= (T1TEST_PUMP_SPEED + 100) ) &&
+			( modbusData[1][17]>= (T1TEST_PUMP_SPEED - 100) ) &&
+			( modbusData[1][17]<= (T1TEST_PUMP_SPEED + 100) ) &&
+			( modbusData[2][17]>= (T1TEST_PUMP_SPEED - 100) ) &&
+			( modbusData[2][17]<= (T1TEST_PUMP_SPEED + 100) ) &&
+			( modbusData[3][17]>= (T1TEST_PUMP_SPEED - 100) ) &&
+			( modbusData[3][17]<= (T1TEST_PUMP_SPEED + 100) ) /*&&
+			(timerCounterT1Test > 200)*/
+			)
+		{
+			t1Test_pump_state = PUMP_STOP;
+			t1Test_pump_cmd = 0;
+			timerCounterT1Test = 0;
+		}
+		//se passati 10 secondi la PRO e la CON non vedono una velocità corretta vado in allarme
+		else if(timerCounterT1Test > 200){
+			setPumpSpeedValueHighLevel(PPAR, 0);
+			setPumpSpeedValueHighLevel(PPAF, 0);
+			setPumpSpeedValueHighLevel(PPV1, 0);
+			setPumpSpeedValueHighLevel(PPV2, 0);
+			timerCounterT1Test = 0;
+			currentGuard[GUARD_ENABLE_T1_ALARM].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+			DebugStringStr("Enable Pump PROTECTIVE not working");
+			t1Test_pump_state = PUMP_KO;//vado nello stato 5 che identifica un fail per sincornizzarmi con la macchina a stati nel parent.c
+			t1Test_pump_cmd = 0;
+		}
+		break;
+
+	case PUMP_STOP: //stop
 		if(t1Test_pump_cmd == 0){
 			setPumpSpeedValueHighLevel(PPAR, 0);
 			setPumpSpeedValueHighLevel(PPAF, 0);
 			setPumpSpeedValueHighLevel(PPV1, 0);
 			setPumpSpeedValueHighLevel(PPV2, 0);
 			t1Test_pump_cmd = 1;
-			t1Test_pump_state = 4;
+			t1Test_pump_state = PUMP_OK;
 		}
 		break;
 
-	case 4: //end
+	case PUMP_OK: //end
+		t1Test_pump_state = PUMP_IDLE;//vado nello stato 5 che identifica un fail per sincornizzarmi con la macchina a stati nel parent.c
+		t1Test_pump_cmd = 0;
 		break;
 
-	case 5:  //end with fail
+	case PUMP_KO:  //end with fail
+		setPumpSpeedValueHighLevel(PPAR, 0);
+		setPumpSpeedValueHighLevel(PPAF, 0);
+		setPumpSpeedValueHighLevel(PPV1, 0);
+		setPumpSpeedValueHighLevel(PPV2, 0);
+		timerCounterT1Test = 0;
+		currentGuard[GUARD_ENABLE_T1_ALARM].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+		DebugStringStr("alarm from chk pump");
 		break;
 
 	default:
+		setPumpSpeedValueHighLevel(PPAR, 0);
+		setPumpSpeedValueHighLevel(PPAF, 0);
+		setPumpSpeedValueHighLevel(PPV1, 0);
+		setPumpSpeedValueHighLevel(PPV2, 0);
+		timerCounterT1Test = 0;
+		currentGuard[GUARD_ENABLE_T1_ALARM].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+		DebugStringStr("alarm from chk pump --> WRONG Machine state");
+		t1Test_pump_state = PUMP_KO;
+		t1Test_pump_cmd = 0;
 		break;
 	}
 }
@@ -3035,6 +3580,8 @@ void manageParentTreatAlways(void)
 			TreatDuration = 0;
 			StartTreatmentTime = 0;
 			StartPrimingTime = 0;
+			//GlobalFlags.FlagsDef.EnableAllAlarms = 0;
+			//DisableAllAlarm();
 			//FilterFlowVal = 0;
 			// Filippo - devo spegnere il PID
 			FrigoHeatTempControlTaskNewPID((LIQ_TEMP_CONTR_TASK_CMD)TEMP_MANAGER_STOPPED_CMD);
@@ -3128,7 +3675,6 @@ void manageParentTreatAlways(void)
 			//GlobalFlags.FlagsDef.EnableAllAlarms = 1;
 			SetAllAlarmEnableFlags();
 			EnableFlowAndPressSetAlarmEnableFlags();
-			EnableLongPumpStopAlarms();
 			SetFlowHigAlarmEnableFlags();
 			EnableBadPinchPosAlmFunc();
 			// disabilito allarme di livello alto in trattamento (per ora)
@@ -3304,6 +3850,8 @@ void manageParentTreatAlways(void)
 			TotalTreatDuration += TreatDuration;
 			TreatDuration = 0;
 			StartTreatmentTime = 0;
+			//GlobalFlags.FlagsDef.EnableAllAlarms = 0;
+			//DisableAllAlarm();
 			//FilterFlowVal = 0;
 			// Filippo - devo spegnere il PID
 			FrigoHeatTempControlTaskNewPID((LIQ_TEMP_CONTR_TASK_CMD)TEMP_MANAGER_STOPPED_CMD);
@@ -3402,7 +3950,6 @@ void manageParentTreatAlways(void)
 			SetAllAlarmEnableFlags();
 			EnableBadPinchPosAlmFunc();
 			EnableFlowAndPressSetAlarmEnableFlags();
-			EnableLongPumpStopAlarms();
 			SetFlowHigAlarmEnableFlags();
 			// disabilito allarme di livello alto in trattamento (per ora)
 			GlobalFlags.FlagsDef.EnableLevHighAlarm = 0;
@@ -3786,7 +4333,7 @@ void EmptyDispStateMach(void)
 				// nel caso del rene sono le pompe di ossigenazione che svuotano il recevoir
 				setPumpSpeedValueHighLevel(pumpPerist[1].pmpMySlaveAddress, KIDNEY_EMPTY_PPAR_SPEED);
 			}
-			// nel processo di svuotamento non mi servono tutti gli allarmi
+			// nel processo di svuotamento non mi servono tutti gli allarmi ma solo quelli di aria
 			DisableAllAlarm();
 			// abilito anche gli allarmi di pressione alta
 			GlobalFlags.FlagsDef.EnablePressSensHighAlm = 1;
@@ -3794,10 +4341,6 @@ void EmptyDispStateMach(void)
 			GlobalFlags.FlagsDef.EnableCoversAlarm = 1;
 			// abilito gli allarmi su modbus
 			GlobalFlags.FlagsDef.EnableModbusNotRespAlm = 1;
-			//Abilito allarmi hooks
-			GlobalFlags.FlagsDef.EnableHooksReservoir = 1;
-			//Abilito allarmi di flusso massimo
-			SetFlowHigAlarmEnableFlags();
 			EmptyDispRunAlwaysState = WAIT_FOR_1000ML;
 		}
 		else if(buttonGUITreatment[BUTTON_PRIMING_ABANDON].state == GUI_BUTTON_RELEASED)

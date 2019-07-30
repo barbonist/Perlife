@@ -46,6 +46,9 @@ void initTempSensIR(void){
 }
 
 float Ir_Temperature_correction_offset (float Temp_value);
+float Ir_Measured_Temperature_correction(int index_array);
+float meanWATempSensorIR(unsigned char dimNum, float newSensVal, char IdSens);
+
 /*funzione che chiede ogni 200 msec ad un sensore di temperatura IR il valoire; se il sensore risponde correttamente (con la corretta PEC)
  * il valore saà memorizzato; ogni sensore sarà interrogato ogni 600 msec in quanto abbiamo 3 sensori, i valori saranno
  * sensorIR_TM[0].tempSensValue --> temperatura del flusso di perfusione arteriosa
@@ -114,8 +117,11 @@ void Manage_IR_Sens_Temp(void)
  		if (computeCRC8TempSensRx(ptrChar,(RAM_ACCESS_COMMAND | SD_TOBJ1_RAM_ADDRESS),Slave_Address_Sent) )
  		{
  			sensorIR_TM[index_array].tempSensValue = (float)((BYTES_TO_WORD(sensorIR_TM[index_array].bufferReceived[1], sensorIR_TM[index_array].bufferReceived[0]))*((float)0.02)) - (float)273.15;
- 			/*correggo il valore di OfFset se sono sotto LOWER_RANGE_IR_CORRECTION o sopra HIGHER_RANGE_IR_CORRECTION*/
- 			sensorIR_TM[index_array].tempSensValue = Ir_Temperature_correction_offset (sensorIR_TM[index_array].tempSensValue);
+ 			/*correggo la temperatura sulla base dell'algoritmo di SB vedi mail del 21/6/2019*/
+ 			sensorIR_TM[index_array].tempSensValue = Ir_Measured_Temperature_correction(index_array);
+ 			/*aggiorno il valore filtrato di temperatura, filtro su 25 campioni quindi tengo la storia su 15 secondi (ogni sensore viene letto ogni 600 msec*/
+ 			sensorIR_TM[index_array].tempSensValueFiltered = meanWATempSensorIR(25,sensorIR_TM[index_array].tempSensValue,index_array);
+
  			/*ho ricevuto bene, resetto il contatore consecutivo di errore*/
  			sensorIR_TM[index_array].ErrorMSG = 0;
  			// invio le temperature
@@ -135,6 +141,43 @@ void Manage_IR_Sens_Temp(void)
  		iflag_sensTempIR_Meas_Ready = IFLAG_IDLE;
 
  	}
+}
+
+
+
+float Ir_Measured_Temperature_correction(int index_array)
+
+{
+	float MeasuredTemp;
+	float E5;  // error at 5 degrees
+	float E30; //error at 30 degrees
+	float a,b,Err;
+
+    MeasuredTemp = sensorIR_TM[index_array].tempSensValue;
+
+    switch(index_array)
+    {
+		case 0:
+			E5 = config_data.T_sensor_ART_Meas_Low - config_data.T_sensor_ART_Real_Low;
+			E30 =  config_data.T_sensor_ART_Meas_High - config_data.T_sensor_ART_Real_High;
+			break;
+
+		case 1:
+			E5 = config_data.T_sensor_RIC_Meas_Low - config_data.T_sensor_RIC_Real_Low;
+			E30 =  config_data.T_sensor_RIC_Meas_High - config_data.T_sensor_RIC_Real_High;
+			break;
+
+		case 2:
+			E5 = config_data.T_sensor_VEN_Meas_Low - config_data.T_sensor_VEN_Real_Low;
+			E30 =  config_data.T_sensor_VEN_Meas_High - config_data.T_sensor_VEN_Real_High;
+			break;
+    }
+
+    a = (E30 - E5)/25;
+    b = (6*E5 - E30)/5;
+    Err = MeasuredTemp*a + b;
+
+    return (MeasuredTemp - Err);
 }
 
 /*funzione che serve a correggere la temperatura letta col sensore IR con un
@@ -160,6 +203,36 @@ float Ir_Temperature_correction_offset (float Temp_value)
     }
 
     return (Temp_correct);
+}
+
+
+float meanWATempSensorIR(unsigned char dimNum, float newSensVal, char IdSens)
+{
+	static float circularBuffer[3] [255]; //uso una matrice di 3 array, uno per ogni sensore
+	static float circBuffAdd[3] [255];    //uso una matrice di 3 array, uno per ogni sensore
+	float numSumValue = 0;
+	float denValue=0;
+	float numTotal=0;
+
+	if(dimNum <= 255){
+	for(int i=(dimNum-1); i>0; i--)
+	{
+		denValue = denValue + i;
+
+		circularBuffer[IdSens] [i] = circularBuffer [IdSens] [i-1];
+		circBuffAdd [IdSens] [i] = circularBuffer[IdSens] [i]*(dimNum-i);
+		numSumValue = numSumValue + circBuffAdd [IdSens] [i];
+
+	}
+	circularBuffer[IdSens] [0] = newSensVal;
+	numSumValue = numSumValue + (circularBuffer [IdSens] [0]*dimNum);
+	denValue = denValue + dimNum;
+	numTotal = (numSumValue/denValue);
+
+	return numTotal;
+	}
+	else
+		return 0;
 }
 
 

@@ -12,6 +12,12 @@ void InitActuators(void);
 void GoTotalSafety(void);
 void DisablePinchNPumps(void);
 void EnablePinchNPumps(void );
+
+void DisablePinches(void);
+void EnablePinches(void);
+void DisablePumps(void);
+void EnablePumps(void);
+
 void SwitchOFFPinchNPumps(void);
 void SwitchONPinchNPumps(void);
 

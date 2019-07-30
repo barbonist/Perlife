@@ -7,7 +7,7 @@
 **     Version     : Component 01.016, Driver 01.07, CPU db: 3.00.000
 **     Repository  : Kinetis
 **     Compiler    : GNU C Compiler
-**     Date/Time   : 2018-03-22, 10:25, # CodeGen: 1
+**     Date/Time   : 2019-07-01, 11:19, # CodeGen: 62
 **     Abstract    :
 **          This component encapsulates the internal I2C communication
 **          interface. The implementation of the interface is based
@@ -417,10 +417,6 @@ LDD_TError IntI2cLdd1_Enable(LDD_TDeviceData *DeviceDataPtr)
   if (!DeviceDataPrv->EnUser) {        /* Is the device disabled by user? */
     DeviceDataPrv->EnUser = TRUE;      /* If yes then set the flag "device enabled" */
     DeviceDataPrv->SerFlag &= (uint8_t)~(MASTER_IN_PROGRES); /* Clear the status variable */
-
-    // Filippo - modifica necessaria per il ripristino delle comunicazioni
-    DeviceDataPrv->OutLenM=0;
-
     HWEnDi(DeviceDataPrv);             /* Enable the device */
   }
   return ERR_OK;
