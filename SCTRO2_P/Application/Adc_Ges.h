@@ -30,6 +30,20 @@ typedef struct
 	float temperatura;
 } TABELLA_PT1000;
 
+typedef struct
+{
+	int count;
+	int press;
+} TABELLA_PRESSVEN;
+
+typedef struct
+{
+	int count;
+	int press;
+} TABELLA_PRESSART;
+
+#define PR_ART_MAX_SATURAZIONE 450 // mmHg
+#define PR_VEN_MAX_SATURAZIONE 450 // mmHg
 
 word * ReadAdcPr1(void);
 word * ReadAdcPr2(void);
@@ -50,6 +64,8 @@ void PR_Sens_ADC_Init(void);
 void Coversion_From_ADC_To_mmHg_Pressure_Sensor(void);
 void Coversion_From_ADC_To_Voltage();
 void Coversion_From_ADC_To_degree_T_PLATE_Sensor(/*word TPlatePadc*/);
+word ConversionePressioneExtraVen(word countVen);
+word ConversionePressioneExtraArt(word countArt);
 void Pressure_sensor_Fltered (void);
 void Manage_Air_Sensor_1(void);
 void Manage_Debug_led(bool Status);
