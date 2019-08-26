@@ -46,7 +46,31 @@ TABELLA_PT1000 tabellaPT1000[14]={
 
 };
 
+//Tabella per gestire il sensore pressione venosa a valori molto alti di pressione
+TABELLA_PRESSVEN tabellaVen[9]={
+		{53000, 235},
+		{54000, 245},
+		{56000, 265},
+		{58000, 280},
+		{59000, 290},
+		{60000, 300},
+		{61000, 320},
+		{62000, 360},
+		{63000, 450},
+};
 
+//Tabella per gestire il sensore pressione arteriosa a valori molto alti di pressione
+TABELLA_PRESSART tabellaArt[9]={
+		{53000, 235},
+		{54000, 245},
+		{56000, 265},
+		{58000, 280},
+		{59000, 290},
+		{60000, 300},
+		{61000, 320},
+		{62000, 360},
+		{63000, 450},
+};
 
 
 byte adcRes = 0xFF;
@@ -224,10 +248,72 @@ void Coversion_From_ADC_To_mmHg_Pressure_Sensor()
 	PR_OXYG_mmHg 	= (word)(config_data.sensor_PRx[OXYG].prSensGain    * PR_OXYG_ADC    + config_data.sensor_PRx[OXYG].prSensOffset + 0.5);
 	PR_LEVEL_mmHg 	= (word)((config_data.sensor_PRx[LEVEL].prSensGain   * PR_LEVEL_ADC   + config_data.sensor_PRx[LEVEL].prSensOffset) * 100.0 + 0.5);
 	PR_ADS_FLT_mmHg = (word)(config_data.sensor_PRx[ADS_FLT].prSensGain * PR_ADS_FLT_ADC + config_data.sensor_PRx[ADS_FLT].prSensOffset + 0.5);
-	PR_VEN_mmHg 	= (word)(config_data.sensor_PRx[VEN].prSensGain     * PR_VEN_ADC     + config_data.sensor_PRx[VEN].prSensOffset + 0.5);
-	PR_ART_mmHg 	= (word)(config_data.sensor_PRx[ART].prSensGain     * PR_ART_ADC     + config_data.sensor_PRx[ART].prSensOffset + 0.5);
 
+	PR_VEN_mmHg = ConversionePressioneExtraVen(PR_VEN_ADC);
+	PR_ART_mmHg = ConversionePressioneExtraArt(PR_ART_ADC);
 }
+
+
+// Routine inserita per gestire il caso (non corretto) di sensore di pressione TSC05 che viene fatto lavorare con pressioni superiori a 250 mmHg (si cerca di ridurre l'errore di misura)
+word ConversionePressioneExtraVen(word countVen)
+{
+	int idx;
+	float deltaInc, q;
+	word press = 0;
+
+	//Gestione normale tramite coefficienti di calibrazione
+	if (countVen < tabellaVen[0].count)
+	{
+		press = (word)(config_data.sensor_PRx[VEN].prSensGain * PR_VEN_ADC + config_data.sensor_PRx[VEN].prSensOffset + 0.5);
+		return press;
+	}
+
+	for (idx = 1; idx < 9; idx++)
+	{
+		if ((countVen >= tabellaVen[idx - 1].count) && (countVen < tabellaVen[idx].count))
+		{
+			deltaInc = (tabellaVen[idx].count - tabellaVen[idx - 1].count)/(tabellaVen[idx].press - tabellaVen[idx - 1].press);
+			q = ((float)countVen - (float)tabellaVen[idx - 1].count)/deltaInc;
+
+			press = (word)((float)tabellaVen[idx - 1].press + q);
+			return press;
+		}
+	}
+
+	if (idx >= 9)
+		return PR_VEN_MAX_SATURAZIONE;
+}
+
+// Routine inserita per gestire il caso (non corretto) di sensore di pressione TSC05 che viene fatto lavorare con pressioni superiori a 250 mmHg (si cerca di ridurre l'errore di misura)
+word ConversionePressioneExtraArt(word countArt)
+{
+	int idx;
+	float deltaInc, q;
+	word press = 0;
+
+	//Gestione normale tramite coefficienti di calibrazione
+	if (countArt < tabellaArt[0].count)
+	{
+		press = (word)(config_data.sensor_PRx[ART].prSensGain * PR_ART_ADC + config_data.sensor_PRx[ART].prSensOffset + 0.5);
+		return press;
+	}
+
+	for (idx = 1; idx < 9; idx++)
+	{
+		if ((countArt >= tabellaArt[idx - 1].count) && (countArt < tabellaArt[idx].count))
+		{
+			deltaInc = (tabellaArt[idx].count - tabellaArt[idx - 1].count)/(tabellaArt[idx].press - tabellaArt[idx - 1].press);
+			q = ((float)countArt - (float)tabellaArt[idx - 1].count)/deltaInc;
+
+			press = (word)((float)tabellaArt[idx - 1].press + q);
+			return press;
+		}
+	}
+
+	if (idx >= 9)
+		return PR_ART_MAX_SATURAZIONE;
+}
+
 
 void Pressure_sensor_Fltered ()
 {
