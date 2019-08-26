@@ -19,6 +19,11 @@
 #include "child_gest.h"
 #include "App_Ges.h"
 
+//Necessari per il check sulla lettura dei sensori di aria
+extern bool gAirTransitionDetectedUF0;
+extern bool gAirTransitionDetectedUF1;
+extern bool gAirTransitionDetectedFilt;
+
 extern bool FilterSelected;
 extern bool AtLeastoneButResRcvd;
 extern bool gDigitalTest;
@@ -192,6 +197,9 @@ typeAlarmS alarmList[] =
    // Ossigenazione Ferma
    {CODE_ALARM_OXYG_PUMP_STILL,      PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH, 120000,  500, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, TRUE},
 
+   // Check sensori di aria fallito
+   {CODE_ALARM_AIR_SENSORS_CHECK,    PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH, 5000,  1000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, TRUE},
+
    // da qui in avanti solo le warning
    {CODE_ALARM_PRESS_ADS_FILTER_WARN, PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR, PRIORITY_LOW,  2000,  2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, FALSE},
 };
@@ -339,6 +347,7 @@ void SetAllAlarmEnableFlags(void)
 	GlobalFlags.FlagsDef.EnableTempArtOORAlm = 1;
 	GlobalFlags.FlagsDef.EnableArtPressDisconnect = 1;
 	GlobalFlags.FlagsDef.EnableVenPressDisconnect = 1;
+	GlobalFlags2.FlagsDef2.EnableAirSensorsCheckAlarm = 1;
 
 	EnableLongPumpStopAlarms();
 	SetFlowHigAlarmEnableFlags();
@@ -879,6 +888,7 @@ void CalcAlarmActive(void)
 			manageAlarmFromProtective();
 			manageCover_Hook_Sensor();
 			manageCheckConnectionTubeArtSensPress();
+			manageAirSensorsCheckAlarm();
 
 			if (GetTherapyType() == LiverTreat)
 				manageCheckConnectionTubeVenSensPress();
@@ -1532,6 +1542,50 @@ void manageCheckConnectionTubeArtSensPress(void)
 		}
 	}
 }
+
+void manageAirSensorsCheckAlarm(void)
+{
+	static bool flussoRilevatoArt = FALSE;
+	static bool flussoRilevatoVen = FALSE;
+
+	if (GlobalFlags2.FlagsDef2.EnableAirSensorsCheckAlarm)
+	{
+		if ((sensor_UFLOW[0].Average_Flow_Val > 0) && (sensor_UFLOW[0].bubblePresence != MASK_ERROR_BUBBLE_ALARM))
+		{
+			flussoRilevatoArt = TRUE;
+		}
+
+		if ((sensor_UFLOW[1].Average_Flow_Val > 0) && (sensor_UFLOW[1].bubblePresence != MASK_ERROR_BUBBLE_ALARM))
+		{
+			flussoRilevatoVen = TRUE;
+		}
+
+		//Eccezione: kidney senza ossigenazione: CHECK OK di default ---------
+		if ((GetTherapyType() == KidneyTreat) &&
+			(((PARAMETER_ACTIVE_TYPE)parameterWordSetFromGUI[PAR_SET_OXYGENATOR_ACTIVE].value) != YES))
+		{
+			flussoRilevatoVen = TRUE; //Metto di default il flusso rilevato
+			gAirTransitionDetectedUF1 = TRUE; //Metto di default il check passato
+		}
+		// ---------------------------------------------------------------------
+
+		if ((flussoRilevatoArt == TRUE) &&
+		    (flussoRilevatoVen == TRUE) &&
+		    (gAirTransitionDetectedUF0 == TRUE)   &&
+		    (gAirTransitionDetectedUF1 == TRUE)   &&
+		    (gAirTransitionDetectedFilt == TRUE))
+		{
+			alarmList[AIR_SENSORS_CHECK].physic = PHYSIC_FALSE;
+		}
+		else
+		{
+			alarmList[AIR_SENSORS_CHECK].physic = PHYSIC_TRUE;
+		}
+	}
+	else
+		alarmList[AIR_SENSORS_CHECK].physic = PHYSIC_FALSE;
+}
+
 
 /*funzione che durante il ricircolo del priming
  * intercetta una mancata connessione del disposible

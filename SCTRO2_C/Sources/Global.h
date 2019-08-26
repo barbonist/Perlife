@@ -1969,6 +1969,7 @@ typedef struct
 	unsigned int EnableOxyPumpStopAlarms       : 1;    // abilito allarmi di stop prolungato delle pompe
 	unsigned int EnableArtPumpStopAlarms       : 1;    // abilito allarmi di stop prolungato delle pompe
 	unsigned int EnableDepPumpStopAlarms       : 1;    // abilito allarmi di stop prolungato delle pompe
+	unsigned int EnableAirSensorsCheckAlarm    : 1;	   // abilito check sensori di aria in priming
 }FLAGS_DEF2;
 
 typedef struct

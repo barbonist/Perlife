@@ -45,6 +45,7 @@
 
 
 void initUFlowSensor(void);
+void ManageAirDetectionTransition(void);
 void Manage_UFlow_Sens(void);
 float Average_Flow_Value(unsigned char Id_sensor, float new_UF_Value);
 float Average_Flow_Value_for_GUI(unsigned char Id_sensor, float new_UF_Value);

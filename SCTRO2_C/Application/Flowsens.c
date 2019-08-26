@@ -17,6 +17,10 @@
 
 #include "FLOWSENS_COMM.h"
 
+//Necessari per i check sul funzionamento del sensore aria
+bool gAirTransitionDetectedUF0 = FALSE;
+bool gAirTransitionDetectedUF1 = FALSE;
+bool gAirTransitionDetectedFilt = FALSE;
 
 void initUFlowSensor(void)
 {
@@ -220,15 +224,15 @@ void Manage_UFlow_Sens()
 		/*valorizzo le variabili globali per definire aria o liquido sui due sensori*/
 		if ((sensor_UFLOW[ARTERIOUS_AIR_SENSOR].bubbleSize >= MAX_BUBBLE_SIZE) ||
 					(sensor_UFLOW[ARTERIOUS_AIR_SENSOR].bubblePresence == MASK_ERROR_BUBBLE_ALARM))
-			Air_Arterious = LIQUID;
-		else
 			Air_Arterious = AIR;
+		else
+			Air_Arterious = LIQUID;
 
 		if ((sensor_UFLOW[VENOUS_AIR_SENSOR].bubbleSize >= MAX_BUBBLE_SIZE) ||
 					(sensor_UFLOW[VENOUS_AIR_SENSOR].bubblePresence == MASK_ERROR_BUBBLE_ALARM))
-			Air_Venous = LIQUID;
-		else
 			Air_Venous = AIR;
+		else
+			Air_Venous = LIQUID;
 
 
 		//...e se un guasto del sensore lo fa derivare verso valori negativi? -->questo if deve essere assolutamente tolto
@@ -436,3 +440,32 @@ unsigned char computeCRCFlowSens(unsigned char buffer[])
 
 	return (b & 0x3F);
 }
+
+//Necessaria una lettura di aria e di acqua per poter ritenere i 3 sensori funzionanti
+//La transizione avviene se il disposable è correttamente montato solo dopo che la macchina è stata accesa
+void ManageAirDetectionTransition(void)
+{
+	static unsigned char sOldAirDetectionUF0 = LIQUID;
+	static unsigned char sOldAirDetectionUF1 = LIQUID;
+	static unsigned char sOldAirDetectionFilt = LIQUID;
+	static unsigned long sWaitTime = 0;
+
+	sWaitTime ++;
+	if (sWaitTime > 100) //attende 100 cicli di chiamata (nel main loop, a 50 msec, sono 5 sec)
+	// Questo per evitare transitori nella lettura dei sensori al power on
+	{
+		if ((Air_Arterious == AIR) && (sOldAirDetectionUF0 == LIQUID))
+			gAirTransitionDetectedUF0 = TRUE;
+
+		if ((Air_Venous == AIR) && (sOldAirDetectionUF1 == LIQUID))
+			gAirTransitionDetectedUF1 = TRUE;
+
+		if ((Air_1_Status == AIR) && (sOldAirDetectionFilt == LIQUID))
+			gAirTransitionDetectedFilt = TRUE;
+
+		sOldAirDetectionUF0 = Air_Arterious;
+		sOldAirDetectionUF1 = Air_Venous;
+		sOldAirDetectionFilt = Air_1_Status;
+	}
+}
+

@@ -666,6 +666,7 @@ int main(void)
 	        	manageAlarmStopButtonPressed();
 
 	        	ManageMuteButton();
+	        	ManageAirDetectionTransition();
 				//manageAlarmPhysicPressSensHigh();
 				//manageAlarmPhysicPressSensLow();
 	        	CalcAlarmActive();
