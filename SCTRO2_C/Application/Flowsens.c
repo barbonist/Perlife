@@ -22,6 +22,10 @@ bool gAirTransitionDetectedUF0 = FALSE;
 bool gAirTransitionDetectedUF1 = FALSE;
 bool gAirTransitionDetectedFilt = FALSE;
 
+//calibrazione flussimetri
+float CalibFlowmeterVen(float arterialFlow);
+float CalibFlowmeterArt(float arterialFlow);
+
 void initUFlowSensor(void)
 {
 	iflag_uflow_sens = IFLAG_IDLE;
@@ -171,13 +175,13 @@ void Manage_UFlow_Sens()
 				}
 				if (Id_Buffer == 1)
 				{
-					sensor_UFLOW[Id_Buffer].Average_Flow_Val         = sensor_UFLOW[Id_Buffer].Average_Flow_Val * config_data.FlowSensor_Ven_Gain + config_data.FlowSensor_Ven_Offset;
-					sensor_UFLOW[Id_Buffer].Average_Flow_Val_for_GUI = sensor_UFLOW[Id_Buffer].Average_Flow_Val_for_GUI * config_data.FlowSensor_Ven_Gain + config_data.FlowSensor_Ven_Offset;
+					sensor_UFLOW[Id_Buffer].Average_Flow_Val = CalibFlowmeterVen(sensor_UFLOW[Id_Buffer].Average_Flow_Val);
+					sensor_UFLOW[Id_Buffer].Average_Flow_Val_for_GUI = CalibFlowmeterVen(sensor_UFLOW[Id_Buffer].Average_Flow_Val_for_GUI);
 				}
 				else //if (Id_Buffer == 0)
 				{
-					sensor_UFLOW[Id_Buffer].Average_Flow_Val         = sensor_UFLOW[Id_Buffer].Average_Flow_Val * config_data.FlowSensor_Art_Gain + config_data.FlowSensor_Art_Offset;
-					sensor_UFLOW[Id_Buffer].Average_Flow_Val_for_GUI = sensor_UFLOW[Id_Buffer].Average_Flow_Val_for_GUI * config_data.FlowSensor_Art_Gain + config_data.FlowSensor_Art_Offset;
+					sensor_UFLOW[Id_Buffer].Average_Flow_Val = CalibFlowmeterArt(sensor_UFLOW[Id_Buffer].Average_Flow_Val);
+					sensor_UFLOW[Id_Buffer].Average_Flow_Val_for_GUI = CalibFlowmeterArt(sensor_UFLOW[Id_Buffer].Average_Flow_Val_for_GUI);
 				}
 
 				/*se sul flusso ricevo un valore neativo lo metto a zero
@@ -242,6 +246,34 @@ void Manage_UFlow_Sens()
 //			sensor_UFLOW[Id_Buffer].Average_Flow_Val = 0;
 	}
 	/***************FINE MEMORIZZAZIONE MESSAGGIO RICEVUTO*****************/
+}
+
+//Flusso arterioso
+//Sotto i 20 ml/min si considera flusso nullo
+float CalibFlowmeterArt(float arterialFlow)
+{
+	float arterialFlowCalib = 0.0;
+
+	arterialFlowCalib = arterialFlow*(config_data.FlowSensor_Art_Gain);
+
+	if (arterialFlowCalib < 20.0)
+		arterialFlowCalib = 0;
+
+	return arterialFlowCalib;
+}
+
+//Flusso arterioso
+//Sotto i 20 ml/min si considera flusso nullo
+float CalibFlowmeterVen(float venousFlow)
+{
+	float venousFlowCalib = 0.0;
+
+	venousFlowCalib = venousFlow*(config_data.FlowSensor_Ven_Gain);
+
+	if (venousFlowCalib < 20.0)
+		venousFlowCalib = 0;
+
+	return venousFlowCalib;
 }
 
 float Average_Flow_Value(unsigned char Id_sensor, float new_UF_Value)
