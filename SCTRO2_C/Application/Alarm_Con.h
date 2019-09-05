@@ -43,7 +43,7 @@ typedef struct elementActiveListWrn sActiveListWrnS;
 #define CODE_ALARM_PRESS_VEN_HIGH				3
 #define CODE_ALARM_PRESS_VEN_SET				4
 #define CODE_ALARM_PRESS_ADS_FILTER_HIGH		5
-#define CODE_ALARM_AIR_SENSORS_CHECK			6
+#define CODE_ALARM_SYSTEM_FAILURE				7
 #define CODE_ALARM_PRESS_OXYG_INLET				8
 #define CODE_ALARM_PRESS_ADS_FILTER_LOW         9
 #define CODE_ALARM_PRESS_OXYG_LOW               10
@@ -263,7 +263,7 @@ enum ALARM
 	 PERF_ART_PUMP_STILL,					//CODE_ALARM_PERF_ART_PUMP_STILL
 	 VEN_PUMP_STILL,						//CODE_ALARM_PERF_VEN_PUMP_STILL
 	 OXYG_PUMP_STILL,						//CODE_ALARM_OXYG_PUMP_STILL
-	 AIR_SENSORS_CHECK,						//CODE_ALARM_AIR_SENSORS_CHECK
+	 CRC_ALARM,                             //CODE_ALARM_SYSTEM_FAILURE
 	 FIRST_WARNING,
 	 // da qui in avanti i codici delle warning
 	 PRESS_ADS_FILTER_WARN = FIRST_WARNING,	//CODE_ALARM_PRESS_ADS_FILTER_WARN
@@ -299,6 +299,7 @@ void manageAlarmPhysicSetFlowAndPressures(void);
 void manageAlarmPhysicPressSensLow(void);
 
 void manageAlarmPhysicTempSensOOR(void);
+void manageAlarmCRC(void);
 void manageAlarmPhysicTempSensInTreat(void);
 
 void manageAlarmPhysicUFlowSens(void);

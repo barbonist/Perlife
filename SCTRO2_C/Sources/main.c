@@ -664,6 +664,8 @@ int main(void)
 	        	manageAlarmT1Test();
 	        	//Gestione allarme di STOP display
 	        	manageAlarmStopButtonPressed();
+	        	//CRC message alarm
+	        	manageAlarmCRC();
 
 	        	ManageMuteButton();
 	        	ManageAirDetectionTransition();

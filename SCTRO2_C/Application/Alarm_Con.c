@@ -29,6 +29,9 @@ extern bool AtLeastoneButResRcvd;
 extern bool gDigitalTest;
 extern unsigned char coverStateGlobal;
 
+//Allarme CRC
+extern bool failedCRC;
+
 // Gestione allarmi: aprile 2019 -- begin
 static signed int sIdxCurrentActiveListAlm = EMPTY_LIST_ALM;
 static signed int sIdxLastActiveListAlm = EMPTY_LIST_ALM;
@@ -197,10 +200,10 @@ typeAlarmS alarmList[] =
    // Ossigenazione Ferma
    {CODE_ALARM_OXYG_PUMP_STILL,      PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH, 120000,  500, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, TRUE},
 
-   // Check sensori di aria fallito
-   {CODE_ALARM_AIR_SENSORS_CHECK,    PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH, 5000,  1000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, TRUE},
+   // Check CRC messaggi da SBC
+   {CODE_ALARM_SYSTEM_FAILURE,       PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH,   0,  1000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, TRUE},
 
-   // da qui in avanti solo le warning
+// da qui in avanti solo le warning
    {CODE_ALARM_PRESS_ADS_FILTER_WARN, PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR, PRIORITY_LOW,  2000,  2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, FALSE},
 };
 
@@ -999,6 +1002,19 @@ void manageAlarmPrimAirPresFilter(void)
 		}
 	}
 }
+
+//Gestione allarme CRC
+void manageAlarmCRC(void)
+{
+	if (failedCRC == TRUE)
+	{
+		alarmList[CRC_ALARM].physic = PHYSIC_TRUE;
+		failedCRC = FALSE; //Consento di resettare l'allarme, in caso di nuovo CRC errato avremo una nuova occorrenza dell'allarme
+	}
+	else
+		alarmList[CRC_ALARM].physic = PHYSIC_FALSE;
+}
+
 
 // Allarme generato dalla condizione di aria in linea arteriosa durante il priming. Viene preso in considerazione
 // dal momento in cui il filtro viene installato alla fine del priming

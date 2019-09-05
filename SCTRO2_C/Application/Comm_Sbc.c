@@ -29,6 +29,9 @@ extern word MedForVenousPid;
 extern typeAlarmS* GetCurrentAlarmActiveListAlm(void);
 extern typeAlarmS* GetCurrentWarningActiveListWrn(void);
 
+//Flag che tiene conto di eventuale CRC fallito
+bool failedCRC = FALSE;
+
 void buildModBusWriteRegActResponseMsg(char *ptrMsgSbcRx)
 {
 	byte index = 0;
@@ -936,6 +939,7 @@ word CRCVal;
 void pollingSBCCommTreat(void){
 
 	word valueWord = 0;
+	word CRCReceived = 0;
 
 	union NumFloatUnion{
 			uint32 ieee754ValFormat;
@@ -970,6 +974,15 @@ void pollingSBCCommTreat(void){
 
 				myCommunicatorToSBC.dataParamSetSBCReadyFlag = DATA_COMM_READY_TO_BE_SEND;
 				CRCVal = ComputeChecksum(sbc_rx_data, 10); // calcolo il CRC del messaggio ricevuto per controllare che sia giusto
+				CRCReceived = (sbc_rx_data[10] << 8) + sbc_rx_data[11];
+				if (CRCReceived != CRCVal)
+				{
+					  failedCRC = TRUE;
+				}
+				else
+				{
+					  failedCRC = FALSE;
+				}
 			}
 			break;
 
