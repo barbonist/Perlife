@@ -750,6 +750,9 @@ void CalcAlarmActive(void)
 			//check sul flusso massimo
 			manageAlarmPhysicFlowHigh();
 
+			//check sensori di aria
+			manageAirSensorsCheckAlarm();
+
 			manageResultT1TestDigital(); //Valutazione finale dei check sui sensori digitali
 			manageAlarmFlowSensNotDetected();
 			manageAlarmIrTempSensNotDetected();
@@ -888,7 +891,6 @@ void CalcAlarmActive(void)
 			manageAlarmFromProtective();
 			manageCover_Hook_Sensor();
 			manageCheckConnectionTubeArtSensPress();
-			manageAirSensorsCheckAlarm();
 
 			if (GetTherapyType() == LiverTreat)
 				manageCheckConnectionTubeVenSensPress();
@@ -1543,47 +1545,32 @@ void manageCheckConnectionTubeArtSensPress(void)
 	}
 }
 
+//Check sensori di aria SAF e SAV e SAA
 void manageAirSensorsCheckAlarm(void)
 {
-	static bool flussoRilevatoArt = FALSE;
-	static bool flussoRilevatoVen = FALSE;
-
 	if (GlobalFlags2.FlagsDef2.EnableAirSensorsCheckAlarm)
 	{
-		if ((sensor_UFLOW[0].Average_Flow_Val > 0) && (sensor_UFLOW[0].bubblePresence != MASK_ERROR_BUBBLE_ALARM))
-		{
-			flussoRilevatoArt = TRUE;
-		}
-
-		if ((sensor_UFLOW[1].Average_Flow_Val > 0) && (sensor_UFLOW[1].bubblePresence != MASK_ERROR_BUBBLE_ALARM))
-		{
-			flussoRilevatoVen = TRUE;
-		}
-
 		//Eccezione: kidney senza ossigenazione: CHECK OK di default ---------
 		if ((GetTherapyType() == KidneyTreat) &&
 			(((PARAMETER_ACTIVE_TYPE)parameterWordSetFromGUI[PAR_SET_OXYGENATOR_ACTIVE].value) != YES))
 		{
-			flussoRilevatoVen = TRUE; //Metto di default il flusso rilevato
 			gAirTransitionDetectedUF1 = TRUE; //Metto di default il check passato
 		}
 		// ---------------------------------------------------------------------
 
-		if ((flussoRilevatoArt == TRUE) &&
-		    (flussoRilevatoVen == TRUE) &&
-		    (gAirTransitionDetectedUF0 == TRUE)   &&
+		//Se alla partenza del priming non ho visto aria su tutti e tre i sensori --> allarme
+		if ((gAirTransitionDetectedUF0 == TRUE)   &&
 		    (gAirTransitionDetectedUF1 == TRUE)   &&
 		    (gAirTransitionDetectedFilt == TRUE))
 		{
-			alarmList[AIR_SENSORS_CHECK].physic = PHYSIC_FALSE;
+			// Check OK;
 		}
 		else
 		{
-			alarmList[AIR_SENSORS_CHECK].physic = PHYSIC_TRUE;
+			//Almeno uno dei sensori non ha visto aria
+			alarmList[ALARM_T1_TEST].physic = PHYSIC_TRUE;
 		}
 	}
-	else
-		alarmList[AIR_SENSORS_CHECK].physic = PHYSIC_FALSE;
 }
 
 
@@ -2024,10 +2011,8 @@ void manageResultT1TestDigital(void)
     #ifdef T1_TEST_ENABLED
 		//Quando questa funzione viene chiamata, si controlla che il risultato del test sia positivo.
 		//In caso contrario viene generato un allarme T1 Test
-		if (gDigitalTest)
+		if (!gDigitalTest)
 			alarmList[ALARM_T1_TEST].physic = PHYSIC_FALSE; //Check OK
-		else
-			alarmList[ALARM_T1_TEST].physic = PHYSIC_TRUE; //Almeno un check sui segnali digitali non è passato
     #endif
 }
 
