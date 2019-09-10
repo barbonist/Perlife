@@ -27,6 +27,9 @@
 #include "Comm_Sbc.h"
 #include "ControlProtectiveInterface.h"
 
+//Valore non filtrato del sensore di piastra STP2 [gradi Celsius * 10]
+float not_filtered_T_PLATE_P_GRADI_CENT;
+
 // Filippo - definisco tabella di conversione per una PT1000
 TABELLA_PT1000 tabellaPT1000[14]={
 		{803.06,-50.0},
@@ -243,14 +246,15 @@ void Coversion_From_ADC_To_degree_T_PLATE_Sensor(/*word TPlatePadc*/)
 
 	if (i<14)
 	{
-		T_PLATE_P_GRADI_CENT=m*resPT1000+q;
+		not_filtered_T_PLATE_P_GRADI_CENT=m*resPT1000+q;
 	}
 	else
 	{
-		T_PLATE_P_GRADI_CENT=tabellaPT1000[13].temperatura;
+		not_filtered_T_PLATE_P_GRADI_CENT=tabellaPT1000[13].temperatura;
 	}
 
-//	return (T_PLATE_P_GRADI_CENT);
+	//Il valore acquisito entra in un filtro passa-basso per ridurne le oscillazioni
+	T_PLATE_P_GRADI_CENT = ((float)(PESO_FILTRO_STP2 - 1)*T_PLATE_P_GRADI_CENT + not_filtered_T_PLATE_P_GRADI_CENT)/(float)PESO_FILTRO_STP2;
 }
 
 void Coversion_From_ADC_To_mmHg_Pressure_Sensor()
