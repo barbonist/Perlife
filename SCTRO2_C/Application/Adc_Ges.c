@@ -27,6 +27,9 @@
 #include "Comm_Sbc.h"
 #include "pid.h"
 
+//Valore non filtrato del sensore di piastra STP [gradi Celsius]
+float not_filtered_T_PLATE_C_GRADI_CENT;
+
 // Filippo - definisco tabella di conversione per una PT1000
 TABELLA_PT1000 tabellaPT1000[14]={
 		{803.06,-50.0},
@@ -188,14 +191,6 @@ void Manange_ADC1(void)
 
 void Coversion_From_ADC_To_degree_T_PLATE_Sensor()
 {
-/* Filippo - calcoliamo la temperatura della PT1000 in altro modo
-	if (Frigo_ON)
-		T_PLATE_C_GRADI_CENT = config_data.T_Plate_Sensor_Gain_Cold * T_PLATE_C_ADC + config_data.T_Plate_Sensor_Offset_Cold;
-	else
-		T_PLATE_C_GRADI_CENT = config_data.T_Plate_Sensor_Gain_Heat * T_PLATE_C_ADC + config_data.T_Plate_Sensor_Offset_Heat;
-
-	T_PLATE_C_GRADI_CENT /= 10;
-*/
 	float appoggioFloat,V1;
 	float resPT1000;
 	int i;
@@ -232,21 +227,21 @@ void Coversion_From_ADC_To_degree_T_PLATE_Sensor()
 
 	if (i<14)
 	{
-		T_PLATE_C_GRADI_CENT=m*resPT1000+q;
+		not_filtered_T_PLATE_C_GRADI_CENT=m*resPT1000+q;
 	}
 	else
 	{
-		T_PLATE_C_GRADI_CENT=tabellaPT1000[13].temperatura;
+		not_filtered_T_PLATE_C_GRADI_CENT=tabellaPT1000[13].temperatura;
 	}
 
-//	T_PLATE_C_GRADI_CENT+=config_data.T_Plate_Sensor_Offset_Heat;
-
+	//Il valore acquisito entra in un filtro passa-basso per ridurne le oscillazioni
+	T_PLATE_C_GRADI_CENT = ((float)(PESO_FILTRO_STP - 1)*T_PLATE_C_GRADI_CENT + not_filtered_T_PLATE_C_GRADI_CENT)/(float)PESO_FILTRO_STP;
 }
 void Coversion_From_ADC_To_mmHg_Pressure_Sensor()
 {
 
 	PR_OXYG_mmHg 	= (word)(config_data.sensor_PRx[OXYG].prSensGain    * PR_OXYG_ADC    + config_data.sensor_PRx[OXYG].prSensOffset + 0.5);
-	PR_LEVEL_mmHg 	= (word)((config_data.sensor_PRx[LEVEL].prSensGain   * PR_LEVEL_ADC   + config_data.sensor_PRx[LEVEL].prSensOffset) * 100.0 + 0.5);
+	PR_LEVEL_mmHg 	= (word)((config_data.sensor_PRx[LEVEL].prSensGain  * PR_LEVEL_ADC   + config_data.sensor_PRx[LEVEL].prSensOffset) * 100.0 + 0.5);
 	PR_ADS_FLT_mmHg = (word)(config_data.sensor_PRx[ADS_FLT].prSensGain * PR_ADS_FLT_ADC + config_data.sensor_PRx[ADS_FLT].prSensOffset + 0.5);
 
 	PR_VEN_mmHg = ConversionePressioneExtraVen(PR_VEN_ADC);

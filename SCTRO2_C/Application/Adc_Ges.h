@@ -23,6 +23,9 @@
 // campioni gia' mediati dopo la conversione
 #define NUMB_OF_SAMPLES_VEN     500
 
+//Peso del filtraggio per il valore acquisito STP di piastra
+#define PESO_FILTRO_STP			100
+
 // Filippo - definizione della tabella di conversione PT1000
 typedef struct
 {
