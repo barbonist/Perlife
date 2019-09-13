@@ -1315,17 +1315,29 @@ void manageParentChk24Vbrk(void){
 }
 
 void manageParentChkPress(void){
+
+// Check sui sensori Control e Protective
 	if(
-		(PR_OXYG_mmHg_Filtered <= T1_TEST_PRESS_LOW_THRSLD)  	||
-		(PR_OXYG_mmHg_Filtered >= T1_TEST_PRESS_HIGH_THRSLD) 	||
-		(PR_LEVEL_mmHg_Filtered <= T1_TEST_PRESS_LOW_THRSLD) 	||
-		(PR_LEVEL_mmHg_Filtered >= T1_TEST_PRESS_HIGH_THRSLD) 	||
-		(PR_ADS_FLT_mmHg_Filtered <= T1_TEST_PRESS_LOW_THRSLD) 	||
-		(PR_ADS_FLT_mmHg_Filtered >= T1_TEST_PRESS_HIGH_THRSLD) ||
-		(PR_VEN_mmHg_Filtered <= T1_TEST_PRESS_LOW_THRSLD) 		||
-		(PR_VEN_mmHg_Filtered >= T1_TEST_PRESS_HIGH_THRSLD) 	||
-		(PR_ART_mmHg_Filtered <= T1_TEST_PRESS_LOW_THRSLD) 		||
-		(PR_ART_mmHg_Filtered >= T1_TEST_PRESS_HIGH_THRSLD)
+		(PR_OXYG_mmHg_Filtered <= T1_TEST_PRESS_LOW_THRSLD)  	  ||
+		(PR_OXYG_mmHg_Filtered >= T1_TEST_PRESS_HIGH_THRSLD) 	  ||
+		(PR_LEVEL_mmHg_Filtered <= T1_TEST_PRESS_LOW_THRSLD_LEV)  ||
+		(PR_LEVEL_mmHg_Filtered >= T1_TEST_PRESS_HIGH_THRSLD_LEV) ||
+		(PR_ADS_FLT_mmHg_Filtered <= T1_TEST_PRESS_LOW_THRSLD) 	  ||
+		(PR_ADS_FLT_mmHg_Filtered >= T1_TEST_PRESS_HIGH_THRSLD)   ||
+		(PR_VEN_mmHg_Filtered <= T1_TEST_PRESS_LOW_THRSLD) 		  ||
+		(PR_VEN_mmHg_Filtered >= T1_TEST_PRESS_HIGH_THRSLD) 	  ||
+		(PR_ART_mmHg_Filtered <= T1_TEST_PRESS_LOW_THRSLD) 		  ||
+		(PR_ART_mmHg_Filtered >= T1_TEST_PRESS_HIGH_THRSLD)       ||
+		(*PressOxy <= T1_TEST_PRESS_LOW_THRSLD)  	              ||
+		(*PressOxy >= T1_TEST_PRESS_HIGH_THRSLD)  	              ||
+		(*PressFilter <= T1_TEST_PRESS_LOW_THRSLD)     	          ||
+		(*PressFilter >= T1_TEST_PRESS_HIGH_THRSLD) 	          ||
+		(*PressArt <= T1_TEST_PRESS_LOW_THRSLD)  	              ||
+		(*PressArt >= T1_TEST_PRESS_HIGH_THRSLD) 	              ||
+		(*PressVen <= T1_TEST_PRESS_LOW_THRSLD) 	              ||
+		(*PressVen >= T1_TEST_PRESS_HIGH_THRSLD)  				  ||
+		(*PressLevelx100 <= T1_TEST_PRESS_LOW_THRSLD_LEV) 	      ||
+		(*PressLevelx100 >= T1_TEST_PRESS_HIGH_THRSLD_LEV)
 		){
 		ptrT1Test->result_T1_press = T1_TEST_KO;
 		currentGuard[GUARD_ENABLE_T1_ALARM].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
@@ -1340,13 +1352,25 @@ void manageParentTempSensIR(void){
 
 	static unsigned char index = 0;
 
+//Check sui sensori Control e Protective
+	float tempProtSTA2 = ((float)(*STA2)/10.0);
+	float tempProtSTF2 = ((float)(*STF2)/10.0);
+	float tempProtSTV2 = ((float)(*STV2)/10.0);
+
 	if(
-	   (sensorIR_TM[0].tempSensValue < 15) ||
-	   (sensorIR_TM[0].tempSensValue > 30) ||
-	   (sensorIR_TM[1].tempSensValue < 15) ||
-	   (sensorIR_TM[1].tempSensValue > 30) ||
-	   (sensorIR_TM[2].tempSensValue < 15) ||
-	   (sensorIR_TM[2].tempSensValue > 30)
+	   (sensorIR_TM[0].tempSensValue < LOW_ENV_TEMP_T1_TEST)  ||
+	   (sensorIR_TM[0].tempSensValue > HIGH_ENV_TEMP_T1_TEST) ||
+	   (sensorIR_TM[1].tempSensValue < LOW_ENV_TEMP_T1_TEST)  ||
+	   (sensorIR_TM[1].tempSensValue > HIGH_ENV_TEMP_T1_TEST) ||
+	   (sensorIR_TM[2].tempSensValue < LOW_ENV_TEMP_T1_TEST)  ||
+	   (sensorIR_TM[2].tempSensValue > HIGH_ENV_TEMP_T1_TEST) ||
+	   (tempProtSTA2 < LOW_ENV_TEMP_T1_TEST)  ||
+	   (tempProtSTA2 > HIGH_ENV_TEMP_T1_TEST) ||
+	   (tempProtSTF2 < LOW_ENV_TEMP_T1_TEST)  ||
+	   (tempProtSTF2 > HIGH_ENV_TEMP_T1_TEST) ||
+	   (tempProtSTV2 < LOW_ENV_TEMP_T1_TEST)  ||
+	   (tempProtSTV2 > HIGH_ENV_TEMP_T1_TEST)
+
 	   ){
 			ptrT1Test->result_T1_tempIR = T1_TEST_KO;
 			currentGuard[GUARD_ENABLE_T1_ALARM].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
@@ -1361,10 +1385,10 @@ void manageParentTempSensIR(void){
 
 void mangeParentUFlowSens(void){
 	if(
-			(sensor_UFLOW[0].Average_Flow_Val > 100) ||
-			(sensor_UFLOW[0].Average_Flow_Val < -100) ||
-			(sensor_UFLOW[1].Average_Flow_Val > 100) ||
-			(sensor_UFLOW[1].Average_Flow_Val < -100)
+			(sensor_UFLOW[0].Average_Flow_Val > HIGH_ENV_FLOW_T1_TEST) ||
+			(sensor_UFLOW[0].Average_Flow_Val < LOW_ENV_FLOW_T1_TEST)  ||
+			(sensor_UFLOW[1].Average_Flow_Val > HIGH_ENV_FLOW_T1_TEST) ||
+			(sensor_UFLOW[1].Average_Flow_Val < LOW_ENV_FLOW_T1_TEST)
 		){
 		ptrT1Test->result_T1_flwmtr = T1_TEST_KO;
 		currentGuard[GUARD_ENABLE_T1_ALARM].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
@@ -7331,6 +7355,9 @@ void manageParentT1HeaterInit(void)
 void manageParentT1Heater(void)
 {
 	LIQ_TEMP_CONTR_TASK_STATE ltcts;
+	int tempPlateP = (int)getValTempPlateProt();
+	int tempPlateC = (int)T_PLATE_C_GRADI_CENT;
+	int deltaTempPlate = 0;
 
 	switch (t1Test_heater)
 	{
@@ -7346,6 +7373,8 @@ void manageParentT1Heater(void)
 
 		break;
 	case 1:
+		deltaTempPlate = (tempPlateP > tempPlateC) ? (tempPlateP - tempPlateC) : (tempPlateC - tempPlateP);
+
 		// Verifica che il processo di riscaldamento sia partito (lato CONTROL)
 		if (IsHeating())
 		{
@@ -7358,6 +7387,19 @@ void manageParentT1Heater(void)
 		{
 			currentGuard[GUARD_ENABLE_T1_ALARM].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
 			DebugStringStr("alarm from chk heater");
+			testT1HeatFridge = 0;
+			protectiveOn = 0;
+		}
+		// Check che DEVE essere presente in quanto T1 Test dei sensori di piastra
+		else if (
+				(deltaTempPlate > 10) ||  //Al massimo STP e STP2 devono differire di 10 gradi
+				(tempPlateP > 70)     ||  //Devono leggere valori ammissibili
+				(tempPlateP < -15)    ||
+				(tempPlateC > 70)     ||
+				(tempPlateC < -15)
+			){
+			currentGuard[GUARD_ENABLE_T1_ALARM].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+			DebugStringStr("alarm from chk heater: temperatura plate Prot e Ctrl");
 			testT1HeatFridge = 0;
 			protectiveOn = 0;
 		}

@@ -43,10 +43,23 @@ void onNewAlmToResetMsg(uint16_t AlmCodeToreset);
 extern uint8_t *FilterPinchPos;
 extern uint8_t *ArtPinchPos;
 extern uint8_t *OxygPinchPos;
+
+//Valori di pressione in arrivo dalla Protective
+extern uint16_t *PressOxy      ;
+extern uint16_t *PressFilter   ;
+extern uint16_t *PressArt      ;
+extern uint16_t *PressVen      ;
+extern uint16_t *PressLevelx100;
+
 extern uint16_t *SpeedPump1Rpmx10;
 extern uint16_t *SpeedPump2Rpmx10;
 extern uint16_t *SpeedPump3Rpmx10;
 extern uint16_t *SpeedPump4Rpmx10;
+
+//Temperature in arrivo dalla Protective
+extern uint16_t *STA2;
+extern uint16_t *STV2;
+extern uint16_t *STF2;
 
 uint16_t GetAlarmCodeProt(void);
 uint16_t GetRevisionFWProt(void);

@@ -140,13 +140,22 @@ uint8_t *FilterPinchPos = &(RxCan2.SRxCan2.FilterPinchPos);
 uint8_t *ArtPinchPos = &(RxCan2.SRxCan2.ArtPinchPos);
 uint8_t *OxygPinchPos = &(RxCan2.SRxCan2.OxygPinchPos);
 
+// Valori di pressione in arrivo dalla Protective
+uint16_t *PressOxy       = &(RxCan1.SRxCan1.PressOxy);
+uint16_t *PressFilter    = &(RxCan0.SRxCan0.PressFilter);
+uint16_t *PressArt       = &(RxCan0.SRxCan0.PressArt);
+uint16_t *PressVen       = &(RxCan0.SRxCan0.PressVen);
+uint16_t *PressLevelx100 = &(RxCan0.SRxCan0.PressLevelx100);
+
 uint16_t *SpeedPump1Rpmx10 = &(RxCan3.SRxCan3.SpeedPump1Rpmx10);
 uint16_t *SpeedPump2Rpmx10 = &(RxCan3.SRxCan3.SpeedPump2Rpmx10);
 uint16_t *SpeedPump3Rpmx10 = &(RxCan3.SRxCan3.SpeedPump3Rpmx10);
 uint16_t *SpeedPump4Rpmx10 = &(RxCan3.SRxCan3.SpeedPump4Rpmx10);
 
-
-
+//Valori di temperatura in arrivo dalla Protective
+uint16_t *STA2       = &(RxCan1.SRxCan1.TempArtx10);
+uint16_t *STV2       = &(RxCan1.SRxCan1.TempVenx10);
+uint16_t *STF2       = &(RxCan1.SRxCan1.TempFluidx10);
 
 //#define CAN_DEBUG 1
 

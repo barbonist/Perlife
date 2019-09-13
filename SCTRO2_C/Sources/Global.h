@@ -1495,7 +1495,14 @@ float V24_Ever_Motor_Value;
 #define T1_TEST_PRESS_LOW_THRSLD	-5 //mmHg
 #define T1_TEST_PRESS_HIGH_THRSLD	5 //mmHg
 #define T1_TEST_PRESS_TRKNG_THRSLD	5 //mmHg
+#define T1_TEST_PRESS_LOW_THRSLD_LEV	-500    //5 mmHg per sensore di livello
+#define T1_TEST_PRESS_HIGH_THRSLD_LEV    500    //5 mmHg per sensore di livello
+
 /* t1 test */
+#define HIGH_ENV_TEMP_T1_TEST		30     //30 °C
+#define LOW_ENV_TEMP_T1_TEST		5      //5 °C
+#define HIGH_ENV_FLOW_T1_TEST		50     //50 °C
+#define LOW_ENV_FLOW_T1_TEST		-50    //-50 °C
 
 #define V5_B_CHK_ADC_CHANNEL		9
 #define V24_P2_CHK_ADC_CHANNEL 		10
