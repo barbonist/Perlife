@@ -824,6 +824,7 @@ void CalcAlarmActive(void)
 				manageAlarmPhysicSetFlowAndPressures();
 				//verifica physic flow sensor (presenza aria)
 				manageAlarmPhysicUFlowSens();
+				manageAlarmLiquidLevelLow();
 			}
 
 			if(GetTherapyType() == LiverTreat)
@@ -848,8 +849,6 @@ void CalcAlarmActive(void)
 			 * sensore di livello che sarà Soglia_minima_ADC_allarme_Livello e controllando solo
 			 * in trattamento se Gli ADC del sensore di livello vanno sotto tale soglia
 			 */
-
-			manageAlarmLiquidLevelLow();
 
 			// i due allarmi che seguono devo essere gestiti attentamente perche' potrei avere delle
 			// segnalazioni di allarme anche durante la fase di accelerazione e decelerazione del pid
@@ -1212,7 +1211,6 @@ void manageAlarmDeltaTempRecVen(void)
 // controlla se sono al di sotto del livello minimo
 void manageAlarmLiquidLevelLow(void)
 {
-#if 0
 	/*controllo l'alamre solo se ho calcolato la soglia Soglia_minima_ADC_allarme_Livello*/
 	if (GlobalFlags.FlagsDef.EnableLevLowAlarm && TARA_PRESS_DONE)
 	{
@@ -1228,7 +1226,6 @@ void manageAlarmLiquidLevelLow(void)
 	}
 	else
 		alarmList[LIQUID_LEVEL_LOW].physic = PHYSIC_FALSE;
-#endif
 }
 
 
