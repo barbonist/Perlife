@@ -256,7 +256,7 @@ float CalibFlowmeterArt(float arterialFlow)
 
 	arterialFlowCalib = arterialFlow*(config_data.FlowSensor_Art_Gain);
 
-	if (arterialFlowCalib < 20.0)
+	if (arterialFlowCalib < 25.0)
 		arterialFlowCalib = 0;
 
 	return arterialFlowCalib;
@@ -270,7 +270,7 @@ float CalibFlowmeterVen(float venousFlow)
 
 	venousFlowCalib = venousFlow*(config_data.FlowSensor_Ven_Gain);
 
-	if (venousFlowCalib < 20.0)
+	if (venousFlowCalib < 25.0)
 		venousFlowCalib = 0;
 
 	return venousFlowCalib;
