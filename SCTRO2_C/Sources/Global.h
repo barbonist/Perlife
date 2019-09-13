@@ -2039,10 +2039,10 @@ unsigned char CoversState;
 #define MAX_VEN_FLOW_DIFF_FROM_CALC_AND_MIS 300.0
 
 // massima differenza di temperatura tra recevoir e liquido arterioso
-#define MAX_DELTA_TEMP_ART_AND_REC  5.0
+#define MAX_DELTA_TEMP_ART_AND_REC  3.0
 
 // massima differenza di temperatura tra recevoir e liquido venoso
-#define MAX_DELTA_TEMP_VEN_AND_REC  5.0
+#define MAX_DELTA_TEMP_VEN_AND_REC  3.0
 
 // valore massimo del parametro di resitenza arteriosa
 #define RENAL_RESIST_HIGH_LEVEL   600 // 0.60 mmHg/ml/min
