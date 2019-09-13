@@ -63,9 +63,11 @@ TAlarmTimer PressLevelMismatchAlarmTimer = {0,70,false,false, MismatchPressLevel
 TAlarmTimer TempArtMismatchAlarmTimer = {0,20,false,false, MismatchTempArtAlarmAct , 0 , 65 , PumpsOrPinchNotRespond_EmergAct }; // alarm after 2 s mismatch
 TAlarmTimer TempVenMismatchAlarmTimer = {0,20,false,false, MismatchTempVenAlarmAct , 0 , 65 , PumpsOrPinchNotRespond_EmergAct }; // alarm after 2 s mismatch
 TAlarmTimer TempFluidMismatchAlarmTimer = {0,20,false,false, MismatchTempFluidAlarmAct , 0 , 65 , PumpsOrPinchNotRespond_EmergAct }; // alarm after 2 s mismatch
-TAlarmTimer TempPlateMismatchAlarmTimer = {0,20,false,false, MismatchTempPlateAlarmAct , 0 , 50 , PumpsOrPinchNotRespond_EmergAct }; // alarm after 2 s mismatch
 
 TAlarmTimer AirPresentAlarmTimer = {0,03,false,false, AirPresentAlarmAct , 0 , 65 , PumpsOrPinchNotRespond_EmergAct_AirAlarm }; // alarm after 300ms s mismatch , then check pumps stop
+
+//Allarme di mismatch temperature di piastra NON USATO per ora
+//TAlarmTimer TempPlateMismatchAlarmTimer = {0,20,false,false, MismatchTempPlateAlarmAct , 0 , 50 , PumpsOrPinchNotRespond_EmergAct }; // alarm after 2 s mismatch
 
 static TAlarmTimer	*AlarmTimerList[] = {
 		&PumpMismatchAlarmTimer ,
@@ -81,9 +83,12 @@ static TAlarmTimer	*AlarmTimerList[] = {
 		&TempArtMismatchAlarmTimer,
 		&TempVenMismatchAlarmTimer,
 		&TempFluidMismatchAlarmTimer,
-		&TempPlateMismatchAlarmTimer,
 
-		&AirPresentAlarmTimer  // 2-4-2019 new spex
+		&AirPresentAlarmTimer,  // 2-4-2019 new spex
+
+		//Allarme di mismatch temperature di piastra NON USATO per ora
+		//&TempPlateMismatchAlarmTimer
+
 };
 
 static void ManageVerificatorAlarms100ms(void);
@@ -277,6 +282,7 @@ void MismatchPressLevelAlarmAct(void)
 
 void MismatchTempPlateAlarmAct(void)
 {
+#if 0 //Allarme mismatch temperature di piastra è NON USATO al momento
 //	if(GetControlFSMState() == STATE_TREATMENT)
 	if(true) // 16/1/2018
 	{
@@ -287,6 +293,7 @@ void MismatchTempPlateAlarmAct(void)
 		// trigger sec action
 		TriggerSecondaryAction(&TempPlateMismatchAlarmTimer);
 	}
+#endif
 }
 
 void AirPresentAlarmAct(void)
