@@ -1167,7 +1167,6 @@ void manageAlarmDeltaFlowVen(void)
 // controllo se il delta di temperatura tra recipiente e liquido arterioso e' troppo alta
 void manageAlarmDeltaTempRecArt(void)
 {
-#if 0
 	if (GlobalFlags.FlagsDef.EnableDeltaTempRecArtAlarm)
 	{
 		float tart = sensorIR_TM[0].tempSensValue;
@@ -1184,14 +1183,12 @@ void manageAlarmDeltaTempRecArt(void)
 		}
 	}
 	else
-#endif
 		alarmList[DELTA_TEMP_REC_ART].physic = PHYSIC_FALSE;
 }
 
 // controllo se il delta di temperatura tra recipiente e liquido venoso e' troppo alta
 void manageAlarmDeltaTempRecVen(void)
 {
-#if 0
 	if (GlobalFlags.FlagsDef.EnableDeltaTempRecVenAlarm)
 	{
 		float trec = sensorIR_TM[1].tempSensValue;
@@ -1208,7 +1205,6 @@ void manageAlarmDeltaTempRecVen(void)
 		}
 	}
 	else
-#endif
 		alarmList[DELTA_TEMP_REC_VEN].physic = PHYSIC_FALSE;
 }
 
@@ -1564,6 +1560,7 @@ void manageCheckConnectionTubeArtSensPress(void)
 //Check sensori di aria SAF e SAV e SAA
 void manageAirSensorsCheckAlarm(void)
 {
+#ifdef T1_TEST_ENABLED
 	if (GlobalFlags2.FlagsDef2.EnableAirSensorsCheckAlarm)
 	{
 		//Eccezione: kidney senza ossigenazione: CHECK OK di default ---------
@@ -1587,6 +1584,7 @@ void manageAirSensorsCheckAlarm(void)
 			alarmList[ALARM_T1_TEST].physic = PHYSIC_TRUE;
 		}
 	}
+#endif
 }
 
 
@@ -2076,11 +2074,6 @@ void manageAlarmFlowSensNotDetected(void)
 			sensor_UFLOW[i].RequestMsgProcessed = 0;
 	}
 }
-
-
-
-
-
 
 void manageAlarmIrTempSensNotDetected(void)
 {
