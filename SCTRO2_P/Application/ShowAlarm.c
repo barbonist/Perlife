@@ -46,16 +46,6 @@ void ManageShowAlarm500ms(void)
 		ShowErrorSevenSeg(ActualErrNum); // send each 4 seconds
 	}
 	ErrorTimer = (ErrorTimer + 1) % 8;
-	if(ActualErrNum != 0){
-		BuzzCnt = (BuzzCnt + 1) % 6;
-#ifndef PROTECTIVE_SLEEPS
-		if(BuzzCnt == 0) BUZZER_HIGH_P_SetVal();
-		if(BuzzCnt == 2) BUZZER_HIGH_P_ClrVal();
-#endif
-	}
-	else{
-		BUZZER_HIGH_P_ClrVal();
-	}
 }
 
 

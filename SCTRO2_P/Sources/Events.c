@@ -661,6 +661,7 @@ void TI1_10ms_OnInterrupt(void)
 	timerIsr_10ms();
 	timerCounterADC0++;
 	timerCounter++;
+	timerCounterBuzzer ++;
 }
 
 /*

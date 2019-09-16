@@ -212,6 +212,14 @@ void verificaTempPlate(void);
 /*lint -save  -e970 Disable MISRA rule (6.3) checking. */
 
 int Phase = 0x99;
+
+// Gestione del buzzer per risolvere il problema del volume basso in caso di 
+// attivazione contemporanea di pin low e high
+// il pin low è attivato subito, il pin high dopo poche decine di msec
+int firstTimeAlarm = 0;
+int stateMachineBuzzer = 0;
+extern int ActualErrNum;
+
 /*Funtion to enable power and actuation of teh actuator*/
 void verificaTempPlate(void)
 {
@@ -289,6 +297,7 @@ int main(void)
   ADC1_Calibration();
   timerCounterADC1 = 0;
   timerCounterADC0 = 0;
+  timerCounterBuzzer = 0;
 
   Dip_Switch_ADC_Init();
   PR_Sens_ADC_Init();
@@ -361,6 +370,42 @@ int main(void)
 		AD1_Start();
 	 }
 
+	 //30 mseccycle
+	 if (timerCounterBuzzer > 3)
+	 {
+		 timerCounterBuzzer = 0;
+#ifdef PROTECTIVE_SLEEPS
+		 //in caso di errore...
+		 if(ActualErrNum != 0)
+		 {
+			 //... inizializza lo stato a 0
+			 if (firstTimeAlarm == 0)
+			 {
+				 firstTimeAlarm = 1;
+				 stateMachineBuzzer = 0;
+			 }
+
+			 switch(stateMachineBuzzer)
+			 {
+			 case 0: //prima un tono basso...
+				 BUZZER_LOW_P_SetVal();
+				 stateMachineBuzzer = 1;
+				 break;
+
+			 case 1://...poi un tono alto
+				 BUZZER_HIGH_P_SetVal();
+				 break;
+			 }
+		 }
+		 else
+#endif
+		 {
+			 //quando l'errore scompare, reset sia buzzer pin LOW che HIGH (vedere application note del Mallory)
+			 firstTimeAlarm = 0;
+			 BUZZER_LOW_P_ClrVal();
+			 BUZZER_HIGH_P_ClrVal();
+		 }
+	 }
      /********************************/
      /*          FRONTAL COVER       */
      /********************************/

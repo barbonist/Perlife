@@ -735,6 +735,7 @@ struct tempIRSensor sensorIR_TM5A;
 int timerCounterCheckTempIRSens;
 unsigned int timerCounterADC0;
 unsigned int timerCounterADC1;
+unsigned int timerCounterBuzzer;
 
 // Filippo - variabili aggiunte
 float tempPlateControl;	// serve a verificare che le temperature di piatto lette dalle PT1000 sulla protective e sulla
