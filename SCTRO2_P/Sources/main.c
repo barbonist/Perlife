@@ -261,7 +261,7 @@ void verificaTempPlate(void)
 
 #define VERS_1 1
 #define VERS_2 2
-#define VERS_3 5
+#define VERS_3 6
 
 #endif
 uint16_t GetFwVersionProtective(void)
