@@ -1980,6 +1980,7 @@ void manageAlarmPhysicFlowHigh(void)
 // Filippo - funzione che gestisce l'allarme di pressione del tasto di stop
 void manageAlarmStopButtonPressed(void)
 {
+#if 0
 	if(!GlobalFlags.FlagsDef.EnableStopButton)
 		alarmList[ALARM_STOP_BUTTON].physic = PHYSIC_FALSE;
 	else
@@ -1994,6 +1995,7 @@ void manageAlarmStopButtonPressed(void)
 			alarmList[ALARM_STOP_BUTTON].physic = PHYSIC_FALSE;
 		}
 	}
+#endif
 }
 
 // Filippo - funzione che gestisce l'allarme di pressione del tasto di stop
