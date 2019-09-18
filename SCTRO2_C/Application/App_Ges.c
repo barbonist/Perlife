@@ -140,7 +140,7 @@ bool ResButInChildFlag = FALSE;
 GLOBAL_FLAGS AlarmEnableConf;
 // Filippo - aggiunto per test T1 del frigo
 int counterFridgeStability;
-float tempFridgePlate;
+float tempMinFridgePlate;
 float tempMaxHeatPlate;
 
 int speed_filter;
@@ -7362,38 +7362,25 @@ void manageParentT1Heater(void)
 	switch (t1Test_heater)
 	{
 	case 0:
-		// per prima cosa devo provare ad attivare il riscaldatore ma
+		// per prima cosa devo provare ad attivare il riscaldatore
 		// (senza che la protective dia il consenso) e verificare che il riscaldatore non parta
+		// Temperatura desiderata = PIASTRA STP + 5 gradi
 		parameterWordSetFromGUI[PAR_SET_PRIMING_TEMPERATURE_PERFUSION].value=(word)((T_PLATE_C_GRADI_CENT + 5)*10);
-		t1TestTempPartenza = T_PLATE_C_GRADI_CENT;	// salvo la temperatura di partenza STP
+		t1TestTempPartenza = T_PLATE_C_GRADI_CENT;	// Salvo la temperatura di partenza STP
 
-		EnableHeating();	    // faccio partire il riscaldatore
-		t1Test_heater = 1;      // prossimo stato
+		EnableHeating();	    // faccio partire il processo di riscaldamento
+		t1Test_heater = 1;      // passo al prossimo stato
 		timerCounterT1Test = 0; // reset timer test
 
 		break;
 	case 1:
+		//Differenza tra STP (control) e STP2 (da protective)
 		deltaTempPlate = (tempPlateP > tempPlateC) ? (tempPlateP - tempPlateC) : (tempPlateC - tempPlateP);
 
-		// Verifica che il processo di riscaldamento sia partito (lato CONTROL)
-		if (IsHeating())
-		{
-			// OK, passo allo stato successivo
-			t1Test_heater = 2;
-			timerCounterT1Test = 0;
-		}
-		/* altrimenti aspetto 5 secondi prima di andare in allarme, per dare il tempo al controllo del riscaldatore di partire */
-		else if (timerCounterT1Test > 500)
-		{
-			currentGuard[GUARD_ENABLE_T1_ALARM].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
-			DebugStringStr("alarm from chk heater");
-			testT1HeatFridge = 0;
-			protectiveOn = 0;
-		}
-		// Check che DEVE essere presente in quanto T1 Test dei sensori di piastra
-		else if (
+		//Check congruenza sensori di piastra control e protective
+		if (
 				(deltaTempPlate > 10) ||  //Al massimo STP e STP2 devono differire di 10 gradi
-				(tempPlateP > 70)     ||  //Devono leggere valori ammissibili
+				(tempPlateP > 70)     ||  //e devono leggere valori ammissibili
 				(tempPlateP < -15)    ||
 				(tempPlateC > 70)     ||
 				(tempPlateC < -15)
@@ -7404,6 +7391,21 @@ void manageParentT1Heater(void)
 			protectiveOn = 0;
 		}
 
+		// Verifica che il processo di riscaldamento sia partito (lato CONTROL)
+		if (IsHeating())
+		{
+			// OK, passo allo stato successivo
+			t1Test_heater = 2;
+			timerCounterT1Test = 0;
+		}
+		/* altrimenti aspetto 10 secondi prima di andare in allarme, per dare il tempo al controllo del riscaldatore di partire */
+		else if (timerCounterT1Test > 200)
+		{
+			currentGuard[GUARD_ENABLE_T1_ALARM].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+			DebugStringStr("alarm from chk heater");
+			testT1HeatFridge = 0;
+			protectiveOn = 0;
+		}
 		break;
 	case 2:
 		// Sono in uno stato in cui la CONTROL sta cercando di riscaldare la piastra ma senza consenso PROTECTIVE -->
@@ -7412,7 +7414,7 @@ void manageParentT1Heater(void)
 		{
 			// Se la temperatura cresce di almeno 3 gradi --> allarme
 			currentGuard[GUARD_ENABLE_T1_ALARM].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
-			DebugStringStr("alarm from chk heater");
+			DebugStringStr("alarm from chk heater, state 2");
 			timerCounterT1Test = 0;
 			DisableHeating();
 			testT1HeatFridge = 0;
@@ -7421,11 +7423,11 @@ void manageParentT1Heater(void)
 		else
 		{
 			// Attendo 2 minuti
-			if (timerCounterT1Test > 1200) //Se ho visto la temperatura NON crescere allora proseguo con il test
+			if (timerCounterT1Test > 2400) //Se ho visto la temperatura NON crescere allora proseguo con il test
 			{
 				// Spengo il processo di riscaldamento
 				DisableHeating();
-				t1Test_heater = 3;
+				t1Test_heater = 3; //passo allo stato successivo
 				timerCounterT1Test = 0;
 				protectiveOn = 1; // adesso consento l'attivazione della protective
 			}
@@ -7433,6 +7435,7 @@ void manageParentT1Heater(void)
 
 		break;
 	case 3:
+		//Stato del processo di riscaldamento?
 		ltcts = FrigoHeatTempControlTaskNewPID((LIQ_TEMP_CONTR_TASK_CMD)READ_STATE_CMD);
 		if (ltcts == LIQ_T_CONTR_HEATING_STOPPED)
 		{
@@ -7441,12 +7444,12 @@ void manageParentT1Heater(void)
 			t1TestTempPartenza = T_PLATE_C_GRADI_CENT;	// salvo la temperatura di partenza
 			timerCounterT1Test = 0;                     // reset timer
 		}
-		/* altrimenti aspetto 5 secondi prima di andare in allarme, per dare il tempo al controllo del riscaldatore di fermarsi */
-		else if (timerCounterT1Test > 500)
+		/* altrimenti aspetto 10 secondi prima di andare in allarme, per dare il tempo al controllo del riscaldatore di fermarsi */
+		else if (timerCounterT1Test > 200)
 		{
 			// non si è fermato - errore
 			currentGuard[GUARD_ENABLE_T1_ALARM].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
-			DebugStringStr("alarm from chk heater");
+			DebugStringStr("alarm from chk heater, state 3");
 			timerCounterT1Test = 0;
 			testT1HeatFridge = 0;
 			protectiveOn = 0;
@@ -7454,36 +7457,38 @@ void manageParentT1Heater(void)
 
 		break;
 	case 4:
-		if (T_PLATE_C_GRADI_CENT>=38)
+		//Verifica limite superiore
+		if (T_PLATE_C_GRADI_CENT>=55)
 		{
-			// Se STP è maggiore di 38 gradi per 4 minuti --> allarme
-			if (timerCounterT1Test >= 2400)
+			// Se STP è maggiore di 55 gradi per 4 minuti --> allarme
+			if (timerCounterT1Test >= 4800)
 			{
-				// la temperatura non è ancora scesa dopo due minuti vado in allarme
+				// la temperatura non è ancora scesa dopo vado in allarme
 				currentGuard[GUARD_ENABLE_T1_ALARM].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
-				DebugStringStr("alarm from chk heater");
-				timerCounterT1Test=0;
-				testT1HeatFridge=0;
-				protectiveOn=0;
+				DebugStringStr("alarm from chk heater, state 4");
+				timerCounterT1Test = 0;
+				testT1HeatFridge = 0;
+				protectiveOn = 0;
 			}
 			break;
 		}
+		//Finchè la temperatura è maggiore di 55 gradi non proseguo
 
-		// Facciamo partire il riscaldatore
+		// Ora facciamo partire veramente il riscaldatore,
 		// imposto questo parametro per far partire l'algoritmo
-		if (T_PLATE_C_GRADI_CENT> sensorIR_TM[1].tempSensValue)
+		if (T_PLATE_C_GRADI_CENT > sensorIR_TM[1].tempSensValue)
 		{
 			//Se la piastra ha una temperatura superiore a quella misurata da STA
 			//Target = PIASTRA + 5 gradi
 			parameterWordSetFromGUI[PAR_SET_PRIMING_TEMPERATURE_PERFUSION].value=(word)((T_PLATE_C_GRADI_CENT + 5)*10);
-			t1TestTempPartenza=T_PLATE_C_GRADI_CENT;	// salvo la temperatura di partenza
+			t1TestTempPartenza = T_PLATE_C_GRADI_CENT;	// salvo la temperatura di partenza
 		}
 		else
 		{
 			//Se la piastra ha una temperatura inferiore a quella misurata da STA
 			//Target = STA + 5 gradi
 			parameterWordSetFromGUI[PAR_SET_PRIMING_TEMPERATURE_PERFUSION].value=(word)((sensorIR_TM[1].tempSensValue + 5)*10);
-			t1TestTempPartenza=sensorIR_TM[1].tempSensValue;	// salvo la temperatura di partenza
+			t1TestTempPartenza = sensorIR_TM[1].tempSensValue;	// salvo la temperatura di partenza
 		}
 		EnableHeating();	// faccio partire il riscaldatore
 		t1Test_heater = 5;
@@ -7498,14 +7503,14 @@ void manageParentT1Heater(void)
 			t1Test_heater = 6;
 			timerCounterT1Test = 0;
 		}
-		/* altrimenti aspetto 5 secondi prima di andare in allarme, per dare il tempo al controllo del riscaldatore di partire */
-		else if (timerCounterT1Test > 500)
+		/* altrimenti aspetto 10 secondi prima di andare in allarme, per dare il tempo al controllo del riscaldatore di partire */
+		else if (timerCounterT1Test > 200) //10 sec
 		{
 			//Allarme: controllo del riscaldamento non partito
 			currentGuard[GUARD_ENABLE_T1_ALARM].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
-			DebugStringStr("alarm from chk heater");
-			testT1HeatFridge=0;
-			protectiveOn=0;
+			DebugStringStr("alarm from chk heater, state 5");
+			testT1HeatFridge = 0;
+			protectiveOn = 0;
 		}
 		break;
 	case 6:
@@ -7521,10 +7526,10 @@ void manageParentT1Heater(void)
 		else
 		{
 			// Trascorre un minuto senza avere un incremento di almeno 3 gradi --> allarme
-			if (timerCounterT1Test>6000)
+			if (timerCounterT1Test > 1200) //60 sec
 			{
 				currentGuard[GUARD_ENABLE_T1_ALARM].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
-				DebugStringStr("alarm from chk heater");
+				DebugStringStr("alarm from chk heater, state 6");
 				timerCounterT1Test = 0;
 				DisableHeating();
 				testT1HeatFridge = 0;
@@ -7543,45 +7548,55 @@ void manageParentT1Heater(void)
 			tempMaxHeatPlate = T_PLATE_C_GRADI_CENT;    // imposto il max
 			timerCounterT1Test = 0;
 		}
-		/* altrimenti aspetto 5 secondi prima di andare in allarme, per dare il tempo al controllo del riscaldatore di fermarsi */
-		else if (timerCounterT1Test > 500)
+		/* altrimenti aspetto 10 secondi prima di andare in allarme, per dare il tempo al controllo del riscaldatore di fermarsi */
+		else if (timerCounterT1Test > 200)
 		{
 			// non si è fermato - errore
 			currentGuard[GUARD_ENABLE_T1_ALARM].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
-			DebugStringStr("alarm from chk heater");
+			DebugStringStr("alarm from chk heater, state 7");
 			timerCounterT1Test = 0;
 			testT1HeatFridge = 0;
 			protectiveOn = 0;
 		}
 		break;
 	case 8:
-		// prendo il massimo di temperatura e quando la temperatura scende sotto il massimo - 2 gradi allora il test è passato
-		if (T_PLATE_C_GRADI_CENT>tempMaxHeatPlate)
+		// prendo il massimo di temperatura, per inerzia termica è possibile che il valore massimo tenda ancora a salire.
+		// Allora monitoro la temperatura per 30 secondi
+		if (T_PLATE_C_GRADI_CENT > tempMaxHeatPlate)
 		{
-			//Aggiorno il massimo, potrei avere anche una inerzia termica, l'importante è che veda poi la discesa
-			tempMaxHeatPlate=T_PLATE_C_GRADI_CENT;
+			//Aggiorno il massimo, potrei avere anche una inerzia termica
+			tempMaxHeatPlate = T_PLATE_C_GRADI_CENT;
 		}
 
-		// verifico che la temperatura cali di circa 2 gradi
-		if (T_PLATE_C_GRADI_CENT <= tempMaxHeatPlate - 2)
+		//Attendo 30 secondi con heater spento, al termine avrò trovato il massimo o comunque un valore molto prossimo al massimo
+		if (timerCounterT1Test > 600)
 		{
-	      	FrigoHeatTempControlTaskNewPID((LIQ_TEMP_CONTR_TASK_CMD)LIQ_T_CONTR_TASK_RESET_CMD);
-	      	t1Test_heater = 9;
+			t1Test_heater = 81;
+			timerCounterT1Test = 0;
+		}
+		break;
+
+	case 81:
+		// verifico che la temperatura non salga di due gradi
+		if (T_PLATE_C_GRADI_CENT >= tempMaxHeatPlate + 2)
+		{
+			// se ciò avviene, vado in allarme
+			currentGuard[GUARD_ENABLE_T1_ALARM].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+			DebugStringStr("alarm from chk heater, state 81");
+			timerCounterT1Test = 0;
+			testT1HeatFridge = 0;
+			protectiveOn = 0;
 		}
 		else
 		{
-			// Non vedo scendere la temperatura --> allarme
-			if (timerCounterT1Test > 7200)
+			// Se dopo 90 secondi non ho visto salire la temperatura, considero il test OK
+			if (timerCounterT1Test > 1800)
 			{
-				// dopo tre minuti se la temperatura non scende sotto il limite vado in allarme
-				currentGuard[GUARD_ENABLE_T1_ALARM].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
-				DebugStringStr("alarm from chk heater");
-				timerCounterT1Test = 0;
-				testT1HeatFridge = 0;
-				protectiveOn = 0;
+				//Resetto il controllo
+		      	FrigoHeatTempControlTaskNewPID((LIQ_TEMP_CONTR_TASK_CMD)LIQ_T_CONTR_TASK_RESET_CMD);
+		      	t1Test_heater = 9;
 			}
 		}
-
 		break;
 	case 9:
 		// il test è finito correttamente
@@ -7663,8 +7678,8 @@ void manageParentT1Fridge(void)
 		parameterWordSetFromGUI[PAR_SET_PRIMING_TEMPERATURE_PERFUSION].value=(word)((sensorIR_TM[1].tempSensValue - 7) * 10);
 		t1TestTempPartenza = sensorIR_TM[1].tempSensValue;	// salvo la temperatura di partenza e prendo la temperatura STA in modo che la piastra vada sotto
 		EnableFrigo();	// faccio partire il controllo del raffreddamento
-		t1Test_Frigo=1;
-		timerCounterT1Test=0;
+		t1Test_Frigo = 1;
+		timerCounterT1Test = 0;
 
 		break;
 	case 1:
@@ -7674,8 +7689,8 @@ void manageParentT1Fridge(void)
 			t1Test_Frigo = 2;
 			timerCounterT1Test = 0;
 		}
-		/* altrimenti aspetto 5 secondi prima di andare in allarme, per dare il tempo al controllo del frigo di partire */
-		else if (timerCounterT1Test>500)
+		/* altrimenti aspetto 10 secondi prima di andare in allarme, per dare il tempo al controllo del frigo di partire */
+		else if (timerCounterT1Test > 100)
 		{
 			currentGuard[GUARD_ENABLE_T1_ALARM].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
 			DebugStringStr("alarm from chk fridge");
@@ -7697,7 +7712,7 @@ void manageParentT1Fridge(void)
 		else
 		{
 			//Attesa 2 minuti, e se la temperatura non scende posso proseguire
-			if (timerCounterT1Test > 1200)
+			if (timerCounterT1Test > 2400)
 			{
 				DisableFrigo();
 				StopFrigo();
@@ -7708,7 +7723,7 @@ void manageParentT1Fridge(void)
 
 		break;
 	case 3:
-		//Check controllo del firgo
+		//Check controllo del frigo
 		ltcts = FrigoHeatTempControlTaskNewPID((LIQ_TEMP_CONTR_TASK_CMD)READ_STATE_CMD);
 		if (ltcts == LIQ_T_CONTR_FRIGO_STOPPED)
 		{
@@ -7718,20 +7733,18 @@ void manageParentT1Fridge(void)
 			timerCounterT1Test = 0;
 			timerCounterT1TestFridge = 0;
 			counterFridgeStability = 0;
-			tempFridgePlate = T_PLATE_C_GRADI_CENT;
 			protectiveOn = 1;
 		}
-		/* altrimenti aspetto 5 secondi prima di andare in allarme, per dare il tempo al controllo del frigo di fermarsi */
-		else if (timerCounterT1Test>500)
+		/* altrimenti aspetto 10 secondi prima di andare in allarme, per dare il tempo al controllo del frigo di fermarsi */
+		else if (timerCounterT1Test > 200)
 		{
 			// non si è fermato - errore
 			currentGuard[GUARD_ENABLE_T1_ALARM].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
 			DebugStringStr("alarm from chk fridge");
-			timerCounterT1Test=0;
-			timerCounterT1TestFridge=0;
-			testT1HeatFridge=0;
+			timerCounterT1Test = 0;
+			timerCounterT1TestFridge = 0;
+			testT1HeatFridge = 0;
 		}
-
 		break;
 
 	case 4:
@@ -7739,9 +7752,9 @@ void manageParentT1Fridge(void)
 		// imposto questo parametro per far partire l'algoritmo
 		parameterWordSetFromGUI[PAR_SET_PRIMING_TEMPERATURE_PERFUSION].value=(word)((sensorIR_TM[1].tempSensValue-7)*10);
 		t1TestTempPartenza=sensorIR_TM[1].tempSensValue;	// salvo la temperatura di partenza e prendo la temperatura ambiente in modo che la piastra vada sotto
-		EnableFrigo();	// faccio partire il riscaldatore
-		t1Test_Frigo=5;
-		timerCounterT1Test=0;
+		EnableFrigo();	// faccio partire il raffreddamento
+		t1Test_Frigo = 5;
+		timerCounterT1Test = 0;
 
 		break;
 	case 5:
@@ -7749,11 +7762,11 @@ void manageParentT1Fridge(void)
 		if (IsFrigo())
 		{
 			// ok, il controllo del raffreddamento è partito
-			t1Test_Frigo=6;
-			timerCounterT1Test=0;
+			t1Test_Frigo = 6;
+			timerCounterT1Test = 0;
 		}
-		/* altrimenti aspetto 5 secondi prima di andare in allarme, per dare il tempo al controllo del frigo di partire */
-		else if (timerCounterT1Test>500)
+		/* altrimenti aspetto 10 secondi prima di andare in allarme, per dare il tempo al controllo del frigo di partire */
+		else if (timerCounterT1Test > 200)
 		{
 			currentGuard[GUARD_ENABLE_T1_ALARM].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
 			DebugStringStr("alarm from chk fridge");
@@ -7774,8 +7787,8 @@ void manageParentT1Fridge(void)
 		}
 		else
 		{
-			//Attendo al massimo un minuto
-			if (timerCounterT1Test>6000)
+			//Attendo al massimo 90 secondi
+			if (timerCounterT1Test > 1800)
 			{
 				// se non scende la temperatura vado in allarme
 				currentGuard[GUARD_ENABLE_T1_ALARM].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
@@ -7799,55 +7812,60 @@ void manageParentT1Fridge(void)
 			timerCounterT1Test = 0;
 			timerCounterT1TestFridge = 0;
 			counterFridgeStability = 0;
-			tempFridgePlate = T_PLATE_C_GRADI_CENT;
+			tempMinFridgePlate = T_PLATE_C_GRADI_CENT;
 		}
-		/* altrimenti aspetto 5 secondi prima di andare in allarme, per dare il tempo al controllo del frigo di fermarsi */
-		else if (timerCounterT1Test > 500)
+		/* altrimenti aspetto 10 secondi prima di andare in allarme, per dare il tempo al controllo del frigo di fermarsi */
+		else if (timerCounterT1Test > 200)
 		{
-			// non si è fermato - errore
+			// se non scende la temperatura vado in allarme
 			currentGuard[GUARD_ENABLE_T1_ALARM].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
 			DebugStringStr("alarm from chk fridge");
 			timerCounterT1Test=0;
-			timerCounterT1TestFridge=0;
+			DisableFrigo();
 			testT1HeatFridge=0;
 			protectiveOn=0;
 		}
 
 		break;
-	case 8:
-		// calcolo il minimo della temperatura - se la temperatura comincia a risalire e quindi il minimo non viene più aggiornato
-		// allora dopo 3 minuti di questo andamento il test lo ritengo concluso
-		if (timerCounterT1TestFridge >= 600)
-		{
-			// una volta al secondo vado a vedere l'andamento della temperatura
-			timerCounterT1TestFridge=0;
-			if (T_PLATE_C_GRADI_CENT < tempFridgePlate)
-			{
-				// la temperatura continua a scendere
-				tempFridgePlate=T_PLATE_C_GRADI_CENT;
-				counterFridgeStability=0;
-			}
-			else
-			{
-				counterFridgeStability++;
-			}
 
-			if (counterFridgeStability >= 6)
-			{
-				// Filippo - cambio funzione per gestire nuovo PID che usa frigo e riscaldatore insieme
-		      	FrigoHeatTempControlTaskNewPID((LIQ_TEMP_CONTR_TASK_CMD)LIQ_T_CONTR_TASK_RESET_CMD);
-		      	t1Test_Frigo=9;
-			}
+	case 8:
+		// prendo il minimo di temperatura, per inerzia termica è possibile che il valore minimo tenda ancora a scendere.
+		// Allora monitoro la temperatura per 60 secondi
+		if (T_PLATE_C_GRADI_CENT < tempMinFridgePlate)
+		{
+			//Aggiorno il minimo, potrei avere anche una inerzia termica
+			tempMinFridgePlate = T_PLATE_C_GRADI_CENT;
 		}
 
-		if (timerCounterT1Test >= 12000)
+		//Attendo 60 secondi con frigo spento, se il frigo si è arrestato correttamente al termine avrò trovato il minimo o comunque un valore molto prossimo al minimo
+		if (timerCounterT1Test > 1200)
 		{
-			// se dopo due minuti la temperatura piastra ha continuato a diminuire allora vado in allarme
+			t1Test_Frigo = 81;
+			timerCounterT1Test = 0;
+		}
+		break;
+
+	case 81:
+		// verifico che la temperatura non scenda di altri tre gradi
+		if (T_PLATE_C_GRADI_CENT <= (tempMinFridgePlate - 3))
+		{
+			// se ciò avviene, vado in allarme
 			currentGuard[GUARD_ENABLE_T1_ALARM].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
 			DebugStringStr("alarm from chk fridge");
 			timerCounterT1Test=0;
+			DisableFrigo();
 			testT1HeatFridge=0;
 			protectiveOn=0;
+		}
+		else
+		{
+			// Se dopo 90 secondi non ho visto scendere la temperatura, considero il test OK
+			if (timerCounterT1Test > 1800)
+			{
+				//Resetto il controllo
+		      	FrigoHeatTempControlTaskNewPID((LIQ_TEMP_CONTR_TASK_CMD)LIQ_T_CONTR_TASK_RESET_CMD);
+		      	t1Test_Frigo = 9;
+			}
 		}
 		break;
 	case 9:
