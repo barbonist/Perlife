@@ -184,6 +184,9 @@ typedef struct elementActiveListWrn sActiveListWrnS;
 #define DELTA_TARGET_FLOW_DEP_LIVER							50 // ml/min
 #define DELTA_TARGET_FLOW_ART_KIDNEY						50 // ml/min
 
+#define TUBE_ART_DISCONNECTED_PRESS		4 //mmHg
+#define TUBE_VEN_DISCONNECTED_PRESS     4 //mmHg
+
 // Allarmi pressione ossigenatore [mmHg]
 #define PR_OXYG_HIGH                                        500
 #define PR_OXYG_LOW                                          10

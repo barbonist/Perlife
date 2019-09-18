@@ -1543,7 +1543,7 @@ void manageCheckConnectionTubeArtSensPress(void)
 	if (GlobalFlags.FlagsDef.EnableArtPressDisconnect)
 	{
 		/*attivo l'allarme se la pompa arteriosa sta girando e la pressione sta sotto 10 mmHg*/
-		if (PR_ART_mmHg_Filtered < 10 && modbusData[0][17] != 0)
+		if (PR_ART_mmHg_Filtered < TUBE_ART_DISCONNECTED_PRESS && modbusData[0][17] != 0)
 		{
 			alarmList[TUBE_ART_DISCONNECTED].physic = PHYSIC_TRUE;
 		}
@@ -1593,7 +1593,7 @@ void manageCheckConnectionTubeVenSensPress(void)
 	if (GlobalFlags.FlagsDef.EnableVenPressDisconnect)
 	{
 		/*attivo l'allarme se la pompa arteriosa sta girando e la pressione sta sotto 10 mmHg*/
-		if (PR_VEN_mmHg_Filtered < 10 && modbusData[2][17] != 0 && modbusData[3][17] != 0)
+		if (PR_VEN_mmHg_Filtered < TUBE_VEN_DISCONNECTED_PRESS && modbusData[2][17] != 0 && modbusData[3][17] != 0)
 		{
 			alarmList[TUBE_VEN_DISCONNECTED].physic = PHYSIC_TRUE;
 		}
