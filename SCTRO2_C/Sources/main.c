@@ -674,7 +674,7 @@ int main(void)
 	        	CalcAlarmActive();
 
 	        	alarmEngineAlways();
-
+	        	CalcNewFluidLevel();
 
 	        	CalcWarningActive();
 	        	WarningEngineAlways();

@@ -1608,19 +1608,17 @@ void setGUIButton(unsigned char buttonId)
 		if (PR_VEN_TARA_mmHg < 0)
 			PR_VEN_TARA_mmHg = 0;
 
-		/*nella variabile Soglia_minima_ADC_allarme_Livello metto il valore di ADC minimo in odo che
-		 * se PR_LEVEL_ADC_Filtered scende sotto questo valore per 30 sec di fila do un allarme*/
-		/*calcolo il delta di ADC tra prima e dopo il preiming*/
-		Soglia_minima_ADC_allarme_Livello = PR_LEVEL_ADC_Filtered - Soglia_minima_ADC_allarme_Livello;
+		Soglia_minima_ADC_allarme_Livello = (signed long int)PR_LEVEL_ADC_Filtered - SogliaVaschettaVuotaADC;
 		/*su questo delta calcolo la percentuale al di sotto della quale dare allarme*/
 		Soglia_minima_ADC_allarme_Livello = Soglia_minima_ADC_allarme_Livello * Percentuale_Massima_perdita_liquido;
 		/*Se dopo il calcolo dela percentuale ottengo un valore di ADC inferiore a SOGLIA_ADC_MINIMA, lo blocco a SOGLIA_ADC_MINIMA*/
 		if (Soglia_minima_ADC_allarme_Livello < SOGLIA_ADC_MINIMA)
 			Soglia_minima_ADC_allarme_Livello = SOGLIA_ADC_MINIMA;
 		/*trovato il valore percentuale di ADC calcolo la soglia minima di ADC rispetto al valore di ADC dopo il priming*/
-		Soglia_minima_ADC_allarme_Livello = PR_LEVEL_ADC_Filtered - Soglia_minima_ADC_allarme_Livello;
+		Soglia_minima_ADC_allarme_Livello = (signed long int)PR_LEVEL_ADC_Filtered - Soglia_minima_ADC_allarme_Livello;
 
 		TARA_PRESS_DONE = TRUE;
+		TARA_LIVELLO_DONE = TRUE;
 	}
 
 //BSW8 START:

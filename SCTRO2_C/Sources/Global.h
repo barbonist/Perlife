@@ -1140,11 +1140,13 @@ int  PR_VEN_Med_mmHg_ORG;			//variabile globale per il valore medio in mmHg del 
 int PR_VEN_TARA_mmHg;			//variabile globale che serve a fare la tara di pressione dopo la connessione dell'organo, all'inizio del trattamento
 int PR_ART_TARA_mmHg;			//variabile globale che serve a fare la tara di pressione dopo la connessione dell'organo, all'inizio del trattamento
 bool TARA_PRESS_DONE;
+bool TARA_LIVELLO_DONE;
 
 /*flag che tiene traccia della pressione del tasto di stop sia in trattamento che in priming---serve pèer la corretta gestione della procedura di sbollamento*/
 bool ButtonStopPressed;
 
-word Soglia_minima_ADC_allarme_Livello;
+signed long int Soglia_minima_ADC_allarme_Livello;
+signed long int SogliaVaschettaVuotaADC;
 #define Percentuale_Massima_perdita_liquido 0.4f //con 0.4 accetto una perdita del liquido non superiore al 40% oltre la quale andrò in allarme
 #define SOGLIA_ADC_MINIMA					650  //soglia minima di decremento rispetto al valore ADC frezato dopo il riempimento RESERVOIRE
 

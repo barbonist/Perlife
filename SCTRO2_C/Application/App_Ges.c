@@ -6367,7 +6367,7 @@ void processMachineState(void)
 
 				/*faccio la tara degli ADC del sensore di livello per sapere *
                  * quanti ADC ho con tubo connesso ma senza liquido inserito nel reservoire*/
-				Soglia_minima_ADC_allarme_Livello = PR_LEVEL_ADC_Filtered;
+				SogliaVaschettaVuotaADC = PR_LEVEL_ADC_Filtered;
 			}
 
 //TODO da aggiungere l'eventuale tasto di abbandona che porta in somontaggio e non in svuotamento

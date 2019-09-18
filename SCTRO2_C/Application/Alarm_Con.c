@@ -101,7 +101,7 @@ typeAlarmS alarmList[] =
    {CODE_ALARM_PUMP_OXY_COVER_OPEN,   PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH,    0,  100, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, FALSE},
 
    // Allarme livello BASSO
-   {CODE_ALARM_TANK_LEVEL_LOW,        PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH,30000,30000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, FALSE},
+   {CODE_ALARM_TANK_LEVEL_LOW,        PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH,30000,30000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, TRUE},
 
    // Allarme livello ALTO (NON USATO AL MOMENTO)
    {CODE_ALARM_TANK_LEVEL_HIGH,       PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACT_WAIT_CMD, PRIORITY_HIGH,  500,  500, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, FALSE},
@@ -1212,7 +1212,7 @@ void manageAlarmDeltaTempRecVen(void)
 void manageAlarmLiquidLevelLow(void)
 {
 	/*controllo l'alamre solo se ho calcolato la soglia Soglia_minima_ADC_allarme_Livello*/
-	if (GlobalFlags.FlagsDef.EnableLevLowAlarm && TARA_PRESS_DONE)
+	if (GlobalFlags.FlagsDef.EnableLevLowAlarm && TARA_LIVELLO_DONE)
 	{
 		//if(LiquidAmount <= MIN_LIQUID_LEV_IN_PERC)
 		if (PR_LEVEL_ADC_Filtered <= Soglia_minima_ADC_allarme_Livello)
@@ -3369,4 +3369,45 @@ void alarmManageNull(void)
 {
 	currentGuard[GUARD_ALARM_ACTIVE].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
 	manageAlarmChildGuard(GetCurrentAlarmActiveListAlm()); //Gestisce le sicurezze associate all'allarme
+}
+
+// Usato per gestire l'aggiornamento della tara di livello liquido
+void CalcNewFluidLevel(void)
+{
+	typeAlarmS *alarmPtr = 0;
+
+	bool levelAlarmStatus;
+	static bool oldLevelAlarmStatus = FALSE;
+
+	//puntatore all'allarme di livello basso
+	alarmPtr = &alarmList[LIQUID_LEVEL_LOW];
+
+	//l'allarme LEVEL LOW è presente nella lista degli allarmi attivi?
+	levelAlarmStatus = AlarmPresentInActiveListAlm(alarmPtr);
+
+	//L'allarme si è attivato?
+	if (levelAlarmStatus == TRUE && oldLevelAlarmStatus == FALSE)
+	{
+		//Cancello il flag per la tara della pressione di livello, andrà rifatta
+		TARA_LIVELLO_DONE = FALSE;
+	}
+
+	// Viceversa, l'allarme è stato rimosso?
+	if (levelAlarmStatus == FALSE && oldLevelAlarmStatus == TRUE)
+	{
+		// rifaccio la tara di livello
+
+		//Soglia minima = LIVELLO ATTUALE - livello vaschetta vuota, fatto prima del priming
+		Soglia_minima_ADC_allarme_Livello = (signed long int)PR_LEVEL_ADC_Filtered - SogliaVaschettaVuotaADC;
+		/*su questo delta calcolo la percentuale al di sotto della quale dare allarme*/
+		Soglia_minima_ADC_allarme_Livello = Soglia_minima_ADC_allarme_Livello * Percentuale_Massima_perdita_liquido;
+		/*Se dopo il calcolo dela percentuale ottengo un valore di ADC inferiore a SOGLIA_ADC_MINIMA, lo blocco a SOGLIA_ADC_MINIMA*/
+		if (Soglia_minima_ADC_allarme_Livello < SOGLIA_ADC_MINIMA)
+			Soglia_minima_ADC_allarme_Livello = SOGLIA_ADC_MINIMA;
+		/*trovato il valore percentuale di ADC calcolo la soglia minima di ADC rispetto al valore di ADC dopo il priming*/
+		Soglia_minima_ADC_allarme_Livello = (signed long int)PR_LEVEL_ADC_Filtered - Soglia_minima_ADC_allarme_Livello;
+		TARA_LIVELLO_DONE = TRUE;
+	}
+
+	oldLevelAlarmStatus = levelAlarmStatus;
 }

@@ -308,6 +308,9 @@ void manageAlarmPhysicUFlowSensVen(void);
 //void DebugStringStr(char *s);
 //void DebugStringPID();
 
+// Gestione della tara di livello basso 
+void CalcNewFluidLevel(void);
+
 void Buzzer_Management(BUZZER_LEVEL level);
 void manageAlarmCoversPumpLiver(void);
 void manageAlarmCoversPumpKidney(void);
