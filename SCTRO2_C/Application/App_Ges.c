@@ -6302,30 +6302,40 @@ void processMachineState(void)
 
 		TARA_PRESS_DONE = FALSE;
 
-		/* compute future state */
-		if((currentGuard[GUARD_ENABLE_SELECT_TREAT_PAGE].guardValue == GUARD_VALUE_TRUE))
+		if (EMERGENCY_BUTTON_ACTIVATION_PC)
 		{
-			currentGuard[GUARD_ENABLE_SELECT_TREAT_PAGE].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
-			/* (FM) HO RICEVUTO UN COMANDO (DA TASTIERA O SERIALE) CHE MI CHIEDE DI ENTRARE NELLO STATO DI
-			   SELEZIONE DEL TRATTAMENTO */
-
-			/* compute future state */
-			// provvisoriamente per provare il pid passo direttamente allo stato di trattamento con il tasto 3
-			// della tastiera a bolle
-			//ptrFutureState = &stateState[17];
-
-			// Passo direttamente allo stato mounting disposable senza passare per STATE_SELECT_TREAT
-			// perche' il trattamento e' gia' stato selezionato.
-			ptrFutureState = &stateState[9];
-			/* compute future parent */
-			ptrFutureParent = ptrFutureState->ptrParent;
-			/* compute future child */
-			ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
-			DebugStringStr("STATE_MOUNTING_DISP");
+			//Sono arrivato qui a causa della pressione del tasto di STOP
+			//Fermo tutto, l'unica possibilità è lo spegnimento macchina
+			  EN_Clamp_Control(DISABLE);
+			  EN_Motor_Control(DISABLE);
 		}
-		/* execute function state level */
-		// (FM) DOPO LA PRIMA VOLTA PASSA AUTOMATICAMENTE NELLO STATO IDLE,ACTION_ALWAYS
-		manageStateEntryAndStateAlways(4);
+		else
+		{
+			/* compute future state */
+			if((currentGuard[GUARD_ENABLE_SELECT_TREAT_PAGE].guardValue == GUARD_VALUE_TRUE))
+			{
+				currentGuard[GUARD_ENABLE_SELECT_TREAT_PAGE].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
+				/* (FM) HO RICEVUTO UN COMANDO (DA TASTIERA O SERIALE) CHE MI CHIEDE DI ENTRARE NELLO STATO DI
+				   SELEZIONE DEL TRATTAMENTO */
+
+				/* compute future state */
+				// provvisoriamente per provare il pid passo direttamente allo stato di trattamento con il tasto 3
+				// della tastiera a bolle
+				//ptrFutureState = &stateState[17];
+
+				// Passo direttamente allo stato mounting disposable senza passare per STATE_SELECT_TREAT
+				// perche' il trattamento e' gia' stato selezionato.
+				ptrFutureState = &stateState[9];
+				/* compute future parent */
+				ptrFutureParent = ptrFutureState->ptrParent;
+				/* compute future child */
+				ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
+				DebugStringStr("STATE_MOUNTING_DISP");
+			}
+			/* execute function state level */
+			// (FM) DOPO LA PRIMA VOLTA PASSA AUTOMATICAMENTE NELLO STATO IDLE,ACTION_ALWAYS
+			manageStateEntryAndStateAlways(4);
+		}
 
 	//	DebugStringStr("reach idle state");
 		break;
@@ -7306,7 +7316,6 @@ void Manage_Emergency_Button(void)
 				else
 				{
 					Status_Emergency_Button = 0;
-					EMERGENCY_BUTTON_ACTIVATION_PC = FALSE;
 					timer_button = timerCounterModBus;
 				}
 			}

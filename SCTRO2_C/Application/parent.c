@@ -1862,7 +1862,16 @@ void ParentFuncT1Test(void)
 		}
 	}
 
+	//ShortCut
+	if (EMERGENCY_BUTTON_ACTIVATION_PC)
+	{
+		//Forzo una transizione allo stato di fine T1
+		currentGuard[GUARD_ENABLE_T1_END].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
 
+		ptrFutureParent = &stateParentT1TNoDisposable[23];
+		ptrFutureChild = ptrFutureParent->ptrChild;
+		DebugStringStr("emergency stop");
+	}
 
 #endif
 }
