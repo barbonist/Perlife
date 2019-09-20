@@ -253,7 +253,7 @@ void verificaTempPlate(void)
 
 #define VERS_1 1
 #define VERS_2 2
-#define VERS_3 4
+#define VERS_3 5
 
 #endif
 uint16_t GetFwVersionProtective(void)
@@ -503,6 +503,10 @@ int main(void)
 		-- SB command for temperature calibration
 		-- SB command to enable & disable pumps and pinchs
 		-- SB in T1Test Control can send commands to protective for enable and power on off test.
+	Versione 1.2.500
+		-- SB solved bug causing all check performed also during T1 test and priming phases. Check during T1 test have not to be done
+		-- SB during T1 test , pumps speed match test should not be performed
+
   */
 
 

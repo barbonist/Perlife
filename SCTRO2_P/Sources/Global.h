@@ -12,7 +12,7 @@
 typedef unsigned short	word;
 
 
-#define PROTECTIVE_SLEEPS
+// #define PROTECTIVE_SLEEPS
 
 /* Syncronization flag */
 char	iflag_pc_rx;
@@ -151,6 +151,8 @@ unsigned char CHANGE_ADDRESS_IR_SENS;
 #define T_SESOR_VEN_REAL_HIGH_DEF	 30.0f
 
 #define STATE_TREATMENT	9
+#define STATE_T1TEST 4
+
 
 struct funcRetStruct
 {
