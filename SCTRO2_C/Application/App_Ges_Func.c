@@ -917,7 +917,7 @@ bool Start_Frigo_AMSNewPID(float DeltaT,unsigned char spegniFrigo)
 	    }
 	    SetFan(FALSE);
 	}
-	else if (power != power_old)
+	else if ((power != power_old) || (testT1HeatFridge))
 	{
 		Enable_AMS = TRUE;
 		/* a power = 10 corrisponde la massima frequenza pari
@@ -930,7 +930,8 @@ bool Start_Frigo_AMSNewPID(float DeltaT,unsigned char spegniFrigo)
 	    SetFan(TRUE);
 	}
 
-	power_old = power;
+
+		power_old = power;
 
 	return StartFlag;
 }
@@ -1056,7 +1057,7 @@ void HeatingPwmDebug(int Perc)
 
 
 
-	if(OldPerc != Perc)
+	if ((OldPerc != Perc) || (testT1HeatFridge))
 	{
 		OldPerc = Perc;
 		if(Perc == 100 && T_PLATE_C_GRADI_CENT < MAX_PLATE_TEMP)

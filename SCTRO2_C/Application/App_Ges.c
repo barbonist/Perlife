@@ -7402,7 +7402,7 @@ void manageParentT1Heater(void)
 		else if (timerCounterT1Test > 200)
 		{
 			currentGuard[GUARD_ENABLE_T1_ALARM].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
-			DebugStringStr("alarm from chk heater");
+			DebugStringStr("alarm from chk heater, state 1");
 			testT1HeatFridge = 0;
 			protectiveOn = 0;
 		}
@@ -7526,7 +7526,7 @@ void manageParentT1Heater(void)
 		else
 		{
 			// Trascorre un minuto senza avere un incremento di almeno 3 gradi --> allarme
-			if (timerCounterT1Test > 1200) //60 sec
+			if (timerCounterT1Test > 2400) //120 sec
 			{
 				currentGuard[GUARD_ENABLE_T1_ALARM].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
 				DebugStringStr("alarm from chk heater, state 6");
@@ -7693,7 +7693,7 @@ void manageParentT1Fridge(void)
 		else if (timerCounterT1Test > 100)
 		{
 			currentGuard[GUARD_ENABLE_T1_ALARM].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
-			DebugStringStr("alarm from chk fridge");
+			DebugStringStr("alarm from chk fridge, state 1");
 			testT1HeatFridge=0;
 		}
 
@@ -7703,7 +7703,7 @@ void manageParentT1Fridge(void)
 		if (T_PLATE_C_GRADI_CENT <= (t1TestTempPartenza - 3))
 		{
 			currentGuard[GUARD_ENABLE_T1_ALARM].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
-			DebugStringStr("alarm from chk fridge");
+			DebugStringStr("alarm from chk fridge, state 2");
 			timerCounterT1Test = 0;
 			DisableFrigo();
 			testT1HeatFridge = 0;
@@ -7740,7 +7740,7 @@ void manageParentT1Fridge(void)
 		{
 			// non si è fermato - errore
 			currentGuard[GUARD_ENABLE_T1_ALARM].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
-			DebugStringStr("alarm from chk fridge");
+			DebugStringStr("alarm from chk fridge, state 3");
 			timerCounterT1Test = 0;
 			timerCounterT1TestFridge = 0;
 			testT1HeatFridge = 0;
@@ -7769,7 +7769,7 @@ void manageParentT1Fridge(void)
 		else if (timerCounterT1Test > 200)
 		{
 			currentGuard[GUARD_ENABLE_T1_ALARM].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
-			DebugStringStr("alarm from chk fridge");
+			DebugStringStr("alarm from chk fridge, state 5");
 			testT1HeatFridge=0;
 			protectiveOn=0;
 		}
@@ -7792,7 +7792,7 @@ void manageParentT1Fridge(void)
 			{
 				// se non scende la temperatura vado in allarme
 				currentGuard[GUARD_ENABLE_T1_ALARM].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
-				DebugStringStr("alarm from chk fridge");
+				DebugStringStr("alarm from chk fridge, state 6");
 				timerCounterT1Test=0;
 				DisableFrigo();
 				testT1HeatFridge=0;
@@ -7819,7 +7819,7 @@ void manageParentT1Fridge(void)
 		{
 			// se non scende la temperatura vado in allarme
 			currentGuard[GUARD_ENABLE_T1_ALARM].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
-			DebugStringStr("alarm from chk fridge");
+			DebugStringStr("alarm from chk fridge, state 7");
 			timerCounterT1Test=0;
 			DisableFrigo();
 			testT1HeatFridge=0;
@@ -7851,7 +7851,7 @@ void manageParentT1Fridge(void)
 		{
 			// se ciò avviene, vado in allarme
 			currentGuard[GUARD_ENABLE_T1_ALARM].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
-			DebugStringStr("alarm from chk fridge");
+			DebugStringStr("alarm from chk fridge, state 81");
 			timerCounterT1Test=0;
 			DisableFrigo();
 			testT1HeatFridge=0;
