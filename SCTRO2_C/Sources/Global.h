@@ -25,7 +25,7 @@
 	 * 0x080E --> 1.0.14 *0x080F --> 1.0.15 *0x0810 --> 1.0.16 *0x0811 --> 1.0.17 *0x0812 --> 1.0.18 *0x0813 --> 1.0.19 *0x0814 --> 1.0.20
 	 * 0x0815 --> 1.0.21 *0x0816 --> 1.0.22 *0x0817 --> 1.0.23 *0x0818 --> 1.0.24*/
 
-#define REVISION_FW_CONTROL 0x0819
+#define REVISION_FW_CONTROL 0x081A
 
 /* Syncronization flag */
 char	iflag_pc_rx;
