@@ -149,7 +149,7 @@ float Ir_Measured_Temperature_correction(int index_array)
 
 {
 	float MeasuredTemp;
-	float E5;  // error at 5 degrees
+	float E8;  // error at 8 degrees
 	float E30; //error at 30 degrees
 	float a,b,Err;
 
@@ -158,26 +158,30 @@ float Ir_Measured_Temperature_correction(int index_array)
     switch(index_array)
     {
 		case 0:
-			E5 = config_data.T_sensor_ART_Meas_Low - config_data.T_sensor_ART_Real_Low;
+			E8 = config_data.T_sensor_ART_Meas_Low - config_data.T_sensor_ART_Real_Low;
 			E30 =  config_data.T_sensor_ART_Meas_High - config_data.T_sensor_ART_Real_High;
 			break;
 
 		case 1:
-			E5 = config_data.T_sensor_RIC_Meas_Low - config_data.T_sensor_RIC_Real_Low;
+			E8 = config_data.T_sensor_RIC_Meas_Low - config_data.T_sensor_RIC_Real_Low;
 			E30 =  config_data.T_sensor_RIC_Meas_High - config_data.T_sensor_RIC_Real_High;
 			break;
 
 		case 2:
-			E5 = config_data.T_sensor_VEN_Meas_Low - config_data.T_sensor_VEN_Real_Low;
+			E8 = config_data.T_sensor_VEN_Meas_Low - config_data.T_sensor_VEN_Real_Low;
 			E30 =  config_data.T_sensor_VEN_Meas_High - config_data.T_sensor_VEN_Real_High;
 			break;
     }
 
-    a = (E30 - E5)/25;
-    b = (6*E5 - E30)/5;
-    Err = MeasuredTemp*a + b;
+    // a = (E30 - E5)/25;
+    // b = (6*E5 - E30)/5;
+    // Err = MeasuredTemp*a + b;
 
-    return (MeasuredTemp - Err);
+    a = (E30 - E8)/22;
+    b = (30*E8 - 8*E30)/ 22;
+    Err = MeasuredTemp*a + b; // la T non è quella reale dato che la devo ancora calcolare
+
+    return (MeasuredTemp + Err);
 }
 
 /*funzione che serve a correggere la temperatura letta col sensore IR con un
