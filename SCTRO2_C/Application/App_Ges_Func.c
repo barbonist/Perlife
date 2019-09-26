@@ -917,7 +917,7 @@ bool Start_Frigo_AMSNewPID(float DeltaT,unsigned char spegniFrigo)
 	    }
 	    SetFan(FALSE);
 	}
-	else if ((power != power_old) || (testT1HeatFridge))
+	else //if ((power != power_old) || (testT1HeatFridge))
 	{
 		Enable_AMS = TRUE;
 		/* a power = 10 corrisponde la massima frequenza pari

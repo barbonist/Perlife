@@ -23,9 +23,9 @@
 	 * 0x0800 --> 1.0.0  *0x0801 -->  1.0.1 *0x0802 --> 1.0.2 *0x0803 --> 1.0.3   *0x0804 --> 1.0.4  *0x0805 --> 1.0.5  *0x0806 --> 1.0.6
 	 * 0x0807 --> 1.0.7  *0x0808 -->  1.0.8 *0x0809 --> 1.0.9 *0x080A --> 1.0.10  *0x080B --> 1.0.11 *0x080C --> 1.0.12 *0x080D --> 1.0.13
 	 * 0x080E --> 1.0.14 *0x080F --> 1.0.15 *0x0810 --> 1.0.16 *0x0811 --> 1.0.17 *0x0812 --> 1.0.18 *0x0813 --> 1.0.19 *0x0814 --> 1.0.20
-	 * 0x0815 --> 1.0.21 *0x0816 --> 1.0.22 *0x0817 --> 1.0.23 *0x0818 --> 1.0.24*/
+	 * 0x0815 --> 1.0.21 *0x0816 --> 1.0.22 *0x0817 --> 1.0.23 *0x0818 --> 1.0.24 ... 0x081B --> 1.0.27*/
 
-#define REVISION_FW_CONTROL 0x081A
+#define REVISION_FW_CONTROL 0x081B
 
 /* Syncronization flag */
 char	iflag_pc_rx;
@@ -1553,17 +1553,17 @@ unsigned char CHANGE_ADDRESS_IR_SENS;
 #define OFFSET_FLOW_SENS_ART		56
 
 /*valori di errore dei sensori di temperatura su due temperature (5 e 30 °C circa) valutati rispetto ad una Pt1000 a contatto con il liquido*/
-#define T_SESOR_ART_MEAS_LOW_DEF	  4.5f
-#define T_SESOR_ART_MEAS_HIGH_DEF	 30.5f
-#define T_SESOR_RIC_MEAS_LOW_DEF	  5.0f
-#define T_SESOR_RIC_MEAS_HIGH_DEF	 30.0f
-#define T_SESOR_VEN_MEAS_LOW_DEF	  4.0f
+#define T_SESOR_ART_MEAS_LOW_DEF	  6.5f
+#define T_SESOR_ART_MEAS_HIGH_DEF	 31.0f
+#define T_SESOR_RIC_MEAS_LOW_DEF	  6.5f
+#define T_SESOR_RIC_MEAS_HIGH_DEF	 31.0f
+#define T_SESOR_VEN_MEAS_LOW_DEF	  6.5f
 #define T_SESOR_VEN_MEAS_HIGH_DEF	 31.0f
-#define T_SESOR_ART_REAL_LOW_DEF	  5.0f
+#define T_SESOR_ART_REAL_LOW_DEF	  8.0f
 #define T_SESOR_ART_REAL_HIGH_DEF	 30.0f
-#define T_SESOR_RIC_REAL_LOW_DEF	  5.0f
+#define T_SESOR_RIC_REAL_LOW_DEF	  8.0f
 #define T_SESOR_RIC_REAL_HIGH_DEF	 30.0f
-#define T_SESOR_VEN_REAL_LOW_DEF	  5.0f
+#define T_SESOR_VEN_REAL_LOW_DEF	  8.0f
 #define T_SESOR_VEN_REAL_HIGH_DEF	 30.0f
 
 #define FREQ_DEBUG_LED 	10
@@ -2526,7 +2526,7 @@ float MIN_PLATE_TEMP;
 // Filippo - attesa per lo spegnimento del frigo quando lo uso spot per raffreddare il riscaldatore (tick da 10ms)
 #define ATTESA_FRIGO_OFF_SPOT 6000
 
-#define T1_TEST_ENABLED			//se scommentata abilita i T1 Test
+//#define T1_TEST_ENABLED			//se scommentata abilita i T1 Test
 //#define FRONTAL_COVERS_T1_TEST_ENABLED //per abilitare i test specifici per i sensori di Hall dei coperchi frontali
 bool T1_Test_Frigo_Before_Heater;		//variabile  che decide se fare il T1 Test prima del frigo e poi del riscaldatore o viceversa
 
@@ -2564,7 +2564,7 @@ typedef enum
 
 // PARAMETRI PER LA PROCEDURA DI RIPRISTINO DELLA TEMPERATURA DEL LIQUIDO DURANTE I TRATTAMENTO------------
 // velocita' di rotazione delle pompe durante il ripristino della temperatura
-#define TEMP_RESTORE_SPEED 2000
+#define TEMP_RESTORE_SPEED 5500
 // tempo in msec riservato al processo di ripristino della temperatura del liquido
 #define TIME_TO_RESTORE_TEMP 120000L
 
