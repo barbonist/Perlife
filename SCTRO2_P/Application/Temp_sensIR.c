@@ -150,8 +150,9 @@ float Ir_Measured_Temperature_correction(int index_array)
 {
 	float MeasuredTemp;
 	float E8;  // error at 8 degrees
-	float E30; //error at 30 degrees
-	float a,b,Err;
+	float E27;  // error at 27 degrees
+	float E37; //error at 37 degrees
+	float a,b,c,d, Err;
 
     MeasuredTemp = sensorIR_TM[index_array].tempSensValue;
 
@@ -159,17 +160,18 @@ float Ir_Measured_Temperature_correction(int index_array)
     {
 		case 0:
 			E8 = config_data.T_sensor_ART_Meas_Low - config_data.T_sensor_ART_Real_Low;
-			E30 =  config_data.T_sensor_ART_Meas_High - config_data.T_sensor_ART_Real_High;
+			E27 = config_data.T_sensor_ART_Meas_Med - config_data.T_sensor_ART_Real_Med;
+			E37 =  config_data.T_sensor_ART_Meas_High - config_data.T_sensor_ART_Real_High;
 			break;
-
 		case 1:
 			E8 = config_data.T_sensor_RIC_Meas_Low - config_data.T_sensor_RIC_Real_Low;
-			E30 =  config_data.T_sensor_RIC_Meas_High - config_data.T_sensor_RIC_Real_High;
+			E27 =  config_data.T_sensor_RIC_Meas_Med - config_data.T_sensor_RIC_Real_Med;
+			E37 =  config_data.T_sensor_RIC_Meas_High - config_data.T_sensor_RIC_Real_High;
 			break;
-
 		case 2:
 			E8 = config_data.T_sensor_VEN_Meas_Low - config_data.T_sensor_VEN_Real_Low;
-			E30 =  config_data.T_sensor_VEN_Meas_High - config_data.T_sensor_VEN_Real_High;
+			E27 =  config_data.T_sensor_VEN_Meas_Med - config_data.T_sensor_VEN_Real_Med;
+			E37 =  config_data.T_sensor_VEN_Meas_High - config_data.T_sensor_VEN_Real_High;
 			break;
     }
 
@@ -177,9 +179,16 @@ float Ir_Measured_Temperature_correction(int index_array)
     // b = (6*E5 - E30)/5;
     // Err = MeasuredTemp*a + b;
 
-    a = (E30 - E8)/22;
-    b = (30*E8 - 8*E30)/ 22;
-    Err = MeasuredTemp*a + b; // la T non è quella reale dato che la devo ancora calcolare
+    a = (E27 - E8)/19;
+    b = (27*E8 - 8*E27)/19;
+    c = (E37 - E27)/10;
+    d = (37*E27 - 27*E37)/10;
+
+    // vedi SC111_008C_19
+    if(MeasuredTemp <= 27.0 )
+    	Err = MeasuredTemp*a + b;
+    else
+    	Err = MeasuredTemp*c + d;
 
     return (MeasuredTemp + Err);
 }

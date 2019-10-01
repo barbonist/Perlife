@@ -253,7 +253,7 @@ void verificaTempPlate(void)
 
 #define VERS_1 1
 #define VERS_2 2
-#define VERS_3 5
+#define VERS_3 6
 
 #endif
 uint16_t GetFwVersionProtective(void)
@@ -506,7 +506,9 @@ int main(void)
 	Versione 1.2.500
 		-- SB solved bug causing all check performed also during T1 test and priming phases. Check during T1 test have not to be done
 		-- SB during T1 test , pumps speed match test should not be performed
-
+	Versione 1.2.600
+		-- SB changed IR temperature sensors calibration : introduced 3 calibration points at 8 , 27 and 37 degrees , set calibtemp command
+		   changed accordingly
   */
 
 
