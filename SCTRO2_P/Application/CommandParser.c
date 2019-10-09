@@ -307,11 +307,6 @@ void SetCalibTemp(int NParams, char** Params)
 		/*finita la calibrazione di un sensore la vado subito a salvare in EEPROM*/
 		EEPROM_write((EEPROM_TDataAddress)&config_data, START_ADDRESS_EEPROM, sizeof(config_data));
 	}
-	else if (NParams == 4)
-	{
-		str_NoCr(Params[3]);
-		//TODO
-	}
 	else
 	{
 		//messaggio di errore

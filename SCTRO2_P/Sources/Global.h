@@ -137,15 +137,15 @@ unsigned char CHANGE_ADDRESS_IR_SENS;
 #define OFFSET_FLOW_SENS_ART		56
 
 /*valori di errore dei sensori di temperatura su due temperature (5 e 30 °C circa) valutati rispetto ad una Pt1000 a contatto con il liquido*/
-#define T_SESOR_ART_MEAS_LOW_DEF      6.5f
+#define T_SESOR_ART_MEAS_LOW_DEF      6.2f
 #define T_SESOR_ART_MEAS_MED_DEF      28.0f
 #define T_SESOR_ART_MEAS_HIGH_DEF     39.0f
 
-#define T_SESOR_RIC_MEAS_LOW_DEF      6.5f
+#define T_SESOR_RIC_MEAS_LOW_DEF      6.2f
 #define T_SESOR_RIC_MEAS_MED_DEF      28.0f
 #define T_SESOR_RIC_MEAS_HIGH_DEF     39.0f
 
-#define T_SESOR_VEN_MEAS_LOW_DEF      6.5f
+#define T_SESOR_VEN_MEAS_LOW_DEF      6.2f
 #define T_SESOR_VEN_MEAS_MED_DEF      28.0f
 #define T_SESOR_VEN_MEAS_HIGH_DEF     39.0f
 

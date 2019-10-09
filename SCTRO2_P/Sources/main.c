@@ -253,7 +253,7 @@ void verificaTempPlate(void)
 
 #define VERS_1 1
 #define VERS_2 2
-#define VERS_3 6
+#define VERS_3 7
 
 #endif
 uint16_t GetFwVersionProtective(void)
@@ -509,6 +509,8 @@ int main(void)
 	Versione 1.2.600
 		-- SB changed IR temperature sensors calibration : introduced 3 calibration points at 8 , 27 and 37 degrees , set calibtemp command
 		   changed accordingly
+	Versione 1.2.700
+		-- SB 09/10/2019 As from SRS.PRT.45 and other non recoverable alarms , protective must disconnect heater and cooler , regardless of pinch status
   */
 
 

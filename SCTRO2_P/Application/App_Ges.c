@@ -119,32 +119,32 @@ void Set_Data_EEPROM_Default(void)
 	 * scrivo i parametri di default*/
 	if ( config_data.EEPROM_CRC != Calc_CRC_EEPROM || config_data.EEPROM_Revision != EEPROM_REVISION)
 	{
-		 config_data.sensor_PRx[OXYG].prSensGain      = PR_OXYG_GAIN_DEFAULT;
-		 config_data.sensor_PRx[OXYG].prSensOffset    = PR_OXYG_OFFSET_DEFAULT;
-
-		 config_data.sensor_PRx[LEVEL].prSensGain     = PR_LEVEL_GAIN_DEFAULT;
-		 config_data.sensor_PRx[LEVEL].prSensOffset   = PR_LEVEL_OFFSET_DEFAULT;
-
-		 config_data.sensor_PRx[ADS_FLT].prSensGain   = PR_ADS_FLT_GAIN_DEFAULT;
-		 config_data.sensor_PRx[ADS_FLT].prSensOffset = PR_ADS_FLT_OFFSET_DEFAULT;
-
-		 config_data.sensor_PRx[VEN].prSensGain       = PR_VEN_GAIN_DEFAULT;
-		 config_data.sensor_PRx[VEN].prSensOffset     = PR_VEN_OFFSET_DEFAULT;
-
-		 config_data.sensor_PRx[ART].prSensGain       = PR_ART_GAIN_DEFAULT;
-		 config_data.sensor_PRx[ART].prSensOffset     = PR_ART_OFFSET_DEFAULT;
-
-		 config_data.T_Plate_Sensor_Gain_Heat         = GAIN_T_PLATE_SENS_HEAT;
-		 config_data.T_Plate_Sensor_Offset_Heat       = OFFSET_T_PLATE_SENS_HEAT;
-
-		 config_data.T_Plate_Sensor_Gain_Cold         = GAIN_T_PLATE_SENS_COLD;
-		 config_data.T_Plate_Sensor_Offset_Cold       = OFFSET_T_PLATE_SENS_COLD;
-
-		 config_data.FlowSensor_Ven_Gain              = GAIN_FLOW_SENS_VEN;
-		 config_data.FlowSensor_Ven_Offset            = OFFSET_FLOW_SENS_VEN;
-
-		 config_data.FlowSensor_Art_Gain              = GAIN_FLOW_SENS_ART;
-		 config_data.FlowSensor_Art_Offset            = OFFSET_FLOW_SENS_ART;
+//		 config_data.sensor_PRx[OXYG].prSensGain      = PR_OXYG_GAIN_DEFAULT;
+//		 config_data.sensor_PRx[OXYG].prSensOffset    = PR_OXYG_OFFSET_DEFAULT;
+//
+//		 config_data.sensor_PRx[LEVEL].prSensGain     = PR_LEVEL_GAIN_DEFAULT;
+//		 config_data.sensor_PRx[LEVEL].prSensOffset   = PR_LEVEL_OFFSET_DEFAULT;
+//
+//		 config_data.sensor_PRx[ADS_FLT].prSensGain   = PR_ADS_FLT_GAIN_DEFAULT;
+//		 config_data.sensor_PRx[ADS_FLT].prSensOffset = PR_ADS_FLT_OFFSET_DEFAULT;
+//
+//		 config_data.sensor_PRx[VEN].prSensGain       = PR_VEN_GAIN_DEFAULT;
+//		 config_data.sensor_PRx[VEN].prSensOffset     = PR_VEN_OFFSET_DEFAULT;
+//
+//		 config_data.sensor_PRx[ART].prSensGain       = PR_ART_GAIN_DEFAULT;
+//		 config_data.sensor_PRx[ART].prSensOffset     = PR_ART_OFFSET_DEFAULT;
+//
+//		 config_data.T_Plate_Sensor_Gain_Heat         = GAIN_T_PLATE_SENS_HEAT;
+//		 config_data.T_Plate_Sensor_Offset_Heat       = OFFSET_T_PLATE_SENS_HEAT;
+//
+//		 config_data.T_Plate_Sensor_Gain_Cold         = GAIN_T_PLATE_SENS_COLD;
+//		 config_data.T_Plate_Sensor_Offset_Cold       = OFFSET_T_PLATE_SENS_COLD;
+//
+//		 config_data.FlowSensor_Ven_Gain              = GAIN_FLOW_SENS_VEN;
+//		 config_data.FlowSensor_Ven_Offset            = OFFSET_FLOW_SENS_VEN;
+//
+//		 config_data.FlowSensor_Art_Gain              = GAIN_FLOW_SENS_ART;
+//		 config_data.FlowSensor_Art_Offset            = OFFSET_FLOW_SENS_ART;
 
 		 // calibrazione sensori di temperatura
 		 config_data.T_sensor_ART_Real_Low 			  = T_SESOR_ART_REAL_LOW_DEF;
@@ -173,11 +173,9 @@ void Set_Data_EEPROM_Default(void)
 
 		 //revsione della EEPROM
 		 config_data.EEPROM_Revision 				  = EEPROM_REVISION;
-
 		 /*carico il CRC della EEPROM (usata la stessa funzione di CRC del MOD_BUS
 		  * IL CRC lo clacolo su tutta la struttura meno i due byte ndel CRC stesso*/
 		 config_data.EEPROM_CRC = ComputeChecksum(ptr_EEPROM, sizeof(config_data)-2);
-
 		 EEPROM_write((EEPROM_TDataAddress)&config_data, START_ADDRESS_EEPROM, sizeof(config_data));
 	}
 

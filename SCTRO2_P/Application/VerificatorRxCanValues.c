@@ -306,11 +306,11 @@ void PumpsOrPinchNotRespond_EmergAct_AirAlarm(void)
 bool some_error = false;
 
 	//DIS HEAT , DIS COOL if pinch not safety , OFF 24V  if motors not stopped within 6,5 seconds
-	if( !PinchesAreInSafetyMode() ){
+	// if( !PinchesAreInSafetyMode() ){    9/10/2019 --> MUST disable heater and cooler regardless of condition of pinches ( Verification )
 		some_error = true;
 		Enable_Heater(FALSE);
 		Enable_Frigo(FALSE);
-	}
+	// }
 //	if( !PumpsAreStopped() ){  / don't check since it is possible that user reset alarm in the meantime
 //		some_error = true;
 //		SwitchOFFPinchNPumps();
