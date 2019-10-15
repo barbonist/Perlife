@@ -63,11 +63,9 @@ TAlarmTimer PressLevelMismatchAlarmTimer = {0,70,false,false, MismatchPressLevel
 TAlarmTimer TempArtMismatchAlarmTimer = {0,20,false,false, MismatchTempArtAlarmAct , 0 , 65 , PumpsOrPinchNotRespond_EmergAct }; // alarm after 2 s mismatch
 TAlarmTimer TempVenMismatchAlarmTimer = {0,20,false,false, MismatchTempVenAlarmAct , 0 , 65 , PumpsOrPinchNotRespond_EmergAct }; // alarm after 2 s mismatch
 TAlarmTimer TempFluidMismatchAlarmTimer = {0,20,false,false, MismatchTempFluidAlarmAct , 0 , 65 , PumpsOrPinchNotRespond_EmergAct }; // alarm after 2 s mismatch
+TAlarmTimer TempPlateMismatchAlarmTimer = {0,20,false,false, MismatchTempPlateAlarmAct , 0 , 50 , PumpsOrPinchNotRespond_EmergAct }; // alarm after 2 s mismatch
 
 TAlarmTimer AirPresentAlarmTimer = {0,03,false,false, AirPresentAlarmAct , 0 , 65 , PumpsOrPinchNotRespond_EmergAct_AirAlarm }; // alarm after 300ms s mismatch , then check pumps stop
-
-//Allarme di mismatch temperature di piastra NON USATO per ora
-//TAlarmTimer TempPlateMismatchAlarmTimer = {0,20,false,false, MismatchTempPlateAlarmAct , 0 , 50 , PumpsOrPinchNotRespond_EmergAct }; // alarm after 2 s mismatch
 
 static TAlarmTimer	*AlarmTimerList[] = {
 		&PumpMismatchAlarmTimer ,
@@ -83,12 +81,9 @@ static TAlarmTimer	*AlarmTimerList[] = {
 		&TempArtMismatchAlarmTimer,
 		&TempVenMismatchAlarmTimer,
 		&TempFluidMismatchAlarmTimer,
+		&TempPlateMismatchAlarmTimer,
 
-		&AirPresentAlarmTimer,  // 2-4-2019 new spex
-
-		//Allarme di mismatch temperature di piastra NON USATO per ora
-		//&TempPlateMismatchAlarmTimer
-
+		&AirPresentAlarmTimer  // 2-4-2019 new spex
 };
 
 static void ManageVerificatorAlarms100ms(void);
@@ -188,24 +183,24 @@ void NoCanCommunicationAlarmAct(void)
 void MismatchPumpSpeedAlarmAct(void)
 {
 	if( GetControlFSMState() != STATE_T1TEST){
-	ShowNewAlarmError(CODE_ALARM_PUMPSPEED_DONT_MATCH);
-	DisablePinchNPumps();
-	Enable_Heater(false);
-	Enable_Frigo(false);
-	// trigger sec action
-	TriggerSecondaryAction(&PumpMismatchAlarmTimer);
+		ShowNewAlarmError(CODE_ALARM_PUMPSPEED_DONT_MATCH);
+		DisablePinchNPumps();
+		Enable_Heater(false);
+		Enable_Frigo(false);
+		// trigger sec action
+		TriggerSecondaryAction(&PumpMismatchAlarmTimer);
 	}
 }
 
 void MismatchPinchPosAlarmAct(void)
 {
 	if( GetControlFSMState() != STATE_T1TEST){
-	ShowNewAlarmError(CODE_PINCH_POS_DONTMATCH);
-	DisablePinchNPumps();
-	Enable_Heater(false);
-	Enable_Frigo(false);
-	// trigger sec action
-	TriggerSecondaryAction(&PinchMismatchAlarmTimer);
+		ShowNewAlarmError(CODE_PINCH_POS_DONTMATCH);
+		DisablePinchNPumps();
+		Enable_Heater(false);
+		Enable_Frigo(false);
+		// trigger sec action
+		TriggerSecondaryAction(&PinchMismatchAlarmTimer);
 	}
 }
 
@@ -281,7 +276,8 @@ void MismatchPressLevelAlarmAct(void)
 
 void MismatchTempPlateAlarmAct(void)
 {
-if(GetControlFSMState() == STATE_TREATMENT)	{
+	if(GetControlFSMState() == STATE_TREATMENT)
+	{
 		ShowNewAlarmError(CODE_ALARM_TEMP_PLATE_DONTMATCH);
 		DisablePinchNPumps();
 		Enable_Heater(false);
@@ -289,7 +285,6 @@ if(GetControlFSMState() == STATE_TREATMENT)	{
 		// trigger sec action
 		TriggerSecondaryAction(&TempPlateMismatchAlarmTimer);
 	}
-#endif
 }
 
 void AirPresentAlarmAct(void)
@@ -415,8 +410,7 @@ void VerifyRxTemperatures(uint16_t TempArtx10, uint16_t TempFluidx10, uint16_t T
 	TempFluidMismatchAlarmTimer.AlarmConditionPending = ValueIsInRange(tempFluidx10_p, TempFluidx10, 40 ) ? false : true ;
 	//TempPlateMismatchAlarmTimer.AlarmConditionPending = ValueIsInRange(tempPlatex10_p, TempPlatex10, 40 ) ? false : true ;
 	// causa inaccuratezza della misura ,  porto l'errore accettabile da 4 a 8 gradi , no a 15 gradi ( ah ah )
-	// ALLARME di MISMATCH NON ATTIVO
-	//TempPlateMismatchAlarmTimer.AlarmConditionPending = ValueIsInRange(tempPlatex10_p, TempPlatex10, 150 ) ? false : true ;
+	TempPlateMismatchAlarmTimer.AlarmConditionPending = ValueIsInRange(tempPlatex10_p, TempPlatex10, 150 ) ? false : true ;
 }
 
 void VerifyRxAirLevels(uint8_t AirArtLevel, uint8_t AirVenLevel)

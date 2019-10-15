@@ -212,14 +212,6 @@ void verificaTempPlate(void);
 /*lint -save  -e970 Disable MISRA rule (6.3) checking. */
 
 int Phase = 0x99;
-
-// Gestione del buzzer per risolvere il problema del volume basso in caso di 
-// attivazione contemporanea di pin low e high
-// il pin low è attivato subito, il pin high dopo poche decine di msec
-int firstTimeAlarm = 0;
-int stateMachineBuzzer = 0;
-extern int ActualErrNum;
-
 /*Funtion to enable power and actuation of teh actuator*/
 void verificaTempPlate(void)
 {
@@ -262,6 +254,7 @@ void verificaTempPlate(void)
 #define VERS_1 1
 #define VERS_2 2
 #define VERS_3 7
+
 #endif
 uint16_t GetFwVersionProtective(void)
 {
@@ -296,7 +289,6 @@ int main(void)
   ADC1_Calibration();
   timerCounterADC1 = 0;
   timerCounterADC0 = 0;
-  timerCounterBuzzer = 0;
 
   Dip_Switch_ADC_Init();
   PR_Sens_ADC_Init();
@@ -369,42 +361,6 @@ int main(void)
 		AD1_Start();
 	 }
 
-	 //30 mseccycle
-	 if (timerCounterBuzzer > 3)
-	 {
-		 timerCounterBuzzer = 0;
-#ifdef PROTECTIVE_SLEEPS
-		 //in caso di errore...
-		 if(ActualErrNum != 0)
-		 {
-			 //... inizializza lo stato a 0
-			 if (firstTimeAlarm == 0)
-			 {
-				 firstTimeAlarm = 1;
-				 stateMachineBuzzer = 0;
-			 }
-
-			 switch(stateMachineBuzzer)
-			 {
-			 case 0: //prima un tono basso...
-				 BUZZER_LOW_P_SetVal();
-				 stateMachineBuzzer = 1;
-				 break;
-
-			 case 1://...poi un tono alto
-				 BUZZER_HIGH_P_SetVal();
-				 break;
-			 }
-		 }
-		 else
-#endif
-		 {
-			 //quando l'errore scompare, reset sia buzzer pin LOW che HIGH (vedere application note del Mallory)
-			 firstTimeAlarm = 0;
-			 BUZZER_LOW_P_ClrVal();
-			 BUZZER_HIGH_P_ClrVal();
-		 }
-	 }
      /********************************/
      /*          FRONTAL COVER       */
      /********************************/
@@ -488,14 +444,6 @@ int main(void)
 		Modificati i valori di allarme per pressione extrema
 		P Arteriosa max = 110 + 30 mmHg
 		P Venosa max = 10 + 2 mmHg
-		 COntinua a comportarsi come quando ENABLE_PINCH = OFF fino a quando si verifica un nuovo comando che riporta allo stato (PinchVerifierStat = 1)
-
-		 tutto questo per ogni pinch
-
-	Versione 1.0.002 8/1/2019
-		Modificati i valori di allarme per pressione extrema
-		P Arteriosa max = 110 + 30 mmHg
-		P Venosa max = 10 + 2 mmHg
 		P filtro assorbente = 450 + 75 mmHg
 		P filtro ossigenazione = 500 + 80 mmHg
 
@@ -555,6 +503,14 @@ int main(void)
 		-- SB command for temperature calibration
 		-- SB command to enable & disable pumps and pinchs
 		-- SB in T1Test Control can send commands to protective for enable and power on off test.
+	Versione 1.2.500
+		-- SB solved bug causing all check performed also during T1 test and priming phases. Check during T1 test have not to be done
+		-- SB during T1 test , pumps speed match test should not be performed
+	Versione 1.2.600
+		-- SB changed IR temperature sensors calibration : introduced 3 calibration points at 8 , 27 and 37 degrees , set calibtemp command
+		   changed accordingly
+	Versione 1.2.700
+		-- SB 09/10/2019 As from SRS.PRT.45 and other non recoverable alarms , protective must disconnect heater and cooler , regardless of pinch status
   */
 
 
