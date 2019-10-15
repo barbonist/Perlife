@@ -5229,8 +5229,9 @@ void DeltaTHighAlarmRecoveryStateMach(void)
 			TimeRemaining = TIME_TO_RESTORE_TEMP;
 			break;
 		case TEMP_RESTORE_START_TIME:
-			if(StarTimeToRestoreTemp && ((msTick_elapsed(StarTimeToRestoreTemp) * 50L) >= TimeRemaining) ||
-			   (deltaT < (float)DELTA_T_ART_IF_OK))
+			if( (StarTimeToRestoreTemp && ((msTick_elapsed(StarTimeToRestoreTemp) * 50L) >= TimeRemaining) ) &&
+			   (deltaT < ( (float)DELTA_T_ART_IF_OK - HYSTERESIS) )
+			   )
 			{
 				// e' trascorso il tempo massimo riservato al processo di ripristino della temperatura
 				// oppure la temperatura target e' stata raggiunta entro un certo range
@@ -7224,7 +7225,7 @@ void Set_Data_EEPROM_Default(void)
 
 	/*Se il CRC calcolato non è uguale a quello letto o la revsione non è uguale a quella attesa
 	 * scrivo i parametri di default*/
-	if ( config_data.EEPROM_CRC != Calc_CRC_EEPROM || config_data.EEPROM_Revision != EEPROM_REVISION)
+	if ( config_data.EEPROM_CRC != Calc_CRC_EEPROM || config_data.EEPROM_Revision !=  EEPROM_REVISION)
 	{
 		 config_data.sensor_PRx[OXYG].prSensGain      = PR_OXYG_GAIN_DEFAULT;
 		 config_data.sensor_PRx[OXYG].prSensOffset    = PR_OXYG_OFFSET_DEFAULT;
@@ -7253,19 +7254,26 @@ void Set_Data_EEPROM_Default(void)
 		 config_data.FlowSensor_Art_Gain              = GAIN_FLOW_SENS_ART;
 		 config_data.FlowSensor_Art_Offset            = OFFSET_FLOW_SENS_ART;
 
+		 //coeff per la calibrazione dei seosnri IR di temperatura
 		 config_data.T_sensor_ART_Real_Low 			  = T_SESOR_ART_REAL_LOW_DEF;
+		 config_data.T_sensor_ART_Real_Med			  = T_SESOR_ART_REAL_MED_DEF;
 		 config_data.T_sensor_ART_Real_High			  = T_SESOR_ART_REAL_HIGH_DEF;
 		 config_data.T_sensor_ART_Meas_Low 			  = T_SESOR_ART_MEAS_LOW_DEF;
+		 config_data.T_sensor_ART_Meas_Med 			  = T_SESOR_ART_MEAS_MED_DEF;
 		 config_data.T_sensor_ART_Meas_High			  = T_SESOR_ART_MEAS_HIGH_DEF;
 
 		 config_data.T_sensor_RIC_Real_Low 			  = T_SESOR_RIC_REAL_LOW_DEF;
+		 config_data.T_sensor_RIC_Real_Med 			  = T_SESOR_RIC_REAL_MED_DEF;
 		 config_data.T_sensor_RIC_Real_High			  = T_SESOR_RIC_REAL_HIGH_DEF;
 		 config_data.T_sensor_RIC_Meas_Low 			  = T_SESOR_RIC_MEAS_LOW_DEF;
+		 config_data.T_sensor_RIC_Meas_Med 			  = T_SESOR_RIC_MEAS_MED_DEF;
 		 config_data.T_sensor_RIC_Meas_High			  = T_SESOR_RIC_MEAS_HIGH_DEF;
 
 		 config_data.T_sensor_VEN_Real_Low 			  = T_SESOR_VEN_REAL_LOW_DEF;
+		 config_data.T_sensor_VEN_Real_Med 			  = T_SESOR_VEN_REAL_MED_DEF;
 		 config_data.T_sensor_VEN_Real_High			  = T_SESOR_VEN_REAL_HIGH_DEF;
 		 config_data.T_sensor_VEN_Meas_Low 			  = T_SESOR_VEN_MEAS_LOW_DEF;
+		 config_data.T_sensor_VEN_Meas_Med 			  = T_SESOR_VEN_MEAS_MED_DEF;
 		 config_data.T_sensor_VEN_Meas_High			  = T_SESOR_VEN_MEAS_HIGH_DEF;
 
 		 //revsione della EEPROM

@@ -113,10 +113,10 @@ typeAlarmS alarmList[] =
    {CODE_ALARM_DELTA_FLOW_VEN,        PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH,  3000, 3000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, FALSE},
 
    // allarme differenza tra temperatura vaschetta e temperatura fluido arterioso troppo alta
-   {CODE_ALARM_DELTA_TEMP_REC_ART,    PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_DELTA_TEMP_HIGH,       PRIORITY_HIGH, 10000, 3000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, TRUE},
+   {CODE_ALARM_DELTA_TEMP_REC_ART,    PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_DELTA_TEMP_HIGH,       PRIORITY_HIGH, 60000, 3000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, TRUE},
 
    // allarme differenza tra temperatura vaschetta e temperatura fluido venoso troppo alta
-   {CODE_ALARM_DELTA_TEMP_REC_VEN,    PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_DELTA_TEMP_HIGH,       PRIORITY_HIGH, 10000, 3000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, TRUE},
+   {CODE_ALARM_DELTA_TEMP_REC_VEN,    PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_DELTA_TEMP_HIGH,       PRIORITY_HIGH, 60000, 3000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, TRUE},
 
    // allarme comunicazione canbus
    {CODE_ALARM_CAN_BUS_ERROR,         PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH,  3000, 3000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, FALSE},
@@ -751,7 +751,10 @@ void CalcAlarmActive(void)
 		case STATE_PRIMING_PH_1:
 		{
 			//check sul flusso massimo
-			manageAlarmPhysicFlowHigh();
+		// VP:15/10/2019 manageAlarmPhysicFlowHigh();
+			/*la funzione viene chiamata solo in trattamento,
+			 * in quanto dsa requirements SRS.CTR.64.1 e SRS.CTR.68.1
+			 * questo controllo viene fatto solo in trattamento*/
 
 			//check sensori di aria
 			manageAirSensorsCheckAlarm();
@@ -778,7 +781,10 @@ void CalcAlarmActive(void)
 		case STATE_PRIMING_PH_2:
 		{
 			//check sul flusso massimo
-			manageAlarmPhysicFlowHigh();
+			// VP:15/10/2019 manageAlarmPhysicFlowHigh();
+			/*la funzione viene chiamata solo in trattamento,
+			 * in quanto dsa requirements SRS.CTR.64.1 e SRS.CTR.68.1
+			 * questo controllo viene fatto solo in trattamento*/
 
 			manageAlarmFlowSensNotDetected();
 			manageAlarmIrTempSensNotDetected();
@@ -833,6 +839,10 @@ void CalcAlarmActive(void)
 			manageAlarmPhysicTempSensOOR();
 			//verifica physic flusso di perfusione arteriosa e venosa massimi
 			manageAlarmPhysicFlowHigh();
+			/*la funzione viene chiamata solo in trattamento,
+			 * in quanto dsa requirements SRS.CTR.64.1 e SRS.CTR.68.1
+			 * questo controllo viene fatto solo in trattamento*/
+
 			//verifica  flusso  non rilevato
 			manageAlarmFlowSensNotDetected();
 			//verifica temperatura noin rilevata
@@ -876,7 +886,10 @@ void CalcAlarmActive(void)
 			manageAlarmPhysicPressSensLow();
 
 			//check sul flusso massimo
-			manageAlarmPhysicFlowHigh();
+			// VP:15/10/2019 manageAlarmPhysicFlowHigh();
+			/*la funzione viene chiamata solo in trattamento,
+			 * in quanto dsa requirements SRS.CTR.64.1 e SRS.CTR.68.1
+			 * questo controllo viene fatto solo in trattamento*/
 
 			//verifica physic ir temp sens
 			if(GetTherapyType() == LiverTreat)
@@ -928,7 +941,10 @@ void CalcAlarmActive(void)
 		case STATE_EMPTY_DISPOSABLE_1:
 		{
 			//check sul flusso massimo
-			manageAlarmPhysicFlowHigh();
+			// VP:15/10/2019 manageAlarmPhysicFlowHigh();
+			/*la funzione viene chiamata solo in trattamento,
+			 * in quanto dsa requirements SRS.CTR.64.1 e SRS.CTR.68.1
+			 * questo controllo viene fatto solo in trattamento*/
 
 			manageAlarmFlowSensNotDetected();
 			manageAlarmIrTempSensNotDetected();
@@ -1164,9 +1180,17 @@ void manageAlarmDeltaFlowVen(void)
 }
 
 // controllo se il delta di temperatura tra recipiente e liquido arterioso e' troppo alta
+/*07-10-2019 VP condiziono l'allarme al fatto che la pompa arteriorsa stia girando*/
 void manageAlarmDeltaTempRecArt(void)
 {
-	if (GlobalFlags.FlagsDef.EnableDeltaTempRecArtAlarm)
+	word pmpArtSpeed;
+
+	if (GetTherapyType() == LiverTreat)
+		pmpArtSpeed = modbusData[1][17];
+	else //if (GetTherapyType() == KidneyTreat)
+		pmpArtSpeed = modbusData[0][17];
+
+	if (GlobalFlags.FlagsDef.EnableDeltaTempRecArtAlarm && pmpArtSpeed != 0)
 	{
 		float tart = sensorIR_TM[0].tempSensValue;
 		float trec = sensorIR_TM[1].tempSensValue;
@@ -1186,9 +1210,10 @@ void manageAlarmDeltaTempRecArt(void)
 }
 
 // controllo se il delta di temperatura tra recipiente e liquido venoso e' troppo alta
+/*07-10-2019 VP condiziono l'allarme al fatto che la pompa arteriorsa stia girando*/
 void manageAlarmDeltaTempRecVen(void)
 {
-	if (GlobalFlags.FlagsDef.EnableDeltaTempRecVenAlarm)
+	if (GlobalFlags.FlagsDef.EnableDeltaTempRecVenAlarm && ( modbusData[2][17] != 0) && (modbusData[3][17] != 0) )
 	{
 		float trec = sensorIR_TM[1].tempSensValue;
 		float tven = sensorIR_TM[2].tempSensValue;
@@ -1538,12 +1563,23 @@ void manageCover_Hook_Sensor(void)
 /*funzione che durante il ricircolo del priming
  * intercetta una mancata connessione del disposible
  * al sensore di pressione Arteriosa della macchina*/
+/*VP 07-10-19 devo condizionare l'allarme al fatto che la pinch
+ * sia aperta sulla linea arteriosa */
 void manageCheckConnectionTubeArtSensPress(void)
 {
+	word pmpArtSpeed;
+	word Pinch_Art_Position  = modbusData[5][0];
+
+	if (GetTherapyType() == LiverTreat)
+		pmpArtSpeed = modbusData[1][17];
+	else //if (GetTherapyType() == KidneyTreat)
+		pmpArtSpeed = modbusData[0][17];
+
+
 	if (GlobalFlags.FlagsDef.EnableArtPressDisconnect)
 	{
 		/*attivo l'allarme se la pompa arteriosa sta girando e la pressione sta sotto 10 mmHg*/
-		if (PR_ART_mmHg_Filtered < TUBE_ART_DISCONNECTED_PRESS && modbusData[0][17] != 0)
+		if ( (PR_ART_mmHg_Filtered < TUBE_ART_DISCONNECTED_PRESS) && (pmpArtSpeed != 0) && (Pinch_Art_Position == MODBUS_PINCH_LEFT_OPEN) )
 		{
 			alarmList[TUBE_ART_DISCONNECTED].physic = PHYSIC_TRUE;
 		}
@@ -1588,12 +1624,25 @@ void manageAirSensorsCheckAlarm(void)
 /*funzione che durante il ricircolo del priming
  * intercetta una mancata connessione del disposible
  * al sensore di pressione Venosa della macchina*/
+/*VP 07-10-19 devo condizionare l'allarme al fatto che la pinch
+ * sia aperta sulla linea venosa
+ * inoltre se sto facendo tratatemnto rene, non ho perfusione venosa
+ * quindi sensore venoso collegato, quindi non controllo l'alarme*/
+
 void manageCheckConnectionTubeVenSensPress(void)
 {
+	word Pinch_Ven_Position  = modbusData[6][0];
+
+	if (GetTherapyType() == KidneyTreat)
+		return;
+
 	if (GlobalFlags.FlagsDef.EnableVenPressDisconnect)
 	{
 		/*attivo l'allarme se la pompa arteriosa sta girando e la pressione sta sotto 10 mmHg*/
-		if (PR_VEN_mmHg_Filtered < TUBE_VEN_DISCONNECTED_PRESS && modbusData[2][17] != 0 && modbusData[3][17] != 0)
+		if ( (PR_VEN_mmHg_Filtered < TUBE_VEN_DISCONNECTED_PRESS) &&
+			 ( modbusData[2][17] != 0) && (modbusData[3][17] != 0) &&
+			  (Pinch_Ven_Position == MODBUS_PINCH_LEFT_OPEN)
+			)
 		{
 			alarmList[TUBE_VEN_DISCONNECTED].physic = PHYSIC_TRUE;
 		}
@@ -1667,7 +1716,7 @@ void checkAlmPhysicTempOOR(void)
 		case ALM_CONTROL_NEW_LEVEL:
 			// controllo che la temperatura rientri in un range ridotto altrimenti genero un allarme
 			alarmList[TEMP_ART_OOR].physic = PHYSIC_TRUE;
-			if(deltaT < CurrMaxDeltaT)
+			if(deltaT <= (CurrMaxDeltaT - HYSTERESIS) )
 			{
 				// sono ritornato nelle vicinanze del target
 				alarmList[TEMP_ART_OOR].physic = PHYSIC_FALSE;
@@ -1911,10 +1960,15 @@ void ClearNonPhysicalAlm( int AlarmCode)
 }
 
 // Gestione allarmi di flusso arterioso e venoso massimi
+/*la funzione viene chiamata solo in trattamento,
+ * in quanto dsa requirements SRS.CTR.64.1 e SRS.CTR.68.1
+ * questo controllo viene fatto solo in trattamento*/
 void manageAlarmPhysicFlowHigh(void)
 {
 	int flowMaxArt = 0;
 	int flowMaxVen = 0;
+
+	/*l'alalarme di flusso alto deve essere attivo sono il trattamento, dai requirements infatti non risulta allarme di flusso massimo in altri stati*/
 
 	if (GlobalFlags.FlagsDef.EnableFlowHighAlm)
 	{
