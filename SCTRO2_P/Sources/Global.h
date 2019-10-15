@@ -14,6 +14,7 @@ typedef unsigned short	word;
 
 //#define PROTECTIVE_SLEEPS
 
+
 /* Syncronization flag */
 char	iflag_pc_rx;
 char	iflag_pc_tx;
@@ -137,20 +138,34 @@ unsigned char CHANGE_ADDRESS_IR_SENS;
 #define OFFSET_FLOW_SENS_ART		56
 
 /*valori di errore dei sensori di temperatura su due temperature (5 e 30 °C circa) valutati rispetto ad una Pt1000 a contatto con il liquido*/
-#define T_SESOR_ART_MEAS_LOW_DEF	  5.0f
-#define T_SESOR_ART_MEAS_HIGH_DEF	 30.0f
-#define T_SESOR_RIC_MEAS_LOW_DEF	  5.0f
-#define T_SESOR_RIC_MEAS_HIGH_DEF	 30.0f
-#define T_SESOR_VEN_MEAS_LOW_DEF	  5.0f
-#define T_SESOR_VEN_MEAS_HIGH_DEF	 30.0f
-#define T_SESOR_ART_REAL_LOW_DEF	  5.0f
-#define T_SESOR_ART_REAL_HIGH_DEF	 30.0f
-#define T_SESOR_RIC_REAL_LOW_DEF	  5.0f
-#define T_SESOR_RIC_REAL_HIGH_DEF	 30.0f
-#define T_SESOR_VEN_REAL_LOW_DEF	  5.0f
-#define T_SESOR_VEN_REAL_HIGH_DEF	 30.0f
+#define T_SESOR_ART_MEAS_LOW_DEF      6.2f
+#define T_SESOR_ART_MEAS_MED_DEF      28.0f
+#define T_SESOR_ART_MEAS_HIGH_DEF     39.0f
+
+#define T_SESOR_RIC_MEAS_LOW_DEF      6.2f
+#define T_SESOR_RIC_MEAS_MED_DEF      28.0f
+#define T_SESOR_RIC_MEAS_HIGH_DEF     39.0f
+
+#define T_SESOR_VEN_MEAS_LOW_DEF      6.2f
+#define T_SESOR_VEN_MEAS_MED_DEF      28.0f
+#define T_SESOR_VEN_MEAS_HIGH_DEF     39.0f
+
+#define T_SESOR_ART_REAL_LOW_DEF      8.0f
+#define T_SESOR_ART_REAL_MED_DEF      27.0f
+#define T_SESOR_ART_REAL_HIGH_DEF     37.0f
+
+#define T_SESOR_RIC_REAL_LOW_DEF      8.0f
+#define T_SESOR_RIC_REAL_MED_DEF      27.0f
+#define T_SESOR_RIC_REAL_HIGH_DEF     37.0f
+
+#define T_SESOR_VEN_REAL_LOW_DEF      8.0f
+#define T_SESOR_VEN_REAL_MED_DEF      27.0f
+#define T_SESOR_VEN_REAL_HIGH_DEF     37.0f
+
 
 #define STATE_TREATMENT	9
+#define STATE_T1TEST 4
+
 
 struct funcRetStruct
 {
@@ -617,17 +632,29 @@ struct ParSaveTO_EEPROM
 	float  T_Plate_Sensor_Offset_heat;
 
 	float T_sensor_ART_Real_Low;
+	float T_sensor_ART_Real_Med;
 	float T_sensor_ART_Real_High;
+
 	float T_sensor_ART_Meas_Low;
+	float T_sensor_ART_Meas_Med;
 	float T_sensor_ART_Meas_High;
+
 	float T_sensor_VEN_Real_Low;
+	float T_sensor_VEN_Real_Med;
 	float T_sensor_VEN_Real_High;
+
 	float T_sensor_VEN_Meas_Low;
+	float T_sensor_VEN_Meas_Med;
 	float T_sensor_VEN_Meas_High;
+
 	float T_sensor_RIC_Real_Low;
+	float T_sensor_RIC_Real_Med;
 	float T_sensor_RIC_Real_High;
+
 	float T_sensor_RIC_Meas_Low;
+	float T_sensor_RIC_Meas_Med;
 	float T_sensor_RIC_Meas_High;
+
 	unsigned char EEPROM_Revision;
 	word EEPROM_CRC;
 };

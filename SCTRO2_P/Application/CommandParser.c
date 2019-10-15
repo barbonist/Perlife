@@ -234,10 +234,10 @@ void SetHeater(int NParams, char** Params)
 void SetCalibTemp(int NParams, char** Params)
 {
 	unsigned char SensNum = 0;
-	float TempVal1, TempVal2 = 0;
+	float TempVal1, TempVal2, TempVal3 = 0;
 	unsigned char *ptr_EEPROM = (EEPROM_TDataAddress)&config_data;
 
-	if (NParams == 3)
+	if (NParams == 4)
 	{
 		if (strcmp_cr(Params[0],"1") == 0)
 		{
@@ -262,7 +262,7 @@ void SetCalibTemp(int NParams, char** Params)
 			sscanf(Params[1] , "%f" , &TempVal1);
 		}
 		else{
-			CommandAnswer("First temperature not ok");
+			CommandAnswer("Low temperature not ok");
 			return;
 		}
 		if(strspn(Params[2], "0123456789.") == strlen(Params[2]))
@@ -271,22 +271,34 @@ void SetCalibTemp(int NParams, char** Params)
 		}
 		else
 		{
-			CommandAnswer("Second temperature not ok");
+			CommandAnswer("Middle temperature not ok");
+			return;
+		}
+		if(strspn(Params[3], "0123456789.") == strlen(Params[3]))
+		{
+			sscanf(Params[3] , "%f" , &TempVal3);
+		}
+		else
+		{
+			CommandAnswer("High temperature not ok");
 			return;
 		}
 
 		switch(SensNum){
 		case 1:
 			config_data.T_sensor_ART_Meas_Low = TempVal1;
-			config_data.T_sensor_ART_Meas_High = TempVal2;
+			config_data.T_sensor_ART_Meas_Med = TempVal2;
+			config_data.T_sensor_ART_Meas_High = TempVal3;
 			break;
 		case 2:
 			config_data.T_sensor_RIC_Meas_Low = TempVal1;
-			config_data.T_sensor_RIC_Meas_High = TempVal2;
+			config_data.T_sensor_RIC_Meas_Med = TempVal2;
+			config_data.T_sensor_RIC_Meas_High = TempVal3;
 			break;
 		case 3:
 			config_data.T_sensor_VEN_Meas_Low = TempVal1;
-			config_data.T_sensor_VEN_Meas_High = TempVal2;
+			config_data.T_sensor_VEN_Meas_Med = TempVal2;
+			config_data.T_sensor_VEN_Meas_High = TempVal3;
 			break;
 		}
 		/*carico il CRC della EEPROM (usata la stessa funzione di CRC del MOD_BUS
@@ -294,11 +306,6 @@ void SetCalibTemp(int NParams, char** Params)
 		config_data.EEPROM_CRC = ComputeChecksum(ptr_EEPROM, sizeof(config_data)-2);
 		/*finita la calibrazione di un sensore la vado subito a salvare in EEPROM*/
 		EEPROM_write((EEPROM_TDataAddress)&config_data, START_ADDRESS_EEPROM, sizeof(config_data));
-	}
-	else if (NParams == 4)
-	{
-		str_NoCr(Params[3]);
-		//TODO
 	}
 	else
 	{

@@ -261,8 +261,7 @@ void verificaTempPlate(void)
 
 #define VERS_1 1
 #define VERS_2 2
-#define VERS_3 6
-
+#define VERS_3 7
 #endif
 uint16_t GetFwVersionProtective(void)
 {
@@ -481,6 +480,14 @@ int main(void)
 		 - se dopo ENABLE_PINC = OFF , torna ENABLE_PINCH = ON vai a (PinchVerifierStat = 3)
 
 		 -(PinchVerifierStat = 3)
+		 COntinua a comportarsi come quando ENABLE_PINCH = OFF fino a quando si verifica un nuovo comando che riporta allo stato (PinchVerifierStat = 1)
+
+		 tutto questo per ogni pinch
+
+	Versione 1.0.002 8/1/2019
+		Modificati i valori di allarme per pressione extrema
+		P Arteriosa max = 110 + 30 mmHg
+		P Venosa max = 10 + 2 mmHg
 		 COntinua a comportarsi come quando ENABLE_PINCH = OFF fino a quando si verifica un nuovo comando che riporta allo stato (PinchVerifierStat = 1)
 
 		 tutto questo per ogni pinch

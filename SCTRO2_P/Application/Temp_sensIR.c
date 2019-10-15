@@ -149,35 +149,48 @@ float Ir_Measured_Temperature_correction(int index_array)
 
 {
 	float MeasuredTemp;
-	float E5;  // error at 5 degrees
-	float E30; //error at 30 degrees
-	float a,b,Err;
+	float E8;  // error at 8 degrees
+	float E27;  // error at 27 degrees
+	float E37; //error at 37 degrees
+	float a,b,c,d, Err;
 
     MeasuredTemp = sensorIR_TM[index_array].tempSensValue;
 
     switch(index_array)
     {
 		case 0:
-			E5 = config_data.T_sensor_ART_Meas_Low - config_data.T_sensor_ART_Real_Low;
-			E30 =  config_data.T_sensor_ART_Meas_High - config_data.T_sensor_ART_Real_High;
+			E8 = config_data.T_sensor_ART_Meas_Low - config_data.T_sensor_ART_Real_Low;
+			E27 = config_data.T_sensor_ART_Meas_Med - config_data.T_sensor_ART_Real_Med;
+			E37 =  config_data.T_sensor_ART_Meas_High - config_data.T_sensor_ART_Real_High;
 			break;
-
 		case 1:
-			E5 = config_data.T_sensor_RIC_Meas_Low - config_data.T_sensor_RIC_Real_Low;
-			E30 =  config_data.T_sensor_RIC_Meas_High - config_data.T_sensor_RIC_Real_High;
+			E8 = config_data.T_sensor_RIC_Meas_Low - config_data.T_sensor_RIC_Real_Low;
+			E27 =  config_data.T_sensor_RIC_Meas_Med - config_data.T_sensor_RIC_Real_Med;
+			E37 =  config_data.T_sensor_RIC_Meas_High - config_data.T_sensor_RIC_Real_High;
 			break;
-
 		case 2:
-			E5 = config_data.T_sensor_VEN_Meas_Low - config_data.T_sensor_VEN_Real_Low;
-			E30 =  config_data.T_sensor_VEN_Meas_High - config_data.T_sensor_VEN_Real_High;
+			E8 = config_data.T_sensor_VEN_Meas_Low - config_data.T_sensor_VEN_Real_Low;
+			E27 =  config_data.T_sensor_VEN_Meas_Med - config_data.T_sensor_VEN_Real_Med;
+			E37 =  config_data.T_sensor_VEN_Meas_High - config_data.T_sensor_VEN_Real_High;
 			break;
     }
 
-    a = (E30 - E5)/25;
-    b = (6*E5 - E30)/5;
-    Err = MeasuredTemp*a + b;
+    // a = (E30 - E5)/25;
+    // b = (6*E5 - E30)/5;
+    // Err = MeasuredTemp*a + b;
 
-    return (MeasuredTemp - Err);
+    a = (E27 - E8)/19;
+    b = (27*E8 - 8*E27)/19;
+    c = (E37 - E27)/10;
+    d = (37*E27 - 27*E37)/10;
+
+    // vedi SC111_008C_19
+    if(MeasuredTemp <= 27.0 )
+    	Err = MeasuredTemp*a + b;
+    else
+    	Err = MeasuredTemp*c + d;
+
+    return (MeasuredTemp + Err);
 }
 
 /*funzione che serve a correggere la temperatura letta col sensore IR con un

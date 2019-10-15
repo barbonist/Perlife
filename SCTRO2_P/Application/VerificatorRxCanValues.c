@@ -187,28 +187,31 @@ void NoCanCommunicationAlarmAct(void)
 
 void MismatchPumpSpeedAlarmAct(void)
 {
+	if( GetControlFSMState() != STATE_T1TEST){
 	ShowNewAlarmError(CODE_ALARM_PUMPSPEED_DONT_MATCH);
 	DisablePinchNPumps();
 	Enable_Heater(false);
 	Enable_Frigo(false);
 	// trigger sec action
 	TriggerSecondaryAction(&PumpMismatchAlarmTimer);
+	}
 }
 
 void MismatchPinchPosAlarmAct(void)
 {
+	if( GetControlFSMState() != STATE_T1TEST){
 	ShowNewAlarmError(CODE_PINCH_POS_DONTMATCH);
 	DisablePinchNPumps();
 	Enable_Heater(false);
 	Enable_Frigo(false);
 	// trigger sec action
 	TriggerSecondaryAction(&PinchMismatchAlarmTimer);
+	}
 }
 
 void MismatchPressArtAlarmAct(void)
 {
-//	if( GetControlFSMState() == STATE_TREATMENT )
-	if(true) // 16/1/2018
+	if( GetControlFSMState() == STATE_TREATMENT )
 	{
 		ShowNewAlarmError(CODE_ALARM_PRESS_ART_DONTMATCH);
 		DisablePinchNPumps();
@@ -223,8 +226,7 @@ void MismatchPressArtAlarmAct(void)
 // venous pressure
 void MismatchPressVenAlarmAct(void)
 {
-//	if( GetControlFSMState() == STATE_TREATMENT )
-	if(true) // 16/1/2018
+	if( GetControlFSMState() == STATE_TREATMENT )
 	{
 		ShowNewAlarmError(CODE_ALARM_PRESS_VEN_DONTMATCH);
 		DisablePinchNPumps();
@@ -239,8 +241,7 @@ void MismatchPressVenAlarmAct(void)
 // filter pressure
 void MismatchPressFiltAlarmAct(void)
 {
-//	if(GetControlFSMState() == STATE_TREATMENT)
-	if(true) // 16/1/2018
+	if(GetControlFSMState() == STATE_TREATMENT)
 	{
 		ShowNewAlarmError(CODE_ALARM_PRESS_ADSFILT_DONTMATCH);
 		DisablePinchNPumps();
@@ -254,8 +255,7 @@ void MismatchPressFiltAlarmAct(void)
 // oxy pressure
 void MismatchPressOxyAlarmAct(void)
 {
-//	if(GetControlFSMState() == STATE_TREATMENT)
-	if(true) // 16/1/2018
+	if(GetControlFSMState() == STATE_TREATMENT)
 	{
 		ShowNewAlarmError(CODE_ALARM_PRESS_OXYGEN_DONTMATCH);
 		DisablePinchNPumps();
@@ -268,8 +268,7 @@ void MismatchPressOxyAlarmAct(void)
 
 void MismatchPressLevelAlarmAct(void)
 {
-//	if(GetControlFSMState() == STATE_TREATMENT)
-	if(true) // 16/1/2018
+	if(GetControlFSMState() == STATE_TREATMENT)
 	{
 		ShowNewAlarmError(CODE_ALARM_PRESS_LEVEL_DONTMATCH);
 		DisablePinchNPumps();
@@ -282,10 +281,7 @@ void MismatchPressLevelAlarmAct(void)
 
 void MismatchTempPlateAlarmAct(void)
 {
-#if 0 //Allarme mismatch temperature di piastra è NON USATO al momento
-//	if(GetControlFSMState() == STATE_TREATMENT)
-	if(true) // 16/1/2018
-	{
+if(GetControlFSMState() == STATE_TREATMENT)	{
 		ShowNewAlarmError(CODE_ALARM_TEMP_PLATE_DONTMATCH);
 		DisablePinchNPumps();
 		Enable_Heater(false);
@@ -315,11 +311,11 @@ void PumpsOrPinchNotRespond_EmergAct_AirAlarm(void)
 bool some_error = false;
 
 	//DIS HEAT , DIS COOL if pinch not safety , OFF 24V  if motors not stopped within 6,5 seconds
-	if( !PinchesAreInSafetyMode() ){
+	// if( !PinchesAreInSafetyMode() ){    9/10/2019 --> MUST disable heater and cooler regardless of condition of pinches ( Verification )
 		some_error = true;
 		Enable_Heater(FALSE);
 		Enable_Frigo(FALSE);
-	}
+	// }
 //	if( !PumpsAreStopped() ){  / don't check since it is possible that user reset alarm in the meantime
 //		some_error = true;
 //		SwitchOFFPinchNPumps();
@@ -351,8 +347,7 @@ void MismatchTempArtAlarmAct(void)
 
 void MismatchTempVenAlarmAct(void)
 {
-//	if(GetControlFSMState() == STATE_TREATMENT)
-	if(true) // 16/1/2018
+	if(GetControlFSMState() == STATE_TREATMENT)
 	{
 		ShowNewAlarmError(CODE_ALARM_TEMP_VEN_DONTMATCH);
 		DisablePinchNPumps();
@@ -365,8 +360,7 @@ void MismatchTempVenAlarmAct(void)
 
 void MismatchTempFluidAlarmAct(void)
 {
-//	if(GetControlFSMState() == STATE_TREATMENT)
-	if(true) // 16/1/2018
+	if(GetControlFSMState() == STATE_TREATMENT)
 	{
 		ShowNewAlarmError(CODE_ALARM_TEMP_FLUID_DONTMATCH);
 		DisablePinchNPumps();
