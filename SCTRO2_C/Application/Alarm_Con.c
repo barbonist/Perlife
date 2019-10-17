@@ -1967,10 +1967,33 @@ void manageAlarmPhysicFlowHigh(void)
 {
 	int flowMaxArt = 0;
 	int flowMaxVen = 0;
+	static bool AlarmFlowHighActive =FALSE;
+	word Pinch_Art_Position  = modbusData[5][0];
+	word Pinch_Ven_Position  = modbusData[6][0];
 
-	/*l'alalarme di flusso alto deve essere attivo sono il trattamento, dai requirements infatti non risulta allarme di flusso massimo in altri stati*/
+	/*l'alalarme di flusso alto deve essere attivo sono il trattamento, dai requirements infatti non risulta allarme di flusso massimo in altri stati
+	 * inoltre se sono in trattamento ma sto facendo ricircolo, quindi se le pinch non sono sull'organo, l'allarme non deve essere attivo*/
 
-	if (GlobalFlags.FlagsDef.EnableFlowHighAlm)
+	if (GetTherapyType() == LiverTreat)
+	{
+		if (Pinch_Art_Position == MODBUS_PINCH_LEFT_OPEN || Pinch_Ven_Position == MODBUS_PINCH_LEFT_OPEN)
+			AlarmFlowHighActive = TRUE;
+		else
+			AlarmFlowHighActive = FALSE;
+	}
+	else if (GetTherapyType() == KidneyTreat)
+	{
+		if (Pinch_Art_Position == MODBUS_PINCH_LEFT_OPEN)
+			AlarmFlowHighActive = TRUE;
+		else
+			AlarmFlowHighActive = FALSE;
+	}
+	else
+	{
+		AlarmFlowHighActive = FALSE;
+	}
+
+	if (GlobalFlags.FlagsDef.EnableFlowHighAlm && AlarmFlowHighActive)
 	{
 		switch (GetTherapyType())
 		{
