@@ -87,7 +87,7 @@ void Manage_IR_Sens_Temp(void)
  		 * andrò ad effettuare la lettura con 'IR_TM_COMM_RecvBlock(ptrDataTemperatureIR, 3, &ret);'*/
  		ptrDataTemperatureIR = buildCmdReadTempSensIR(Address, (RAM_ACCESS_COMMAND | SD_TOBJ1_RAM_ADDRESS), 0);
  		/*incremento i possibili errori dpovuti a non risposte o a risposte con PEC errate; se ricevo benbe resetto questo contatore*/
- 		sensorIR_TM[Address].ErrorMSG++;
+ 		sensorIR_TM[Address-1].ErrorMSG++;
  		/*incremento l'indirizzo così al prossimo giro interrogo il sensore successivo*/
  		Address++;
     }

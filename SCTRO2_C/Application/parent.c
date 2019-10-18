@@ -62,6 +62,9 @@
 
 extern bool AtLeastoneButResRcvd;
 
+/*timer per oltre il quale si fa suonare l'allarme per mancata comunicazione*/
+int timerCounterCheckCommunicationControlSBC = 0;
+
 void ParentFunc(void)
 {
 	static unsigned short ParentStateGenAlarm = 0;  // mantiene il valore dello stato parent che ha generato l'allarme
@@ -1403,6 +1406,20 @@ void ParentFuncT1Test(void)
 	{
 		/*Vincenzo gestione T1 TEST*/
 	case PARENT_T1_NO_DISP_INIT:
+		/*se non ho la comunicazione con l'SBC non vado avanti*/
+		/*setto il timer*/
+		if (timerCounterCheckCommunicationControlSBC == 0)
+			timerCounterCheckCommunicationControlSBC = timerCounterModBus;
+
+		if (SBC_Control_communication_OK == FALSE)
+		{
+			if (msTick_elapsed(timerCounterCheckCommunicationControlSBC) >= 1200 )//intervalli da 50 msec, aspetto quindi 60 sec
+				LevelBuzzer = HIGH;
+			return;
+		}
+		else
+			LevelBuzzer = SILENT;
+
 #ifdef T1_TEST_ENABLED
 		// Filippo - tolto per fargli eseguire il T1 test
 		ptrFutureParent = &stateParentT1TNoDisposable[3];	// lo mando al test della EEPROM quindi eseguo il T1 TEST

@@ -23,9 +23,9 @@
 	 * 0x0800 --> 1.0.0  *0x0801 -->  1.0.1 *0x0802 --> 1.0.2 *0x0803 --> 1.0.3   *0x0804 --> 1.0.4  *0x0805 --> 1.0.5  *0x0806 --> 1.0.6
 	 * 0x0807 --> 1.0.7  *0x0808 -->  1.0.8 *0x0809 --> 1.0.9 *0x080A --> 1.0.10  *0x080B --> 1.0.11 *0x080C --> 1.0.12 *0x080D --> 1.0.13
 	 * 0x080E --> 1.0.14 *0x080F --> 1.0.15 *0x0810 --> 1.0.16 *0x0811 --> 1.0.17 *0x0812 --> 1.0.18 *0x0813 --> 1.0.19 *0x0814 --> 1.0.20
-	 * 0x0815 --> 1.0.21 *0x0816 --> 1.0.22 *0x0817 --> 1.0.23 *0x0818 --> 1.0.24 ... 0x081E --> 1.0.30*/
+	 * 0x0815 --> 1.0.21 *0x0816 --> 1.0.22 *0x0817 --> 1.0.23 *0x0818 --> 1.0.24 ... 0x081F --> 1.0.31*/
 
-#define REVISION_FW_CONTROL 0x081E
+#define REVISION_FW_CONTROL 0x081F
 
 /* Syncronization flag */
 char	iflag_pc_rx;
@@ -2546,6 +2546,10 @@ float MIN_PLATE_TEMP;
 //#define T1_TEST_ENABLED			//se scommentata abilita i T1 Test
 //#define FRONTAL_COVERS_T1_TEST_ENABLED //per abilitare i test specifici per i sensori di Hall dei coperchi frontali
 bool T1_Test_Frigo_Before_Heater;		//variabile  che decide se fare il T1 Test prima del frigo e poi del riscaldatore o viceversa
+
+/*flag che dentifica l'avevnuta comunicazione con l' SBC
+ * farò injiziare il T1_TEST solo dopo che è stata messa a TRUE*/
+bool SBC_Control_communication_OK;
 
 // stati per gestire il pilotaggio delle resistenze di riscaldamento
 typedef enum

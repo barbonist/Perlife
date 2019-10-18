@@ -1369,7 +1369,10 @@ void manageParentTempSensIR(void){
 	   (tempProtSTF2 < LOW_ENV_TEMP_T1_TEST)  ||
 	   (tempProtSTF2 > HIGH_ENV_TEMP_T1_TEST) ||
 	   (tempProtSTV2 < LOW_ENV_TEMP_T1_TEST)  ||
-	   (tempProtSTV2 > HIGH_ENV_TEMP_T1_TEST)
+	   (tempProtSTV2 > HIGH_ENV_TEMP_T1_TEST) ||
+	   sensorIR_TM[0].ErrorMSG > MAX_MSG_CONSECUTIVE_IR_TEMP_SENS_NOT_DETECTED ||
+	   sensorIR_TM[1].ErrorMSG > MAX_MSG_CONSECUTIVE_IR_TEMP_SENS_NOT_DETECTED ||
+	   sensorIR_TM[2].ErrorMSG > MAX_MSG_CONSECUTIVE_IR_TEMP_SENS_NOT_DETECTED
 
 	   ){
 			ptrT1Test->result_T1_tempIR = T1_TEST_KO;
@@ -1574,7 +1577,7 @@ void manageParenT1Pinch(void)
 
 	case CHK_PINCH_DIS_CON:
 		/*verifico che le posizioni viste da pro e inviate dai driver a con
-		 * siano coerenti con le posizioni di disale (filtro a sinistra e le altre due a destra)*/
+		 * siano coerenti con le posizioni di disable (filtro a sinistra e le altre due a destra)*/
 		if (
 			(*FilterPinchPos == MODBUS_PINCH_LEFT_OPEN) &&
 			(*ArtPinchPos == MODBUS_PINCH_RIGHT_OPEN) &&

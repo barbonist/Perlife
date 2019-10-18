@@ -705,7 +705,7 @@ void CalcAlarmActive(void)
 		{
 			/* DA DEBUGGARE*/
 			//manageAlarmFlowSensNotDetected();
-			//manageAlarmIrTempSensNotDetected();
+		//	manageAlarmIrTempSensNotDetected();
 				// Filippo - aggiungo la gestione del tasto di stop come allarme
 		//		manageAlarmStopButtonPressed();
 
@@ -733,8 +733,8 @@ void CalcAlarmActive(void)
 		case STATE_MOUNTING_DISP:
 		{
 			/* DA DEBUGGARE*/
-			//manageAlarmFlowSensNotDetected();
-			//manageAlarmIrTempSensNotDetected();
+			manageAlarmFlowSensNotDetected();
+			manageAlarmIrTempSensNotDetected();
 
 			break;
 		}
@@ -2161,7 +2161,7 @@ void manageAlarmIrTempSensNotDetected(void)
 		if (sensorIR_TM[i].ErrorMSG > MAX_MSG_CONSECUTIVE_IR_TEMP_SENS_NOT_DETECTED)
 		{
 			alarmList[IR_SENS_NOT_DETECTED].physic = PHYSIC_TRUE;
-
+			LevelBuzzer = HIGH;//2
 			/*in questo caso bisogna comunicarlo all'SBC che metterà a video un pop up per le possibili soluzioni*/
 			break;
 		}
@@ -2171,6 +2171,8 @@ void manageAlarmIrTempSensNotDetected(void)
 	if(i == 3 && alarmList[IR_SENS_NOT_DETECTED].physic == PHYSIC_TRUE)
 	{
 		alarmList[IR_SENS_NOT_DETECTED].physic = PHYSIC_FALSE;
+
+		LevelBuzzer = SILENT;//0
 
 		for (int j = 0; j<3; j++)
 			sensorIR_TM[j].ErrorMSG = 0;
@@ -2185,6 +2187,8 @@ void ClearModBusAlarm(void)
 		CountErrorModbusMSG[j] = 0;
 	for (int j = 0; j<LAST_ACTUATOR; j++)
 		ActuatorWriteCnt[j] = 0;
+
+	LevelBuzzer = SILENT;//0
 }
 
 void manageAlarmActuatorModbusNotRespond(void)
@@ -2206,6 +2210,7 @@ void manageAlarmActuatorModbusNotRespond(void)
 				CntErrModbusMSGAlmActive = 1;
 				alarmList[MODBUS_ACTUATOR_SEND].physic = PHYSIC_TRUE;
 				//CountErrorModbusMSG[i] = 0;
+				LevelBuzzer = HIGH;//2
 
 				/*in questo caso bisogna comunicarlo all'SBC che metterà a video un pop up per le possibili soluzioni*/
 				break;
@@ -2217,6 +2222,7 @@ void manageAlarmActuatorModbusNotRespond(void)
 		{
 			CntErrModbusMSGAlmActive = 0;
 			alarmList[MODBUS_ACTUATOR_SEND].physic = PHYSIC_FALSE;
+			LevelBuzzer = SILENT;//0
 
 			for (int j = 0; j<8; j++)
 				CountErrorModbusMSG[j] = 0;
@@ -2244,7 +2250,7 @@ void manageAlarmActuatorWRModbusNotRespond(void)
 			{
 				ActWriteCntAlmActive = 1;
 				alarmList[MODBUS_ACTUATOR_SEND].physic = PHYSIC_TRUE;
-
+				LevelBuzzer = HIGH;//2
 				/*in questo caso bisogna comunicarlo all'SBC che metterà a video un pop up per le possibili soluzioni*/
 				break;
 			}
@@ -2255,6 +2261,7 @@ void manageAlarmActuatorWRModbusNotRespond(void)
 		{
 			ActWriteCntAlmActive = 0;
 			alarmList[MODBUS_ACTUATOR_SEND].physic = PHYSIC_FALSE;
+			LevelBuzzer = SILENT;//0
 
 			for (int j = 0; j<LAST_ACTUATOR; j++)
 				ActuatorWriteCnt[j] = 0;

@@ -1082,6 +1082,9 @@ void buildRDMachineStateResponseMsg(char code, char subcode)
 	byte index = 0;
 	unsigned int life = FreeRunCnt10msec *10;
 
+	if (SBC_Control_communication_OK == FALSE)
+		SBC_Control_communication_OK = TRUE;
+
 	/*0*/	sbc_tx_data[index++] = 0xA5;
 	/*1*/   sbc_tx_data[index++] = 0xAA;
 	/*2*/   sbc_tx_data[index++] = 0x55;

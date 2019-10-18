@@ -628,7 +628,7 @@ void EnablePinch(int NParams, char** Params)
 
        // parse on off
        if(NParams != 1){
-             CommandAnswer("enable power on/off");
+             CommandAnswer("enable pinch on/off");
              return;
        }
        if(strcmp_cr(Params[0],"on") == 0) enab_val = TRUE;

@@ -283,6 +283,12 @@ int main(void)
   /*inizializzo il flag che mi dice se in svuotamento è stato premuto il bottone di stop*/
   emptyStopButtonPressed = FALSE;
 
+  /*inizializzo la flag che mi assicura l'avvenuta comunicazione con l'SBC*/
+  SBC_Control_communication_OK = FALSE;
+
+  /*inizializzo la flag per decidere se fare prima il T1 test sul frogo e dopo sul riscaldatore o viceversa*/
+  T1_Test_Frigo_Before_Heater = FALSE;
+
   // Filippo - inizializzo il flag di test del frigo e riscaldatore
   testT1HeatFridge=0;
   airSensorTestKO=FALSE;
