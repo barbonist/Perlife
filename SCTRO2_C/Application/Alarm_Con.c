@@ -1469,13 +1469,13 @@ void manageAlarmPhysicSetFlowAndPressures(void)
 		if (GetTherapyType() == LiverTreat)
 		{
 			// Allarme di SET pressione venosa -- Vincenzo: lo attivo solo se la pinch venosa è aperta sull'organo
-			if ((PR_VEN_mmHg_Filtered > pressureTargetVen + DELTA_TARGET_PRESS_VEN_LIVER) && (Pinch_Ven_Position == MODBUS_PINCH_LEFT_OPEN))
+			if ((PR_VEN_Sistolyc_mmHg > pressureTargetVen + DELTA_TARGET_PRESS_VEN_LIVER) && (Pinch_Ven_Position == MODBUS_PINCH_LEFT_OPEN))
 				alarmList[PRESS_VEN_SET].physic = PHYSIC_TRUE;
 			else
 				alarmList[PRESS_VEN_SET].physic = PHYSIC_FALSE;
 
 			// Allarme di SET pressione arteriosa -- Vincenzo: lo attivo solo se la pinch arteriosa è aperta sull'organo
-			if ((PR_ART_mmHg_Filtered > pressureTargetArt + DELTA_TARGET_PRESS_ART_LIVER) && (Pinch_Art_Position == MODBUS_PINCH_LEFT_OPEN))
+			if ((PR_ART_Sistolyc_mmHg > pressureTargetArt + DELTA_TARGET_PRESS_ART_LIVER) && (Pinch_Art_Position == MODBUS_PINCH_LEFT_OPEN))
 				alarmList[PRESS_ART_SET].physic = PHYSIC_TRUE;
 			else
 				alarmList[PRESS_ART_SET].physic = PHYSIC_FALSE;
@@ -1501,7 +1501,7 @@ void manageAlarmPhysicSetFlowAndPressures(void)
 		else //Kidney, pressione arteriosa, flusso arterioso e flusso ossigenazione
 		{
 			// Allarme di SET pressione arteriosa -- Vincenzo: lo attivo solo se la pinch arteriosa è aperta sull'organo
-			if ((PR_ART_mmHg_Filtered > pressureTargetArt + DELTA_TARGET_PRESS_ART_KIDNEY) && (Pinch_Art_Position == MODBUS_PINCH_LEFT_OPEN))
+			if ((PR_ART_Sistolyc_mmHg > pressureTargetArt + DELTA_TARGET_PRESS_ART_KIDNEY) && (Pinch_Art_Position == MODBUS_PINCH_LEFT_OPEN))
 				alarmList[PRESS_ART_SET].physic = PHYSIC_TRUE;
 			else
 				alarmList[PRESS_ART_SET].physic = PHYSIC_FALSE;
