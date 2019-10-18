@@ -253,7 +253,7 @@ void verificaTempPlate(void)
 
 #define VERS_1 1
 #define VERS_2 2
-#define VERS_3 7
+#define VERS_3 8
 
 #endif
 uint16_t GetFwVersionProtective(void)
@@ -481,36 +481,38 @@ int main(void)
 		- Modificata la funzione
 			bool PinchesAreInSafetyMode(void)
 			per considerare in sicurezza anche una  pinch chiusa da entrambi i lati.
-	Versione 1.1.000
+	Versione 1.1.0
 		- inserito il command processor su seriale per accettare comandi tipo >get temp ... >set heater on 65 ...
 		- aumentato il tempo per scatenare l'errore di temperatura troppo bassa . Infatti succede a volte T troppo bassa in
 		  ipotermia quando si fermano i motori per input utente.
 
-	Versione 1.2.000
+	Versione 1.2.0
 		- inseriti nuovi comandi command processore : get doors ( per posizione ante delle pompe laterali ) ,  get hooks ( per stato ganci reservoir )
 		  get can ( per stato can-bus : ok / not ok )
-	Versione 1.2.100
+	Versione 1.2.1
 		- gestita ricezione valori di aria in linea venosa e arteriosa da control
 		- se si riceve valore di aria >= 50 , si fa partire un timer di 5 sec.
 		- trascorsi 5 sec , se non si sono fermate le pompe e le pinch in sicurezza , si da allarme e si va in sicurezza
-	Versione 1.2.200
+	Versione 1.2.2
 		-- SB 2-5-2019 sometimes error occurs if control changes fast from 0 RPM to non 0 RPM and back , to overcome this issue
 		-- change CountTreshold depending on control RPM and local RPM vales.
 		-- if some values of RPM control or RPM protective is too low then wait longer time before error
-	Versione 1.2.300
+	Versione 1.2.3
 		-- SB 16-5-2019 high pressure alarms intervention time changed from 1 to 2 seconds.
-	Versione 1.2.400
+	Versione 1.2.4
 		-- SB command for temperature calibration
 		-- SB command to enable & disable pumps and pinchs
 		-- SB in T1Test Control can send commands to protective for enable and power on off test.
-	Versione 1.2.500
+	Versione 1.2.5
 		-- SB solved bug causing all check performed also during T1 test and priming phases. Check during T1 test have not to be done
 		-- SB during T1 test , pumps speed match test should not be performed
-	Versione 1.2.600
+	Versione 1.2.6
 		-- SB changed IR temperature sensors calibration : introduced 3 calibration points at 8 , 27 and 37 degrees , set calibtemp command
 		   changed accordingly
-	Versione 1.2.700
+	Versione 1.2.7
 		-- SB 09/10/2019 As from SRS.PRT.45 and other non recoverable alarms , protective must disconnect heater and cooler , regardless of pinch status
+	Versione 1.2.8
+		-- VP 18/10/2019 Bug fixing on index of sensorIR_TM[i].ErrorMSG++ on Temp_sensIR.c file
   */
 
 
