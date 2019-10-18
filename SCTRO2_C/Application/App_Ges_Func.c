@@ -1710,7 +1710,7 @@ LIQ_TEMP_CONTR_TASK_STATE FrigoHeatTempControlTaskNewPID(LIQ_TEMP_CONTR_TASK_CMD
 	}
 	else
 	{
-		tmpr = ((int)(sensorIR_TM[1].tempSensValue*10));
+		tmpr = ((int)(sensorIR_TM[0].tempSensValue*10)); //VP 18/10/2019: uso il sensore di temp arterioso e non + quello di ricircolo
 	}
 
 	//----------------------------------------------------------------------
