@@ -40,6 +40,7 @@ void Enable_Frigo (bool status);
 typedef void(*TAlarmAction)(void);// TAlarmAction;
 
 typedef struct {
+	bool AlarmCheckEnabled;
 	uint8_t AlarmCounter;
 	uint8_t	CountTreshold;
 	bool AlarmConditionPending;

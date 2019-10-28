@@ -55,4 +55,15 @@ void Enable_Frigo_CommandCAN(bool status);
 void LogControlBoardError(uint16_t NumCError);
 void LogProtectiveBoardError(uint16_t NumPError);
 
+
+
+typedef struct {
+	int hours;
+	int minutes;
+	int seconds;
+	int hundredms;
+} TTime ;
+
+TTime Get_OnTime(void);
+
 #endif /* CONTROLPROTECTIVEINTERFACE_H_ */

@@ -414,12 +414,16 @@ LDD_TError IntI2cLdd1_Enable(LDD_TDeviceData *DeviceDataPtr)
 {
   IntI2cLdd1_TDeviceData *DeviceDataPrv = (IntI2cLdd1_TDeviceData *)DeviceDataPtr;
 
-  if (!DeviceDataPrv->EnUser) {        /* Is the device disabled by user? */
-    DeviceDataPrv->EnUser = TRUE;      /* If yes then set the flag "device enabled" */
-    DeviceDataPrv->SerFlag &= (uint8_t)~(MASTER_IN_PROGRES); /* Clear the status variable */
-    HWEnDi(DeviceDataPrv);             /* Enable the device */
-  }
-  return ERR_OK;
+    if (!DeviceDataPrv->EnUser) {        /* Is the device disabled by user? */
+      DeviceDataPrv->EnUser = TRUE;      /* If yes then set the flag "device enabled" */
+      DeviceDataPrv->SerFlag &= (uint8_t)~(MASTER_IN_PROGRES); /* Clear the status variable */
+
+      // Filippo - modifica necessaria per il ripristino delle comunicazioni
+      DeviceDataPrv->OutLenM=0;
+
+      HWEnDi(DeviceDataPrv);             /* Enable the device */
+    }
+    return ERR_OK;
 }
 
 /*

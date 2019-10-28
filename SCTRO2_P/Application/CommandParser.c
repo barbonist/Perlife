@@ -181,6 +181,7 @@ void GetMulti(int NParams, char** Params)
 		else if(strcmp_cr(Params[0],"pumps_hall") == 0) GetPumpsHall(NParams-1, Params+1) ;
 		else if(strcmp_cr(Params[0],"hooks") == 0) GetHooksStat(NParams-1, Params+1);
 		else if(strcmp_cr(Params[0],"can") == 0) GetIfCanOk(NParams-1, Params+1);
+		else if(strcmp_cr(Params[0],"ontime") == 0) GetNShowOnTime(NParams-1, Params+1) ;
 		else {
 			//ErrorParamsNotOk( NParams, Params);
 			CommandAnswer("get temp/press/pumps/pinch/errors/doors/pumps_hall/hooks/can  [params] ");
@@ -504,7 +505,10 @@ void GetIfCanOk(int NParams, char** Params)
 	SetLogCommand('3');
 }
 
-
+void GetNShowOnTime(int NParams, char** Params)
+{
+	SetLogCommand('B');
+}
 
 void DrawLion(int NParams, char** Params)
 {

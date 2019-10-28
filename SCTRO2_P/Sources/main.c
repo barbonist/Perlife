@@ -253,7 +253,7 @@ void verificaTempPlate(void)
 
 #define VERS_1 1
 #define VERS_2 2
-#define VERS_3 8
+#define VERS_3 9
 
 #endif
 uint16_t GetFwVersionProtective(void)
@@ -513,6 +513,34 @@ int main(void)
 		-- SB 09/10/2019 As from SRS.PRT.45 and other non recoverable alarms , protective must disconnect heater and cooler , regardless of pinch status
 	Versione 1.2.8
 		-- VP 18/10/2019 Bug fixing on index of sensorIR_TM[i].ErrorMSG++ on Temp_sensIR.c file
+
+	Versione 1.2.9
+		-- aggiornata specifica : comportamento in caso di livello aria eccessivo
+		Se verifica la seguenti condizioni: a) Ricezione da CSB FW mediante linea CAN di un valore ARIA maggiore di 50 su linea arteriosa o venosa e le pinch non sono in
+		posizione di sicurezza --> Verifica che le condizioni suddette permangono per almeno due secondi -->  Trascorsi 3 secondi dalle condizioni precedentemente descritte verifica
+		che le pinch continuano a non essere in sicurezza.  In questo caso , effettua le seguenti azioni :  DIS PIN / DIS MOT / OFF 24V / OFF 48V / TXAL
+
+		-- aggiornata specifica per la gestione dei codici allarme ricevuti dalla control:
+		Se riceve dalla control un CODICE DI ALLARME di pressione o temperatura presente nella  TABELLA ALLARMI CAN (vedi documento di progetto fw protective ),
+		effettuare le seguenti azioni : Verifica che (a) entro 2 secondi le pinch arteriosa e venosa si portino in condizoni di sicurezza / che entro 6.5 secondi si abbia arresto dei
+		motori delle pompe.
+		Se la verifica (a) dà esito positivo , inibisce temporaneamente le azioni di verifica  per questi allarmi:
+		CODE_ALARM_TEMP_ART_XHIGH = 483 / CODE_ALARM_TEMP_VEN_XHIGH = 484 / CODE_ALARM_TEMP_FLUID_XHIGH = 485 / CODE_ALARM_TEMP_ART_XLOW = 486 / CODE_ALARM_TEMP_VEN_XLOW = 487
+		CODE_ALARM_TEMP_FLUID_XLOW = 488 / CODE_ALARM_PRESS_ART_XHIGH = 477 / CODE_ALARM_PRESS_VEN_XHIGH = 478 / CODE_ALARM_PRESS_ADSFILT_XHIGH = 479 / CODE_ALARM_PRESS_OXYGEN_XHIGH = 480
+		CODE_ALARM_PRESS_LEVEL_X1HIGH = 481.
+		Tutti gli altri controlli e tutti gli altri allarmi devono essere mantenuti attivi
+		c) se dopo 2 secondi dall'allarme da control le pinch arteriosa e venosa non si portano in sicurezza  , eseguire le seguenti azioni :  / OFF 24V / OFF 48V.
+		E invia alla control il codice di allarme  CODE_ALARM_GEN_HWFAILURE = 496
+		d) se dopo 6.5 secondi dall'allarme da control le pompe non si sono fermate  , eseguire le seguenti azioni : / OFF 24V / OFF 48V. e invia alla control il codice di allarme
+		CODE_ALARM_GEN_HWFAILURE = 496
+
+		-- aggiornata specifica per la gestione del reset allarme control ricevuto via can:
+		Se riceve da control via CAN un CODICE DI ALLARME con il valore CODE ALARM NO ERROR dopo la ricezione di un allarme non nullo ,  Se l'allarme attivo sulla control
+		era un CODICE DI ALLARME di pressione o temperatura presente nella  TABELLA ALLARMI CAN (vedi documen o [2],  effettuare le seguenti azioni:
+
+		a) Attendere che le pinch escano dalla condizione di sicurezza
+		b) ripristinare i controlli e la generazione degli allarmi precedentemente elencati.
+
   */
 
 

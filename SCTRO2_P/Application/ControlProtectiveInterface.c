@@ -136,6 +136,8 @@ void TxPumpsHall(void);
 void TxDoorsStatus(void);
 void TxHooksStatus(void);
 void TxIfCanOk(void);
+void TxTimeOn(void);
+void Timer100ms(void); // RTC timer
 
 uint8_t CharReceived(void);
 
@@ -244,11 +246,11 @@ void InitControlProtectiveInterface(void)
 		OldRxCan7.RawCanBuffer[ii] = 1;
 	}
 
-
 	TxCan5.STxCan5.ProtFwVersion = GetFwVersionProtective();
 	AddSwTimer(ManageTxCan100ms,10,TM_REPEAT);
 	AddSwTimer(ManageTxDebug,5,TM_REPEAT);
 	AddSwTimer(ManageGetParams,5,TM_REPEAT);
+	AddSwTimer(Timer100ms,10,TM_REPEAT);
 	InitVerificatorRx();
 	InitVerificatorLocalParams();
 	InitIncomingAlarmManager();
@@ -288,35 +290,35 @@ void TxAlarmCode( uint16_t AlarmCode)
 void onNewPressOxygen(uint16_t Value)
 {
 	TxCan1.STxCan1.PressOxy = Value;
-	if( IsVerifyRequired() )
+	//if( IsVerifyRequired() )
 			VerifyOxygenPressure(Value);
 }
 
 void onNewTubPressLevel(uint16_t Value)
 {
 	TxCan0.STxCan0.PressLevelx100 = Value;
-	if( IsVerifyRequired() )
+	//if( IsVerifyRequired() )
 			VerifyTubPressure(Value);
 }
 
 void onNewPressADSFLT(uint16_t  Value)
 {
 	TxCan0.STxCan0.PressFilter = Value;
-	if( IsVerifyRequired() )
+	//if( IsVerifyRequired() )
 			VerifyFilterPressure(Value);
 }
 
 void onNewPressVen(uint16_t  Value)
 {
 	TxCan0.STxCan0.PressVen = Value;
-	if( IsVerifyRequired() )
+	//if( IsVerifyRequired() )
 			VerifyVenousPressure(Value);
 }
 
 void onNewPressArt(uint16_t  Value)
 {
 	TxCan0.STxCan0.PressArt = Value;
-	if( IsVerifyRequired() )
+	//if( IsVerifyRequired() )
 		VerifyArterialPressure(Value);
 }
 
@@ -477,7 +479,7 @@ void onNewTPlateCentDegrees(  float Temper11  )
 
        Tempx10 = (int16_t)(Temper11 * 10);
        TxCan5.STxCan5.tempPlateP = Tempx10;
-       if( IsVerifyRequired() )
+       //if( IsVerifyRequired() )
                     VerifyPlateTemp( Temper11 );
 }
 
@@ -486,7 +488,7 @@ void onNewTPerfArteriosa(float Temper)
        int16_t Tempx10;
        Tempx10 = (int16_t)(Temper * 10);
        TxCan1.STxCan1.TempArtx10 = Tempx10;
-       if( IsVerifyRequired() )
+       //if( IsVerifyRequired() )
                     VerifyArtTemp(Temper);
 }
 
@@ -495,7 +497,7 @@ void onNewTPerfRicircolo(float Temper)
       int16_t Tempx10;
        Tempx10 = (int16_t)(Temper * 10);
        TxCan1.STxCan1.TempFluidx10 = Tempx10;
-       if( IsVerifyRequired() )
+       //if( IsVerifyRequired() )
                     VerifyFluidTemp(Temper);
 }
 
@@ -505,7 +507,7 @@ void onNewTPerfVenosa(float Temper)
        int16_t Tempx10;
        Tempx10 = (int16_t)(Temper * 10);
        TxCan1.STxCan1.TempVenx10 = Tempx10;
-       if( IsVerifyRequired() )
+       //if( IsVerifyRequired() )
              VerifyVenTemp(Temper);
 }
 
@@ -613,13 +615,13 @@ void ReceivedCanData(uint8_t *rxbuff, int rxlen, int RxChannel) {
 }
 
 void NewDataRxChannel0(void) {
-	if( IsVerifyRequired() )
+	//if( IsVerifyRequired() )
 	VerifyRxState(RxCan0.SRxCan0.State, RxCan0.SRxCan0.Parent,
 			RxCan0.SRxCan0.Child, RxCan0.SRxCan0.Guard);
 }
 
 void NewDataRxChannel1(void) {
-	if( IsVerifyRequired() )
+	//if( IsVerifyRequired() )
 	VerifyRxPressures(RxCan1.SRxCan1.PressFilter, RxCan1.SRxCan1.PressArt,
 			RxCan1.SRxCan1.PressVen, RxCan1.SRxCan1.PressLevelx100,
 			RxCan2.SRxCan2.PressOxy);
@@ -637,7 +639,7 @@ void NewDataRxChannel2(void) {
 	// pressure changed
 	if (RxCan2.SRxCan2.PressOxy != OldRxCan2.SRxCan2.PressOxy) {
 		// oxy pressure changed
-		if( IsVerifyRequired() )
+		//if( IsVerifyRequired() )
 		VerifyRxPressures(RxCan1.SRxCan1.PressFilter, RxCan1.SRxCan1.PressArt,
 				RxCan1.SRxCan1.PressVen, RxCan1.SRxCan1.PressLevelx100,
 				RxCan2.SRxCan2.PressOxy);
@@ -648,7 +650,7 @@ void NewDataRxChannel2(void) {
 //			|| (RxCan2.SRxCan2.TempVenx10 != OldRxCan2.SRxCan2.TempVenx10)
 //			|| (RxCan2.SRxCan2.TempFluidx10 != OldRxCan2.SRxCan2.TempFluidx10)) {
 
-			if( IsVerifyRequired() )
+			//if( IsVerifyRequired() )
 				VerifyRxTemperatures(RxCan2.SRxCan2.TempArtx10, RxCan2.SRxCan2.TempFluidx10, RxCan2.SRxCan2.TempVenx10, RxCan5.SRxCan5.tempPlateC);
 //	}
 }
@@ -656,7 +658,7 @@ void NewDataRxChannel2(void) {
 void NewDataRxChannel3(void) {
 	// air alarm
 	//if (RxCan3.SRxCan3.AirAlarm_N_Therm != OldRxCan3.SRxCan3.AirAlarm_N_Therm) {
-		if( IsVerifyRequired() )
+		//if( IsVerifyRequired() )
 			VerifyRxAirAlarm(RxCan3.SRxCan3.AirAlarm_N_Therm & 0x01);
 
 		if ( (RxCan3.SRxCan3.AirAlarm_N_Therm & 0x02) && !(RxCan3.SRxCan3.AirAlarm_N_Therm & 0x04) )
@@ -704,7 +706,7 @@ void NewDataRxChannel3(void) {
 	// pinch pos
 
 
-	if( IsVerifyRequired() )
+	//if( IsVerifyRequired() )
 		VerifyRxPinchPos(RxCan3.SRxCan3.Pinch0Pos, RxCan3.SRxCan3.Pinch1Pos, RxCan3.SRxCan3.Pinch2Pos);
 
 }
@@ -715,7 +717,7 @@ uint16_t GetReceivedAlarmCode(void)
 }
 
 void NewDataRxChannel4(void) {
-	if( IsVerifyRequired() )
+	//if( IsVerifyRequired() )
 	VerifyRxPumpsRpm(RxCan4.SRxCan4.SpeedPump0Rpmx100,
 			RxCan4.SRxCan4.SpeedPump1Rpmx100, RxCan4.SRxCan4.SpeedPump2Rpmx100,
 			RxCan4.SRxCan4.SpeedPump3Rpmx100);
@@ -752,7 +754,7 @@ void NewDataRxChannel5(void)
 
 	//if (RxCan5.SRxCan5.tempPlateC != OldRxCan5.SRxCan5.tempPlateC) {
 		// temp plate changed
-	if( IsVerifyRequired() )
+	//if( IsVerifyRequired() )
 		VerifyRxTemperatures(RxCan2.SRxCan2.TempArtx10, RxCan2.SRxCan2.TempFluidx10, RxCan2.SRxCan2.TempVenx10, RxCan5.SRxCan5.tempPlateC);
 	//}
 	VerifyRxAirLevels(RxCan5.SRxCan5.AirArtLevel, RxCan5.SRxCan5.AirVenLevel);
@@ -984,6 +986,11 @@ word sent_data;
 			sprintf(stringPtr, "  CAN bus communication  \r\n");
 			PC_DEBUG_COMM_SendBlock(stringPtr, strlen(stringPtr), &sent_data);
 			break;
+		case 'B': // log time
+			LogMode = 27;
+			sprintf(stringPtr, "  Time from power on  \r\n");
+			PC_DEBUG_COMM_SendBlock(stringPtr, strlen(stringPtr), &sent_data);
+			break;
 	}
 	cmd = '_';
 
@@ -1015,6 +1022,9 @@ word sent_data;
 		break;
 	case 25: // log if can ok
 		LogMode = 26;
+		break;
+	case 27: // log time on
+		LogMode = 28;
 		break;
 	case 2: // pressure
 		TxDebugPressures();
@@ -1064,6 +1074,12 @@ word sent_data;
 	case 26: // log if can status ok
 		if( PrescalerCnt == 0){
 			TxIfCanOk();
+		}
+		PrescalerCnt = (PrescalerCnt + 1) % 20;
+		break;
+	case 28: // log time since power on
+		if( PrescalerCnt == 0){
+			TxTimeOn();
 		}
 		PrescalerCnt = (PrescalerCnt + 1) % 20;
 		break;
@@ -1266,6 +1282,19 @@ void TxHooksStatus(void)
 
 bool GetCanOk(void);
 
+void TxTimeOn(void)
+{
+	static char ResultStr[200];
+	word sent_data;
+	char sCanOk[8];
+	TTime timeon;
+
+	timeon = Get_OnTime();
+
+	sprintf(ResultStr," %02u:%02u:%02u \r\n", timeon.hours , timeon.minutes , timeon.seconds);
+	PC_DEBUG_COMM_SendBlock(ResultStr, strlen(ResultStr) , &sent_data);
+}
+
 void TxIfCanOk(void)
 {
 	static char ResultStr[200];
@@ -1278,6 +1307,8 @@ void TxIfCanOk(void)
 }
 
 
+
+
 uint8_t CharReceived(void)
 {
 uint8_t rxchr;
@@ -1286,6 +1317,32 @@ uint8_t rxchr;
 	else return 0xFF;
 
 }
+
+///////////////////////////////////
+// Software RTC measuring on time
+///////////////////////////////////
+
+TTime OnTime = {0,0,0,0};
+
+void Timer100ms(void)
+{
+	OnTime.hundredms = (OnTime.hundredms+1) % 10;
+	if(OnTime.hundredms == 0){
+		OnTime.seconds = (OnTime.seconds+1) % 60;
+		if(OnTime.seconds == 0){
+			OnTime.minutes = (OnTime.minutes + 1) % 60;
+			if(OnTime.minutes == 0) OnTime.hours ++;
+		}
+	}
+}
+
+TTime Get_OnTime(void)
+{
+	return OnTime;
+}
+
+
+
 
 
 

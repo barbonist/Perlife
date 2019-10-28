@@ -9,6 +9,8 @@
 #define APPLICATION_VERIFICATORLOCALSENSORS_H_
 
 void InitVerificatorLocalParams(void);
+void DisableOrganProtectionChecks(void);
+void EnableOrganProtectionChecks(void);
 
 void VerifyArterialPressure(uint16_t ValPress);
 void VerifyOxygenPressure(uint16_t Value);

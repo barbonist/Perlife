@@ -50,22 +50,22 @@ void AirPresentAlarmAct(void);
 
 void PumpsOrPinchNotRespond_EmergAct_AirAlarm(void);
 
-TAlarmTimer PumpMismatchAlarmTimer = {0,80,false,false,MismatchPumpSpeedAlarmAct , 0 , 65 , PumpsOrPinchNotRespond_EmergAct }; // alarm after 7 s mismatch
-TAlarmTimer CanOfflineAlarmTimer = {0,20,false,false,NoCanCommunicationAlarmAct , 0 , 65 , PumpsOrPinchNotRespond_EmergAct }; // alarm after 2 s mismatch
-TAlarmTimer PinchMismatchAlarmTimer = {0,20,false,false, MismatchPinchPosAlarmAct , 0 , 65 , PumpsOrPinchNotRespond_EmergAct }; // alarm after 2 s mismatch
+TAlarmTimer PumpMismatchAlarmTimer = {true, 0 , 80,false,false,MismatchPumpSpeedAlarmAct , 0 , 65 , PumpsOrPinchNotRespond_EmergAct }; // alarm after 7 s mismatch
+TAlarmTimer CanOfflineAlarmTimer = {true, 0,20,false,false,NoCanCommunicationAlarmAct , 0 , 65 , PumpsOrPinchNotRespond_EmergAct }; // alarm after 2 s mismatch
+TAlarmTimer PinchMismatchAlarmTimer = {true, 0,20,false,false, MismatchPinchPosAlarmAct , 0 , 65 , PumpsOrPinchNotRespond_EmergAct }; // alarm after 2 s mismatch
 
-TAlarmTimer PressArtMismatchAlarmTimer = {0,50,false,false, MismatchPressArtAlarmAct , 0 , 65 , PumpsOrPinchNotRespond_EmergAct }; // alarm after 5 s mismatch
-TAlarmTimer PressVenMismatchAlarmTimer = {0,50,false,false, MismatchPressVenAlarmAct , 0 , 65 , PumpsOrPinchNotRespond_EmergAct }; // alarm after 5 s mismatch and 6.5
-TAlarmTimer PressFilterMismatchAlarmTimer = {0,50,false,false, MismatchPressFiltAlarmAct , 0 , 65 , PumpsOrPinchNotRespond_EmergAct }; // alarm after 5 s mismatch
-TAlarmTimer PressOxyMismatchAlarmTimer = {0,50,false,false, MismatchPressOxyAlarmAct , 0 , 65 , PumpsOrPinchNotRespond_EmergAct }; // alarm after 5 s mismatch
-TAlarmTimer PressLevelMismatchAlarmTimer = {0,70,false,false, MismatchPressLevelAlarmAct , 0 , 65 , PumpsOrPinchNotRespond_EmergAct }; // alarm after 7 s mismatch
+TAlarmTimer PressArtMismatchAlarmTimer = {true, 0,50,false,false, MismatchPressArtAlarmAct , 0 , 65 , PumpsOrPinchNotRespond_EmergAct }; // alarm after 5 s mismatch
+TAlarmTimer PressVenMismatchAlarmTimer = {true, 0,50,false,false, MismatchPressVenAlarmAct , 0 , 65 , PumpsOrPinchNotRespond_EmergAct }; // alarm after 5 s mismatch and 6.5
+TAlarmTimer PressFilterMismatchAlarmTimer = {true, 0,50,false,false, MismatchPressFiltAlarmAct , 0 , 65 , PumpsOrPinchNotRespond_EmergAct }; // alarm after 5 s mismatch
+TAlarmTimer PressOxyMismatchAlarmTimer = {true, 0,50,false,false, MismatchPressOxyAlarmAct , 0 , 65 , PumpsOrPinchNotRespond_EmergAct }; // alarm after 5 s mismatch
+TAlarmTimer PressLevelMismatchAlarmTimer = {true, 0,70,false,false, MismatchPressLevelAlarmAct , 0 , 65 , PumpsOrPinchNotRespond_EmergAct }; // alarm after 7 s mismatch
 
-TAlarmTimer TempArtMismatchAlarmTimer = {0,20,false,false, MismatchTempArtAlarmAct , 0 , 65 , PumpsOrPinchNotRespond_EmergAct }; // alarm after 2 s mismatch
-TAlarmTimer TempVenMismatchAlarmTimer = {0,20,false,false, MismatchTempVenAlarmAct , 0 , 65 , PumpsOrPinchNotRespond_EmergAct }; // alarm after 2 s mismatch
-TAlarmTimer TempFluidMismatchAlarmTimer = {0,20,false,false, MismatchTempFluidAlarmAct , 0 , 65 , PumpsOrPinchNotRespond_EmergAct }; // alarm after 2 s mismatch
-TAlarmTimer TempPlateMismatchAlarmTimer = {0,20,false,false, MismatchTempPlateAlarmAct , 0 , 50 , PumpsOrPinchNotRespond_EmergAct }; // alarm after 2 s mismatch
+TAlarmTimer TempArtMismatchAlarmTimer = {true, 0,20,false,false, MismatchTempArtAlarmAct , 0 , 65 , PumpsOrPinchNotRespond_EmergAct }; // alarm after 2 s mismatch
+TAlarmTimer TempVenMismatchAlarmTimer = {true, 0,20,false,false, MismatchTempVenAlarmAct , 0 , 65 , PumpsOrPinchNotRespond_EmergAct }; // alarm after 2 s mismatch
+TAlarmTimer TempFluidMismatchAlarmTimer = {true, 0,20,false,false, MismatchTempFluidAlarmAct , 0 , 65 , PumpsOrPinchNotRespond_EmergAct }; // alarm after 2 s mismatch
+TAlarmTimer TempPlateMismatchAlarmTimer = {true, 0,20,false,false, MismatchTempPlateAlarmAct , 0 , 50 , PumpsOrPinchNotRespond_EmergAct }; // alarm after 2 s mismatch
 
-TAlarmTimer AirPresentAlarmTimer = {0,03,false,false, AirPresentAlarmAct , 0 , 65 , PumpsOrPinchNotRespond_EmergAct_AirAlarm }; // alarm after 300ms s mismatch , then check pumps stop
+TAlarmTimer AirPresentAlarmTimer = {true, 0,03,false,false, AirPresentAlarmAct , 0 , 30 , PumpsOrPinchNotRespond_EmergAct_AirAlarm }; // alarm after 300ms s mismatch , then check pumps stop
 
 static TAlarmTimer	*AlarmTimerList[] = {
 		&PumpMismatchAlarmTimer ,
@@ -96,17 +96,16 @@ void InitVerificatorRx(void){
 
 static int StartupDelayCnt = 0;
 
-int CounterDebugErrorGenerator = 0;
 
 static void ManageVerificatorAlarms100ms(void) {
 
 int ii;
 
-CounterDebugErrorGenerator++;
-	if( !IsVerifyRequired() ){
-		// avoid control if no verify required
-		return;
-	}
+
+//	if( !IsVerifyRequired() ){
+//		// avoid control if no verify required
+//		return;
+//	}
 
 	if(StartupDelayCnt < 100){
 		// verificator idle for 10 seconds from startup
@@ -116,27 +115,29 @@ CounterDebugErrorGenerator++;
 
 	for( ii=0; ii< sizeof(AlarmTimerList)/sizeof(TAlarmTimer*); ii++)
 	{
-		if (AlarmTimerList[ii]->AlarmConditionPending) {
-			if (AlarmTimerList[ii]->AlarmCounter < AlarmTimerList[ii]->CountTreshold) {
-				AlarmTimerList[ii]->AlarmCounter++;
-				if (AlarmTimerList[ii]->AlarmCounter == AlarmTimerList[ii]->CountTreshold) {
-					// manage alarm
-					AlarmTimerList[ii]->AlarmActive = true;
-					// manage alarm with specific action
-					AlarmTimerList[ii]->AlarmAction();
+		if ( AlarmTimerList[ii]->AlarmCheckEnabled){
+			if (AlarmTimerList[ii]->AlarmConditionPending) {
+				if (AlarmTimerList[ii]->AlarmCounter < AlarmTimerList[ii]->CountTreshold) {
+					AlarmTimerList[ii]->AlarmCounter++;
+					if (AlarmTimerList[ii]->AlarmCounter == AlarmTimerList[ii]->CountTreshold) {
+						// manage alarm
+						AlarmTimerList[ii]->AlarmActive = true;
+						// manage alarm with specific action
+						AlarmTimerList[ii]->AlarmAction();
+					}
 				}
 			}
-		}
-		else{
-			// if AlarmActive , don't clear alarm anyway ,
-			// if not AlarmActive ,  restart AlarmCounter
-			AlarmTimerList[ii]->AlarmCounter = 0;
-		}
-		// manage secondary actions
-		if( AlarmTimerList[ii]->SecondaryActionTimer > 0){
-			AlarmTimerList[ii]->SecondaryActionTimer--;
-			if(AlarmTimerList[ii]->SecondaryActionTimer == 0)
-					AlarmTimerList[ii]->SecondaryAlarmAction();
+			else{
+				// if AlarmActive , don't clear alarm anyway ,
+				// if not AlarmActive ,  restart AlarmCounter
+				AlarmTimerList[ii]->AlarmCounter = 0;
+			}
+			// manage secondary actions
+			if( AlarmTimerList[ii]->SecondaryActionTimer > 0){
+				AlarmTimerList[ii]->SecondaryActionTimer--;
+				if(AlarmTimerList[ii]->SecondaryActionTimer == 0)
+						AlarmTimerList[ii]->SecondaryAlarmAction();
+			}
 		}
 	}
 }
@@ -305,18 +306,18 @@ void PumpsOrPinchNotRespond_EmergAct_AirAlarm(void)
 {
 bool some_error = false;
 
-	//DIS HEAT , DIS COOL if pinch not safety , OFF 24V  if motors not stopped within 6,5 seconds
-	// if( !PinchesAreInSafetyMode() ){    9/10/2019 --> MUST disable heater and cooler regardless of condition of pinches ( Verification )
+	//DIS HEAT , DIS COOL if pinch or motor not safety , OFF 24V  if motors not stopped within 6,5 seconds
+	if( !PinchArteriousInSafetyMode() || !PinchVenousInSafetyMode() ){    // controllare --> 9/10/2019 --> MUST disable heater and cooler regardless of condition of pinches ( Verification )
 		some_error = true;
-		Enable_Heater(FALSE);
-		Enable_Frigo(FALSE);
-	// }
-//	if( !PumpsAreStopped() ){  / don't check since it is possible that user reset alarm in the meantime
-//		some_error = true;
-//		SwitchOFFPinchNPumps();
-//	}
+    }
+	if( !PumpsAreStopped() ){
+		some_error = true;
+	}
 	if( some_error ){
 		ShowNewAlarmError(CODE_ALARM_ON_ALARMS_FSM);
+		Enable_Heater(FALSE);
+		Enable_Frigo(FALSE);
+		SwitchOFFPinchNPumps();
 	}
 	else {
 		// reset err condition if control stopped motors / pinch and acted as expected
@@ -418,13 +419,20 @@ void VerifyRxAirLevels(uint8_t AirArtLevel, uint8_t AirVenLevel)
 	if (GetControlFSMState() == STATE_TREATMENT) {
 		if (GetTherapyType() == 0x50) {
 			// liever therap
-			if ((AirArtLevel > 50) || (AirVenLevel > 50))
+			if (
+					((AirArtLevel > 50) && !PinchArteriousInSafetyMode()) ||
+					((AirVenLevel > 50) && !PinchVenousInSafetyMode())
+				)
 				AirPresentAlarmTimer.AlarmConditionPending = true; // only set , deliberately don't clear if falling below treshold
+			else
+				AirPresentAlarmTimer.AlarmConditionPending = false; // reset alarm condition
 		}
 		else if (GetTherapyType() == 0x10) {
 			// kidney therapy
-			if (AirArtLevel > 50)
+			if ((AirArtLevel > 50) && !PinchArteriousInSafetyMode())
 				AirPresentAlarmTimer.AlarmConditionPending = true; // only set , deliberately  don't clear if falling below treshold
+			else
+				AirPresentAlarmTimer.AlarmConditionPending = false; // reset alarm condition
 		}
 	}
 }
@@ -627,20 +635,7 @@ bool ValueIsInRangePerc(uint16_t RefValue, uint16_t Val2Test, uint16_t IPercent)
 
 }
 
-//bool ValueIsInRange(uint16_t RefValue, uint16_t Val2Test, uint16_t IDelta) {
-//	int16_t max;
-//	int16_t min;
-//
-//	max = RefValue + IDelta;
-//	if (RefValue > IDelta) 	min = RefValue - IDelta;
-//	else min = 0;
-//	if( (Val2Test <= max) && (Val2Test >= min) )
-//		return true;
-//	else
-//		return false;
-////	return ((Val2Test <= max) && (Val2Test >= min));
-//
-//}
+
 
 bool ValueIsInRange(short int RefValue, short int Val2Test, short unsigned int IDelta) {
 
