@@ -2165,8 +2165,12 @@ unsigned char TemperatureStateMach(int cmd)
 
 	float tmpr;
 	word tmpr_trgt;
-	// temperatura raggiunta dal reservoir
-	tmpr = ((int)(sensorIR_TM[1].tempSensValue*10));
+//	// temperatura raggiunta dal reservoir
+//	tmpr = ((int)(sensorIR_TM[1].tempSensValue*10));
+	/*31/10/2019 VP: è più corretto andare a controllare la linea arteriosa
+	 * ossia quella + vicina all'ingresso dell'organo usata in entrambi i trattamenti*/
+	// temperatura raggiunta sulla linea arteriosa
+	tmpr = ((int)(sensorIR_TM[0].tempSensValue*10));
 	// temperatura da raggiungere moltiplicata per 10
 	tmpr_trgt = parameterWordSetFromGUI[PAR_SET_PRIMING_TEMPERATURE_PERFUSION].value;
 

@@ -677,19 +677,20 @@ int main(void)
 	        	ManageAirDetectionTransition();
 				//manageAlarmPhysicPressSensHigh();
 				//manageAlarmPhysicPressSensLow();
+
+#ifndef VALIDAZIONE_PROTECTIVE
 	        	CalcAlarmActive();
-
 	        	alarmEngineAlways();
-	        	CalcNewFluidLevel();
-
 	        	CalcWarningActive();
 	        	WarningEngineAlways();
+#endif
+
+	        	CalcNewFluidLevel();
 	        	manageAlarmT1Test();
 		        GenerateSBCComm();
 		        ProtectiveTask();
 		        // Filippo - devo verificare che le temperature piatto lette dalla control e dalla protective siano le stesse
 		        verificaTempPlate();
-		        manageAlarmT1Test();
 
 		        updateDurationToSendSBC();
 

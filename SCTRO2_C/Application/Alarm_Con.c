@@ -950,9 +950,10 @@ void CalcAlarmActive(void)
 			manageAlarmIrTempSensNotDetected();
 
 			manageAlarmPhysicPressSensHigh();
-			manageAlarmPhysicUFlowSens();
-			manageAlarmSAFAirSens();
-			manageAlarmPhysicUFlowSensVen();
+			/*05-11-2019 VP rimuovo l'allarme di aria in svuotamento*/
+			//manageAlarmPhysicUFlowSens();
+		    //manageAlarmSAFAirSens();
+		    //manageAlarmPhysicUFlowSensVen();
 
 			if(GetTherapyType() == LiverTreat)
 				manageAlarmCoversPumpLiver();
@@ -1367,7 +1368,8 @@ void manageAlarmPhysicPressSensHigh(void)
 	{
         // PRIMING LIVER
         if ((ptrCurrentState->state == STATE_PRIMING_PH_1) || (ptrCurrentState->state == STATE_PRIMING_PH_2) ||
-            (ptrCurrentState->state == STATE_PRIMING_RICIRCOLO))
+            (ptrCurrentState->state == STATE_PRIMING_RICIRCOLO) || ptrCurrentState->state == STATE_EMPTY_DISPOSABLE ||
+			ptrCurrentState->state == STATE_EMPTY_DISPOSABLE_1 || ptrCurrentState->state == STATE_EMPTY_DISPOSABLE_2)
 		{
 			MaxPressArt = PR_ART_HIGH_PRIMING_LIVER;
 			MaxPressVen = PR_VEN_HIGH_PRIMING_LIVER;
@@ -1382,7 +1384,8 @@ void manageAlarmPhysicPressSensHigh(void)
 	else //KidneyTreat
 	{
 		if ((ptrCurrentState->state == STATE_PRIMING_PH_1) || (ptrCurrentState->state == STATE_PRIMING_PH_2) ||
-	       (ptrCurrentState->state == STATE_PRIMING_RICIRCOLO))
+	       (ptrCurrentState->state == STATE_PRIMING_RICIRCOLO) || ptrCurrentState->state == STATE_EMPTY_DISPOSABLE ||
+			ptrCurrentState->state == STATE_EMPTY_DISPOSABLE_1 || ptrCurrentState->state == STATE_EMPTY_DISPOSABLE_2)
 		{
 			// PRIMING KIDNEY
 			MaxPressArt = PR_ART_HIGH_PRIMING_KIDNEY;
@@ -1732,19 +1735,24 @@ void checkAlmPhysicTempOOR(void)
 // la temperatura target
 void manageAlarmPhysicTempSensInTreat(void)
 {
-	float tempSTF = 0.0;
-	float tempSTA = 0.0;
-	float tempSTV = 0.0;
+	float tempSTF = sensorIR_TM[1].tempSensValue;
+	float tempSTA = sensorIR_TM[0].tempSensValue	;
+	float tempSTV = sensorIR_TM[2].tempSensValue;
+	word Pinch_Art_Position  = modbusData[5][0];
+	word Pinch_Ven_Position  = modbusData[6][0];
 
-	tempSTF = sensorIR_TM[0].tempSensValue;
-	tempSTA = sensorIR_TM[1].tempSensValue;
-	tempSTV = sensorIR_TM[2].tempSensValue;
-
+/*28/10/2019 VP: il controllo sul sensore STF (sensore di temperatura filtro)
+ *               lo rimuovo in quanto a temeprature del liquido molto diverse
+ *               dalla temepratura ambiente, tra il sensore STF e il sensore
+ *               STA/STV possono esserci anche 2 gradi di difefrenza e noi
+ *               la temepratura masismo o minima interessa sulle linee di ingresso all'organ
+ 	 	 	 	 quindi condizione l'allarmre anche alla pinch relativa aperta sull'organo*/
 	if(GlobalFlags.FlagsDef.EnableTempMaxMin)
 	{
-		if((tempSTF > (float)MAX_TEMPERATURE_VALUE_IN_TREAT) ||
-           (tempSTA > (float)MAX_TEMPERATURE_VALUE_IN_TREAT) ||
-           (tempSTV > (float)MAX_TEMPERATURE_VALUE_IN_TREAT))
+		if(/*(tempSTF > (float)MAX_TEMPERATURE_VALUE_IN_TREAT) ||*/
+           ( (tempSTA > (float)MAX_TEMPERATURE_VALUE_IN_TREAT) && Pinch_Art_Position == MODBUS_PINCH_LEFT_OPEN) ||
+           ( (tempSTV > (float)MAX_TEMPERATURE_VALUE_IN_TREAT) && Pinch_Ven_Position == MODBUS_PINCH_LEFT_OPEN)
+		  )
 		{
 			alarmList[TEMP_MAX_IN_TREAT].physic = PHYSIC_TRUE;
 		}
@@ -1753,7 +1761,7 @@ void manageAlarmPhysicTempSensInTreat(void)
 			alarmList[TEMP_MAX_IN_TREAT].physic = PHYSIC_FALSE;
 		}
 
-		if((tempSTF < (float)MIN_TEMPERATURE_VALUE_IN_TREAT) ||
+		if(/*(tempSTF < (float)MIN_TEMPERATURE_VALUE_IN_TREAT) ||*/
            (tempSTA < (float)MIN_TEMPERATURE_VALUE_IN_TREAT) ||
            (tempSTV < (float)MIN_TEMPERATURE_VALUE_IN_TREAT))
 		{
@@ -1817,12 +1825,15 @@ void manageAlarmSAFAirSens(void)
 
 void manageAlarmPhysicUFlowSensVen(void)
 {
+	word Pinch_Ven_Position  = modbusData[6][0];
+
 	if(!GlobalFlags.FlagsDef.EnableSFVAir)
 	{
 		alarmList[AIR_PRES_VEN].physic = PHYSIC_FALSE;
 		return;
 	}
-	else
+/*05-11-2019 VP: controllo l'alalrme aria solo se la pinch venosa è aperta sull'organo*/
+	else if (Pinch_Ven_Position == MODBUS_PINCH_LEFT_OPEN)
 	{
 //		if((sensor_UFLOW[VENOUS_AIR_SENSOR].bubbleSize >= MAX_BUBBLE_SIZE) ||
 //			(sensor_UFLOW[VENOUS_AIR_SENSOR].bubblePresence == MASK_ERROR_BUBBLE_ALARM))
@@ -1843,12 +1854,15 @@ void manageAlarmPhysicUFlowSensVen(void)
 
 void manageAlarmPhysicUFlowSens(void)
 {
+	word Pinch_Art_Position  = modbusData[5][0];
+
 	if(!GlobalFlags.FlagsDef.EnableSFAAir)
 	{
 		alarmList[AIR_PRES_ART].physic = PHYSIC_FALSE;
 		return;
 	}
-	else
+	/*05-11-2019 VP: controllo l'alalrme aria solo se la pinch arteriosa è aperta sull'organo*/
+	else if (Pinch_Art_Position == MODBUS_PINCH_LEFT_OPEN)
 	{
 //		if(
 //			(sensor_UFLOW[ARTERIOUS_AIR_SENSOR].bubbleSize >= MAX_BUBBLE_SIZE) ||

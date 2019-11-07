@@ -12,6 +12,11 @@
 // debug con il software di service fatto da Luca.
 //#define DEBUG_WITH_SERVICE_SBC 0
 
+/*define di compilazione che disabilita gli allarmi control
+ * per effettuare la validazione sulla protective
+ * nella versione di rilascio va commentata*/
+//#define VALIDAZIONE_PROTECTIVE
+
 /*----------++++++++++ FW REVISION ++++++++++----------*/
 	/* REVISION FW CONTROL: rev fw-H
      * uso 5 bit per il primo numero
@@ -23,9 +28,15 @@
 	 * 0x0800 --> 1.0.0  *0x0801 -->  1.0.1 *0x0802 --> 1.0.2 *0x0803 --> 1.0.3   *0x0804 --> 1.0.4  *0x0805 --> 1.0.5  *0x0806 --> 1.0.6
 	 * 0x0807 --> 1.0.7  *0x0808 -->  1.0.8 *0x0809 --> 1.0.9 *0x080A --> 1.0.10  *0x080B --> 1.0.11 *0x080C --> 1.0.12 *0x080D --> 1.0.13
 	 * 0x080E --> 1.0.14 *0x080F --> 1.0.15 *0x0810 --> 1.0.16 *0x0811 --> 1.0.17 *0x0812 --> 1.0.18 *0x0813 --> 1.0.19 *0x0814 --> 1.0.20
-	 * 0x0815 --> 1.0.21 *0x0816 --> 1.0.22 *0x0817 --> 1.0.23 *0x0818 --> 1.0.24 ... 0x0821 --> 1.0.33*/
+	 * 0x0815 --> 1.0.21 *0x0816 --> 1.0.22 *0x0817 --> 1.0.23 *0x0818 --> 1.0.24 ... 0x0822 --> 1.0.34*/
 
-#define REVISION_FW_CONTROL 0x0821
+#ifndef VALIDAZIONE_PROTECTIVE
+#define REVISION_FW_CONTROL 0x0822
+#else
+#define REVISION_FW_CONTROL 0x0001 // nel caso sia compialto con allarmi control disabilitati per la validazione protective mettiamo revisione pari a 0.0.1
+#endif
+
+
 
 /* Syncronization flag */
 char	iflag_pc_rx;
