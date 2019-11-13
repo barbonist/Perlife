@@ -257,6 +257,8 @@ int main(void)
   THERAPY_TYPE TreatType = Undef;
   EnableNextAlarm = FALSE;
 
+  failedCRCState = RESOLVED;
+
   pollingDataFromSBC = 0;
   pollingDataToSBC = 0;
   codeDBG = 0;

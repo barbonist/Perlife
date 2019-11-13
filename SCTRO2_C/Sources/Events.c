@@ -99,6 +99,14 @@ void SBC_COMM_OnRxChar(void)
   /* Write your code here ... */
 	// SBC_COMM_RecvChar(&msg_sbc_rx[0]);
 	SBC_COMM_RecvChar(ptrMsgSbcRx);
+	unsigned char Lenght_MSG = 0;
+
+	if (sbc_rx_data[5] == COMMAND_ID_ST)
+		Lenght_MSG = 10; // se sto ricevendo una richiesta di stato la lungheza complessiva è 10 (byte da 0 a 9)
+	else if (sbc_rx_data[5] == COMMAND_ID_PAR_SET)
+		Lenght_MSG = 13; // se sto ricevendo una richiesta di stato la lungheza complessiva è 13 (byte da 0 a 12)
+	else if (sbc_rx_data[5] == COMMAND_ID_BUT_SBC)
+		Lenght_MSG = 12; // se sto ricevendo una richiesta di stato la lungheza complessiva è 12 (byte da 0 a 11)
 
 	#ifdef	DEBUG_COMM_SBC
 	//PC_DEBUG_COMM_SendChar(*ptrMsgSbcRx);
@@ -113,7 +121,7 @@ void SBC_COMM_OnRxChar(void)
 //		((*(ptrMsgSbcRx-2)) == 0x00) &&
 //		((*(ptrMsgSbcRx-3)) == 0x00)
 //		)
-	if((*(ptrMsgSbcRx-1)) == 0x5A)
+	if((*(ptrMsgSbcRx-1)) == 0x5A && ptrSbcCountRx == Lenght_MSG)
 	{
 		iflag_sbc_rx |= IFLAG_SBC_RX;
 
@@ -121,10 +129,14 @@ void SBC_COMM_OnRxChar(void)
 			Service = TRUE;
 		else
 		{
-			if (sbc_rx_data[5] == COMMAND_ID_BUT_SBC)
-			{
-				sbc_rx_data[7] = sbc_rx_data[7];
-			}
+//			if (sbc_rx_data[5] == COMMAND_ID_PAR_SET)
+//			{
+//				sbc_rx_data[7] = sbc_rx_data[7];
+//			}
+//			if (sbc_rx_data[5] == COMMAND_ID_BUT_SBC)
+//			{
+//				sbc_rx_data[7] = sbc_rx_data[7];
+//			}
 			Service = FALSE;
 		}
 

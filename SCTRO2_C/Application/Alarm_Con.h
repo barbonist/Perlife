@@ -272,6 +272,16 @@ enum ALARM
 	 PRESS_ADS_FILTER_WARN = FIRST_WARNING,	//CODE_ALARM_PRESS_ADS_FILTER_WARN
 };
 
+
+typedef enum
+{
+	ACTIVATED = 0,
+	DEACTIVATED,
+	RESOLVED
+}AlarmCRCState;
+
+AlarmCRCState failedCRCState;
+
 // Nuova gestione allarmi: aprile 2019
 unsigned char LengthActiveListAlm(void);
 typeAlarmS* GetCurrentAlarmActiveListAlm(void);

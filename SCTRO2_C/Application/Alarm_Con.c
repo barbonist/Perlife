@@ -32,6 +32,8 @@ extern unsigned char coverStateGlobal;
 //Allarme CRC
 extern bool failedCRC;
 
+
+
 // Gestione allarmi: aprile 2019 -- begin
 static signed int sIdxCurrentActiveListAlm = EMPTY_LIST_ALM;
 static signed int sIdxLastActiveListAlm = EMPTY_LIST_ALM;
@@ -204,7 +206,7 @@ typeAlarmS alarmList[] =
    {CODE_ALARM_SYSTEM_FAILURE,       PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR,     PRIORITY_HIGH,   0,  1000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, TRUE},
 
 // da qui in avanti solo le warning
-   {CODE_ALARM_PRESS_ADS_FILTER_WARN, PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR, PRIORITY_LOW,  2000,  2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, FALSE},
+   {CODE_ALARM_PRESS_ADS_FILTER_WARN, PHYSIC_FALSE, ACTIVE_FALSE, ALARM_TYPE_CONTROL, SECURITY_STOP_ALL_ACTUATOR, PRIORITY_LOW,  20000,  2000, OVRD_NOT_ENABLED, RESET_ALLOWED, SILENCE_ALLOWED, MEMO_NOT_ALLOWED, &alarmManageNull, 0, FALSE},
 };
 
 void EnableDeltaTHighAlmFunc(void)
@@ -1026,9 +1028,18 @@ void manageAlarmCRC(void)
 	{
 		alarmList[CRC_ALARM].physic = PHYSIC_TRUE;
 		failedCRC = FALSE; //Consento di resettare l'allarme, in caso di nuovo CRC errato avremo una nuova occorrenza dell'allarme
+		failedCRCState = ACTIVATED; //tengo traccia che l'allarme è stato attivato; quando mi arriva il confirm lo ritengo disattivato; serve per la gestione del buzzer
+		LevelBuzzer = HIGH;
 	}
 	else
+	{
 		alarmList[CRC_ALARM].physic = PHYSIC_FALSE;
+		if ( failedCRCState == DEACTIVATED)
+		{
+			LevelBuzzer = FALSE;
+			failedCRCState = RESOLVED;
+		}
+	}
 }
 
 
@@ -1332,8 +1343,9 @@ void manageAlarmPhysicPressSensLow(void)
 {
 	if (GlobalFlags.FlagsDef.EnablePressSensLowAlm)
 	{
-		/*abilito l'allarme di pressione filtro bassa solo se la pompa filtro si sta muovendo a velocità superiore a 5 RPM*/
-		if (PR_ADS_FLT_mmHg_Filtered < PR_ADS_FILTER_LOW && modbusData[3][17] > 500)
+		/*abilito l'allarme di pressione filtro bassa solo se la pompa filtro si sta muovendo a velocità uguale o superiore a 5 RPM
+		 * la pompa filtro è sempre quella frontale sinistra siaper trattamento fegato che rene e ha indirizzo array modbusData[0][17]*/
+		if (PR_ADS_FLT_mmHg_Filtered < PR_ADS_FILTER_LOW && modbusData[0][17] >= 500)
 		{
 			alarmList[PRESS_ADS_FILTER_LOW].physic = PHYSIC_TRUE;
 		}
@@ -2688,10 +2700,11 @@ void WarningPhysicPressSensHigh(void)
 		case WRN_WAIT_LOWER_LEV:
 			if (PR_ADS_FLT_mmHg_Filtered < PR_ADS_FILTER_WARN_LOWER_LEV)
 			{
-				if ((warningPtr->faultConditionTimer += ALARM_TICK) >= warningPtr->entryTime)
-				{
+				warningPtr->faultConditionTimer += ALARM_TICK;
+				//if ((warningPtr->faultConditionTimer += ALARM_TICK) >= warningPtr->entryTime)
+				if (warningPtr->faultConditionTimer >  warningPtr->entryTime)
 					WrnPressSensHighState = WRN_INIT;
-				}
+
 			}
 			else if (warningPtr->faultConditionTimer >= ALARM_TICK)
 				warningPtr->faultConditionTimer -= ALARM_TICK;

@@ -2337,7 +2337,9 @@ unsigned char TemperatureStateMach(int cmd)
 		}
 		break;
 	case TEMP_CHECK_DURATION_STATE:
-		if((tmpr >= (float)(tmpr_trgt - DELTA_TEMP_TERGET_FOR_STABILITY_PRIMING)) && (tmpr <= (float)(tmpr_trgt + DELTA_TEMP_TERGET_FOR_STABILITY_PRIMING)))
+		/*VP 07/11/2019: vincolo la fine del priming/ricircolo e quindi il raggiungimento della temperatura al fatto che non siano presenti allarmi o warning Control*/
+		if((tmpr >= (float)(tmpr_trgt - DELTA_TEMP_TERGET_FOR_STABILITY_PRIMING)) && (tmpr <= (float)(tmpr_trgt + DELTA_TEMP_TERGET_FOR_STABILITY_PRIMING)) &&
+				LengthActiveListAlm() == 0 && LengthActiveListWrn() == 0)
 		{
 			// ho raggiunto la temperatura target
 			if(msTick_elapsed(RicircTimeout) * 50L >= TIMEOUT_TEMPERATURE_RICIRC)

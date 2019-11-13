@@ -968,12 +968,13 @@ void pollingSBCCommTreat(void){
 			/* Set parameter from SBC */
 			case COMMAND_ID_PAR_SET:
 			{
+				unsigned char *ptr_CRC = &sbc_rx_data[0];
 				valueWord = (sbc_rx_data[8] << 8) + sbc_rx_data[9];
 				setParamWordFromGUI(sbc_rx_data[7],valueWord);
 				ShowParameterStr(parameterWordSetFromGUI, sbc_rx_data[7]);
 
 				myCommunicatorToSBC.dataParamSetSBCReadyFlag = DATA_COMM_READY_TO_BE_SEND;
-				CRCVal = ComputeChecksum(sbc_rx_data, 10); // calcolo il CRC del messaggio ricevuto per controllare che sia giusto
+				CRCVal = ComputeChecksum(ptr_CRC, 10); // calcolo il CRC del messaggio ricevuto per controllare che sia giusto
 				CRCReceived = (sbc_rx_data[10] << 8) + sbc_rx_data[11];
 				if (CRCReceived != CRCVal)
 				{
@@ -1009,6 +1010,7 @@ void pollingSBCCommTreat(void){
 				{
 					int ii = 0;
 				}
+
 			}
 			break;
 
@@ -1584,6 +1586,9 @@ void setGUIButton(unsigned char buttonId)
 	static char Button[10];
 
 	buttonGUITreatment[buttonId].state = GUI_BUTTON_RELEASED;
+
+	if (buttonId ==	BUTTON_RESET_ALARM && failedCRCState == ACTIVATED)
+		failedCRCState = DEACTIVATED;
 
 	/*tengo traccia della pressione del tasto di stop col flag ButtonStopPressed (serve per la gestione dello sbollamento) */
 	if (buttonId == BUTTON_STOP_TREATMENT || buttonId == BUTTON_STOP_PRIMING)
