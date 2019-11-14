@@ -14,6 +14,7 @@
 #include "App_Ges.h"
 #include "general_func.h"
 #include "ModBusCommProt.h"
+#include "ControlProtectiveInterface_C.h"
 
 
 void CommandExecute( int argc, char** argv);
@@ -24,6 +25,7 @@ void SetHeater(int NParams, char** Params);
 void SetCooler(int NParams, char** Params);
 void SetCalibTemp(int NParams, char** Params);
 void SetCalibFlowSens(int NParams, char** Params);
+void SetDiffTemp(int NParams, char** Params);
 
 void ErrorCommandNotFound( int NParams, char** Params);
 void ErrorNParamsNotOk( int NParams, char** Params);
@@ -56,6 +58,11 @@ void EnablePinch(int NParams, char** Params);
 void EnablePower(int NParams, char** Params);
 
 void DrawLion(int NParams, char** Params);
+
+static int OffsetTempRes   = 0; // variabile in cui scrivo l'offset aggiunto via command parser per validazione protective
+static int OffsetTempArt   = 0; // variabile in cui scrivo l'offset aggiunto via command parser per validazione protective
+static int OffsetTempVen   = 0; // variabile in cui scrivo l'offset aggiunto via command parser per validazione protective
+static int OffsetTempPlate = 0; // variabile in cui scrivo l'offset aggiunto via command parser per validazione protective
 
 typedef void(*TCommandAction)(int argc, char** argv);// TAlarmAction;
 
@@ -144,9 +151,10 @@ void SetMulti(int NParams, char** Params)
 		else if(strcmp_cr(Params[0],"cooler") == 0) SetCooler(NParams-1, Params+1);
 		else if (strcmp_cr(Params[0],"calibtemp") == 0) SetCalibTemp(NParams-1, Params+1);
 		else if (strcmp_cr(Params[0],"calibflowsens") == 0) SetCalibFlowSens(NParams-1, Params+1);
+		else if (strcmp_cr(Params[0],"difftemp") == 0) SetDiffTemp(NParams-1, Params+1);
 		else {
 			//ErrorParamsNotOk( NParams, Params);
-			CommandAnswer("set heater/cooler/calibtemp/calibflowsens");
+			CommandAnswer("set heater/cooler/calibtemp/calibflowsens/difftemp");
 			return;
 		}
 }
@@ -218,6 +226,115 @@ void SetHeater(int NParams, char** Params)
 
 	HeaterOnOff(HeaterPower );
 	CommandAnswer("set heater done");
+}
+void setOffsetTempRes(int Offset)
+{
+	OffsetTempRes   = Offset;
+}
+
+void setOffsetTempArt(int Offset)
+{
+	OffsetTempArt   = Offset;
+}
+
+void setOffsetTempVen(int Offset)
+{
+	OffsetTempVen   = Offset;
+}
+
+void setOffsetTempPlate(int Offset)
+{
+	OffsetTempPlate   = Offset;
+}
+
+int getOffsetTempRes()
+{
+	return(OffsetTempRes);
+}
+
+int getOffsetTempArt()
+{
+	return(OffsetTempArt);
+}
+
+int getOffsetTempVen()
+{
+	return(OffsetTempVen);
+}
+
+int getOffsetTempPlate()
+{
+	return(OffsetTempPlate);
+}
+
+
+/*funzione che aggiunge un offset impostabile
+ * alla temperatura inviata alla Pro (serve per la validazione PRO)*/
+void SetDiffTemp(int NParams, char** Params)
+{
+	unsigned char SensNum = 0;
+	int DiffTemp = 0;
+
+	/*servono due parametri, uno per scegliere il sensore, lìaltro per impostare la differenza*/
+	if (NParams == 2)
+	{
+		if (strcmp_cr(Params[0],"1") == 0)
+		{
+			/*è stato selezionato il sensore di temperatura Arterioso*/
+			SensNum = 1;
+		}
+		else if (strcmp_cr(Params[0],"2") == 0)
+		{
+			/*è stato selezionato il sensore di temperatura Reservoire*/
+			SensNum = 2;
+		}
+		else if (strcmp_cr(Params[0],"3") == 0)
+		{
+			/*è stato selezionato il sensore di temperatura Venoso*/
+			SensNum = 3;
+		}
+		else if (strcmp_cr(Params[0],"4") == 0)
+		{
+			/*è stato selezionato il sensore di temperatura Piastra*/
+			SensNum = 4;
+		}
+		else
+		{
+			CommandAnswer("Sensor Number should be 1 for Arterious, 2 for Reservoire, 3 for Venous, 4 for Plate");
+			return;
+		}
+		/*per toglie il 'cr'*/
+		str_NoCr(Params[1]);
+
+		if(strspn(Params[1], "0123456789.-") == strlen(Params[1])){
+			sscanf(Params[1] , "%d" , &DiffTemp);
+		}
+
+		switch(SensNum)
+		{
+			case 1:
+				setOffsetTempArt (DiffTemp);
+				break;
+			case 2:
+				setOffsetTempRes (DiffTemp);
+				break;
+			case 3:
+				setOffsetTempVen (DiffTemp);
+				break;
+			case 4:
+				setOffsetTempPlate (DiffTemp);
+				break;
+			default:
+				CommandAnswer("Sensor Number should be 1 for Arterious, 2 for Reservoire, 3 for Venous, 4 for Plate");
+				break;
+		}
+
+	}
+	else
+	{
+		//messaggio di errore
+		CommandAnswer("wrong number of parameters");
+	}
 }
 
 void SetCalibFlowSens(int NParams, char** Params)

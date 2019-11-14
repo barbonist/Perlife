@@ -6221,7 +6221,11 @@ void processMachineState(void)
 		{
 			/* (FM) VADO NELLO STATO IDLE,ACTION_ON_ENTRY DATO CHE LA FASE INIZIALE DI TEST E' FINITA */
 			/* compute future state */
+#ifdef T1_TEST_ENABLED
 			ptrFutureState = &stateState[7];
+#else
+			ptrFutureState = &stateState[3]; //se il T1 Test non è abilitato, mi porto direttamente in IDLE
+#endif
 			/* compute future parent */
 			ptrFutureParent = ptrFutureState->ptrParent;
 			/* compute future child */

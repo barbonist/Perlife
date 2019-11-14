@@ -285,6 +285,10 @@ void onNewSensPressVal(uint16_t PressFilt, uint16_t PressArt,
 void onNewSensTempVal(uint16_t PressOxyg, float TempRes,
 		               float TempArt, float TempVen)
 {
+	TempRes += getOffsetTempRes(); // aggiungo l'eventuale offset inviato via command parser per validazione protective
+	TempArt += getOffsetTempArt(); // aggiungo l'eventuale offset inviato via command parser per validazione protective
+	TempVen += getOffsetTempVen(); // aggiungo l'eventuale offset inviato via command parser per validazione protective
+
 	TxCan2.STxCan2.PressOxy = PressOxyg;
 	TxCan2.STxCan2.TempFluidx10 = (int16_t) (TempRes * 10);
 	TxCan2.STxCan2.TempArtx10   = (int16_t) (TempArt * 10);
@@ -292,7 +296,7 @@ void onNewSensTempVal(uint16_t PressOxyg, float TempRes,
 
     // SB added plate temperature
 
-    TxCan5.STxCan5.tempPlateC = (int16_t)(T_PLATE_C_GRADI_CENT*10);
+    TxCan5.STxCan5.tempPlateC = (int16_t)( (T_PLATE_C_GRADI_CENT + getOffsetTempPlate()) *10); //alla temperatura di piastra aggiungo l'eventuale offset inviato via command parser per validazione protective
 
 }
 

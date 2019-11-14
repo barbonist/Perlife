@@ -36,6 +36,15 @@ typedef  enum {
 
 void onNewCommadT1TEST(TControl2ProtCommands Command);
 
+void setOffsetTempRes (int Offset); // funzione che scrive l'offset aggiunto via command parser per validazione protective
+int getOffsetTempRes();				// funzione che restituisce l'offset aggiunto via command parser per validazione protective
+void setOffsetTempArt (int Offset); // funzione che scrive l'offset aggiunto via command parser per validazione protective
+int getOffsetTempArt();				// funzione che restituisce l'offset aggiunto via command parser per validazione protective
+void setOffsetTempVen (int Offset); // funzione che scrive l'offset aggiunto via command parser per validazione protective
+int getOffsetTempVen();				// funzione che restituisce l'offset aggiunto via command parser per validazione protective
+void setOffsetTempPlate (int Offset); // funzione che scrive l'offset aggiunto via command parser per validazione protective
+int getOffsetTempPlate();				// funzione che restituisce l'offset aggiunto via command parser per validazione protective
+
 #ifdef ENABLE_PROTECTIVE_ALARM_RESET
 void onNewAlmToResetMsg(uint16_t AlmCodeToreset);
 #endif
