@@ -114,12 +114,12 @@ void Service_SBC(void){
 		switch(sbc_rx_data[5])
 		{
 			// Service
-			case 0xCC:
+			case COMMAND_ID_SERVICE:
 			{
 				switch(sbc_rx_data[6])
 				{
 					// Modbus write
-					case 0x15:
+					case SERVICE_MODBUS_WRITE_REG:
 					{
 						/*mando il messaggio ricevuto dall SBC alle pompe/pinch solo se il buffer è libero
 						 * ovvero se ho avuto l'ultima ricezione*/
@@ -199,7 +199,7 @@ void Service_SBC(void){
 					break;
 
 					// Modbus read
-					case 0x16:
+					case SERVICE_MODBUS_READ_REG:
 					{
 
 						//iFlag_actuatorCheck = IFLAG_COMMAND_SENT;
@@ -235,7 +235,7 @@ void Service_SBC(void){
 					}
 					break;
 
-					case 0x17:
+					case SERVICE_MODBUS_READ_STATUS:
 					{
 						//send answer to sbc
 						word snd;
@@ -291,7 +291,7 @@ void Service_SBC(void){
 					break;*/
 
 					// Read adc and mmHg pressure values
-					case 0x31:
+					case SERVICE_PRESS_SENS_READ_VALUE:
 					{
 						word snd;
 						ptrMsgSbcRx = &sbc_rx_data[0];
@@ -302,7 +302,7 @@ void Service_SBC(void){
 					break;
 
 					// Read pressure sensors calibration values
-					case 0x32:
+					case SERVICE_PRESS_SENS_READ_PARAM:
 					{
 						word snd;
 						ptrMsgSbcRx = &sbc_rx_data[0];
@@ -313,7 +313,7 @@ void Service_SBC(void){
 					break;
 
 					// Set pressure sensors zero point
-					case 0x33:
+					case SERVICE_PRESS_SENS_CAL_P0:
 					{
 						//TODO Store zero point for calibration
 						word snd;
@@ -335,7 +335,7 @@ void Service_SBC(void){
 					break;
 
 					// Set pressure sensors load point
-					case 0x34:
+					case SERVICE_PRESS_SENS_CAL_P1:
 					{
 						//TODO Store load point for calibration
 						word snd;
@@ -357,7 +357,7 @@ void Service_SBC(void){
 					break;
 
 					// Read temperature IR values
-					case 0x40:
+					case SERVICE_TEMP_SENS_READ_VALUE:
 					{
 						word snd;
 						ptrMsgSbcRx = &sbc_rx_data[0];
@@ -368,7 +368,7 @@ void Service_SBC(void){
 					break;
 
 					// Read temperature IR register
-					case 0x41:
+					case SERVICE_TEMP_SENS_READ_REG:
 					{
 						word snd;
 						ptrMsgSbcRx = &sbc_rx_data[0];
@@ -379,7 +379,7 @@ void Service_SBC(void){
 					break;
 
 					// Write temperature IR register
-					case 0x42:
+					case SERVICE_TEMP_SENS_WRITE_REG:
 					{
 						//TODO write the register
 
@@ -457,7 +457,7 @@ void Service_SBC(void){
 						break;
 
 					// Flow sensor read values
-					case 0x50:
+					case SERVICE_FLOW_SENS_READ:
 					{
 						word snd;
 						ptrMsgSbcRx = &sbc_rx_data[0];
@@ -467,7 +467,7 @@ void Service_SBC(void){
 
 					}
 					// Flow sensor reset
-					case 0x51:
+					case SERVICE_FLOW_SENS_RESET:
 					{
 						word snd;
 						ptrMsgSbcRx = &sbc_rx_data[0];
@@ -477,7 +477,7 @@ void Service_SBC(void){
 					}
 					break;
 					// Peltier read float
-					case 0x26:
+					case SERVICE_PELTIER_READ_FLOAT:
 					{
 						sprintf(regId, "%u", sbc_rx_data[7]);
 						PeltierAssSendCommand(READ_FLOAT_FROM_REG_XX,regId,0,"0",2);
@@ -490,7 +490,7 @@ void Service_SBC(void){
 					}
 					break;
 					// Peltier read int
-					case 0x28:
+					case SERVICE_PELTIER_READ_INT:
 					{
 						sprintf(regId, "%u", sbc_rx_data[7]);
 						PeltierAssSendCommand(READ_DATA_REGISTER_XX,regId,0,"0",1);
@@ -504,7 +504,7 @@ void Service_SBC(void){
 					}
 					break;
 					// Peltier write float
-					case 0x27:
+					case SERVICE_PELTIER_WRITE_FLOAT:
 					{
 						sprintf(regId, "%u", sbc_rx_data[7]);
 						sprintf(valueIeee, "%2X%2X%2X%2X", sbc_rx_data[8], sbc_rx_data[9], sbc_rx_data[10], sbc_rx_data[11]);
@@ -519,7 +519,7 @@ void Service_SBC(void){
 					}
 					break;
 					// Peltier write int
-					case 0x29:
+					case SERVICE_PELTIER_WRITE_INT:
 					{
 						sprintf(regId, "%u", sbc_rx_data[7]);
 						valueInt = sbc_rx_data[8];
@@ -534,7 +534,7 @@ void Service_SBC(void){
 					}
 					break;
 					// Peltier start
-					case 0x20:
+					case SERVICE_PELTIER_START:
 					{
 						EnableFrigoFromPlate = TRUE;
 						EnableFrigoFromControl = TRUE;
@@ -595,7 +595,7 @@ void Service_SBC(void){
 					}
 					break;
 					// Peltier stop
-					case 0x21:
+					case SERVICE_PELTIER_STOP:
 					{
 						Start_Frigo_AMS((float)0.0);
 //						StopHeating();
@@ -613,7 +613,7 @@ void Service_SBC(void){
 					}
 					break;
 					// Peltier write ee
-					case 0x22:
+					case SERVICE_PELTIER_WRITE_EE:
 					{
 						PeltierAssSendCommand(WRITE_REG_VAL_TO_EEPROM, "0",0,"0",2);
 

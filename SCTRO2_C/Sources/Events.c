@@ -107,6 +107,35 @@ void SBC_COMM_OnRxChar(void)
 		Lenght_MSG = 13; // se sto ricevendo una richiesta di stato la lungheza complessiva è 13 (byte da 0 a 12)
 	else if (sbc_rx_data[5] == COMMAND_ID_BUT_SBC)
 		Lenght_MSG = 12; // se sto ricevendo una richiesta di stato la lungheza complessiva è 12 (byte da 0 a 11)
+	else if (sbc_rx_data[5] == COMMAND_ID_SERVICE)
+	{
+			if (sbc_rx_data[6] == SERVICE_MODBUS_WRITE_REG)
+				Lenght_MSG = 17;
+			else if (sbc_rx_data[6] == SERVICE_MODBUS_READ_REG ||
+					 sbc_rx_data[6] == SERVICE_PELTIER_WRITE_FLOAT)
+				Lenght_MSG = 15;
+			else if (sbc_rx_data[6] == SERVICE_MODBUS_READ_STATUS ||
+					 sbc_rx_data[6] == SERVICE_PRESS_SENS_READ_VALUE ||
+					 sbc_rx_data[6] == SERVICE_PRESS_SENS_READ_PARAM ||
+					 sbc_rx_data[6] == SERVICE_TEMP_SENS_READ_VALUE ||
+					 sbc_rx_data[6] == SERVICE_FLOW_SENS_READ ||
+					 sbc_rx_data[6] == SERVICE_FLOW_SENS_RESET ||
+					 sbc_rx_data[6] == SERVICE_PELTIER_START ||
+					 sbc_rx_data[6] == SERVICE_PELTIER_STOP ||
+					 sbc_rx_data[6] == SERVICE_PELTIER_WRITE_EE   )
+				Lenght_MSG = 10;
+			else if (sbc_rx_data[6] == SERVICE_PRESS_SENS_CAL_P0 ||
+					 sbc_rx_data[6] == SERVICE_PRESS_SENS_CAL_P1)
+				Lenght_MSG = 13;
+			else if (sbc_rx_data[6] == SERVICE_TEMP_SENS_READ_REG ||
+					 sbc_rx_data[6] == SERVICE_PELTIER_WRITE_INT)
+				Lenght_MSG = 12;
+			else if (sbc_rx_data[6] == SERVICE_TEMP_SENS_WRITE_REG)
+				Lenght_MSG = 14;
+			else if (sbc_rx_data[6] == SERVICE_PELTIER_READ_FLOAT ||
+					 sbc_rx_data[6] == SERVICE_PELTIER_READ_INT)
+				Lenght_MSG = 11;
+	}
 
 	#ifdef	DEBUG_COMM_SBC
 	//PC_DEBUG_COMM_SendChar(*ptrMsgSbcRx);
@@ -125,20 +154,10 @@ void SBC_COMM_OnRxChar(void)
 	{
 		iflag_sbc_rx |= IFLAG_SBC_RX;
 
-		if (sbc_rx_data[5] == 0xCC)
+		if (sbc_rx_data[5] == COMMAND_ID_SERVICE)
 			Service = TRUE;
 		else
-		{
-//			if (sbc_rx_data[5] == COMMAND_ID_PAR_SET)
-//			{
-//				sbc_rx_data[7] = sbc_rx_data[7];
-//			}
-//			if (sbc_rx_data[5] == COMMAND_ID_BUT_SBC)
-//			{
-//				sbc_rx_data[7] = sbc_rx_data[7];
-//			}
-			Service = FALSE;
-		}
+		    Service = FALSE;
 
 		ptrSbcCountRx = 0;
 		//ptrMsgSbcRx = &msg_sbc_rx[0];
