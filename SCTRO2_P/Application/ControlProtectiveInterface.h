@@ -54,8 +54,12 @@ void Enable_Frigo_CommandCAN(bool status);
 
 void LogControlBoardError(uint16_t NumCError);
 void LogProtectiveBoardError(uint16_t NumPError);
+void ShowDebug(char* DebugString );
 
-
+int getOffsetTempRes(void);
+int getOffsetTempArt(void);
+int getOffsetTempVen(void);
+int getOffsetTempPlate(void);
 
 typedef struct {
 	int hours;

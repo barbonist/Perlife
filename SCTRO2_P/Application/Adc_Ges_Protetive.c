@@ -80,11 +80,6 @@ void Dip_Switch_ADC_Init(void)
 }
 
 
-//{
-	//SB T_PLATE_P_ADC		 = 0;
-//	T_PLATE_P_GRADI_CENT = 0;
-//}
-
 void Manange_ADC0(void)
 {
 	//word TPlatePadc = 0;
@@ -172,16 +167,10 @@ void Plate_Temp_Sensor_Calibration(float value)
 }
 
 
+#define PESO_FILTRO_STP 100
+
 void Coversion_From_ADC_To_degree_T_PLATE_Sensor(/*word TPlatePadc*/)
 {
-/* Filippo - calcoliamo la temperatura della PT1000 in altro modo
-	if (Frigo_ON)
-		T_PLATE_P_GRADI_CENT = config_data.T_Plate_Sensor_Gain_cold * T_PLATE_P_ADC + config_data.T_Plate_Sensor_Offset_cold;
-	else
-		T_PLATE_P_GRADI_CENT = config_data.T_Plate_Sensor_Gain_heat * T_PLATE_P_ADC + config_data.T_Plate_Sensor_Offset_heat;
-
-	T_PLATE_P_GRADI_CENT /= 10;
-*/
 	float appoggioFloat,V1;
 	float resPT1000;
 	int i;
@@ -218,14 +207,14 @@ void Coversion_From_ADC_To_degree_T_PLATE_Sensor(/*word TPlatePadc*/)
 
 	if (i<14)
 	{
-		T_PLATE_P_GRADI_CENT=m*resPT1000+q;
+		not_filtered_T_PLATE_P_GRADI_CENT=m*resPT1000+q;
 	}
 	else
 	{
-		T_PLATE_P_GRADI_CENT=tabellaPT1000[13].temperatura;
+		not_filtered_T_PLATE_P_GRADI_CENT=tabellaPT1000[13].temperatura;
 	}
+    T_PLATE_P_GRADI_CENT = ((float)(PESO_FILTRO_STP - 1)*T_PLATE_P_GRADI_CENT + not_filtered_T_PLATE_P_GRADI_CENT)/(float)PESO_FILTRO_STP;
 
-//	return (T_PLATE_P_GRADI_CENT);
 }
 
 void Coversion_From_ADC_To_mmHg_Pressure_Sensor()

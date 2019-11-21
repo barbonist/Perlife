@@ -253,7 +253,7 @@ void verificaTempPlate(void)
 
 #define VERS_1 1
 #define VERS_2 2
-#define VERS_3 9
+#define VERS_3 12
 
 #endif
 uint16_t GetFwVersionProtective(void)
@@ -271,7 +271,9 @@ int main(void)
 {
 
   /*** Processor Expert internal initialization. DON'T REMOVE THIS CODE!!! ***/
-  PE_low_level_init();
+
+
+	PE_low_level_init();
   /*** End of Processor Expert internal initialization.                    ***/
 
   /* Write your code here */
@@ -540,6 +542,42 @@ int main(void)
 
 		a) Attendere che le pinch escano dalla condizione di sicurezza
 		b) ripristinare i controlli e la generazione degli allarmi precedentemente elencati.
+
+	---------------------
+		Versione 1.2.10
+
+	a1) Il monitoraggio del superamento dei valori massimi per T e P sensori arterioso e venoso , e la presenza di aria deve essere condizionate allo stato delle pinch ,
+	solo se le pinch A e V non sono in sicurezza ,  attivare il timer per creare l'allarme. Durante il tempo del timer continuare a controllare le condizioni predette e dare
+	l'allarme solo se al timeout la condizione di allarme permane .
+	a3) In caso di allarme  mandare l'allarme e spegnere sempre tutto ( pompe , pinch , riscaldatore e raffreddatore ).
+
+	b) In caso di condizioni di allarme di mismatch valore parametri  , attendere 20 secondi di errore persistente prima di andare in allarme , nel caso , comunicare errore e s
+	pegnere tutto.
+
+	c1) Monitorare il superamento dei valori massimi per P sul sensore filtro di depurazione , dare l'allarme solo se la pinch del filtro è aperta a destra e quindi
+	non in sicurezza per il filtro per un tempo continuativo di 3 secondi.
+	c2) Monitorare il superamento dei valori massimi per P sul sensore filtro di ossigenazione , dare l'allarme solo se le pompe di ossigenazione sono attive
+	( verifica possibile dopo 6.5 secondi )
+
+---------------------
+		Versione 1.2.11    8/11/2019
+
+	a) rimesso allarme se comunicazione can not ok ( bug )
+	b) tolti allarmi di temperatura troppo alta e troppo bassa su sensore di temperatura di ricircolo
+
+---------------------
+		Versione 1.2.12    15/11/2019
+
+	a) mismatch di pressione non generano allarme in priming ( bug )
+	b) l'allarme di mismatch di pressione non veniva generato se la differenza era rilevata allo startup
+	c) aggiunto il comando "debug" al command parser
+	e) aggiunto il comando "set buzzer" al command parser
+	f) modificata la gestione del buzzer
+	g) aggiunto il comando set difftemp al command parser per la verification protective
+	h) tolgo il controllo di temp alta sul sensore di flusso ( richiesta Perrone 15 Novembre 2019 )
+	i) modificati tempi di intervento allarme Temp max e min venosa arteriosa e piastra , portati a 2 secondi ( Perrone Barboni 18/11/2019 )
+	j) correzione bug gestione allarme HW failure dopo ricezione allarmi control e mancato blocco motori/pinch da control (21/11/2019)
+	k) dopo allarme HW ,  blocco ulteriori controlli essendo allarme irreversibile
 
   */
 

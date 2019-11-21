@@ -5,7 +5,7 @@
  *      Author: W5
  */
 
-
+#include <stdbool.h>
 #include "Cpu.h"
 #include "Events.h"
 #include "Global.h"
@@ -363,10 +363,12 @@ bool Pinch_Venous_IsEnabled(void)
 	#undef DISABLE_HEATER_FRIGO_CONTROL
 #endif
 
+bool ProtectiveIssuedCoolerHeaterCommand = false;
 
 void Enable_Heater(bool status)
 {
 #ifndef 	DISABLE_HEATER_FRIGO_CONTROL
+	ProtectiveIssuedCoolerHeaterCommand = true;
 	if (status && !HEAT_ON_P_GetVal())
 	{
 		HEAT_ON_P_SetVal();
@@ -384,6 +386,7 @@ void Enable_Heater(bool status)
 void Enable_Frigo(bool status)
 {
 #ifndef 	DISABLE_HEATER_FRIGO_CONTROL
+	ProtectiveIssuedCoolerHeaterCommand = true;
 	if (status && !COMP_ENABLE_GetVal())
 	{
 		COMP_ENABLE_SetVal();
@@ -402,31 +405,36 @@ void Enable_Frigo(bool status)
 
 void Enable_Heater_CommandCAN(bool status)
 {
-	if (status && !HEAT_ON_P_GetVal())
-	{
-		HEAT_ON_P_SetVal();
-		Heat_ON = TRUE;
+	if( !ProtectiveIssuedCoolerHeaterCommand){
+		if (status && !HEAT_ON_P_GetVal())
+		{
+			HEAT_ON_P_SetVal();
+			Heat_ON = TRUE;
+		}
+
+		if (!status && HEAT_ON_P_GetVal())
+		{
+			HEAT_ON_P_ClrVal();
+			Heat_ON = FALSE;
+		}
 	}
 
-	if (!status && HEAT_ON_P_GetVal())
-	{
-		HEAT_ON_P_ClrVal();
-		Heat_ON = FALSE;
-	}
 }
 
 void Enable_Frigo_CommandCAN(bool status)
 {
-	if (status && !COMP_ENABLE_GetVal())
-	{
-		COMP_ENABLE_SetVal();
-		Frigo_ON = TRUE;
-	}
+	if( !ProtectiveIssuedCoolerHeaterCommand){
+		if (status && !COMP_ENABLE_GetVal())
+		{
+			COMP_ENABLE_SetVal();
+			Frigo_ON = TRUE;
+		}
 
-	if (!status && COMP_ENABLE_GetVal())
-	{
-		COMP_ENABLE_ClrVal();
-		Frigo_ON = FALSE;
+		if (!status && COMP_ENABLE_GetVal())
+		{
+			COMP_ENABLE_ClrVal();
+			Frigo_ON = FALSE;
+		}
 	}
 }
 

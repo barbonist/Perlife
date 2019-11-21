@@ -38,9 +38,10 @@ void Enable_Heater(bool status);
 void Enable_Frigo (bool status);
 
 typedef void(*TAlarmAction)(void);// TAlarmAction;
+typedef bool (*TConditionChecker)(void);
 
 typedef struct {
-	bool AlarmCheckEnabled;
+	TConditionChecker IsCheckRequired;
 	uint8_t AlarmCounter;
 	uint8_t	CountTreshold;
 	bool AlarmConditionPending;

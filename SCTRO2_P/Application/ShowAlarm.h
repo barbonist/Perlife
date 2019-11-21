@@ -11,5 +11,6 @@
 
 void RetriggerNoCANRxTxAlarm(void);
 void ShowNewAlarmError(uint16_t AlarmCode);
+void SetBuzzerMode(int val);
 
 #endif /* APPLICATION_SHOWALARM_H_ */

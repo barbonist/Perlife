@@ -290,36 +290,31 @@ void TxAlarmCode( uint16_t AlarmCode)
 void onNewPressOxygen(uint16_t Value)
 {
 	TxCan1.STxCan1.PressOxy = Value;
-	//if( IsVerifyRequired() )
-			VerifyOxygenPressure(Value);
+	VerifyOxygenPressure(Value);
 }
 
 void onNewTubPressLevel(uint16_t Value)
 {
 	TxCan0.STxCan0.PressLevelx100 = Value;
-	//if( IsVerifyRequired() )
-			VerifyTubPressure(Value);
+	VerifyTubPressure(Value);
 }
 
 void onNewPressADSFLT(uint16_t  Value)
 {
 	TxCan0.STxCan0.PressFilter = Value;
-	//if( IsVerifyRequired() )
-			VerifyFilterPressure(Value);
+	VerifyFilterPressure(Value);
 }
 
 void onNewPressVen(uint16_t  Value)
 {
 	TxCan0.STxCan0.PressVen = Value;
-	//if( IsVerifyRequired() )
-			VerifyVenousPressure(Value);
+	VerifyVenousPressure(Value);
 }
 
 void onNewPressArt(uint16_t  Value)
 {
 	TxCan0.STxCan0.PressArt = Value;
-	//if( IsVerifyRequired() )
-		VerifyArterialPressure(Value);
+	VerifyArterialPressure(Value);
 }
 
 
@@ -477,38 +472,46 @@ void onNewTPlateCentDegrees(  float Temper11  )
 {
 	int16_t Tempx10;
 
+
+	   Temper11 = Temper11 + (float)getOffsetTempPlate(); // add offset for verification purpuse , should be 0 normally
+
        Tempx10 = (int16_t)(Temper11 * 10);
        TxCan5.STxCan5.tempPlateP = Tempx10;
-       //if( IsVerifyRequired() )
-                    VerifyPlateTemp( Temper11 );
+       VerifyPlateTemp( Temper11 );
 }
 
 void onNewTPerfArteriosa(float Temper)
 {
        int16_t Tempx10;
+
+   	   Temper = Temper + (float) getOffsetTempArt();  // add offset for verification purpuse , should be 0 normally
+
        Tempx10 = (int16_t)(Temper * 10);
        TxCan1.STxCan1.TempArtx10 = Tempx10;
-       //if( IsVerifyRequired() )
-                    VerifyArtTemp(Temper);
+       VerifyArtTemp(Temper);
 }
 
 void onNewTPerfRicircolo(float Temper)
 {
       int16_t Tempx10;
+
+       Temper = Temper + (float)getOffsetTempRes();  // add offset for verification purpuse , should be 0 normally
+
        Tempx10 = (int16_t)(Temper * 10);
        TxCan1.STxCan1.TempFluidx10 = Tempx10;
-       //if( IsVerifyRequired() )
-                    VerifyFluidTemp(Temper);
+       VerifyFluidTemp(Temper);
 }
 
 
 void onNewTPerfVenosa(float Temper)
 {
        int16_t Tempx10;
+
+   	   Temper = Temper + (float)getOffsetTempVen();  // add offset for verification purpuse , should be 0 normally
+
        Tempx10 = (int16_t)(Temper * 10);
        TxCan1.STxCan1.TempVenx10 = Tempx10;
-       //if( IsVerifyRequired() )
-             VerifyVenTemp(Temper);
+       VerifyVenTemp(Temper);
 }
 
 
@@ -835,19 +838,20 @@ void RetriggerNoCANRxTxAlarm(void){
 	CanAlarmCounter = 0;
 }
 
+#define DEBUG_CONTROL
+
 void CanCheckTimer(void)
 {
+#ifndef DEBUG_CONTROL
 	if( CanAlarmCounter < 10 ){
 		CanAlarmCounter ++;
 		if(CanAlarmCounter == 10){
 			// notify can alarm
-
-			// <SB> disab alarm for test VIncenzo 19 7 2019
-			//NotifyCanOnline(false);
-			// cause repeated notification if alarm persist
+			NotifyCanOnline(false);
 			CanAlarmCounter = 0;
 		}
 	}
+#endif
 }
 
 
@@ -927,6 +931,7 @@ void SetLogCommand( uint8_t Command)
 }
 
 int PrescalerCnt = 0;
+bool DebugEnabled = false;
 void ManageGetParams(void)
 {
 static char stringPtr[200];
@@ -937,6 +942,7 @@ word sent_data;
 	switch(cmd){
 		case ESC:
 			LogMode = 0;
+			DebugEnabled = false;
 			break;
 		case 'P':
 			LogMode = 1;
@@ -989,6 +995,12 @@ word sent_data;
 		case 'B': // log time
 			LogMode = 27;
 			sprintf(stringPtr, "  Time from power on  \r\n");
+			PC_DEBUG_COMM_SendBlock(stringPtr, strlen(stringPtr), &sent_data);
+			break;
+		case 'D':// log debug messages
+			LogMode = 99;
+			DebugEnabled = true;
+			sprintf(stringPtr, "  Debug enabled  \r\n");
 			PC_DEBUG_COMM_SendBlock(stringPtr, strlen(stringPtr), &sent_data);
 			break;
 	}
@@ -1083,6 +1095,25 @@ word sent_data;
 		}
 		PrescalerCnt = (PrescalerCnt + 1) % 20;
 		break;
+	}
+}
+
+void ShowDebug(char* DebugString )
+{
+	static char stringPtr[200];
+	word sent_data;
+	TTime timeon;
+
+
+
+
+	if(DebugEnabled == true){
+		timeon = Get_OnTime();
+		sprintf(stringPtr," %02u:%02u:%02u.%03u ", timeon.hours , timeon.minutes , timeon.seconds, timeon.hundredms*100);
+		PC_DEBUG_COMM_SendBlock(stringPtr, strlen(stringPtr), &sent_data);
+
+		sprintf(stringPtr, "%s\r\n",DebugString);
+		PC_DEBUG_COMM_SendBlock(stringPtr, strlen(stringPtr), &sent_data);
 	}
 }
 

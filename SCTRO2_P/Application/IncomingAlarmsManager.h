@@ -19,6 +19,7 @@ bool PinchAdsorbentInSafetyMode(void);
 
 bool SomePinchIsInPerfusionPosition(void);
 bool PumpsAreStopped(void);
+bool OxyPumpsAreStopped(void);
 
 
 #endif /* APPLICATION_INCOMINGALARMSMANAGER_H_ */

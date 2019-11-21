@@ -60,7 +60,8 @@ bool SomePinchNotDisabled = false;
 			HuntingPinchNoSafeMode = true;
 		}
 
-		if( IsAlarmTemperatureRelated( controlBoard_AlarmCode ) || IsAlarmPressureRelated( controlBoard_AlarmCode )){
+		//if( IsAlarmTemperatureRelated( controlBoard_AlarmCode ) || IsAlarmPressureRelated( controlBoard_AlarmCode )){
+		if( IsAlarmTemperatureRelated( controlBoard_AlarmCode )){
 				Time2CheckPumpsStopped = 65; // trigger check pumps after 6 seconds ( limit of hall sensors pos )
 				Time2CheckPinchSafe = 20;
 		}
@@ -76,6 +77,7 @@ bool SomePinchNotDisabled = false;
 				// hardware error --> must remove supply to pinch and motors
 				SwitchOFFPinchNPumps();
 				UnrecoverableAlarm = true;
+				DisableHwVerification();
 				ShowNewAlarmError(CODE_ALARM_GEN_HWFAILURE);
 			}
 		}
@@ -88,6 +90,7 @@ bool SomePinchNotDisabled = false;
 				// hardware error --> must remove supply to pinch and motors
 				SwitchOFFPinchNPumps();
 				UnrecoverableAlarm = true;
+				DisableHwVerification();
 				ShowNewAlarmError(CODE_ALARM_GEN_HWFAILURE);
 			}
 			else {
@@ -196,6 +199,14 @@ bool SomePumpIsMoving =
 	return !SomePumpIsMoving;
 }
 
+bool OxyPumpsAreStopped(void)
+{
+	bool OxyPumpsAreMoving =
+				( (GetMeasuredPumpSpeed(2) != 0) ||
+				  (GetMeasuredPumpSpeed(3) != 0)	);
+
+		return !OxyPumpsAreMoving;
+}
 
 bool IsAlarmTemperatureRelated(uint16_t alarm)
 {
@@ -203,15 +214,12 @@ bool result;
 
 	switch(alarm)
 	{
-			case CODE_ALARM_TEMP_ART_HIGH:
-			case CODE_ALARM_TEMP_ART_LOW:
-			case CODE_ALARM_TEMP_VEN_HIGH:
-			case CODE_ALARM_TEMP_VEN_LOW:
-			case CODE_ALARM_TEMP_NTC_HIGH:
-			case CODE_ALARM_TEMP_NTC_LOW:
 			case CODE_ALARM_TEMP_SENS_NOT_DETECTED:
 			case CODE_ALARM_DELTA_TEMP_REC_ART:
 			case CODE_ALARM_DELTA_TEMP_REC_VEN:
+			case CODE_ALARM_T_ART_OUT_OF_RANGE:
+			case CODE_ALARM_TEMP_MAX_IN_TRT:
+			case CODE_ALARM_TEMP_MIN_IN_TRT:
 				result = true;
 			break;
 			default:

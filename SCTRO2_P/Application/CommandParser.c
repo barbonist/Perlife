@@ -11,16 +11,19 @@
 #include "global.h"
 #include "EEPROM.h"
 #include "PC_DEBUG_COMM.h"
-
+#include "ShowAlarm.h"
 
 void CommandExecute( int argc, char** argv);
 char** ExtractTokens(char* CommandNParamsString);
 void SetMulti(int NParams, char** Params);
 void EnableMulti(int NParams, char** Params);
 void GetMulti(int NParams, char** Params);
+void EnabDebug(int NParams, char** Params);
 void SetHeater(int NParams, char** Params);
 void SetCalibTemp(int NParams, char** Params);
 void SetCooler(int NParams, char** Params);
+void SetBuzzerr(int NParams, char** Params);
+void SetDiffTemp(int NParams, char** Params);
 
 void ErrorCommandNotFound( int NParams, char** Params);
 void ErrorNParamsNotOk( int NParams, char** Params);
@@ -65,6 +68,7 @@ struct CommandNParams CommandsAvailable[] =
 		{ "set", 2 , SetMulti },
 		{ "get", 2 , GetMulti },
 		{ "enable", 2 , EnableMulti },
+		{ "debug", 2 , EnabDebug },
 		{ "DrawLion", 2 , DrawLion }
 };
 
@@ -130,9 +134,11 @@ void SetMulti(int NParams, char** Params)
 		if(strcmp_cr(Params[0],"heater") == 0) SetHeater(NParams-1, Params+1) ;
 		else if(strcmp_cr(Params[0],"cooler") == 0) SetCooler(NParams-1, Params+1) ;
 		else if (strcmp_cr(Params[0],"calibtemp") == 0) SetCalibTemp(NParams-1, Params+1) ;
+		else if (strcmp_cr(Params[0],"buzzer") == 0) SetBuzzer(NParams-1, Params+1) ;
+		else if (strcmp_cr(Params[0],"difftemp") == 0) SetDiffTemp(NParams-1, Params+1) ;
 		else {
 			//ErrorParamsNotOk( NParams, Params);
-			CommandAnswer("set heater/cooler/calibtemp");
+			CommandAnswer("set heater/cooler/calibtemp/buzz/difftemp");
 			return;
 		}
 }
@@ -188,6 +194,13 @@ void GetMulti(int NParams, char** Params)
 			return;
 		}
 }
+
+void EnabDebug(int NParams, char** Params)
+{
+	SetLogCommand('D');
+}
+
+
 
 void SetHeater(int NParams, char** Params)
 {
@@ -359,6 +372,89 @@ void SetCooler(int NParams, char** Params)
 	CommandAnswer("set cooler done");
 
 }
+
+
+
+void SetBuzzer(int NParams, char** Params)
+{
+	// execute
+	int BuzzMode;
+
+	if((NParams < 1) || (NParams > 2)){
+		ErrorNParamsNotOk(NParams, Params);
+		return;
+	}
+
+	// Buzzer mode 0 1 2 3
+	str_NoCr(Params[0]);
+	if(strspn(Params[0], "0123") == strlen(Params[0])){
+			sscanf(Params[0] , "%u" , &BuzzMode);
+	}
+	else {
+			CommandAnswer("set buzzer 0/1/2/3 ");
+			return;
+	}
+	SetBuzzerMode(BuzzMode);
+	CommandAnswer("set buzzer done");
+
+}
+
+
+
+static int OffsetTempRes   = 0; // offset temp. Reservoir
+static int OffsetTempArt   = 0; // offset temp. Arter.
+static int OffsetTempVen   = 0; // offset temp. Ven
+static int OffsetTempPlate = 0; // offset temp. Plate
+
+int getOffsetTempRes() {  return(OffsetTempRes);  }
+int getOffsetTempArt() {  return(OffsetTempArt);  }
+int getOffsetTempVen() {  return(OffsetTempVen);  }
+int getOffsetTempPlate() {  return(OffsetTempPlate); }
+
+//
+// add required offset to temperature
+// needed for protective verificatio
+//
+void SetDiffTemp(int NParams, char** Params)
+{
+    unsigned char SensNum = 0;
+    int DiffTemp = 0;
+
+    // 2 params needed : N. sensor , required diff
+    if (NParams == 2)
+    {
+        if (strcmp_cr(Params[0],"1") == 0)  SensNum = 1; // arterious
+        else if (strcmp_cr(Params[0],"2") == 0) SensNum = 2; // reservoir
+        else if (strcmp_cr(Params[0],"3") == 0) SensNum = 3; // venous
+        else if (strcmp_cr(Params[0],"4") == 0) SensNum = 4; // Plate
+        else
+        {
+            CommandAnswer("Sensor Number should be 1 for Arterious, 2 for Reservoire, 3 for Venous, 4 for Plate");
+            return;
+        }
+        /*remove 'cr'*/
+        str_NoCr(Params[1]);
+        if(strspn(Params[1], "0123456789.-") == strlen(Params[1])){
+            sscanf(Params[1] , "%d" , &DiffTemp);
+        }
+
+        switch(SensNum)
+        {
+            case 1: OffsetTempArt = DiffTemp; break;
+            case 2: OffsetTempRes = DiffTemp; break;
+            case 3: OffsetTempVen = DiffTemp; break;
+            case 4: OffsetTempPlate = DiffTemp; break;
+            default:
+                CommandAnswer("Sensor Number should be 1 for Arterious, 2 for Reservoire, 3 for Venous, 4 for Plate");
+            break;
+        }
+    }
+    else
+    {
+        CommandAnswer("wrong number of parameters");
+    }
+}
+
 
 
 #include "events.h"

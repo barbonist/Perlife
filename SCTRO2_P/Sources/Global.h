@@ -12,7 +12,7 @@
 typedef unsigned short	word;
 
 
-// #define PROTECTIVE_SLEEPS
+#define PROTECTIVE_SLEEPS
 
 /* Syncronization flag */
 char	iflag_pc_rx;
@@ -23,11 +23,6 @@ char	iflag_sensTempIR_Meas_Ready;
 char	iflag_sensTempIRRW;
 unsigned char * ptrDataTemperatureIR;
 
-/* DEBUG */
-#define DEBUG_ENABLE
-#define DEBUG_CONTROL			0xA5
-#define DEBUG_PROTECTION		0x5A
-/* DEBUG */
 
 #define	IFLAG_PC_RX				0x01 /* new data on rx 232 pc */
 #define IFLAG_PC_TX				0x01 /* new data to rx 232 pc */
@@ -528,6 +523,7 @@ word  PR_ART_Sistolyc_mmHg;	    //variabile globale per il valore sistolico  in 
 word  PR_ART_Med_mmHg;			//variabile globale per il valore medio in mmHg del sensore di pressione arteriosa calcolato come (2 *PR_OXYG_Sistolyc_mmHg + PR_OXYG_Diastolyc_mmHg)/3
 word  T_PLATE_P_ADC;			// variabile globale per il valore in ADC della temperatura di piastra letta dalla protective
 float  T_PLATE_P_GRADI_CENT;		// variabile globale per il valore in gradi centigradi della temperatura di piastra letta dalla protective
+float  not_filtered_T_PLATE_P_GRADI_CENT;		// variabile globale per il valore in gradi centigradi della temperatura di piastra letta dalla protective
 int   PR_ART_Diastolyc_mmHg_ORG; //variabile globale per il valore diastolico  in mmHg del sensore di pressione arteriosa
 int   PR_ART_Sistolyc_mmHg_ORG;	 //variabile globale per il valore sistolico  in mmHg del sensore di pressione arteriosa
 int   PR_ART_Med_mmHg_ORG;		 //variabile globale per il valore medio in mmHg del sensore di pressione arteriosa calcolato come (2 *PR_OXYG_Sistolyc_mmHg + PR_OXYG_Diastolyc_mmHg)/3
