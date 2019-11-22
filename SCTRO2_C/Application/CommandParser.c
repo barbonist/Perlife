@@ -26,6 +26,9 @@ void SetCooler(int NParams, char** Params);
 void SetCalibTemp(int NParams, char** Params);
 void SetCalibFlowSens(int NParams, char** Params);
 void SetDiffTemp(int NParams, char** Params);
+void SetDiffTemp(int NParams, char** Params);
+void SetAlarm(int NParams, char** Params);
+void SetAirValue(int NParams, char** Params);
 
 void ErrorCommandNotFound( int NParams, char** Params);
 void ErrorNParamsNotOk( int NParams, char** Params);
@@ -63,6 +66,9 @@ static int OffsetTempRes   = 0; // variabile in cui scrivo l'offset aggiunto via
 static int OffsetTempArt   = 0; // variabile in cui scrivo l'offset aggiunto via command parser per validazione protective
 static int OffsetTempVen   = 0; // variabile in cui scrivo l'offset aggiunto via command parser per validazione protective
 static int OffsetTempPlate = 0; // variabile in cui scrivo l'offset aggiunto via command parser per validazione protective
+static int AirValueArt	   = 0; // variabile in cui scrivo il valore inviatomi via command parser per il sensore di aria arterioso
+static int AirValueVen	   = 0; // variabile in cui scrivo il valore inviatomi via command parser per il sensore di aria Venoso
+static int AlarmValue	   = 0; // variabile in cui scrivo il valore inviatomi via command parser per il codice di allarme Control
 
 typedef void(*TCommandAction)(int argc, char** argv);// TAlarmAction;
 
@@ -152,9 +158,11 @@ void SetMulti(int NParams, char** Params)
 		else if (strcmp_cr(Params[0],"calibtemp") == 0) SetCalibTemp(NParams-1, Params+1);
 		else if (strcmp_cr(Params[0],"calibflowsens") == 0) SetCalibFlowSens(NParams-1, Params+1);
 		else if (strcmp_cr(Params[0],"difftemp") == 0) SetDiffTemp(NParams-1, Params+1);
+		else if (strcmp_cr(Params[0],"alarm") == 0) SetAlarm(NParams-1, Params+1);
+		else if (strcmp_cr(Params[0],"airvalue") == 0) SetAirValue(NParams-1, Params+1);
 		else {
 			//ErrorParamsNotOk( NParams, Params);
-			CommandAnswer("set heater/cooler/calibtemp/calibflowsens/difftemp");
+			CommandAnswer("set heater/cooler/calibtemp/calibflowsens/difftemp/alarm/airvalue");
 			return;
 		}
 }
@@ -275,7 +283,7 @@ void SetDiffTemp(int NParams, char** Params)
 	unsigned char SensNum = 0;
 	int DiffTemp = 0;
 
-	/*servono due parametri, uno per scegliere il sensore, lìaltro per impostare la differenza*/
+	/*servono due parametri, uno per scegliere il sensore, l'altro per impostare la differenza*/
 	if (NParams == 2)
 	{
 		if (strcmp_cr(Params[0],"1") == 0)
@@ -330,6 +338,117 @@ void SetDiffTemp(int NParams, char** Params)
 		}
 
 	}
+	else
+	{
+		//messaggio di errore
+		CommandAnswer("wrong number of parameters");
+	}
+}
+
+void setAlarm (int param)
+{
+	AlarmValue = param;
+}
+
+int getAlarm()
+{
+	return (AlarmValue);
+}
+
+/*funzione che imposta un allarme da inviare alla PRO
+ * senza che la CON debba andare in allarme --> serve per validazione PRO
+ * inviamo solo 1 parametro che è il codice di allarme*/
+void SetAlarm(int NParams, char** Params)
+{
+	int AlaValue = 0;
+
+	/*serve 1 parametro*/
+	if (NParams == 1)
+	{
+		/*per toglie il 'cr'*/
+		str_NoCr(Params[0]);
+
+		if(strspn(Params[0], "0123456789") == strlen(Params[0]))
+	    {
+			sscanf(Params[0] , "%d" , &AlaValue);
+			setAlarm (AlaValue);
+	    }
+	}
+	else
+	{
+		//messaggio di errore
+		CommandAnswer("wrong number of parameters");
+	}
+}
+
+
+void setArtAir (int param)
+{
+	AirValueArt = param;
+}
+
+int getArtAir()
+{
+	return (AirValueArt);
+}
+
+void setVenAir (int param)
+{
+	AirValueVen = param;
+}
+
+int getVenAir()
+{
+	return (AirValueVen);
+}
+
+/*funzione che imposta un valore di aria su un dei due sensori
+ * di aria/flusso per permettere di simulare un allarme da inviare alla PRO
+ * Serve per validazione PRO
+ * inviamo due parametri: numero sens (1 arterioso e 2 venoso) e il valore numerico da inviare*/
+void SetAirValue(int NParams, char** Params)
+{
+	unsigned char SensNum = 0;
+	int AirValue = 0;
+
+	/*servono due parametri, uno per scegliere il sensore, l'altro per impostare il valore*/
+	if (NParams == 2)
+	{
+		if (strcmp_cr(Params[0],"1") == 0)
+		{
+			/*è stato selezionato il sensore di aria Arterioso*/
+			SensNum = 1;
+		}
+		else if (strcmp_cr(Params[0],"2") == 0)
+		{
+			/*è stato selezionato il sensore di aria Venoso*/
+			SensNum = 2;
+		}
+		else
+		{
+			CommandAnswer("Sensor Number should be 1 for Arterious, 2 for Venous");
+			return;
+		}
+		/*per toglie il 'cr'*/
+		str_NoCr(Params[1]);
+
+		if(strspn(Params[1], "0123456789") == strlen(Params[1])){
+			sscanf(Params[1] , "%d" , &AirValue);
+		}
+
+		switch(SensNum)
+		{
+			case 1:
+				setArtAir (AirValue);
+				break;
+			case 2:
+				setVenAir (AirValue);
+				break;
+			default:
+				CommandAnswer("Sensor Number should be 1 for Arterious, 2 for Venous");
+				break;
+		}
+}
 	else
 	{
 		//messaggio di errore

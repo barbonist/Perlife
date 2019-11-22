@@ -305,16 +305,38 @@ void onNewSensTempVal(uint16_t PressOxyg, float TempRes,
 void onNewTherapyType()
 {
     TxCan5.STxCan5.TerapyType = (THERAPY_TYPE) GetTherapyType();
-    TxCan5.STxCan5.ArtLineAirMeasure = sensor_UFLOW[ARTERIOUS_AIR_SENSOR].bubbleSize;
-	TxCan5.STxCan5.VenLineAirMeasure = sensor_UFLOW[VENOUS_AIR_SENSOR].bubbleSize;
+
+    /*VP 19/11/2019: qui faremo la getArtAir e la getVenAir in cui sarà presente il
+     * numero inviato via Command Parser; quando questo nimero sarà zero invieremo
+     * sensor_UFLOW[ARTERIOUS_AIR_SENSOR].bubbleSize e sensor_UFLOW[VENOUS_AIR_SENSOR].bubbleSize
+     * se sarà diverso da zero invieremo proprio quel numero*/
+    if (getArtAir() == 0)
+    	TxCan5.STxCan5.ArtLineAirMeasure = sensor_UFLOW[ARTERIOUS_AIR_SENSOR].bubbleSize;
+    else
+    	TxCan5.STxCan5.ArtLineAirMeasure = getArtAir();
+
+    if (getVenAir() == 0)
+    	TxCan5.STxCan5.VenLineAirMeasure = sensor_UFLOW[VENOUS_AIR_SENSOR].bubbleSize;
+    else
+    	TxCan5.STxCan5.VenLineAirMeasure = getVenAir();
 }
 void onNewPinchVal(uint8_t AirFiltStat, uint16_t AlarmCode,
 		           uint8_t Pinch2WPVF, uint8_t Pinch2WPVA, uint8_t Pinch2WPVV)
 {
-	TxCan3.STxCan3.AlarmCode = AlarmCode;
+
+	/*VP 19/11/2019: qui faremo la getAlarm in cui sarà presente il codice inviato
+	 * via Command Parser; quando questo codice sarà zero invieremo AlarmCode,
+	 * se sarà diverso da zero invieremo proprio quel codice*/
+	if (getAlarm() == 0)
+		TxCan3.STxCan3.AlarmCode = AlarmCode;
+	else
+		TxCan3.STxCan3.AlarmCode = getAlarm();
+
 	TxCan3.STxCan3.AirAlarm = AirFiltStat;
 	TxCan3.STxCan3.FilterPinchPos = Pinch2WPVF;
 	TxCan3.STxCan3.ArtPinchPos = Pinch2WPVA;
+
+
 	TxCan3.STxCan3.OxygPinchPos = Pinch2WPVV;
 	/* Aggiungo l'informnazione della posizione della pinch
 	 * letta dal driver tramite la matrice globale modbusData;

@@ -36,14 +36,21 @@ typedef  enum {
 
 void onNewCommadT1TEST(TControl2ProtCommands Command);
 
-void setOffsetTempRes (int Offset); // funzione che scrive l'offset aggiunto via command parser per validazione protective
-int getOffsetTempRes();				// funzione che restituisce l'offset aggiunto via command parser per validazione protective
-void setOffsetTempArt (int Offset); // funzione che scrive l'offset aggiunto via command parser per validazione protective
-int getOffsetTempArt();				// funzione che restituisce l'offset aggiunto via command parser per validazione protective
-void setOffsetTempVen (int Offset); // funzione che scrive l'offset aggiunto via command parser per validazione protective
-int getOffsetTempVen();				// funzione che restituisce l'offset aggiunto via command parser per validazione protective
-void setOffsetTempPlate (int Offset); // funzione che scrive l'offset aggiunto via command parser per validazione protective
+void setOffsetTempRes (int Offset); 	// funzione che scrive l'offset aggiunto via command parser per validazione protective
+int getOffsetTempRes();					// funzione che restituisce l'offset aggiunto via command parser per validazione protective
+void setOffsetTempArt (int Offset); 	// funzione che scrive l'offset aggiunto via command parser per validazione protective
+int getOffsetTempArt();					// funzione che restituisce l'offset aggiunto via command parser per validazione protective
+void setOffsetTempVen (int Offset); 	// funzione che scrive l'offset aggiunto via command parser per validazione protective
+int getOffsetTempVen();					// funzione che restituisce l'offset aggiunto via command parser per validazione protective
+void setOffsetTempPlate (int Offset); 	// funzione che scrive l'offset aggiunto via command parser per validazione protective
 int getOffsetTempPlate();				// funzione che restituisce l'offset aggiunto via command parser per validazione protective
+
+void setAlarm (int param); 	// funzione che scrive il valore inviatomi via command parser per il codice di allarme Control
+int getAlarm();						// funzione che restituisce il valore inviatomi via command parser per il codice di allarme Control
+void setArtAir (int param); 	// funzione che scrive il valore inviatomi via command parser per il sensore di aria arterioso
+int getArtAir();					// funzione che restituisce il valore inviatomi via command parser per il sensore di aria arterioso
+void setVenAir (int param); 	// funzione che scrive il valore inviatomi via command parser per il sensore di aria venoso
+int getVenAir();					// funzione che restituisce il valore inviatomi via command parser per il sensore di aria venoso
 
 #ifdef ENABLE_PROTECTIVE_ALARM_RESET
 void onNewAlmToResetMsg(uint16_t AlmCodeToreset);

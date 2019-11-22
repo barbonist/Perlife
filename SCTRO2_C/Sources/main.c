@@ -562,6 +562,9 @@ int main(void)
   timerCounterADC0 = 0;
   timerCounterADC1 = 0;
 
+  //attesa di 200 msec prima di dare il primo comando di chiusura alla priuma pinch
+  while (timerCounterCheckModBus < 2);
+  timerCounterCheckModBus = 0;
 
   // al reset metto tutti i rami delle pinch chiusi
   setPinchPosValue (PINCH_2WPVF, MODBUS_PINCH_POS_CLOSED);
