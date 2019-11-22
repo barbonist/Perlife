@@ -80,6 +80,9 @@ bool SomePinchNotDisabled = false;
 				DisableHwVerification();
 				ShowNewAlarmError(CODE_ALARM_GEN_HWFAILURE);
 			}
+			else {
+				Time2CheckPumpsStopped = 65; // retrigger check
+			}
 		}
 	}
 	if( Time2CheckPinchSafe > 0 ){
@@ -94,8 +97,9 @@ bool SomePinchNotDisabled = false;
 				ShowNewAlarmError(CODE_ALARM_GEN_HWFAILURE);
 			}
 			else {
+				Time2CheckPinchSafe = 20; // retrigger check
 				// pinches in safety mode --> disable protective check not needed when fluid cannot enter organ
-				DisableOrganProtectionChecks();
+				// DisableOrganProtectionChecks(); keep checking
 			}
 		}
 	}
@@ -112,7 +116,6 @@ bool SomePinchNotDisabled = false;
 	OldcontrolBoard_AlarmCode = controlBoard_AlarmCode;
 }
 
-
 void ControlAlarmReset( void )
 {
 
@@ -127,7 +130,6 @@ void ControlAlarmReset( void )
 		EnablePinchNPumps();
 	}
 }
-
 
 // pinch chiuse --> 1
 // aperte a sinistra --> 2
@@ -174,9 +176,6 @@ bool PinchAdsorbentInSafetyMode(void)
 	GetPinchPos( &pch0 ,  &pch1, &pch2);
 	return ((pch2 == 0x02) || (pch2 == 0x01));
 }
-
-
-
 
 
 bool SomePinchIsInPerfusionPosition(void)

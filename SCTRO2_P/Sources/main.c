@@ -253,7 +253,7 @@ void verificaTempPlate(void)
 
 #define VERS_1 1
 #define VERS_2 2
-#define VERS_3 12
+#define VERS_3 13
 
 #endif
 uint16_t GetFwVersionProtective(void)
@@ -578,6 +578,12 @@ int main(void)
 	i) modificati tempi di intervento allarme Temp max e min venosa arteriosa e piastra , portati a 2 secondi ( Perrone Barboni 18/11/2019 )
 	j) correzione bug gestione allarme HW failure dopo ricezione allarmi control e mancato blocco motori/pinch da control (21/11/2019)
 	k) dopo allarme HW ,  blocco ulteriori controlli essendo allarme irreversibile
+
+	---------------------
+		Versione 1.2.13    21/11/2019
+		- Rimosso il PROTECTIVE_SLEEPS
+		- Corretto bug nella ricezione codici di allarme da control , ( sequenza : allarme control in trattamento --> protective verifica pipnch in sicurezza e motori off (OK)
+		  --> la control ,prima del reset allamrme , rimette le pinch in perfusione . BUG = La protective non interviene.
 
   */
 
