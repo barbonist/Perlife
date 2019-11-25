@@ -1661,7 +1661,7 @@ void setGUIButton(unsigned char buttonId)
 	else if  (
 			   (buttonId == BUTTON_START_PRIMING 		||
 			    buttonId == BUTTON_START_TREATMENT 		||
-		        buttonId == BUTTON_STOP_EMPTY_DISPOSABLE
+		        buttonId == BUTTON_START_EMPTY_DISPOSABLE
 		        )
 				&& Stop_Button_clicked == TRUE
 			 )
