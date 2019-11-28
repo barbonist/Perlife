@@ -4374,6 +4374,13 @@ void EmptyDispStateMach(void)
 			GlobalFlags.FlagsDef.EnableCoversAlarm = 1;
 			// abilito gli allarmi su modbus
 			GlobalFlags.FlagsDef.EnableModbusNotRespAlm = 1;
+			// abilito l'allarme su mancata comunicazione CANBUS
+			GlobalFlags.FlagsDef.EnableCANBUSErr = 1;
+			// abilito allarmi Hall Machine Covers
+			GlobalFlags.FlagsDef.EnableMachineCovers = 1;
+			// abilito allarmi Hall ganci contenitore organo
+			GlobalFlags.FlagsDef.EnableHooksReservoir = 1;
+
 			EmptyDispRunAlwaysState = WAIT_FOR_1000ML;
 		}
 		else if(buttonGUITreatment[BUTTON_PRIMING_ABANDON].state == GUI_BUTTON_RELEASED)

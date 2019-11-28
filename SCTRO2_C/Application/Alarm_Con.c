@@ -333,11 +333,7 @@ void SetAllAlarmEnableFlags(void)
 	GlobalFlags.FlagsDef.EnableSFAAir = 1;
 	GlobalFlags.FlagsDef.EnableMachineCovers = 1;         // abilito allarmi Hall Machine Covers
 	GlobalFlags.FlagsDef.EnableHooksReservoir = 1;        // abilito allarmi Hall ganci contenitore organo
-#ifdef ENABLE_PROTECTIVE_BOARD
 	GlobalFlags.FlagsDef.EnableCANBUSErr = 1;
-#else
-	GlobalFlags.FlagsDef.EnableCANBUSErr = 0;
-#endif
 	GlobalFlags.FlagsDef.EnableBadPinchPosAlm = 0;        // viene attivato in un'altro momento
 	GlobalFlags.FlagsDef.EnableAlmPrimAirDetection = 0;   // viene attivato in un'altro momento
 
@@ -737,6 +733,7 @@ void CalcAlarmActive(void)
 			/* DA DEBUGGARE*/
 			manageAlarmFlowSensNotDetected();
 			manageAlarmIrTempSensNotDetected();
+			manageAlarmCanBus();
 
 			break;
 		}
@@ -966,6 +963,7 @@ void CalcAlarmActive(void)
 			manageAlarmActuatorWRModbusNotRespond();
 			manageAlarmFromProtective();
 			manageCover_Hook_Sensor();
+			manageAlarmCanBus();
 			break;
 		}
 
@@ -1355,7 +1353,7 @@ void manageAlarmPhysicPressSensLow(void)
 		}
 
 		/*abilito l'allarme di pressione OXY bassa solo se almeno una delle due pompe OXY si sta muovendo  a velocità superiore a 5 RPM*/
-		if (PR_OXYG_mmHg_Filtered < PR_OXYG_LOW && (modbusData[1][17] > 500 || modbusData[2][17] > 500))
+		if (PR_OXYG_mmHg_Filtered < PR_OXYG_LOW && (modbusData[2][17] > 500 || modbusData[3][17] > 500))
 		{
 			alarmList[PRESS_OXYG_LOW].physic = PHYSIC_TRUE;
 		}
@@ -1799,11 +1797,11 @@ void manageAlarmPhysicTempSensOOR(void)
 
 	if (GetTherapyType() == LiverTreat)
 	{
-		pompeInMovimento = (modbusData[1][17] > 500) ? TRUE : FALSE;	//PPAF in movimento, rpm*100
+		pompeInMovimento = (modbusData[1][17] > 500) ? TRUE : FALSE;	//PPAR in movimento, rpm*100
 	}
 	else if (GetTherapyType() == KidneyTreat)
 	{
-		pompeInMovimento = (modbusData[0][17] > 500) ? TRUE : FALSE;	//PPAR in movimento, rpm*100
+		pompeInMovimento = (modbusData[0][17] > 500) ? TRUE : FALSE;	//PPAF in movimento, rpm*100
 	}
 
 	if (GlobalFlags.FlagsDef.EnableTempArtOORAlm && pompeInMovimento)
@@ -2294,8 +2292,6 @@ void manageAlarmActuatorWRModbusNotRespond(void)
 		}
 	}
 }
-
-
 
 void manageAlarmFromProtective(void)
 {
@@ -2797,7 +2793,9 @@ void manageAlarmOxygPumpStill(void)
 		{
 			if ((((PARAMETER_ACTIVE_TYPE)parameterWordSetFromGUI[PAR_SET_OXYGENATOR_ACTIVE].value) == YES) && (parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value != 0))
 			{
-				if(((int)(modbusData[pumpPerist[1].pmpMySlaveAddress-2][17] / 100)) <= (int)PUMP_STOPPED_SPEED_VAL)
+				if(	(((int)(modbusData[2][17] / 100)) <= (int)PUMP_STOPPED_SPEED_VAL) &&
+					(((int)(modbusData[3][17] / 100)) <= (int)PUMP_STOPPED_SPEED_VAL)
+					)
 				{
 					alarmList[OXYG_PUMP_STILL].physic = PHYSIC_TRUE;
 				}
@@ -2817,7 +2815,9 @@ void manageAlarmOxygPumpStill(void)
 			// Set perfusione venosa
 			if (parameterWordSetFromGUI[PAR_SET_OXYGENATOR_FLOW].value != 0)
 			{
-				if(((int)(modbusData[pumpPerist[1].pmpMySlaveAddress-2][17] / 100)) <= (int)PUMP_STOPPED_SPEED_VAL)
+				if(	(((int)(modbusData[2][17] / 100)) <= (int)PUMP_STOPPED_SPEED_VAL) &&
+					(((int)(modbusData[3][17] / 100)) <= (int)PUMP_STOPPED_SPEED_VAL)
+					)
 				{
 					alarmList[VEN_PUMP_STILL].physic = PHYSIC_TRUE;
 				}
