@@ -28,4 +28,5 @@ void VerifyArtTemp(float Value);
 void VerifyVenTemp(float Value);
 void VerifyFluidTemp(float Value);
 
+bool NeedAirAlarmParamsCheck(void);
 #endif /* APPLICATION_VERIFICATORLOCALSENSORS_H_ */

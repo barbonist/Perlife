@@ -838,7 +838,7 @@ void RetriggerNoCANRxTxAlarm(void){
 	CanAlarmCounter = 0;
 }
 
-#define DEBUG_CONTROL
+//#define DEBUG_CONTROL
 
 void CanCheckTimer(void)
 {

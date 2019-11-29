@@ -165,6 +165,16 @@ bool NeedVenousParamsCheck(void)
 	return cond1 && cond2;
 }
 
+bool NeedAirAlarmParamsCheck(void)
+{
+	bool cond1,cond2,cond3;
+	cond1 = !PinchVenousInSafetyMode(); // venous pinch is in perfusion
+	cond2 = !PinchArteriousInSafetyMode(); // arterious pinch in perfusion
+	cond3 = ( GetControlFSMState() == STATE_TREATMENT );
+	return (cond1 || cond2) && cond3;
+}
+
+
 bool NeedAdsFilterParamsCheck(void)
 {
 	return !PinchAdsorbentInSafetyMode(); // ads filter pinch is not in bypass

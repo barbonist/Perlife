@@ -21,6 +21,7 @@
 #include "HEAT_ON_P.h"
 #include "ActionsProtective.h"
 #include "IncomingAlarmsManager.h"
+#include "VerificatorLocalSensors.h"
 
 //
 // TimerCounter increased each 100ms .
@@ -70,7 +71,7 @@ TAlarmTimer TempVenMismatchAlarmTimer = {NoT1Test, 0,200,false,false, MismatchTe
 TAlarmTimer TempFluidMismatchAlarmTimer = {NoT1Test, 0,200,false,false, MismatchTempFluidAlarmAct , 0 , 65 , PumpsOrPinchNotRespond_EmergAct }; // alarm after 2 s mismatch
 TAlarmTimer TempPlateMismatchAlarmTimer = {NoT1Test, 0,200,false,false, MismatchTempPlateAlarmAct , 0 , 50 , PumpsOrPinchNotRespond_EmergAct }; // alarm after 2 s mismatch
 
-TAlarmTimer AirPresentAlarmTimer = {IsTreatmentStatus, 0,03,false,false, AirPresentAlarmAct , 0 , 30 , PumpsOrPinchNotRespond_EmergAct_AirAlarm }; // alarm after 300ms s mismatch , then check pumps stop
+TAlarmTimer AirPresentAlarmTimer = {NeedAirAlarmParamsCheck, 0,03,false,false, AirPresentAlarmAct , 0 , 30 , PumpsOrPinchNotRespond_EmergAct_AirAlarm }; // alarm after 300ms s mismatch , then check pumps stop
 
 static TAlarmTimer	*AlarmTimerList[] = {
 		&PumpMismatchAlarmTimer ,

@@ -253,7 +253,7 @@ void verificaTempPlate(void)
 
 #define VERS_1 1
 #define VERS_2 2
-#define VERS_3 13
+#define VERS_3 14
 
 #endif
 uint16_t GetFwVersionProtective(void)
@@ -584,6 +584,9 @@ int main(void)
 		- Rimosso il PROTECTIVE_SLEEPS
 		- Corretto bug nella ricezione codici di allarme da control , ( sequenza : allarme control in trattamento --> protective verifica pipnch in sicurezza e motori off (OK)
 		  --> la control ,prima del reset allamrme , rimette le pinch in perfusione . BUG = La protective non interviene.
+		  	---------------------
+		Versione 1.2.14    21/11/2019
+		- Bug fix: l'allarme aria protective scatta si quando è in trattamento ma anche se le pinch in sicurezza, in questo caso non dovrebbe farlo.
 
   */
 
