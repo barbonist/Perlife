@@ -1178,14 +1178,20 @@ void buildRDMachineStateResponseMsg(char code, char subcode)
 		/* status parameters: alarm code  se GetAlarmCodeProt() != 0
 		 * oppre GetAlarmCodeProt() dando priorità alla visualizzazione
 		 * degli alalrmi protective*/
-		if (GetAlarmCodeProt() != 0)
-			wd = GetAlarmCodeProt();
-		else if (LengthActiveListAlm() > 0)
-			wd = GetCurrentAlarmActiveListAlm()->code;
-		else if (LengthActiveListWrn() > 0)
-			wd = GetCurrentWarningActiveListWrn()->code;
-		else
+		wd = GetAlarmCodeProt();
+		if(wd > 0x5000){
+			// can buffer is initialized with  0x5A5A ,  neglect to avoid unwanted errors
 			wd = 0;
+		}
+
+		if (wd == 0) {
+			if (LengthActiveListAlm() > 0)
+				wd = GetCurrentAlarmActiveListAlm()->code;
+			else if (LengthActiveListWrn() > 0)
+				wd = GetCurrentWarningActiveListWrn()->code;
+			else
+				wd = 0;
+		}
 
 	    /*14*/	sbc_tx_data[index++] = ( wd >> 8) & 0xFF; // (alarmCurrent.code >> 8 ) & 0xFF;
 		/*15*/	sbc_tx_data[index++] = ( wd )     & 0xFF; // (alarmCurrent.code 	    ) & 0xFF;
