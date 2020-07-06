@@ -437,7 +437,11 @@ void onNewCanBusMsg14(CANBUS_MSG_14 ReceivedCanBusMsg14);
 
 uint16_t GetAlarmCodeProt(void)
 {
-	return (RxBuffCanP[2]->SRxCan2.AlarmCode);
+uint16_t tempAlarmVal;
+	tempAlarmVal = RxBuffCanP[2]->SRxCan2.AlarmCode;
+	if(tempAlarmVal > 20000)
+		tempAlarmVal = 0;
+	return tempAlarmVal;
 }
 
 uint16_t GetRevisionFWProt()

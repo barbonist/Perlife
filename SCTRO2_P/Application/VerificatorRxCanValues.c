@@ -533,6 +533,13 @@ bool CheckAPinch(int* PinchVerifierStat , uint8_t CtrlPinch_pos, uint8_t CtrlPin
 {
 bool PinchOk;
 
+	// if CtrlPinch_cmd == 0 || CtrlPinch_pos == 0 don't perform any check and consider match valid
+	if((CtrlPinch_cmd == 0) || (CtrlPinch_pos == 0))
+	{
+		// force match to avoid mismatch --> status 0 for a pinch is not allowed
+		CtrlPinch_cmd = CtrlPinch_pos = Locpinch_pos;
+	}
+
 	switch(*PinchVerifierStat)
 	{
 	case 1:

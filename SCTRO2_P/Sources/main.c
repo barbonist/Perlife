@@ -253,7 +253,7 @@ void verificaTempPlate(void)
 
 #define VERS_1 1
 #define VERS_2 2
-#define VERS_3 14
+#define VERS_3 14 // creata la 14A con disabilitazione allarme pinch , bisogna risolvere il problema sensori hall pinch ) non cambiato la vrsione per evitare problemi di verif.
 
 #endif
 uint16_t GetFwVersionProtective(void)
@@ -587,6 +587,10 @@ int main(void)
 		  	---------------------
 		Versione 1.2.14    21/11/2019
 		- Bug fix: l'allarme aria protective scatta si quando è in trattamento ma anche se le pinch in sicurezza, in questo caso non dovrebbe farlo.
+
+		Versione 1.2.14A    6/7/2020
+		- Scoperto che l'allarme Pinch era generato perchè un valore della control era non ammesso (0) i valori ammessi sono 1 , 2 e 4 , adesso , on caso di 0 , non fare il controllo
+		  e non generare alcun allarme (VerificationRxCanVaues.c)
 
   */
 

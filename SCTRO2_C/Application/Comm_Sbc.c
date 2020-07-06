@@ -1078,7 +1078,8 @@ void buildRDMachineStateResponseMsg(char code, char subcode)
 	// contatore usato per determinare il numero si status inviati con allarme a 0
 	// dopo che ho ricevuto un BUTTON_ALARM_RESET per ripartire dopo un allarme
 	static unsigned char StatrespCnt = 0;
-	word wd;
+	// word wd;
+	uint16_t wd;
 	byte index = 0;
 	unsigned int life = FreeRunCnt10msec *10;
 

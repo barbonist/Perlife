@@ -251,7 +251,7 @@ int main(void)
 {
   /* Write your local variable definition here */
 
-  bool MOTORE_ACCESO   = FALSE;
+d  bool MOTORE_ACCESO   = FALSE;
   bool MOTORE_ACCESO_2 = FALSE;
   bool Status_Board;
   THERAPY_TYPE TreatType = Undef;
