@@ -25,7 +25,20 @@
 	 * 0x080E --> 1.0.14 *0x080F --> 1.0.15 *0x0810 --> 1.0.16 *0x0811 --> 1.0.17 *0x0812 --> 1.0.18 *0x0813 --> 1.0.19 *0x0814 --> 1.0.20
 	 * 0x0815 --> 1.0.21 *0x0816 --> 1.0.22 *0x0817 --> 1.0.23 *0x0818 --> 1.0.24 ... 0x0820 --> 1.0.32*/
 
-#define REVISION_FW_CONTROL 0x0820
+#ifdef T1_TEST_ENABLED
+#define VERSION_FW_CON 1
+#define RELEASE_FW_CON 0
+#define BUILD_FW_CON 32
+#else
+#define VERSION_FW_CON 9
+#define RELEASE_FW_CON 0
+#define BUILD_FW_CON 32
+#endif
+
+
+#define REVISION_FW_CONTROL ((VERSION_FW_CON << 11) | (RELEASE_FW_CON << 6) | (BUILD_FW_CON))
+
+// #define REVISION_FW_CONTROL 0x0820
 
 /* Syncronization flag */
 char	iflag_pc_rx;
@@ -2543,7 +2556,7 @@ float MIN_PLATE_TEMP;
 // Filippo - attesa per lo spegnimento del frigo quando lo uso spot per raffreddare il riscaldatore (tick da 10ms)
 #define ATTESA_FRIGO_OFF_SPOT 6000
 
-#define T1_TEST_ENABLED			//se scommentata abilita i T1 Test
+// #define T1_TEST_ENABLED			//se scommentata abilita i T1 Test
 //#define FRONTAL_COVERS_T1_TEST_ENABLED //per abilitare i test specifici per i sensori di Hall dei coperchi frontali
 bool T1_Test_Frigo_Before_Heater;		//variabile  che decide se fare il T1 Test prima del frigo e poi del riscaldatore o viceversa
 
