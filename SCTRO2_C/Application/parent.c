@@ -1130,7 +1130,9 @@ void ParentFunc(void)
 }
 
 
-
+int FlagToExitT1Test = 0; // SB 8 July 2020 to exit T1 test
+bool AllCoversOpened(void);
+bool AllCoversClosed(void);
 void ParentFuncT1Test(void)
 {
 
@@ -1889,6 +1891,30 @@ void ParentFuncT1Test(void)
 		ptrFutureChild = ptrFutureParent->ptrChild;
 		DebugStringStr("emergency stop");
 	}
+
+	// Aux state machine to exit cleanly T1 test : should open all pumps doors and then close them all
+		//
+		switch( FlagToExitT1Test )
+		{
+			case 0:
+				if( AllCoversOpened() )
+						FlagToExitT1Test = 1;
+				break;
+			case 1:
+				if( AllCoversClosed() ){
+					FlagToExitT1Test = 2;
+					//Forzo una transizione allo stato di fine T1
+					currentGuard[GUARD_ENABLE_T1_END].guardEntryValue = GUARD_ENTRY_VALUE_TRUE;
+					ptrFutureParent = &stateParentT1TNoDisposable[23];
+					ptrFutureChild = ptrFutureParent->ptrChild;
+					DebugStringStr("emergency stop ( SB backdoor )");
+				}
+				break;
+			default:
+				// stay here and do nothing until the end of the world
+				break;
+		}
+
 
 #endif
 }

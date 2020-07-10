@@ -19,7 +19,6 @@
 ** @brief
 **         Main module.
 **         This module contains user's application code.
-*/         
 /*!
 **  @addtogroup main_module main module documentation
 **  @{

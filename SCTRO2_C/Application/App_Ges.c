@@ -7245,7 +7245,8 @@ void Set_Data_EEPROM_Default(void)
 
 	/*Se il CRC calcolato non è uguale a quello letto o la revsione non è uguale a quella attesa
 	 * scrivo i parametri di default*/
-	if ( config_data.EEPROM_CRC != Calc_CRC_EEPROM || config_data.EEPROM_Revision !=  EEPROM_REVISION)
+	//if ( config_data.EEPROM_CRC != Calc_CRC_EEPROM || config_data.EEPROM_Revision !=  EEPROM_REVISION)
+	if (1)
 	{
 		 config_data.sensor_PRx[OXYG].prSensGain      = PR_OXYG_GAIN_DEFAULT;
 		 config_data.sensor_PRx[OXYG].prSensOffset    = PR_OXYG_OFFSET_DEFAULT;

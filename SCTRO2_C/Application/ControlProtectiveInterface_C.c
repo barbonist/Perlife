@@ -825,6 +825,19 @@ void ManageTxDebug(void)
 	}
 }
 
+bool AllCoversOpened(void)
+{
+	unsigned char * pumps_cover;
+	pumps_cover = GetCoverState();
+	return( (pumps_cover[0] == 1) && (pumps_cover[1] == 1) && (pumps_cover[2] == 1) && (pumps_cover[3] == 1));
+}
+
+bool AllCoversClosed(void)
+{
+	unsigned char * pumps_cover;
+	pumps_cover = GetCoverState();
+	return( (pumps_cover[0] == 0) && (pumps_cover[1] == 0) && (pumps_cover[2] == 0) && (pumps_cover[3] == 0));
+}
 
 
 uint8_t cmd = '_' ; // nothing
