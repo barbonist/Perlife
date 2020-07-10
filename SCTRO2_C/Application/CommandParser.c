@@ -173,7 +173,7 @@ void GetMulti(int NParams, char** Params)
 		else if(strcmp_cr(Params[0],"FW_version") == 0) GetFWVersion(NParams-1, Params+1) ;
 		else {
 			//ErrorParamsNotOk( NParams, Params);
-			CommandAnswer("get temp/press/pumps/pinch/errors/covers/air/canbus/voltage/doors/hooks/FW_version  params ");
+			CommandAnswer("get temp/press/pumps/pinch/errors/covers/air/canbus/voltage/doors/hooks/FW_version/config  params ");
 			return;
 		}
 }

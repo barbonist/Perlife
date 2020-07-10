@@ -8,6 +8,8 @@
 #ifndef SOURCES_GLOBAL_H_
 #define SOURCES_GLOBAL_H_
 
+#define T1_TEST_ENABLED			//se scommentata abilita i T1 Test
+
 // TODO commentare questo define nella versione definitiva perche' deve essere usato solo per il
 // debug con il software di service fatto da Luca.
 //#define DEBUG_WITH_SERVICE_SBC 0
@@ -29,7 +31,9 @@
 #define VERSION_FW_CON 1
 #define RELEASE_FW_CON 0
 #define BUILD_FW_CON 32
-#else
+#endif
+
+#ifndef T1_TEST_ENABLED
 #define VERSION_FW_CON 9
 #define RELEASE_FW_CON 0
 #define BUILD_FW_CON 32
@@ -1566,7 +1570,9 @@ unsigned char CHANGE_ADDRESS_IR_SENS;
 #define PR_ART_OFFSET_DEFAULT		-127.287
 
 /*valore di gain e offset del sensore di flusso venoso calcolati sperimentalmente con prove di flusso con la bilancia*/
-#define GAIN_FLOW_SENS_VEN		0.891219f
+//#define GAIN_FLOW_SENS_VEN		0.891219f
+#define GAIN_FLOW_SENS_VEN		0.7f
+
 #define OFFSET_FLOW_SENS_VEN		25
 #define GAIN_FLOW_SENS_ART      0.7678f
 #define OFFSET_FLOW_SENS_ART		56
@@ -2553,10 +2559,10 @@ float MIN_PLATE_TEMP;
 // insieme (in tick da 50msec)
 #define ATTESA_FRIGO_OFF_NEW_PID 6000
 
+
 // Filippo - attesa per lo spegnimento del frigo quando lo uso spot per raffreddare il riscaldatore (tick da 10ms)
 #define ATTESA_FRIGO_OFF_SPOT 6000
 
-// #define T1_TEST_ENABLED			//se scommentata abilita i T1 Test
 //#define FRONTAL_COVERS_T1_TEST_ENABLED //per abilitare i test specifici per i sensori di Hall dei coperchi frontali
 bool T1_Test_Frigo_Before_Heater;		//variabile  che decide se fare il T1 Test prima del frigo e poi del riscaldatore o viceversa
 

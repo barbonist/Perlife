@@ -6927,7 +6927,6 @@ void processMachineState(void)
                      (currentGuard[GUARD_ALARM_STOP_OXYG_PUMP].guardValue == GUARD_VALUE_FALSE) )
                 ptrFutureChild = &stateChildAlarmPriming[13]; /* (FM) allarme chiuso */
 			else if(ptrCurrentChild->action == ACTION_ALWAYS){
-				//ptrCurrentChild->callBackFunct(); NON SERVE QUESTO
 			}
 			break;
 
@@ -7228,7 +7227,8 @@ void Set_Data_EEPROM_Default(void)
 
 	/*Se il CRC calcolato non è uguale a quello letto o la revsione non è uguale a quella attesa
 	 * scrivo i parametri di default*/
-	if ( config_data.EEPROM_CRC != Calc_CRC_EEPROM || config_data.EEPROM_Revision !=  EEPROM_REVISION)
+	//if ( config_data.EEPROM_CRC != Calc_CRC_EEPROM || config_data.EEPROM_Revision !=  EEPROM_REVISION)
+	if(1)// always use default
 	{
 		 config_data.sensor_PRx[OXYG].prSensGain      = PR_OXYG_GAIN_DEFAULT;
 		 config_data.sensor_PRx[OXYG].prSensOffset    = PR_OXYG_OFFSET_DEFAULT;
@@ -7288,6 +7288,14 @@ void Set_Data_EEPROM_Default(void)
 
 		 EEPROM_write((EEPROM_TDataAddress)&config_data, START_ADDRESS_EEPROM, sizeof(config_data));
 	}
+
+}
+
+//
+// compute checksum ,
+//
+void SealE2PromParams(void)
+{
 
 }
 
