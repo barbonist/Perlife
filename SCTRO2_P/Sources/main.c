@@ -253,8 +253,8 @@ void verificaTempPlate(void)
 
 #define VERS_1 1
 #define VERS_2 2
-#define VERS_3 14 // creata la 14A con disabilitazione allarme pinch , bisogna risolvere il problema sensori hall pinch ) non cambiato la vrsione per evitare problemi di verif.
-
+// #define VERS_3 14 // creata la 14A con disabilitazione allarme pinch , bisogna risolvere il problema sensori hall pinch ) non cambiato la vrsione per evitare problemi di verif.
+#define VERS_3 15
 #endif
 uint16_t GetFwVersionProtective(void)
 {
@@ -592,6 +592,12 @@ int main(void)
 		- Scoperto che l'allarme Pinch era generato perchè un valore della control era non ammesso (0) i valori ammessi sono 1 , 2 e 4 , adesso , on caso di 0 , non fare il controllo
 		  e non generare alcun allarme (VerificationRxCanVaues.c)
 
+		Versione 1.2.15
+		VerificationRxCalValues.c
+		void VerifyRxPumpsRpm(
+			modified --> protective action only if pumps rpm difference > 20
+		VerificationLocalSensors
+			increased alarm time of high press. alarm from 2secs to 6secs
   */
 
 

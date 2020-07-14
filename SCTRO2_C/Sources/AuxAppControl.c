@@ -179,19 +179,6 @@ bool IsPinchPosOk(unsigned char *pArrPinchPos)
 	return PinchPosOk;
 }
 
-//void ReceivedCanDataFrank(uint8_t *rxbuff, int rxlen, int RxChannel)
-//{
-//	if((RxChannel == 0) && (memcmp(rxbuff,"VINCENZO",8) == 0)){
-//		// expected channel n message
-//		RetriggerAlarm();
-//	}
-//	else if(RxChannel == 11)
-//	{
-//		memcpy(&CanBusMsg11, rxbuff, 8);
-//		// expected channel n message
-//		RetriggerAlarm();
-//	}
-//}
 
 //Message buffer 1 CON > PRO (STATE MACHINE)
 // Byte 1	Byte 2	Byte 3	Byte 4	Byte 5	Byte 6	Byte 7	Byte 8

@@ -45,9 +45,9 @@ bool NeedArtherialParamsCheck(void);
 bool NeedVenousParamsCheck(void);
 bool NeedOxyParamsCheck(void);
 
-TAlarmTimer HighArterPressAlarmTimer = {NeedArtherialParamsCheck, 0,20,false,false,  HighArterPressAlarmAct , 0 , 65 , PumpsOrPinchNotRespond_EmergAct}; // alarm after 1 s alarm
-TAlarmTimer HighVenousPressAlarmTimer = {NeedVenousParamsCheck, 0,20,false,false, HighVenousPressAlarmAct , 0 ,  65 , PumpsOrPinchNotRespond_EmergAct}; // alarm after 1 s alarm
-TAlarmTimer HighAdsFiltPressAlarmTimer = {SayTrue, 0,20,false,false, HighAdsFiltPressAlarmAct , 0 , 65 , PumpsOrPinchNotRespond_EmergAct}; // alarm after 1 s alarm
+TAlarmTimer HighArterPressAlarmTimer = {NeedArtherialParamsCheck, 0,60,false,false,  HighArterPressAlarmAct , 0 , 65 , PumpsOrPinchNotRespond_EmergAct}; // alarm after 1 s alarm
+TAlarmTimer HighVenousPressAlarmTimer = {NeedVenousParamsCheck, 0,60,false,false, HighVenousPressAlarmAct , 0 ,  65 , PumpsOrPinchNotRespond_EmergAct}; // alarm after 1 s alarm
+TAlarmTimer HighAdsFiltPressAlarmTimer = {SayTrue, 0,60,false,false, HighAdsFiltPressAlarmAct , 0 , 65 , PumpsOrPinchNotRespond_EmergAct}; // alarm after 1 s alarm
 TAlarmTimer HighOxygenPressAlarmTimer = {NeedOxyParamsCheck, 0,70,false,false, HighOxygenPressAlarmAct , 0 , 65 , PumpsOrPinchNotRespond_EmergAct}; // alarm after 1 s alarm
 TAlarmTimer HighLevelPressAlarmTimer = {SayTrue, 0,40,false,false, HighLevelPressAlarmAct , 0 , 65 , PumpsOrPinchNotRespond_EmergAct}; // alarm after 4 s alarm
 TAlarmTimer HighPlateTempAlarmTimer = {SayTrue, 0,10,false,false, HighPlateTempAlarmAct , 0 , 65 , PumpsOrPinchNotRespond_EmergAct}; // alarm after 1 s alarm

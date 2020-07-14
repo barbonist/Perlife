@@ -590,11 +590,11 @@ bool Pump1Ok = true;
 bool Pump2Ok = true;
 bool Pump3Ok = true;
 
-	Pump0Ok = ValueIsInRange(GetMeasuredPumpSpeed(0), SpeedPump0Rpmx100, 1000) ? true : false;
-	Pump1Ok = ValueIsInRange(GetMeasuredPumpSpeed(1), SpeedPump1Rpmx100, 1000) ? true : false;
+	Pump0Ok = ValueIsInRange(GetMeasuredPumpSpeed(0), SpeedPump0Rpmx100, 2000) ? true : false;
+	Pump1Ok = ValueIsInRange(GetMeasuredPumpSpeed(1), SpeedPump1Rpmx100, 2000) ? true : false;
 	//Pump1Ok = true; // debug SB 7 11 2018
-	Pump2Ok = ValueIsInRange(GetMeasuredPumpSpeed(2), SpeedPump2Rpmx100, 1000) ? true : false;
-	Pump3Ok = ValueIsInRange(GetMeasuredPumpSpeed(3), SpeedPump3Rpmx100, 1000) ? true : false;
+	Pump2Ok = ValueIsInRange(GetMeasuredPumpSpeed(2), SpeedPump2Rpmx100, 2000) ? true : false;
+	Pump3Ok = ValueIsInRange(GetMeasuredPumpSpeed(3), SpeedPump3Rpmx100, 2000) ? true : false;
 
 	//Pump2Ok = true; // SB sensori di hall non funzionanti ,  soluzione temporanea 10 10 2018
 	//Pump3Ok = true;
