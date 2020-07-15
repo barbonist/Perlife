@@ -55,6 +55,7 @@ void GetPinches(int NParams, char** Params);
 void GetErrors(int NParams, char** Params);
 void GetPumpsHall(int NParams, char** Params);
 void GetFWVersion(int NParams, char** Params);
+void GetParamsVal(int NParams, char** Params);
 void EnableMulti(int NParams, char** Params);
 void EnablePump(int NParams, char** Params);
 void EnablePinch(int NParams, char** Params);
@@ -187,9 +188,10 @@ void GetMulti(int NParams, char** Params)
 		else if(strcmp_cr(Params[0],"doors") == 0) GetDoorsStat(NParams-1, Params+1) ;
 		else if(strcmp_cr(Params[0],"hooks") == 0) GetReservoirHooks(NParams-1, Params+1) ;
 		else if(strcmp_cr(Params[0],"FW_version") == 0) GetFWVersion(NParams-1, Params+1) ;
+		else if(strcmp_cr(Params[0],"params") == 0) GetParamsVal(NParams-1, Params+1) ;
 		else {
 			//ErrorParamsNotOk( NParams, Params);
-			CommandAnswer("get temp/press/pumps/pinch/errors/covers/air/canbus/voltage/doors/hooks/FW_version  params ");
+			CommandAnswer("get temp/press/pumps/pinch/errors/covers/air/canbus/voltage/doors/hooks/FW_version/params ");
 			return;
 		}
 }
@@ -715,6 +717,26 @@ void GetFWVersion(int NParams, char** Params)
 {
 	SetLogCommand('7');
 }
+
+void GetParamsVal(int NParams, char** Params)
+{
+	char	str1[100];
+	CommandAnswer("calib press ossigeno\r\n");
+	sprintf(str1,"gain = %f , offset = %f\r\n\r\n",
+	config_data.sensor_PRx[OXYG].prSensGain,config_data.sensor_PRx[OXYG].prSensOffset);
+	CommandAnswer(str1);
+
+	CommandAnswer("calib flussimetro venoso\r\n");
+	sprintf(str1,"gain = %f , offset = %f\r\n\r\n",
+	config_data.FlowSensor_Ven_Gain,config_data.FlowSensor_Ven_Offset);
+	CommandAnswer(str1);
+
+	CommandAnswer("calib flussimetro arterioso\r\n");
+	sprintf(str1,"gain = %f , offset = %f\r\n\r\n",
+	config_data.FlowSensor_Art_Gain ,config_data.FlowSensor_Art_Offset);
+	CommandAnswer(str1);
+}
+
 
 void DrawLion(int NParams, char** Params)
 {

@@ -965,6 +965,18 @@ int main(void)
   /*** Processor Expert end of main routine. DON'T WRITE CODE BELOW!!! ***/
 } /*** End of main routine. DO NOT MODIFY THIS TEXT!!! ***/
 
+/*
+ * control vers 1.1.1  changed oxigenator pumps gain from 22 to 28 in order to have a correct flux
+ * in kidney oxigenator circuit . Was different from the selected value .
+ *
+ * control vers 1.1.2 adde command >get params , now it shows gain and offset of flow meters and oxy press sensor
+ *
+ *
+ *
+ *
+ */
+
+
 /* END main */
 /*!
 ** @}
