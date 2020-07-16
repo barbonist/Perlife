@@ -14,6 +14,6 @@ void  SwTimerInit(void);
 void  ManageSwTimers(void);
 void  ChangeTimerPeriod( int Index, uint16_t Timer10Ms);
 uint8_t AddSwTimer( TAction TimerFun,  uint16_t Timer10ms, TTimerMode  TimerMode);
-
+char* GetRTCVal(void);
 
 #endif /* SWTIMER_H_ */

@@ -6143,9 +6143,15 @@ void ManageMuteButton (void)
 
 }
 
+// to debug state transitions
+int IndexFutureState = 0;
+int OldIndexFutureState = 99;
+
 /*----------------------------------------------------------------------------*/
 /* This function compute the machine state transition based on guard - state level         */
 /*----------------------------------------------------------------------------*/
+void SetPtrFutureState(int NFutureState ); // utility fun
+
 void processMachineState(void)
 {
 	static unsigned short Oldstate = 0;
@@ -6164,13 +6170,8 @@ void processMachineState(void)
 		if (ptrCurrentState->state!=STATE_IDLE)
 		{
 			// mi porto in idle solo se non c'ero già
-			ptrFutureState = &stateState[3];
-			/* compute future parent */
-			ptrFutureParent = ptrFutureState->ptrParent;
-			/* compute future child */
-			ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
+			SetPtrFutureState(3);
 			DebugStringStr("enable state idle");
-
 		}
 	}
 
@@ -6181,11 +6182,7 @@ void processMachineState(void)
 		if (ptrCurrentState->state!=STATE_IDLE)
 		{
 			// mi porto in idle solo se non c'ero già
-			ptrFutureState = &stateState[3];
-			/* compute future parent */
-			ptrFutureParent = ptrFutureState->ptrParent;
-			/* compute future child */
-			ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
+			SetPtrFutureState(3);
 			DebugStringStr("enable state idle");
 
 		}
@@ -6199,11 +6196,7 @@ void processMachineState(void)
 		if(currentGuard[GUARD_START_ENABLE].guardValue == GUARD_VALUE_TRUE)
 		{
 			/* compute future state */
-			ptrFutureState = &stateState[1];
-			/* compute future parent */
-			ptrFutureParent = ptrFutureState->ptrParent;
-			/* compute future child */
-			ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
+			SetPtrFutureState(1);
 			break; //cambio stato NULL --> ENTRY
 		}
 
@@ -6211,7 +6204,6 @@ void processMachineState(void)
 		if(ptrCurrentState->action == ACTION_ON_ENTRY)
 		{
 			ptrCurrentState->callBackFunct();
-
 			// (FM) faccio in modo che dopo un aprima inizializzazione esca subito e vada
 			// nello stato STATE_ENTRY
 			if( currentGuard[GUARD_START_ENABLE].guardValue != GUARD_VALUE_TRUE)
@@ -6229,14 +6221,10 @@ void processMachineState(void)
 			/* (FM) VADO NELLO STATO IDLE,ACTION_ON_ENTRY DATO CHE LA FASE INIZIALE DI TEST E' FINITA */
 			/* compute future state */
 #ifdef T1_TEST_ENABLED
-			ptrFutureState = &stateState[7];
+			SetPtrFutureState(7);
 #else
-			ptrFutureState = &stateState[3]; //se il T1 Test non è abilitato, mi porto direttamente in IDLE
+			SetPtrFutureState(3);
 #endif
-			/* compute future parent */
-			ptrFutureParent = ptrFutureState->ptrParent;
-			/* compute future child */
-			ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
 			DebugStringStr("exit from entry");
 			break; //cambio stato ENTRY --> T1_TEST_NO_DISP
 		}
@@ -6293,11 +6281,7 @@ void processMachineState(void)
 		if((currentGuard[GUARD_HW_T1T_DONE].guardValue == GUARD_VALUE_TRUE) &&
 			(currentGuard[GUARD_COMM_ENABLED].guardValue == GUARD_VALUE_TRUE))
 		{
-			ptrFutureState = &stateState[3];
-			/* compute future parent */
-			ptrFutureParent = ptrFutureState->ptrParent;
-			/* compute future child */
-			ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
+			SetPtrFutureState(3);
 			DebugStringStr("enable state idle");
 		}
 
@@ -6346,11 +6330,8 @@ void processMachineState(void)
 
 				// Passo direttamente allo stato mounting disposable senza passare per STATE_SELECT_TREAT
 				// perche' il trattamento e' gia' stato selezionato.
-				ptrFutureState = &stateState[9];
+				SetPtrFutureState(9);
 				/* compute future parent */
-				ptrFutureParent = ptrFutureState->ptrParent;
-				/* compute future child */
-				ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
 				DebugStringStr("STATE_MOUNTING_DISP");
 			}
 			/* execute function state level */
@@ -6368,11 +6349,7 @@ void processMachineState(void)
 			currentGuard[GUARD_ENABLE_MOUNT_DISPOSABLE].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
 			/* (FM) E' ARRIVATO UN COMANDO CHE MI CHIEDE DI PASSARE ALLA FASE DI INSTALLAZIONE DEL DISPOSABLE */
 			/* compute future state */
-			ptrFutureState = &stateState[9];
-			/* compute future parent */
-			ptrFutureParent = ptrFutureState->ptrParent;
-			/* compute future child */
-			ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
+			SetPtrFutureState(9);
 			DebugStringStr("STATE_MOUNTING_DISP");
 		}
 
@@ -6389,13 +6366,8 @@ void processMachineState(void)
 			    /* (FM) FINITA LA FASE DI MONTAGGIO DEL DISPOSABLE, POSSO PASSARE ALLA FASE DI RIEMPIMENTO
 			       DEL RECIPIENTE */
 				/* compute future state */
-				ptrFutureState = &stateState[11];
-				/* compute future parent */
-				ptrFutureParent = ptrFutureState->ptrParent;
-				/* compute future child */
-				ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
+				SetPtrFutureState(11);
 				DebugStringStr("STATE_TANK_FILL");
-
 				/*faccio la tara degli ADC del sensore di livello per sapere *
                  * quanti ADC ho con tubo connesso ma senza liquido inserito nel reservoire*/
 				SogliaVaschettaVuotaADC = PR_LEVEL_ADC_Filtered;
@@ -6426,11 +6398,7 @@ void processMachineState(void)
 				currentGuard[GUARD_ENABLE_PRIMING_PHASE_1].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
 				/* (FM) FINITA LA FASE DI RIEMPIMENTO POSSO PASSARE ALLA FASE 1 DEL PRIMING */
 				/* compute future state */
-				ptrFutureState = &stateState[13];
-				/* compute future parent */
-				ptrFutureParent = ptrFutureState->ptrParent;
-				/* compute future child */
-				ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
+				SetPtrFutureState(13);
 				DebugStringStr("STATE_PRIMING_PH_1");
 			}
 			else if((currentGuard[GUARD_ENABLE_PRIMING_PHASE_2].guardValue == GUARD_VALUE_TRUE))
@@ -6438,11 +6406,7 @@ void processMachineState(void)
 				currentGuard[GUARD_ENABLE_PRIMING_PHASE_2].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
 				/* VADO DIRETTAMENTE ALLA FASE 2 DEL PRIMING PER POI ANDARE IN RICIRCOLO */
 				/* compute future state */
-				ptrFutureState = &stateState[15];
-				/* compute future parent */
-				ptrFutureParent = ptrFutureState->ptrParent;
-				/* compute future child */
-				ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
+				SetPtrFutureState(15);
 				DebugStringStr("STATE_PRIMING_PH_2");
 			}
 
@@ -6458,11 +6422,7 @@ void processMachineState(void)
 			// le pompe sono ferme e vado nello stato di attesa che l'utente monti il filtro
 			currentGuard[GUARD_ENABLE_STATE_PRIMING_PH_1_WAIT].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
 			/* compute future state */
-			ptrFutureState = &stateState[39];
-			/* compute future parent */
-			ptrFutureParent = ptrFutureState->ptrParent;
-			/* compute future child */
-			ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
+			SetPtrFutureState(39);
 			DebugStringStr("PRIMING_PH_1_WAIT");
 			break;
 		}
@@ -6471,11 +6431,7 @@ void processMachineState(void)
 			currentGuard[GUARD_ABANDON_PRIMING].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
 			/* (FM) HO DECISO DI ABBANDONARE IL PRIMING, VADO NELLO STATO DI SVUOTAMENTO */
 			/* compute future state */
-			ptrFutureState = &stateState[19];
-			/* compute future parent */
-			ptrFutureParent = ptrFutureState->ptrParent;
-			/* compute future child */
-			ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
+			SetPtrFutureState(19);
 			DebugStringStr("STATE_EMPTY_DISPOSABLE(ABBANDONA)");
 		}
 		/* execute function state level */
@@ -6490,11 +6446,7 @@ void processMachineState(void)
 			currentGuard[GUARD_FILTER_INSTALLED].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
 			/* (FM) FINITA LA FASE 1 DEL PRIMING POSSO PASSARE ALLA FASE 2 */
 			/* compute future state */
-			ptrFutureState = &stateState[15];
-			/* compute future parent */
-			ptrFutureParent = ptrFutureState->ptrParent;
-			/* compute future child */
-			ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
+			SetPtrFutureState(15);
 			DebugStringStr("STATE_PRIMING_PH_2");
 			break;
 		}
@@ -6503,11 +6455,7 @@ void processMachineState(void)
 			currentGuard[GUARD_ABANDON_PRIMING].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
 			/* (FM) HO DECISO DI ABBANDONARE IL PRIMING, VADO NELLO STATO DI SVUOTAMENTO */
 			/* compute future state */
-			ptrFutureState = &stateState[19];
-			/* compute future parent */
-			ptrFutureParent = ptrFutureState->ptrParent;
-			/* compute future child */
-			ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
+			SetPtrFutureState(19);
 			DebugStringStr("STATE_EMPTY_DISPOSABLE(ABBANDONA)");
 			break;
 		}
@@ -6521,11 +6469,7 @@ void processMachineState(void)
 			currentGuard[GUARD_ENABLE_PRIMING_WAIT].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
 			/* (FM) FINITA LA FASE 2 DEL PRIMING PASSO ALL'ATTESA DI UN NUOVO VOLUME O UN BUTTON_PRIMING_END */
 			/* compute future state */
-			ptrFutureState = &stateState[21];
-			/* compute future parent */
-			ptrFutureParent = ptrFutureState->ptrParent;
-			/* compute future child */
-			ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
+			SetPtrFutureState(21);
 			DebugStringStr("STATE_PRIMING_WAIT");
 
 			/*torno indietro nella macchina a stati quindi resetto la flag di entry sullo stato in cui sono*/
@@ -6537,11 +6481,7 @@ void processMachineState(void)
 			currentGuard[GUARD_ABANDON_PRIMING].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
 			/* (FM) HO DECISO DI ABBANDONARE IL PRIMING, VADO NELLO STATO DI SVUOTAMENTO */
 			/* compute future state */
-			ptrFutureState = &stateState[19];
-			/* compute future parent */
-			ptrFutureParent = ptrFutureState->ptrParent;
-			/* compute future child */
-			ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
+			SetPtrFutureState(19);
 			DebugStringStr("STATE_EMPTY_DISPOSABLE(ABBANDONA)");
 			break;
 		}
@@ -6554,11 +6494,7 @@ void processMachineState(void)
 		{
 			// vado nello stato di attesa di un nuovo start trattamento o start svuotamento
 			currentGuard[GUARD_ENABLE_WAIT_TREATMENT].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
-			ptrFutureState = &stateState[25];
-			/* compute future parent */
-			ptrFutureParent = ptrFutureState->ptrParent;
-			/* compute future child */
-			ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
+			SetPtrFutureState(25);
 			DebugStringStr("STATE_WAIT_TREATMENT");
 
 			/*per poter tornare indietro dallo stato STATE_WAIT_TREATMENT allo stato STATE_TREATMENT_KIDNEY_1
@@ -6576,11 +6512,7 @@ void processMachineState(void)
 			currentGuard[GUARD_ABANDON_PRIMING].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
 			/* (FM) HO DECISO DI ABBANDONARE IL TRATTAMENTO, VADO NELLO STATO DI SVUOTAMENTO */
 			/* compute future state */
-			ptrFutureState = &stateState[19];
-			/* compute future parent */
-			ptrFutureParent = ptrFutureState->ptrParent;
-			/* compute future child */
-			ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
+			SetPtrFutureState(19);
 			DebugStringStr("STATE_EMPTY_DISPOSABLE(ABBANDONA)");
 
 			// disabilito allarme di pinch posizionate male perche' sto uscendo dal trattamento.
@@ -6598,11 +6530,7 @@ void processMachineState(void)
 		{
 			// ho terminato il riempimento del reservoir vado nello stato di attesa di raggiungimento della temperatura
 			currentGuard[GUARD_PRIMING_END].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
-			ptrFutureState = &stateState[23];
-			/* compute future parent */
-			ptrFutureParent = ptrFutureState->ptrParent;
-			/* compute future child */
-			ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
+			SetPtrFutureState(23);
 			DebugStringStr("STATE_RICICLO");
 			break;
 		}
@@ -6610,11 +6538,8 @@ void processMachineState(void)
 		{
 			// abbandono il priming e VADO NELLO STATO DI SVUOTAMENTO
 			currentGuard[GUARD_ABANDON_PRIMING].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
+			SetPtrFutureState(19);
 			ptrFutureState = &stateState[19];
-			/* compute future parent */
-			ptrFutureParent = ptrFutureState->ptrParent;
-			/* compute future child */
-			ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
 			DebugStringStr("STATE_EMPTY_DISPOSABLE(ABBANDONA)");
 			break;
 		}
@@ -6622,12 +6547,7 @@ void processMachineState(void)
 		{
 			// il volume e' stato modificato ritorno nella fase di riempimento
 			currentGuard[GUARD_ENABLE_PRIMING_PHASE_2].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
-
-			ptrFutureState = &stateState[15];
-			/* compute future parent */
-			ptrFutureParent = ptrFutureState->ptrParent;
-			/* compute future child */
-			ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
+			SetPtrFutureState(15);
 			DebugStringStr("STATE_PRIMING_PHASE_2");
 
 			/*torno indietro nella macchina a stati quindi resetto la flag di entry sullo stato in cui sono*/
@@ -6644,11 +6564,7 @@ void processMachineState(void)
 			// PASSO ALLA FASE DI TRATTAMENTO
 			currentGuard[GUARD_ENABLE_TREATMENT_KIDNEY_1].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
 			// ho ricevuto il comando per entrare in trattamento
-			ptrFutureState = &stateState[17];
-			/* compute future parent */
-			ptrFutureParent = ptrFutureState->ptrParent;
-			/* compute future child */
-			ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
+			SetPtrFutureState(17);
 			DebugStringStr("STATE_TREATMENT");
 			break;
 		}
@@ -6656,11 +6572,7 @@ void processMachineState(void)
 		{
 			// abbandono il priming e VADO NELLO STATO DI SVUOTAMENTO
 			currentGuard[GUARD_ABANDON_PRIMING].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
-			ptrFutureState = &stateState[19];
-			/* compute future parent */
-			ptrFutureParent = ptrFutureState->ptrParent;
-			/* compute future child */
-			ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
+			SetPtrFutureState(19);
 			DebugStringStr("STATE_EMPTY_DISPOSABLE(ABBANDONA)");
 			break;
 		}
@@ -6675,11 +6587,7 @@ void processMachineState(void)
 			// se voglio andare in idle e selezionare un nuovo trattamento
 			//ptrFutureState = &stateState[3];
 			// se voglio andare nella procedura di svuotamento
-			ptrFutureState = &stateState[19];
-			/* compute future parent */
-			ptrFutureParent = ptrFutureState->ptrParent;
-			/* compute future child */
-			ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
+			SetPtrFutureState(19);
 			// ripristino gli enable azzerati alla fine del trattamento
 			RestoreAllCntrlAlarm(&AlarmEnableConf);
 			DebugStringStr("STATE_EMPTY_DISPOSABLE");
@@ -6689,12 +6597,8 @@ void processMachineState(void)
 		{
 			// ritorno direttamente in trattamento per cominciarne uno nuovo
 			currentGuard[GUARD_ENABLE_TREATMENT_KIDNEY_1].guardEntryValue = GUARD_ENTRY_VALUE_FALSE;
-
+			SetPtrFutureState(17);
 			ptrFutureState = &stateState[17];
-			/* compute future parent */
-			ptrFutureParent = ptrFutureState->ptrParent;
-			/* compute future child */
-			ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
 			// ripristino gli enable azzerati alla fine del trattamento
 			RestoreAllCntrlAlarm(&AlarmEnableConf);
 			DebugStringStr("STATE_TREATMENT");
@@ -6743,11 +6647,7 @@ void processMachineState(void)
 			// se voglio andare in idle e selezionare un nuovo trattamento
 			//ptrFutureState = &stateState[3];
 			// se voglio andare in STATE_UNMOUNT_DISPOSABLE e staccare il disposable
-			ptrFutureState = &stateState[27];
-			/* compute future parent */
-			ptrFutureParent = ptrFutureState->ptrParent;
-			/* compute future child */
-			ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
+			SetPtrFutureState(27);
 			if(currentGuard[GUARD_ABANDON_EMPTY].guardValue == GUARD_VALUE_TRUE)
 			{
 				// abbandono il priming e VADO NELLO STATO DI STATE_UNMOUNT_DISPOSABLE per smontare il disposable
@@ -6775,12 +6675,8 @@ void processMachineState(void)
 		if((currentGuard[GUARD_ENABLE_UNMOUNT_END].guardValue == GUARD_VALUE_TRUE) ||
 			(currentGuard[GUARD_ABANDON_UNMOUNT].guardValue == GUARD_VALUE_TRUE))
 		{
+			SetPtrFutureState(3);
 			ptrFutureState = &stateState[3];
-			/* compute future parent */
-			ptrFutureParent = ptrFutureState->ptrParent;
-			/* compute future child */
-			ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
-
 			if(currentGuard[GUARD_ABANDON_UNMOUNT].guardValue == GUARD_VALUE_TRUE)
 			{
 				// abbandono il priming e VADO NELLO STATO DI SVUOTAMENTO
@@ -7082,7 +6978,26 @@ void processMachineState(void)
 	/* process child structure */
 }
 
+void SetPtrFutureState(int NFutureState )
+{
+	char StatStr[40];
+	uint16_t sent_size;
 
+	ptrFutureState = &stateState[NFutureState];
+	/* compute future parent */
+	ptrFutureParent = ptrFutureState->ptrParent;
+	/* compute future child */
+	ptrFutureChild = ptrFutureState->ptrParent->ptrChild;
+
+	IndexFutureState = NFutureState;
+	if(OldIndexFutureState != NFutureState)
+	{
+		PC_DEBUG_COMM_SendBlock("Change state index \r\n" , 21  , &sent_size);
+		sprintf(StatStr , "\r %s - %d --> %d \n", GetRTCVal() , OldIndexFutureState, NFutureState);
+		PC_DEBUG_COMM_SendBlock(StatStr , strlen(StatStr) , &sent_size); //SB 7-2020
+		OldIndexFutureState = NFutureState;
+	}
+}
 
 /*----------------------------------------------------------------------------*/
 /* This function initialise machine state variables                           */

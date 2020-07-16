@@ -86,7 +86,7 @@ void StartTimer( int Index )
 }
 
 
-
+void DummyRtc100ms(void);
 void  SwTimerInit(void)
 {
 	int ii;
@@ -96,6 +96,9 @@ void  SwTimerInit(void)
 		Timers[ii].TimerVal = 0;
 		Timers[ii].TimerMode == TM_SINGLE;
 	}
+
+	//
+	AddSwTimer(DummyRtc100ms,10,TM_REPEAT);
 }
 
 
@@ -142,7 +145,28 @@ void ManageSwTimers(void)
 
 
 
+int RTChh = 0;
+int RTCmin = 0;
+int RTCsec = 0;
+int RTCdsec = 0;
+void DummyRtc100ms(void)
+{
+	RTCdsec = (RTCdsec+1) % 10;
+	if(RTCdsec == 0){
+		RTCsec = (RTCsec+1) % 60;
+		if( RTCsec == 0 ){
+			RTCmin = (RTCmin+1) % 60;
+			if( RTCmin == 0 ){
+				RTChh = (RTChh+1) % 24;
+			}
+		}
+	}
+}
 
-
-
+char rtcString[20];
+char* GetRTCVal(void)
+{
+	sprintf(rtcString,"%02u:%02u:%02u.%03u", RTChh,RTCmin,RTCsec,RTCdsec*100);
+	return rtcString;
+}
 

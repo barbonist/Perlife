@@ -22,6 +22,7 @@
 #include "Alarm_Con.h"
 #include "ControlProtectiveInterface_C.h"
 #include "PC_DEBUG_COMM.h"
+#include "SWTimer.h"
 
 extern int PinchFilterCurrValue;
 extern word MedForArteriousPid;
@@ -1583,7 +1584,7 @@ void initGUIButton(void){
 // Facendo questa inversione non cambio tutto il resto del codice.
 void setGUIButton(unsigned char buttonId)
 {
-	static char Button[10];
+	static char ButtonStr[40];
 
 	buttonGUITreatment[buttonId].state = GUI_BUTTON_RELEASED;
 
@@ -1677,9 +1678,11 @@ void setGUIButton(unsigned char buttonId)
 
 
 /*invio l'eco sulla seriale di servizio del comando ricevuto*/
-	sprintf(Button, "\r %d;", buttonId);
+	sprintf(ButtonStr , "\r %s - ButtonId = %d \n", GetRTCVal() , buttonId);
+	uint16_t sent_size;
+	PC_DEBUG_COMM_SendBlock(ButtonStr , strlen(ButtonStr) , &sent_size); //SB 7-2020
 
-	for(int i=0; i<10; i++)
+	/*for(int i=0; i<10; i++)
 	{
 		if(Button[i])
 			PC_DEBUG_COMM_SendChar(Button[i]);
@@ -1687,6 +1690,7 @@ void setGUIButton(unsigned char buttonId)
 			break;
 	}
 	PC_DEBUG_COMM_SendChar(0x0A);
+	*/
 
 //BSW8 STOP:
 

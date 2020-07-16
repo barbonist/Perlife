@@ -250,7 +250,7 @@ int main(void)
 {
   /* Write your local variable definition here */
 
-  bool MOTORE_ACCESO   = FALSE;
+   bool MOTORE_ACCESO   = FALSE;
   bool MOTORE_ACCESO_2 = FALSE;
   bool Status_Board;
   THERAPY_TYPE TreatType = Undef;
@@ -970,7 +970,8 @@ int main(void)
  * in kidney oxigenator circuit . Was different from the selected value .
  *
  * control vers 1.1.2 adde command >get params , now it shows gain and offset of flow meters and oxy press sensor
- *
+ * control vers 1.1.3 inserted RTCGetString funcion for logging , pressed button id on terminal now shown with time info
+ *              1.1.3A  show state index on log , modified App_Ges.c to simplify code
  *
  *
  *
