@@ -6993,7 +6993,7 @@ void SetPtrFutureState(int NFutureState )
 	if(OldIndexFutureState != NFutureState)
 	{
 		PC_DEBUG_COMM_SendBlock("Change state index \r\n" , 21  , &sent_size);
-		sprintf(StatStr , "\r %s - %d --> %d \n", GetRTCVal() , OldIndexFutureState, NFutureState);
+		sprintf(StatStr , "\r%s  State transition  %d --> %d \r\n", GetRTCVal() , OldIndexFutureState, NFutureState);
 		PC_DEBUG_COMM_SendBlock(StatStr , strlen(StatStr) , &sent_size); //SB 7-2020
 		OldIndexFutureState = NFutureState;
 	}
