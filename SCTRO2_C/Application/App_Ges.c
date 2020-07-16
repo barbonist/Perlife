@@ -6199,7 +6199,6 @@ void processMachineState(void)
 			SetPtrFutureState(1);
 			break; //cambio stato NULL --> ENTRY
 		}
-
 		/* execute function state level */
 		if(ptrCurrentState->action == ACTION_ON_ENTRY)
 		{

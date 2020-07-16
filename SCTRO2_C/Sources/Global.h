@@ -856,14 +856,12 @@ enum MachineStateGuardValue
 
 enum MachineStateGuardFlag
 {
-	GUARD_FLAG_NULL = 0x00,
 	GUARD_FLAG_TRUE = 0xA5,
 	GUARD_FLAG_FALSE = 0x5A,
 };
 
 enum MachineStateGuardEntry
 {
-	GUARD_ENTRY_VALUE_NULL = 0x00,
 	GUARD_ENTRY_VALUE_TRUE = 0xA5,
 	GUARD_ENTRY_VALUE_FALSE = 0x5A
 };
