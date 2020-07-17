@@ -4,7 +4,6 @@
 
 #include "App_Ges.h"
 #include "ModBusCommProt.h"
-#include "Peltier_Module.h"
 
 #include "Pins1.h"
 
@@ -208,15 +207,15 @@ void manageChildPrimAlarmStopAllPumpAlways(void)
 /* Manage CHILD_PRIMING_ALARM_STOP_PELTIER entry state */
 void manageChildPrimAlarmStopPeltEntry(void)
 {
-	stopPeltierActuator();
-	stopPeltier2Actuator();
+//	stopPeltierActuator();
+//	stopPeltier2Actuator();
 }
 
 /* Manage CHILD_PRIMING_ALARM_STOP_PELTIER always state */
 void manageChildPrimAlarmStopPeltAlways(void)
 {
-	stopPeltierActuator();
-	stopPeltier2Actuator();
+	//stopPeltierActuator();
+	//stopPeltier2Actuator();
 }
 
 /* Manage CHILD_PRIMING_ALARM_STOP_ALL_ACTUATOR entry state */
@@ -638,15 +637,15 @@ void manageChildTreatAlm1StopAllPumpAlways(void)
 /* Manage CHILD_TREAT_ALARM_1_STOP_PELTIER entry state */
 void manageChildTreatAlm1StopPeltEntry(void)
 {
-	stopPeltierActuator();
-	stopPeltier2Actuator();
+//	stopPeltierActuator();
+//	stopPeltier2Actuator();
 }
 
 /* Manage CHILD_TREAT_ALARM_1_STOP_PELTIER always state */
 void manageChildTreatAlm1StopPeltAlways(void)
 {
-	stopPeltierActuator();
-	stopPeltier2Actuator();
+//	stopPeltierActuator();
+//	stopPeltier2Actuator();
 }
 
 // Filippo gestisco lo stop attuatori in modo diverso nel caso di allarme in test T1

@@ -64,11 +64,6 @@
 #include "BitIoLdd36.h"
 #include "VOLTAGE_M_CHK.h"
 #include "BitIoLdd37.h"
-#include "PELTIER_COMM.h"
-#include "PELTIER2_COMM.h"
-#include "ASerialLdd3.h"
-#include "PELTIER2_COMM.h"
-#include "ASerialLdd6.h"
 #include "EN_P_2_C.h"
 #include "BitIoLdd14.h"
 #include "EN_P_1_C.h"
@@ -169,7 +164,6 @@
 #include "Global.h"
 #include "App_Ges.h"
 #include "ModBusCommProt.h"
-#include "Peltier_Module.h"
 #include "Adc_Ges.h"
 #include "Alarm_Con.h"
 #include "Perfusion.h"
@@ -350,8 +344,6 @@ int main(void)
   InitAlarmsStates();
   initPerfusionParam();
   initPurifParam();
-
-  peltierAssInit();
 
   initUFlowSensor();
   initTempSensIR();
@@ -973,7 +965,8 @@ int main(void)
  * control vers 1.1.3 inserted RTCGetString funcion for logging , pressed button id on terminal now shown with time info
  *              1.1.3A  show state index on log , modified App_Ges.c to simplify code
  *
- *
+ * control vers 7.0.0 code cleaner lab ( trying to clen a dirty code ) *
+ * 	eliminate le routine della peltier 1 e della peltier 2
  *
  */
 

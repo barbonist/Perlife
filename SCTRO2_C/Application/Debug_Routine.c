@@ -18,7 +18,6 @@
 
 #include "Global.h"
 #include "Comm_Sbc.h"
-#include "Peltier_Module.h"
 #include "ModBusCommProt.h"
 #include "Adc_ges.h"
 #include "Flowsens.h"
@@ -479,58 +478,58 @@ void Service_SBC(void){
 					// Peltier read float
 					case SERVICE_PELTIER_READ_FLOAT:
 					{
-						sprintf(regId, "%u", sbc_rx_data[7]);
-						PeltierAssSendCommand(READ_FLOAT_FROM_REG_XX,regId,0,"0",2);
-
-						word snd;
-						ptrMsgSbcRx = &sbc_rx_data[0];
-						buildPeltierReadFloatResponseMsg(ptrMsgSbcRx, ptrMsgDataieee754start);
-						ptrMsgSbcTx = &sbc_tx_data[0];
-						SBC_COMM_SendBlock(ptrMsgSbcTx,myCommunicatorToSBC.numByteToSend,&snd);
+//						sprintf(regId, "%u", sbc_rx_data[7]);
+//						PeltierAssSendCommand(READ_FLOAT_FROM_REG_XX,regId,0,"0",2);
+//
+//						word snd;
+//						ptrMsgSbcRx = &sbc_rx_data[0];
+//						buildPeltierReadFloatResponseMsg(ptrMsgSbcRx, ptrMsgDataieee754start);
+//						ptrMsgSbcTx = &sbc_tx_data[0];
+//						SBC_COMM_SendBlock(ptrMsgSbcTx,myCommunicatorToSBC.numByteToSend,&snd);
 					}
 					break;
 					// Peltier read int
 					case SERVICE_PELTIER_READ_INT:
 					{
-						sprintf(regId, "%u", sbc_rx_data[7]);
-						PeltierAssSendCommand(READ_DATA_REGISTER_XX,regId,0,"0",1);
-						PeltierAssSendCommand(READ_DATA_REGISTER_XX,regId,0,"0",2);
-
-						word snd;
-						ptrMsgSbcRx = &sbc_rx_data[0];
-						buildPeltierReadIntResponseMsg(ptrMsgSbcRx, ptrMsgDataPeltierInt);
-						ptrMsgSbcTx = &sbc_tx_data[0];
-						SBC_COMM_SendBlock(ptrMsgSbcTx,myCommunicatorToSBC.numByteToSend,&snd);
+//						sprintf(regId, "%u", sbc_rx_data[7]);
+//						PeltierAssSendCommand(READ_DATA_REGISTER_XX,regId,0,"0",1);
+//						PeltierAssSendCommand(READ_DATA_REGISTER_XX,regId,0,"0",2);
+//
+//						word snd;
+//						ptrMsgSbcRx = &sbc_rx_data[0];
+//						buildPeltierReadIntResponseMsg(ptrMsgSbcRx, ptrMsgDataPeltierInt);
+//						ptrMsgSbcTx = &sbc_tx_data[0];
+//						SBC_COMM_SendBlock(ptrMsgSbcTx,myCommunicatorToSBC.numByteToSend,&snd);
 					}
 					break;
 					// Peltier write float
 					case SERVICE_PELTIER_WRITE_FLOAT:
 					{
-						sprintf(regId, "%u", sbc_rx_data[7]);
-						sprintf(valueIeee, "%2X%2X%2X%2X", sbc_rx_data[8], sbc_rx_data[9], sbc_rx_data[10], sbc_rx_data[11]);
-						PeltierAssSendCommand(WRITE_FLOAT_REG_XX,regId,0,valueIeee,1);
-						PeltierAssSendCommand(WRITE_FLOAT_REG_XX,regId,0,valueIeee,2);
-
-						word snd;
-						ptrMsgSbcRx = &sbc_rx_data[0];
-						buildPeltierWriteFloatResponseMsg(ptrMsgSbcRx);
-						ptrMsgSbcTx = &sbc_tx_data[0];
-						SBC_COMM_SendBlock(ptrMsgSbcTx,myCommunicatorToSBC.numByteToSend,&snd);
+//						sprintf(regId, "%u", sbc_rx_data[7]);
+//						sprintf(valueIeee, "%2X%2X%2X%2X", sbc_rx_data[8], sbc_rx_data[9], sbc_rx_data[10], sbc_rx_data[11]);
+//						PeltierAssSendCommand(WRITE_FLOAT_REG_XX,regId,0,valueIeee,1);
+//						PeltierAssSendCommand(WRITE_FLOAT_REG_XX,regId,0,valueIeee,2);
+//
+//						word snd;
+//						ptrMsgSbcRx = &sbc_rx_data[0];
+//						buildPeltierWriteFloatResponseMsg(ptrMsgSbcRx);
+//						ptrMsgSbcTx = &sbc_tx_data[0];
+//						SBC_COMM_SendBlock(ptrMsgSbcTx,myCommunicatorToSBC.numByteToSend,&snd);
 					}
 					break;
 					// Peltier write int
 					case SERVICE_PELTIER_WRITE_INT:
 					{
-						sprintf(regId, "%u", sbc_rx_data[7]);
-						valueInt = sbc_rx_data[8];
-						PeltierAssSendCommand(WRITE_DATA_REGISTER_XX,regId,valueInt,"0",1);
-						PeltierAssSendCommand(WRITE_DATA_REGISTER_XX,regId,valueInt,"0",2);
-
-						word snd;
-						ptrMsgSbcRx = &sbc_rx_data[0];
-						buildPeltierWriteIntResponseMsg(ptrMsgSbcRx);
-						ptrMsgSbcTx = &sbc_tx_data[0];
-						SBC_COMM_SendBlock(ptrMsgSbcTx,myCommunicatorToSBC.numByteToSend,&snd);
+//						sprintf(regId, "%u", sbc_rx_data[7]);
+//						valueInt = sbc_rx_data[8];
+//						PeltierAssSendCommand(WRITE_DATA_REGISTER_XX,regId,valueInt,"0",1);
+//						PeltierAssSendCommand(WRITE_DATA_REGISTER_XX,regId,valueInt,"0",2);
+//
+//						word snd;
+//						ptrMsgSbcRx = &sbc_rx_data[0];
+//						buildPeltierWriteIntResponseMsg(ptrMsgSbcRx);
+//						ptrMsgSbcTx = &sbc_tx_data[0];
+//						SBC_COMM_SendBlock(ptrMsgSbcTx,myCommunicatorToSBC.numByteToSend,&snd);
 					}
 					break;
 					// Peltier start
@@ -615,13 +614,13 @@ void Service_SBC(void){
 					// Peltier write ee
 					case SERVICE_PELTIER_WRITE_EE:
 					{
-						PeltierAssSendCommand(WRITE_REG_VAL_TO_EEPROM, "0",0,"0",2);
-
-						word snd;
-						ptrMsgSbcRx = &sbc_rx_data[0];
-						buildPeltierWriteEEResponseMsg(ptrMsgSbcRx);
-						ptrMsgSbcTx = &sbc_tx_data[0];
-						SBC_COMM_SendBlock(ptrMsgSbcTx,myCommunicatorToSBC.numByteToSend,&snd);
+//						PeltierAssSendCommand(WRITE_REG_VAL_TO_EEPROM, "0",0,"0",2);
+//
+//						word snd;
+//						ptrMsgSbcRx = &sbc_rx_data[0];
+//						buildPeltierWriteEEResponseMsg(ptrMsgSbcRx);
+//						ptrMsgSbcTx = &sbc_tx_data[0];
+//						SBC_COMM_SendBlock(ptrMsgSbcTx,myCommunicatorToSBC.numByteToSend,&snd);
 					}
 					break;
 
@@ -633,7 +632,7 @@ void Service_SBC(void){
 					{
 						//build command for peltier
 						//send command to peltier
-						PeltierAssSendCommand(SHOW_CURRENT_SW,0,0,"0",2);
+						// PeltierAssSendCommand(SHOW_CURRENT_SW,0,0,"0",2);
 						//wait for response
 					}
 					break;
@@ -647,7 +646,7 @@ void Service_SBC(void){
 						for(char i=0; i<1; i++)
 						{
 							//while(iflagPeltierBusy == IFLAG_PELTIER_BUSY);
-							PeltierAssSendCommand(READ_FLOAT_FROM_REG_XX,REG_0_SET_POINT+i,0,"0",2);
+							// PeltierAssSendCommand(READ_FLOAT_FROM_REG_XX,REG_0_SET_POINT+i,0,"0",2);
 						}
 						//wait for response
 					}
@@ -656,7 +655,7 @@ void Service_SBC(void){
 					case 0x03:
 					{
 						/* when using the ieee 754 format the hex number shall be written as a string */
-						PeltierAssSendCommand(WRITE_FLOAT_REG_XX, REG_0_SET_POINT, 0, "40133333",2);
+						// PeltierAssSendCommand(WRITE_FLOAT_REG_XX, REG_0_SET_POINT, 0, "40133333",2);
 					}
 					break;
 

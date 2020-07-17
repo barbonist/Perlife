@@ -11,7 +11,6 @@
 #include "App_Ges.h"
 #include "Global.h"
 #include "ModBusCommProt.h"
-#include "Peltier_Module.h"
 #include "Adc_Ges.h"
 
 

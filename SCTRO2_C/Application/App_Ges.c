@@ -10,7 +10,6 @@
 #include "PANIC_BUTTON_INPUT.h"
 #include "ModBusCommProt.h"
 #include "App_Ges.h"
-#include "Peltier_Module.h"
 #include "ControlProtectiveInterface_C.h"
 #include "VOLTAGE_B_CHK.h"
 #include "BitIoLdd36.h"
@@ -77,6 +76,8 @@
 #include "HOOK_SENSOR_1.h"
 #include "HOOK_SENSOR_2.h"
 #include "Adc_Ges.h"
+#include "SWTimer.h"
+
 
 bool IsPinchPosOk(unsigned char *pArrPinchPos);
 

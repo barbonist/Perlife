@@ -32,8 +32,10 @@
 	 * 0x0815 --> 1.0.21 *0x0816 --> 1.0.22 *0x0817 --> 1.0.23 *0x0818 --> 1.0.24 ... 0x0840 --> 1.1.0 ... 0x0841 --> 1.1.1 ... 0x0842 --> 1.1.2
 	 * 0x0842 --> 1.1.3*/
 
+	 /* 7.0.0   00111 00000 000000 = 0x3800 */
+
 #ifndef VALIDAZIONE_PROTECTIVE
-#define REVISION_FW_CONTROL 0x0843
+#define REVISION_FW_CONTROL 0x3800
 #else
 #define REVISION_FW_CONTROL 0x0001 // nel caso sia compilato con allarmi control disabilitati per la validazione protective mettiamo revisione pari a 0.0.1
 #endif
